@@ -446,15 +446,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[0].de),
-    .d      (hw2reg.ip[0].d ),
+    .d      (hw2reg.ip[0].d),
 
     // to internal hardware
     .qe     (),
@@ -471,15 +472,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[1].de),
-    .d      (hw2reg.ip[1].d ),
+    .d      (hw2reg.ip[1].d),
 
     // to internal hardware
     .qe     (),
@@ -496,15 +498,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[2].de),
-    .d      (hw2reg.ip[2].d ),
+    .d      (hw2reg.ip[2].d),
 
     // to internal hardware
     .qe     (),
@@ -521,15 +524,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[3].de),
-    .d      (hw2reg.ip[3].d ),
+    .d      (hw2reg.ip[3].d),
 
     // to internal hardware
     .qe     (),
@@ -546,15 +550,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[4].de),
-    .d      (hw2reg.ip[4].d ),
+    .d      (hw2reg.ip[4].d),
 
     // to internal hardware
     .qe     (),
@@ -571,15 +576,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[5].de),
-    .d      (hw2reg.ip[5].d ),
+    .d      (hw2reg.ip[5].d),
 
     // to internal hardware
     .qe     (),
@@ -596,15 +602,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[6].de),
-    .d      (hw2reg.ip[6].d ),
+    .d      (hw2reg.ip[6].d),
 
     // to internal hardware
     .qe     (),
@@ -621,15 +628,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[7].de),
-    .d      (hw2reg.ip[7].d ),
+    .d      (hw2reg.ip[7].d),
 
     // to internal hardware
     .qe     (),
@@ -646,15 +654,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[8].de),
-    .d      (hw2reg.ip[8].d ),
+    .d      (hw2reg.ip[8].d),
 
     // to internal hardware
     .qe     (),
@@ -671,15 +680,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[9].de),
-    .d      (hw2reg.ip[9].d ),
+    .d      (hw2reg.ip[9].d),
 
     // to internal hardware
     .qe     (),
@@ -696,15 +706,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[10].de),
-    .d      (hw2reg.ip[10].d ),
+    .d      (hw2reg.ip[10].d),
 
     // to internal hardware
     .qe     (),
@@ -721,15 +732,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[11].de),
-    .d      (hw2reg.ip[11].d ),
+    .d      (hw2reg.ip[11].d),
 
     // to internal hardware
     .qe     (),
@@ -746,15 +758,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[12].de),
-    .d      (hw2reg.ip[12].d ),
+    .d      (hw2reg.ip[12].d),
 
     // to internal hardware
     .qe     (),
@@ -771,15 +784,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[13].de),
-    .d      (hw2reg.ip[13].d ),
+    .d      (hw2reg.ip[13].d),
 
     // to internal hardware
     .qe     (),
@@ -796,15 +810,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[14].de),
-    .d      (hw2reg.ip[14].d ),
+    .d      (hw2reg.ip[14].d),
 
     // to internal hardware
     .qe     (),
@@ -821,15 +836,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[15].de),
-    .d      (hw2reg.ip[15].d ),
+    .d      (hw2reg.ip[15].d),
 
     // to internal hardware
     .qe     (),
@@ -846,15 +862,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[16].de),
-    .d      (hw2reg.ip[16].d ),
+    .d      (hw2reg.ip[16].d),
 
     // to internal hardware
     .qe     (),
@@ -871,15 +888,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[17].de),
-    .d      (hw2reg.ip[17].d ),
+    .d      (hw2reg.ip[17].d),
 
     // to internal hardware
     .qe     (),
@@ -896,15 +914,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[18].de),
-    .d      (hw2reg.ip[18].d ),
+    .d      (hw2reg.ip[18].d),
 
     // to internal hardware
     .qe     (),
@@ -921,15 +940,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[19].de),
-    .d      (hw2reg.ip[19].d ),
+    .d      (hw2reg.ip[19].d),
 
     // to internal hardware
     .qe     (),
@@ -946,15 +966,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[20].de),
-    .d      (hw2reg.ip[20].d ),
+    .d      (hw2reg.ip[20].d),
 
     // to internal hardware
     .qe     (),
@@ -971,15 +992,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[21].de),
-    .d      (hw2reg.ip[21].d ),
+    .d      (hw2reg.ip[21].d),
 
     // to internal hardware
     .qe     (),
@@ -996,15 +1018,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[22].de),
-    .d      (hw2reg.ip[22].d ),
+    .d      (hw2reg.ip[22].d),
 
     // to internal hardware
     .qe     (),
@@ -1021,15 +1044,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[23].de),
-    .d      (hw2reg.ip[23].d ),
+    .d      (hw2reg.ip[23].d),
 
     // to internal hardware
     .qe     (),
@@ -1046,15 +1070,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[24].de),
-    .d      (hw2reg.ip[24].d ),
+    .d      (hw2reg.ip[24].d),
 
     // to internal hardware
     .qe     (),
@@ -1071,15 +1096,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[25].de),
-    .d      (hw2reg.ip[25].d ),
+    .d      (hw2reg.ip[25].d),
 
     // to internal hardware
     .qe     (),
@@ -1096,15 +1122,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[26].de),
-    .d      (hw2reg.ip[26].d ),
+    .d      (hw2reg.ip[26].d),
 
     // to internal hardware
     .qe     (),
@@ -1121,15 +1148,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[27].de),
-    .d      (hw2reg.ip[27].d ),
+    .d      (hw2reg.ip[27].d),
 
     // to internal hardware
     .qe     (),
@@ -1146,15 +1174,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[28].de),
-    .d      (hw2reg.ip[28].d ),
+    .d      (hw2reg.ip[28].d),
 
     // to internal hardware
     .qe     (),
@@ -1171,15 +1200,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[29].de),
-    .d      (hw2reg.ip[29].d ),
+    .d      (hw2reg.ip[29].d),
 
     // to internal hardware
     .qe     (),
@@ -1196,15 +1226,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[30].de),
-    .d      (hw2reg.ip[30].d ),
+    .d      (hw2reg.ip[30].d),
 
     // to internal hardware
     .qe     (),
@@ -1221,15 +1252,16 @@ module rv_plic_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_ip_p_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ip[31].de),
-    .d      (hw2reg.ip[31].d ),
+    .d      (hw2reg.ip[31].d),
 
     // to internal hardware
     .qe     (),
@@ -1251,8 +1283,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_0_we),
@@ -1260,11 +1292,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[0].q ),
+    .q      (reg2hw.le[0].q),
 
     // to register interface (read)
     .qs     (le_le_0_qs)
@@ -1277,8 +1309,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_1_we),
@@ -1286,11 +1318,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[1].q ),
+    .q      (reg2hw.le[1].q),
 
     // to register interface (read)
     .qs     (le_le_1_qs)
@@ -1303,8 +1335,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_2_we),
@@ -1312,11 +1344,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[2].q ),
+    .q      (reg2hw.le[2].q),
 
     // to register interface (read)
     .qs     (le_le_2_qs)
@@ -1329,8 +1361,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_3_we),
@@ -1338,11 +1370,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[3].q ),
+    .q      (reg2hw.le[3].q),
 
     // to register interface (read)
     .qs     (le_le_3_qs)
@@ -1355,8 +1387,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_4_we),
@@ -1364,11 +1396,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[4].q ),
+    .q      (reg2hw.le[4].q),
 
     // to register interface (read)
     .qs     (le_le_4_qs)
@@ -1381,8 +1413,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_5_we),
@@ -1390,11 +1422,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[5].q ),
+    .q      (reg2hw.le[5].q),
 
     // to register interface (read)
     .qs     (le_le_5_qs)
@@ -1407,8 +1439,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_6_we),
@@ -1416,11 +1448,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[6].q ),
+    .q      (reg2hw.le[6].q),
 
     // to register interface (read)
     .qs     (le_le_6_qs)
@@ -1433,8 +1465,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_7_we),
@@ -1442,11 +1474,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[7].q ),
+    .q      (reg2hw.le[7].q),
 
     // to register interface (read)
     .qs     (le_le_7_qs)
@@ -1459,8 +1491,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_8_we),
@@ -1468,11 +1500,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[8].q ),
+    .q      (reg2hw.le[8].q),
 
     // to register interface (read)
     .qs     (le_le_8_qs)
@@ -1485,8 +1517,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_9_we),
@@ -1494,11 +1526,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[9].q ),
+    .q      (reg2hw.le[9].q),
 
     // to register interface (read)
     .qs     (le_le_9_qs)
@@ -1511,8 +1543,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_10_we),
@@ -1520,11 +1552,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[10].q ),
+    .q      (reg2hw.le[10].q),
 
     // to register interface (read)
     .qs     (le_le_10_qs)
@@ -1537,8 +1569,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_11_we),
@@ -1546,11 +1578,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[11].q ),
+    .q      (reg2hw.le[11].q),
 
     // to register interface (read)
     .qs     (le_le_11_qs)
@@ -1563,8 +1595,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_12_we),
@@ -1572,11 +1604,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[12].q ),
+    .q      (reg2hw.le[12].q),
 
     // to register interface (read)
     .qs     (le_le_12_qs)
@@ -1589,8 +1621,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_13_we),
@@ -1598,11 +1630,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[13].q ),
+    .q      (reg2hw.le[13].q),
 
     // to register interface (read)
     .qs     (le_le_13_qs)
@@ -1615,8 +1647,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_14_we),
@@ -1624,11 +1656,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[14].q ),
+    .q      (reg2hw.le[14].q),
 
     // to register interface (read)
     .qs     (le_le_14_qs)
@@ -1641,8 +1673,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_15_we),
@@ -1650,11 +1682,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[15].q ),
+    .q      (reg2hw.le[15].q),
 
     // to register interface (read)
     .qs     (le_le_15_qs)
@@ -1667,8 +1699,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_16_we),
@@ -1676,11 +1708,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[16].q ),
+    .q      (reg2hw.le[16].q),
 
     // to register interface (read)
     .qs     (le_le_16_qs)
@@ -1693,8 +1725,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_17_we),
@@ -1702,11 +1734,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[17].q ),
+    .q      (reg2hw.le[17].q),
 
     // to register interface (read)
     .qs     (le_le_17_qs)
@@ -1719,8 +1751,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_18_we),
@@ -1728,11 +1760,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[18].q ),
+    .q      (reg2hw.le[18].q),
 
     // to register interface (read)
     .qs     (le_le_18_qs)
@@ -1745,8 +1777,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_19_we),
@@ -1754,11 +1786,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[19].q ),
+    .q      (reg2hw.le[19].q),
 
     // to register interface (read)
     .qs     (le_le_19_qs)
@@ -1771,8 +1803,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_20_we),
@@ -1780,11 +1812,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[20].q ),
+    .q      (reg2hw.le[20].q),
 
     // to register interface (read)
     .qs     (le_le_20_qs)
@@ -1797,8 +1829,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_21_we),
@@ -1806,11 +1838,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[21].q ),
+    .q      (reg2hw.le[21].q),
 
     // to register interface (read)
     .qs     (le_le_21_qs)
@@ -1823,8 +1855,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_22_we),
@@ -1832,11 +1864,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[22].q ),
+    .q      (reg2hw.le[22].q),
 
     // to register interface (read)
     .qs     (le_le_22_qs)
@@ -1849,8 +1881,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_23_we),
@@ -1858,11 +1890,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[23].q ),
+    .q      (reg2hw.le[23].q),
 
     // to register interface (read)
     .qs     (le_le_23_qs)
@@ -1875,8 +1907,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_24_we),
@@ -1884,11 +1916,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[24].q ),
+    .q      (reg2hw.le[24].q),
 
     // to register interface (read)
     .qs     (le_le_24_qs)
@@ -1901,8 +1933,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_25_we),
@@ -1910,11 +1942,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[25].q ),
+    .q      (reg2hw.le[25].q),
 
     // to register interface (read)
     .qs     (le_le_25_qs)
@@ -1927,8 +1959,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_26_we),
@@ -1936,11 +1968,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[26].q ),
+    .q      (reg2hw.le[26].q),
 
     // to register interface (read)
     .qs     (le_le_26_qs)
@@ -1953,8 +1985,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_27_we),
@@ -1962,11 +1994,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[27].q ),
+    .q      (reg2hw.le[27].q),
 
     // to register interface (read)
     .qs     (le_le_27_qs)
@@ -1979,8 +2011,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_28_we),
@@ -1988,11 +2020,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[28].q ),
+    .q      (reg2hw.le[28].q),
 
     // to register interface (read)
     .qs     (le_le_28_qs)
@@ -2005,8 +2037,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_29_we),
@@ -2014,11 +2046,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[29].q ),
+    .q      (reg2hw.le[29].q),
 
     // to register interface (read)
     .qs     (le_le_29_qs)
@@ -2031,8 +2063,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_30_we),
@@ -2040,11 +2072,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[30].q ),
+    .q      (reg2hw.le[30].q),
 
     // to register interface (read)
     .qs     (le_le_30_qs)
@@ -2057,8 +2089,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_le_le_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (le_le_31_we),
@@ -2066,11 +2098,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.le[31].q ),
+    .q      (reg2hw.le[31].q),
 
     // to register interface (read)
     .qs     (le_le_31_qs)
@@ -2085,8 +2117,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio0_we),
@@ -2094,11 +2126,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio0.q ),
+    .q      (reg2hw.prio0.q),
 
     // to register interface (read)
     .qs     (prio0_qs)
@@ -2112,8 +2144,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio1_we),
@@ -2121,11 +2153,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio1.q ),
+    .q      (reg2hw.prio1.q),
 
     // to register interface (read)
     .qs     (prio1_qs)
@@ -2139,8 +2171,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio2_we),
@@ -2148,11 +2180,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio2.q ),
+    .q      (reg2hw.prio2.q),
 
     // to register interface (read)
     .qs     (prio2_qs)
@@ -2166,8 +2198,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio3_we),
@@ -2175,11 +2207,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio3.q ),
+    .q      (reg2hw.prio3.q),
 
     // to register interface (read)
     .qs     (prio3_qs)
@@ -2193,8 +2225,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio4_we),
@@ -2202,11 +2234,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio4.q ),
+    .q      (reg2hw.prio4.q),
 
     // to register interface (read)
     .qs     (prio4_qs)
@@ -2220,8 +2252,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio5_we),
@@ -2229,11 +2261,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio5.q ),
+    .q      (reg2hw.prio5.q),
 
     // to register interface (read)
     .qs     (prio5_qs)
@@ -2247,8 +2279,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio6_we),
@@ -2256,11 +2288,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio6.q ),
+    .q      (reg2hw.prio6.q),
 
     // to register interface (read)
     .qs     (prio6_qs)
@@ -2274,8 +2306,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio7_we),
@@ -2283,11 +2315,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio7.q ),
+    .q      (reg2hw.prio7.q),
 
     // to register interface (read)
     .qs     (prio7_qs)
@@ -2301,8 +2333,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio8_we),
@@ -2310,11 +2342,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio8.q ),
+    .q      (reg2hw.prio8.q),
 
     // to register interface (read)
     .qs     (prio8_qs)
@@ -2328,8 +2360,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio9_we),
@@ -2337,11 +2369,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio9.q ),
+    .q      (reg2hw.prio9.q),
 
     // to register interface (read)
     .qs     (prio9_qs)
@@ -2355,8 +2387,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio10_we),
@@ -2364,11 +2396,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio10.q ),
+    .q      (reg2hw.prio10.q),
 
     // to register interface (read)
     .qs     (prio10_qs)
@@ -2382,8 +2414,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio11_we),
@@ -2391,11 +2423,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio11.q ),
+    .q      (reg2hw.prio11.q),
 
     // to register interface (read)
     .qs     (prio11_qs)
@@ -2409,8 +2441,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio12_we),
@@ -2418,11 +2450,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio12.q ),
+    .q      (reg2hw.prio12.q),
 
     // to register interface (read)
     .qs     (prio12_qs)
@@ -2436,8 +2468,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio13_we),
@@ -2445,11 +2477,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio13.q ),
+    .q      (reg2hw.prio13.q),
 
     // to register interface (read)
     .qs     (prio13_qs)
@@ -2463,8 +2495,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio14_we),
@@ -2472,11 +2504,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio14.q ),
+    .q      (reg2hw.prio14.q),
 
     // to register interface (read)
     .qs     (prio14_qs)
@@ -2490,8 +2522,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio15_we),
@@ -2499,11 +2531,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio15.q ),
+    .q      (reg2hw.prio15.q),
 
     // to register interface (read)
     .qs     (prio15_qs)
@@ -2517,8 +2549,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio16_we),
@@ -2526,11 +2558,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio16.q ),
+    .q      (reg2hw.prio16.q),
 
     // to register interface (read)
     .qs     (prio16_qs)
@@ -2544,8 +2576,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio17_we),
@@ -2553,11 +2585,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio17.q ),
+    .q      (reg2hw.prio17.q),
 
     // to register interface (read)
     .qs     (prio17_qs)
@@ -2571,8 +2603,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio18_we),
@@ -2580,11 +2612,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio18.q ),
+    .q      (reg2hw.prio18.q),
 
     // to register interface (read)
     .qs     (prio18_qs)
@@ -2598,8 +2630,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio19_we),
@@ -2607,11 +2639,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio19.q ),
+    .q      (reg2hw.prio19.q),
 
     // to register interface (read)
     .qs     (prio19_qs)
@@ -2625,8 +2657,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio20_we),
@@ -2634,11 +2666,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio20.q ),
+    .q      (reg2hw.prio20.q),
 
     // to register interface (read)
     .qs     (prio20_qs)
@@ -2652,8 +2684,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio21_we),
@@ -2661,11 +2693,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio21.q ),
+    .q      (reg2hw.prio21.q),
 
     // to register interface (read)
     .qs     (prio21_qs)
@@ -2679,8 +2711,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio22_we),
@@ -2688,11 +2720,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio22.q ),
+    .q      (reg2hw.prio22.q),
 
     // to register interface (read)
     .qs     (prio22_qs)
@@ -2706,8 +2738,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio23_we),
@@ -2715,11 +2747,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio23.q ),
+    .q      (reg2hw.prio23.q),
 
     // to register interface (read)
     .qs     (prio23_qs)
@@ -2733,8 +2765,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio24_we),
@@ -2742,11 +2774,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio24.q ),
+    .q      (reg2hw.prio24.q),
 
     // to register interface (read)
     .qs     (prio24_qs)
@@ -2760,8 +2792,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio25_we),
@@ -2769,11 +2801,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio25.q ),
+    .q      (reg2hw.prio25.q),
 
     // to register interface (read)
     .qs     (prio25_qs)
@@ -2787,8 +2819,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio26_we),
@@ -2796,11 +2828,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio26.q ),
+    .q      (reg2hw.prio26.q),
 
     // to register interface (read)
     .qs     (prio26_qs)
@@ -2814,8 +2846,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio27_we),
@@ -2823,11 +2855,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio27.q ),
+    .q      (reg2hw.prio27.q),
 
     // to register interface (read)
     .qs     (prio27_qs)
@@ -2841,8 +2873,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio28_we),
@@ -2850,11 +2882,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio28.q ),
+    .q      (reg2hw.prio28.q),
 
     // to register interface (read)
     .qs     (prio28_qs)
@@ -2868,8 +2900,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio29_we),
@@ -2877,11 +2909,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio29.q ),
+    .q      (reg2hw.prio29.q),
 
     // to register interface (read)
     .qs     (prio29_qs)
@@ -2895,8 +2927,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio30_we),
@@ -2904,11 +2936,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio30.q ),
+    .q      (reg2hw.prio30.q),
 
     // to register interface (read)
     .qs     (prio30_qs)
@@ -2922,8 +2954,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_prio31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prio31_we),
@@ -2931,11 +2963,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prio31.q ),
+    .q      (reg2hw.prio31.q),
 
     // to register interface (read)
     .qs     (prio31_qs)
@@ -2952,8 +2984,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_0_we),
@@ -2961,11 +2993,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[0].q ),
+    .q      (reg2hw.ie0[0].q),
 
     // to register interface (read)
     .qs     (ie0_e_0_qs)
@@ -2978,8 +3010,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_1_we),
@@ -2987,11 +3019,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[1].q ),
+    .q      (reg2hw.ie0[1].q),
 
     // to register interface (read)
     .qs     (ie0_e_1_qs)
@@ -3004,8 +3036,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_2_we),
@@ -3013,11 +3045,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[2].q ),
+    .q      (reg2hw.ie0[2].q),
 
     // to register interface (read)
     .qs     (ie0_e_2_qs)
@@ -3030,8 +3062,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_3_we),
@@ -3039,11 +3071,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[3].q ),
+    .q      (reg2hw.ie0[3].q),
 
     // to register interface (read)
     .qs     (ie0_e_3_qs)
@@ -3056,8 +3088,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_4_we),
@@ -3065,11 +3097,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[4].q ),
+    .q      (reg2hw.ie0[4].q),
 
     // to register interface (read)
     .qs     (ie0_e_4_qs)
@@ -3082,8 +3114,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_5_we),
@@ -3091,11 +3123,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[5].q ),
+    .q      (reg2hw.ie0[5].q),
 
     // to register interface (read)
     .qs     (ie0_e_5_qs)
@@ -3108,8 +3140,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_6_we),
@@ -3117,11 +3149,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[6].q ),
+    .q      (reg2hw.ie0[6].q),
 
     // to register interface (read)
     .qs     (ie0_e_6_qs)
@@ -3134,8 +3166,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_7_we),
@@ -3143,11 +3175,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[7].q ),
+    .q      (reg2hw.ie0[7].q),
 
     // to register interface (read)
     .qs     (ie0_e_7_qs)
@@ -3160,8 +3192,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_8_we),
@@ -3169,11 +3201,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[8].q ),
+    .q      (reg2hw.ie0[8].q),
 
     // to register interface (read)
     .qs     (ie0_e_8_qs)
@@ -3186,8 +3218,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_9_we),
@@ -3195,11 +3227,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[9].q ),
+    .q      (reg2hw.ie0[9].q),
 
     // to register interface (read)
     .qs     (ie0_e_9_qs)
@@ -3212,8 +3244,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_10_we),
@@ -3221,11 +3253,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[10].q ),
+    .q      (reg2hw.ie0[10].q),
 
     // to register interface (read)
     .qs     (ie0_e_10_qs)
@@ -3238,8 +3270,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_11_we),
@@ -3247,11 +3279,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[11].q ),
+    .q      (reg2hw.ie0[11].q),
 
     // to register interface (read)
     .qs     (ie0_e_11_qs)
@@ -3264,8 +3296,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_12_we),
@@ -3273,11 +3305,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[12].q ),
+    .q      (reg2hw.ie0[12].q),
 
     // to register interface (read)
     .qs     (ie0_e_12_qs)
@@ -3290,8 +3322,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_13_we),
@@ -3299,11 +3331,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[13].q ),
+    .q      (reg2hw.ie0[13].q),
 
     // to register interface (read)
     .qs     (ie0_e_13_qs)
@@ -3316,8 +3348,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_14_we),
@@ -3325,11 +3357,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[14].q ),
+    .q      (reg2hw.ie0[14].q),
 
     // to register interface (read)
     .qs     (ie0_e_14_qs)
@@ -3342,8 +3374,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_15_we),
@@ -3351,11 +3383,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[15].q ),
+    .q      (reg2hw.ie0[15].q),
 
     // to register interface (read)
     .qs     (ie0_e_15_qs)
@@ -3368,8 +3400,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_16_we),
@@ -3377,11 +3409,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[16].q ),
+    .q      (reg2hw.ie0[16].q),
 
     // to register interface (read)
     .qs     (ie0_e_16_qs)
@@ -3394,8 +3426,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_17_we),
@@ -3403,11 +3435,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[17].q ),
+    .q      (reg2hw.ie0[17].q),
 
     // to register interface (read)
     .qs     (ie0_e_17_qs)
@@ -3420,8 +3452,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_18_we),
@@ -3429,11 +3461,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[18].q ),
+    .q      (reg2hw.ie0[18].q),
 
     // to register interface (read)
     .qs     (ie0_e_18_qs)
@@ -3446,8 +3478,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_19_we),
@@ -3455,11 +3487,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[19].q ),
+    .q      (reg2hw.ie0[19].q),
 
     // to register interface (read)
     .qs     (ie0_e_19_qs)
@@ -3472,8 +3504,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_20_we),
@@ -3481,11 +3513,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[20].q ),
+    .q      (reg2hw.ie0[20].q),
 
     // to register interface (read)
     .qs     (ie0_e_20_qs)
@@ -3498,8 +3530,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_21_we),
@@ -3507,11 +3539,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[21].q ),
+    .q      (reg2hw.ie0[21].q),
 
     // to register interface (read)
     .qs     (ie0_e_21_qs)
@@ -3524,8 +3556,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_22_we),
@@ -3533,11 +3565,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[22].q ),
+    .q      (reg2hw.ie0[22].q),
 
     // to register interface (read)
     .qs     (ie0_e_22_qs)
@@ -3550,8 +3582,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_23_we),
@@ -3559,11 +3591,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[23].q ),
+    .q      (reg2hw.ie0[23].q),
 
     // to register interface (read)
     .qs     (ie0_e_23_qs)
@@ -3576,8 +3608,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_24_we),
@@ -3585,11 +3617,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[24].q ),
+    .q      (reg2hw.ie0[24].q),
 
     // to register interface (read)
     .qs     (ie0_e_24_qs)
@@ -3602,8 +3634,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_25_we),
@@ -3611,11 +3643,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[25].q ),
+    .q      (reg2hw.ie0[25].q),
 
     // to register interface (read)
     .qs     (ie0_e_25_qs)
@@ -3628,8 +3660,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_26_we),
@@ -3637,11 +3669,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[26].q ),
+    .q      (reg2hw.ie0[26].q),
 
     // to register interface (read)
     .qs     (ie0_e_26_qs)
@@ -3654,8 +3686,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_27_we),
@@ -3663,11 +3695,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[27].q ),
+    .q      (reg2hw.ie0[27].q),
 
     // to register interface (read)
     .qs     (ie0_e_27_qs)
@@ -3680,8 +3712,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_28_we),
@@ -3689,11 +3721,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[28].q ),
+    .q      (reg2hw.ie0[28].q),
 
     // to register interface (read)
     .qs     (ie0_e_28_qs)
@@ -3706,8 +3738,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_29_we),
@@ -3715,11 +3747,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[29].q ),
+    .q      (reg2hw.ie0[29].q),
 
     // to register interface (read)
     .qs     (ie0_e_29_qs)
@@ -3732,8 +3764,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_30_we),
@@ -3741,11 +3773,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[30].q ),
+    .q      (reg2hw.ie0[30].q),
 
     // to register interface (read)
     .qs     (ie0_e_30_qs)
@@ -3758,8 +3790,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ie0_e_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ie0_e_31_we),
@@ -3767,11 +3799,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ie0[31].q ),
+    .q      (reg2hw.ie0[31].q),
 
     // to register interface (read)
     .qs     (ie0_e_31_qs)
@@ -3786,8 +3818,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_threshold0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (threshold0_we),
@@ -3795,11 +3827,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.threshold0.q ),
+    .q      (reg2hw.threshold0.q),
 
     // to register interface (read)
     .qs     (threshold0_qs)
@@ -3817,7 +3849,7 @@ module rv_plic_reg_top (
     .d      (hw2reg.cc0.d),
     .qre    (reg2hw.cc0.re),
     .qe     (reg2hw.cc0.qe),
-    .q      (reg2hw.cc0.q ),
+    .q      (reg2hw.cc0.q),
     .qs     (cc0_qs)
   );
 
@@ -3829,8 +3861,8 @@ module rv_plic_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_msip0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (msip0_we),
@@ -3838,11 +3870,11 @@ module rv_plic_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.msip0.q ),
+    .q      (reg2hw.msip0.q),
 
     // to register interface (read)
     .qs     (msip0_qs)

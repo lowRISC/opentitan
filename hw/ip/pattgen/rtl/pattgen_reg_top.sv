@@ -172,8 +172,8 @@ module pattgen_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_done_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_done_ch0_we),
@@ -181,11 +181,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.done_ch0.de),
-    .d      (hw2reg.intr_state.done_ch0.d ),
+    .d      (hw2reg.intr_state.done_ch0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.done_ch0.q ),
+    .q      (reg2hw.intr_state.done_ch0.q),
 
     // to register interface (read)
     .qs     (intr_state_done_ch0_qs)
@@ -198,8 +198,8 @@ module pattgen_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_done_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_done_ch1_we),
@@ -207,11 +207,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.done_ch1.de),
-    .d      (hw2reg.intr_state.done_ch1.d ),
+    .d      (hw2reg.intr_state.done_ch1.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.done_ch1.q ),
+    .q      (reg2hw.intr_state.done_ch1.q),
 
     // to register interface (read)
     .qs     (intr_state_done_ch1_qs)
@@ -226,8 +226,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_done_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_done_ch0_we),
@@ -235,11 +235,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.done_ch0.q ),
+    .q      (reg2hw.intr_enable.done_ch0.q),
 
     // to register interface (read)
     .qs     (intr_enable_done_ch0_qs)
@@ -252,8 +252,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_done_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_done_ch1_we),
@@ -261,11 +261,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.done_ch1.q ),
+    .q      (reg2hw.intr_enable.done_ch1.q),
 
     // to register interface (read)
     .qs     (intr_enable_done_ch1_qs)
@@ -284,7 +284,7 @@ module pattgen_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.done_ch0.qe),
-    .q      (reg2hw.intr_test.done_ch0.q ),
+    .q      (reg2hw.intr_test.done_ch0.q),
     .qs     ()
   );
 
@@ -299,7 +299,7 @@ module pattgen_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.done_ch1.qe),
-    .q      (reg2hw.intr_test.done_ch1.q ),
+    .q      (reg2hw.intr_test.done_ch1.q),
     .qs     ()
   );
 
@@ -312,8 +312,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_enable_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_enable_ch0_we),
@@ -321,11 +321,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.enable_ch0.q ),
+    .q      (reg2hw.ctrl.enable_ch0.q),
 
     // to register interface (read)
     .qs     (ctrl_enable_ch0_qs)
@@ -338,8 +338,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_enable_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_enable_ch1_we),
@@ -347,11 +347,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.enable_ch1.q ),
+    .q      (reg2hw.ctrl.enable_ch1.q),
 
     // to register interface (read)
     .qs     (ctrl_enable_ch1_qs)
@@ -364,8 +364,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_polarity_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_polarity_ch0_we),
@@ -373,11 +373,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.polarity_ch0.q ),
+    .q      (reg2hw.ctrl.polarity_ch0.q),
 
     // to register interface (read)
     .qs     (ctrl_polarity_ch0_qs)
@@ -390,8 +390,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_polarity_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_polarity_ch1_we),
@@ -399,11 +399,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.polarity_ch1.q ),
+    .q      (reg2hw.ctrl.polarity_ch1.q),
 
     // to register interface (read)
     .qs     (ctrl_polarity_ch1_qs)
@@ -417,8 +417,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prediv_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prediv_ch0_we),
@@ -426,11 +426,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prediv_ch0.q ),
+    .q      (reg2hw.prediv_ch0.q),
 
     // to register interface (read)
     .qs     (prediv_ch0_qs)
@@ -444,8 +444,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prediv_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prediv_ch1_we),
@@ -453,11 +453,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prediv_ch1.q ),
+    .q      (reg2hw.prediv_ch1.q),
 
     // to register interface (read)
     .qs     (prediv_ch1_qs)
@@ -473,8 +473,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_data_ch0_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_ch0_0_we),
@@ -482,11 +482,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.data_ch0[0].q ),
+    .q      (reg2hw.data_ch0[0].q),
 
     // to register interface (read)
     .qs     (data_ch0_0_qs)
@@ -500,8 +500,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_data_ch0_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_ch0_1_we),
@@ -509,11 +509,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.data_ch0[1].q ),
+    .q      (reg2hw.data_ch0[1].q),
 
     // to register interface (read)
     .qs     (data_ch0_1_qs)
@@ -529,8 +529,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_data_ch1_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_ch1_0_we),
@@ -538,11 +538,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.data_ch1[0].q ),
+    .q      (reg2hw.data_ch1[0].q),
 
     // to register interface (read)
     .qs     (data_ch1_0_qs)
@@ -556,8 +556,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_data_ch1_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_ch1_1_we),
@@ -565,11 +565,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.data_ch1[1].q ),
+    .q      (reg2hw.data_ch1[1].q),
 
     // to register interface (read)
     .qs     (data_ch1_1_qs)
@@ -584,8 +584,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_size_len_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (size_len_ch0_we),
@@ -593,11 +593,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.size.len_ch0.q ),
+    .q      (reg2hw.size.len_ch0.q),
 
     // to register interface (read)
     .qs     (size_len_ch0_qs)
@@ -610,8 +610,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_size_reps_ch0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (size_reps_ch0_we),
@@ -619,11 +619,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.size.reps_ch0.q ),
+    .q      (reg2hw.size.reps_ch0.q),
 
     // to register interface (read)
     .qs     (size_reps_ch0_qs)
@@ -636,8 +636,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_size_len_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (size_len_ch1_we),
@@ -645,11 +645,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.size.len_ch1.q ),
+    .q      (reg2hw.size.len_ch1.q),
 
     // to register interface (read)
     .qs     (size_len_ch1_qs)
@@ -662,8 +662,8 @@ module pattgen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_size_reps_ch1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (size_reps_ch1_we),
@@ -671,11 +671,11 @@ module pattgen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.size.reps_ch1.q ),
+    .q      (reg2hw.size.reps_ch1.q),
 
     // to register interface (read)
     .qs     (size_reps_ch1_qs)

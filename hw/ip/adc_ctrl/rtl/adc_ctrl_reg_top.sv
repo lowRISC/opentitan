@@ -399,8 +399,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
@@ -408,11 +408,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
+    .d      (hw2reg.intr_state.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q ),
+    .q      (reg2hw.intr_state.q),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -426,8 +426,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
@@ -435,11 +435,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q ),
+    .q      (reg2hw.intr_enable.q),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -457,7 +457,7 @@ module adc_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
+    .q      (reg2hw.intr_test.q),
     .qs     ()
   );
 
@@ -470,8 +470,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_en_ctl_adc_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_en_ctl_adc_enable_we),
@@ -479,11 +479,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_en_ctl.adc_enable.q ),
+    .q      (reg2hw.adc_en_ctl.adc_enable.q),
 
     // to register interface (read)
     .qs     (adc_en_ctl_adc_enable_qs)
@@ -496,8 +496,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_en_ctl_oneshot_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_en_ctl_oneshot_mode_we),
@@ -505,11 +505,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_en_ctl.oneshot_mode.q ),
+    .q      (reg2hw.adc_en_ctl.oneshot_mode.q),
 
     // to register interface (read)
     .qs     (adc_en_ctl_oneshot_mode_qs)
@@ -524,8 +524,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_pd_ctl_lp_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_pd_ctl_lp_mode_we),
@@ -533,11 +533,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_pd_ctl.lp_mode.qe),
-    .q      (reg2hw.adc_pd_ctl.lp_mode.q ),
+    .q      (reg2hw.adc_pd_ctl.lp_mode.q),
 
     // to register interface (read)
     .qs     (adc_pd_ctl_lp_mode_qs)
@@ -550,8 +550,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h6)
   ) u_adc_pd_ctl_pwrup_time (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_pd_ctl_pwrup_time_we),
@@ -559,11 +559,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_pd_ctl.pwrup_time.qe),
-    .q      (reg2hw.adc_pd_ctl.pwrup_time.q ),
+    .q      (reg2hw.adc_pd_ctl.pwrup_time.q),
 
     // to register interface (read)
     .qs     (adc_pd_ctl_pwrup_time_qs)
@@ -576,8 +576,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (24'h640)
   ) u_adc_pd_ctl_wakeup_time (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_pd_ctl_wakeup_time_we),
@@ -585,11 +585,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_pd_ctl.wakeup_time.qe),
-    .q      (reg2hw.adc_pd_ctl.wakeup_time.q ),
+    .q      (reg2hw.adc_pd_ctl.wakeup_time.q),
 
     // to register interface (read)
     .qs     (adc_pd_ctl_wakeup_time_qs)
@@ -603,8 +603,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h4)
   ) u_adc_lp_sample_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_lp_sample_ctl_we),
@@ -612,11 +612,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_lp_sample_ctl.qe),
-    .q      (reg2hw.adc_lp_sample_ctl.q ),
+    .q      (reg2hw.adc_lp_sample_ctl.q),
 
     // to register interface (read)
     .qs     (adc_lp_sample_ctl_qs)
@@ -630,8 +630,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h9b)
   ) u_adc_sample_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_sample_ctl_we),
@@ -639,11 +639,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_sample_ctl.qe),
-    .q      (reg2hw.adc_sample_ctl.q ),
+    .q      (reg2hw.adc_sample_ctl.q),
 
     // to register interface (read)
     .qs     (adc_sample_ctl_qs)
@@ -657,8 +657,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_fsm_rst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_fsm_rst_we),
@@ -666,11 +666,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_fsm_rst.q ),
+    .q      (reg2hw.adc_fsm_rst.q),
 
     // to register interface (read)
     .qs     (adc_fsm_rst_qs)
@@ -687,8 +687,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_0_min_v_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_0_min_v_0_we),
@@ -696,11 +696,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[0].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[0].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[0].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_0_min_v_0_qs)
@@ -713,8 +713,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_0_cond_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_0_cond_0_we),
@@ -722,11 +722,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[0].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[0].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[0].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_0_cond_0_qs)
@@ -739,8 +739,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_0_max_v_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_0_max_v_0_we),
@@ -748,11 +748,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[0].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[0].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[0].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_0_max_v_0_qs)
@@ -768,8 +768,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_1_min_v_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_1_min_v_1_we),
@@ -777,11 +777,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[1].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[1].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[1].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_1_min_v_1_qs)
@@ -794,8 +794,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_1_cond_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_1_cond_1_we),
@@ -803,11 +803,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[1].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[1].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[1].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_1_cond_1_qs)
@@ -820,8 +820,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_1_max_v_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_1_max_v_1_we),
@@ -829,11 +829,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[1].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[1].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[1].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_1_max_v_1_qs)
@@ -849,8 +849,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_2_min_v_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_2_min_v_2_we),
@@ -858,11 +858,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[2].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[2].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[2].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_2_min_v_2_qs)
@@ -875,8 +875,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_2_cond_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_2_cond_2_we),
@@ -884,11 +884,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[2].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[2].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[2].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_2_cond_2_qs)
@@ -901,8 +901,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_2_max_v_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_2_max_v_2_we),
@@ -910,11 +910,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[2].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[2].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[2].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_2_max_v_2_qs)
@@ -930,8 +930,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_3_min_v_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_3_min_v_3_we),
@@ -939,11 +939,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[3].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[3].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[3].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_3_min_v_3_qs)
@@ -956,8 +956,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_3_cond_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_3_cond_3_we),
@@ -965,11 +965,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[3].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[3].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[3].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_3_cond_3_qs)
@@ -982,8 +982,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_3_max_v_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_3_max_v_3_we),
@@ -991,11 +991,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[3].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[3].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[3].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_3_max_v_3_qs)
@@ -1011,8 +1011,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_4_min_v_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_4_min_v_4_we),
@@ -1020,11 +1020,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[4].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[4].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[4].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_4_min_v_4_qs)
@@ -1037,8 +1037,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_4_cond_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_4_cond_4_we),
@@ -1046,11 +1046,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[4].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[4].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[4].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_4_cond_4_qs)
@@ -1063,8 +1063,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_4_max_v_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_4_max_v_4_we),
@@ -1072,11 +1072,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[4].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[4].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[4].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_4_max_v_4_qs)
@@ -1092,8 +1092,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_5_min_v_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_5_min_v_5_we),
@@ -1101,11 +1101,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[5].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[5].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[5].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_5_min_v_5_qs)
@@ -1118,8 +1118,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_5_cond_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_5_cond_5_we),
@@ -1127,11 +1127,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[5].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[5].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[5].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_5_cond_5_qs)
@@ -1144,8 +1144,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_5_max_v_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_5_max_v_5_we),
@@ -1153,11 +1153,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[5].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[5].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[5].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_5_max_v_5_qs)
@@ -1173,8 +1173,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_6_min_v_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_6_min_v_6_we),
@@ -1182,11 +1182,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[6].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[6].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[6].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_6_min_v_6_qs)
@@ -1199,8 +1199,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_6_cond_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_6_cond_6_we),
@@ -1208,11 +1208,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[6].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[6].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[6].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_6_cond_6_qs)
@@ -1225,8 +1225,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_6_max_v_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_6_max_v_6_we),
@@ -1234,11 +1234,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[6].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[6].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[6].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_6_max_v_6_qs)
@@ -1254,8 +1254,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_7_min_v_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_7_min_v_7_we),
@@ -1263,11 +1263,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[7].min_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[7].min_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[7].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_7_min_v_7_qs)
@@ -1280,8 +1280,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn0_filter_ctl_7_cond_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_7_cond_7_we),
@@ -1289,11 +1289,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[7].cond.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[7].cond.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[7].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_7_cond_7_qs)
@@ -1306,8 +1306,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn0_filter_ctl_7_max_v_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn0_filter_ctl_7_max_v_7_we),
@@ -1315,11 +1315,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn0_filter_ctl[7].max_v.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[7].max_v.q ),
+    .q      (reg2hw.adc_chn0_filter_ctl[7].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn0_filter_ctl_7_max_v_7_qs)
@@ -1337,8 +1337,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_0_min_v_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_0_min_v_0_we),
@@ -1346,11 +1346,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[0].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[0].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[0].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_0_min_v_0_qs)
@@ -1363,8 +1363,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_0_cond_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_0_cond_0_we),
@@ -1372,11 +1372,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[0].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[0].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[0].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_0_cond_0_qs)
@@ -1389,8 +1389,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_0_max_v_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_0_max_v_0_we),
@@ -1398,11 +1398,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[0].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[0].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[0].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_0_max_v_0_qs)
@@ -1418,8 +1418,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_1_min_v_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_1_min_v_1_we),
@@ -1427,11 +1427,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[1].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[1].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[1].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_1_min_v_1_qs)
@@ -1444,8 +1444,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_1_cond_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_1_cond_1_we),
@@ -1453,11 +1453,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[1].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[1].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[1].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_1_cond_1_qs)
@@ -1470,8 +1470,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_1_max_v_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_1_max_v_1_we),
@@ -1479,11 +1479,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[1].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[1].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[1].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_1_max_v_1_qs)
@@ -1499,8 +1499,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_2_min_v_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_2_min_v_2_we),
@@ -1508,11 +1508,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[2].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[2].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[2].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_2_min_v_2_qs)
@@ -1525,8 +1525,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_2_cond_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_2_cond_2_we),
@@ -1534,11 +1534,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[2].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[2].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[2].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_2_cond_2_qs)
@@ -1551,8 +1551,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_2_max_v_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_2_max_v_2_we),
@@ -1560,11 +1560,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[2].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[2].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[2].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_2_max_v_2_qs)
@@ -1580,8 +1580,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_3_min_v_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_3_min_v_3_we),
@@ -1589,11 +1589,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[3].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[3].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[3].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_3_min_v_3_qs)
@@ -1606,8 +1606,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_3_cond_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_3_cond_3_we),
@@ -1615,11 +1615,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[3].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[3].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[3].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_3_cond_3_qs)
@@ -1632,8 +1632,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_3_max_v_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_3_max_v_3_we),
@@ -1641,11 +1641,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[3].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[3].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[3].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_3_max_v_3_qs)
@@ -1661,8 +1661,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_4_min_v_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_4_min_v_4_we),
@@ -1670,11 +1670,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[4].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[4].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[4].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_4_min_v_4_qs)
@@ -1687,8 +1687,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_4_cond_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_4_cond_4_we),
@@ -1696,11 +1696,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[4].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[4].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[4].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_4_cond_4_qs)
@@ -1713,8 +1713,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_4_max_v_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_4_max_v_4_we),
@@ -1722,11 +1722,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[4].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[4].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[4].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_4_max_v_4_qs)
@@ -1742,8 +1742,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_5_min_v_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_5_min_v_5_we),
@@ -1751,11 +1751,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[5].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[5].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[5].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_5_min_v_5_qs)
@@ -1768,8 +1768,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_5_cond_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_5_cond_5_we),
@@ -1777,11 +1777,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[5].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[5].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[5].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_5_cond_5_qs)
@@ -1794,8 +1794,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_5_max_v_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_5_max_v_5_we),
@@ -1803,11 +1803,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[5].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[5].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[5].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_5_max_v_5_qs)
@@ -1823,8 +1823,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_6_min_v_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_6_min_v_6_we),
@@ -1832,11 +1832,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[6].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[6].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[6].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_6_min_v_6_qs)
@@ -1849,8 +1849,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_6_cond_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_6_cond_6_we),
@@ -1858,11 +1858,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[6].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[6].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[6].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_6_cond_6_qs)
@@ -1875,8 +1875,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_6_max_v_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_6_max_v_6_we),
@@ -1884,11 +1884,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[6].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[6].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[6].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_6_max_v_6_qs)
@@ -1904,8 +1904,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_7_min_v_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_7_min_v_7_we),
@@ -1913,11 +1913,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[7].min_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[7].min_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[7].min_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_7_min_v_7_qs)
@@ -1930,8 +1930,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_chn1_filter_ctl_7_cond_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_7_cond_7_we),
@@ -1939,11 +1939,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[7].cond.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[7].cond.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[7].cond.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_7_cond_7_qs)
@@ -1956,8 +1956,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_adc_chn1_filter_ctl_7_max_v_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_chn1_filter_ctl_7_max_v_7_we),
@@ -1965,11 +1965,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.adc_chn1_filter_ctl[7].max_v.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[7].max_v.q ),
+    .q      (reg2hw.adc_chn1_filter_ctl[7].max_v.q),
 
     // to register interface (read)
     .qs     (adc_chn1_filter_ctl_7_max_v_7_qs)
@@ -1987,15 +1987,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (2'h0)
   ) u_adc_chn_val_0_adc_chn_value_ext_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[0].adc_chn_value_ext.de),
-    .d      (hw2reg.adc_chn_val[0].adc_chn_value_ext.d ),
+    .d      (hw2reg.adc_chn_val[0].adc_chn_value_ext.d),
 
     // to internal hardware
     .qe     (),
@@ -2012,15 +2013,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (10'h0)
   ) u_adc_chn_val_0_adc_chn_value_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[0].adc_chn_value.de),
-    .d      (hw2reg.adc_chn_val[0].adc_chn_value.d ),
+    .d      (hw2reg.adc_chn_val[0].adc_chn_value.d),
 
     // to internal hardware
     .qe     (),
@@ -2037,15 +2039,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (2'h0)
   ) u_adc_chn_val_0_adc_chn_value_intr_ext_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[0].adc_chn_value_intr_ext.de),
-    .d      (hw2reg.adc_chn_val[0].adc_chn_value_intr_ext.d ),
+    .d      (hw2reg.adc_chn_val[0].adc_chn_value_intr_ext.d),
 
     // to internal hardware
     .qe     (),
@@ -2062,15 +2065,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (10'h0)
   ) u_adc_chn_val_0_adc_chn_value_intr_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[0].adc_chn_value_intr.de),
-    .d      (hw2reg.adc_chn_val[0].adc_chn_value_intr.d ),
+    .d      (hw2reg.adc_chn_val[0].adc_chn_value_intr.d),
 
     // to internal hardware
     .qe     (),
@@ -2090,15 +2094,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (2'h0)
   ) u_adc_chn_val_1_adc_chn_value_ext_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[1].adc_chn_value_ext.de),
-    .d      (hw2reg.adc_chn_val[1].adc_chn_value_ext.d ),
+    .d      (hw2reg.adc_chn_val[1].adc_chn_value_ext.d),
 
     // to internal hardware
     .qe     (),
@@ -2115,15 +2120,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (10'h0)
   ) u_adc_chn_val_1_adc_chn_value_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[1].adc_chn_value.de),
-    .d      (hw2reg.adc_chn_val[1].adc_chn_value.d ),
+    .d      (hw2reg.adc_chn_val[1].adc_chn_value.d),
 
     // to internal hardware
     .qe     (),
@@ -2140,15 +2146,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (2'h0)
   ) u_adc_chn_val_1_adc_chn_value_intr_ext_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[1].adc_chn_value_intr_ext.de),
-    .d      (hw2reg.adc_chn_val[1].adc_chn_value_intr_ext.d ),
+    .d      (hw2reg.adc_chn_val[1].adc_chn_value_intr_ext.d),
 
     // to internal hardware
     .qe     (),
@@ -2165,15 +2172,16 @@ module adc_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (10'h0)
   ) u_adc_chn_val_1_adc_chn_value_intr_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.adc_chn_val[1].adc_chn_value_intr.de),
-    .d      (hw2reg.adc_chn_val[1].adc_chn_value_intr.d ),
+    .d      (hw2reg.adc_chn_val[1].adc_chn_value_intr.d),
 
     // to internal hardware
     .qe     (),
@@ -2193,8 +2201,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter0_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter0_en_we),
@@ -2202,11 +2210,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter0_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter0_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter0_en_qs)
@@ -2219,8 +2227,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter1_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter1_en_we),
@@ -2228,11 +2236,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter1_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter1_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter1_en_qs)
@@ -2245,8 +2253,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter2_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter2_en_we),
@@ -2254,11 +2262,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter2_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter2_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter2_en_qs)
@@ -2271,8 +2279,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter3_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter3_en_we),
@@ -2280,11 +2288,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter3_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter3_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter3_en_qs)
@@ -2297,8 +2305,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter4_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter4_en_we),
@@ -2306,11 +2314,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter4_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter4_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter4_en_qs)
@@ -2323,8 +2331,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter5_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter5_en_we),
@@ -2332,11 +2340,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter5_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter5_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter5_en_qs)
@@ -2349,8 +2357,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter6_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter6_en_we),
@@ -2358,11 +2366,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter6_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter6_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter6_en_qs)
@@ -2375,8 +2383,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_ctl_chn0_1_filter7_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_ctl_chn0_1_filter7_en_we),
@@ -2384,11 +2392,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter7_en.q ),
+    .q      (reg2hw.adc_wakeup_ctl.chn0_1_filter7_en.q),
 
     // to register interface (read)
     .qs     (adc_wakeup_ctl_chn0_1_filter7_en_qs)
@@ -2403,8 +2411,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_sink_det_we),
@@ -2412,7 +2420,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_sink_det.de),
-    .d      (hw2reg.adc_wakeup_status.cc_sink_det.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2429,8 +2437,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_1a5_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_1a5_sink_det_we),
@@ -2438,7 +2446,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_1a5_sink_det.de),
-    .d      (hw2reg.adc_wakeup_status.cc_1a5_sink_det.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_1a5_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2455,8 +2463,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_3a0_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_3a0_sink_det_we),
@@ -2464,7 +2472,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_3a0_sink_det.de),
-    .d      (hw2reg.adc_wakeup_status.cc_3a0_sink_det.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_3a0_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2481,8 +2489,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_src_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_src_det_we),
@@ -2490,7 +2498,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_src_det.de),
-    .d      (hw2reg.adc_wakeup_status.cc_src_det.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_src_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2507,8 +2515,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_1a5_src_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_1a5_src_det_we),
@@ -2516,7 +2524,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_1a5_src_det.de),
-    .d      (hw2reg.adc_wakeup_status.cc_1a5_src_det.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_1a5_src_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2533,8 +2541,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_src_det_flip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_src_det_flip_we),
@@ -2542,7 +2550,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_src_det_flip.de),
-    .d      (hw2reg.adc_wakeup_status.cc_src_det_flip.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_src_det_flip.d),
 
     // to internal hardware
     .qe     (),
@@ -2559,8 +2567,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_1a5_src_det_flip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_1a5_src_det_flip_we),
@@ -2568,7 +2576,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_1a5_src_det_flip.de),
-    .d      (hw2reg.adc_wakeup_status.cc_1a5_src_det_flip.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_1a5_src_det_flip.d),
 
     // to internal hardware
     .qe     (),
@@ -2585,8 +2593,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_wakeup_status_cc_discon (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_wakeup_status_cc_discon_we),
@@ -2594,7 +2602,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_wakeup_status.cc_discon.de),
-    .d      (hw2reg.adc_wakeup_status.cc_discon.d ),
+    .d      (hw2reg.adc_wakeup_status.cc_discon.d),
 
     // to internal hardware
     .qe     (),
@@ -2613,8 +2621,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter0_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter0_en_we),
@@ -2622,11 +2630,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter0_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter0_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter0_en_qs)
@@ -2639,8 +2647,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter1_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter1_en_we),
@@ -2648,11 +2656,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter1_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter1_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter1_en_qs)
@@ -2665,8 +2673,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter2_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter2_en_we),
@@ -2674,11 +2682,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter2_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter2_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter2_en_qs)
@@ -2691,8 +2699,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter3_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter3_en_we),
@@ -2700,11 +2708,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter3_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter3_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter3_en_qs)
@@ -2717,8 +2725,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter4_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter4_en_we),
@@ -2726,11 +2734,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter4_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter4_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter4_en_qs)
@@ -2743,8 +2751,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter5_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter5_en_we),
@@ -2752,11 +2760,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter5_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter5_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter5_en_qs)
@@ -2769,8 +2777,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter6_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter6_en_we),
@@ -2778,11 +2786,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter6_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter6_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter6_en_qs)
@@ -2795,8 +2803,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_chn0_1_filter7_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_chn0_1_filter7_en_we),
@@ -2804,11 +2812,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.chn0_1_filter7_en.q ),
+    .q      (reg2hw.adc_intr_ctl.chn0_1_filter7_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_chn0_1_filter7_en_qs)
@@ -2821,8 +2829,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_adc_intr_ctl_oneshot_intr_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_oneshot_intr_en_we),
@@ -2830,11 +2838,11 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.oneshot_intr_en.q ),
+    .q      (reg2hw.adc_intr_ctl.oneshot_intr_en.q),
 
     // to register interface (read)
     .qs     (adc_intr_ctl_oneshot_intr_en_qs)
@@ -2849,8 +2857,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_sink_det_we),
@@ -2858,7 +2866,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_sink_det.d ),
+    .d      (hw2reg.adc_intr_status.cc_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2875,8 +2883,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_1a5_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_1a5_sink_det_we),
@@ -2884,7 +2892,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_1a5_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_sink_det.d ),
+    .d      (hw2reg.adc_intr_status.cc_1a5_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2901,8 +2909,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_3a0_sink_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_3a0_sink_det_we),
@@ -2910,7 +2918,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_3a0_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_3a0_sink_det.d ),
+    .d      (hw2reg.adc_intr_status.cc_3a0_sink_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2927,8 +2935,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_src_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_src_det_we),
@@ -2936,7 +2944,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_src_det.de),
-    .d      (hw2reg.adc_intr_status.cc_src_det.d ),
+    .d      (hw2reg.adc_intr_status.cc_src_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2953,8 +2961,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_1a5_src_det (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_1a5_src_det_we),
@@ -2962,7 +2970,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_1a5_src_det.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_src_det.d ),
+    .d      (hw2reg.adc_intr_status.cc_1a5_src_det.d),
 
     // to internal hardware
     .qe     (),
@@ -2979,8 +2987,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_src_det_flip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_src_det_flip_we),
@@ -2988,7 +2996,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_src_det_flip.de),
-    .d      (hw2reg.adc_intr_status.cc_src_det_flip.d ),
+    .d      (hw2reg.adc_intr_status.cc_src_det_flip.d),
 
     // to internal hardware
     .qe     (),
@@ -3005,8 +3013,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_1a5_src_det_flip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_1a5_src_det_flip_we),
@@ -3014,7 +3022,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_1a5_src_det_flip.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_src_det_flip.d ),
+    .d      (hw2reg.adc_intr_status.cc_1a5_src_det_flip.d),
 
     // to internal hardware
     .qe     (),
@@ -3031,8 +3039,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_cc_discon (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_cc_discon_we),
@@ -3040,7 +3048,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.cc_discon.de),
-    .d      (hw2reg.adc_intr_status.cc_discon.d ),
+    .d      (hw2reg.adc_intr_status.cc_discon.d),
 
     // to internal hardware
     .qe     (),
@@ -3057,8 +3065,8 @@ module adc_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_adc_intr_status_oneshot (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_oneshot_we),
@@ -3066,7 +3074,7 @@ module adc_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.adc_intr_status.oneshot.de),
-    .d      (hw2reg.adc_intr_status.oneshot.d ),
+    .d      (hw2reg.adc_intr_status.oneshot.d),
 
     // to internal hardware
     .qe     (),

@@ -138,8 +138,8 @@ module nmi_gen_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_esc0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_esc0_we),
@@ -147,11 +147,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.esc0.de),
-    .d      (hw2reg.intr_state.esc0.d ),
+    .d      (hw2reg.intr_state.esc0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.esc0.q ),
+    .q      (reg2hw.intr_state.esc0.q),
 
     // to register interface (read)
     .qs     (intr_state_esc0_qs)
@@ -164,8 +164,8 @@ module nmi_gen_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_esc1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_esc1_we),
@@ -173,11 +173,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.esc1.de),
-    .d      (hw2reg.intr_state.esc1.d ),
+    .d      (hw2reg.intr_state.esc1.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.esc1.q ),
+    .q      (reg2hw.intr_state.esc1.q),
 
     // to register interface (read)
     .qs     (intr_state_esc1_qs)
@@ -190,8 +190,8 @@ module nmi_gen_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_esc2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_esc2_we),
@@ -199,11 +199,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.esc2.de),
-    .d      (hw2reg.intr_state.esc2.d ),
+    .d      (hw2reg.intr_state.esc2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.esc2.q ),
+    .q      (reg2hw.intr_state.esc2.q),
 
     // to register interface (read)
     .qs     (intr_state_esc2_qs)
@@ -218,8 +218,8 @@ module nmi_gen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_esc0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_esc0_we),
@@ -227,11 +227,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.esc0.q ),
+    .q      (reg2hw.intr_enable.esc0.q),
 
     // to register interface (read)
     .qs     (intr_enable_esc0_qs)
@@ -244,8 +244,8 @@ module nmi_gen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_esc1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_esc1_we),
@@ -253,11 +253,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.esc1.q ),
+    .q      (reg2hw.intr_enable.esc1.q),
 
     // to register interface (read)
     .qs     (intr_enable_esc1_qs)
@@ -270,8 +270,8 @@ module nmi_gen_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_esc2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_esc2_we),
@@ -279,11 +279,11 @@ module nmi_gen_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.esc2.q ),
+    .q      (reg2hw.intr_enable.esc2.q),
 
     // to register interface (read)
     .qs     (intr_enable_esc2_qs)
@@ -302,7 +302,7 @@ module nmi_gen_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.esc0.qe),
-    .q      (reg2hw.intr_test.esc0.q ),
+    .q      (reg2hw.intr_test.esc0.q),
     .qs     ()
   );
 
@@ -317,7 +317,7 @@ module nmi_gen_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.esc1.qe),
-    .q      (reg2hw.intr_test.esc1.q ),
+    .q      (reg2hw.intr_test.esc1.q),
     .qs     ()
   );
 
@@ -332,7 +332,7 @@ module nmi_gen_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.esc2.qe),
-    .q      (reg2hw.intr_test.esc2.q ),
+    .q      (reg2hw.intr_test.esc2.q),
     .qs     ()
   );
 

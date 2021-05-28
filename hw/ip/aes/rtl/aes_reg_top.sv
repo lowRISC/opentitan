@@ -213,7 +213,7 @@ module aes_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ctrl_update_err.qe),
-    .q      (reg2hw.alert_test.recov_ctrl_update_err.q ),
+    .q      (reg2hw.alert_test.recov_ctrl_update_err.q),
     .qs     ()
   );
 
@@ -228,7 +228,7 @@ module aes_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_fault.qe),
-    .q      (reg2hw.alert_test.fatal_fault.q ),
+    .q      (reg2hw.alert_test.fatal_fault.q),
     .qs     ()
   );
 
@@ -246,7 +246,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[0].d),
     .qre    (),
     .qe     (reg2hw.key_share0[0].qe),
-    .q      (reg2hw.key_share0[0].q ),
+    .q      (reg2hw.key_share0[0].q),
     .qs     ()
   );
 
@@ -262,7 +262,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[1].d),
     .qre    (),
     .qe     (reg2hw.key_share0[1].qe),
-    .q      (reg2hw.key_share0[1].q ),
+    .q      (reg2hw.key_share0[1].q),
     .qs     ()
   );
 
@@ -278,7 +278,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[2].d),
     .qre    (),
     .qe     (reg2hw.key_share0[2].qe),
-    .q      (reg2hw.key_share0[2].q ),
+    .q      (reg2hw.key_share0[2].q),
     .qs     ()
   );
 
@@ -294,7 +294,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[3].d),
     .qre    (),
     .qe     (reg2hw.key_share0[3].qe),
-    .q      (reg2hw.key_share0[3].q ),
+    .q      (reg2hw.key_share0[3].q),
     .qs     ()
   );
 
@@ -310,7 +310,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[4].d),
     .qre    (),
     .qe     (reg2hw.key_share0[4].qe),
-    .q      (reg2hw.key_share0[4].q ),
+    .q      (reg2hw.key_share0[4].q),
     .qs     ()
   );
 
@@ -326,7 +326,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[5].d),
     .qre    (),
     .qe     (reg2hw.key_share0[5].qe),
-    .q      (reg2hw.key_share0[5].q ),
+    .q      (reg2hw.key_share0[5].q),
     .qs     ()
   );
 
@@ -342,7 +342,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[6].d),
     .qre    (),
     .qe     (reg2hw.key_share0[6].qe),
-    .q      (reg2hw.key_share0[6].q ),
+    .q      (reg2hw.key_share0[6].q),
     .qs     ()
   );
 
@@ -358,7 +358,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share0[7].d),
     .qre    (),
     .qe     (reg2hw.key_share0[7].qe),
-    .q      (reg2hw.key_share0[7].q ),
+    .q      (reg2hw.key_share0[7].q),
     .qs     ()
   );
 
@@ -376,7 +376,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[0].d),
     .qre    (),
     .qe     (reg2hw.key_share1[0].qe),
-    .q      (reg2hw.key_share1[0].q ),
+    .q      (reg2hw.key_share1[0].q),
     .qs     ()
   );
 
@@ -392,7 +392,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[1].d),
     .qre    (),
     .qe     (reg2hw.key_share1[1].qe),
-    .q      (reg2hw.key_share1[1].q ),
+    .q      (reg2hw.key_share1[1].q),
     .qs     ()
   );
 
@@ -408,7 +408,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[2].d),
     .qre    (),
     .qe     (reg2hw.key_share1[2].qe),
-    .q      (reg2hw.key_share1[2].q ),
+    .q      (reg2hw.key_share1[2].q),
     .qs     ()
   );
 
@@ -424,7 +424,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[3].d),
     .qre    (),
     .qe     (reg2hw.key_share1[3].qe),
-    .q      (reg2hw.key_share1[3].q ),
+    .q      (reg2hw.key_share1[3].q),
     .qs     ()
   );
 
@@ -440,7 +440,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[4].d),
     .qre    (),
     .qe     (reg2hw.key_share1[4].qe),
-    .q      (reg2hw.key_share1[4].q ),
+    .q      (reg2hw.key_share1[4].q),
     .qs     ()
   );
 
@@ -456,7 +456,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[5].d),
     .qre    (),
     .qe     (reg2hw.key_share1[5].qe),
-    .q      (reg2hw.key_share1[5].q ),
+    .q      (reg2hw.key_share1[5].q),
     .qs     ()
   );
 
@@ -472,7 +472,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[6].d),
     .qre    (),
     .qe     (reg2hw.key_share1[6].qe),
-    .q      (reg2hw.key_share1[6].q ),
+    .q      (reg2hw.key_share1[6].q),
     .qs     ()
   );
 
@@ -488,7 +488,7 @@ module aes_reg_top (
     .d      (hw2reg.key_share1[7].d),
     .qre    (),
     .qe     (reg2hw.key_share1[7].qe),
-    .q      (reg2hw.key_share1[7].q ),
+    .q      (reg2hw.key_share1[7].q),
     .qs     ()
   );
 
@@ -506,7 +506,7 @@ module aes_reg_top (
     .d      (hw2reg.iv[0].d),
     .qre    (),
     .qe     (reg2hw.iv[0].qe),
-    .q      (reg2hw.iv[0].q ),
+    .q      (reg2hw.iv[0].q),
     .qs     ()
   );
 
@@ -522,7 +522,7 @@ module aes_reg_top (
     .d      (hw2reg.iv[1].d),
     .qre    (),
     .qe     (reg2hw.iv[1].qe),
-    .q      (reg2hw.iv[1].q ),
+    .q      (reg2hw.iv[1].q),
     .qs     ()
   );
 
@@ -538,7 +538,7 @@ module aes_reg_top (
     .d      (hw2reg.iv[2].d),
     .qre    (),
     .qe     (reg2hw.iv[2].qe),
-    .q      (reg2hw.iv[2].q ),
+    .q      (reg2hw.iv[2].q),
     .qs     ()
   );
 
@@ -554,7 +554,7 @@ module aes_reg_top (
     .d      (hw2reg.iv[3].d),
     .qre    (),
     .qe     (reg2hw.iv[3].qe),
-    .q      (reg2hw.iv[3].q ),
+    .q      (reg2hw.iv[3].q),
     .qs     ()
   );
 
@@ -568,8 +568,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_data_in_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_in_0_we),
@@ -577,12 +577,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.data_in[0].de),
-    .d      (hw2reg.data_in[0].d ),
+    .d      (hw2reg.data_in[0].d),
 
     // to internal hardware
     .qe     (reg2hw.data_in[0].qe),
-    .q      (reg2hw.data_in[0].q ),
+    .q      (reg2hw.data_in[0].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -594,8 +595,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_data_in_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_in_1_we),
@@ -603,12 +604,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.data_in[1].de),
-    .d      (hw2reg.data_in[1].d ),
+    .d      (hw2reg.data_in[1].d),
 
     // to internal hardware
     .qe     (reg2hw.data_in[1].qe),
-    .q      (reg2hw.data_in[1].q ),
+    .q      (reg2hw.data_in[1].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -620,8 +622,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_data_in_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_in_2_we),
@@ -629,12 +631,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.data_in[2].de),
-    .d      (hw2reg.data_in[2].d ),
+    .d      (hw2reg.data_in[2].d),
 
     // to internal hardware
     .qe     (reg2hw.data_in[2].qe),
-    .q      (reg2hw.data_in[2].q ),
+    .q      (reg2hw.data_in[2].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -646,8 +649,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_data_in_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_in_3_we),
@@ -655,12 +658,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.data_in[3].de),
-    .d      (hw2reg.data_in[3].d ),
+    .d      (hw2reg.data_in[3].d),
 
     // to internal hardware
     .qe     (reg2hw.data_in[3].qe),
-    .q      (reg2hw.data_in[3].q ),
+    .q      (reg2hw.data_in[3].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -678,7 +682,7 @@ module aes_reg_top (
     .d      (hw2reg.data_out[0].d),
     .qre    (reg2hw.data_out[0].re),
     .qe     (),
-    .q      (reg2hw.data_out[0].q ),
+    .q      (reg2hw.data_out[0].q),
     .qs     (data_out_0_qs)
   );
 
@@ -694,7 +698,7 @@ module aes_reg_top (
     .d      (hw2reg.data_out[1].d),
     .qre    (reg2hw.data_out[1].re),
     .qe     (),
-    .q      (reg2hw.data_out[1].q ),
+    .q      (reg2hw.data_out[1].q),
     .qs     (data_out_1_qs)
   );
 
@@ -710,7 +714,7 @@ module aes_reg_top (
     .d      (hw2reg.data_out[2].d),
     .qre    (reg2hw.data_out[2].re),
     .qe     (),
-    .q      (reg2hw.data_out[2].q ),
+    .q      (reg2hw.data_out[2].q),
     .qs     (data_out_2_qs)
   );
 
@@ -726,7 +730,7 @@ module aes_reg_top (
     .d      (hw2reg.data_out[3].d),
     .qre    (reg2hw.data_out[3].re),
     .qe     (),
-    .q      (reg2hw.data_out[3].q ),
+    .q      (reg2hw.data_out[3].q),
     .qs     (data_out_3_qs)
   );
 
@@ -743,7 +747,7 @@ module aes_reg_top (
     .d      (hw2reg.ctrl_shadowed.operation.d),
     .qre    (reg2hw.ctrl_shadowed.operation.re),
     .qe     (reg2hw.ctrl_shadowed.operation.qe),
-    .q      (reg2hw.ctrl_shadowed.operation.q ),
+    .q      (reg2hw.ctrl_shadowed.operation.q),
     .qs     (ctrl_shadowed_operation_qs)
   );
 
@@ -758,7 +762,7 @@ module aes_reg_top (
     .d      (hw2reg.ctrl_shadowed.mode.d),
     .qre    (reg2hw.ctrl_shadowed.mode.re),
     .qe     (reg2hw.ctrl_shadowed.mode.qe),
-    .q      (reg2hw.ctrl_shadowed.mode.q ),
+    .q      (reg2hw.ctrl_shadowed.mode.q),
     .qs     (ctrl_shadowed_mode_qs)
   );
 
@@ -773,7 +777,7 @@ module aes_reg_top (
     .d      (hw2reg.ctrl_shadowed.key_len.d),
     .qre    (reg2hw.ctrl_shadowed.key_len.re),
     .qe     (reg2hw.ctrl_shadowed.key_len.qe),
-    .q      (reg2hw.ctrl_shadowed.key_len.q ),
+    .q      (reg2hw.ctrl_shadowed.key_len.q),
     .qs     (ctrl_shadowed_key_len_qs)
   );
 
@@ -788,7 +792,7 @@ module aes_reg_top (
     .d      (hw2reg.ctrl_shadowed.manual_operation.d),
     .qre    (reg2hw.ctrl_shadowed.manual_operation.re),
     .qe     (reg2hw.ctrl_shadowed.manual_operation.qe),
-    .q      (reg2hw.ctrl_shadowed.manual_operation.q ),
+    .q      (reg2hw.ctrl_shadowed.manual_operation.q),
     .qs     (ctrl_shadowed_manual_operation_qs)
   );
 
@@ -803,7 +807,7 @@ module aes_reg_top (
     .d      (hw2reg.ctrl_shadowed.force_zero_masks.d),
     .qre    (reg2hw.ctrl_shadowed.force_zero_masks.re),
     .qe     (reg2hw.ctrl_shadowed.force_zero_masks.qe),
-    .q      (reg2hw.ctrl_shadowed.force_zero_masks.q ),
+    .q      (reg2hw.ctrl_shadowed.force_zero_masks.q),
     .qs     (ctrl_shadowed_force_zero_masks_qs)
   );
 
@@ -816,8 +820,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_trigger_start (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (trigger_start_we),
@@ -825,12 +829,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.trigger.start.de),
-    .d      (hw2reg.trigger.start.d ),
+    .d      (hw2reg.trigger.start.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.trigger.start.q ),
+    .q      (reg2hw.trigger.start.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -841,8 +846,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h1)
   ) u_trigger_key_iv_data_in_clear (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (trigger_key_iv_data_in_clear_we),
@@ -850,12 +855,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.trigger.key_iv_data_in_clear.de),
-    .d      (hw2reg.trigger.key_iv_data_in_clear.d ),
+    .d      (hw2reg.trigger.key_iv_data_in_clear.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.trigger.key_iv_data_in_clear.q ),
+    .q      (reg2hw.trigger.key_iv_data_in_clear.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -866,8 +872,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h1)
   ) u_trigger_data_out_clear (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (trigger_data_out_clear_we),
@@ -875,12 +881,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.trigger.data_out_clear.de),
-    .d      (hw2reg.trigger.data_out_clear.d ),
+    .d      (hw2reg.trigger.data_out_clear.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.trigger.data_out_clear.q ),
+    .q      (reg2hw.trigger.data_out_clear.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -891,8 +898,8 @@ module aes_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h1)
   ) u_trigger_prng_reseed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (trigger_prng_reseed_we),
@@ -900,12 +907,13 @@ module aes_reg_top (
 
     // from internal hardware
     .de     (hw2reg.trigger.prng_reseed.de),
-    .d      (hw2reg.trigger.prng_reseed.d ),
+    .d      (hw2reg.trigger.prng_reseed.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.trigger.prng_reseed.q ),
+    .q      (reg2hw.trigger.prng_reseed.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -918,15 +926,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_idle (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.idle.de),
-    .d      (hw2reg.status.idle.d ),
+    .d      (hw2reg.status.idle.d),
 
     // to internal hardware
     .qe     (),
@@ -943,15 +952,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_stall (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.stall.de),
-    .d      (hw2reg.status.stall.d ),
+    .d      (hw2reg.status.stall.d),
 
     // to internal hardware
     .qe     (),
@@ -968,19 +978,20 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_output_lost (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.output_lost.de),
-    .d      (hw2reg.status.output_lost.d ),
+    .d      (hw2reg.status.output_lost.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.output_lost.q ),
+    .q      (reg2hw.status.output_lost.q),
 
     // to register interface (read)
     .qs     (status_output_lost_qs)
@@ -993,15 +1004,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_output_valid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.output_valid.de),
-    .d      (hw2reg.status.output_valid.d ),
+    .d      (hw2reg.status.output_valid.d),
 
     // to internal hardware
     .qe     (),
@@ -1018,15 +1030,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_input_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.input_ready.de),
-    .d      (hw2reg.status.input_ready.d ),
+    .d      (hw2reg.status.input_ready.d),
 
     // to internal hardware
     .qe     (),
@@ -1043,15 +1056,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_alert_recov_ctrl_update_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.alert_recov_ctrl_update_err.de),
-    .d      (hw2reg.status.alert_recov_ctrl_update_err.d ),
+    .d      (hw2reg.status.alert_recov_ctrl_update_err.d),
 
     // to internal hardware
     .qe     (),
@@ -1068,15 +1082,16 @@ module aes_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_alert_fatal_fault (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.alert_fatal_fault.de),
-    .d      (hw2reg.status.alert_fatal_fault.d ),
+    .d      (hw2reg.status.alert_fatal_fault.d),
 
     // to internal hardware
     .qe     (),

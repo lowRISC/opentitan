@@ -148,7 +148,7 @@ module sram_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_intg_error.qe),
-    .q      (reg2hw.alert_test.fatal_intg_error.q ),
+    .q      (reg2hw.alert_test.fatal_intg_error.q),
     .qs     ()
   );
 
@@ -163,7 +163,7 @@ module sram_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_parity_error.qe),
-    .q      (reg2hw.alert_test.fatal_parity_error.q ),
+    .q      (reg2hw.alert_test.fatal_parity_error.q),
     .qs     ()
   );
 
@@ -237,8 +237,8 @@ module sram_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_exec_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (exec_regwen_we),
@@ -246,7 +246,7 @@ module sram_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -264,20 +264,20 @@ module sram_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_exec (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (exec_we & exec_regwen_qs),
     .wd     (exec_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exec.q ),
+    .q      (reg2hw.exec.q),
 
     // to register interface (read)
     .qs     (exec_qs)
@@ -291,8 +291,8 @@ module sram_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_ctrl_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_regwen_we),
@@ -300,7 +300,7 @@ module sram_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -318,13 +318,12 @@ module sram_ctrl_reg_top (
     .DW    (1)
   ) u_ctrl_renew_scr_key (
     .re     (ctrl_renew_scr_key_re),
-    // qualified with register enable
     .we     (ctrl_renew_scr_key_we & ctrl_regwen_qs),
     .wd     (ctrl_renew_scr_key_wd),
     .d      (hw2reg.ctrl.renew_scr_key.d),
     .qre    (),
     .qe     (reg2hw.ctrl.renew_scr_key.qe),
-    .q      (reg2hw.ctrl.renew_scr_key.q ),
+    .q      (reg2hw.ctrl.renew_scr_key.q),
     .qs     (ctrl_renew_scr_key_qs)
   );
 
@@ -334,13 +333,12 @@ module sram_ctrl_reg_top (
     .DW    (1)
   ) u_ctrl_init (
     .re     (ctrl_init_re),
-    // qualified with register enable
     .we     (ctrl_init_we & ctrl_regwen_qs),
     .wd     (ctrl_init_wd),
     .d      (hw2reg.ctrl.init.d),
     .qre    (),
     .qe     (reg2hw.ctrl.init.qe),
-    .q      (reg2hw.ctrl.init.q ),
+    .q      (reg2hw.ctrl.init.q),
     .qs     (ctrl_init_qs)
   );
 
@@ -352,15 +350,16 @@ module sram_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_error_address (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.error_address.de),
-    .d      (hw2reg.error_address.d ),
+    .d      (hw2reg.error_address.d),
 
     // to internal hardware
     .qe     (),

@@ -1617,8 +1617,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_0_we),
@@ -1626,7 +1626,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1644,8 +1644,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_1_we),
@@ -1653,7 +1653,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1671,8 +1671,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_2_we),
@@ -1680,7 +1680,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1698,8 +1698,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_3_we),
@@ -1707,7 +1707,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1725,8 +1725,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_4_we),
@@ -1734,7 +1734,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1752,8 +1752,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_5_we),
@@ -1761,7 +1761,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1779,8 +1779,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_6_we),
@@ -1788,7 +1788,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1806,8 +1806,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_7_we),
@@ -1815,7 +1815,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1833,8 +1833,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_8_we),
@@ -1842,7 +1842,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1860,8 +1860,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_9_we),
@@ -1869,7 +1869,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1887,8 +1887,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_10_we),
@@ -1896,7 +1896,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1914,8 +1914,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_11_we),
@@ -1923,7 +1923,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1941,8 +1941,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_12_we),
@@ -1950,7 +1950,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1968,8 +1968,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_13_we),
@@ -1977,7 +1977,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1995,8 +1995,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_14_we),
@@ -2004,7 +2004,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2022,8 +2022,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_15_we),
@@ -2031,7 +2031,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2049,8 +2049,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_16_we),
@@ -2058,7 +2058,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2076,8 +2076,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_17_we),
@@ -2085,7 +2085,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2103,8 +2103,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_18_we),
@@ -2112,7 +2112,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2130,8 +2130,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_19_we),
@@ -2139,7 +2139,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2157,8 +2157,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_20_we),
@@ -2166,7 +2166,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2184,8 +2184,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_21_we),
@@ -2193,7 +2193,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2211,8 +2211,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_22_we),
@@ -2220,7 +2220,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2238,8 +2238,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_23_we),
@@ -2247,7 +2247,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2265,8 +2265,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_24_we),
@@ -2274,7 +2274,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2292,8 +2292,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_25_we),
@@ -2301,7 +2301,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2319,8 +2319,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_26_we),
@@ -2328,7 +2328,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2346,8 +2346,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_27_we),
@@ -2355,7 +2355,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2373,8 +2373,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_28_we),
@@ -2382,7 +2382,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2400,8 +2400,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_29_we),
@@ -2409,7 +2409,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2427,8 +2427,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_30_we),
@@ -2436,7 +2436,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2454,8 +2454,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_31_we),
@@ -2463,7 +2463,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2481,8 +2481,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_periph_insel_regwen_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_periph_insel_regwen_32_we),
@@ -2490,7 +2490,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2510,20 +2510,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_0_we & mio_periph_insel_regwen_0_qs),
     .wd     (mio_periph_insel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[0].q ),
+    .q      (reg2hw.mio_periph_insel[0].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_0_qs)
@@ -2537,20 +2537,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_1_we & mio_periph_insel_regwen_1_qs),
     .wd     (mio_periph_insel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[1].q ),
+    .q      (reg2hw.mio_periph_insel[1].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_1_qs)
@@ -2564,20 +2564,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_2_we & mio_periph_insel_regwen_2_qs),
     .wd     (mio_periph_insel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[2].q ),
+    .q      (reg2hw.mio_periph_insel[2].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_2_qs)
@@ -2591,20 +2591,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_3_we & mio_periph_insel_regwen_3_qs),
     .wd     (mio_periph_insel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[3].q ),
+    .q      (reg2hw.mio_periph_insel[3].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_3_qs)
@@ -2618,20 +2618,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_4_we & mio_periph_insel_regwen_4_qs),
     .wd     (mio_periph_insel_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[4].q ),
+    .q      (reg2hw.mio_periph_insel[4].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_4_qs)
@@ -2645,20 +2645,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_5_we & mio_periph_insel_regwen_5_qs),
     .wd     (mio_periph_insel_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[5].q ),
+    .q      (reg2hw.mio_periph_insel[5].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_5_qs)
@@ -2672,20 +2672,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_6_we & mio_periph_insel_regwen_6_qs),
     .wd     (mio_periph_insel_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[6].q ),
+    .q      (reg2hw.mio_periph_insel[6].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_6_qs)
@@ -2699,20 +2699,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_7_we & mio_periph_insel_regwen_7_qs),
     .wd     (mio_periph_insel_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[7].q ),
+    .q      (reg2hw.mio_periph_insel[7].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_7_qs)
@@ -2726,20 +2726,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_8_we & mio_periph_insel_regwen_8_qs),
     .wd     (mio_periph_insel_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[8].q ),
+    .q      (reg2hw.mio_periph_insel[8].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_8_qs)
@@ -2753,20 +2753,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_9_we & mio_periph_insel_regwen_9_qs),
     .wd     (mio_periph_insel_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[9].q ),
+    .q      (reg2hw.mio_periph_insel[9].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_9_qs)
@@ -2780,20 +2780,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_10_we & mio_periph_insel_regwen_10_qs),
     .wd     (mio_periph_insel_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[10].q ),
+    .q      (reg2hw.mio_periph_insel[10].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_10_qs)
@@ -2807,20 +2807,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_11_we & mio_periph_insel_regwen_11_qs),
     .wd     (mio_periph_insel_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[11].q ),
+    .q      (reg2hw.mio_periph_insel[11].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_11_qs)
@@ -2834,20 +2834,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_12_we & mio_periph_insel_regwen_12_qs),
     .wd     (mio_periph_insel_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[12].q ),
+    .q      (reg2hw.mio_periph_insel[12].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_12_qs)
@@ -2861,20 +2861,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_13_we & mio_periph_insel_regwen_13_qs),
     .wd     (mio_periph_insel_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[13].q ),
+    .q      (reg2hw.mio_periph_insel[13].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_13_qs)
@@ -2888,20 +2888,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_14_we & mio_periph_insel_regwen_14_qs),
     .wd     (mio_periph_insel_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[14].q ),
+    .q      (reg2hw.mio_periph_insel[14].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_14_qs)
@@ -2915,20 +2915,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_15_we & mio_periph_insel_regwen_15_qs),
     .wd     (mio_periph_insel_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[15].q ),
+    .q      (reg2hw.mio_periph_insel[15].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_15_qs)
@@ -2942,20 +2942,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_16_we & mio_periph_insel_regwen_16_qs),
     .wd     (mio_periph_insel_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[16].q ),
+    .q      (reg2hw.mio_periph_insel[16].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_16_qs)
@@ -2969,20 +2969,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_17_we & mio_periph_insel_regwen_17_qs),
     .wd     (mio_periph_insel_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[17].q ),
+    .q      (reg2hw.mio_periph_insel[17].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_17_qs)
@@ -2996,20 +2996,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_18_we & mio_periph_insel_regwen_18_qs),
     .wd     (mio_periph_insel_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[18].q ),
+    .q      (reg2hw.mio_periph_insel[18].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_18_qs)
@@ -3023,20 +3023,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_19_we & mio_periph_insel_regwen_19_qs),
     .wd     (mio_periph_insel_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[19].q ),
+    .q      (reg2hw.mio_periph_insel[19].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_19_qs)
@@ -3050,20 +3050,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_20_we & mio_periph_insel_regwen_20_qs),
     .wd     (mio_periph_insel_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[20].q ),
+    .q      (reg2hw.mio_periph_insel[20].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_20_qs)
@@ -3077,20 +3077,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_21_we & mio_periph_insel_regwen_21_qs),
     .wd     (mio_periph_insel_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[21].q ),
+    .q      (reg2hw.mio_periph_insel[21].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_21_qs)
@@ -3104,20 +3104,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_22_we & mio_periph_insel_regwen_22_qs),
     .wd     (mio_periph_insel_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[22].q ),
+    .q      (reg2hw.mio_periph_insel[22].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_22_qs)
@@ -3131,20 +3131,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_23_we & mio_periph_insel_regwen_23_qs),
     .wd     (mio_periph_insel_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[23].q ),
+    .q      (reg2hw.mio_periph_insel[23].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_23_qs)
@@ -3158,20 +3158,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_24_we & mio_periph_insel_regwen_24_qs),
     .wd     (mio_periph_insel_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[24].q ),
+    .q      (reg2hw.mio_periph_insel[24].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_24_qs)
@@ -3185,20 +3185,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_25_we & mio_periph_insel_regwen_25_qs),
     .wd     (mio_periph_insel_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[25].q ),
+    .q      (reg2hw.mio_periph_insel[25].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_25_qs)
@@ -3212,20 +3212,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_26_we & mio_periph_insel_regwen_26_qs),
     .wd     (mio_periph_insel_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[26].q ),
+    .q      (reg2hw.mio_periph_insel[26].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_26_qs)
@@ -3239,20 +3239,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_27_we & mio_periph_insel_regwen_27_qs),
     .wd     (mio_periph_insel_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[27].q ),
+    .q      (reg2hw.mio_periph_insel[27].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_27_qs)
@@ -3266,20 +3266,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_28_we & mio_periph_insel_regwen_28_qs),
     .wd     (mio_periph_insel_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[28].q ),
+    .q      (reg2hw.mio_periph_insel[28].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_28_qs)
@@ -3293,20 +3293,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_29_we & mio_periph_insel_regwen_29_qs),
     .wd     (mio_periph_insel_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[29].q ),
+    .q      (reg2hw.mio_periph_insel[29].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_29_qs)
@@ -3320,20 +3320,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_30_we & mio_periph_insel_regwen_30_qs),
     .wd     (mio_periph_insel_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[30].q ),
+    .q      (reg2hw.mio_periph_insel[30].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_30_qs)
@@ -3347,20 +3347,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_31_we & mio_periph_insel_regwen_31_qs),
     .wd     (mio_periph_insel_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[31].q ),
+    .q      (reg2hw.mio_periph_insel[31].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_31_qs)
@@ -3374,20 +3374,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_mio_periph_insel_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_periph_insel_32_we & mio_periph_insel_regwen_32_qs),
     .wd     (mio_periph_insel_32_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_periph_insel[32].q ),
+    .q      (reg2hw.mio_periph_insel[32].q),
 
     // to register interface (read)
     .qs     (mio_periph_insel_32_qs)
@@ -3403,8 +3403,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_0_we),
@@ -3412,7 +3412,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3430,8 +3430,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_1_we),
@@ -3439,7 +3439,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3457,8 +3457,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_2_we),
@@ -3466,7 +3466,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3484,8 +3484,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_3_we),
@@ -3493,7 +3493,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3511,8 +3511,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_4_we),
@@ -3520,7 +3520,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3538,8 +3538,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_5_we),
@@ -3547,7 +3547,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3565,8 +3565,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_6_we),
@@ -3574,7 +3574,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3592,8 +3592,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_7_we),
@@ -3601,7 +3601,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3619,8 +3619,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_8_we),
@@ -3628,7 +3628,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3646,8 +3646,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_9_we),
@@ -3655,7 +3655,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3673,8 +3673,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_10_we),
@@ -3682,7 +3682,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3700,8 +3700,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_11_we),
@@ -3709,7 +3709,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3727,8 +3727,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_12_we),
@@ -3736,7 +3736,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3754,8 +3754,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_13_we),
@@ -3763,7 +3763,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3781,8 +3781,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_14_we),
@@ -3790,7 +3790,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3808,8 +3808,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_15_we),
@@ -3817,7 +3817,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3835,8 +3835,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_16_we),
@@ -3844,7 +3844,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3862,8 +3862,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_17_we),
@@ -3871,7 +3871,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3889,8 +3889,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_18_we),
@@ -3898,7 +3898,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3916,8 +3916,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_19_we),
@@ -3925,7 +3925,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3943,8 +3943,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_20_we),
@@ -3952,7 +3952,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3970,8 +3970,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_21_we),
@@ -3979,7 +3979,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -3997,8 +3997,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_22_we),
@@ -4006,7 +4006,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4024,8 +4024,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_23_we),
@@ -4033,7 +4033,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4051,8 +4051,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_24_we),
@@ -4060,7 +4060,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4078,8 +4078,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_25_we),
@@ -4087,7 +4087,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4105,8 +4105,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_26_we),
@@ -4114,7 +4114,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4132,8 +4132,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_27_we),
@@ -4141,7 +4141,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4159,8 +4159,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_28_we),
@@ -4168,7 +4168,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4186,8 +4186,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_29_we),
@@ -4195,7 +4195,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4213,8 +4213,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_30_we),
@@ -4222,7 +4222,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4240,8 +4240,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_outsel_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_outsel_regwen_31_we),
@@ -4249,7 +4249,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4269,20 +4269,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_0_we & mio_outsel_regwen_0_qs),
     .wd     (mio_outsel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[0].q ),
+    .q      (reg2hw.mio_outsel[0].q),
 
     // to register interface (read)
     .qs     (mio_outsel_0_qs)
@@ -4296,20 +4296,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_1_we & mio_outsel_regwen_1_qs),
     .wd     (mio_outsel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[1].q ),
+    .q      (reg2hw.mio_outsel[1].q),
 
     // to register interface (read)
     .qs     (mio_outsel_1_qs)
@@ -4323,20 +4323,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_2_we & mio_outsel_regwen_2_qs),
     .wd     (mio_outsel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[2].q ),
+    .q      (reg2hw.mio_outsel[2].q),
 
     // to register interface (read)
     .qs     (mio_outsel_2_qs)
@@ -4350,20 +4350,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_3_we & mio_outsel_regwen_3_qs),
     .wd     (mio_outsel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[3].q ),
+    .q      (reg2hw.mio_outsel[3].q),
 
     // to register interface (read)
     .qs     (mio_outsel_3_qs)
@@ -4377,20 +4377,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_4_we & mio_outsel_regwen_4_qs),
     .wd     (mio_outsel_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[4].q ),
+    .q      (reg2hw.mio_outsel[4].q),
 
     // to register interface (read)
     .qs     (mio_outsel_4_qs)
@@ -4404,20 +4404,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_5_we & mio_outsel_regwen_5_qs),
     .wd     (mio_outsel_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[5].q ),
+    .q      (reg2hw.mio_outsel[5].q),
 
     // to register interface (read)
     .qs     (mio_outsel_5_qs)
@@ -4431,20 +4431,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_6_we & mio_outsel_regwen_6_qs),
     .wd     (mio_outsel_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[6].q ),
+    .q      (reg2hw.mio_outsel[6].q),
 
     // to register interface (read)
     .qs     (mio_outsel_6_qs)
@@ -4458,20 +4458,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_7_we & mio_outsel_regwen_7_qs),
     .wd     (mio_outsel_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[7].q ),
+    .q      (reg2hw.mio_outsel[7].q),
 
     // to register interface (read)
     .qs     (mio_outsel_7_qs)
@@ -4485,20 +4485,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_8_we & mio_outsel_regwen_8_qs),
     .wd     (mio_outsel_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[8].q ),
+    .q      (reg2hw.mio_outsel[8].q),
 
     // to register interface (read)
     .qs     (mio_outsel_8_qs)
@@ -4512,20 +4512,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_9_we & mio_outsel_regwen_9_qs),
     .wd     (mio_outsel_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[9].q ),
+    .q      (reg2hw.mio_outsel[9].q),
 
     // to register interface (read)
     .qs     (mio_outsel_9_qs)
@@ -4539,20 +4539,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_10_we & mio_outsel_regwen_10_qs),
     .wd     (mio_outsel_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[10].q ),
+    .q      (reg2hw.mio_outsel[10].q),
 
     // to register interface (read)
     .qs     (mio_outsel_10_qs)
@@ -4566,20 +4566,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_11_we & mio_outsel_regwen_11_qs),
     .wd     (mio_outsel_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[11].q ),
+    .q      (reg2hw.mio_outsel[11].q),
 
     // to register interface (read)
     .qs     (mio_outsel_11_qs)
@@ -4593,20 +4593,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_12_we & mio_outsel_regwen_12_qs),
     .wd     (mio_outsel_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[12].q ),
+    .q      (reg2hw.mio_outsel[12].q),
 
     // to register interface (read)
     .qs     (mio_outsel_12_qs)
@@ -4620,20 +4620,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_13_we & mio_outsel_regwen_13_qs),
     .wd     (mio_outsel_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[13].q ),
+    .q      (reg2hw.mio_outsel[13].q),
 
     // to register interface (read)
     .qs     (mio_outsel_13_qs)
@@ -4647,20 +4647,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_14_we & mio_outsel_regwen_14_qs),
     .wd     (mio_outsel_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[14].q ),
+    .q      (reg2hw.mio_outsel[14].q),
 
     // to register interface (read)
     .qs     (mio_outsel_14_qs)
@@ -4674,20 +4674,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_15_we & mio_outsel_regwen_15_qs),
     .wd     (mio_outsel_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[15].q ),
+    .q      (reg2hw.mio_outsel[15].q),
 
     // to register interface (read)
     .qs     (mio_outsel_15_qs)
@@ -4701,20 +4701,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_16_we & mio_outsel_regwen_16_qs),
     .wd     (mio_outsel_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[16].q ),
+    .q      (reg2hw.mio_outsel[16].q),
 
     // to register interface (read)
     .qs     (mio_outsel_16_qs)
@@ -4728,20 +4728,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_17_we & mio_outsel_regwen_17_qs),
     .wd     (mio_outsel_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[17].q ),
+    .q      (reg2hw.mio_outsel[17].q),
 
     // to register interface (read)
     .qs     (mio_outsel_17_qs)
@@ -4755,20 +4755,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_18_we & mio_outsel_regwen_18_qs),
     .wd     (mio_outsel_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[18].q ),
+    .q      (reg2hw.mio_outsel[18].q),
 
     // to register interface (read)
     .qs     (mio_outsel_18_qs)
@@ -4782,20 +4782,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_19_we & mio_outsel_regwen_19_qs),
     .wd     (mio_outsel_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[19].q ),
+    .q      (reg2hw.mio_outsel[19].q),
 
     // to register interface (read)
     .qs     (mio_outsel_19_qs)
@@ -4809,20 +4809,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_20_we & mio_outsel_regwen_20_qs),
     .wd     (mio_outsel_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[20].q ),
+    .q      (reg2hw.mio_outsel[20].q),
 
     // to register interface (read)
     .qs     (mio_outsel_20_qs)
@@ -4836,20 +4836,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_21_we & mio_outsel_regwen_21_qs),
     .wd     (mio_outsel_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[21].q ),
+    .q      (reg2hw.mio_outsel[21].q),
 
     // to register interface (read)
     .qs     (mio_outsel_21_qs)
@@ -4863,20 +4863,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_22_we & mio_outsel_regwen_22_qs),
     .wd     (mio_outsel_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[22].q ),
+    .q      (reg2hw.mio_outsel[22].q),
 
     // to register interface (read)
     .qs     (mio_outsel_22_qs)
@@ -4890,20 +4890,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_23_we & mio_outsel_regwen_23_qs),
     .wd     (mio_outsel_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[23].q ),
+    .q      (reg2hw.mio_outsel[23].q),
 
     // to register interface (read)
     .qs     (mio_outsel_23_qs)
@@ -4917,20 +4917,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_24_we & mio_outsel_regwen_24_qs),
     .wd     (mio_outsel_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[24].q ),
+    .q      (reg2hw.mio_outsel[24].q),
 
     // to register interface (read)
     .qs     (mio_outsel_24_qs)
@@ -4944,20 +4944,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_25_we & mio_outsel_regwen_25_qs),
     .wd     (mio_outsel_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[25].q ),
+    .q      (reg2hw.mio_outsel[25].q),
 
     // to register interface (read)
     .qs     (mio_outsel_25_qs)
@@ -4971,20 +4971,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_26_we & mio_outsel_regwen_26_qs),
     .wd     (mio_outsel_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[26].q ),
+    .q      (reg2hw.mio_outsel[26].q),
 
     // to register interface (read)
     .qs     (mio_outsel_26_qs)
@@ -4998,20 +4998,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_27_we & mio_outsel_regwen_27_qs),
     .wd     (mio_outsel_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[27].q ),
+    .q      (reg2hw.mio_outsel[27].q),
 
     // to register interface (read)
     .qs     (mio_outsel_27_qs)
@@ -5025,20 +5025,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_28_we & mio_outsel_regwen_28_qs),
     .wd     (mio_outsel_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[28].q ),
+    .q      (reg2hw.mio_outsel[28].q),
 
     // to register interface (read)
     .qs     (mio_outsel_28_qs)
@@ -5052,20 +5052,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_29_we & mio_outsel_regwen_29_qs),
     .wd     (mio_outsel_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[29].q ),
+    .q      (reg2hw.mio_outsel[29].q),
 
     // to register interface (read)
     .qs     (mio_outsel_29_qs)
@@ -5079,20 +5079,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_30_we & mio_outsel_regwen_30_qs),
     .wd     (mio_outsel_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[30].q ),
+    .q      (reg2hw.mio_outsel[30].q),
 
     // to register interface (read)
     .qs     (mio_outsel_30_qs)
@@ -5106,20 +5106,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h2)
   ) u_mio_outsel_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_outsel_31_we & mio_outsel_regwen_31_qs),
     .wd     (mio_outsel_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_outsel[31].q ),
+    .q      (reg2hw.mio_outsel[31].q),
 
     // to register interface (read)
     .qs     (mio_outsel_31_qs)
@@ -5135,8 +5135,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_0_we),
@@ -5144,7 +5144,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5162,8 +5162,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_1_we),
@@ -5171,7 +5171,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5189,8 +5189,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_2_we),
@@ -5198,7 +5198,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5216,8 +5216,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_3_we),
@@ -5225,7 +5225,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5243,8 +5243,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_4_we),
@@ -5252,7 +5252,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5270,8 +5270,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_5_we),
@@ -5279,7 +5279,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5297,8 +5297,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_6_we),
@@ -5306,7 +5306,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5324,8 +5324,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_7_we),
@@ -5333,7 +5333,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5351,8 +5351,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_8_we),
@@ -5360,7 +5360,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5378,8 +5378,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_9_we),
@@ -5387,7 +5387,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5405,8 +5405,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_10_we),
@@ -5414,7 +5414,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5432,8 +5432,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_11_we),
@@ -5441,7 +5441,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5459,8 +5459,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_12_we),
@@ -5468,7 +5468,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5486,8 +5486,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_13_we),
@@ -5495,7 +5495,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5513,8 +5513,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_14_we),
@@ -5522,7 +5522,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5540,8 +5540,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_15_we),
@@ -5549,7 +5549,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5567,8 +5567,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_16_we),
@@ -5576,7 +5576,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5594,8 +5594,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_17_we),
@@ -5603,7 +5603,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5621,8 +5621,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_18_we),
@@ -5630,7 +5630,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5648,8 +5648,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_19_we),
@@ -5657,7 +5657,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5675,8 +5675,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_20_we),
@@ -5684,7 +5684,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5702,8 +5702,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_21_we),
@@ -5711,7 +5711,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5729,8 +5729,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_22_we),
@@ -5738,7 +5738,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5756,8 +5756,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_23_we),
@@ -5765,7 +5765,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5783,8 +5783,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_24_we),
@@ -5792,7 +5792,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5810,8 +5810,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_25_we),
@@ -5819,7 +5819,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5837,8 +5837,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_26_we),
@@ -5846,7 +5846,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5864,8 +5864,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_27_we),
@@ -5873,7 +5873,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5891,8 +5891,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_28_we),
@@ -5900,7 +5900,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5918,8 +5918,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_29_we),
@@ -5927,7 +5927,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5945,8 +5945,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_30_we),
@@ -5954,7 +5954,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5972,8 +5972,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_attr_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_attr_regwen_31_we),
@@ -5981,7 +5981,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6000,13 +6000,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_0 (
     .re     (mio_pad_attr_0_re),
-    // qualified with register enable
     .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
     .wd     (mio_pad_attr_0_wd),
     .d      (hw2reg.mio_pad_attr[0].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[0].qe),
-    .q      (reg2hw.mio_pad_attr[0].q ),
+    .q      (reg2hw.mio_pad_attr[0].q),
     .qs     (mio_pad_attr_0_qs)
   );
 
@@ -6017,13 +6016,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_1 (
     .re     (mio_pad_attr_1_re),
-    // qualified with register enable
     .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
     .wd     (mio_pad_attr_1_wd),
     .d      (hw2reg.mio_pad_attr[1].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[1].qe),
-    .q      (reg2hw.mio_pad_attr[1].q ),
+    .q      (reg2hw.mio_pad_attr[1].q),
     .qs     (mio_pad_attr_1_qs)
   );
 
@@ -6034,13 +6032,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_2 (
     .re     (mio_pad_attr_2_re),
-    // qualified with register enable
     .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
     .wd     (mio_pad_attr_2_wd),
     .d      (hw2reg.mio_pad_attr[2].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[2].qe),
-    .q      (reg2hw.mio_pad_attr[2].q ),
+    .q      (reg2hw.mio_pad_attr[2].q),
     .qs     (mio_pad_attr_2_qs)
   );
 
@@ -6051,13 +6048,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_3 (
     .re     (mio_pad_attr_3_re),
-    // qualified with register enable
     .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
     .wd     (mio_pad_attr_3_wd),
     .d      (hw2reg.mio_pad_attr[3].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[3].qe),
-    .q      (reg2hw.mio_pad_attr[3].q ),
+    .q      (reg2hw.mio_pad_attr[3].q),
     .qs     (mio_pad_attr_3_qs)
   );
 
@@ -6068,13 +6064,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_4 (
     .re     (mio_pad_attr_4_re),
-    // qualified with register enable
     .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
     .wd     (mio_pad_attr_4_wd),
     .d      (hw2reg.mio_pad_attr[4].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[4].qe),
-    .q      (reg2hw.mio_pad_attr[4].q ),
+    .q      (reg2hw.mio_pad_attr[4].q),
     .qs     (mio_pad_attr_4_qs)
   );
 
@@ -6085,13 +6080,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_5 (
     .re     (mio_pad_attr_5_re),
-    // qualified with register enable
     .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
     .wd     (mio_pad_attr_5_wd),
     .d      (hw2reg.mio_pad_attr[5].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[5].qe),
-    .q      (reg2hw.mio_pad_attr[5].q ),
+    .q      (reg2hw.mio_pad_attr[5].q),
     .qs     (mio_pad_attr_5_qs)
   );
 
@@ -6102,13 +6096,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_6 (
     .re     (mio_pad_attr_6_re),
-    // qualified with register enable
     .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
     .wd     (mio_pad_attr_6_wd),
     .d      (hw2reg.mio_pad_attr[6].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[6].qe),
-    .q      (reg2hw.mio_pad_attr[6].q ),
+    .q      (reg2hw.mio_pad_attr[6].q),
     .qs     (mio_pad_attr_6_qs)
   );
 
@@ -6119,13 +6112,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_7 (
     .re     (mio_pad_attr_7_re),
-    // qualified with register enable
     .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
     .wd     (mio_pad_attr_7_wd),
     .d      (hw2reg.mio_pad_attr[7].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[7].qe),
-    .q      (reg2hw.mio_pad_attr[7].q ),
+    .q      (reg2hw.mio_pad_attr[7].q),
     .qs     (mio_pad_attr_7_qs)
   );
 
@@ -6136,13 +6128,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_8 (
     .re     (mio_pad_attr_8_re),
-    // qualified with register enable
     .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
     .wd     (mio_pad_attr_8_wd),
     .d      (hw2reg.mio_pad_attr[8].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[8].qe),
-    .q      (reg2hw.mio_pad_attr[8].q ),
+    .q      (reg2hw.mio_pad_attr[8].q),
     .qs     (mio_pad_attr_8_qs)
   );
 
@@ -6153,13 +6144,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_9 (
     .re     (mio_pad_attr_9_re),
-    // qualified with register enable
     .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
     .wd     (mio_pad_attr_9_wd),
     .d      (hw2reg.mio_pad_attr[9].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[9].qe),
-    .q      (reg2hw.mio_pad_attr[9].q ),
+    .q      (reg2hw.mio_pad_attr[9].q),
     .qs     (mio_pad_attr_9_qs)
   );
 
@@ -6170,13 +6160,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_10 (
     .re     (mio_pad_attr_10_re),
-    // qualified with register enable
     .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
     .wd     (mio_pad_attr_10_wd),
     .d      (hw2reg.mio_pad_attr[10].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[10].qe),
-    .q      (reg2hw.mio_pad_attr[10].q ),
+    .q      (reg2hw.mio_pad_attr[10].q),
     .qs     (mio_pad_attr_10_qs)
   );
 
@@ -6187,13 +6176,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_11 (
     .re     (mio_pad_attr_11_re),
-    // qualified with register enable
     .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
     .wd     (mio_pad_attr_11_wd),
     .d      (hw2reg.mio_pad_attr[11].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[11].qe),
-    .q      (reg2hw.mio_pad_attr[11].q ),
+    .q      (reg2hw.mio_pad_attr[11].q),
     .qs     (mio_pad_attr_11_qs)
   );
 
@@ -6204,13 +6192,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_12 (
     .re     (mio_pad_attr_12_re),
-    // qualified with register enable
     .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
     .wd     (mio_pad_attr_12_wd),
     .d      (hw2reg.mio_pad_attr[12].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[12].qe),
-    .q      (reg2hw.mio_pad_attr[12].q ),
+    .q      (reg2hw.mio_pad_attr[12].q),
     .qs     (mio_pad_attr_12_qs)
   );
 
@@ -6221,13 +6208,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_13 (
     .re     (mio_pad_attr_13_re),
-    // qualified with register enable
     .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
     .wd     (mio_pad_attr_13_wd),
     .d      (hw2reg.mio_pad_attr[13].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[13].qe),
-    .q      (reg2hw.mio_pad_attr[13].q ),
+    .q      (reg2hw.mio_pad_attr[13].q),
     .qs     (mio_pad_attr_13_qs)
   );
 
@@ -6238,13 +6224,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_14 (
     .re     (mio_pad_attr_14_re),
-    // qualified with register enable
     .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
     .wd     (mio_pad_attr_14_wd),
     .d      (hw2reg.mio_pad_attr[14].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[14].qe),
-    .q      (reg2hw.mio_pad_attr[14].q ),
+    .q      (reg2hw.mio_pad_attr[14].q),
     .qs     (mio_pad_attr_14_qs)
   );
 
@@ -6255,13 +6240,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_15 (
     .re     (mio_pad_attr_15_re),
-    // qualified with register enable
     .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
     .wd     (mio_pad_attr_15_wd),
     .d      (hw2reg.mio_pad_attr[15].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[15].qe),
-    .q      (reg2hw.mio_pad_attr[15].q ),
+    .q      (reg2hw.mio_pad_attr[15].q),
     .qs     (mio_pad_attr_15_qs)
   );
 
@@ -6272,13 +6256,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_16 (
     .re     (mio_pad_attr_16_re),
-    // qualified with register enable
     .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
     .wd     (mio_pad_attr_16_wd),
     .d      (hw2reg.mio_pad_attr[16].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[16].qe),
-    .q      (reg2hw.mio_pad_attr[16].q ),
+    .q      (reg2hw.mio_pad_attr[16].q),
     .qs     (mio_pad_attr_16_qs)
   );
 
@@ -6289,13 +6272,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_17 (
     .re     (mio_pad_attr_17_re),
-    // qualified with register enable
     .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
     .wd     (mio_pad_attr_17_wd),
     .d      (hw2reg.mio_pad_attr[17].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[17].qe),
-    .q      (reg2hw.mio_pad_attr[17].q ),
+    .q      (reg2hw.mio_pad_attr[17].q),
     .qs     (mio_pad_attr_17_qs)
   );
 
@@ -6306,13 +6288,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_18 (
     .re     (mio_pad_attr_18_re),
-    // qualified with register enable
     .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
     .wd     (mio_pad_attr_18_wd),
     .d      (hw2reg.mio_pad_attr[18].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[18].qe),
-    .q      (reg2hw.mio_pad_attr[18].q ),
+    .q      (reg2hw.mio_pad_attr[18].q),
     .qs     (mio_pad_attr_18_qs)
   );
 
@@ -6323,13 +6304,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_19 (
     .re     (mio_pad_attr_19_re),
-    // qualified with register enable
     .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
     .wd     (mio_pad_attr_19_wd),
     .d      (hw2reg.mio_pad_attr[19].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[19].qe),
-    .q      (reg2hw.mio_pad_attr[19].q ),
+    .q      (reg2hw.mio_pad_attr[19].q),
     .qs     (mio_pad_attr_19_qs)
   );
 
@@ -6340,13 +6320,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_20 (
     .re     (mio_pad_attr_20_re),
-    // qualified with register enable
     .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
     .wd     (mio_pad_attr_20_wd),
     .d      (hw2reg.mio_pad_attr[20].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[20].qe),
-    .q      (reg2hw.mio_pad_attr[20].q ),
+    .q      (reg2hw.mio_pad_attr[20].q),
     .qs     (mio_pad_attr_20_qs)
   );
 
@@ -6357,13 +6336,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_21 (
     .re     (mio_pad_attr_21_re),
-    // qualified with register enable
     .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
     .wd     (mio_pad_attr_21_wd),
     .d      (hw2reg.mio_pad_attr[21].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[21].qe),
-    .q      (reg2hw.mio_pad_attr[21].q ),
+    .q      (reg2hw.mio_pad_attr[21].q),
     .qs     (mio_pad_attr_21_qs)
   );
 
@@ -6374,13 +6352,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_22 (
     .re     (mio_pad_attr_22_re),
-    // qualified with register enable
     .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
     .wd     (mio_pad_attr_22_wd),
     .d      (hw2reg.mio_pad_attr[22].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[22].qe),
-    .q      (reg2hw.mio_pad_attr[22].q ),
+    .q      (reg2hw.mio_pad_attr[22].q),
     .qs     (mio_pad_attr_22_qs)
   );
 
@@ -6391,13 +6368,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_23 (
     .re     (mio_pad_attr_23_re),
-    // qualified with register enable
     .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
     .wd     (mio_pad_attr_23_wd),
     .d      (hw2reg.mio_pad_attr[23].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[23].qe),
-    .q      (reg2hw.mio_pad_attr[23].q ),
+    .q      (reg2hw.mio_pad_attr[23].q),
     .qs     (mio_pad_attr_23_qs)
   );
 
@@ -6408,13 +6384,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_24 (
     .re     (mio_pad_attr_24_re),
-    // qualified with register enable
     .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
     .wd     (mio_pad_attr_24_wd),
     .d      (hw2reg.mio_pad_attr[24].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[24].qe),
-    .q      (reg2hw.mio_pad_attr[24].q ),
+    .q      (reg2hw.mio_pad_attr[24].q),
     .qs     (mio_pad_attr_24_qs)
   );
 
@@ -6425,13 +6400,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_25 (
     .re     (mio_pad_attr_25_re),
-    // qualified with register enable
     .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
     .wd     (mio_pad_attr_25_wd),
     .d      (hw2reg.mio_pad_attr[25].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[25].qe),
-    .q      (reg2hw.mio_pad_attr[25].q ),
+    .q      (reg2hw.mio_pad_attr[25].q),
     .qs     (mio_pad_attr_25_qs)
   );
 
@@ -6442,13 +6416,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_26 (
     .re     (mio_pad_attr_26_re),
-    // qualified with register enable
     .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
     .wd     (mio_pad_attr_26_wd),
     .d      (hw2reg.mio_pad_attr[26].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[26].qe),
-    .q      (reg2hw.mio_pad_attr[26].q ),
+    .q      (reg2hw.mio_pad_attr[26].q),
     .qs     (mio_pad_attr_26_qs)
   );
 
@@ -6459,13 +6432,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_27 (
     .re     (mio_pad_attr_27_re),
-    // qualified with register enable
     .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
     .wd     (mio_pad_attr_27_wd),
     .d      (hw2reg.mio_pad_attr[27].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[27].qe),
-    .q      (reg2hw.mio_pad_attr[27].q ),
+    .q      (reg2hw.mio_pad_attr[27].q),
     .qs     (mio_pad_attr_27_qs)
   );
 
@@ -6476,13 +6448,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_28 (
     .re     (mio_pad_attr_28_re),
-    // qualified with register enable
     .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
     .wd     (mio_pad_attr_28_wd),
     .d      (hw2reg.mio_pad_attr[28].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[28].qe),
-    .q      (reg2hw.mio_pad_attr[28].q ),
+    .q      (reg2hw.mio_pad_attr[28].q),
     .qs     (mio_pad_attr_28_qs)
   );
 
@@ -6493,13 +6464,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_29 (
     .re     (mio_pad_attr_29_re),
-    // qualified with register enable
     .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
     .wd     (mio_pad_attr_29_wd),
     .d      (hw2reg.mio_pad_attr[29].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[29].qe),
-    .q      (reg2hw.mio_pad_attr[29].q ),
+    .q      (reg2hw.mio_pad_attr[29].q),
     .qs     (mio_pad_attr_29_qs)
   );
 
@@ -6510,13 +6480,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_30 (
     .re     (mio_pad_attr_30_re),
-    // qualified with register enable
     .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
     .wd     (mio_pad_attr_30_wd),
     .d      (hw2reg.mio_pad_attr[30].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[30].qe),
-    .q      (reg2hw.mio_pad_attr[30].q ),
+    .q      (reg2hw.mio_pad_attr[30].q),
     .qs     (mio_pad_attr_30_qs)
   );
 
@@ -6527,13 +6496,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_mio_pad_attr_31 (
     .re     (mio_pad_attr_31_re),
-    // qualified with register enable
     .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
     .wd     (mio_pad_attr_31_wd),
     .d      (hw2reg.mio_pad_attr[31].d),
     .qre    (),
     .qe     (reg2hw.mio_pad_attr[31].qe),
-    .q      (reg2hw.mio_pad_attr[31].q ),
+    .q      (reg2hw.mio_pad_attr[31].q),
     .qs     (mio_pad_attr_31_qs)
   );
 
@@ -6547,8 +6515,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_0_we),
@@ -6556,7 +6524,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6574,8 +6542,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_1_we),
@@ -6583,7 +6551,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6601,8 +6569,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_2_we),
@@ -6610,7 +6578,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6628,8 +6596,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_3_we),
@@ -6637,7 +6605,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6655,8 +6623,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_4_we),
@@ -6664,7 +6632,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6682,8 +6650,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_5_we),
@@ -6691,7 +6659,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6709,8 +6677,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_6_we),
@@ -6718,7 +6686,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6736,8 +6704,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_7_we),
@@ -6745,7 +6713,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6763,8 +6731,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_8_we),
@@ -6772,7 +6740,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6790,8 +6758,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_9_we),
@@ -6799,7 +6767,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6817,8 +6785,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_10_we),
@@ -6826,7 +6794,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6844,8 +6812,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_11_we),
@@ -6853,7 +6821,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6871,8 +6839,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_12_we),
@@ -6880,7 +6848,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6898,8 +6866,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_13_we),
@@ -6907,7 +6875,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6925,8 +6893,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_14_we),
@@ -6934,7 +6902,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6952,8 +6920,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_attr_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_attr_regwen_15_we),
@@ -6961,7 +6929,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6980,13 +6948,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_0 (
     .re     (dio_pad_attr_0_re),
-    // qualified with register enable
     .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
     .wd     (dio_pad_attr_0_wd),
     .d      (hw2reg.dio_pad_attr[0].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[0].qe),
-    .q      (reg2hw.dio_pad_attr[0].q ),
+    .q      (reg2hw.dio_pad_attr[0].q),
     .qs     (dio_pad_attr_0_qs)
   );
 
@@ -6997,13 +6964,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_1 (
     .re     (dio_pad_attr_1_re),
-    // qualified with register enable
     .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
     .wd     (dio_pad_attr_1_wd),
     .d      (hw2reg.dio_pad_attr[1].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[1].qe),
-    .q      (reg2hw.dio_pad_attr[1].q ),
+    .q      (reg2hw.dio_pad_attr[1].q),
     .qs     (dio_pad_attr_1_qs)
   );
 
@@ -7014,13 +6980,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_2 (
     .re     (dio_pad_attr_2_re),
-    // qualified with register enable
     .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
     .wd     (dio_pad_attr_2_wd),
     .d      (hw2reg.dio_pad_attr[2].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[2].qe),
-    .q      (reg2hw.dio_pad_attr[2].q ),
+    .q      (reg2hw.dio_pad_attr[2].q),
     .qs     (dio_pad_attr_2_qs)
   );
 
@@ -7031,13 +6996,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_3 (
     .re     (dio_pad_attr_3_re),
-    // qualified with register enable
     .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
     .wd     (dio_pad_attr_3_wd),
     .d      (hw2reg.dio_pad_attr[3].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[3].qe),
-    .q      (reg2hw.dio_pad_attr[3].q ),
+    .q      (reg2hw.dio_pad_attr[3].q),
     .qs     (dio_pad_attr_3_qs)
   );
 
@@ -7048,13 +7012,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_4 (
     .re     (dio_pad_attr_4_re),
-    // qualified with register enable
     .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
     .wd     (dio_pad_attr_4_wd),
     .d      (hw2reg.dio_pad_attr[4].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[4].qe),
-    .q      (reg2hw.dio_pad_attr[4].q ),
+    .q      (reg2hw.dio_pad_attr[4].q),
     .qs     (dio_pad_attr_4_qs)
   );
 
@@ -7065,13 +7028,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_5 (
     .re     (dio_pad_attr_5_re),
-    // qualified with register enable
     .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
     .wd     (dio_pad_attr_5_wd),
     .d      (hw2reg.dio_pad_attr[5].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[5].qe),
-    .q      (reg2hw.dio_pad_attr[5].q ),
+    .q      (reg2hw.dio_pad_attr[5].q),
     .qs     (dio_pad_attr_5_qs)
   );
 
@@ -7082,13 +7044,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_6 (
     .re     (dio_pad_attr_6_re),
-    // qualified with register enable
     .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
     .wd     (dio_pad_attr_6_wd),
     .d      (hw2reg.dio_pad_attr[6].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[6].qe),
-    .q      (reg2hw.dio_pad_attr[6].q ),
+    .q      (reg2hw.dio_pad_attr[6].q),
     .qs     (dio_pad_attr_6_qs)
   );
 
@@ -7099,13 +7060,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_7 (
     .re     (dio_pad_attr_7_re),
-    // qualified with register enable
     .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
     .wd     (dio_pad_attr_7_wd),
     .d      (hw2reg.dio_pad_attr[7].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[7].qe),
-    .q      (reg2hw.dio_pad_attr[7].q ),
+    .q      (reg2hw.dio_pad_attr[7].q),
     .qs     (dio_pad_attr_7_qs)
   );
 
@@ -7116,13 +7076,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_8 (
     .re     (dio_pad_attr_8_re),
-    // qualified with register enable
     .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
     .wd     (dio_pad_attr_8_wd),
     .d      (hw2reg.dio_pad_attr[8].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[8].qe),
-    .q      (reg2hw.dio_pad_attr[8].q ),
+    .q      (reg2hw.dio_pad_attr[8].q),
     .qs     (dio_pad_attr_8_qs)
   );
 
@@ -7133,13 +7092,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_9 (
     .re     (dio_pad_attr_9_re),
-    // qualified with register enable
     .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
     .wd     (dio_pad_attr_9_wd),
     .d      (hw2reg.dio_pad_attr[9].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[9].qe),
-    .q      (reg2hw.dio_pad_attr[9].q ),
+    .q      (reg2hw.dio_pad_attr[9].q),
     .qs     (dio_pad_attr_9_qs)
   );
 
@@ -7150,13 +7108,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_10 (
     .re     (dio_pad_attr_10_re),
-    // qualified with register enable
     .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
     .wd     (dio_pad_attr_10_wd),
     .d      (hw2reg.dio_pad_attr[10].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[10].qe),
-    .q      (reg2hw.dio_pad_attr[10].q ),
+    .q      (reg2hw.dio_pad_attr[10].q),
     .qs     (dio_pad_attr_10_qs)
   );
 
@@ -7167,13 +7124,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_11 (
     .re     (dio_pad_attr_11_re),
-    // qualified with register enable
     .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
     .wd     (dio_pad_attr_11_wd),
     .d      (hw2reg.dio_pad_attr[11].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[11].qe),
-    .q      (reg2hw.dio_pad_attr[11].q ),
+    .q      (reg2hw.dio_pad_attr[11].q),
     .qs     (dio_pad_attr_11_qs)
   );
 
@@ -7184,13 +7140,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_12 (
     .re     (dio_pad_attr_12_re),
-    // qualified with register enable
     .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
     .wd     (dio_pad_attr_12_wd),
     .d      (hw2reg.dio_pad_attr[12].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[12].qe),
-    .q      (reg2hw.dio_pad_attr[12].q ),
+    .q      (reg2hw.dio_pad_attr[12].q),
     .qs     (dio_pad_attr_12_qs)
   );
 
@@ -7201,13 +7156,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_13 (
     .re     (dio_pad_attr_13_re),
-    // qualified with register enable
     .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
     .wd     (dio_pad_attr_13_wd),
     .d      (hw2reg.dio_pad_attr[13].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[13].qe),
-    .q      (reg2hw.dio_pad_attr[13].q ),
+    .q      (reg2hw.dio_pad_attr[13].q),
     .qs     (dio_pad_attr_13_qs)
   );
 
@@ -7218,13 +7172,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_14 (
     .re     (dio_pad_attr_14_re),
-    // qualified with register enable
     .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
     .wd     (dio_pad_attr_14_wd),
     .d      (hw2reg.dio_pad_attr[14].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[14].qe),
-    .q      (reg2hw.dio_pad_attr[14].q ),
+    .q      (reg2hw.dio_pad_attr[14].q),
     .qs     (dio_pad_attr_14_qs)
   );
 
@@ -7235,13 +7188,12 @@ module pinmux_reg_top (
     .DW    (13)
   ) u_dio_pad_attr_15 (
     .re     (dio_pad_attr_15_re),
-    // qualified with register enable
     .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
     .wd     (dio_pad_attr_15_wd),
     .d      (hw2reg.dio_pad_attr[15].d),
     .qre    (),
     .qe     (reg2hw.dio_pad_attr[15].qe),
-    .q      (reg2hw.dio_pad_attr[15].q ),
+    .q      (reg2hw.dio_pad_attr[15].q),
     .qs     (dio_pad_attr_15_qs)
   );
 
@@ -7256,8 +7208,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_0_we),
@@ -7265,11 +7217,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[0].de),
-    .d      (hw2reg.mio_pad_sleep_status[0].d ),
+    .d      (hw2reg.mio_pad_sleep_status[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[0].q ),
+    .q      (reg2hw.mio_pad_sleep_status[0].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_0_qs)
@@ -7282,8 +7234,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_1_we),
@@ -7291,11 +7243,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[1].de),
-    .d      (hw2reg.mio_pad_sleep_status[1].d ),
+    .d      (hw2reg.mio_pad_sleep_status[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[1].q ),
+    .q      (reg2hw.mio_pad_sleep_status[1].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_1_qs)
@@ -7308,8 +7260,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_2_we),
@@ -7317,11 +7269,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[2].de),
-    .d      (hw2reg.mio_pad_sleep_status[2].d ),
+    .d      (hw2reg.mio_pad_sleep_status[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[2].q ),
+    .q      (reg2hw.mio_pad_sleep_status[2].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_2_qs)
@@ -7334,8 +7286,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_3_we),
@@ -7343,11 +7295,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[3].de),
-    .d      (hw2reg.mio_pad_sleep_status[3].d ),
+    .d      (hw2reg.mio_pad_sleep_status[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[3].q ),
+    .q      (reg2hw.mio_pad_sleep_status[3].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_3_qs)
@@ -7360,8 +7312,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_4_we),
@@ -7369,11 +7321,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[4].de),
-    .d      (hw2reg.mio_pad_sleep_status[4].d ),
+    .d      (hw2reg.mio_pad_sleep_status[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[4].q ),
+    .q      (reg2hw.mio_pad_sleep_status[4].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_4_qs)
@@ -7386,8 +7338,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_5_we),
@@ -7395,11 +7347,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[5].de),
-    .d      (hw2reg.mio_pad_sleep_status[5].d ),
+    .d      (hw2reg.mio_pad_sleep_status[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[5].q ),
+    .q      (reg2hw.mio_pad_sleep_status[5].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_5_qs)
@@ -7412,8 +7364,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_6_we),
@@ -7421,11 +7373,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[6].de),
-    .d      (hw2reg.mio_pad_sleep_status[6].d ),
+    .d      (hw2reg.mio_pad_sleep_status[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[6].q ),
+    .q      (reg2hw.mio_pad_sleep_status[6].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_6_qs)
@@ -7438,8 +7390,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_7_we),
@@ -7447,11 +7399,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[7].de),
-    .d      (hw2reg.mio_pad_sleep_status[7].d ),
+    .d      (hw2reg.mio_pad_sleep_status[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[7].q ),
+    .q      (reg2hw.mio_pad_sleep_status[7].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_7_qs)
@@ -7464,8 +7416,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_8_we),
@@ -7473,11 +7425,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[8].de),
-    .d      (hw2reg.mio_pad_sleep_status[8].d ),
+    .d      (hw2reg.mio_pad_sleep_status[8].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[8].q ),
+    .q      (reg2hw.mio_pad_sleep_status[8].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_8_qs)
@@ -7490,8 +7442,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_9_we),
@@ -7499,11 +7451,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[9].de),
-    .d      (hw2reg.mio_pad_sleep_status[9].d ),
+    .d      (hw2reg.mio_pad_sleep_status[9].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[9].q ),
+    .q      (reg2hw.mio_pad_sleep_status[9].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_9_qs)
@@ -7516,8 +7468,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_10_we),
@@ -7525,11 +7477,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[10].de),
-    .d      (hw2reg.mio_pad_sleep_status[10].d ),
+    .d      (hw2reg.mio_pad_sleep_status[10].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[10].q ),
+    .q      (reg2hw.mio_pad_sleep_status[10].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_10_qs)
@@ -7542,8 +7494,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_11_we),
@@ -7551,11 +7503,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[11].de),
-    .d      (hw2reg.mio_pad_sleep_status[11].d ),
+    .d      (hw2reg.mio_pad_sleep_status[11].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[11].q ),
+    .q      (reg2hw.mio_pad_sleep_status[11].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_11_qs)
@@ -7568,8 +7520,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_12_we),
@@ -7577,11 +7529,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[12].de),
-    .d      (hw2reg.mio_pad_sleep_status[12].d ),
+    .d      (hw2reg.mio_pad_sleep_status[12].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[12].q ),
+    .q      (reg2hw.mio_pad_sleep_status[12].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_12_qs)
@@ -7594,8 +7546,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_13_we),
@@ -7603,11 +7555,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[13].de),
-    .d      (hw2reg.mio_pad_sleep_status[13].d ),
+    .d      (hw2reg.mio_pad_sleep_status[13].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[13].q ),
+    .q      (reg2hw.mio_pad_sleep_status[13].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_13_qs)
@@ -7620,8 +7572,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_14_we),
@@ -7629,11 +7581,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[14].de),
-    .d      (hw2reg.mio_pad_sleep_status[14].d ),
+    .d      (hw2reg.mio_pad_sleep_status[14].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[14].q ),
+    .q      (reg2hw.mio_pad_sleep_status[14].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_14_qs)
@@ -7646,8 +7598,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_15_we),
@@ -7655,11 +7607,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[15].de),
-    .d      (hw2reg.mio_pad_sleep_status[15].d ),
+    .d      (hw2reg.mio_pad_sleep_status[15].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[15].q ),
+    .q      (reg2hw.mio_pad_sleep_status[15].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_15_qs)
@@ -7672,8 +7624,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_16_we),
@@ -7681,11 +7633,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[16].de),
-    .d      (hw2reg.mio_pad_sleep_status[16].d ),
+    .d      (hw2reg.mio_pad_sleep_status[16].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[16].q ),
+    .q      (reg2hw.mio_pad_sleep_status[16].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_16_qs)
@@ -7698,8 +7650,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_17_we),
@@ -7707,11 +7659,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[17].de),
-    .d      (hw2reg.mio_pad_sleep_status[17].d ),
+    .d      (hw2reg.mio_pad_sleep_status[17].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[17].q ),
+    .q      (reg2hw.mio_pad_sleep_status[17].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_17_qs)
@@ -7724,8 +7676,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_18_we),
@@ -7733,11 +7685,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[18].de),
-    .d      (hw2reg.mio_pad_sleep_status[18].d ),
+    .d      (hw2reg.mio_pad_sleep_status[18].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[18].q ),
+    .q      (reg2hw.mio_pad_sleep_status[18].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_18_qs)
@@ -7750,8 +7702,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_19_we),
@@ -7759,11 +7711,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[19].de),
-    .d      (hw2reg.mio_pad_sleep_status[19].d ),
+    .d      (hw2reg.mio_pad_sleep_status[19].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[19].q ),
+    .q      (reg2hw.mio_pad_sleep_status[19].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_19_qs)
@@ -7776,8 +7728,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_20_we),
@@ -7785,11 +7737,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[20].de),
-    .d      (hw2reg.mio_pad_sleep_status[20].d ),
+    .d      (hw2reg.mio_pad_sleep_status[20].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[20].q ),
+    .q      (reg2hw.mio_pad_sleep_status[20].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_20_qs)
@@ -7802,8 +7754,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_21_we),
@@ -7811,11 +7763,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[21].de),
-    .d      (hw2reg.mio_pad_sleep_status[21].d ),
+    .d      (hw2reg.mio_pad_sleep_status[21].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[21].q ),
+    .q      (reg2hw.mio_pad_sleep_status[21].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_21_qs)
@@ -7828,8 +7780,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_22_we),
@@ -7837,11 +7789,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[22].de),
-    .d      (hw2reg.mio_pad_sleep_status[22].d ),
+    .d      (hw2reg.mio_pad_sleep_status[22].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[22].q ),
+    .q      (reg2hw.mio_pad_sleep_status[22].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_22_qs)
@@ -7854,8 +7806,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_23_we),
@@ -7863,11 +7815,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[23].de),
-    .d      (hw2reg.mio_pad_sleep_status[23].d ),
+    .d      (hw2reg.mio_pad_sleep_status[23].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[23].q ),
+    .q      (reg2hw.mio_pad_sleep_status[23].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_23_qs)
@@ -7880,8 +7832,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_24_we),
@@ -7889,11 +7841,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[24].de),
-    .d      (hw2reg.mio_pad_sleep_status[24].d ),
+    .d      (hw2reg.mio_pad_sleep_status[24].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[24].q ),
+    .q      (reg2hw.mio_pad_sleep_status[24].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_24_qs)
@@ -7906,8 +7858,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_25_we),
@@ -7915,11 +7867,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[25].de),
-    .d      (hw2reg.mio_pad_sleep_status[25].d ),
+    .d      (hw2reg.mio_pad_sleep_status[25].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[25].q ),
+    .q      (reg2hw.mio_pad_sleep_status[25].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_25_qs)
@@ -7932,8 +7884,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_26_we),
@@ -7941,11 +7893,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[26].de),
-    .d      (hw2reg.mio_pad_sleep_status[26].d ),
+    .d      (hw2reg.mio_pad_sleep_status[26].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[26].q ),
+    .q      (reg2hw.mio_pad_sleep_status[26].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_26_qs)
@@ -7958,8 +7910,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_27_we),
@@ -7967,11 +7919,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[27].de),
-    .d      (hw2reg.mio_pad_sleep_status[27].d ),
+    .d      (hw2reg.mio_pad_sleep_status[27].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[27].q ),
+    .q      (reg2hw.mio_pad_sleep_status[27].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_27_qs)
@@ -7984,8 +7936,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_28_we),
@@ -7993,11 +7945,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[28].de),
-    .d      (hw2reg.mio_pad_sleep_status[28].d ),
+    .d      (hw2reg.mio_pad_sleep_status[28].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[28].q ),
+    .q      (reg2hw.mio_pad_sleep_status[28].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_28_qs)
@@ -8010,8 +7962,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_29_we),
@@ -8019,11 +7971,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[29].de),
-    .d      (hw2reg.mio_pad_sleep_status[29].d ),
+    .d      (hw2reg.mio_pad_sleep_status[29].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[29].q ),
+    .q      (reg2hw.mio_pad_sleep_status[29].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_29_qs)
@@ -8036,8 +7988,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_30_we),
@@ -8045,11 +7997,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[30].de),
-    .d      (hw2reg.mio_pad_sleep_status[30].d ),
+    .d      (hw2reg.mio_pad_sleep_status[30].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[30].q ),
+    .q      (reg2hw.mio_pad_sleep_status[30].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_30_qs)
@@ -8062,8 +8014,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_status_en_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_status_en_31_we),
@@ -8071,11 +8023,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mio_pad_sleep_status[31].de),
-    .d      (hw2reg.mio_pad_sleep_status[31].d ),
+    .d      (hw2reg.mio_pad_sleep_status[31].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_status[31].q ),
+    .q      (reg2hw.mio_pad_sleep_status[31].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_en_31_qs)
@@ -8092,8 +8044,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_0_we),
@@ -8101,7 +8053,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8119,8 +8071,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_1_we),
@@ -8128,7 +8080,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8146,8 +8098,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_2_we),
@@ -8155,7 +8107,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8173,8 +8125,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_3_we),
@@ -8182,7 +8134,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8200,8 +8152,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_4_we),
@@ -8209,7 +8161,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8227,8 +8179,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_5_we),
@@ -8236,7 +8188,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8254,8 +8206,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_6_we),
@@ -8263,7 +8215,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8281,8 +8233,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_7_we),
@@ -8290,7 +8242,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8308,8 +8260,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_8_we),
@@ -8317,7 +8269,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8335,8 +8287,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_9_we),
@@ -8344,7 +8296,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8362,8 +8314,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_10_we),
@@ -8371,7 +8323,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8389,8 +8341,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_11_we),
@@ -8398,7 +8350,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8416,8 +8368,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_12_we),
@@ -8425,7 +8377,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8443,8 +8395,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_13_we),
@@ -8452,7 +8404,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8470,8 +8422,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_14_we),
@@ -8479,7 +8431,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8497,8 +8449,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_15_we),
@@ -8506,7 +8458,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8524,8 +8476,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_16_we),
@@ -8533,7 +8485,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8551,8 +8503,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_17_we),
@@ -8560,7 +8512,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8578,8 +8530,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_18_we),
@@ -8587,7 +8539,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8605,8 +8557,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_19_we),
@@ -8614,7 +8566,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8632,8 +8584,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_20_we),
@@ -8641,7 +8593,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8659,8 +8611,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_21_we),
@@ -8668,7 +8620,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8686,8 +8638,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_22_we),
@@ -8695,7 +8647,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8713,8 +8665,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_23_we),
@@ -8722,7 +8674,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8740,8 +8692,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_24_we),
@@ -8749,7 +8701,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8767,8 +8719,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_25_we),
@@ -8776,7 +8728,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8794,8 +8746,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_26_we),
@@ -8803,7 +8755,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8821,8 +8773,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_27_we),
@@ -8830,7 +8782,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8848,8 +8800,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_28_we),
@@ -8857,7 +8809,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8875,8 +8827,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_29_we),
@@ -8884,7 +8836,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8902,8 +8854,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_30_we),
@@ -8911,7 +8863,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8929,8 +8881,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_mio_pad_sleep_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_31_we),
@@ -8938,7 +8890,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8958,20 +8910,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_0_we & mio_pad_sleep_regwen_0_qs),
     .wd     (mio_pad_sleep_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[0].q ),
+    .q      (reg2hw.mio_pad_sleep_en[0].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_0_qs)
@@ -8985,20 +8937,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_1_we & mio_pad_sleep_regwen_1_qs),
     .wd     (mio_pad_sleep_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[1].q ),
+    .q      (reg2hw.mio_pad_sleep_en[1].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_1_qs)
@@ -9012,20 +8964,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_2_we & mio_pad_sleep_regwen_2_qs),
     .wd     (mio_pad_sleep_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[2].q ),
+    .q      (reg2hw.mio_pad_sleep_en[2].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_2_qs)
@@ -9039,20 +8991,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_3_we & mio_pad_sleep_regwen_3_qs),
     .wd     (mio_pad_sleep_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[3].q ),
+    .q      (reg2hw.mio_pad_sleep_en[3].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_3_qs)
@@ -9066,20 +9018,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_4_we & mio_pad_sleep_regwen_4_qs),
     .wd     (mio_pad_sleep_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[4].q ),
+    .q      (reg2hw.mio_pad_sleep_en[4].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_4_qs)
@@ -9093,20 +9045,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_5_we & mio_pad_sleep_regwen_5_qs),
     .wd     (mio_pad_sleep_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[5].q ),
+    .q      (reg2hw.mio_pad_sleep_en[5].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_5_qs)
@@ -9120,20 +9072,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_6_we & mio_pad_sleep_regwen_6_qs),
     .wd     (mio_pad_sleep_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[6].q ),
+    .q      (reg2hw.mio_pad_sleep_en[6].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_6_qs)
@@ -9147,20 +9099,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_7_we & mio_pad_sleep_regwen_7_qs),
     .wd     (mio_pad_sleep_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[7].q ),
+    .q      (reg2hw.mio_pad_sleep_en[7].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_7_qs)
@@ -9174,20 +9126,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_8_we & mio_pad_sleep_regwen_8_qs),
     .wd     (mio_pad_sleep_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[8].q ),
+    .q      (reg2hw.mio_pad_sleep_en[8].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_8_qs)
@@ -9201,20 +9153,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_9_we & mio_pad_sleep_regwen_9_qs),
     .wd     (mio_pad_sleep_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[9].q ),
+    .q      (reg2hw.mio_pad_sleep_en[9].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_9_qs)
@@ -9228,20 +9180,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_10_we & mio_pad_sleep_regwen_10_qs),
     .wd     (mio_pad_sleep_en_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[10].q ),
+    .q      (reg2hw.mio_pad_sleep_en[10].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_10_qs)
@@ -9255,20 +9207,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_11_we & mio_pad_sleep_regwen_11_qs),
     .wd     (mio_pad_sleep_en_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[11].q ),
+    .q      (reg2hw.mio_pad_sleep_en[11].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_11_qs)
@@ -9282,20 +9234,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_12_we & mio_pad_sleep_regwen_12_qs),
     .wd     (mio_pad_sleep_en_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[12].q ),
+    .q      (reg2hw.mio_pad_sleep_en[12].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_12_qs)
@@ -9309,20 +9261,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_13_we & mio_pad_sleep_regwen_13_qs),
     .wd     (mio_pad_sleep_en_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[13].q ),
+    .q      (reg2hw.mio_pad_sleep_en[13].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_13_qs)
@@ -9336,20 +9288,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_14_we & mio_pad_sleep_regwen_14_qs),
     .wd     (mio_pad_sleep_en_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[14].q ),
+    .q      (reg2hw.mio_pad_sleep_en[14].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_14_qs)
@@ -9363,20 +9315,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_15_we & mio_pad_sleep_regwen_15_qs),
     .wd     (mio_pad_sleep_en_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[15].q ),
+    .q      (reg2hw.mio_pad_sleep_en[15].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_15_qs)
@@ -9390,20 +9342,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_16_we & mio_pad_sleep_regwen_16_qs),
     .wd     (mio_pad_sleep_en_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[16].q ),
+    .q      (reg2hw.mio_pad_sleep_en[16].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_16_qs)
@@ -9417,20 +9369,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_17_we & mio_pad_sleep_regwen_17_qs),
     .wd     (mio_pad_sleep_en_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[17].q ),
+    .q      (reg2hw.mio_pad_sleep_en[17].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_17_qs)
@@ -9444,20 +9396,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_18_we & mio_pad_sleep_regwen_18_qs),
     .wd     (mio_pad_sleep_en_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[18].q ),
+    .q      (reg2hw.mio_pad_sleep_en[18].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_18_qs)
@@ -9471,20 +9423,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_19_we & mio_pad_sleep_regwen_19_qs),
     .wd     (mio_pad_sleep_en_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[19].q ),
+    .q      (reg2hw.mio_pad_sleep_en[19].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_19_qs)
@@ -9498,20 +9450,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_20_we & mio_pad_sleep_regwen_20_qs),
     .wd     (mio_pad_sleep_en_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[20].q ),
+    .q      (reg2hw.mio_pad_sleep_en[20].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_20_qs)
@@ -9525,20 +9477,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_21_we & mio_pad_sleep_regwen_21_qs),
     .wd     (mio_pad_sleep_en_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[21].q ),
+    .q      (reg2hw.mio_pad_sleep_en[21].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_21_qs)
@@ -9552,20 +9504,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_22_we & mio_pad_sleep_regwen_22_qs),
     .wd     (mio_pad_sleep_en_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[22].q ),
+    .q      (reg2hw.mio_pad_sleep_en[22].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_22_qs)
@@ -9579,20 +9531,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_23_we & mio_pad_sleep_regwen_23_qs),
     .wd     (mio_pad_sleep_en_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[23].q ),
+    .q      (reg2hw.mio_pad_sleep_en[23].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_23_qs)
@@ -9606,20 +9558,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_24_we & mio_pad_sleep_regwen_24_qs),
     .wd     (mio_pad_sleep_en_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[24].q ),
+    .q      (reg2hw.mio_pad_sleep_en[24].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_24_qs)
@@ -9633,20 +9585,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_25_we & mio_pad_sleep_regwen_25_qs),
     .wd     (mio_pad_sleep_en_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[25].q ),
+    .q      (reg2hw.mio_pad_sleep_en[25].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_25_qs)
@@ -9660,20 +9612,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_26_we & mio_pad_sleep_regwen_26_qs),
     .wd     (mio_pad_sleep_en_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[26].q ),
+    .q      (reg2hw.mio_pad_sleep_en[26].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_26_qs)
@@ -9687,20 +9639,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_27_we & mio_pad_sleep_regwen_27_qs),
     .wd     (mio_pad_sleep_en_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[27].q ),
+    .q      (reg2hw.mio_pad_sleep_en[27].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_27_qs)
@@ -9714,20 +9666,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_28_we & mio_pad_sleep_regwen_28_qs),
     .wd     (mio_pad_sleep_en_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[28].q ),
+    .q      (reg2hw.mio_pad_sleep_en[28].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_28_qs)
@@ -9741,20 +9693,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_29_we & mio_pad_sleep_regwen_29_qs),
     .wd     (mio_pad_sleep_en_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[29].q ),
+    .q      (reg2hw.mio_pad_sleep_en[29].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_29_qs)
@@ -9768,20 +9720,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_30_we & mio_pad_sleep_regwen_30_qs),
     .wd     (mio_pad_sleep_en_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[30].q ),
+    .q      (reg2hw.mio_pad_sleep_en[30].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_30_qs)
@@ -9795,20 +9747,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mio_pad_sleep_en_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_en_31_we & mio_pad_sleep_regwen_31_qs),
     .wd     (mio_pad_sleep_en_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_en[31].q ),
+    .q      (reg2hw.mio_pad_sleep_en[31].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_31_qs)
@@ -9824,20 +9776,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_0_we & mio_pad_sleep_regwen_0_qs),
     .wd     (mio_pad_sleep_mode_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[0].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[0].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_0_qs)
@@ -9851,20 +9803,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_1_we & mio_pad_sleep_regwen_1_qs),
     .wd     (mio_pad_sleep_mode_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[1].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[1].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_1_qs)
@@ -9878,20 +9830,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_2_we & mio_pad_sleep_regwen_2_qs),
     .wd     (mio_pad_sleep_mode_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[2].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[2].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_2_qs)
@@ -9905,20 +9857,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_3_we & mio_pad_sleep_regwen_3_qs),
     .wd     (mio_pad_sleep_mode_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[3].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[3].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_3_qs)
@@ -9932,20 +9884,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_4_we & mio_pad_sleep_regwen_4_qs),
     .wd     (mio_pad_sleep_mode_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[4].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[4].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_4_qs)
@@ -9959,20 +9911,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_5_we & mio_pad_sleep_regwen_5_qs),
     .wd     (mio_pad_sleep_mode_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[5].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[5].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_5_qs)
@@ -9986,20 +9938,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_6_we & mio_pad_sleep_regwen_6_qs),
     .wd     (mio_pad_sleep_mode_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[6].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[6].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_6_qs)
@@ -10013,20 +9965,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_7_we & mio_pad_sleep_regwen_7_qs),
     .wd     (mio_pad_sleep_mode_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[7].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[7].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_7_qs)
@@ -10040,20 +9992,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_8_we & mio_pad_sleep_regwen_8_qs),
     .wd     (mio_pad_sleep_mode_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[8].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[8].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_8_qs)
@@ -10067,20 +10019,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_9_we & mio_pad_sleep_regwen_9_qs),
     .wd     (mio_pad_sleep_mode_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[9].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[9].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_9_qs)
@@ -10094,20 +10046,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_10_we & mio_pad_sleep_regwen_10_qs),
     .wd     (mio_pad_sleep_mode_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[10].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[10].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_10_qs)
@@ -10121,20 +10073,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_11_we & mio_pad_sleep_regwen_11_qs),
     .wd     (mio_pad_sleep_mode_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[11].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[11].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_11_qs)
@@ -10148,20 +10100,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_12_we & mio_pad_sleep_regwen_12_qs),
     .wd     (mio_pad_sleep_mode_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[12].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[12].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_12_qs)
@@ -10175,20 +10127,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_13_we & mio_pad_sleep_regwen_13_qs),
     .wd     (mio_pad_sleep_mode_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[13].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[13].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_13_qs)
@@ -10202,20 +10154,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_14_we & mio_pad_sleep_regwen_14_qs),
     .wd     (mio_pad_sleep_mode_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[14].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[14].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_14_qs)
@@ -10229,20 +10181,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_15_we & mio_pad_sleep_regwen_15_qs),
     .wd     (mio_pad_sleep_mode_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[15].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[15].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_15_qs)
@@ -10256,20 +10208,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_16_we & mio_pad_sleep_regwen_16_qs),
     .wd     (mio_pad_sleep_mode_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[16].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[16].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_16_qs)
@@ -10283,20 +10235,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_17_we & mio_pad_sleep_regwen_17_qs),
     .wd     (mio_pad_sleep_mode_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[17].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[17].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_17_qs)
@@ -10310,20 +10262,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_18_we & mio_pad_sleep_regwen_18_qs),
     .wd     (mio_pad_sleep_mode_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[18].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[18].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_18_qs)
@@ -10337,20 +10289,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_19_we & mio_pad_sleep_regwen_19_qs),
     .wd     (mio_pad_sleep_mode_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[19].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[19].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_19_qs)
@@ -10364,20 +10316,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_20_we & mio_pad_sleep_regwen_20_qs),
     .wd     (mio_pad_sleep_mode_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[20].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[20].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_20_qs)
@@ -10391,20 +10343,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_21_we & mio_pad_sleep_regwen_21_qs),
     .wd     (mio_pad_sleep_mode_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[21].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[21].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_21_qs)
@@ -10418,20 +10370,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_22_we & mio_pad_sleep_regwen_22_qs),
     .wd     (mio_pad_sleep_mode_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[22].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[22].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_22_qs)
@@ -10445,20 +10397,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_23_we & mio_pad_sleep_regwen_23_qs),
     .wd     (mio_pad_sleep_mode_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[23].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[23].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_23_qs)
@@ -10472,20 +10424,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_24_we & mio_pad_sleep_regwen_24_qs),
     .wd     (mio_pad_sleep_mode_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[24].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[24].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_24_qs)
@@ -10499,20 +10451,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_25_we & mio_pad_sleep_regwen_25_qs),
     .wd     (mio_pad_sleep_mode_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[25].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[25].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_25_qs)
@@ -10526,20 +10478,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_26_we & mio_pad_sleep_regwen_26_qs),
     .wd     (mio_pad_sleep_mode_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[26].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[26].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_26_qs)
@@ -10553,20 +10505,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_27_we & mio_pad_sleep_regwen_27_qs),
     .wd     (mio_pad_sleep_mode_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[27].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[27].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_27_qs)
@@ -10580,20 +10532,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_28_we & mio_pad_sleep_regwen_28_qs),
     .wd     (mio_pad_sleep_mode_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[28].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[28].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_28_qs)
@@ -10607,20 +10559,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_29_we & mio_pad_sleep_regwen_29_qs),
     .wd     (mio_pad_sleep_mode_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[29].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[29].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_29_qs)
@@ -10634,20 +10586,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_30_we & mio_pad_sleep_regwen_30_qs),
     .wd     (mio_pad_sleep_mode_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[30].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[30].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_30_qs)
@@ -10661,20 +10613,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_mio_pad_sleep_mode_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mio_pad_sleep_mode_31_we & mio_pad_sleep_regwen_31_qs),
     .wd     (mio_pad_sleep_mode_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mio_pad_sleep_mode[31].q ),
+    .q      (reg2hw.mio_pad_sleep_mode[31].q),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_31_qs)
@@ -10691,8 +10643,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_0_we),
@@ -10700,11 +10652,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[0].de),
-    .d      (hw2reg.dio_pad_sleep_status[0].d ),
+    .d      (hw2reg.dio_pad_sleep_status[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[0].q ),
+    .q      (reg2hw.dio_pad_sleep_status[0].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_0_qs)
@@ -10717,8 +10669,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_1_we),
@@ -10726,11 +10678,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[1].de),
-    .d      (hw2reg.dio_pad_sleep_status[1].d ),
+    .d      (hw2reg.dio_pad_sleep_status[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[1].q ),
+    .q      (reg2hw.dio_pad_sleep_status[1].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_1_qs)
@@ -10743,8 +10695,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_2_we),
@@ -10752,11 +10704,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[2].de),
-    .d      (hw2reg.dio_pad_sleep_status[2].d ),
+    .d      (hw2reg.dio_pad_sleep_status[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[2].q ),
+    .q      (reg2hw.dio_pad_sleep_status[2].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_2_qs)
@@ -10769,8 +10721,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_3_we),
@@ -10778,11 +10730,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[3].de),
-    .d      (hw2reg.dio_pad_sleep_status[3].d ),
+    .d      (hw2reg.dio_pad_sleep_status[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[3].q ),
+    .q      (reg2hw.dio_pad_sleep_status[3].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_3_qs)
@@ -10795,8 +10747,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_4_we),
@@ -10804,11 +10756,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[4].de),
-    .d      (hw2reg.dio_pad_sleep_status[4].d ),
+    .d      (hw2reg.dio_pad_sleep_status[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[4].q ),
+    .q      (reg2hw.dio_pad_sleep_status[4].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_4_qs)
@@ -10821,8 +10773,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_5_we),
@@ -10830,11 +10782,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[5].de),
-    .d      (hw2reg.dio_pad_sleep_status[5].d ),
+    .d      (hw2reg.dio_pad_sleep_status[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[5].q ),
+    .q      (reg2hw.dio_pad_sleep_status[5].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_5_qs)
@@ -10847,8 +10799,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_6_we),
@@ -10856,11 +10808,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[6].de),
-    .d      (hw2reg.dio_pad_sleep_status[6].d ),
+    .d      (hw2reg.dio_pad_sleep_status[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[6].q ),
+    .q      (reg2hw.dio_pad_sleep_status[6].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_6_qs)
@@ -10873,8 +10825,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_7_we),
@@ -10882,11 +10834,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[7].de),
-    .d      (hw2reg.dio_pad_sleep_status[7].d ),
+    .d      (hw2reg.dio_pad_sleep_status[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[7].q ),
+    .q      (reg2hw.dio_pad_sleep_status[7].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_7_qs)
@@ -10899,8 +10851,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_8_we),
@@ -10908,11 +10860,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[8].de),
-    .d      (hw2reg.dio_pad_sleep_status[8].d ),
+    .d      (hw2reg.dio_pad_sleep_status[8].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[8].q ),
+    .q      (reg2hw.dio_pad_sleep_status[8].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_8_qs)
@@ -10925,8 +10877,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_9_we),
@@ -10934,11 +10886,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[9].de),
-    .d      (hw2reg.dio_pad_sleep_status[9].d ),
+    .d      (hw2reg.dio_pad_sleep_status[9].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[9].q ),
+    .q      (reg2hw.dio_pad_sleep_status[9].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_9_qs)
@@ -10951,8 +10903,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_10_we),
@@ -10960,11 +10912,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[10].de),
-    .d      (hw2reg.dio_pad_sleep_status[10].d ),
+    .d      (hw2reg.dio_pad_sleep_status[10].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[10].q ),
+    .q      (reg2hw.dio_pad_sleep_status[10].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_10_qs)
@@ -10977,8 +10929,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_11_we),
@@ -10986,11 +10938,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[11].de),
-    .d      (hw2reg.dio_pad_sleep_status[11].d ),
+    .d      (hw2reg.dio_pad_sleep_status[11].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[11].q ),
+    .q      (reg2hw.dio_pad_sleep_status[11].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_11_qs)
@@ -11003,8 +10955,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_12_we),
@@ -11012,11 +10964,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[12].de),
-    .d      (hw2reg.dio_pad_sleep_status[12].d ),
+    .d      (hw2reg.dio_pad_sleep_status[12].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[12].q ),
+    .q      (reg2hw.dio_pad_sleep_status[12].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_12_qs)
@@ -11029,8 +10981,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_13_we),
@@ -11038,11 +10990,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[13].de),
-    .d      (hw2reg.dio_pad_sleep_status[13].d ),
+    .d      (hw2reg.dio_pad_sleep_status[13].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[13].q ),
+    .q      (reg2hw.dio_pad_sleep_status[13].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_13_qs)
@@ -11055,8 +11007,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_14_we),
@@ -11064,11 +11016,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[14].de),
-    .d      (hw2reg.dio_pad_sleep_status[14].d ),
+    .d      (hw2reg.dio_pad_sleep_status[14].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[14].q ),
+    .q      (reg2hw.dio_pad_sleep_status[14].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_14_qs)
@@ -11081,8 +11033,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_status_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_status_en_15_we),
@@ -11090,11 +11042,11 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[15].de),
-    .d      (hw2reg.dio_pad_sleep_status[15].d ),
+    .d      (hw2reg.dio_pad_sleep_status[15].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_status[15].q ),
+    .q      (reg2hw.dio_pad_sleep_status[15].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_15_qs)
@@ -11111,8 +11063,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_0_we),
@@ -11120,7 +11072,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11138,8 +11090,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_1_we),
@@ -11147,7 +11099,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11165,8 +11117,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_2_we),
@@ -11174,7 +11126,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11192,8 +11144,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_3_we),
@@ -11201,7 +11153,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11219,8 +11171,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_4_we),
@@ -11228,7 +11180,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11246,8 +11198,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_5_we),
@@ -11255,7 +11207,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11273,8 +11225,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_6_we),
@@ -11282,7 +11234,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11300,8 +11252,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_7_we),
@@ -11309,7 +11261,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11327,8 +11279,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_8_we),
@@ -11336,7 +11288,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11354,8 +11306,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_9_we),
@@ -11363,7 +11315,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11381,8 +11333,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_10_we),
@@ -11390,7 +11342,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11408,8 +11360,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_11_we),
@@ -11417,7 +11369,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11435,8 +11387,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_12_we),
@@ -11444,7 +11396,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11462,8 +11414,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_13_we),
@@ -11471,7 +11423,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11489,8 +11441,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_14_we),
@@ -11498,7 +11450,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11516,8 +11468,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_dio_pad_sleep_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_15_we),
@@ -11525,7 +11477,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -11545,20 +11497,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_0_we & dio_pad_sleep_regwen_0_qs),
     .wd     (dio_pad_sleep_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[0].q ),
+    .q      (reg2hw.dio_pad_sleep_en[0].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_0_qs)
@@ -11572,20 +11524,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_1_we & dio_pad_sleep_regwen_1_qs),
     .wd     (dio_pad_sleep_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[1].q ),
+    .q      (reg2hw.dio_pad_sleep_en[1].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_1_qs)
@@ -11599,20 +11551,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_2_we & dio_pad_sleep_regwen_2_qs),
     .wd     (dio_pad_sleep_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[2].q ),
+    .q      (reg2hw.dio_pad_sleep_en[2].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_2_qs)
@@ -11626,20 +11578,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_3_we & dio_pad_sleep_regwen_3_qs),
     .wd     (dio_pad_sleep_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[3].q ),
+    .q      (reg2hw.dio_pad_sleep_en[3].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_3_qs)
@@ -11653,20 +11605,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_4_we & dio_pad_sleep_regwen_4_qs),
     .wd     (dio_pad_sleep_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[4].q ),
+    .q      (reg2hw.dio_pad_sleep_en[4].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_4_qs)
@@ -11680,20 +11632,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_5_we & dio_pad_sleep_regwen_5_qs),
     .wd     (dio_pad_sleep_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[5].q ),
+    .q      (reg2hw.dio_pad_sleep_en[5].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_5_qs)
@@ -11707,20 +11659,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_6_we & dio_pad_sleep_regwen_6_qs),
     .wd     (dio_pad_sleep_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[6].q ),
+    .q      (reg2hw.dio_pad_sleep_en[6].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_6_qs)
@@ -11734,20 +11686,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_7_we & dio_pad_sleep_regwen_7_qs),
     .wd     (dio_pad_sleep_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[7].q ),
+    .q      (reg2hw.dio_pad_sleep_en[7].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_7_qs)
@@ -11761,20 +11713,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_8_we & dio_pad_sleep_regwen_8_qs),
     .wd     (dio_pad_sleep_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[8].q ),
+    .q      (reg2hw.dio_pad_sleep_en[8].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_8_qs)
@@ -11788,20 +11740,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_9_we & dio_pad_sleep_regwen_9_qs),
     .wd     (dio_pad_sleep_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[9].q ),
+    .q      (reg2hw.dio_pad_sleep_en[9].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_9_qs)
@@ -11815,20 +11767,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_10_we & dio_pad_sleep_regwen_10_qs),
     .wd     (dio_pad_sleep_en_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[10].q ),
+    .q      (reg2hw.dio_pad_sleep_en[10].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_10_qs)
@@ -11842,20 +11794,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_11_we & dio_pad_sleep_regwen_11_qs),
     .wd     (dio_pad_sleep_en_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[11].q ),
+    .q      (reg2hw.dio_pad_sleep_en[11].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_11_qs)
@@ -11869,20 +11821,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_12_we & dio_pad_sleep_regwen_12_qs),
     .wd     (dio_pad_sleep_en_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[12].q ),
+    .q      (reg2hw.dio_pad_sleep_en[12].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_12_qs)
@@ -11896,20 +11848,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_13_we & dio_pad_sleep_regwen_13_qs),
     .wd     (dio_pad_sleep_en_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[13].q ),
+    .q      (reg2hw.dio_pad_sleep_en[13].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_13_qs)
@@ -11923,20 +11875,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_14_we & dio_pad_sleep_regwen_14_qs),
     .wd     (dio_pad_sleep_en_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[14].q ),
+    .q      (reg2hw.dio_pad_sleep_en[14].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_14_qs)
@@ -11950,20 +11902,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_dio_pad_sleep_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_en_15_we & dio_pad_sleep_regwen_15_qs),
     .wd     (dio_pad_sleep_en_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_en[15].q ),
+    .q      (reg2hw.dio_pad_sleep_en[15].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_15_qs)
@@ -11979,20 +11931,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_0_we & dio_pad_sleep_regwen_0_qs),
     .wd     (dio_pad_sleep_mode_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[0].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[0].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_0_qs)
@@ -12006,20 +11958,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_1_we & dio_pad_sleep_regwen_1_qs),
     .wd     (dio_pad_sleep_mode_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[1].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[1].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_1_qs)
@@ -12033,20 +11985,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_2_we & dio_pad_sleep_regwen_2_qs),
     .wd     (dio_pad_sleep_mode_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[2].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[2].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_2_qs)
@@ -12060,20 +12012,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_3_we & dio_pad_sleep_regwen_3_qs),
     .wd     (dio_pad_sleep_mode_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[3].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[3].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_3_qs)
@@ -12087,20 +12039,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_4_we & dio_pad_sleep_regwen_4_qs),
     .wd     (dio_pad_sleep_mode_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[4].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[4].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_4_qs)
@@ -12114,20 +12066,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_5_we & dio_pad_sleep_regwen_5_qs),
     .wd     (dio_pad_sleep_mode_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[5].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[5].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_5_qs)
@@ -12141,20 +12093,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_6_we & dio_pad_sleep_regwen_6_qs),
     .wd     (dio_pad_sleep_mode_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[6].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[6].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_6_qs)
@@ -12168,20 +12120,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_7_we & dio_pad_sleep_regwen_7_qs),
     .wd     (dio_pad_sleep_mode_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[7].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[7].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_7_qs)
@@ -12195,20 +12147,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_8_we & dio_pad_sleep_regwen_8_qs),
     .wd     (dio_pad_sleep_mode_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[8].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[8].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_8_qs)
@@ -12222,20 +12174,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_9_we & dio_pad_sleep_regwen_9_qs),
     .wd     (dio_pad_sleep_mode_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[9].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[9].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_9_qs)
@@ -12249,20 +12201,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_10_we & dio_pad_sleep_regwen_10_qs),
     .wd     (dio_pad_sleep_mode_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[10].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[10].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_10_qs)
@@ -12276,20 +12228,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_11_we & dio_pad_sleep_regwen_11_qs),
     .wd     (dio_pad_sleep_mode_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[11].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[11].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_11_qs)
@@ -12303,20 +12255,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_12_we & dio_pad_sleep_regwen_12_qs),
     .wd     (dio_pad_sleep_mode_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[12].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[12].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_12_qs)
@@ -12330,20 +12282,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_13_we & dio_pad_sleep_regwen_13_qs),
     .wd     (dio_pad_sleep_mode_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[13].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[13].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_13_qs)
@@ -12357,20 +12309,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_14_we & dio_pad_sleep_regwen_14_qs),
     .wd     (dio_pad_sleep_mode_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[14].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[14].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_14_qs)
@@ -12384,20 +12336,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_dio_pad_sleep_mode_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (dio_pad_sleep_mode_15_we & dio_pad_sleep_regwen_15_qs),
     .wd     (dio_pad_sleep_mode_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dio_pad_sleep_mode[15].q ),
+    .q      (reg2hw.dio_pad_sleep_mode[15].q),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_15_qs)
@@ -12413,8 +12365,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_0_we),
@@ -12422,7 +12374,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12440,8 +12392,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_1_we),
@@ -12449,7 +12401,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12467,8 +12419,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_2_we),
@@ -12476,7 +12428,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12494,8 +12446,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_3_we),
@@ -12503,7 +12455,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12521,8 +12473,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_4_we),
@@ -12530,7 +12482,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12548,8 +12500,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_5_we),
@@ -12557,7 +12509,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12575,8 +12527,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_6_we),
@@ -12584,7 +12536,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12602,8 +12554,8 @@ module pinmux_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wkup_detector_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wkup_detector_regwen_7_we),
@@ -12611,7 +12563,7 @@ module pinmux_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -12631,20 +12583,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[0].q ),
+    .q      (reg2hw.wkup_detector_en[0].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_0_qs)
@@ -12658,20 +12610,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[1].q ),
+    .q      (reg2hw.wkup_detector_en[1].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_1_qs)
@@ -12685,20 +12637,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[2].q ),
+    .q      (reg2hw.wkup_detector_en[2].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_2_qs)
@@ -12712,20 +12664,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[3].q ),
+    .q      (reg2hw.wkup_detector_en[3].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_3_qs)
@@ -12739,20 +12691,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[4].q ),
+    .q      (reg2hw.wkup_detector_en[4].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_4_qs)
@@ -12766,20 +12718,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[5].q ),
+    .q      (reg2hw.wkup_detector_en[5].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_5_qs)
@@ -12793,20 +12745,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[6].q ),
+    .q      (reg2hw.wkup_detector_en[6].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_6_qs)
@@ -12820,20 +12772,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_en_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_en[7].q ),
+    .q      (reg2hw.wkup_detector_en[7].q),
 
     // to register interface (read)
     .qs     (wkup_detector_en_7_qs)
@@ -12850,20 +12802,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_0_mode_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_0_mode_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_0_mode_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[0].mode.q ),
+    .q      (reg2hw.wkup_detector[0].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_0_mode_0_qs)
@@ -12876,20 +12828,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_0_filter_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_0_filter_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_0_filter_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[0].filter.q ),
+    .q      (reg2hw.wkup_detector[0].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_0_filter_0_qs)
@@ -12902,20 +12854,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_0_miodio_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_0_miodio_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_0_miodio_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[0].miodio.q ),
+    .q      (reg2hw.wkup_detector[0].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_0_miodio_0_qs)
@@ -12931,20 +12883,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_1_mode_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_1_mode_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_1_mode_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[1].mode.q ),
+    .q      (reg2hw.wkup_detector[1].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_1_mode_1_qs)
@@ -12957,20 +12909,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_1_filter_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_1_filter_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_1_filter_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[1].filter.q ),
+    .q      (reg2hw.wkup_detector[1].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_1_filter_1_qs)
@@ -12983,20 +12935,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_1_miodio_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_1_miodio_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_1_miodio_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[1].miodio.q ),
+    .q      (reg2hw.wkup_detector[1].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_1_miodio_1_qs)
@@ -13012,20 +12964,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_2_mode_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_2_mode_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_2_mode_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[2].mode.q ),
+    .q      (reg2hw.wkup_detector[2].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_2_mode_2_qs)
@@ -13038,20 +12990,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_2_filter_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_2_filter_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_2_filter_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[2].filter.q ),
+    .q      (reg2hw.wkup_detector[2].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_2_filter_2_qs)
@@ -13064,20 +13016,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_2_miodio_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_2_miodio_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_2_miodio_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[2].miodio.q ),
+    .q      (reg2hw.wkup_detector[2].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_2_miodio_2_qs)
@@ -13093,20 +13045,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_3_mode_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_3_mode_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_3_mode_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[3].mode.q ),
+    .q      (reg2hw.wkup_detector[3].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_3_mode_3_qs)
@@ -13119,20 +13071,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_3_filter_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_3_filter_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_3_filter_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[3].filter.q ),
+    .q      (reg2hw.wkup_detector[3].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_3_filter_3_qs)
@@ -13145,20 +13097,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_3_miodio_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_3_miodio_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_3_miodio_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[3].miodio.q ),
+    .q      (reg2hw.wkup_detector[3].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_3_miodio_3_qs)
@@ -13174,20 +13126,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_4_mode_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_4_mode_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_4_mode_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[4].mode.q ),
+    .q      (reg2hw.wkup_detector[4].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_4_mode_4_qs)
@@ -13200,20 +13152,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_4_filter_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_4_filter_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_4_filter_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[4].filter.q ),
+    .q      (reg2hw.wkup_detector[4].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_4_filter_4_qs)
@@ -13226,20 +13178,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_4_miodio_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_4_miodio_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_4_miodio_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[4].miodio.q ),
+    .q      (reg2hw.wkup_detector[4].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_4_miodio_4_qs)
@@ -13255,20 +13207,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_5_mode_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_5_mode_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_5_mode_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[5].mode.q ),
+    .q      (reg2hw.wkup_detector[5].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_5_mode_5_qs)
@@ -13281,20 +13233,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_5_filter_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_5_filter_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_5_filter_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[5].filter.q ),
+    .q      (reg2hw.wkup_detector[5].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_5_filter_5_qs)
@@ -13307,20 +13259,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_5_miodio_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_5_miodio_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_5_miodio_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[5].miodio.q ),
+    .q      (reg2hw.wkup_detector[5].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_5_miodio_5_qs)
@@ -13336,20 +13288,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_6_mode_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_6_mode_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_6_mode_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[6].mode.q ),
+    .q      (reg2hw.wkup_detector[6].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_6_mode_6_qs)
@@ -13362,20 +13314,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_6_filter_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_6_filter_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_6_filter_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[6].filter.q ),
+    .q      (reg2hw.wkup_detector[6].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_6_filter_6_qs)
@@ -13388,20 +13340,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_6_miodio_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_6_miodio_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_6_miodio_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[6].miodio.q ),
+    .q      (reg2hw.wkup_detector[6].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_6_miodio_6_qs)
@@ -13417,20 +13369,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_wkup_detector_7_mode_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_7_mode_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_7_mode_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[7].mode.q ),
+    .q      (reg2hw.wkup_detector[7].mode.q),
 
     // to register interface (read)
     .qs     (wkup_detector_7_mode_7_qs)
@@ -13443,20 +13395,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_7_filter_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_7_filter_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_7_filter_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[7].filter.q ),
+    .q      (reg2hw.wkup_detector[7].filter.q),
 
     // to register interface (read)
     .qs     (wkup_detector_7_filter_7_qs)
@@ -13469,20 +13421,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wkup_detector_7_miodio_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_7_miodio_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_7_miodio_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector[7].miodio.q ),
+    .q      (reg2hw.wkup_detector[7].miodio.q),
 
     // to register interface (read)
     .qs     (wkup_detector_7_miodio_7_qs)
@@ -13499,20 +13451,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_cnt_th_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[0].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[0].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_0_qs)
@@ -13526,20 +13478,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_cnt_th_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[1].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[1].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_1_qs)
@@ -13553,20 +13505,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_cnt_th_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[2].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[2].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_2_qs)
@@ -13580,20 +13532,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_cnt_th_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[3].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[3].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_3_qs)
@@ -13607,20 +13559,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_cnt_th_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[4].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[4].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_4_qs)
@@ -13634,20 +13586,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_cnt_th_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[5].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[5].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_5_qs)
@@ -13661,20 +13613,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_cnt_th_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[6].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[6].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_6_qs)
@@ -13688,20 +13640,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_cnt_th_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_cnt_th_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[7].q ),
+    .q      (reg2hw.wkup_detector_cnt_th[7].q),
 
     // to register interface (read)
     .qs     (wkup_detector_cnt_th_7_qs)
@@ -13717,20 +13669,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_0_we & wkup_detector_regwen_0_qs),
     .wd     (wkup_detector_padsel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[0].q ),
+    .q      (reg2hw.wkup_detector_padsel[0].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_0_qs)
@@ -13744,20 +13696,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_1_we & wkup_detector_regwen_1_qs),
     .wd     (wkup_detector_padsel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[1].q ),
+    .q      (reg2hw.wkup_detector_padsel[1].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_1_qs)
@@ -13771,20 +13723,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_2_we & wkup_detector_regwen_2_qs),
     .wd     (wkup_detector_padsel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[2].q ),
+    .q      (reg2hw.wkup_detector_padsel[2].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_2_qs)
@@ -13798,20 +13750,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_3_we & wkup_detector_regwen_3_qs),
     .wd     (wkup_detector_padsel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[3].q ),
+    .q      (reg2hw.wkup_detector_padsel[3].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_3_qs)
@@ -13825,20 +13777,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_4_we & wkup_detector_regwen_4_qs),
     .wd     (wkup_detector_padsel_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[4].q ),
+    .q      (reg2hw.wkup_detector_padsel[4].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_4_qs)
@@ -13852,20 +13804,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_5_we & wkup_detector_regwen_5_qs),
     .wd     (wkup_detector_padsel_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[5].q ),
+    .q      (reg2hw.wkup_detector_padsel[5].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_5_qs)
@@ -13879,20 +13831,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_6_we & wkup_detector_regwen_6_qs),
     .wd     (wkup_detector_padsel_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[6].q ),
+    .q      (reg2hw.wkup_detector_padsel[6].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_6_qs)
@@ -13906,20 +13858,20 @@ module pinmux_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (6'h0)
   ) u_wkup_detector_padsel_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wkup_detector_padsel_7_we & wkup_detector_regwen_7_qs),
     .wd     (wkup_detector_padsel_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wkup_detector_padsel[7].q ),
+    .q      (reg2hw.wkup_detector_padsel[7].q),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_7_qs)
@@ -13940,7 +13892,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[0].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[0].qe),
-    .q      (reg2hw.wkup_cause[0].q ),
+    .q      (reg2hw.wkup_cause[0].q),
     .qs     (wkup_cause_cause_0_qs)
   );
 
@@ -13955,7 +13907,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[1].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[1].qe),
-    .q      (reg2hw.wkup_cause[1].q ),
+    .q      (reg2hw.wkup_cause[1].q),
     .qs     (wkup_cause_cause_1_qs)
   );
 
@@ -13970,7 +13922,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[2].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[2].qe),
-    .q      (reg2hw.wkup_cause[2].q ),
+    .q      (reg2hw.wkup_cause[2].q),
     .qs     (wkup_cause_cause_2_qs)
   );
 
@@ -13985,7 +13937,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[3].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[3].qe),
-    .q      (reg2hw.wkup_cause[3].q ),
+    .q      (reg2hw.wkup_cause[3].q),
     .qs     (wkup_cause_cause_3_qs)
   );
 
@@ -14000,7 +13952,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[4].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[4].qe),
-    .q      (reg2hw.wkup_cause[4].q ),
+    .q      (reg2hw.wkup_cause[4].q),
     .qs     (wkup_cause_cause_4_qs)
   );
 
@@ -14015,7 +13967,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[5].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[5].qe),
-    .q      (reg2hw.wkup_cause[5].q ),
+    .q      (reg2hw.wkup_cause[5].q),
     .qs     (wkup_cause_cause_5_qs)
   );
 
@@ -14030,7 +13982,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[6].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[6].qe),
-    .q      (reg2hw.wkup_cause[6].q ),
+    .q      (reg2hw.wkup_cause[6].q),
     .qs     (wkup_cause_cause_6_qs)
   );
 
@@ -14045,7 +13997,7 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[7].d),
     .qre    (),
     .qe     (reg2hw.wkup_cause[7].qe),
-    .q      (reg2hw.wkup_cause[7].q ),
+    .q      (reg2hw.wkup_cause[7].q),
     .qs     (wkup_cause_cause_7_qs)
   );
 

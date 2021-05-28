@@ -137,7 +137,7 @@ module rom_ctrl_regs_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -150,15 +150,16 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_checker_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.checker_error.de),
-    .d      (hw2reg.fatal_alert_cause.checker_error.d ),
+    .d      (hw2reg.fatal_alert_cause.checker_error.d),
 
     // to internal hardware
     .qe     (),
@@ -175,15 +176,16 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_integrity_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.integrity_error.de),
-    .d      (hw2reg.fatal_alert_cause.integrity_error.d ),
+    .d      (hw2reg.fatal_alert_cause.integrity_error.d),
 
     // to internal hardware
     .qe     (),
@@ -203,19 +205,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[0].de),
-    .d      (hw2reg.digest[0].d ),
+    .d      (hw2reg.digest[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[0].q ),
+    .q      (reg2hw.digest[0].q),
 
     // to register interface (read)
     .qs     (digest_0_qs)
@@ -229,19 +232,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[1].de),
-    .d      (hw2reg.digest[1].d ),
+    .d      (hw2reg.digest[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[1].q ),
+    .q      (reg2hw.digest[1].q),
 
     // to register interface (read)
     .qs     (digest_1_qs)
@@ -255,19 +259,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[2].de),
-    .d      (hw2reg.digest[2].d ),
+    .d      (hw2reg.digest[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[2].q ),
+    .q      (reg2hw.digest[2].q),
 
     // to register interface (read)
     .qs     (digest_2_qs)
@@ -281,19 +286,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[3].de),
-    .d      (hw2reg.digest[3].d ),
+    .d      (hw2reg.digest[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[3].q ),
+    .q      (reg2hw.digest[3].q),
 
     // to register interface (read)
     .qs     (digest_3_qs)
@@ -307,19 +313,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[4].de),
-    .d      (hw2reg.digest[4].d ),
+    .d      (hw2reg.digest[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[4].q ),
+    .q      (reg2hw.digest[4].q),
 
     // to register interface (read)
     .qs     (digest_4_qs)
@@ -333,19 +340,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[5].de),
-    .d      (hw2reg.digest[5].d ),
+    .d      (hw2reg.digest[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[5].q ),
+    .q      (reg2hw.digest[5].q),
 
     // to register interface (read)
     .qs     (digest_5_qs)
@@ -359,19 +367,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[6].de),
-    .d      (hw2reg.digest[6].d ),
+    .d      (hw2reg.digest[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[6].q ),
+    .q      (reg2hw.digest[6].q),
 
     // to register interface (read)
     .qs     (digest_6_qs)
@@ -385,19 +394,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_digest_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.digest[7].de),
-    .d      (hw2reg.digest[7].d ),
+    .d      (hw2reg.digest[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.digest[7].q ),
+    .q      (reg2hw.digest[7].q),
 
     // to register interface (read)
     .qs     (digest_7_qs)
@@ -413,19 +423,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[0].de),
-    .d      (hw2reg.exp_digest[0].d ),
+    .d      (hw2reg.exp_digest[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[0].q ),
+    .q      (reg2hw.exp_digest[0].q),
 
     // to register interface (read)
     .qs     (exp_digest_0_qs)
@@ -439,19 +450,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[1].de),
-    .d      (hw2reg.exp_digest[1].d ),
+    .d      (hw2reg.exp_digest[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[1].q ),
+    .q      (reg2hw.exp_digest[1].q),
 
     // to register interface (read)
     .qs     (exp_digest_1_qs)
@@ -465,19 +477,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[2].de),
-    .d      (hw2reg.exp_digest[2].d ),
+    .d      (hw2reg.exp_digest[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[2].q ),
+    .q      (reg2hw.exp_digest[2].q),
 
     // to register interface (read)
     .qs     (exp_digest_2_qs)
@@ -491,19 +504,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[3].de),
-    .d      (hw2reg.exp_digest[3].d ),
+    .d      (hw2reg.exp_digest[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[3].q ),
+    .q      (reg2hw.exp_digest[3].q),
 
     // to register interface (read)
     .qs     (exp_digest_3_qs)
@@ -517,19 +531,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[4].de),
-    .d      (hw2reg.exp_digest[4].d ),
+    .d      (hw2reg.exp_digest[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[4].q ),
+    .q      (reg2hw.exp_digest[4].q),
 
     // to register interface (read)
     .qs     (exp_digest_4_qs)
@@ -543,19 +558,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[5].de),
-    .d      (hw2reg.exp_digest[5].d ),
+    .d      (hw2reg.exp_digest[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[5].q ),
+    .q      (reg2hw.exp_digest[5].q),
 
     // to register interface (read)
     .qs     (exp_digest_5_qs)
@@ -569,19 +585,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[6].de),
-    .d      (hw2reg.exp_digest[6].d ),
+    .d      (hw2reg.exp_digest[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[6].q ),
+    .q      (reg2hw.exp_digest[6].q),
 
     // to register interface (read)
     .qs     (exp_digest_6_qs)
@@ -595,19 +612,20 @@ module rom_ctrl_regs_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_exp_digest_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.exp_digest[7].de),
-    .d      (hw2reg.exp_digest[7].d ),
+    .d      (hw2reg.exp_digest[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.exp_digest[7].q ),
+    .q      (reg2hw.exp_digest[7].q),
 
     // to register interface (read)
     .qs     (exp_digest_7_qs)

@@ -294,19 +294,20 @@ module ast_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (8'h1)
   ) u_revid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.revid.q ),
+    .q      (reg2hw.revid.q),
 
     // to register interface (read)
     .qs     (revid_qs)
@@ -322,8 +323,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_0_we),
@@ -331,11 +332,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[0].q ),
+    .q      (reg2hw.rega[0].q),
 
     // to register interface (read)
     .qs     (rega_0_qs)
@@ -349,8 +350,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_1_we),
@@ -358,11 +359,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[1].q ),
+    .q      (reg2hw.rega[1].q),
 
     // to register interface (read)
     .qs     (rega_1_qs)
@@ -376,8 +377,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_2_we),
@@ -385,11 +386,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[2].q ),
+    .q      (reg2hw.rega[2].q),
 
     // to register interface (read)
     .qs     (rega_2_qs)
@@ -403,8 +404,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_3_we),
@@ -412,11 +413,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[3].q ),
+    .q      (reg2hw.rega[3].q),
 
     // to register interface (read)
     .qs     (rega_3_qs)
@@ -430,8 +431,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_4_we),
@@ -439,11 +440,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[4].q ),
+    .q      (reg2hw.rega[4].q),
 
     // to register interface (read)
     .qs     (rega_4_qs)
@@ -457,8 +458,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_5_we),
@@ -466,11 +467,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[5].q ),
+    .q      (reg2hw.rega[5].q),
 
     // to register interface (read)
     .qs     (rega_5_qs)
@@ -484,8 +485,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_6_we),
@@ -493,11 +494,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[6].q ),
+    .q      (reg2hw.rega[6].q),
 
     // to register interface (read)
     .qs     (rega_6_qs)
@@ -511,8 +512,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_7_we),
@@ -520,11 +521,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[7].q ),
+    .q      (reg2hw.rega[7].q),
 
     // to register interface (read)
     .qs     (rega_7_qs)
@@ -538,8 +539,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_8_we),
@@ -547,11 +548,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[8].q ),
+    .q      (reg2hw.rega[8].q),
 
     // to register interface (read)
     .qs     (rega_8_qs)
@@ -565,8 +566,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_9_we),
@@ -574,11 +575,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[9].q ),
+    .q      (reg2hw.rega[9].q),
 
     // to register interface (read)
     .qs     (rega_9_qs)
@@ -592,8 +593,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_10_we),
@@ -601,11 +602,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[10].q ),
+    .q      (reg2hw.rega[10].q),
 
     // to register interface (read)
     .qs     (rega_10_qs)
@@ -619,8 +620,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_11_we),
@@ -628,11 +629,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[11].q ),
+    .q      (reg2hw.rega[11].q),
 
     // to register interface (read)
     .qs     (rega_11_qs)
@@ -646,8 +647,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_12_we),
@@ -655,11 +656,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[12].q ),
+    .q      (reg2hw.rega[12].q),
 
     // to register interface (read)
     .qs     (rega_12_qs)
@@ -673,8 +674,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_13_we),
@@ -682,11 +683,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[13].q ),
+    .q      (reg2hw.rega[13].q),
 
     // to register interface (read)
     .qs     (rega_13_qs)
@@ -700,8 +701,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_14_we),
@@ -709,11 +710,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[14].q ),
+    .q      (reg2hw.rega[14].q),
 
     // to register interface (read)
     .qs     (rega_14_qs)
@@ -727,8 +728,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_15_we),
@@ -736,11 +737,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[15].q ),
+    .q      (reg2hw.rega[15].q),
 
     // to register interface (read)
     .qs     (rega_15_qs)
@@ -754,8 +755,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_16_we),
@@ -763,11 +764,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[16].q ),
+    .q      (reg2hw.rega[16].q),
 
     // to register interface (read)
     .qs     (rega_16_qs)
@@ -781,8 +782,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_17_we),
@@ -790,11 +791,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[17].q ),
+    .q      (reg2hw.rega[17].q),
 
     // to register interface (read)
     .qs     (rega_17_qs)
@@ -808,8 +809,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_18_we),
@@ -817,11 +818,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[18].q ),
+    .q      (reg2hw.rega[18].q),
 
     // to register interface (read)
     .qs     (rega_18_qs)
@@ -835,8 +836,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_19_we),
@@ -844,11 +845,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[19].q ),
+    .q      (reg2hw.rega[19].q),
 
     // to register interface (read)
     .qs     (rega_19_qs)
@@ -862,8 +863,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_20_we),
@@ -871,11 +872,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[20].q ),
+    .q      (reg2hw.rega[20].q),
 
     // to register interface (read)
     .qs     (rega_20_qs)
@@ -889,8 +890,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_21_we),
@@ -898,11 +899,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[21].q ),
+    .q      (reg2hw.rega[21].q),
 
     // to register interface (read)
     .qs     (rega_21_qs)
@@ -916,8 +917,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_22_we),
@@ -925,11 +926,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[22].q ),
+    .q      (reg2hw.rega[22].q),
 
     // to register interface (read)
     .qs     (rega_22_qs)
@@ -943,8 +944,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_23_we),
@@ -952,11 +953,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[23].q ),
+    .q      (reg2hw.rega[23].q),
 
     // to register interface (read)
     .qs     (rega_23_qs)
@@ -970,8 +971,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_24_we),
@@ -979,11 +980,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[24].q ),
+    .q      (reg2hw.rega[24].q),
 
     // to register interface (read)
     .qs     (rega_24_qs)
@@ -997,8 +998,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_25_we),
@@ -1006,11 +1007,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[25].q ),
+    .q      (reg2hw.rega[25].q),
 
     // to register interface (read)
     .qs     (rega_25_qs)
@@ -1024,8 +1025,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_26_we),
@@ -1033,11 +1034,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[26].q ),
+    .q      (reg2hw.rega[26].q),
 
     // to register interface (read)
     .qs     (rega_26_qs)
@@ -1051,8 +1052,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_27_we),
@@ -1060,11 +1061,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[27].q ),
+    .q      (reg2hw.rega[27].q),
 
     // to register interface (read)
     .qs     (rega_27_qs)
@@ -1078,8 +1079,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_28_we),
@@ -1087,11 +1088,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[28].q ),
+    .q      (reg2hw.rega[28].q),
 
     // to register interface (read)
     .qs     (rega_28_qs)
@@ -1105,8 +1106,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_29_we),
@@ -1114,11 +1115,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[29].q ),
+    .q      (reg2hw.rega[29].q),
 
     // to register interface (read)
     .qs     (rega_29_qs)
@@ -1132,8 +1133,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_30_we),
@@ -1141,11 +1142,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[30].q ),
+    .q      (reg2hw.rega[30].q),
 
     // to register interface (read)
     .qs     (rega_30_qs)
@@ -1159,8 +1160,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_31_we),
@@ -1168,11 +1169,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[31].q ),
+    .q      (reg2hw.rega[31].q),
 
     // to register interface (read)
     .qs     (rega_31_qs)
@@ -1186,8 +1187,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_32_we),
@@ -1195,11 +1196,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[32].q ),
+    .q      (reg2hw.rega[32].q),
 
     // to register interface (read)
     .qs     (rega_32_qs)
@@ -1213,8 +1214,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_33_we),
@@ -1222,11 +1223,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[33].q ),
+    .q      (reg2hw.rega[33].q),
 
     // to register interface (read)
     .qs     (rega_33_qs)
@@ -1240,8 +1241,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_34_we),
@@ -1249,11 +1250,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[34].q ),
+    .q      (reg2hw.rega[34].q),
 
     // to register interface (read)
     .qs     (rega_34_qs)
@@ -1267,8 +1268,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_35_we),
@@ -1276,11 +1277,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[35].q ),
+    .q      (reg2hw.rega[35].q),
 
     // to register interface (read)
     .qs     (rega_35_qs)
@@ -1294,8 +1295,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_36_we),
@@ -1303,11 +1304,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[36].q ),
+    .q      (reg2hw.rega[36].q),
 
     // to register interface (read)
     .qs     (rega_36_qs)
@@ -1321,8 +1322,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_37_we),
@@ -1330,11 +1331,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[37].q ),
+    .q      (reg2hw.rega[37].q),
 
     // to register interface (read)
     .qs     (rega_37_qs)
@@ -1348,8 +1349,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_38_we),
@@ -1357,11 +1358,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[38].q ),
+    .q      (reg2hw.rega[38].q),
 
     // to register interface (read)
     .qs     (rega_38_qs)
@@ -1375,8 +1376,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_39 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_39_we),
@@ -1384,11 +1385,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[39].q ),
+    .q      (reg2hw.rega[39].q),
 
     // to register interface (read)
     .qs     (rega_39_qs)
@@ -1402,8 +1403,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_40 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_40_we),
@@ -1411,11 +1412,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[40].q ),
+    .q      (reg2hw.rega[40].q),
 
     // to register interface (read)
     .qs     (rega_40_qs)
@@ -1429,8 +1430,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_41 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_41_we),
@@ -1438,11 +1439,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[41].q ),
+    .q      (reg2hw.rega[41].q),
 
     // to register interface (read)
     .qs     (rega_41_qs)
@@ -1456,8 +1457,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_42 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_42_we),
@@ -1465,11 +1466,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[42].q ),
+    .q      (reg2hw.rega[42].q),
 
     // to register interface (read)
     .qs     (rega_42_qs)
@@ -1483,8 +1484,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_43 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_43_we),
@@ -1492,11 +1493,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[43].q ),
+    .q      (reg2hw.rega[43].q),
 
     // to register interface (read)
     .qs     (rega_43_qs)
@@ -1510,8 +1511,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_44 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_44_we),
@@ -1519,11 +1520,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[44].q ),
+    .q      (reg2hw.rega[44].q),
 
     // to register interface (read)
     .qs     (rega_44_qs)
@@ -1537,8 +1538,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_45 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_45_we),
@@ -1546,11 +1547,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[45].q ),
+    .q      (reg2hw.rega[45].q),
 
     // to register interface (read)
     .qs     (rega_45_qs)
@@ -1564,8 +1565,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_46 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_46_we),
@@ -1573,11 +1574,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[46].q ),
+    .q      (reg2hw.rega[46].q),
 
     // to register interface (read)
     .qs     (rega_46_qs)
@@ -1591,8 +1592,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_47 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_47_we),
@@ -1600,11 +1601,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[47].q ),
+    .q      (reg2hw.rega[47].q),
 
     // to register interface (read)
     .qs     (rega_47_qs)
@@ -1618,8 +1619,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_48 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_48_we),
@@ -1627,11 +1628,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[48].q ),
+    .q      (reg2hw.rega[48].q),
 
     // to register interface (read)
     .qs     (rega_48_qs)
@@ -1645,8 +1646,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_rega_49 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rega_49_we),
@@ -1654,11 +1655,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rega[49].q ),
+    .q      (reg2hw.rega[49].q),
 
     // to register interface (read)
     .qs     (rega_49_qs)
@@ -1674,8 +1675,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_0_we),
@@ -1683,11 +1684,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[0].de),
-    .d      (hw2reg.regb[0].d ),
+    .d      (hw2reg.regb[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[0].q ),
+    .q      (reg2hw.regb[0].q),
 
     // to register interface (read)
     .qs     (regb_0_qs)
@@ -1701,8 +1702,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_1_we),
@@ -1710,11 +1711,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[1].de),
-    .d      (hw2reg.regb[1].d ),
+    .d      (hw2reg.regb[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[1].q ),
+    .q      (reg2hw.regb[1].q),
 
     // to register interface (read)
     .qs     (regb_1_qs)
@@ -1728,8 +1729,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_2_we),
@@ -1737,11 +1738,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[2].de),
-    .d      (hw2reg.regb[2].d ),
+    .d      (hw2reg.regb[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[2].q ),
+    .q      (reg2hw.regb[2].q),
 
     // to register interface (read)
     .qs     (regb_2_qs)
@@ -1755,8 +1756,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_3_we),
@@ -1764,11 +1765,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[3].de),
-    .d      (hw2reg.regb[3].d ),
+    .d      (hw2reg.regb[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[3].q ),
+    .q      (reg2hw.regb[3].q),
 
     // to register interface (read)
     .qs     (regb_3_qs)
@@ -1782,8 +1783,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_4_we),
@@ -1791,11 +1792,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[4].de),
-    .d      (hw2reg.regb[4].d ),
+    .d      (hw2reg.regb[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[4].q ),
+    .q      (reg2hw.regb[4].q),
 
     // to register interface (read)
     .qs     (regb_4_qs)
@@ -1809,8 +1810,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_5_we),
@@ -1818,11 +1819,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[5].de),
-    .d      (hw2reg.regb[5].d ),
+    .d      (hw2reg.regb[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[5].q ),
+    .q      (reg2hw.regb[5].q),
 
     // to register interface (read)
     .qs     (regb_5_qs)
@@ -1836,8 +1837,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_6_we),
@@ -1845,11 +1846,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[6].de),
-    .d      (hw2reg.regb[6].d ),
+    .d      (hw2reg.regb[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[6].q ),
+    .q      (reg2hw.regb[6].q),
 
     // to register interface (read)
     .qs     (regb_6_qs)
@@ -1863,8 +1864,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_7_we),
@@ -1872,11 +1873,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[7].de),
-    .d      (hw2reg.regb[7].d ),
+    .d      (hw2reg.regb[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[7].q ),
+    .q      (reg2hw.regb[7].q),
 
     // to register interface (read)
     .qs     (regb_7_qs)
@@ -1890,8 +1891,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_8_we),
@@ -1899,11 +1900,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[8].de),
-    .d      (hw2reg.regb[8].d ),
+    .d      (hw2reg.regb[8].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[8].q ),
+    .q      (reg2hw.regb[8].q),
 
     // to register interface (read)
     .qs     (regb_8_qs)
@@ -1917,8 +1918,8 @@ module ast_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_regb_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regb_9_we),
@@ -1926,11 +1927,11 @@ module ast_reg_top (
 
     // from internal hardware
     .de     (hw2reg.regb[9].de),
-    .d      (hw2reg.regb[9].d ),
+    .d      (hw2reg.regb[9].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regb[9].q ),
+    .q      (reg2hw.regb[9].q),
 
     // to register interface (read)
     .qs     (regb_9_qs)

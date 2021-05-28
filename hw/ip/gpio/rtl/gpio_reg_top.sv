@@ -173,8 +173,8 @@ module gpio_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (32'h0)
   ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
@@ -182,11 +182,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
+    .d      (hw2reg.intr_state.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q ),
+    .q      (reg2hw.intr_state.q),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -200,8 +200,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
@@ -209,11 +209,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q ),
+    .q      (reg2hw.intr_enable.q),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -231,7 +231,7 @@ module gpio_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
+    .q      (reg2hw.intr_test.q),
     .qs     ()
   );
 
@@ -243,15 +243,16 @@ module gpio_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_data_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.data_in.de),
-    .d      (hw2reg.data_in.d ),
+    .d      (hw2reg.data_in.d),
 
     // to internal hardware
     .qe     (),
@@ -273,7 +274,7 @@ module gpio_reg_top (
     .d      (hw2reg.direct_out.d),
     .qre    (),
     .qe     (reg2hw.direct_out.qe),
-    .q      (reg2hw.direct_out.q ),
+    .q      (reg2hw.direct_out.q),
     .qs     (direct_out_qs)
   );
 
@@ -290,7 +291,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_out_lower.data.d),
     .qre    (),
     .qe     (reg2hw.masked_out_lower.data.qe),
-    .q      (reg2hw.masked_out_lower.data.q ),
+    .q      (reg2hw.masked_out_lower.data.q),
     .qs     (masked_out_lower_data_qs)
   );
 
@@ -305,7 +306,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_out_lower.mask.d),
     .qre    (),
     .qe     (reg2hw.masked_out_lower.mask.qe),
-    .q      (reg2hw.masked_out_lower.mask.q ),
+    .q      (reg2hw.masked_out_lower.mask.q),
     .qs     ()
   );
 
@@ -322,7 +323,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_out_upper.data.d),
     .qre    (),
     .qe     (reg2hw.masked_out_upper.data.qe),
-    .q      (reg2hw.masked_out_upper.data.q ),
+    .q      (reg2hw.masked_out_upper.data.q),
     .qs     (masked_out_upper_data_qs)
   );
 
@@ -337,7 +338,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_out_upper.mask.d),
     .qre    (),
     .qe     (reg2hw.masked_out_upper.mask.qe),
-    .q      (reg2hw.masked_out_upper.mask.q ),
+    .q      (reg2hw.masked_out_upper.mask.q),
     .qs     ()
   );
 
@@ -353,7 +354,7 @@ module gpio_reg_top (
     .d      (hw2reg.direct_oe.d),
     .qre    (),
     .qe     (reg2hw.direct_oe.qe),
-    .q      (reg2hw.direct_oe.q ),
+    .q      (reg2hw.direct_oe.q),
     .qs     (direct_oe_qs)
   );
 
@@ -370,7 +371,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_oe_lower.data.d),
     .qre    (),
     .qe     (reg2hw.masked_oe_lower.data.qe),
-    .q      (reg2hw.masked_oe_lower.data.q ),
+    .q      (reg2hw.masked_oe_lower.data.q),
     .qs     (masked_oe_lower_data_qs)
   );
 
@@ -385,7 +386,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_oe_lower.mask.d),
     .qre    (),
     .qe     (reg2hw.masked_oe_lower.mask.qe),
-    .q      (reg2hw.masked_oe_lower.mask.q ),
+    .q      (reg2hw.masked_oe_lower.mask.q),
     .qs     (masked_oe_lower_mask_qs)
   );
 
@@ -402,7 +403,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_oe_upper.data.d),
     .qre    (),
     .qe     (reg2hw.masked_oe_upper.data.qe),
-    .q      (reg2hw.masked_oe_upper.data.q ),
+    .q      (reg2hw.masked_oe_upper.data.q),
     .qs     (masked_oe_upper_data_qs)
   );
 
@@ -417,7 +418,7 @@ module gpio_reg_top (
     .d      (hw2reg.masked_oe_upper.mask.d),
     .qre    (),
     .qe     (reg2hw.masked_oe_upper.mask.qe),
-    .q      (reg2hw.masked_oe_upper.mask.q ),
+    .q      (reg2hw.masked_oe_upper.mask.q),
     .qs     (masked_oe_upper_mask_qs)
   );
 
@@ -429,8 +430,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_intr_ctrl_en_rising (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_ctrl_en_rising_we),
@@ -438,11 +439,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_ctrl_en_rising.q ),
+    .q      (reg2hw.intr_ctrl_en_rising.q),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_rising_qs)
@@ -456,8 +457,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_intr_ctrl_en_falling (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_ctrl_en_falling_we),
@@ -465,11 +466,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_ctrl_en_falling.q ),
+    .q      (reg2hw.intr_ctrl_en_falling.q),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_falling_qs)
@@ -483,8 +484,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_intr_ctrl_en_lvlhigh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_ctrl_en_lvlhigh_we),
@@ -492,11 +493,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_ctrl_en_lvlhigh.q ),
+    .q      (reg2hw.intr_ctrl_en_lvlhigh.q),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_lvlhigh_qs)
@@ -510,8 +511,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_intr_ctrl_en_lvllow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_ctrl_en_lvllow_we),
@@ -519,11 +520,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_ctrl_en_lvllow.q ),
+    .q      (reg2hw.intr_ctrl_en_lvllow.q),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_lvllow_qs)
@@ -537,8 +538,8 @@ module gpio_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_ctrl_en_input_filter (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_en_input_filter_we),
@@ -546,11 +547,11 @@ module gpio_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl_en_input_filter.q ),
+    .q      (reg2hw.ctrl_en_input_filter.q),
 
     // to register interface (read)
     .qs     (ctrl_en_input_filter_qs)

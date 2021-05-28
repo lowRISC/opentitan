@@ -351,8 +351,8 @@ module kmac_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_kmac_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_kmac_done_we),
@@ -360,11 +360,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.kmac_done.de),
-    .d      (hw2reg.intr_state.kmac_done.d ),
+    .d      (hw2reg.intr_state.kmac_done.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.kmac_done.q ),
+    .q      (reg2hw.intr_state.kmac_done.q),
 
     // to register interface (read)
     .qs     (intr_state_kmac_done_qs)
@@ -377,8 +377,8 @@ module kmac_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_fifo_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_fifo_empty_we),
@@ -386,11 +386,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.fifo_empty.de),
-    .d      (hw2reg.intr_state.fifo_empty.d ),
+    .d      (hw2reg.intr_state.fifo_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.fifo_empty.q ),
+    .q      (reg2hw.intr_state.fifo_empty.q),
 
     // to register interface (read)
     .qs     (intr_state_fifo_empty_qs)
@@ -403,8 +403,8 @@ module kmac_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_kmac_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_kmac_err_we),
@@ -412,11 +412,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.kmac_err.de),
-    .d      (hw2reg.intr_state.kmac_err.d ),
+    .d      (hw2reg.intr_state.kmac_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.kmac_err.q ),
+    .q      (reg2hw.intr_state.kmac_err.q),
 
     // to register interface (read)
     .qs     (intr_state_kmac_err_qs)
@@ -431,8 +431,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_kmac_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_kmac_done_we),
@@ -440,11 +440,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.kmac_done.q ),
+    .q      (reg2hw.intr_enable.kmac_done.q),
 
     // to register interface (read)
     .qs     (intr_enable_kmac_done_qs)
@@ -457,8 +457,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_fifo_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_fifo_empty_we),
@@ -466,11 +466,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.fifo_empty.q ),
+    .q      (reg2hw.intr_enable.fifo_empty.q),
 
     // to register interface (read)
     .qs     (intr_enable_fifo_empty_qs)
@@ -483,8 +483,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_kmac_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_kmac_err_we),
@@ -492,11 +492,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.kmac_err.q ),
+    .q      (reg2hw.intr_enable.kmac_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_kmac_err_qs)
@@ -515,7 +515,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.kmac_done.qe),
-    .q      (reg2hw.intr_test.kmac_done.q ),
+    .q      (reg2hw.intr_test.kmac_done.q),
     .qs     ()
   );
 
@@ -530,7 +530,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.fifo_empty.qe),
-    .q      (reg2hw.intr_test.fifo_empty.q ),
+    .q      (reg2hw.intr_test.fifo_empty.q),
     .qs     ()
   );
 
@@ -545,7 +545,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.kmac_err.qe),
-    .q      (reg2hw.intr_test.kmac_err.q ),
+    .q      (reg2hw.intr_test.kmac_err.q),
     .qs     ()
   );
 
@@ -561,7 +561,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -590,20 +590,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_kmac_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_kmac_en_we & cfg_regwen_qs),
     .wd     (cfg_kmac_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.kmac_en.q ),
+    .q      (reg2hw.cfg.kmac_en.q),
 
     // to register interface (read)
     .qs     (cfg_kmac_en_qs)
@@ -616,20 +616,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_cfg_kstrength (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_kstrength_we & cfg_regwen_qs),
     .wd     (cfg_kstrength_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.kstrength.q ),
+    .q      (reg2hw.cfg.kstrength.q),
 
     // to register interface (read)
     .qs     (cfg_kstrength_qs)
@@ -642,20 +642,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_cfg_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_mode_we & cfg_regwen_qs),
     .wd     (cfg_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.mode.q ),
+    .q      (reg2hw.cfg.mode.q),
 
     // to register interface (read)
     .qs     (cfg_mode_qs)
@@ -668,20 +668,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_msg_endianness (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_msg_endianness_we & cfg_regwen_qs),
     .wd     (cfg_msg_endianness_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.msg_endianness.q ),
+    .q      (reg2hw.cfg.msg_endianness.q),
 
     // to register interface (read)
     .qs     (cfg_msg_endianness_qs)
@@ -694,20 +694,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_state_endianness (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_state_endianness_we & cfg_regwen_qs),
     .wd     (cfg_state_endianness_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.state_endianness.q ),
+    .q      (reg2hw.cfg.state_endianness.q),
 
     // to register interface (read)
     .qs     (cfg_state_endianness_qs)
@@ -720,20 +720,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_sideload (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_sideload_we & cfg_regwen_qs),
     .wd     (cfg_sideload_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.sideload.q ),
+    .q      (reg2hw.cfg.sideload.q),
 
     // to register interface (read)
     .qs     (cfg_sideload_qs)
@@ -746,20 +746,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_cfg_entropy_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_entropy_mode_we & cfg_regwen_qs),
     .wd     (cfg_entropy_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.entropy_mode.q ),
+    .q      (reg2hw.cfg.entropy_mode.q),
 
     // to register interface (read)
     .qs     (cfg_entropy_mode_qs)
@@ -772,20 +772,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_entropy_fast_process (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_entropy_fast_process_we & cfg_regwen_qs),
     .wd     (cfg_entropy_fast_process_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.entropy_fast_process.q ),
+    .q      (reg2hw.cfg.entropy_fast_process.q),
 
     // to register interface (read)
     .qs     (cfg_entropy_fast_process_qs)
@@ -798,20 +798,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_entropy_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_entropy_ready_we & cfg_regwen_qs),
     .wd     (cfg_entropy_ready_wd),
 
     // from internal hardware
     .de     (hw2reg.cfg.entropy_ready.de),
-    .d      (hw2reg.cfg.entropy_ready.d ),
+    .d      (hw2reg.cfg.entropy_ready.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.entropy_ready.q ),
+    .q      (reg2hw.cfg.entropy_ready.q),
 
     // to register interface (read)
     .qs     (cfg_entropy_ready_qs)
@@ -824,20 +824,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_err_processed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cfg_err_processed_we & cfg_regwen_qs),
     .wd     (cfg_err_processed_wd),
 
     // from internal hardware
     .de     (hw2reg.cfg.err_processed.de),
-    .d      (hw2reg.cfg.err_processed.d ),
+    .d      (hw2reg.cfg.err_processed.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.err_processed.q ),
+    .q      (reg2hw.cfg.err_processed.q),
 
     // to register interface (read)
     .qs     (cfg_err_processed_qs)
@@ -855,7 +855,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.cmd.qe),
-    .q      (reg2hw.cmd.q ),
+    .q      (reg2hw.cmd.q),
     .qs     ()
   );
 
@@ -960,20 +960,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_entropy_period_entropy_timer (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_period_entropy_timer_we & cfg_regwen_qs),
     .wd     (entropy_period_entropy_timer_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.entropy_period.entropy_timer.q ),
+    .q      (reg2hw.entropy_period.entropy_timer.q),
 
     // to register interface (read)
     .qs     (entropy_period_entropy_timer_qs)
@@ -986,20 +986,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_entropy_period_wait_timer (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_period_wait_timer_we & cfg_regwen_qs),
     .wd     (entropy_period_wait_timer_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.entropy_period.wait_timer.q ),
+    .q      (reg2hw.entropy_period.wait_timer.q),
 
     // to register interface (read)
     .qs     (entropy_period_wait_timer_qs)
@@ -1013,20 +1013,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_entropy_seed_lower (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_seed_lower_we & cfg_regwen_qs),
     .wd     (entropy_seed_lower_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.entropy_seed_lower.qe),
-    .q      (reg2hw.entropy_seed_lower.q ),
+    .q      (reg2hw.entropy_seed_lower.q),
 
     // to register interface (read)
     .qs     (entropy_seed_lower_qs)
@@ -1040,20 +1040,20 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_entropy_seed_upper (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_seed_upper_we & cfg_regwen_qs),
     .wd     (entropy_seed_upper_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.entropy_seed_upper.qe),
-    .q      (reg2hw.entropy_seed_upper.q ),
+    .q      (reg2hw.entropy_seed_upper.q),
 
     // to register interface (read)
     .qs     (entropy_seed_upper_qs)
@@ -1073,7 +1073,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[0].qe),
-    .q      (reg2hw.key_share0[0].q ),
+    .q      (reg2hw.key_share0[0].q),
     .qs     ()
   );
 
@@ -1089,7 +1089,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[1].qe),
-    .q      (reg2hw.key_share0[1].q ),
+    .q      (reg2hw.key_share0[1].q),
     .qs     ()
   );
 
@@ -1105,7 +1105,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[2].qe),
-    .q      (reg2hw.key_share0[2].q ),
+    .q      (reg2hw.key_share0[2].q),
     .qs     ()
   );
 
@@ -1121,7 +1121,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[3].qe),
-    .q      (reg2hw.key_share0[3].q ),
+    .q      (reg2hw.key_share0[3].q),
     .qs     ()
   );
 
@@ -1137,7 +1137,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[4].qe),
-    .q      (reg2hw.key_share0[4].q ),
+    .q      (reg2hw.key_share0[4].q),
     .qs     ()
   );
 
@@ -1153,7 +1153,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[5].qe),
-    .q      (reg2hw.key_share0[5].q ),
+    .q      (reg2hw.key_share0[5].q),
     .qs     ()
   );
 
@@ -1169,7 +1169,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[6].qe),
-    .q      (reg2hw.key_share0[6].q ),
+    .q      (reg2hw.key_share0[6].q),
     .qs     ()
   );
 
@@ -1185,7 +1185,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[7].qe),
-    .q      (reg2hw.key_share0[7].q ),
+    .q      (reg2hw.key_share0[7].q),
     .qs     ()
   );
 
@@ -1201,7 +1201,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[8].qe),
-    .q      (reg2hw.key_share0[8].q ),
+    .q      (reg2hw.key_share0[8].q),
     .qs     ()
   );
 
@@ -1217,7 +1217,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[9].qe),
-    .q      (reg2hw.key_share0[9].q ),
+    .q      (reg2hw.key_share0[9].q),
     .qs     ()
   );
 
@@ -1233,7 +1233,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[10].qe),
-    .q      (reg2hw.key_share0[10].q ),
+    .q      (reg2hw.key_share0[10].q),
     .qs     ()
   );
 
@@ -1249,7 +1249,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[11].qe),
-    .q      (reg2hw.key_share0[11].q ),
+    .q      (reg2hw.key_share0[11].q),
     .qs     ()
   );
 
@@ -1265,7 +1265,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[12].qe),
-    .q      (reg2hw.key_share0[12].q ),
+    .q      (reg2hw.key_share0[12].q),
     .qs     ()
   );
 
@@ -1281,7 +1281,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[13].qe),
-    .q      (reg2hw.key_share0[13].q ),
+    .q      (reg2hw.key_share0[13].q),
     .qs     ()
   );
 
@@ -1297,7 +1297,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[14].qe),
-    .q      (reg2hw.key_share0[14].q ),
+    .q      (reg2hw.key_share0[14].q),
     .qs     ()
   );
 
@@ -1313,7 +1313,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share0[15].qe),
-    .q      (reg2hw.key_share0[15].q ),
+    .q      (reg2hw.key_share0[15].q),
     .qs     ()
   );
 
@@ -1331,7 +1331,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[0].qe),
-    .q      (reg2hw.key_share1[0].q ),
+    .q      (reg2hw.key_share1[0].q),
     .qs     ()
   );
 
@@ -1347,7 +1347,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[1].qe),
-    .q      (reg2hw.key_share1[1].q ),
+    .q      (reg2hw.key_share1[1].q),
     .qs     ()
   );
 
@@ -1363,7 +1363,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[2].qe),
-    .q      (reg2hw.key_share1[2].q ),
+    .q      (reg2hw.key_share1[2].q),
     .qs     ()
   );
 
@@ -1379,7 +1379,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[3].qe),
-    .q      (reg2hw.key_share1[3].q ),
+    .q      (reg2hw.key_share1[3].q),
     .qs     ()
   );
 
@@ -1395,7 +1395,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[4].qe),
-    .q      (reg2hw.key_share1[4].q ),
+    .q      (reg2hw.key_share1[4].q),
     .qs     ()
   );
 
@@ -1411,7 +1411,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[5].qe),
-    .q      (reg2hw.key_share1[5].q ),
+    .q      (reg2hw.key_share1[5].q),
     .qs     ()
   );
 
@@ -1427,7 +1427,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[6].qe),
-    .q      (reg2hw.key_share1[6].q ),
+    .q      (reg2hw.key_share1[6].q),
     .qs     ()
   );
 
@@ -1443,7 +1443,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[7].qe),
-    .q      (reg2hw.key_share1[7].q ),
+    .q      (reg2hw.key_share1[7].q),
     .qs     ()
   );
 
@@ -1459,7 +1459,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[8].qe),
-    .q      (reg2hw.key_share1[8].q ),
+    .q      (reg2hw.key_share1[8].q),
     .qs     ()
   );
 
@@ -1475,7 +1475,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[9].qe),
-    .q      (reg2hw.key_share1[9].q ),
+    .q      (reg2hw.key_share1[9].q),
     .qs     ()
   );
 
@@ -1491,7 +1491,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[10].qe),
-    .q      (reg2hw.key_share1[10].q ),
+    .q      (reg2hw.key_share1[10].q),
     .qs     ()
   );
 
@@ -1507,7 +1507,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[11].qe),
-    .q      (reg2hw.key_share1[11].q ),
+    .q      (reg2hw.key_share1[11].q),
     .qs     ()
   );
 
@@ -1523,7 +1523,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[12].qe),
-    .q      (reg2hw.key_share1[12].q ),
+    .q      (reg2hw.key_share1[12].q),
     .qs     ()
   );
 
@@ -1539,7 +1539,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[13].qe),
-    .q      (reg2hw.key_share1[13].q ),
+    .q      (reg2hw.key_share1[13].q),
     .qs     ()
   );
 
@@ -1555,7 +1555,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[14].qe),
-    .q      (reg2hw.key_share1[14].q ),
+    .q      (reg2hw.key_share1[14].q),
     .qs     ()
   );
 
@@ -1571,7 +1571,7 @@ module kmac_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.key_share1[15].qe),
-    .q      (reg2hw.key_share1[15].q ),
+    .q      (reg2hw.key_share1[15].q),
     .qs     ()
   );
 
@@ -1583,21 +1583,22 @@ module kmac_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (3'h0)
   ) u_key_len (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_len_we & cfg_regwen_qs),
     .wd     (key_len_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_len.q ),
+    .q      (reg2hw.key_len.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1611,8 +1612,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_0_we),
@@ -1620,11 +1621,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[0].q ),
+    .q      (reg2hw.prefix[0].q),
 
     // to register interface (read)
     .qs     (prefix_0_qs)
@@ -1638,8 +1639,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_1_we),
@@ -1647,11 +1648,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[1].q ),
+    .q      (reg2hw.prefix[1].q),
 
     // to register interface (read)
     .qs     (prefix_1_qs)
@@ -1665,8 +1666,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_2_we),
@@ -1674,11 +1675,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[2].q ),
+    .q      (reg2hw.prefix[2].q),
 
     // to register interface (read)
     .qs     (prefix_2_qs)
@@ -1692,8 +1693,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_3_we),
@@ -1701,11 +1702,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[3].q ),
+    .q      (reg2hw.prefix[3].q),
 
     // to register interface (read)
     .qs     (prefix_3_qs)
@@ -1719,8 +1720,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_4_we),
@@ -1728,11 +1729,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[4].q ),
+    .q      (reg2hw.prefix[4].q),
 
     // to register interface (read)
     .qs     (prefix_4_qs)
@@ -1746,8 +1747,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_5_we),
@@ -1755,11 +1756,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[5].q ),
+    .q      (reg2hw.prefix[5].q),
 
     // to register interface (read)
     .qs     (prefix_5_qs)
@@ -1773,8 +1774,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_6_we),
@@ -1782,11 +1783,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[6].q ),
+    .q      (reg2hw.prefix[6].q),
 
     // to register interface (read)
     .qs     (prefix_6_qs)
@@ -1800,8 +1801,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_7_we),
@@ -1809,11 +1810,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[7].q ),
+    .q      (reg2hw.prefix[7].q),
 
     // to register interface (read)
     .qs     (prefix_7_qs)
@@ -1827,8 +1828,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_8_we),
@@ -1836,11 +1837,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[8].q ),
+    .q      (reg2hw.prefix[8].q),
 
     // to register interface (read)
     .qs     (prefix_8_qs)
@@ -1854,8 +1855,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_9_we),
@@ -1863,11 +1864,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[9].q ),
+    .q      (reg2hw.prefix[9].q),
 
     // to register interface (read)
     .qs     (prefix_9_qs)
@@ -1881,8 +1882,8 @@ module kmac_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_prefix_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prefix_10_we),
@@ -1890,11 +1891,11 @@ module kmac_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prefix[10].q ),
+    .q      (reg2hw.prefix[10].q),
 
     // to register interface (read)
     .qs     (prefix_10_qs)
@@ -1908,15 +1909,16 @@ module kmac_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_err_code (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.de),
-    .d      (hw2reg.err_code.d ),
+    .d      (hw2reg.err_code.d),
 
     // to internal hardware
     .qe     (),

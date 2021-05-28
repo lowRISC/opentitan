@@ -397,8 +397,8 @@ module entropy_src_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_es_entropy_valid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_es_entropy_valid_we),
@@ -406,11 +406,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.es_entropy_valid.de),
-    .d      (hw2reg.intr_state.es_entropy_valid.d ),
+    .d      (hw2reg.intr_state.es_entropy_valid.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_entropy_valid.q ),
+    .q      (reg2hw.intr_state.es_entropy_valid.q),
 
     // to register interface (read)
     .qs     (intr_state_es_entropy_valid_qs)
@@ -423,8 +423,8 @@ module entropy_src_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_es_health_test_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_es_health_test_failed_we),
@@ -432,11 +432,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.es_health_test_failed.de),
-    .d      (hw2reg.intr_state.es_health_test_failed.d ),
+    .d      (hw2reg.intr_state.es_health_test_failed.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_health_test_failed.q ),
+    .q      (reg2hw.intr_state.es_health_test_failed.q),
 
     // to register interface (read)
     .qs     (intr_state_es_health_test_failed_qs)
@@ -449,8 +449,8 @@ module entropy_src_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_es_observe_fifo_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_es_observe_fifo_ready_we),
@@ -458,11 +458,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.es_observe_fifo_ready.de),
-    .d      (hw2reg.intr_state.es_observe_fifo_ready.d ),
+    .d      (hw2reg.intr_state.es_observe_fifo_ready.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_observe_fifo_ready.q ),
+    .q      (reg2hw.intr_state.es_observe_fifo_ready.q),
 
     // to register interface (read)
     .qs     (intr_state_es_observe_fifo_ready_qs)
@@ -475,8 +475,8 @@ module entropy_src_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_es_fatal_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_es_fatal_err_we),
@@ -484,11 +484,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.es_fatal_err.de),
-    .d      (hw2reg.intr_state.es_fatal_err.d ),
+    .d      (hw2reg.intr_state.es_fatal_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_fatal_err.q ),
+    .q      (reg2hw.intr_state.es_fatal_err.q),
 
     // to register interface (read)
     .qs     (intr_state_es_fatal_err_qs)
@@ -503,8 +503,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_entropy_valid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_es_entropy_valid_we),
@@ -512,11 +512,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_entropy_valid.q ),
+    .q      (reg2hw.intr_enable.es_entropy_valid.q),
 
     // to register interface (read)
     .qs     (intr_enable_es_entropy_valid_qs)
@@ -529,8 +529,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_health_test_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_es_health_test_failed_we),
@@ -538,11 +538,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_health_test_failed.q ),
+    .q      (reg2hw.intr_enable.es_health_test_failed.q),
 
     // to register interface (read)
     .qs     (intr_enable_es_health_test_failed_qs)
@@ -555,8 +555,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_observe_fifo_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_es_observe_fifo_ready_we),
@@ -564,11 +564,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_observe_fifo_ready.q ),
+    .q      (reg2hw.intr_enable.es_observe_fifo_ready.q),
 
     // to register interface (read)
     .qs     (intr_enable_es_observe_fifo_ready_qs)
@@ -581,8 +581,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_fatal_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_es_fatal_err_we),
@@ -590,11 +590,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_fatal_err.q ),
+    .q      (reg2hw.intr_enable.es_fatal_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_es_fatal_err_qs)
@@ -613,7 +613,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.es_entropy_valid.qe),
-    .q      (reg2hw.intr_test.es_entropy_valid.q ),
+    .q      (reg2hw.intr_test.es_entropy_valid.q),
     .qs     ()
   );
 
@@ -628,7 +628,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.es_health_test_failed.qe),
-    .q      (reg2hw.intr_test.es_health_test_failed.q ),
+    .q      (reg2hw.intr_test.es_health_test_failed.q),
     .qs     ()
   );
 
@@ -643,7 +643,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.es_observe_fifo_ready.qe),
-    .q      (reg2hw.intr_test.es_observe_fifo_ready.q ),
+    .q      (reg2hw.intr_test.es_observe_fifo_ready.q),
     .qs     ()
   );
 
@@ -658,7 +658,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.es_fatal_err.qe),
-    .q      (reg2hw.intr_test.es_fatal_err.q ),
+    .q      (reg2hw.intr_test.es_fatal_err.q),
     .qs     ()
   );
 
@@ -675,7 +675,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_alert.qe),
-    .q      (reg2hw.alert_test.recov_alert.q ),
+    .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
 
@@ -690,7 +690,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_alert.qe),
-    .q      (reg2hw.alert_test.fatal_alert.q ),
+    .q      (reg2hw.alert_test.fatal_alert.q),
     .qs     ()
   );
 
@@ -736,8 +736,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_conf_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_enable_we),
@@ -745,11 +745,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.enable.q ),
+    .q      (reg2hw.conf.enable.q),
 
     // to register interface (read)
     .qs     (conf_enable_qs)
@@ -762,8 +762,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_boot_bypass_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_boot_bypass_disable_we),
@@ -771,11 +771,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.boot_bypass_disable.q ),
+    .q      (reg2hw.conf.boot_bypass_disable.q),
 
     // to register interface (read)
     .qs     (conf_boot_bypass_disable_qs)
@@ -788,8 +788,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_repcnt_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_repcnt_disable_we),
@@ -797,11 +797,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.repcnt_disable.q ),
+    .q      (reg2hw.conf.repcnt_disable.q),
 
     // to register interface (read)
     .qs     (conf_repcnt_disable_qs)
@@ -814,8 +814,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_adaptp_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_adaptp_disable_we),
@@ -823,11 +823,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.adaptp_disable.q ),
+    .q      (reg2hw.conf.adaptp_disable.q),
 
     // to register interface (read)
     .qs     (conf_adaptp_disable_qs)
@@ -840,8 +840,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_bucket_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_bucket_disable_we),
@@ -849,11 +849,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.bucket_disable.q ),
+    .q      (reg2hw.conf.bucket_disable.q),
 
     // to register interface (read)
     .qs     (conf_bucket_disable_qs)
@@ -866,8 +866,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_markov_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_markov_disable_we),
@@ -875,11 +875,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.markov_disable.q ),
+    .q      (reg2hw.conf.markov_disable.q),
 
     // to register interface (read)
     .qs     (conf_markov_disable_qs)
@@ -892,8 +892,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_health_test_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_health_test_clr_we),
@@ -901,11 +901,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.health_test_clr.q ),
+    .q      (reg2hw.conf.health_test_clr.q),
 
     // to register interface (read)
     .qs     (conf_health_test_clr_qs)
@@ -918,8 +918,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_rng_bit_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_rng_bit_en_we),
@@ -927,11 +927,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.rng_bit_en.q ),
+    .q      (reg2hw.conf.rng_bit_en.q),
 
     // to register interface (read)
     .qs     (conf_rng_bit_en_qs)
@@ -944,8 +944,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_conf_rng_bit_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_rng_bit_sel_we),
@@ -953,11 +953,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.rng_bit_sel.q ),
+    .q      (reg2hw.conf.rng_bit_sel.q),
 
     // to register interface (read)
     .qs     (conf_rng_bit_sel_qs)
@@ -970,8 +970,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_extht_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_extht_enable_we),
@@ -979,11 +979,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.extht_enable.q ),
+    .q      (reg2hw.conf.extht_enable.q),
 
     // to register interface (read)
     .qs     (conf_extht_enable_qs)
@@ -996,8 +996,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_conf_repcnts_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_repcnts_disable_we),
@@ -1005,11 +1005,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.repcnts_disable.q ),
+    .q      (reg2hw.conf.repcnts_disable.q),
 
     // to register interface (read)
     .qs     (conf_repcnts_disable_qs)
@@ -1023,8 +1023,8 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h4)
   ) u_rate (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rate_we),
@@ -1032,11 +1032,11 @@ module entropy_src_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rate.q ),
+    .q      (reg2hw.rate.q),
 
     // to register interface (read)
     .qs     (rate_qs)
@@ -1051,20 +1051,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_entropy_control_es_route (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_control_es_route_we & regwen_qs),
     .wd     (entropy_control_es_route_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.entropy_control.es_route.q ),
+    .q      (reg2hw.entropy_control.es_route.q),
 
     // to register interface (read)
     .qs     (entropy_control_es_route_qs)
@@ -1077,20 +1077,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_entropy_control_es_type (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (entropy_control_es_type_we & regwen_qs),
     .wd     (entropy_control_es_type_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.entropy_control.es_type.q ),
+    .q      (reg2hw.entropy_control.es_type.q),
 
     // to register interface (read)
     .qs     (entropy_control_es_type_qs)
@@ -1108,7 +1108,7 @@ module entropy_src_reg_top (
     .d      (hw2reg.entropy_data.d),
     .qre    (reg2hw.entropy_data.re),
     .qe     (),
-    .q      (reg2hw.entropy_data.q ),
+    .q      (reg2hw.entropy_data.q),
     .qs     (entropy_data_qs)
   );
 
@@ -1121,20 +1121,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h200)
   ) u_health_test_windows_fips_window (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (health_test_windows_fips_window_we & regwen_qs),
     .wd     (health_test_windows_fips_window_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.health_test_windows.fips_window.q ),
+    .q      (reg2hw.health_test_windows.fips_window.q),
 
     // to register interface (read)
     .qs     (health_test_windows_fips_window_qs)
@@ -1147,20 +1147,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h60)
   ) u_health_test_windows_bypass_window (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (health_test_windows_bypass_window_we & regwen_qs),
     .wd     (health_test_windows_bypass_window_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.health_test_windows.bypass_window.q ),
+    .q      (reg2hw.health_test_windows.bypass_window.q),
 
     // to register interface (read)
     .qs     (health_test_windows_bypass_window_qs)
@@ -1174,13 +1174,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnt_thresholds_fips_thresh (
     .re     (repcnt_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (repcnt_thresholds_fips_thresh_we & regwen_qs),
     .wd     (repcnt_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.repcnt_thresholds.fips_thresh.qe),
-    .q      (reg2hw.repcnt_thresholds.fips_thresh.q ),
+    .q      (reg2hw.repcnt_thresholds.fips_thresh.q),
     .qs     (repcnt_thresholds_fips_thresh_qs)
   );
 
@@ -1190,13 +1189,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnt_thresholds_bypass_thresh (
     .re     (repcnt_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (repcnt_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (repcnt_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.repcnt_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.repcnt_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.repcnt_thresholds.bypass_thresh.q),
     .qs     (repcnt_thresholds_bypass_thresh_qs)
   );
 
@@ -1208,13 +1206,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnts_thresholds_fips_thresh (
     .re     (repcnts_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (repcnts_thresholds_fips_thresh_we & regwen_qs),
     .wd     (repcnts_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.repcnts_thresholds.fips_thresh.qe),
-    .q      (reg2hw.repcnts_thresholds.fips_thresh.q ),
+    .q      (reg2hw.repcnts_thresholds.fips_thresh.q),
     .qs     (repcnts_thresholds_fips_thresh_qs)
   );
 
@@ -1224,13 +1221,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnts_thresholds_bypass_thresh (
     .re     (repcnts_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (repcnts_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (repcnts_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.repcnts_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.repcnts_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.repcnts_thresholds.bypass_thresh.q),
     .qs     (repcnts_thresholds_bypass_thresh_qs)
   );
 
@@ -1242,13 +1238,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_hi_thresholds_fips_thresh (
     .re     (adaptp_hi_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (adaptp_hi_thresholds_fips_thresh_we & regwen_qs),
     .wd     (adaptp_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.adaptp_hi_thresholds.fips_thresh.qe),
-    .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q ),
+    .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q),
     .qs     (adaptp_hi_thresholds_fips_thresh_qs)
   );
 
@@ -1258,13 +1253,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_hi_thresholds_bypass_thresh (
     .re     (adaptp_hi_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (adaptp_hi_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (adaptp_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.adaptp_hi_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q),
     .qs     (adaptp_hi_thresholds_bypass_thresh_qs)
   );
 
@@ -1276,13 +1270,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_lo_thresholds_fips_thresh (
     .re     (adaptp_lo_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (adaptp_lo_thresholds_fips_thresh_we & regwen_qs),
     .wd     (adaptp_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.adaptp_lo_thresholds.fips_thresh.qe),
-    .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q ),
+    .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q),
     .qs     (adaptp_lo_thresholds_fips_thresh_qs)
   );
 
@@ -1292,13 +1285,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_lo_thresholds_bypass_thresh (
     .re     (adaptp_lo_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (adaptp_lo_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (adaptp_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.adaptp_lo_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q),
     .qs     (adaptp_lo_thresholds_bypass_thresh_qs)
   );
 
@@ -1310,13 +1302,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_bucket_thresholds_fips_thresh (
     .re     (bucket_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (bucket_thresholds_fips_thresh_we & regwen_qs),
     .wd     (bucket_thresholds_fips_thresh_wd),
     .d      (hw2reg.bucket_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.bucket_thresholds.fips_thresh.qe),
-    .q      (reg2hw.bucket_thresholds.fips_thresh.q ),
+    .q      (reg2hw.bucket_thresholds.fips_thresh.q),
     .qs     (bucket_thresholds_fips_thresh_qs)
   );
 
@@ -1326,13 +1317,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_bucket_thresholds_bypass_thresh (
     .re     (bucket_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (bucket_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (bucket_thresholds_bypass_thresh_wd),
     .d      (hw2reg.bucket_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.bucket_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.bucket_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.bucket_thresholds.bypass_thresh.q),
     .qs     (bucket_thresholds_bypass_thresh_qs)
   );
 
@@ -1344,13 +1334,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_hi_thresholds_fips_thresh (
     .re     (markov_hi_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (markov_hi_thresholds_fips_thresh_we & regwen_qs),
     .wd     (markov_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.markov_hi_thresholds.fips_thresh.qe),
-    .q      (reg2hw.markov_hi_thresholds.fips_thresh.q ),
+    .q      (reg2hw.markov_hi_thresholds.fips_thresh.q),
     .qs     (markov_hi_thresholds_fips_thresh_qs)
   );
 
@@ -1360,13 +1349,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_hi_thresholds_bypass_thresh (
     .re     (markov_hi_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (markov_hi_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (markov_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.markov_hi_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q),
     .qs     (markov_hi_thresholds_bypass_thresh_qs)
   );
 
@@ -1378,13 +1366,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_lo_thresholds_fips_thresh (
     .re     (markov_lo_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (markov_lo_thresholds_fips_thresh_we & regwen_qs),
     .wd     (markov_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.markov_lo_thresholds.fips_thresh.qe),
-    .q      (reg2hw.markov_lo_thresholds.fips_thresh.q ),
+    .q      (reg2hw.markov_lo_thresholds.fips_thresh.q),
     .qs     (markov_lo_thresholds_fips_thresh_qs)
   );
 
@@ -1394,13 +1381,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_lo_thresholds_bypass_thresh (
     .re     (markov_lo_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (markov_lo_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (markov_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.markov_lo_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q),
     .qs     (markov_lo_thresholds_bypass_thresh_qs)
   );
 
@@ -1412,13 +1398,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_hi_thresholds_fips_thresh (
     .re     (extht_hi_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (extht_hi_thresholds_fips_thresh_we & regwen_qs),
     .wd     (extht_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.extht_hi_thresholds.fips_thresh.qe),
-    .q      (reg2hw.extht_hi_thresholds.fips_thresh.q ),
+    .q      (reg2hw.extht_hi_thresholds.fips_thresh.q),
     .qs     (extht_hi_thresholds_fips_thresh_qs)
   );
 
@@ -1428,13 +1413,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_hi_thresholds_bypass_thresh (
     .re     (extht_hi_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (extht_hi_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (extht_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.extht_hi_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q),
     .qs     (extht_hi_thresholds_bypass_thresh_qs)
   );
 
@@ -1446,13 +1430,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_lo_thresholds_fips_thresh (
     .re     (extht_lo_thresholds_fips_thresh_re),
-    // qualified with register enable
     .we     (extht_lo_thresholds_fips_thresh_we & regwen_qs),
     .wd     (extht_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.fips_thresh.d),
     .qre    (),
     .qe     (reg2hw.extht_lo_thresholds.fips_thresh.qe),
-    .q      (reg2hw.extht_lo_thresholds.fips_thresh.q ),
+    .q      (reg2hw.extht_lo_thresholds.fips_thresh.q),
     .qs     (extht_lo_thresholds_fips_thresh_qs)
   );
 
@@ -1462,13 +1445,12 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_lo_thresholds_bypass_thresh (
     .re     (extht_lo_thresholds_bypass_thresh_re),
-    // qualified with register enable
     .we     (extht_lo_thresholds_bypass_thresh_we & regwen_qs),
     .wd     (extht_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.bypass_thresh.d),
     .qre    (),
     .qe     (reg2hw.extht_lo_thresholds.bypass_thresh.qe),
-    .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q ),
+    .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q),
     .qs     (extht_lo_thresholds_bypass_thresh_qs)
   );
 
@@ -1912,20 +1894,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h2)
   ) u_alert_threshold (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_threshold_we & regwen_qs),
     .wd     (alert_threshold_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_threshold.q ),
+    .q      (reg2hw.alert_threshold.q),
 
     // to register interface (read)
     .qs     (alert_threshold_qs)
@@ -2095,20 +2077,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_fw_ov_control_fw_ov_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (fw_ov_control_fw_ov_mode_we & regwen_qs),
     .wd     (fw_ov_control_fw_ov_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fw_ov_control.fw_ov_mode.q ),
+    .q      (reg2hw.fw_ov_control.fw_ov_mode.q),
 
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_mode_qs)
@@ -2121,20 +2103,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_fw_ov_control_fw_ov_entropy_insert (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (fw_ov_control_fw_ov_entropy_insert_we & regwen_qs),
     .wd     (fw_ov_control_fw_ov_entropy_insert_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fw_ov_control.fw_ov_entropy_insert.q ),
+    .q      (reg2hw.fw_ov_control.fw_ov_entropy_insert.q),
 
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_entropy_insert_qs)
@@ -2152,7 +2134,7 @@ module entropy_src_reg_top (
     .d      (hw2reg.fw_ov_rd_data.d),
     .qre    (reg2hw.fw_ov_rd_data.re),
     .qe     (),
-    .q      (reg2hw.fw_ov_rd_data.q ),
+    .q      (reg2hw.fw_ov_rd_data.q),
     .qs     (fw_ov_rd_data_qs)
   );
 
@@ -2168,7 +2150,7 @@ module entropy_src_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.fw_ov_wr_data.qe),
-    .q      (reg2hw.fw_ov_wr_data.q ),
+    .q      (reg2hw.fw_ov_wr_data.q),
     .qs     ()
   );
 
@@ -2180,20 +2162,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h20)
   ) u_observe_fifo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (observe_fifo_thresh_we & regwen_qs),
     .wd     (observe_fifo_thresh_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.observe_fifo_thresh.q ),
+    .q      (reg2hw.observe_fifo_thresh.q),
 
     // to register interface (read)
     .qs     (observe_fifo_thresh_qs)
@@ -2329,20 +2311,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'hb)
   ) u_seed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (seed_we & regwen_qs),
     .wd     (seed_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.seed.q ),
+    .q      (reg2hw.seed.q),
 
     // to register interface (read)
     .qs     (seed_qs)
@@ -2357,15 +2339,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esrng_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_esrng_err.de),
-    .d      (hw2reg.err_code.sfifo_esrng_err.d ),
+    .d      (hw2reg.err_code.sfifo_esrng_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2382,15 +2365,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_observe_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_observe_err.de),
-    .d      (hw2reg.err_code.sfifo_observe_err.d ),
+    .d      (hw2reg.err_code.sfifo_observe_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2407,15 +2391,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esfinal_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_esfinal_err.de),
-    .d      (hw2reg.err_code.sfifo_esfinal_err.d ),
+    .d      (hw2reg.err_code.sfifo_esfinal_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2432,15 +2417,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_es_ack_sm_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.es_ack_sm_err.de),
-    .d      (hw2reg.err_code.es_ack_sm_err.d ),
+    .d      (hw2reg.err_code.es_ack_sm_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2457,15 +2443,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_es_main_sm_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.es_main_sm_err.de),
-    .d      (hw2reg.err_code.es_main_sm_err.d ),
+    .d      (hw2reg.err_code.es_main_sm_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2482,15 +2469,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_write_err.de),
-    .d      (hw2reg.err_code.fifo_write_err.d ),
+    .d      (hw2reg.err_code.fifo_write_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2507,15 +2495,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_read_err.de),
-    .d      (hw2reg.err_code.fifo_read_err.d ),
+    .d      (hw2reg.err_code.fifo_read_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2532,15 +2521,16 @@ module entropy_src_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_state_err.de),
-    .d      (hw2reg.err_code.fifo_state_err.d ),
+    .d      (hw2reg.err_code.fifo_state_err.d),
 
     // to internal hardware
     .qe     (),
@@ -2558,20 +2548,20 @@ module entropy_src_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_err_code_test (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (err_code_test_we & regwen_qs),
     .wd     (err_code_test_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.err_code_test.qe),
-    .q      (reg2hw.err_code_test.q ),
+    .q      (reg2hw.err_code_test.q),
 
     // to register interface (read)
     .qs     (err_code_test_qs)

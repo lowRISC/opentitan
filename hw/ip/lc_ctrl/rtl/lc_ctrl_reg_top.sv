@@ -194,7 +194,7 @@ module lc_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_prog_error.qe),
-    .q      (reg2hw.alert_test.fatal_prog_error.q ),
+    .q      (reg2hw.alert_test.fatal_prog_error.q),
     .qs     ()
   );
 
@@ -209,7 +209,7 @@ module lc_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_state_error.qe),
-    .q      (reg2hw.alert_test.fatal_state_error.q ),
+    .q      (reg2hw.alert_test.fatal_state_error.q),
     .qs     ()
   );
 
@@ -362,7 +362,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.claim_transition_if.d),
     .qre    (),
     .qe     (reg2hw.claim_transition_if.qe),
-    .q      (reg2hw.claim_transition_if.q ),
+    .q      (reg2hw.claim_transition_if.q),
     .qs     (claim_transition_if_qs)
   );
 
@@ -389,13 +389,12 @@ module lc_ctrl_reg_top (
     .DW    (1)
   ) u_transition_cmd (
     .re     (1'b0),
-    // qualified with register enable
     .we     (transition_cmd_we & transition_regwen_qs),
     .wd     (transition_cmd_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.transition_cmd.qe),
-    .q      (reg2hw.transition_cmd.q ),
+    .q      (reg2hw.transition_cmd.q),
     .qs     ()
   );
 
@@ -408,13 +407,12 @@ module lc_ctrl_reg_top (
     .DW    (32)
   ) u_transition_token_0 (
     .re     (transition_token_0_re),
-    // qualified with register enable
     .we     (transition_token_0_we & transition_regwen_qs),
     .wd     (transition_token_0_wd),
     .d      (hw2reg.transition_token[0].d),
     .qre    (),
     .qe     (reg2hw.transition_token[0].qe),
-    .q      (reg2hw.transition_token[0].q ),
+    .q      (reg2hw.transition_token[0].q),
     .qs     (transition_token_0_qs)
   );
 
@@ -425,13 +423,12 @@ module lc_ctrl_reg_top (
     .DW    (32)
   ) u_transition_token_1 (
     .re     (transition_token_1_re),
-    // qualified with register enable
     .we     (transition_token_1_we & transition_regwen_qs),
     .wd     (transition_token_1_wd),
     .d      (hw2reg.transition_token[1].d),
     .qre    (),
     .qe     (reg2hw.transition_token[1].qe),
-    .q      (reg2hw.transition_token[1].q ),
+    .q      (reg2hw.transition_token[1].q),
     .qs     (transition_token_1_qs)
   );
 
@@ -442,13 +439,12 @@ module lc_ctrl_reg_top (
     .DW    (32)
   ) u_transition_token_2 (
     .re     (transition_token_2_re),
-    // qualified with register enable
     .we     (transition_token_2_we & transition_regwen_qs),
     .wd     (transition_token_2_wd),
     .d      (hw2reg.transition_token[2].d),
     .qre    (),
     .qe     (reg2hw.transition_token[2].qe),
-    .q      (reg2hw.transition_token[2].q ),
+    .q      (reg2hw.transition_token[2].q),
     .qs     (transition_token_2_qs)
   );
 
@@ -459,13 +455,12 @@ module lc_ctrl_reg_top (
     .DW    (32)
   ) u_transition_token_3 (
     .re     (transition_token_3_re),
-    // qualified with register enable
     .we     (transition_token_3_we & transition_regwen_qs),
     .wd     (transition_token_3_wd),
     .d      (hw2reg.transition_token[3].d),
     .qre    (),
     .qe     (reg2hw.transition_token[3].qe),
-    .q      (reg2hw.transition_token[3].q ),
+    .q      (reg2hw.transition_token[3].q),
     .qs     (transition_token_3_qs)
   );
 
@@ -476,13 +471,12 @@ module lc_ctrl_reg_top (
     .DW    (4)
   ) u_transition_target (
     .re     (transition_target_re),
-    // qualified with register enable
     .we     (transition_target_we & transition_regwen_qs),
     .wd     (transition_target_wd),
     .d      (hw2reg.transition_target.d),
     .qre    (),
     .qe     (reg2hw.transition_target.qe),
-    .q      (reg2hw.transition_target.q ),
+    .q      (reg2hw.transition_target.q),
     .qs     (transition_target_qs)
   );
 
@@ -493,13 +487,12 @@ module lc_ctrl_reg_top (
     .DW    (8)
   ) u_otp_test_ctrl (
     .re     (otp_test_ctrl_re),
-    // qualified with register enable
     .we     (otp_test_ctrl_we & transition_regwen_qs),
     .wd     (otp_test_ctrl_wd),
     .d      (hw2reg.otp_test_ctrl.d),
     .qre    (),
     .qe     (reg2hw.otp_test_ctrl.qe),
-    .q      (reg2hw.otp_test_ctrl.q ),
+    .q      (reg2hw.otp_test_ctrl.q),
     .qs     (otp_test_ctrl_qs)
   );
 

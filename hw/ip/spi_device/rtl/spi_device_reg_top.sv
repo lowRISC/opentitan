@@ -1443,8 +1443,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rxf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rxf_we),
@@ -1452,11 +1452,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rxf.de),
-    .d      (hw2reg.intr_state.rxf.d ),
+    .d      (hw2reg.intr_state.rxf.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rxf.q ),
+    .q      (reg2hw.intr_state.rxf.q),
 
     // to register interface (read)
     .qs     (intr_state_rxf_qs)
@@ -1469,8 +1469,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rxlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rxlvl_we),
@@ -1478,11 +1478,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rxlvl.de),
-    .d      (hw2reg.intr_state.rxlvl.d ),
+    .d      (hw2reg.intr_state.rxlvl.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rxlvl.q ),
+    .q      (reg2hw.intr_state.rxlvl.q),
 
     // to register interface (read)
     .qs     (intr_state_rxlvl_qs)
@@ -1495,8 +1495,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_txlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_txlvl_we),
@@ -1504,11 +1504,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.txlvl.de),
-    .d      (hw2reg.intr_state.txlvl.d ),
+    .d      (hw2reg.intr_state.txlvl.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.txlvl.q ),
+    .q      (reg2hw.intr_state.txlvl.q),
 
     // to register interface (read)
     .qs     (intr_state_txlvl_qs)
@@ -1521,8 +1521,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rxerr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rxerr_we),
@@ -1530,11 +1530,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rxerr.de),
-    .d      (hw2reg.intr_state.rxerr.d ),
+    .d      (hw2reg.intr_state.rxerr.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rxerr.q ),
+    .q      (reg2hw.intr_state.rxerr.q),
 
     // to register interface (read)
     .qs     (intr_state_rxerr_qs)
@@ -1547,8 +1547,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rxoverflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rxoverflow_we),
@@ -1556,11 +1556,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rxoverflow.de),
-    .d      (hw2reg.intr_state.rxoverflow.d ),
+    .d      (hw2reg.intr_state.rxoverflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rxoverflow.q ),
+    .q      (reg2hw.intr_state.rxoverflow.q),
 
     // to register interface (read)
     .qs     (intr_state_rxoverflow_qs)
@@ -1573,8 +1573,8 @@ module spi_device_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_txunderflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_txunderflow_we),
@@ -1582,11 +1582,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.txunderflow.de),
-    .d      (hw2reg.intr_state.txunderflow.d ),
+    .d      (hw2reg.intr_state.txunderflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.txunderflow.q ),
+    .q      (reg2hw.intr_state.txunderflow.q),
 
     // to register interface (read)
     .qs     (intr_state_txunderflow_qs)
@@ -1601,8 +1601,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rxf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rxf_we),
@@ -1610,11 +1610,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rxf.q ),
+    .q      (reg2hw.intr_enable.rxf.q),
 
     // to register interface (read)
     .qs     (intr_enable_rxf_qs)
@@ -1627,8 +1627,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rxlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rxlvl_we),
@@ -1636,11 +1636,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rxlvl.q ),
+    .q      (reg2hw.intr_enable.rxlvl.q),
 
     // to register interface (read)
     .qs     (intr_enable_rxlvl_qs)
@@ -1653,8 +1653,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_txlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_txlvl_we),
@@ -1662,11 +1662,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.txlvl.q ),
+    .q      (reg2hw.intr_enable.txlvl.q),
 
     // to register interface (read)
     .qs     (intr_enable_txlvl_qs)
@@ -1679,8 +1679,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rxerr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rxerr_we),
@@ -1688,11 +1688,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rxerr.q ),
+    .q      (reg2hw.intr_enable.rxerr.q),
 
     // to register interface (read)
     .qs     (intr_enable_rxerr_qs)
@@ -1705,8 +1705,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rxoverflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rxoverflow_we),
@@ -1714,11 +1714,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rxoverflow.q ),
+    .q      (reg2hw.intr_enable.rxoverflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_rxoverflow_qs)
@@ -1731,8 +1731,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_txunderflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_txunderflow_we),
@@ -1740,11 +1740,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.txunderflow.q ),
+    .q      (reg2hw.intr_enable.txunderflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_txunderflow_qs)
@@ -1763,7 +1763,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rxf.qe),
-    .q      (reg2hw.intr_test.rxf.q ),
+    .q      (reg2hw.intr_test.rxf.q),
     .qs     ()
   );
 
@@ -1778,7 +1778,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rxlvl.qe),
-    .q      (reg2hw.intr_test.rxlvl.q ),
+    .q      (reg2hw.intr_test.rxlvl.q),
     .qs     ()
   );
 
@@ -1793,7 +1793,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.txlvl.qe),
-    .q      (reg2hw.intr_test.txlvl.q ),
+    .q      (reg2hw.intr_test.txlvl.q),
     .qs     ()
   );
 
@@ -1808,7 +1808,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rxerr.qe),
-    .q      (reg2hw.intr_test.rxerr.q ),
+    .q      (reg2hw.intr_test.rxerr.q),
     .qs     ()
   );
 
@@ -1823,7 +1823,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rxoverflow.qe),
-    .q      (reg2hw.intr_test.rxoverflow.q ),
+    .q      (reg2hw.intr_test.rxoverflow.q),
     .qs     ()
   );
 
@@ -1838,7 +1838,7 @@ module spi_device_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.txunderflow.qe),
-    .q      (reg2hw.intr_test.txunderflow.q ),
+    .q      (reg2hw.intr_test.txunderflow.q),
     .qs     ()
   );
 
@@ -1851,8 +1851,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_abort (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_abort_we),
@@ -1860,11 +1860,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.abort.q ),
+    .q      (reg2hw.control.abort.q),
 
     // to register interface (read)
     .qs     (control_abort_qs)
@@ -1877,8 +1877,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_control_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_mode_we),
@@ -1886,11 +1886,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.mode.q ),
+    .q      (reg2hw.control.mode.q),
 
     // to register interface (read)
     .qs     (control_mode_qs)
@@ -1903,8 +1903,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_rst_txfifo (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_rst_txfifo_we),
@@ -1912,11 +1912,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.rst_txfifo.q ),
+    .q      (reg2hw.control.rst_txfifo.q),
 
     // to register interface (read)
     .qs     (control_rst_txfifo_qs)
@@ -1929,8 +1929,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_rst_rxfifo (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_rst_rxfifo_we),
@@ -1938,11 +1938,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.rst_rxfifo.q ),
+    .q      (reg2hw.control.rst_rxfifo.q),
 
     // to register interface (read)
     .qs     (control_rst_rxfifo_qs)
@@ -1955,8 +1955,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_control_sram_clk_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_sram_clk_en_we),
@@ -1964,11 +1964,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.sram_clk_en.q ),
+    .q      (reg2hw.control.sram_clk_en.q),
 
     // to register interface (read)
     .qs     (control_sram_clk_en_qs)
@@ -1983,8 +1983,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_cpol (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_cpol_we),
@@ -1992,11 +1992,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.cpol.q ),
+    .q      (reg2hw.cfg.cpol.q),
 
     // to register interface (read)
     .qs     (cfg_cpol_qs)
@@ -2009,8 +2009,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_cpha (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_cpha_we),
@@ -2018,11 +2018,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.cpha.q ),
+    .q      (reg2hw.cfg.cpha.q),
 
     // to register interface (read)
     .qs     (cfg_cpha_qs)
@@ -2035,8 +2035,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_tx_order (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_tx_order_we),
@@ -2044,11 +2044,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.tx_order.q ),
+    .q      (reg2hw.cfg.tx_order.q),
 
     // to register interface (read)
     .qs     (cfg_tx_order_qs)
@@ -2061,8 +2061,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_rx_order (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_rx_order_we),
@@ -2070,11 +2070,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.rx_order.q ),
+    .q      (reg2hw.cfg.rx_order.q),
 
     // to register interface (read)
     .qs     (cfg_rx_order_qs)
@@ -2087,8 +2087,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h7f)
   ) u_cfg_timer_v (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_timer_v_we),
@@ -2096,11 +2096,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.timer_v.q ),
+    .q      (reg2hw.cfg.timer_v.q),
 
     // to register interface (read)
     .qs     (cfg_timer_v_qs)
@@ -2113,8 +2113,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_addr_4b_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_addr_4b_en_we),
@@ -2122,11 +2122,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.addr_4b_en.q ),
+    .q      (reg2hw.cfg.addr_4b_en.q),
 
     // to register interface (read)
     .qs     (cfg_addr_4b_en_qs)
@@ -2141,8 +2141,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h80)
   ) u_fifo_level_rxlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_level_rxlvl_we),
@@ -2150,11 +2150,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fifo_level.rxlvl.q ),
+    .q      (reg2hw.fifo_level.rxlvl.q),
 
     // to register interface (read)
     .qs     (fifo_level_rxlvl_qs)
@@ -2167,8 +2167,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_fifo_level_txlvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_level_txlvl_we),
@@ -2176,11 +2176,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fifo_level.txlvl.q ),
+    .q      (reg2hw.fifo_level.txlvl.q),
 
     // to register interface (read)
     .qs     (fifo_level_txlvl_qs)
@@ -2319,8 +2319,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_rxf_ptr_rptr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxf_ptr_rptr_we),
@@ -2328,11 +2328,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxf_ptr.rptr.q ),
+    .q      (reg2hw.rxf_ptr.rptr.q),
 
     // to register interface (read)
     .qs     (rxf_ptr_rptr_qs)
@@ -2345,15 +2345,16 @@ module spi_device_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (16'h0)
   ) u_rxf_ptr_wptr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.rxf_ptr.wptr.de),
-    .d      (hw2reg.rxf_ptr.wptr.d ),
+    .d      (hw2reg.rxf_ptr.wptr.d),
 
     // to internal hardware
     .qe     (),
@@ -2372,15 +2373,16 @@ module spi_device_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (16'h0)
   ) u_txf_ptr_rptr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.txf_ptr.rptr.de),
-    .d      (hw2reg.txf_ptr.rptr.d ),
+    .d      (hw2reg.txf_ptr.rptr.d),
 
     // to internal hardware
     .qe     (),
@@ -2397,8 +2399,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_txf_ptr_wptr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (txf_ptr_wptr_we),
@@ -2406,11 +2408,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.txf_ptr.wptr.q ),
+    .q      (reg2hw.txf_ptr.wptr.q),
 
     // to register interface (read)
     .qs     (txf_ptr_wptr_qs)
@@ -2425,8 +2427,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_rxf_addr_base (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxf_addr_base_we),
@@ -2434,11 +2436,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxf_addr.base.q ),
+    .q      (reg2hw.rxf_addr.base.q),
 
     // to register interface (read)
     .qs     (rxf_addr_base_qs)
@@ -2451,8 +2453,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h1fc)
   ) u_rxf_addr_limit (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxf_addr_limit_we),
@@ -2460,11 +2462,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxf_addr.limit.q ),
+    .q      (reg2hw.rxf_addr.limit.q),
 
     // to register interface (read)
     .qs     (rxf_addr_limit_qs)
@@ -2479,8 +2481,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h200)
   ) u_txf_addr_base (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (txf_addr_base_we),
@@ -2488,11 +2490,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.txf_addr.base.q ),
+    .q      (reg2hw.txf_addr.base.q),
 
     // to register interface (read)
     .qs     (txf_addr_base_qs)
@@ -2505,8 +2507,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h3fc)
   ) u_txf_addr_limit (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (txf_addr_limit_we),
@@ -2514,11 +2516,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.txf_addr.limit.q ),
+    .q      (reg2hw.txf_addr.limit.q),
 
     // to register interface (read)
     .qs     (txf_addr_limit_qs)
@@ -2535,8 +2537,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_0_we),
@@ -2544,11 +2546,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[0].q ),
+    .q      (reg2hw.cmd_filter[0].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_0_qs)
@@ -2561,8 +2563,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_1_we),
@@ -2570,11 +2572,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[1].q ),
+    .q      (reg2hw.cmd_filter[1].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_1_qs)
@@ -2587,8 +2589,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_2_we),
@@ -2596,11 +2598,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[2].q ),
+    .q      (reg2hw.cmd_filter[2].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_2_qs)
@@ -2613,8 +2615,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_3_we),
@@ -2622,11 +2624,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[3].q ),
+    .q      (reg2hw.cmd_filter[3].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_3_qs)
@@ -2639,8 +2641,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_4_we),
@@ -2648,11 +2650,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[4].q ),
+    .q      (reg2hw.cmd_filter[4].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_4_qs)
@@ -2665,8 +2667,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_5_we),
@@ -2674,11 +2676,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[5].q ),
+    .q      (reg2hw.cmd_filter[5].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_5_qs)
@@ -2691,8 +2693,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_6_we),
@@ -2700,11 +2702,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[6].q ),
+    .q      (reg2hw.cmd_filter[6].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_6_qs)
@@ -2717,8 +2719,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_7_we),
@@ -2726,11 +2728,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[7].q ),
+    .q      (reg2hw.cmd_filter[7].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_7_qs)
@@ -2743,8 +2745,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_8_we),
@@ -2752,11 +2754,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[8].q ),
+    .q      (reg2hw.cmd_filter[8].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_8_qs)
@@ -2769,8 +2771,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_9_we),
@@ -2778,11 +2780,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[9].q ),
+    .q      (reg2hw.cmd_filter[9].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_9_qs)
@@ -2795,8 +2797,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_10_we),
@@ -2804,11 +2806,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[10].q ),
+    .q      (reg2hw.cmd_filter[10].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_10_qs)
@@ -2821,8 +2823,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_11_we),
@@ -2830,11 +2832,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[11].q ),
+    .q      (reg2hw.cmd_filter[11].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_11_qs)
@@ -2847,8 +2849,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_12_we),
@@ -2856,11 +2858,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[12].q ),
+    .q      (reg2hw.cmd_filter[12].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_12_qs)
@@ -2873,8 +2875,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_13_we),
@@ -2882,11 +2884,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[13].q ),
+    .q      (reg2hw.cmd_filter[13].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_13_qs)
@@ -2899,8 +2901,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_14_we),
@@ -2908,11 +2910,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[14].q ),
+    .q      (reg2hw.cmd_filter[14].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_14_qs)
@@ -2925,8 +2927,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_15_we),
@@ -2934,11 +2936,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[15].q ),
+    .q      (reg2hw.cmd_filter[15].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_15_qs)
@@ -2951,8 +2953,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_16_we),
@@ -2960,11 +2962,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[16].q ),
+    .q      (reg2hw.cmd_filter[16].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_16_qs)
@@ -2977,8 +2979,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_17_we),
@@ -2986,11 +2988,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[17].q ),
+    .q      (reg2hw.cmd_filter[17].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_17_qs)
@@ -3003,8 +3005,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_18_we),
@@ -3012,11 +3014,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[18].q ),
+    .q      (reg2hw.cmd_filter[18].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_18_qs)
@@ -3029,8 +3031,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_19_we),
@@ -3038,11 +3040,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[19].q ),
+    .q      (reg2hw.cmd_filter[19].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_19_qs)
@@ -3055,8 +3057,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_20_we),
@@ -3064,11 +3066,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[20].q ),
+    .q      (reg2hw.cmd_filter[20].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_20_qs)
@@ -3081,8 +3083,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_21_we),
@@ -3090,11 +3092,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[21].q ),
+    .q      (reg2hw.cmd_filter[21].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_21_qs)
@@ -3107,8 +3109,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_22_we),
@@ -3116,11 +3118,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[22].q ),
+    .q      (reg2hw.cmd_filter[22].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_22_qs)
@@ -3133,8 +3135,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_23_we),
@@ -3142,11 +3144,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[23].q ),
+    .q      (reg2hw.cmd_filter[23].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_23_qs)
@@ -3159,8 +3161,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_24_we),
@@ -3168,11 +3170,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[24].q ),
+    .q      (reg2hw.cmd_filter[24].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_24_qs)
@@ -3185,8 +3187,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_25_we),
@@ -3194,11 +3196,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[25].q ),
+    .q      (reg2hw.cmd_filter[25].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_25_qs)
@@ -3211,8 +3213,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_26_we),
@@ -3220,11 +3222,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[26].q ),
+    .q      (reg2hw.cmd_filter[26].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_26_qs)
@@ -3237,8 +3239,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_27_we),
@@ -3246,11 +3248,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[27].q ),
+    .q      (reg2hw.cmd_filter[27].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_27_qs)
@@ -3263,8 +3265,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_28_we),
@@ -3272,11 +3274,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[28].q ),
+    .q      (reg2hw.cmd_filter[28].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_28_qs)
@@ -3289,8 +3291,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_29_we),
@@ -3298,11 +3300,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[29].q ),
+    .q      (reg2hw.cmd_filter[29].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_29_qs)
@@ -3315,8 +3317,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_30_we),
@@ -3324,11 +3326,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[30].q ),
+    .q      (reg2hw.cmd_filter[30].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_30_qs)
@@ -3341,8 +3343,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_0_filter_31_we),
@@ -3350,11 +3352,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[31].q ),
+    .q      (reg2hw.cmd_filter[31].q),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_31_qs)
@@ -3370,8 +3372,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_32_we),
@@ -3379,11 +3381,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[32].q ),
+    .q      (reg2hw.cmd_filter[32].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_32_qs)
@@ -3396,8 +3398,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_33_we),
@@ -3405,11 +3407,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[33].q ),
+    .q      (reg2hw.cmd_filter[33].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_33_qs)
@@ -3422,8 +3424,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_34_we),
@@ -3431,11 +3433,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[34].q ),
+    .q      (reg2hw.cmd_filter[34].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_34_qs)
@@ -3448,8 +3450,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_35_we),
@@ -3457,11 +3459,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[35].q ),
+    .q      (reg2hw.cmd_filter[35].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_35_qs)
@@ -3474,8 +3476,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_36_we),
@@ -3483,11 +3485,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[36].q ),
+    .q      (reg2hw.cmd_filter[36].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_36_qs)
@@ -3500,8 +3502,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_37_we),
@@ -3509,11 +3511,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[37].q ),
+    .q      (reg2hw.cmd_filter[37].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_37_qs)
@@ -3526,8 +3528,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_38_we),
@@ -3535,11 +3537,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[38].q ),
+    .q      (reg2hw.cmd_filter[38].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_38_qs)
@@ -3552,8 +3554,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_39 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_39_we),
@@ -3561,11 +3563,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[39].q ),
+    .q      (reg2hw.cmd_filter[39].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_39_qs)
@@ -3578,8 +3580,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_40 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_40_we),
@@ -3587,11 +3589,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[40].q ),
+    .q      (reg2hw.cmd_filter[40].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_40_qs)
@@ -3604,8 +3606,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_41 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_41_we),
@@ -3613,11 +3615,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[41].q ),
+    .q      (reg2hw.cmd_filter[41].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_41_qs)
@@ -3630,8 +3632,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_42 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_42_we),
@@ -3639,11 +3641,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[42].q ),
+    .q      (reg2hw.cmd_filter[42].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_42_qs)
@@ -3656,8 +3658,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_43 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_43_we),
@@ -3665,11 +3667,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[43].q ),
+    .q      (reg2hw.cmd_filter[43].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_43_qs)
@@ -3682,8 +3684,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_44 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_44_we),
@@ -3691,11 +3693,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[44].q ),
+    .q      (reg2hw.cmd_filter[44].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_44_qs)
@@ -3708,8 +3710,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_45 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_45_we),
@@ -3717,11 +3719,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[45].q ),
+    .q      (reg2hw.cmd_filter[45].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_45_qs)
@@ -3734,8 +3736,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_46 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_46_we),
@@ -3743,11 +3745,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[46].q ),
+    .q      (reg2hw.cmd_filter[46].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_46_qs)
@@ -3760,8 +3762,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_47 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_47_we),
@@ -3769,11 +3771,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[47].q ),
+    .q      (reg2hw.cmd_filter[47].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_47_qs)
@@ -3786,8 +3788,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_48 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_48_we),
@@ -3795,11 +3797,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[48].q ),
+    .q      (reg2hw.cmd_filter[48].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_48_qs)
@@ -3812,8 +3814,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_49 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_49_we),
@@ -3821,11 +3823,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[49].q ),
+    .q      (reg2hw.cmd_filter[49].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_49_qs)
@@ -3838,8 +3840,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_50 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_50_we),
@@ -3847,11 +3849,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[50].q ),
+    .q      (reg2hw.cmd_filter[50].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_50_qs)
@@ -3864,8 +3866,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_51 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_51_we),
@@ -3873,11 +3875,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[51].q ),
+    .q      (reg2hw.cmd_filter[51].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_51_qs)
@@ -3890,8 +3892,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_52 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_52_we),
@@ -3899,11 +3901,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[52].q ),
+    .q      (reg2hw.cmd_filter[52].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_52_qs)
@@ -3916,8 +3918,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_53 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_53_we),
@@ -3925,11 +3927,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[53].q ),
+    .q      (reg2hw.cmd_filter[53].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_53_qs)
@@ -3942,8 +3944,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_54 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_54_we),
@@ -3951,11 +3953,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[54].q ),
+    .q      (reg2hw.cmd_filter[54].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_54_qs)
@@ -3968,8 +3970,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_55 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_55_we),
@@ -3977,11 +3979,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[55].q ),
+    .q      (reg2hw.cmd_filter[55].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_55_qs)
@@ -3994,8 +3996,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_56 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_56_we),
@@ -4003,11 +4005,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[56].q ),
+    .q      (reg2hw.cmd_filter[56].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_56_qs)
@@ -4020,8 +4022,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_57 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_57_we),
@@ -4029,11 +4031,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[57].q ),
+    .q      (reg2hw.cmd_filter[57].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_57_qs)
@@ -4046,8 +4048,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_58 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_58_we),
@@ -4055,11 +4057,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[58].q ),
+    .q      (reg2hw.cmd_filter[58].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_58_qs)
@@ -4072,8 +4074,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_59 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_59_we),
@@ -4081,11 +4083,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[59].q ),
+    .q      (reg2hw.cmd_filter[59].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_59_qs)
@@ -4098,8 +4100,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_60 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_60_we),
@@ -4107,11 +4109,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[60].q ),
+    .q      (reg2hw.cmd_filter[60].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_60_qs)
@@ -4124,8 +4126,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_61 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_61_we),
@@ -4133,11 +4135,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[61].q ),
+    .q      (reg2hw.cmd_filter[61].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_61_qs)
@@ -4150,8 +4152,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_62 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_62_we),
@@ -4159,11 +4161,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[62].q ),
+    .q      (reg2hw.cmd_filter[62].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_62_qs)
@@ -4176,8 +4178,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_63 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_1_filter_63_we),
@@ -4185,11 +4187,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[63].q ),
+    .q      (reg2hw.cmd_filter[63].q),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_63_qs)
@@ -4205,8 +4207,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_64 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_64_we),
@@ -4214,11 +4216,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[64].q ),
+    .q      (reg2hw.cmd_filter[64].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_64_qs)
@@ -4231,8 +4233,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_65 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_65_we),
@@ -4240,11 +4242,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[65].q ),
+    .q      (reg2hw.cmd_filter[65].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_65_qs)
@@ -4257,8 +4259,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_66 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_66_we),
@@ -4266,11 +4268,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[66].q ),
+    .q      (reg2hw.cmd_filter[66].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_66_qs)
@@ -4283,8 +4285,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_67 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_67_we),
@@ -4292,11 +4294,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[67].q ),
+    .q      (reg2hw.cmd_filter[67].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_67_qs)
@@ -4309,8 +4311,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_68 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_68_we),
@@ -4318,11 +4320,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[68].q ),
+    .q      (reg2hw.cmd_filter[68].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_68_qs)
@@ -4335,8 +4337,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_69 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_69_we),
@@ -4344,11 +4346,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[69].q ),
+    .q      (reg2hw.cmd_filter[69].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_69_qs)
@@ -4361,8 +4363,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_70 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_70_we),
@@ -4370,11 +4372,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[70].q ),
+    .q      (reg2hw.cmd_filter[70].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_70_qs)
@@ -4387,8 +4389,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_71 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_71_we),
@@ -4396,11 +4398,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[71].q ),
+    .q      (reg2hw.cmd_filter[71].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_71_qs)
@@ -4413,8 +4415,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_72 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_72_we),
@@ -4422,11 +4424,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[72].q ),
+    .q      (reg2hw.cmd_filter[72].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_72_qs)
@@ -4439,8 +4441,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_73 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_73_we),
@@ -4448,11 +4450,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[73].q ),
+    .q      (reg2hw.cmd_filter[73].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_73_qs)
@@ -4465,8 +4467,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_74 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_74_we),
@@ -4474,11 +4476,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[74].q ),
+    .q      (reg2hw.cmd_filter[74].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_74_qs)
@@ -4491,8 +4493,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_75 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_75_we),
@@ -4500,11 +4502,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[75].q ),
+    .q      (reg2hw.cmd_filter[75].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_75_qs)
@@ -4517,8 +4519,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_76 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_76_we),
@@ -4526,11 +4528,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[76].q ),
+    .q      (reg2hw.cmd_filter[76].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_76_qs)
@@ -4543,8 +4545,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_77 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_77_we),
@@ -4552,11 +4554,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[77].q ),
+    .q      (reg2hw.cmd_filter[77].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_77_qs)
@@ -4569,8 +4571,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_78 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_78_we),
@@ -4578,11 +4580,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[78].q ),
+    .q      (reg2hw.cmd_filter[78].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_78_qs)
@@ -4595,8 +4597,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_79 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_79_we),
@@ -4604,11 +4606,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[79].q ),
+    .q      (reg2hw.cmd_filter[79].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_79_qs)
@@ -4621,8 +4623,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_80 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_80_we),
@@ -4630,11 +4632,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[80].q ),
+    .q      (reg2hw.cmd_filter[80].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_80_qs)
@@ -4647,8 +4649,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_81 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_81_we),
@@ -4656,11 +4658,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[81].q ),
+    .q      (reg2hw.cmd_filter[81].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_81_qs)
@@ -4673,8 +4675,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_82 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_82_we),
@@ -4682,11 +4684,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[82].q ),
+    .q      (reg2hw.cmd_filter[82].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_82_qs)
@@ -4699,8 +4701,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_83 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_83_we),
@@ -4708,11 +4710,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[83].q ),
+    .q      (reg2hw.cmd_filter[83].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_83_qs)
@@ -4725,8 +4727,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_84 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_84_we),
@@ -4734,11 +4736,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[84].q ),
+    .q      (reg2hw.cmd_filter[84].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_84_qs)
@@ -4751,8 +4753,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_85 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_85_we),
@@ -4760,11 +4762,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[85].q ),
+    .q      (reg2hw.cmd_filter[85].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_85_qs)
@@ -4777,8 +4779,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_86 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_86_we),
@@ -4786,11 +4788,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[86].q ),
+    .q      (reg2hw.cmd_filter[86].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_86_qs)
@@ -4803,8 +4805,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_87 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_87_we),
@@ -4812,11 +4814,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[87].q ),
+    .q      (reg2hw.cmd_filter[87].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_87_qs)
@@ -4829,8 +4831,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_88 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_88_we),
@@ -4838,11 +4840,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[88].q ),
+    .q      (reg2hw.cmd_filter[88].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_88_qs)
@@ -4855,8 +4857,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_89 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_89_we),
@@ -4864,11 +4866,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[89].q ),
+    .q      (reg2hw.cmd_filter[89].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_89_qs)
@@ -4881,8 +4883,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_90 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_90_we),
@@ -4890,11 +4892,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[90].q ),
+    .q      (reg2hw.cmd_filter[90].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_90_qs)
@@ -4907,8 +4909,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_91 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_91_we),
@@ -4916,11 +4918,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[91].q ),
+    .q      (reg2hw.cmd_filter[91].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_91_qs)
@@ -4933,8 +4935,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_92 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_92_we),
@@ -4942,11 +4944,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[92].q ),
+    .q      (reg2hw.cmd_filter[92].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_92_qs)
@@ -4959,8 +4961,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_93 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_93_we),
@@ -4968,11 +4970,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[93].q ),
+    .q      (reg2hw.cmd_filter[93].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_93_qs)
@@ -4985,8 +4987,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_94 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_94_we),
@@ -4994,11 +4996,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[94].q ),
+    .q      (reg2hw.cmd_filter[94].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_94_qs)
@@ -5011,8 +5013,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_95 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_2_filter_95_we),
@@ -5020,11 +5022,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[95].q ),
+    .q      (reg2hw.cmd_filter[95].q),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_95_qs)
@@ -5040,8 +5042,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_96 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_96_we),
@@ -5049,11 +5051,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[96].q ),
+    .q      (reg2hw.cmd_filter[96].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_96_qs)
@@ -5066,8 +5068,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_97 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_97_we),
@@ -5075,11 +5077,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[97].q ),
+    .q      (reg2hw.cmd_filter[97].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_97_qs)
@@ -5092,8 +5094,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_98 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_98_we),
@@ -5101,11 +5103,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[98].q ),
+    .q      (reg2hw.cmd_filter[98].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_98_qs)
@@ -5118,8 +5120,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_99 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_99_we),
@@ -5127,11 +5129,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[99].q ),
+    .q      (reg2hw.cmd_filter[99].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_99_qs)
@@ -5144,8 +5146,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_100 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_100_we),
@@ -5153,11 +5155,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[100].q ),
+    .q      (reg2hw.cmd_filter[100].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_100_qs)
@@ -5170,8 +5172,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_101 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_101_we),
@@ -5179,11 +5181,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[101].q ),
+    .q      (reg2hw.cmd_filter[101].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_101_qs)
@@ -5196,8 +5198,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_102 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_102_we),
@@ -5205,11 +5207,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[102].q ),
+    .q      (reg2hw.cmd_filter[102].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_102_qs)
@@ -5222,8 +5224,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_103 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_103_we),
@@ -5231,11 +5233,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[103].q ),
+    .q      (reg2hw.cmd_filter[103].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_103_qs)
@@ -5248,8 +5250,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_104 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_104_we),
@@ -5257,11 +5259,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[104].q ),
+    .q      (reg2hw.cmd_filter[104].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_104_qs)
@@ -5274,8 +5276,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_105 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_105_we),
@@ -5283,11 +5285,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[105].q ),
+    .q      (reg2hw.cmd_filter[105].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_105_qs)
@@ -5300,8 +5302,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_106 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_106_we),
@@ -5309,11 +5311,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[106].q ),
+    .q      (reg2hw.cmd_filter[106].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_106_qs)
@@ -5326,8 +5328,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_107 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_107_we),
@@ -5335,11 +5337,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[107].q ),
+    .q      (reg2hw.cmd_filter[107].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_107_qs)
@@ -5352,8 +5354,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_108 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_108_we),
@@ -5361,11 +5363,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[108].q ),
+    .q      (reg2hw.cmd_filter[108].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_108_qs)
@@ -5378,8 +5380,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_109 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_109_we),
@@ -5387,11 +5389,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[109].q ),
+    .q      (reg2hw.cmd_filter[109].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_109_qs)
@@ -5404,8 +5406,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_110 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_110_we),
@@ -5413,11 +5415,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[110].q ),
+    .q      (reg2hw.cmd_filter[110].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_110_qs)
@@ -5430,8 +5432,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_111 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_111_we),
@@ -5439,11 +5441,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[111].q ),
+    .q      (reg2hw.cmd_filter[111].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_111_qs)
@@ -5456,8 +5458,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_112 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_112_we),
@@ -5465,11 +5467,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[112].q ),
+    .q      (reg2hw.cmd_filter[112].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_112_qs)
@@ -5482,8 +5484,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_113 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_113_we),
@@ -5491,11 +5493,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[113].q ),
+    .q      (reg2hw.cmd_filter[113].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_113_qs)
@@ -5508,8 +5510,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_114 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_114_we),
@@ -5517,11 +5519,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[114].q ),
+    .q      (reg2hw.cmd_filter[114].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_114_qs)
@@ -5534,8 +5536,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_115 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_115_we),
@@ -5543,11 +5545,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[115].q ),
+    .q      (reg2hw.cmd_filter[115].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_115_qs)
@@ -5560,8 +5562,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_116 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_116_we),
@@ -5569,11 +5571,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[116].q ),
+    .q      (reg2hw.cmd_filter[116].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_116_qs)
@@ -5586,8 +5588,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_117 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_117_we),
@@ -5595,11 +5597,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[117].q ),
+    .q      (reg2hw.cmd_filter[117].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_117_qs)
@@ -5612,8 +5614,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_118 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_118_we),
@@ -5621,11 +5623,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[118].q ),
+    .q      (reg2hw.cmd_filter[118].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_118_qs)
@@ -5638,8 +5640,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_119 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_119_we),
@@ -5647,11 +5649,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[119].q ),
+    .q      (reg2hw.cmd_filter[119].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_119_qs)
@@ -5664,8 +5666,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_120 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_120_we),
@@ -5673,11 +5675,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[120].q ),
+    .q      (reg2hw.cmd_filter[120].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_120_qs)
@@ -5690,8 +5692,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_121 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_121_we),
@@ -5699,11 +5701,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[121].q ),
+    .q      (reg2hw.cmd_filter[121].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_121_qs)
@@ -5716,8 +5718,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_122 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_122_we),
@@ -5725,11 +5727,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[122].q ),
+    .q      (reg2hw.cmd_filter[122].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_122_qs)
@@ -5742,8 +5744,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_123 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_123_we),
@@ -5751,11 +5753,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[123].q ),
+    .q      (reg2hw.cmd_filter[123].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_123_qs)
@@ -5768,8 +5770,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_124 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_124_we),
@@ -5777,11 +5779,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[124].q ),
+    .q      (reg2hw.cmd_filter[124].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_124_qs)
@@ -5794,8 +5796,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_125 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_125_we),
@@ -5803,11 +5805,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[125].q ),
+    .q      (reg2hw.cmd_filter[125].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_125_qs)
@@ -5820,8 +5822,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_126 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_126_we),
@@ -5829,11 +5831,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[126].q ),
+    .q      (reg2hw.cmd_filter[126].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_126_qs)
@@ -5846,8 +5848,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_127 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_3_filter_127_we),
@@ -5855,11 +5857,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[127].q ),
+    .q      (reg2hw.cmd_filter[127].q),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_127_qs)
@@ -5875,8 +5877,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_128 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_128_we),
@@ -5884,11 +5886,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[128].q ),
+    .q      (reg2hw.cmd_filter[128].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_128_qs)
@@ -5901,8 +5903,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_129 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_129_we),
@@ -5910,11 +5912,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[129].q ),
+    .q      (reg2hw.cmd_filter[129].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_129_qs)
@@ -5927,8 +5929,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_130 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_130_we),
@@ -5936,11 +5938,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[130].q ),
+    .q      (reg2hw.cmd_filter[130].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_130_qs)
@@ -5953,8 +5955,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_131 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_131_we),
@@ -5962,11 +5964,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[131].q ),
+    .q      (reg2hw.cmd_filter[131].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_131_qs)
@@ -5979,8 +5981,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_132 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_132_we),
@@ -5988,11 +5990,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[132].q ),
+    .q      (reg2hw.cmd_filter[132].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_132_qs)
@@ -6005,8 +6007,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_133 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_133_we),
@@ -6014,11 +6016,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[133].q ),
+    .q      (reg2hw.cmd_filter[133].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_133_qs)
@@ -6031,8 +6033,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_134 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_134_we),
@@ -6040,11 +6042,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[134].q ),
+    .q      (reg2hw.cmd_filter[134].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_134_qs)
@@ -6057,8 +6059,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_135 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_135_we),
@@ -6066,11 +6068,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[135].q ),
+    .q      (reg2hw.cmd_filter[135].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_135_qs)
@@ -6083,8 +6085,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_136 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_136_we),
@@ -6092,11 +6094,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[136].q ),
+    .q      (reg2hw.cmd_filter[136].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_136_qs)
@@ -6109,8 +6111,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_137 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_137_we),
@@ -6118,11 +6120,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[137].q ),
+    .q      (reg2hw.cmd_filter[137].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_137_qs)
@@ -6135,8 +6137,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_138 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_138_we),
@@ -6144,11 +6146,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[138].q ),
+    .q      (reg2hw.cmd_filter[138].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_138_qs)
@@ -6161,8 +6163,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_139 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_139_we),
@@ -6170,11 +6172,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[139].q ),
+    .q      (reg2hw.cmd_filter[139].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_139_qs)
@@ -6187,8 +6189,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_140 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_140_we),
@@ -6196,11 +6198,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[140].q ),
+    .q      (reg2hw.cmd_filter[140].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_140_qs)
@@ -6213,8 +6215,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_141 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_141_we),
@@ -6222,11 +6224,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[141].q ),
+    .q      (reg2hw.cmd_filter[141].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_141_qs)
@@ -6239,8 +6241,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_142 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_142_we),
@@ -6248,11 +6250,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[142].q ),
+    .q      (reg2hw.cmd_filter[142].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_142_qs)
@@ -6265,8 +6267,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_143 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_143_we),
@@ -6274,11 +6276,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[143].q ),
+    .q      (reg2hw.cmd_filter[143].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_143_qs)
@@ -6291,8 +6293,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_144 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_144_we),
@@ -6300,11 +6302,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[144].q ),
+    .q      (reg2hw.cmd_filter[144].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_144_qs)
@@ -6317,8 +6319,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_145 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_145_we),
@@ -6326,11 +6328,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[145].q ),
+    .q      (reg2hw.cmd_filter[145].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_145_qs)
@@ -6343,8 +6345,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_146 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_146_we),
@@ -6352,11 +6354,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[146].q ),
+    .q      (reg2hw.cmd_filter[146].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_146_qs)
@@ -6369,8 +6371,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_147 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_147_we),
@@ -6378,11 +6380,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[147].q ),
+    .q      (reg2hw.cmd_filter[147].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_147_qs)
@@ -6395,8 +6397,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_148 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_148_we),
@@ -6404,11 +6406,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[148].q ),
+    .q      (reg2hw.cmd_filter[148].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_148_qs)
@@ -6421,8 +6423,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_149 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_149_we),
@@ -6430,11 +6432,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[149].q ),
+    .q      (reg2hw.cmd_filter[149].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_149_qs)
@@ -6447,8 +6449,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_150 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_150_we),
@@ -6456,11 +6458,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[150].q ),
+    .q      (reg2hw.cmd_filter[150].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_150_qs)
@@ -6473,8 +6475,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_151 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_151_we),
@@ -6482,11 +6484,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[151].q ),
+    .q      (reg2hw.cmd_filter[151].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_151_qs)
@@ -6499,8 +6501,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_152 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_152_we),
@@ -6508,11 +6510,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[152].q ),
+    .q      (reg2hw.cmd_filter[152].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_152_qs)
@@ -6525,8 +6527,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_153 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_153_we),
@@ -6534,11 +6536,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[153].q ),
+    .q      (reg2hw.cmd_filter[153].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_153_qs)
@@ -6551,8 +6553,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_154 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_154_we),
@@ -6560,11 +6562,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[154].q ),
+    .q      (reg2hw.cmd_filter[154].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_154_qs)
@@ -6577,8 +6579,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_155 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_155_we),
@@ -6586,11 +6588,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[155].q ),
+    .q      (reg2hw.cmd_filter[155].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_155_qs)
@@ -6603,8 +6605,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_156 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_156_we),
@@ -6612,11 +6614,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[156].q ),
+    .q      (reg2hw.cmd_filter[156].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_156_qs)
@@ -6629,8 +6631,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_157 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_157_we),
@@ -6638,11 +6640,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[157].q ),
+    .q      (reg2hw.cmd_filter[157].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_157_qs)
@@ -6655,8 +6657,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_158 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_158_we),
@@ -6664,11 +6666,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[158].q ),
+    .q      (reg2hw.cmd_filter[158].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_158_qs)
@@ -6681,8 +6683,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_159 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_4_filter_159_we),
@@ -6690,11 +6692,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[159].q ),
+    .q      (reg2hw.cmd_filter[159].q),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_159_qs)
@@ -6710,8 +6712,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_160 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_160_we),
@@ -6719,11 +6721,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[160].q ),
+    .q      (reg2hw.cmd_filter[160].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_160_qs)
@@ -6736,8 +6738,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_161 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_161_we),
@@ -6745,11 +6747,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[161].q ),
+    .q      (reg2hw.cmd_filter[161].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_161_qs)
@@ -6762,8 +6764,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_162 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_162_we),
@@ -6771,11 +6773,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[162].q ),
+    .q      (reg2hw.cmd_filter[162].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_162_qs)
@@ -6788,8 +6790,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_163 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_163_we),
@@ -6797,11 +6799,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[163].q ),
+    .q      (reg2hw.cmd_filter[163].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_163_qs)
@@ -6814,8 +6816,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_164 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_164_we),
@@ -6823,11 +6825,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[164].q ),
+    .q      (reg2hw.cmd_filter[164].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_164_qs)
@@ -6840,8 +6842,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_165 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_165_we),
@@ -6849,11 +6851,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[165].q ),
+    .q      (reg2hw.cmd_filter[165].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_165_qs)
@@ -6866,8 +6868,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_166 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_166_we),
@@ -6875,11 +6877,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[166].q ),
+    .q      (reg2hw.cmd_filter[166].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_166_qs)
@@ -6892,8 +6894,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_167 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_167_we),
@@ -6901,11 +6903,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[167].q ),
+    .q      (reg2hw.cmd_filter[167].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_167_qs)
@@ -6918,8 +6920,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_168 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_168_we),
@@ -6927,11 +6929,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[168].q ),
+    .q      (reg2hw.cmd_filter[168].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_168_qs)
@@ -6944,8 +6946,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_169 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_169_we),
@@ -6953,11 +6955,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[169].q ),
+    .q      (reg2hw.cmd_filter[169].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_169_qs)
@@ -6970,8 +6972,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_170 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_170_we),
@@ -6979,11 +6981,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[170].q ),
+    .q      (reg2hw.cmd_filter[170].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_170_qs)
@@ -6996,8 +6998,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_171 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_171_we),
@@ -7005,11 +7007,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[171].q ),
+    .q      (reg2hw.cmd_filter[171].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_171_qs)
@@ -7022,8 +7024,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_172 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_172_we),
@@ -7031,11 +7033,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[172].q ),
+    .q      (reg2hw.cmd_filter[172].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_172_qs)
@@ -7048,8 +7050,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_173 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_173_we),
@@ -7057,11 +7059,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[173].q ),
+    .q      (reg2hw.cmd_filter[173].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_173_qs)
@@ -7074,8 +7076,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_174 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_174_we),
@@ -7083,11 +7085,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[174].q ),
+    .q      (reg2hw.cmd_filter[174].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_174_qs)
@@ -7100,8 +7102,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_175 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_175_we),
@@ -7109,11 +7111,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[175].q ),
+    .q      (reg2hw.cmd_filter[175].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_175_qs)
@@ -7126,8 +7128,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_176 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_176_we),
@@ -7135,11 +7137,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[176].q ),
+    .q      (reg2hw.cmd_filter[176].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_176_qs)
@@ -7152,8 +7154,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_177 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_177_we),
@@ -7161,11 +7163,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[177].q ),
+    .q      (reg2hw.cmd_filter[177].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_177_qs)
@@ -7178,8 +7180,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_178 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_178_we),
@@ -7187,11 +7189,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[178].q ),
+    .q      (reg2hw.cmd_filter[178].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_178_qs)
@@ -7204,8 +7206,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_179 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_179_we),
@@ -7213,11 +7215,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[179].q ),
+    .q      (reg2hw.cmd_filter[179].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_179_qs)
@@ -7230,8 +7232,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_180 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_180_we),
@@ -7239,11 +7241,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[180].q ),
+    .q      (reg2hw.cmd_filter[180].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_180_qs)
@@ -7256,8 +7258,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_181 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_181_we),
@@ -7265,11 +7267,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[181].q ),
+    .q      (reg2hw.cmd_filter[181].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_181_qs)
@@ -7282,8 +7284,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_182 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_182_we),
@@ -7291,11 +7293,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[182].q ),
+    .q      (reg2hw.cmd_filter[182].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_182_qs)
@@ -7308,8 +7310,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_183 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_183_we),
@@ -7317,11 +7319,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[183].q ),
+    .q      (reg2hw.cmd_filter[183].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_183_qs)
@@ -7334,8 +7336,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_184 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_184_we),
@@ -7343,11 +7345,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[184].q ),
+    .q      (reg2hw.cmd_filter[184].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_184_qs)
@@ -7360,8 +7362,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_185 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_185_we),
@@ -7369,11 +7371,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[185].q ),
+    .q      (reg2hw.cmd_filter[185].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_185_qs)
@@ -7386,8 +7388,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_186 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_186_we),
@@ -7395,11 +7397,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[186].q ),
+    .q      (reg2hw.cmd_filter[186].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_186_qs)
@@ -7412,8 +7414,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_187 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_187_we),
@@ -7421,11 +7423,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[187].q ),
+    .q      (reg2hw.cmd_filter[187].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_187_qs)
@@ -7438,8 +7440,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_188 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_188_we),
@@ -7447,11 +7449,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[188].q ),
+    .q      (reg2hw.cmd_filter[188].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_188_qs)
@@ -7464,8 +7466,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_189 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_189_we),
@@ -7473,11 +7475,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[189].q ),
+    .q      (reg2hw.cmd_filter[189].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_189_qs)
@@ -7490,8 +7492,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_190 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_190_we),
@@ -7499,11 +7501,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[190].q ),
+    .q      (reg2hw.cmd_filter[190].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_190_qs)
@@ -7516,8 +7518,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_191 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_5_filter_191_we),
@@ -7525,11 +7527,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[191].q ),
+    .q      (reg2hw.cmd_filter[191].q),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_191_qs)
@@ -7545,8 +7547,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_192 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_192_we),
@@ -7554,11 +7556,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[192].q ),
+    .q      (reg2hw.cmd_filter[192].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_192_qs)
@@ -7571,8 +7573,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_193 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_193_we),
@@ -7580,11 +7582,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[193].q ),
+    .q      (reg2hw.cmd_filter[193].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_193_qs)
@@ -7597,8 +7599,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_194 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_194_we),
@@ -7606,11 +7608,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[194].q ),
+    .q      (reg2hw.cmd_filter[194].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_194_qs)
@@ -7623,8 +7625,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_195 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_195_we),
@@ -7632,11 +7634,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[195].q ),
+    .q      (reg2hw.cmd_filter[195].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_195_qs)
@@ -7649,8 +7651,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_196 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_196_we),
@@ -7658,11 +7660,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[196].q ),
+    .q      (reg2hw.cmd_filter[196].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_196_qs)
@@ -7675,8 +7677,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_197 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_197_we),
@@ -7684,11 +7686,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[197].q ),
+    .q      (reg2hw.cmd_filter[197].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_197_qs)
@@ -7701,8 +7703,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_198 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_198_we),
@@ -7710,11 +7712,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[198].q ),
+    .q      (reg2hw.cmd_filter[198].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_198_qs)
@@ -7727,8 +7729,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_199 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_199_we),
@@ -7736,11 +7738,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[199].q ),
+    .q      (reg2hw.cmd_filter[199].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_199_qs)
@@ -7753,8 +7755,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_200 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_200_we),
@@ -7762,11 +7764,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[200].q ),
+    .q      (reg2hw.cmd_filter[200].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_200_qs)
@@ -7779,8 +7781,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_201 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_201_we),
@@ -7788,11 +7790,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[201].q ),
+    .q      (reg2hw.cmd_filter[201].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_201_qs)
@@ -7805,8 +7807,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_202 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_202_we),
@@ -7814,11 +7816,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[202].q ),
+    .q      (reg2hw.cmd_filter[202].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_202_qs)
@@ -7831,8 +7833,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_203 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_203_we),
@@ -7840,11 +7842,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[203].q ),
+    .q      (reg2hw.cmd_filter[203].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_203_qs)
@@ -7857,8 +7859,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_204 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_204_we),
@@ -7866,11 +7868,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[204].q ),
+    .q      (reg2hw.cmd_filter[204].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_204_qs)
@@ -7883,8 +7885,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_205 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_205_we),
@@ -7892,11 +7894,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[205].q ),
+    .q      (reg2hw.cmd_filter[205].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_205_qs)
@@ -7909,8 +7911,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_206 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_206_we),
@@ -7918,11 +7920,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[206].q ),
+    .q      (reg2hw.cmd_filter[206].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_206_qs)
@@ -7935,8 +7937,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_207 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_207_we),
@@ -7944,11 +7946,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[207].q ),
+    .q      (reg2hw.cmd_filter[207].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_207_qs)
@@ -7961,8 +7963,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_208 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_208_we),
@@ -7970,11 +7972,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[208].q ),
+    .q      (reg2hw.cmd_filter[208].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_208_qs)
@@ -7987,8 +7989,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_209 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_209_we),
@@ -7996,11 +7998,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[209].q ),
+    .q      (reg2hw.cmd_filter[209].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_209_qs)
@@ -8013,8 +8015,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_210 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_210_we),
@@ -8022,11 +8024,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[210].q ),
+    .q      (reg2hw.cmd_filter[210].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_210_qs)
@@ -8039,8 +8041,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_211 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_211_we),
@@ -8048,11 +8050,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[211].q ),
+    .q      (reg2hw.cmd_filter[211].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_211_qs)
@@ -8065,8 +8067,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_212 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_212_we),
@@ -8074,11 +8076,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[212].q ),
+    .q      (reg2hw.cmd_filter[212].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_212_qs)
@@ -8091,8 +8093,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_213 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_213_we),
@@ -8100,11 +8102,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[213].q ),
+    .q      (reg2hw.cmd_filter[213].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_213_qs)
@@ -8117,8 +8119,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_214 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_214_we),
@@ -8126,11 +8128,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[214].q ),
+    .q      (reg2hw.cmd_filter[214].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_214_qs)
@@ -8143,8 +8145,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_215 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_215_we),
@@ -8152,11 +8154,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[215].q ),
+    .q      (reg2hw.cmd_filter[215].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_215_qs)
@@ -8169,8 +8171,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_216 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_216_we),
@@ -8178,11 +8180,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[216].q ),
+    .q      (reg2hw.cmd_filter[216].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_216_qs)
@@ -8195,8 +8197,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_217 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_217_we),
@@ -8204,11 +8206,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[217].q ),
+    .q      (reg2hw.cmd_filter[217].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_217_qs)
@@ -8221,8 +8223,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_218 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_218_we),
@@ -8230,11 +8232,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[218].q ),
+    .q      (reg2hw.cmd_filter[218].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_218_qs)
@@ -8247,8 +8249,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_219 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_219_we),
@@ -8256,11 +8258,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[219].q ),
+    .q      (reg2hw.cmd_filter[219].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_219_qs)
@@ -8273,8 +8275,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_220 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_220_we),
@@ -8282,11 +8284,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[220].q ),
+    .q      (reg2hw.cmd_filter[220].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_220_qs)
@@ -8299,8 +8301,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_221 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_221_we),
@@ -8308,11 +8310,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[221].q ),
+    .q      (reg2hw.cmd_filter[221].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_221_qs)
@@ -8325,8 +8327,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_222 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_222_we),
@@ -8334,11 +8336,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[222].q ),
+    .q      (reg2hw.cmd_filter[222].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_222_qs)
@@ -8351,8 +8353,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_223 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_6_filter_223_we),
@@ -8360,11 +8362,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[223].q ),
+    .q      (reg2hw.cmd_filter[223].q),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_223_qs)
@@ -8380,8 +8382,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_224 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_224_we),
@@ -8389,11 +8391,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[224].q ),
+    .q      (reg2hw.cmd_filter[224].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_224_qs)
@@ -8406,8 +8408,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_225 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_225_we),
@@ -8415,11 +8417,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[225].q ),
+    .q      (reg2hw.cmd_filter[225].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_225_qs)
@@ -8432,8 +8434,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_226 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_226_we),
@@ -8441,11 +8443,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[226].q ),
+    .q      (reg2hw.cmd_filter[226].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_226_qs)
@@ -8458,8 +8460,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_227 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_227_we),
@@ -8467,11 +8469,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[227].q ),
+    .q      (reg2hw.cmd_filter[227].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_227_qs)
@@ -8484,8 +8486,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_228 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_228_we),
@@ -8493,11 +8495,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[228].q ),
+    .q      (reg2hw.cmd_filter[228].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_228_qs)
@@ -8510,8 +8512,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_229 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_229_we),
@@ -8519,11 +8521,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[229].q ),
+    .q      (reg2hw.cmd_filter[229].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_229_qs)
@@ -8536,8 +8538,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_230 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_230_we),
@@ -8545,11 +8547,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[230].q ),
+    .q      (reg2hw.cmd_filter[230].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_230_qs)
@@ -8562,8 +8564,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_231 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_231_we),
@@ -8571,11 +8573,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[231].q ),
+    .q      (reg2hw.cmd_filter[231].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_231_qs)
@@ -8588,8 +8590,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_232 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_232_we),
@@ -8597,11 +8599,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[232].q ),
+    .q      (reg2hw.cmd_filter[232].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_232_qs)
@@ -8614,8 +8616,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_233 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_233_we),
@@ -8623,11 +8625,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[233].q ),
+    .q      (reg2hw.cmd_filter[233].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_233_qs)
@@ -8640,8 +8642,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_234 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_234_we),
@@ -8649,11 +8651,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[234].q ),
+    .q      (reg2hw.cmd_filter[234].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_234_qs)
@@ -8666,8 +8668,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_235 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_235_we),
@@ -8675,11 +8677,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[235].q ),
+    .q      (reg2hw.cmd_filter[235].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_235_qs)
@@ -8692,8 +8694,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_236 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_236_we),
@@ -8701,11 +8703,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[236].q ),
+    .q      (reg2hw.cmd_filter[236].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_236_qs)
@@ -8718,8 +8720,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_237 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_237_we),
@@ -8727,11 +8729,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[237].q ),
+    .q      (reg2hw.cmd_filter[237].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_237_qs)
@@ -8744,8 +8746,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_238 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_238_we),
@@ -8753,11 +8755,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[238].q ),
+    .q      (reg2hw.cmd_filter[238].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_238_qs)
@@ -8770,8 +8772,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_239 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_239_we),
@@ -8779,11 +8781,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[239].q ),
+    .q      (reg2hw.cmd_filter[239].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_239_qs)
@@ -8796,8 +8798,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_240 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_240_we),
@@ -8805,11 +8807,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[240].q ),
+    .q      (reg2hw.cmd_filter[240].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_240_qs)
@@ -8822,8 +8824,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_241 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_241_we),
@@ -8831,11 +8833,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[241].q ),
+    .q      (reg2hw.cmd_filter[241].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_241_qs)
@@ -8848,8 +8850,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_242 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_242_we),
@@ -8857,11 +8859,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[242].q ),
+    .q      (reg2hw.cmd_filter[242].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_242_qs)
@@ -8874,8 +8876,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_243 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_243_we),
@@ -8883,11 +8885,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[243].q ),
+    .q      (reg2hw.cmd_filter[243].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_243_qs)
@@ -8900,8 +8902,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_244 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_244_we),
@@ -8909,11 +8911,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[244].q ),
+    .q      (reg2hw.cmd_filter[244].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_244_qs)
@@ -8926,8 +8928,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_245 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_245_we),
@@ -8935,11 +8937,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[245].q ),
+    .q      (reg2hw.cmd_filter[245].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_245_qs)
@@ -8952,8 +8954,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_246 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_246_we),
@@ -8961,11 +8963,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[246].q ),
+    .q      (reg2hw.cmd_filter[246].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_246_qs)
@@ -8978,8 +8980,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_247 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_247_we),
@@ -8987,11 +8989,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[247].q ),
+    .q      (reg2hw.cmd_filter[247].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_247_qs)
@@ -9004,8 +9006,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_248 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_248_we),
@@ -9013,11 +9015,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[248].q ),
+    .q      (reg2hw.cmd_filter[248].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_248_qs)
@@ -9030,8 +9032,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_249 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_249_we),
@@ -9039,11 +9041,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[249].q ),
+    .q      (reg2hw.cmd_filter[249].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_249_qs)
@@ -9056,8 +9058,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_250 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_250_we),
@@ -9065,11 +9067,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[250].q ),
+    .q      (reg2hw.cmd_filter[250].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_250_qs)
@@ -9082,8 +9084,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_251 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_251_we),
@@ -9091,11 +9093,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[251].q ),
+    .q      (reg2hw.cmd_filter[251].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_251_qs)
@@ -9108,8 +9110,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_252 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_252_we),
@@ -9117,11 +9119,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[252].q ),
+    .q      (reg2hw.cmd_filter[252].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_252_qs)
@@ -9134,8 +9136,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_253 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_253_we),
@@ -9143,11 +9145,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[253].q ),
+    .q      (reg2hw.cmd_filter[253].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_253_qs)
@@ -9160,8 +9162,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_254 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_254_we),
@@ -9169,11 +9171,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[254].q ),
+    .q      (reg2hw.cmd_filter[254].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_254_qs)
@@ -9186,8 +9188,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_255 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_filter_7_filter_255_we),
@@ -9195,11 +9197,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_filter[255].q ),
+    .q      (reg2hw.cmd_filter[255].q),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_255_qs)
@@ -9214,8 +9216,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_addr_swap_mask (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (addr_swap_mask_we),
@@ -9223,11 +9225,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.addr_swap_mask.q ),
+    .q      (reg2hw.addr_swap_mask.q),
 
     // to register interface (read)
     .qs     (addr_swap_mask_qs)
@@ -9241,8 +9243,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_addr_swap_data (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (addr_swap_data_we),
@@ -9250,11 +9252,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.addr_swap_data.q ),
+    .q      (reg2hw.addr_swap_data.q),
 
     // to register interface (read)
     .qs     (addr_swap_data_qs)
@@ -9271,8 +9273,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_0_opcode_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_opcode_0_we),
@@ -9280,11 +9282,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].opcode.q ),
+    .q      (reg2hw.cmd_info[0].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_opcode_0_qs)
@@ -9297,8 +9299,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_0_addr_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_addr_en_0_we),
@@ -9306,11 +9308,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].addr_en.q ),
+    .q      (reg2hw.cmd_info[0].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_addr_en_0_qs)
@@ -9323,8 +9325,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_0_addr_swap_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_addr_swap_en_0_we),
@@ -9332,11 +9334,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[0].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_addr_swap_en_0_qs)
@@ -9349,8 +9351,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_0_addr_4b_affected_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_addr_4b_affected_0_we),
@@ -9358,11 +9360,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[0].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_addr_4b_affected_0_qs)
@@ -9375,8 +9377,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_0_dummy_size_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_dummy_size_0_we),
@@ -9384,11 +9386,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].dummy_size.q ),
+    .q      (reg2hw.cmd_info[0].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_dummy_size_0_qs)
@@ -9401,8 +9403,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_0_dummy_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_dummy_en_0_we),
@@ -9410,11 +9412,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].dummy_en.q ),
+    .q      (reg2hw.cmd_info[0].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_dummy_en_0_qs)
@@ -9427,8 +9429,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_0_payload_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_payload_en_0_we),
@@ -9436,11 +9438,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].payload_en.q ),
+    .q      (reg2hw.cmd_info[0].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_payload_en_0_qs)
@@ -9453,8 +9455,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_0_payload_dir_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_payload_dir_0_we),
@@ -9462,11 +9464,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[0].payload_dir.q ),
+    .q      (reg2hw.cmd_info[0].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_0_payload_dir_0_qs)
@@ -9482,8 +9484,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_1_opcode_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_opcode_1_we),
@@ -9491,11 +9493,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].opcode.q ),
+    .q      (reg2hw.cmd_info[1].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_opcode_1_qs)
@@ -9508,8 +9510,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_1_addr_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_addr_en_1_we),
@@ -9517,11 +9519,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].addr_en.q ),
+    .q      (reg2hw.cmd_info[1].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_en_1_qs)
@@ -9534,8 +9536,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_1_addr_swap_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_addr_swap_en_1_we),
@@ -9543,11 +9545,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[1].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_swap_en_1_qs)
@@ -9560,8 +9562,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_1_addr_4b_affected_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_addr_4b_affected_1_we),
@@ -9569,11 +9571,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[1].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_4b_affected_1_qs)
@@ -9586,8 +9588,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_1_dummy_size_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_dummy_size_1_we),
@@ -9595,11 +9597,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].dummy_size.q ),
+    .q      (reg2hw.cmd_info[1].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_dummy_size_1_qs)
@@ -9612,8 +9614,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_1_dummy_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_dummy_en_1_we),
@@ -9621,11 +9623,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].dummy_en.q ),
+    .q      (reg2hw.cmd_info[1].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_dummy_en_1_qs)
@@ -9638,8 +9640,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_1_payload_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_payload_en_1_we),
@@ -9647,11 +9649,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].payload_en.q ),
+    .q      (reg2hw.cmd_info[1].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_en_1_qs)
@@ -9664,8 +9666,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_1_payload_dir_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_payload_dir_1_we),
@@ -9673,11 +9675,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[1].payload_dir.q ),
+    .q      (reg2hw.cmd_info[1].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_dir_1_qs)
@@ -9693,8 +9695,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_2_opcode_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_opcode_2_we),
@@ -9702,11 +9704,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].opcode.q ),
+    .q      (reg2hw.cmd_info[2].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_opcode_2_qs)
@@ -9719,8 +9721,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_2_addr_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_addr_en_2_we),
@@ -9728,11 +9730,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].addr_en.q ),
+    .q      (reg2hw.cmd_info[2].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_addr_en_2_qs)
@@ -9745,8 +9747,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_2_addr_swap_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_addr_swap_en_2_we),
@@ -9754,11 +9756,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[2].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_addr_swap_en_2_qs)
@@ -9771,8 +9773,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_2_addr_4b_affected_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_addr_4b_affected_2_we),
@@ -9780,11 +9782,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[2].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_addr_4b_affected_2_qs)
@@ -9797,8 +9799,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_2_dummy_size_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_dummy_size_2_we),
@@ -9806,11 +9808,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].dummy_size.q ),
+    .q      (reg2hw.cmd_info[2].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_dummy_size_2_qs)
@@ -9823,8 +9825,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_2_dummy_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_dummy_en_2_we),
@@ -9832,11 +9834,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].dummy_en.q ),
+    .q      (reg2hw.cmd_info[2].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_dummy_en_2_qs)
@@ -9849,8 +9851,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_2_payload_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_payload_en_2_we),
@@ -9858,11 +9860,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].payload_en.q ),
+    .q      (reg2hw.cmd_info[2].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_payload_en_2_qs)
@@ -9875,8 +9877,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_2_payload_dir_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_payload_dir_2_we),
@@ -9884,11 +9886,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[2].payload_dir.q ),
+    .q      (reg2hw.cmd_info[2].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_2_payload_dir_2_qs)
@@ -9904,8 +9906,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_3_opcode_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_opcode_3_we),
@@ -9913,11 +9915,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].opcode.q ),
+    .q      (reg2hw.cmd_info[3].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_opcode_3_qs)
@@ -9930,8 +9932,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_3_addr_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_addr_en_3_we),
@@ -9939,11 +9941,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].addr_en.q ),
+    .q      (reg2hw.cmd_info[3].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_en_3_qs)
@@ -9956,8 +9958,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_3_addr_swap_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_addr_swap_en_3_we),
@@ -9965,11 +9967,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[3].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_swap_en_3_qs)
@@ -9982,8 +9984,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_3_addr_4b_affected_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_addr_4b_affected_3_we),
@@ -9991,11 +9993,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[3].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_4b_affected_3_qs)
@@ -10008,8 +10010,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_3_dummy_size_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_dummy_size_3_we),
@@ -10017,11 +10019,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].dummy_size.q ),
+    .q      (reg2hw.cmd_info[3].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_dummy_size_3_qs)
@@ -10034,8 +10036,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_3_dummy_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_dummy_en_3_we),
@@ -10043,11 +10045,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].dummy_en.q ),
+    .q      (reg2hw.cmd_info[3].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_dummy_en_3_qs)
@@ -10060,8 +10062,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_3_payload_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_payload_en_3_we),
@@ -10069,11 +10071,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].payload_en.q ),
+    .q      (reg2hw.cmd_info[3].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_en_3_qs)
@@ -10086,8 +10088,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_3_payload_dir_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_payload_dir_3_we),
@@ -10095,11 +10097,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[3].payload_dir.q ),
+    .q      (reg2hw.cmd_info[3].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_dir_3_qs)
@@ -10115,8 +10117,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_4_opcode_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_opcode_4_we),
@@ -10124,11 +10126,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].opcode.q ),
+    .q      (reg2hw.cmd_info[4].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_opcode_4_qs)
@@ -10141,8 +10143,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_4_addr_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_addr_en_4_we),
@@ -10150,11 +10152,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].addr_en.q ),
+    .q      (reg2hw.cmd_info[4].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_addr_en_4_qs)
@@ -10167,8 +10169,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_4_addr_swap_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_addr_swap_en_4_we),
@@ -10176,11 +10178,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[4].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_addr_swap_en_4_qs)
@@ -10193,8 +10195,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_4_addr_4b_affected_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_addr_4b_affected_4_we),
@@ -10202,11 +10204,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[4].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_addr_4b_affected_4_qs)
@@ -10219,8 +10221,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_4_dummy_size_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_dummy_size_4_we),
@@ -10228,11 +10230,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].dummy_size.q ),
+    .q      (reg2hw.cmd_info[4].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_dummy_size_4_qs)
@@ -10245,8 +10247,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_4_dummy_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_dummy_en_4_we),
@@ -10254,11 +10256,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].dummy_en.q ),
+    .q      (reg2hw.cmd_info[4].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_dummy_en_4_qs)
@@ -10271,8 +10273,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_4_payload_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_payload_en_4_we),
@@ -10280,11 +10282,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].payload_en.q ),
+    .q      (reg2hw.cmd_info[4].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_payload_en_4_qs)
@@ -10297,8 +10299,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_4_payload_dir_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_payload_dir_4_we),
@@ -10306,11 +10308,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[4].payload_dir.q ),
+    .q      (reg2hw.cmd_info[4].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_4_payload_dir_4_qs)
@@ -10326,8 +10328,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_5_opcode_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_opcode_5_we),
@@ -10335,11 +10337,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].opcode.q ),
+    .q      (reg2hw.cmd_info[5].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_opcode_5_qs)
@@ -10352,8 +10354,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_5_addr_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_addr_en_5_we),
@@ -10361,11 +10363,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].addr_en.q ),
+    .q      (reg2hw.cmd_info[5].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_en_5_qs)
@@ -10378,8 +10380,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_5_addr_swap_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_addr_swap_en_5_we),
@@ -10387,11 +10389,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[5].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_swap_en_5_qs)
@@ -10404,8 +10406,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_5_addr_4b_affected_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_addr_4b_affected_5_we),
@@ -10413,11 +10415,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[5].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_4b_affected_5_qs)
@@ -10430,8 +10432,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_5_dummy_size_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_dummy_size_5_we),
@@ -10439,11 +10441,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].dummy_size.q ),
+    .q      (reg2hw.cmd_info[5].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_dummy_size_5_qs)
@@ -10456,8 +10458,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_5_dummy_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_dummy_en_5_we),
@@ -10465,11 +10467,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].dummy_en.q ),
+    .q      (reg2hw.cmd_info[5].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_dummy_en_5_qs)
@@ -10482,8 +10484,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_5_payload_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_payload_en_5_we),
@@ -10491,11 +10493,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].payload_en.q ),
+    .q      (reg2hw.cmd_info[5].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_en_5_qs)
@@ -10508,8 +10510,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_5_payload_dir_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_payload_dir_5_we),
@@ -10517,11 +10519,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[5].payload_dir.q ),
+    .q      (reg2hw.cmd_info[5].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_dir_5_qs)
@@ -10537,8 +10539,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_6_opcode_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_opcode_6_we),
@@ -10546,11 +10548,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].opcode.q ),
+    .q      (reg2hw.cmd_info[6].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_opcode_6_qs)
@@ -10563,8 +10565,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_6_addr_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_addr_en_6_we),
@@ -10572,11 +10574,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].addr_en.q ),
+    .q      (reg2hw.cmd_info[6].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_addr_en_6_qs)
@@ -10589,8 +10591,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_6_addr_swap_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_addr_swap_en_6_we),
@@ -10598,11 +10600,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[6].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_addr_swap_en_6_qs)
@@ -10615,8 +10617,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_6_addr_4b_affected_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_addr_4b_affected_6_we),
@@ -10624,11 +10626,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[6].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_addr_4b_affected_6_qs)
@@ -10641,8 +10643,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_6_dummy_size_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_dummy_size_6_we),
@@ -10650,11 +10652,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].dummy_size.q ),
+    .q      (reg2hw.cmd_info[6].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_dummy_size_6_qs)
@@ -10667,8 +10669,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_6_dummy_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_dummy_en_6_we),
@@ -10676,11 +10678,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].dummy_en.q ),
+    .q      (reg2hw.cmd_info[6].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_dummy_en_6_qs)
@@ -10693,8 +10695,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_6_payload_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_payload_en_6_we),
@@ -10702,11 +10704,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].payload_en.q ),
+    .q      (reg2hw.cmd_info[6].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_payload_en_6_qs)
@@ -10719,8 +10721,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_6_payload_dir_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_payload_dir_6_we),
@@ -10728,11 +10730,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[6].payload_dir.q ),
+    .q      (reg2hw.cmd_info[6].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_6_payload_dir_6_qs)
@@ -10748,8 +10750,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_7_opcode_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_opcode_7_we),
@@ -10757,11 +10759,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].opcode.q ),
+    .q      (reg2hw.cmd_info[7].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_opcode_7_qs)
@@ -10774,8 +10776,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_7_addr_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_addr_en_7_we),
@@ -10783,11 +10785,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].addr_en.q ),
+    .q      (reg2hw.cmd_info[7].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_en_7_qs)
@@ -10800,8 +10802,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_7_addr_swap_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_addr_swap_en_7_we),
@@ -10809,11 +10811,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[7].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_swap_en_7_qs)
@@ -10826,8 +10828,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_7_addr_4b_affected_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_addr_4b_affected_7_we),
@@ -10835,11 +10837,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[7].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_4b_affected_7_qs)
@@ -10852,8 +10854,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_7_dummy_size_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_dummy_size_7_we),
@@ -10861,11 +10863,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].dummy_size.q ),
+    .q      (reg2hw.cmd_info[7].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_dummy_size_7_qs)
@@ -10878,8 +10880,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_7_dummy_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_dummy_en_7_we),
@@ -10887,11 +10889,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].dummy_en.q ),
+    .q      (reg2hw.cmd_info[7].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_dummy_en_7_qs)
@@ -10904,8 +10906,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_7_payload_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_payload_en_7_we),
@@ -10913,11 +10915,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].payload_en.q ),
+    .q      (reg2hw.cmd_info[7].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_en_7_qs)
@@ -10930,8 +10932,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_7_payload_dir_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_payload_dir_7_we),
@@ -10939,11 +10941,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[7].payload_dir.q ),
+    .q      (reg2hw.cmd_info[7].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_dir_7_qs)
@@ -10959,8 +10961,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_8_opcode_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_opcode_8_we),
@@ -10968,11 +10970,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].opcode.q ),
+    .q      (reg2hw.cmd_info[8].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_opcode_8_qs)
@@ -10985,8 +10987,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_8_addr_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_addr_en_8_we),
@@ -10994,11 +10996,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].addr_en.q ),
+    .q      (reg2hw.cmd_info[8].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_addr_en_8_qs)
@@ -11011,8 +11013,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_8_addr_swap_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_addr_swap_en_8_we),
@@ -11020,11 +11022,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[8].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_addr_swap_en_8_qs)
@@ -11037,8 +11039,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_8_addr_4b_affected_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_addr_4b_affected_8_we),
@@ -11046,11 +11048,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[8].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_addr_4b_affected_8_qs)
@@ -11063,8 +11065,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_8_dummy_size_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_dummy_size_8_we),
@@ -11072,11 +11074,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].dummy_size.q ),
+    .q      (reg2hw.cmd_info[8].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_dummy_size_8_qs)
@@ -11089,8 +11091,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_8_dummy_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_dummy_en_8_we),
@@ -11098,11 +11100,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].dummy_en.q ),
+    .q      (reg2hw.cmd_info[8].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_dummy_en_8_qs)
@@ -11115,8 +11117,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_8_payload_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_payload_en_8_we),
@@ -11124,11 +11126,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].payload_en.q ),
+    .q      (reg2hw.cmd_info[8].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_payload_en_8_qs)
@@ -11141,8 +11143,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_8_payload_dir_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_payload_dir_8_we),
@@ -11150,11 +11152,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[8].payload_dir.q ),
+    .q      (reg2hw.cmd_info[8].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_8_payload_dir_8_qs)
@@ -11170,8 +11172,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_9_opcode_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_opcode_9_we),
@@ -11179,11 +11181,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].opcode.q ),
+    .q      (reg2hw.cmd_info[9].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_opcode_9_qs)
@@ -11196,8 +11198,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_9_addr_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_addr_en_9_we),
@@ -11205,11 +11207,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].addr_en.q ),
+    .q      (reg2hw.cmd_info[9].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_en_9_qs)
@@ -11222,8 +11224,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_9_addr_swap_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_addr_swap_en_9_we),
@@ -11231,11 +11233,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[9].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_swap_en_9_qs)
@@ -11248,8 +11250,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_9_addr_4b_affected_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_addr_4b_affected_9_we),
@@ -11257,11 +11259,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[9].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_4b_affected_9_qs)
@@ -11274,8 +11276,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_9_dummy_size_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_dummy_size_9_we),
@@ -11283,11 +11285,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].dummy_size.q ),
+    .q      (reg2hw.cmd_info[9].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_dummy_size_9_qs)
@@ -11300,8 +11302,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_9_dummy_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_dummy_en_9_we),
@@ -11309,11 +11311,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].dummy_en.q ),
+    .q      (reg2hw.cmd_info[9].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_dummy_en_9_qs)
@@ -11326,8 +11328,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_9_payload_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_payload_en_9_we),
@@ -11335,11 +11337,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].payload_en.q ),
+    .q      (reg2hw.cmd_info[9].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_en_9_qs)
@@ -11352,8 +11354,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_9_payload_dir_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_payload_dir_9_we),
@@ -11361,11 +11363,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[9].payload_dir.q ),
+    .q      (reg2hw.cmd_info[9].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_dir_9_qs)
@@ -11381,8 +11383,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_10_opcode_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_opcode_10_we),
@@ -11390,11 +11392,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].opcode.q ),
+    .q      (reg2hw.cmd_info[10].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_opcode_10_qs)
@@ -11407,8 +11409,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_10_addr_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_addr_en_10_we),
@@ -11416,11 +11418,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].addr_en.q ),
+    .q      (reg2hw.cmd_info[10].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_addr_en_10_qs)
@@ -11433,8 +11435,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_10_addr_swap_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_addr_swap_en_10_we),
@@ -11442,11 +11444,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[10].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_addr_swap_en_10_qs)
@@ -11459,8 +11461,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_10_addr_4b_affected_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_addr_4b_affected_10_we),
@@ -11468,11 +11470,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[10].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_addr_4b_affected_10_qs)
@@ -11485,8 +11487,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_10_dummy_size_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_dummy_size_10_we),
@@ -11494,11 +11496,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].dummy_size.q ),
+    .q      (reg2hw.cmd_info[10].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_dummy_size_10_qs)
@@ -11511,8 +11513,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_10_dummy_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_dummy_en_10_we),
@@ -11520,11 +11522,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].dummy_en.q ),
+    .q      (reg2hw.cmd_info[10].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_dummy_en_10_qs)
@@ -11537,8 +11539,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_10_payload_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_payload_en_10_we),
@@ -11546,11 +11548,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].payload_en.q ),
+    .q      (reg2hw.cmd_info[10].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_payload_en_10_qs)
@@ -11563,8 +11565,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_10_payload_dir_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_payload_dir_10_we),
@@ -11572,11 +11574,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[10].payload_dir.q ),
+    .q      (reg2hw.cmd_info[10].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_10_payload_dir_10_qs)
@@ -11592,8 +11594,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_11_opcode_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_opcode_11_we),
@@ -11601,11 +11603,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].opcode.q ),
+    .q      (reg2hw.cmd_info[11].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_opcode_11_qs)
@@ -11618,8 +11620,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_11_addr_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_addr_en_11_we),
@@ -11627,11 +11629,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].addr_en.q ),
+    .q      (reg2hw.cmd_info[11].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_en_11_qs)
@@ -11644,8 +11646,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_11_addr_swap_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_addr_swap_en_11_we),
@@ -11653,11 +11655,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[11].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_swap_en_11_qs)
@@ -11670,8 +11672,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_11_addr_4b_affected_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_addr_4b_affected_11_we),
@@ -11679,11 +11681,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[11].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_4b_affected_11_qs)
@@ -11696,8 +11698,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_11_dummy_size_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_dummy_size_11_we),
@@ -11705,11 +11707,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].dummy_size.q ),
+    .q      (reg2hw.cmd_info[11].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_dummy_size_11_qs)
@@ -11722,8 +11724,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_11_dummy_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_dummy_en_11_we),
@@ -11731,11 +11733,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].dummy_en.q ),
+    .q      (reg2hw.cmd_info[11].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_dummy_en_11_qs)
@@ -11748,8 +11750,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_11_payload_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_payload_en_11_we),
@@ -11757,11 +11759,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].payload_en.q ),
+    .q      (reg2hw.cmd_info[11].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_en_11_qs)
@@ -11774,8 +11776,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_11_payload_dir_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_payload_dir_11_we),
@@ -11783,11 +11785,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[11].payload_dir.q ),
+    .q      (reg2hw.cmd_info[11].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_dir_11_qs)
@@ -11803,8 +11805,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_12_opcode_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_opcode_12_we),
@@ -11812,11 +11814,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].opcode.q ),
+    .q      (reg2hw.cmd_info[12].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_opcode_12_qs)
@@ -11829,8 +11831,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_12_addr_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_addr_en_12_we),
@@ -11838,11 +11840,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].addr_en.q ),
+    .q      (reg2hw.cmd_info[12].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_addr_en_12_qs)
@@ -11855,8 +11857,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_12_addr_swap_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_addr_swap_en_12_we),
@@ -11864,11 +11866,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[12].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_addr_swap_en_12_qs)
@@ -11881,8 +11883,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_12_addr_4b_affected_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_addr_4b_affected_12_we),
@@ -11890,11 +11892,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[12].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_addr_4b_affected_12_qs)
@@ -11907,8 +11909,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_12_dummy_size_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_dummy_size_12_we),
@@ -11916,11 +11918,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].dummy_size.q ),
+    .q      (reg2hw.cmd_info[12].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_dummy_size_12_qs)
@@ -11933,8 +11935,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_12_dummy_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_dummy_en_12_we),
@@ -11942,11 +11944,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].dummy_en.q ),
+    .q      (reg2hw.cmd_info[12].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_dummy_en_12_qs)
@@ -11959,8 +11961,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_12_payload_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_payload_en_12_we),
@@ -11968,11 +11970,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].payload_en.q ),
+    .q      (reg2hw.cmd_info[12].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_payload_en_12_qs)
@@ -11985,8 +11987,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_12_payload_dir_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_payload_dir_12_we),
@@ -11994,11 +11996,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[12].payload_dir.q ),
+    .q      (reg2hw.cmd_info[12].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_12_payload_dir_12_qs)
@@ -12014,8 +12016,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_13_opcode_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_opcode_13_we),
@@ -12023,11 +12025,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].opcode.q ),
+    .q      (reg2hw.cmd_info[13].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_opcode_13_qs)
@@ -12040,8 +12042,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_13_addr_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_addr_en_13_we),
@@ -12049,11 +12051,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].addr_en.q ),
+    .q      (reg2hw.cmd_info[13].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_en_13_qs)
@@ -12066,8 +12068,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_13_addr_swap_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_addr_swap_en_13_we),
@@ -12075,11 +12077,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[13].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_swap_en_13_qs)
@@ -12092,8 +12094,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_13_addr_4b_affected_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_addr_4b_affected_13_we),
@@ -12101,11 +12103,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[13].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_4b_affected_13_qs)
@@ -12118,8 +12120,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_13_dummy_size_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_dummy_size_13_we),
@@ -12127,11 +12129,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].dummy_size.q ),
+    .q      (reg2hw.cmd_info[13].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_dummy_size_13_qs)
@@ -12144,8 +12146,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_13_dummy_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_dummy_en_13_we),
@@ -12153,11 +12155,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].dummy_en.q ),
+    .q      (reg2hw.cmd_info[13].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_dummy_en_13_qs)
@@ -12170,8 +12172,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_13_payload_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_payload_en_13_we),
@@ -12179,11 +12181,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].payload_en.q ),
+    .q      (reg2hw.cmd_info[13].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_en_13_qs)
@@ -12196,8 +12198,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_13_payload_dir_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_payload_dir_13_we),
@@ -12205,11 +12207,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[13].payload_dir.q ),
+    .q      (reg2hw.cmd_info[13].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_dir_13_qs)
@@ -12225,8 +12227,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_14_opcode_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_opcode_14_we),
@@ -12234,11 +12236,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].opcode.q ),
+    .q      (reg2hw.cmd_info[14].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_opcode_14_qs)
@@ -12251,8 +12253,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_14_addr_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_addr_en_14_we),
@@ -12260,11 +12262,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].addr_en.q ),
+    .q      (reg2hw.cmd_info[14].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_addr_en_14_qs)
@@ -12277,8 +12279,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_14_addr_swap_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_addr_swap_en_14_we),
@@ -12286,11 +12288,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[14].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_addr_swap_en_14_qs)
@@ -12303,8 +12305,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_14_addr_4b_affected_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_addr_4b_affected_14_we),
@@ -12312,11 +12314,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[14].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_addr_4b_affected_14_qs)
@@ -12329,8 +12331,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_14_dummy_size_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_dummy_size_14_we),
@@ -12338,11 +12340,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].dummy_size.q ),
+    .q      (reg2hw.cmd_info[14].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_dummy_size_14_qs)
@@ -12355,8 +12357,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_14_dummy_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_dummy_en_14_we),
@@ -12364,11 +12366,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].dummy_en.q ),
+    .q      (reg2hw.cmd_info[14].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_dummy_en_14_qs)
@@ -12381,8 +12383,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_14_payload_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_payload_en_14_we),
@@ -12390,11 +12392,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].payload_en.q ),
+    .q      (reg2hw.cmd_info[14].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_payload_en_14_qs)
@@ -12407,8 +12409,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_14_payload_dir_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_payload_dir_14_we),
@@ -12416,11 +12418,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[14].payload_dir.q ),
+    .q      (reg2hw.cmd_info[14].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_14_payload_dir_14_qs)
@@ -12436,8 +12438,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_cmd_info_15_opcode_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_opcode_15_we),
@@ -12445,11 +12447,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].opcode.q ),
+    .q      (reg2hw.cmd_info[15].opcode.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_opcode_15_qs)
@@ -12462,8 +12464,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_15_addr_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_addr_en_15_we),
@@ -12471,11 +12473,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].addr_en.q ),
+    .q      (reg2hw.cmd_info[15].addr_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_en_15_qs)
@@ -12488,8 +12490,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_15_addr_swap_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_addr_swap_en_15_we),
@@ -12497,11 +12499,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].addr_swap_en.q ),
+    .q      (reg2hw.cmd_info[15].addr_swap_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_swap_en_15_qs)
@@ -12514,8 +12516,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_15_addr_4b_affected_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_addr_4b_affected_15_we),
@@ -12523,11 +12525,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].addr_4b_affected.q ),
+    .q      (reg2hw.cmd_info[15].addr_4b_affected.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_4b_affected_15_qs)
@@ -12540,8 +12542,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h7)
   ) u_cmd_info_15_dummy_size_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_dummy_size_15_we),
@@ -12549,11 +12551,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].dummy_size.q ),
+    .q      (reg2hw.cmd_info[15].dummy_size.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_dummy_size_15_qs)
@@ -12566,8 +12568,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_15_dummy_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_dummy_en_15_we),
@@ -12575,11 +12577,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].dummy_en.q ),
+    .q      (reg2hw.cmd_info[15].dummy_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_dummy_en_15_qs)
@@ -12592,8 +12594,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cmd_info_15_payload_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_payload_en_15_we),
@@ -12601,11 +12603,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].payload_en.q ),
+    .q      (reg2hw.cmd_info[15].payload_en.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_en_15_qs)
@@ -12618,8 +12620,8 @@ module spi_device_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cmd_info_15_payload_dir_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_payload_dir_15_we),
@@ -12627,11 +12629,11 @@ module spi_device_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cmd_info[15].payload_dir.q ),
+    .q      (reg2hw.cmd_info[15].payload_dir.q),
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_dir_15_qs)

@@ -194,8 +194,8 @@ module pwrmgr_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
@@ -203,11 +203,11 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
+    .d      (hw2reg.intr_state.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q ),
+    .q      (reg2hw.intr_state.q),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -221,8 +221,8 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
@@ -230,11 +230,11 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q ),
+    .q      (reg2hw.intr_enable.q),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -252,7 +252,7 @@ module pwrmgr_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
+    .q      (reg2hw.intr_test.q),
     .qs     ()
   );
 
@@ -281,20 +281,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_low_power_hint (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_low_power_hint_we & ctrl_cfg_regwen_qs),
     .wd     (control_low_power_hint_wd),
 
     // from internal hardware
     .de     (hw2reg.control.low_power_hint.de),
-    .d      (hw2reg.control.low_power_hint.d ),
+    .d      (hw2reg.control.low_power_hint.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.low_power_hint.q ),
+    .q      (reg2hw.control.low_power_hint.q),
 
     // to register interface (read)
     .qs     (control_low_power_hint_qs)
@@ -307,20 +307,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_core_clk_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_core_clk_en_we & ctrl_cfg_regwen_qs),
     .wd     (control_core_clk_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.core_clk_en.q ),
+    .q      (reg2hw.control.core_clk_en.q),
 
     // to register interface (read)
     .qs     (control_core_clk_en_qs)
@@ -333,20 +333,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_io_clk_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_io_clk_en_we & ctrl_cfg_regwen_qs),
     .wd     (control_io_clk_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.io_clk_en.q ),
+    .q      (reg2hw.control.io_clk_en.q),
 
     // to register interface (read)
     .qs     (control_io_clk_en_qs)
@@ -359,20 +359,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_usb_clk_en_lp (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_usb_clk_en_lp_we & ctrl_cfg_regwen_qs),
     .wd     (control_usb_clk_en_lp_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.usb_clk_en_lp.q ),
+    .q      (reg2hw.control.usb_clk_en_lp.q),
 
     // to register interface (read)
     .qs     (control_usb_clk_en_lp_qs)
@@ -385,20 +385,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_control_usb_clk_en_active (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_usb_clk_en_active_we & ctrl_cfg_regwen_qs),
     .wd     (control_usb_clk_en_active_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.usb_clk_en_active.q ),
+    .q      (reg2hw.control.usb_clk_en_active.q),
 
     // to register interface (read)
     .qs     (control_usb_clk_en_active_qs)
@@ -411,20 +411,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_control_main_pd_n (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_main_pd_n_we & ctrl_cfg_regwen_qs),
     .wd     (control_main_pd_n_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.main_pd_n.q ),
+    .q      (reg2hw.control.main_pd_n.q),
 
     // to register interface (read)
     .qs     (control_main_pd_n_qs)
@@ -438,8 +438,8 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_cdc_sync (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_cdc_sync_we),
@@ -447,11 +447,11 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (hw2reg.cfg_cdc_sync.de),
-    .d      (hw2reg.cfg_cdc_sync.d ),
+    .d      (hw2reg.cfg_cdc_sync.d),
 
     // to internal hardware
     .qe     (reg2hw.cfg_cdc_sync.qe),
-    .q      (reg2hw.cfg_cdc_sync.q ),
+    .q      (reg2hw.cfg_cdc_sync.q),
 
     // to register interface (read)
     .qs     (cfg_cdc_sync_qs)
@@ -465,8 +465,8 @@ module pwrmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wakeup_en_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wakeup_en_regwen_we),
@@ -474,7 +474,7 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -495,20 +495,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wakeup_en_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wakeup_en_en_0_we & wakeup_en_regwen_qs),
     .wd     (wakeup_en_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wakeup_en[0].q ),
+    .q      (reg2hw.wakeup_en[0].q),
 
     // to register interface (read)
     .qs     (wakeup_en_en_0_qs)
@@ -521,20 +521,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wakeup_en_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wakeup_en_en_1_we & wakeup_en_regwen_qs),
     .wd     (wakeup_en_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wakeup_en[1].q ),
+    .q      (reg2hw.wakeup_en[1].q),
 
     // to register interface (read)
     .qs     (wakeup_en_en_1_qs)
@@ -547,20 +547,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wakeup_en_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wakeup_en_en_2_we & wakeup_en_regwen_qs),
     .wd     (wakeup_en_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wakeup_en[2].q ),
+    .q      (reg2hw.wakeup_en[2].q),
 
     // to register interface (read)
     .qs     (wakeup_en_en_2_qs)
@@ -573,20 +573,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wakeup_en_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wakeup_en_en_3_we & wakeup_en_regwen_qs),
     .wd     (wakeup_en_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wakeup_en[3].q ),
+    .q      (reg2hw.wakeup_en[3].q),
 
     // to register interface (read)
     .qs     (wakeup_en_en_3_qs)
@@ -599,20 +599,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wakeup_en_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (wakeup_en_en_4_we & wakeup_en_regwen_qs),
     .wd     (wakeup_en_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wakeup_en[4].q ),
+    .q      (reg2hw.wakeup_en[4].q),
 
     // to register interface (read)
     .qs     (wakeup_en_en_4_qs)
@@ -630,15 +630,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_wake_status_val_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_status[0].de),
-    .d      (hw2reg.wake_status[0].d ),
+    .d      (hw2reg.wake_status[0].d),
 
     // to internal hardware
     .qe     (),
@@ -655,15 +656,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_wake_status_val_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_status[1].de),
-    .d      (hw2reg.wake_status[1].d ),
+    .d      (hw2reg.wake_status[1].d),
 
     // to internal hardware
     .qe     (),
@@ -680,15 +682,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_wake_status_val_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_status[2].de),
-    .d      (hw2reg.wake_status[2].d ),
+    .d      (hw2reg.wake_status[2].d),
 
     // to internal hardware
     .qe     (),
@@ -705,15 +708,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_wake_status_val_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_status[3].de),
-    .d      (hw2reg.wake_status[3].d ),
+    .d      (hw2reg.wake_status[3].d),
 
     // to internal hardware
     .qe     (),
@@ -730,15 +734,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_wake_status_val_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_status[4].de),
-    .d      (hw2reg.wake_status[4].d ),
+    .d      (hw2reg.wake_status[4].d),
 
     // to internal hardware
     .qe     (),
@@ -757,8 +762,8 @@ module pwrmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_reset_en_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (reset_en_regwen_we),
@@ -766,7 +771,7 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -787,20 +792,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_reset_en_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (reset_en_en_0_we & reset_en_regwen_qs),
     .wd     (reset_en_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en[0].q ),
+    .q      (reg2hw.reset_en[0].q),
 
     // to register interface (read)
     .qs     (reset_en_en_0_qs)
@@ -813,20 +818,20 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_reset_en_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (reset_en_en_1_we & reset_en_regwen_qs),
     .wd     (reset_en_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en[1].q ),
+    .q      (reg2hw.reset_en[1].q),
 
     // to register interface (read)
     .qs     (reset_en_en_1_qs)
@@ -844,15 +849,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_reset_status_val_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.reset_status[0].de),
-    .d      (hw2reg.reset_status[0].d ),
+    .d      (hw2reg.reset_status[0].d),
 
     // to internal hardware
     .qe     (),
@@ -869,15 +875,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_reset_status_val_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.reset_status[1].de),
-    .d      (hw2reg.reset_status[1].d ),
+    .d      (hw2reg.reset_status[1].d),
 
     // to internal hardware
     .qe     (),
@@ -896,15 +903,16 @@ module pwrmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_escalate_reset_status (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.escalate_reset_status.de),
-    .d      (hw2reg.escalate_reset_status.d ),
+    .d      (hw2reg.escalate_reset_status.d),
 
     // to internal hardware
     .qe     (),
@@ -922,8 +930,8 @@ module pwrmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wake_info_capture_dis (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wake_info_capture_dis_we),
@@ -931,11 +939,11 @@ module pwrmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wake_info_capture_dis.q ),
+    .q      (reg2hw.wake_info_capture_dis.q),
 
     // to register interface (read)
     .qs     (wake_info_capture_dis_qs)
@@ -954,7 +962,7 @@ module pwrmgr_reg_top (
     .d      (hw2reg.wake_info.reasons.d),
     .qre    (),
     .qe     (reg2hw.wake_info.reasons.qe),
-    .q      (reg2hw.wake_info.reasons.q ),
+    .q      (reg2hw.wake_info.reasons.q),
     .qs     (wake_info_reasons_qs)
   );
 
@@ -969,7 +977,7 @@ module pwrmgr_reg_top (
     .d      (hw2reg.wake_info.fall_through.d),
     .qre    (),
     .qe     (reg2hw.wake_info.fall_through.qe),
-    .q      (reg2hw.wake_info.fall_through.q ),
+    .q      (reg2hw.wake_info.fall_through.q),
     .qs     (wake_info_fall_through_qs)
   );
 
@@ -984,7 +992,7 @@ module pwrmgr_reg_top (
     .d      (hw2reg.wake_info.abort.d),
     .qre    (),
     .qe     (reg2hw.wake_info.abort.qe),
-    .q      (reg2hw.wake_info.abort.q ),
+    .q      (reg2hw.wake_info.abort.q),
     .qs     (wake_info_abort_qs)
   );
 

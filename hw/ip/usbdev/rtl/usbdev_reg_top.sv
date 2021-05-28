@@ -759,8 +759,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_pkt_received (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_pkt_received_we),
@@ -768,11 +768,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.pkt_received.de),
-    .d      (hw2reg.intr_state.pkt_received.d ),
+    .d      (hw2reg.intr_state.pkt_received.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.pkt_received.q ),
+    .q      (reg2hw.intr_state.pkt_received.q),
 
     // to register interface (read)
     .qs     (intr_state_pkt_received_qs)
@@ -785,8 +785,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_pkt_sent (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_pkt_sent_we),
@@ -794,11 +794,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.pkt_sent.de),
-    .d      (hw2reg.intr_state.pkt_sent.d ),
+    .d      (hw2reg.intr_state.pkt_sent.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.pkt_sent.q ),
+    .q      (reg2hw.intr_state.pkt_sent.q),
 
     // to register interface (read)
     .qs     (intr_state_pkt_sent_qs)
@@ -811,8 +811,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_disconnected (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_disconnected_we),
@@ -820,11 +820,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.disconnected.de),
-    .d      (hw2reg.intr_state.disconnected.d ),
+    .d      (hw2reg.intr_state.disconnected.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.disconnected.q ),
+    .q      (reg2hw.intr_state.disconnected.q),
 
     // to register interface (read)
     .qs     (intr_state_disconnected_qs)
@@ -837,8 +837,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_host_lost (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_host_lost_we),
@@ -846,11 +846,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.host_lost.de),
-    .d      (hw2reg.intr_state.host_lost.d ),
+    .d      (hw2reg.intr_state.host_lost.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.host_lost.q ),
+    .q      (reg2hw.intr_state.host_lost.q),
 
     // to register interface (read)
     .qs     (intr_state_host_lost_qs)
@@ -863,8 +863,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_link_reset (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_link_reset_we),
@@ -872,11 +872,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.link_reset.de),
-    .d      (hw2reg.intr_state.link_reset.d ),
+    .d      (hw2reg.intr_state.link_reset.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.link_reset.q ),
+    .q      (reg2hw.intr_state.link_reset.q),
 
     // to register interface (read)
     .qs     (intr_state_link_reset_qs)
@@ -889,8 +889,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_link_suspend (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_link_suspend_we),
@@ -898,11 +898,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.link_suspend.de),
-    .d      (hw2reg.intr_state.link_suspend.d ),
+    .d      (hw2reg.intr_state.link_suspend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.link_suspend.q ),
+    .q      (reg2hw.intr_state.link_suspend.q),
 
     // to register interface (read)
     .qs     (intr_state_link_suspend_qs)
@@ -915,8 +915,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_link_resume (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_link_resume_we),
@@ -924,11 +924,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.link_resume.de),
-    .d      (hw2reg.intr_state.link_resume.d ),
+    .d      (hw2reg.intr_state.link_resume.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.link_resume.q ),
+    .q      (reg2hw.intr_state.link_resume.q),
 
     // to register interface (read)
     .qs     (intr_state_link_resume_qs)
@@ -941,8 +941,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_av_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_av_empty_we),
@@ -950,11 +950,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.av_empty.de),
-    .d      (hw2reg.intr_state.av_empty.d ),
+    .d      (hw2reg.intr_state.av_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.av_empty.q ),
+    .q      (reg2hw.intr_state.av_empty.q),
 
     // to register interface (read)
     .qs     (intr_state_av_empty_qs)
@@ -967,8 +967,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_full_we),
@@ -976,11 +976,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_full.de),
-    .d      (hw2reg.intr_state.rx_full.d ),
+    .d      (hw2reg.intr_state.rx_full.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_full.q ),
+    .q      (reg2hw.intr_state.rx_full.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_full_qs)
@@ -993,8 +993,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_av_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_av_overflow_we),
@@ -1002,11 +1002,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.av_overflow.de),
-    .d      (hw2reg.intr_state.av_overflow.d ),
+    .d      (hw2reg.intr_state.av_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.av_overflow.q ),
+    .q      (reg2hw.intr_state.av_overflow.q),
 
     // to register interface (read)
     .qs     (intr_state_av_overflow_qs)
@@ -1019,8 +1019,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_link_in_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_link_in_err_we),
@@ -1028,11 +1028,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.link_in_err.de),
-    .d      (hw2reg.intr_state.link_in_err.d ),
+    .d      (hw2reg.intr_state.link_in_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.link_in_err.q ),
+    .q      (reg2hw.intr_state.link_in_err.q),
 
     // to register interface (read)
     .qs     (intr_state_link_in_err_qs)
@@ -1045,8 +1045,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_crc_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_crc_err_we),
@@ -1054,11 +1054,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_crc_err.de),
-    .d      (hw2reg.intr_state.rx_crc_err.d ),
+    .d      (hw2reg.intr_state.rx_crc_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_crc_err.q ),
+    .q      (reg2hw.intr_state.rx_crc_err.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_crc_err_qs)
@@ -1071,8 +1071,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_pid_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_pid_err_we),
@@ -1080,11 +1080,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_pid_err.de),
-    .d      (hw2reg.intr_state.rx_pid_err.d ),
+    .d      (hw2reg.intr_state.rx_pid_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_pid_err.q ),
+    .q      (reg2hw.intr_state.rx_pid_err.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_pid_err_qs)
@@ -1097,8 +1097,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_bitstuff_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_bitstuff_err_we),
@@ -1106,11 +1106,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_bitstuff_err.de),
-    .d      (hw2reg.intr_state.rx_bitstuff_err.d ),
+    .d      (hw2reg.intr_state.rx_bitstuff_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_bitstuff_err.q ),
+    .q      (reg2hw.intr_state.rx_bitstuff_err.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_bitstuff_err_qs)
@@ -1123,8 +1123,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_frame (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_frame_we),
@@ -1132,11 +1132,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.frame.de),
-    .d      (hw2reg.intr_state.frame.d ),
+    .d      (hw2reg.intr_state.frame.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.frame.q ),
+    .q      (reg2hw.intr_state.frame.q),
 
     // to register interface (read)
     .qs     (intr_state_frame_qs)
@@ -1149,8 +1149,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_connected (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_connected_we),
@@ -1158,11 +1158,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.connected.de),
-    .d      (hw2reg.intr_state.connected.d ),
+    .d      (hw2reg.intr_state.connected.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.connected.q ),
+    .q      (reg2hw.intr_state.connected.q),
 
     // to register interface (read)
     .qs     (intr_state_connected_qs)
@@ -1175,8 +1175,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_link_out_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_link_out_err_we),
@@ -1184,11 +1184,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.link_out_err.de),
-    .d      (hw2reg.intr_state.link_out_err.d ),
+    .d      (hw2reg.intr_state.link_out_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.link_out_err.q ),
+    .q      (reg2hw.intr_state.link_out_err.q),
 
     // to register interface (read)
     .qs     (intr_state_link_out_err_qs)
@@ -1203,8 +1203,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_pkt_received (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_pkt_received_we),
@@ -1212,11 +1212,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.pkt_received.q ),
+    .q      (reg2hw.intr_enable.pkt_received.q),
 
     // to register interface (read)
     .qs     (intr_enable_pkt_received_qs)
@@ -1229,8 +1229,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_pkt_sent (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_pkt_sent_we),
@@ -1238,11 +1238,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.pkt_sent.q ),
+    .q      (reg2hw.intr_enable.pkt_sent.q),
 
     // to register interface (read)
     .qs     (intr_enable_pkt_sent_qs)
@@ -1255,8 +1255,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_disconnected (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_disconnected_we),
@@ -1264,11 +1264,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.disconnected.q ),
+    .q      (reg2hw.intr_enable.disconnected.q),
 
     // to register interface (read)
     .qs     (intr_enable_disconnected_qs)
@@ -1281,8 +1281,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_host_lost (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_host_lost_we),
@@ -1290,11 +1290,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.host_lost.q ),
+    .q      (reg2hw.intr_enable.host_lost.q),
 
     // to register interface (read)
     .qs     (intr_enable_host_lost_qs)
@@ -1307,8 +1307,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_link_reset (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_link_reset_we),
@@ -1316,11 +1316,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.link_reset.q ),
+    .q      (reg2hw.intr_enable.link_reset.q),
 
     // to register interface (read)
     .qs     (intr_enable_link_reset_qs)
@@ -1333,8 +1333,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_link_suspend (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_link_suspend_we),
@@ -1342,11 +1342,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.link_suspend.q ),
+    .q      (reg2hw.intr_enable.link_suspend.q),
 
     // to register interface (read)
     .qs     (intr_enable_link_suspend_qs)
@@ -1359,8 +1359,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_link_resume (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_link_resume_we),
@@ -1368,11 +1368,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.link_resume.q ),
+    .q      (reg2hw.intr_enable.link_resume.q),
 
     // to register interface (read)
     .qs     (intr_enable_link_resume_qs)
@@ -1385,8 +1385,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_av_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_av_empty_we),
@@ -1394,11 +1394,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.av_empty.q ),
+    .q      (reg2hw.intr_enable.av_empty.q),
 
     // to register interface (read)
     .qs     (intr_enable_av_empty_qs)
@@ -1411,8 +1411,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_full_we),
@@ -1420,11 +1420,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_full.q ),
+    .q      (reg2hw.intr_enable.rx_full.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_full_qs)
@@ -1437,8 +1437,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_av_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_av_overflow_we),
@@ -1446,11 +1446,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.av_overflow.q ),
+    .q      (reg2hw.intr_enable.av_overflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_av_overflow_qs)
@@ -1463,8 +1463,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_link_in_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_link_in_err_we),
@@ -1472,11 +1472,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.link_in_err.q ),
+    .q      (reg2hw.intr_enable.link_in_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_link_in_err_qs)
@@ -1489,8 +1489,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_crc_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_crc_err_we),
@@ -1498,11 +1498,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_crc_err.q ),
+    .q      (reg2hw.intr_enable.rx_crc_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_crc_err_qs)
@@ -1515,8 +1515,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_pid_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_pid_err_we),
@@ -1524,11 +1524,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_pid_err.q ),
+    .q      (reg2hw.intr_enable.rx_pid_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_pid_err_qs)
@@ -1541,8 +1541,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_bitstuff_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_bitstuff_err_we),
@@ -1550,11 +1550,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_bitstuff_err.q ),
+    .q      (reg2hw.intr_enable.rx_bitstuff_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_bitstuff_err_qs)
@@ -1567,8 +1567,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_frame (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_frame_we),
@@ -1576,11 +1576,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.frame.q ),
+    .q      (reg2hw.intr_enable.frame.q),
 
     // to register interface (read)
     .qs     (intr_enable_frame_qs)
@@ -1593,8 +1593,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_connected (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_connected_we),
@@ -1602,11 +1602,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.connected.q ),
+    .q      (reg2hw.intr_enable.connected.q),
 
     // to register interface (read)
     .qs     (intr_enable_connected_qs)
@@ -1619,8 +1619,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_link_out_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_link_out_err_we),
@@ -1628,11 +1628,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.link_out_err.q ),
+    .q      (reg2hw.intr_enable.link_out_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_link_out_err_qs)
@@ -1651,7 +1651,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.pkt_received.qe),
-    .q      (reg2hw.intr_test.pkt_received.q ),
+    .q      (reg2hw.intr_test.pkt_received.q),
     .qs     ()
   );
 
@@ -1666,7 +1666,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.pkt_sent.qe),
-    .q      (reg2hw.intr_test.pkt_sent.q ),
+    .q      (reg2hw.intr_test.pkt_sent.q),
     .qs     ()
   );
 
@@ -1681,7 +1681,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.disconnected.qe),
-    .q      (reg2hw.intr_test.disconnected.q ),
+    .q      (reg2hw.intr_test.disconnected.q),
     .qs     ()
   );
 
@@ -1696,7 +1696,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.host_lost.qe),
-    .q      (reg2hw.intr_test.host_lost.q ),
+    .q      (reg2hw.intr_test.host_lost.q),
     .qs     ()
   );
 
@@ -1711,7 +1711,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_reset.qe),
-    .q      (reg2hw.intr_test.link_reset.q ),
+    .q      (reg2hw.intr_test.link_reset.q),
     .qs     ()
   );
 
@@ -1726,7 +1726,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_suspend.qe),
-    .q      (reg2hw.intr_test.link_suspend.q ),
+    .q      (reg2hw.intr_test.link_suspend.q),
     .qs     ()
   );
 
@@ -1741,7 +1741,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_resume.qe),
-    .q      (reg2hw.intr_test.link_resume.q ),
+    .q      (reg2hw.intr_test.link_resume.q),
     .qs     ()
   );
 
@@ -1756,7 +1756,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.av_empty.qe),
-    .q      (reg2hw.intr_test.av_empty.q ),
+    .q      (reg2hw.intr_test.av_empty.q),
     .qs     ()
   );
 
@@ -1771,7 +1771,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_full.qe),
-    .q      (reg2hw.intr_test.rx_full.q ),
+    .q      (reg2hw.intr_test.rx_full.q),
     .qs     ()
   );
 
@@ -1786,7 +1786,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.av_overflow.qe),
-    .q      (reg2hw.intr_test.av_overflow.q ),
+    .q      (reg2hw.intr_test.av_overflow.q),
     .qs     ()
   );
 
@@ -1801,7 +1801,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_in_err.qe),
-    .q      (reg2hw.intr_test.link_in_err.q ),
+    .q      (reg2hw.intr_test.link_in_err.q),
     .qs     ()
   );
 
@@ -1816,7 +1816,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_crc_err.qe),
-    .q      (reg2hw.intr_test.rx_crc_err.q ),
+    .q      (reg2hw.intr_test.rx_crc_err.q),
     .qs     ()
   );
 
@@ -1831,7 +1831,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_pid_err.qe),
-    .q      (reg2hw.intr_test.rx_pid_err.q ),
+    .q      (reg2hw.intr_test.rx_pid_err.q),
     .qs     ()
   );
 
@@ -1846,7 +1846,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_bitstuff_err.qe),
-    .q      (reg2hw.intr_test.rx_bitstuff_err.q ),
+    .q      (reg2hw.intr_test.rx_bitstuff_err.q),
     .qs     ()
   );
 
@@ -1861,7 +1861,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.frame.qe),
-    .q      (reg2hw.intr_test.frame.q ),
+    .q      (reg2hw.intr_test.frame.q),
     .qs     ()
   );
 
@@ -1876,7 +1876,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.connected.qe),
-    .q      (reg2hw.intr_test.connected.q ),
+    .q      (reg2hw.intr_test.connected.q),
     .qs     ()
   );
 
@@ -1891,7 +1891,7 @@ module usbdev_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_out_err.qe),
-    .q      (reg2hw.intr_test.link_out_err.q ),
+    .q      (reg2hw.intr_test.link_out_err.q),
     .qs     ()
   );
 
@@ -1904,8 +1904,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_usbctrl_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (usbctrl_enable_we),
@@ -1913,11 +1913,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.usbctrl.enable.q ),
+    .q      (reg2hw.usbctrl.enable.q),
 
     // to register interface (read)
     .qs     (usbctrl_enable_qs)
@@ -1930,8 +1930,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_usbctrl_device_address (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (usbctrl_device_address_we),
@@ -1939,11 +1939,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.usbctrl.device_address.de),
-    .d      (hw2reg.usbctrl.device_address.d ),
+    .d      (hw2reg.usbctrl.device_address.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.usbctrl.device_address.q ),
+    .q      (reg2hw.usbctrl.device_address.q),
 
     // to register interface (read)
     .qs     (usbctrl_device_address_qs)
@@ -2079,8 +2079,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (5'h0)
   ) u_avbuffer (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (avbuffer_we),
@@ -2088,12 +2088,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.avbuffer.qe),
-    .q      (reg2hw.avbuffer.q ),
+    .q      (reg2hw.avbuffer.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -2110,7 +2111,7 @@ module usbdev_reg_top (
     .d      (hw2reg.rxfifo.buffer.d),
     .qre    (reg2hw.rxfifo.buffer.re),
     .qe     (),
-    .q      (reg2hw.rxfifo.buffer.q ),
+    .q      (reg2hw.rxfifo.buffer.q),
     .qs     (rxfifo_buffer_qs)
   );
 
@@ -2125,7 +2126,7 @@ module usbdev_reg_top (
     .d      (hw2reg.rxfifo.size.d),
     .qre    (reg2hw.rxfifo.size.re),
     .qe     (),
-    .q      (reg2hw.rxfifo.size.q ),
+    .q      (reg2hw.rxfifo.size.q),
     .qs     (rxfifo_size_qs)
   );
 
@@ -2140,7 +2141,7 @@ module usbdev_reg_top (
     .d      (hw2reg.rxfifo.setup.d),
     .qre    (reg2hw.rxfifo.setup.re),
     .qe     (),
-    .q      (reg2hw.rxfifo.setup.q ),
+    .q      (reg2hw.rxfifo.setup.q),
     .qs     (rxfifo_setup_qs)
   );
 
@@ -2155,7 +2156,7 @@ module usbdev_reg_top (
     .d      (hw2reg.rxfifo.ep.d),
     .qre    (reg2hw.rxfifo.ep.re),
     .qe     (),
-    .q      (reg2hw.rxfifo.ep.q ),
+    .q      (reg2hw.rxfifo.ep.q),
     .qs     (rxfifo_ep_qs)
   );
 
@@ -2170,8 +2171,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_0_we),
@@ -2179,11 +2180,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[0].q ),
+    .q      (reg2hw.rxenable_setup[0].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_0_qs)
@@ -2196,8 +2197,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_1_we),
@@ -2205,11 +2206,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[1].q ),
+    .q      (reg2hw.rxenable_setup[1].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_1_qs)
@@ -2222,8 +2223,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_2_we),
@@ -2231,11 +2232,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[2].q ),
+    .q      (reg2hw.rxenable_setup[2].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_2_qs)
@@ -2248,8 +2249,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_3_we),
@@ -2257,11 +2258,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[3].q ),
+    .q      (reg2hw.rxenable_setup[3].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_3_qs)
@@ -2274,8 +2275,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_4_we),
@@ -2283,11 +2284,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[4].q ),
+    .q      (reg2hw.rxenable_setup[4].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_4_qs)
@@ -2300,8 +2301,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_5_we),
@@ -2309,11 +2310,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[5].q ),
+    .q      (reg2hw.rxenable_setup[5].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_5_qs)
@@ -2326,8 +2327,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_6_we),
@@ -2335,11 +2336,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[6].q ),
+    .q      (reg2hw.rxenable_setup[6].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_6_qs)
@@ -2352,8 +2353,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_7_we),
@@ -2361,11 +2362,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[7].q ),
+    .q      (reg2hw.rxenable_setup[7].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_7_qs)
@@ -2378,8 +2379,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_8_we),
@@ -2387,11 +2388,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[8].q ),
+    .q      (reg2hw.rxenable_setup[8].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_8_qs)
@@ -2404,8 +2405,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_9_we),
@@ -2413,11 +2414,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[9].q ),
+    .q      (reg2hw.rxenable_setup[9].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_9_qs)
@@ -2430,8 +2431,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_10_we),
@@ -2439,11 +2440,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[10].q ),
+    .q      (reg2hw.rxenable_setup[10].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_10_qs)
@@ -2456,8 +2457,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_setup_setup_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_setup_setup_11_we),
@@ -2465,11 +2466,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_setup[11].q ),
+    .q      (reg2hw.rxenable_setup[11].q),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_11_qs)
@@ -2487,8 +2488,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_0_we),
@@ -2496,11 +2497,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[0].q ),
+    .q      (reg2hw.rxenable_out[0].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_0_qs)
@@ -2513,8 +2514,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_1_we),
@@ -2522,11 +2523,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[1].q ),
+    .q      (reg2hw.rxenable_out[1].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_1_qs)
@@ -2539,8 +2540,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_2_we),
@@ -2548,11 +2549,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[2].q ),
+    .q      (reg2hw.rxenable_out[2].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_2_qs)
@@ -2565,8 +2566,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_3_we),
@@ -2574,11 +2575,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[3].q ),
+    .q      (reg2hw.rxenable_out[3].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_3_qs)
@@ -2591,8 +2592,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_4_we),
@@ -2600,11 +2601,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[4].q ),
+    .q      (reg2hw.rxenable_out[4].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_4_qs)
@@ -2617,8 +2618,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_5_we),
@@ -2626,11 +2627,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[5].q ),
+    .q      (reg2hw.rxenable_out[5].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_5_qs)
@@ -2643,8 +2644,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_6_we),
@@ -2652,11 +2653,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[6].q ),
+    .q      (reg2hw.rxenable_out[6].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_6_qs)
@@ -2669,8 +2670,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_7_we),
@@ -2678,11 +2679,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[7].q ),
+    .q      (reg2hw.rxenable_out[7].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_7_qs)
@@ -2695,8 +2696,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_8_we),
@@ -2704,11 +2705,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[8].q ),
+    .q      (reg2hw.rxenable_out[8].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_8_qs)
@@ -2721,8 +2722,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_9_we),
@@ -2730,11 +2731,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[9].q ),
+    .q      (reg2hw.rxenable_out[9].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_9_qs)
@@ -2747,8 +2748,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_10_we),
@@ -2756,11 +2757,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[10].q ),
+    .q      (reg2hw.rxenable_out[10].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_10_qs)
@@ -2773,8 +2774,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rxenable_out_out_11_we),
@@ -2782,11 +2783,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rxenable_out[11].q ),
+    .q      (reg2hw.rxenable_out[11].q),
 
     // to register interface (read)
     .qs     (rxenable_out_out_11_qs)
@@ -2804,8 +2805,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_0_we),
@@ -2813,7 +2814,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[0].de),
-    .d      (hw2reg.in_sent[0].d ),
+    .d      (hw2reg.in_sent[0].d),
 
     // to internal hardware
     .qe     (),
@@ -2830,8 +2831,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_1_we),
@@ -2839,7 +2840,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[1].de),
-    .d      (hw2reg.in_sent[1].d ),
+    .d      (hw2reg.in_sent[1].d),
 
     // to internal hardware
     .qe     (),
@@ -2856,8 +2857,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_2_we),
@@ -2865,7 +2866,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[2].de),
-    .d      (hw2reg.in_sent[2].d ),
+    .d      (hw2reg.in_sent[2].d),
 
     // to internal hardware
     .qe     (),
@@ -2882,8 +2883,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_3_we),
@@ -2891,7 +2892,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[3].de),
-    .d      (hw2reg.in_sent[3].d ),
+    .d      (hw2reg.in_sent[3].d),
 
     // to internal hardware
     .qe     (),
@@ -2908,8 +2909,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_4_we),
@@ -2917,7 +2918,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[4].de),
-    .d      (hw2reg.in_sent[4].d ),
+    .d      (hw2reg.in_sent[4].d),
 
     // to internal hardware
     .qe     (),
@@ -2934,8 +2935,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_5_we),
@@ -2943,7 +2944,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[5].de),
-    .d      (hw2reg.in_sent[5].d ),
+    .d      (hw2reg.in_sent[5].d),
 
     // to internal hardware
     .qe     (),
@@ -2960,8 +2961,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_6_we),
@@ -2969,7 +2970,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[6].de),
-    .d      (hw2reg.in_sent[6].d ),
+    .d      (hw2reg.in_sent[6].d),
 
     // to internal hardware
     .qe     (),
@@ -2986,8 +2987,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_7_we),
@@ -2995,7 +2996,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[7].de),
-    .d      (hw2reg.in_sent[7].d ),
+    .d      (hw2reg.in_sent[7].d),
 
     // to internal hardware
     .qe     (),
@@ -3012,8 +3013,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_8_we),
@@ -3021,7 +3022,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[8].de),
-    .d      (hw2reg.in_sent[8].d ),
+    .d      (hw2reg.in_sent[8].d),
 
     // to internal hardware
     .qe     (),
@@ -3038,8 +3039,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_9_we),
@@ -3047,7 +3048,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[9].de),
-    .d      (hw2reg.in_sent[9].d ),
+    .d      (hw2reg.in_sent[9].d),
 
     // to internal hardware
     .qe     (),
@@ -3064,8 +3065,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_10_we),
@@ -3073,7 +3074,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[10].de),
-    .d      (hw2reg.in_sent[10].d ),
+    .d      (hw2reg.in_sent[10].d),
 
     // to internal hardware
     .qe     (),
@@ -3090,8 +3091,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_in_sent_sent_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (in_sent_sent_11_we),
@@ -3099,7 +3100,7 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.in_sent[11].de),
-    .d      (hw2reg.in_sent[11].d ),
+    .d      (hw2reg.in_sent[11].d),
 
     // to internal hardware
     .qe     (),
@@ -3121,8 +3122,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_0_we),
@@ -3130,11 +3131,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[0].de),
-    .d      (hw2reg.stall[0].d ),
+    .d      (hw2reg.stall[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[0].q ),
+    .q      (reg2hw.stall[0].q),
 
     // to register interface (read)
     .qs     (stall_stall_0_qs)
@@ -3147,8 +3148,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_1_we),
@@ -3156,11 +3157,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[1].de),
-    .d      (hw2reg.stall[1].d ),
+    .d      (hw2reg.stall[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[1].q ),
+    .q      (reg2hw.stall[1].q),
 
     // to register interface (read)
     .qs     (stall_stall_1_qs)
@@ -3173,8 +3174,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_2_we),
@@ -3182,11 +3183,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[2].de),
-    .d      (hw2reg.stall[2].d ),
+    .d      (hw2reg.stall[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[2].q ),
+    .q      (reg2hw.stall[2].q),
 
     // to register interface (read)
     .qs     (stall_stall_2_qs)
@@ -3199,8 +3200,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_3_we),
@@ -3208,11 +3209,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[3].de),
-    .d      (hw2reg.stall[3].d ),
+    .d      (hw2reg.stall[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[3].q ),
+    .q      (reg2hw.stall[3].q),
 
     // to register interface (read)
     .qs     (stall_stall_3_qs)
@@ -3225,8 +3226,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_4_we),
@@ -3234,11 +3235,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[4].de),
-    .d      (hw2reg.stall[4].d ),
+    .d      (hw2reg.stall[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[4].q ),
+    .q      (reg2hw.stall[4].q),
 
     // to register interface (read)
     .qs     (stall_stall_4_qs)
@@ -3251,8 +3252,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_5_we),
@@ -3260,11 +3261,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[5].de),
-    .d      (hw2reg.stall[5].d ),
+    .d      (hw2reg.stall[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[5].q ),
+    .q      (reg2hw.stall[5].q),
 
     // to register interface (read)
     .qs     (stall_stall_5_qs)
@@ -3277,8 +3278,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_6_we),
@@ -3286,11 +3287,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[6].de),
-    .d      (hw2reg.stall[6].d ),
+    .d      (hw2reg.stall[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[6].q ),
+    .q      (reg2hw.stall[6].q),
 
     // to register interface (read)
     .qs     (stall_stall_6_qs)
@@ -3303,8 +3304,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_7_we),
@@ -3312,11 +3313,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[7].de),
-    .d      (hw2reg.stall[7].d ),
+    .d      (hw2reg.stall[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[7].q ),
+    .q      (reg2hw.stall[7].q),
 
     // to register interface (read)
     .qs     (stall_stall_7_qs)
@@ -3329,8 +3330,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_8_we),
@@ -3338,11 +3339,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[8].de),
-    .d      (hw2reg.stall[8].d ),
+    .d      (hw2reg.stall[8].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[8].q ),
+    .q      (reg2hw.stall[8].q),
 
     // to register interface (read)
     .qs     (stall_stall_8_qs)
@@ -3355,8 +3356,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_9_we),
@@ -3364,11 +3365,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[9].de),
-    .d      (hw2reg.stall[9].d ),
+    .d      (hw2reg.stall[9].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[9].q ),
+    .q      (reg2hw.stall[9].q),
 
     // to register interface (read)
     .qs     (stall_stall_9_qs)
@@ -3381,8 +3382,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_10_we),
@@ -3390,11 +3391,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[10].de),
-    .d      (hw2reg.stall[10].d ),
+    .d      (hw2reg.stall[10].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[10].q ),
+    .q      (reg2hw.stall[10].q),
 
     // to register interface (read)
     .qs     (stall_stall_10_qs)
@@ -3407,8 +3408,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stall_stall_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stall_stall_11_we),
@@ -3416,11 +3417,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stall[11].de),
-    .d      (hw2reg.stall[11].d ),
+    .d      (hw2reg.stall[11].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stall[11].q ),
+    .q      (reg2hw.stall[11].q),
 
     // to register interface (read)
     .qs     (stall_stall_11_qs)
@@ -3438,8 +3439,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_0_buffer_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_0_buffer_0_we),
@@ -3447,11 +3448,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[0].buffer.q ),
+    .q      (reg2hw.configin[0].buffer.q),
 
     // to register interface (read)
     .qs     (configin_0_buffer_0_qs)
@@ -3464,8 +3465,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_0_size_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_0_size_0_we),
@@ -3473,11 +3474,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[0].size.q ),
+    .q      (reg2hw.configin[0].size.q),
 
     // to register interface (read)
     .qs     (configin_0_size_0_qs)
@@ -3490,8 +3491,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_0_pend_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_0_pend_0_we),
@@ -3499,11 +3500,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[0].pend.de),
-    .d      (hw2reg.configin[0].pend.d ),
+    .d      (hw2reg.configin[0].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[0].pend.q ),
+    .q      (reg2hw.configin[0].pend.q),
 
     // to register interface (read)
     .qs     (configin_0_pend_0_qs)
@@ -3516,8 +3517,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_0_rdy_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_0_rdy_0_we),
@@ -3525,11 +3526,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[0].rdy.de),
-    .d      (hw2reg.configin[0].rdy.d ),
+    .d      (hw2reg.configin[0].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[0].rdy.q ),
+    .q      (reg2hw.configin[0].rdy.q),
 
     // to register interface (read)
     .qs     (configin_0_rdy_0_qs)
@@ -3545,8 +3546,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_1_buffer_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_1_buffer_1_we),
@@ -3554,11 +3555,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[1].buffer.q ),
+    .q      (reg2hw.configin[1].buffer.q),
 
     // to register interface (read)
     .qs     (configin_1_buffer_1_qs)
@@ -3571,8 +3572,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_1_size_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_1_size_1_we),
@@ -3580,11 +3581,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[1].size.q ),
+    .q      (reg2hw.configin[1].size.q),
 
     // to register interface (read)
     .qs     (configin_1_size_1_qs)
@@ -3597,8 +3598,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_1_pend_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_1_pend_1_we),
@@ -3606,11 +3607,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[1].pend.de),
-    .d      (hw2reg.configin[1].pend.d ),
+    .d      (hw2reg.configin[1].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[1].pend.q ),
+    .q      (reg2hw.configin[1].pend.q),
 
     // to register interface (read)
     .qs     (configin_1_pend_1_qs)
@@ -3623,8 +3624,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_1_rdy_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_1_rdy_1_we),
@@ -3632,11 +3633,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[1].rdy.de),
-    .d      (hw2reg.configin[1].rdy.d ),
+    .d      (hw2reg.configin[1].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[1].rdy.q ),
+    .q      (reg2hw.configin[1].rdy.q),
 
     // to register interface (read)
     .qs     (configin_1_rdy_1_qs)
@@ -3652,8 +3653,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_2_buffer_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_2_buffer_2_we),
@@ -3661,11 +3662,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[2].buffer.q ),
+    .q      (reg2hw.configin[2].buffer.q),
 
     // to register interface (read)
     .qs     (configin_2_buffer_2_qs)
@@ -3678,8 +3679,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_2_size_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_2_size_2_we),
@@ -3687,11 +3688,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[2].size.q ),
+    .q      (reg2hw.configin[2].size.q),
 
     // to register interface (read)
     .qs     (configin_2_size_2_qs)
@@ -3704,8 +3705,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_2_pend_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_2_pend_2_we),
@@ -3713,11 +3714,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[2].pend.de),
-    .d      (hw2reg.configin[2].pend.d ),
+    .d      (hw2reg.configin[2].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[2].pend.q ),
+    .q      (reg2hw.configin[2].pend.q),
 
     // to register interface (read)
     .qs     (configin_2_pend_2_qs)
@@ -3730,8 +3731,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_2_rdy_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_2_rdy_2_we),
@@ -3739,11 +3740,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[2].rdy.de),
-    .d      (hw2reg.configin[2].rdy.d ),
+    .d      (hw2reg.configin[2].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[2].rdy.q ),
+    .q      (reg2hw.configin[2].rdy.q),
 
     // to register interface (read)
     .qs     (configin_2_rdy_2_qs)
@@ -3759,8 +3760,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_3_buffer_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_3_buffer_3_we),
@@ -3768,11 +3769,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[3].buffer.q ),
+    .q      (reg2hw.configin[3].buffer.q),
 
     // to register interface (read)
     .qs     (configin_3_buffer_3_qs)
@@ -3785,8 +3786,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_3_size_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_3_size_3_we),
@@ -3794,11 +3795,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[3].size.q ),
+    .q      (reg2hw.configin[3].size.q),
 
     // to register interface (read)
     .qs     (configin_3_size_3_qs)
@@ -3811,8 +3812,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_3_pend_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_3_pend_3_we),
@@ -3820,11 +3821,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[3].pend.de),
-    .d      (hw2reg.configin[3].pend.d ),
+    .d      (hw2reg.configin[3].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[3].pend.q ),
+    .q      (reg2hw.configin[3].pend.q),
 
     // to register interface (read)
     .qs     (configin_3_pend_3_qs)
@@ -3837,8 +3838,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_3_rdy_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_3_rdy_3_we),
@@ -3846,11 +3847,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[3].rdy.de),
-    .d      (hw2reg.configin[3].rdy.d ),
+    .d      (hw2reg.configin[3].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[3].rdy.q ),
+    .q      (reg2hw.configin[3].rdy.q),
 
     // to register interface (read)
     .qs     (configin_3_rdy_3_qs)
@@ -3866,8 +3867,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_4_buffer_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_4_buffer_4_we),
@@ -3875,11 +3876,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[4].buffer.q ),
+    .q      (reg2hw.configin[4].buffer.q),
 
     // to register interface (read)
     .qs     (configin_4_buffer_4_qs)
@@ -3892,8 +3893,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_4_size_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_4_size_4_we),
@@ -3901,11 +3902,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[4].size.q ),
+    .q      (reg2hw.configin[4].size.q),
 
     // to register interface (read)
     .qs     (configin_4_size_4_qs)
@@ -3918,8 +3919,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_4_pend_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_4_pend_4_we),
@@ -3927,11 +3928,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[4].pend.de),
-    .d      (hw2reg.configin[4].pend.d ),
+    .d      (hw2reg.configin[4].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[4].pend.q ),
+    .q      (reg2hw.configin[4].pend.q),
 
     // to register interface (read)
     .qs     (configin_4_pend_4_qs)
@@ -3944,8 +3945,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_4_rdy_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_4_rdy_4_we),
@@ -3953,11 +3954,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[4].rdy.de),
-    .d      (hw2reg.configin[4].rdy.d ),
+    .d      (hw2reg.configin[4].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[4].rdy.q ),
+    .q      (reg2hw.configin[4].rdy.q),
 
     // to register interface (read)
     .qs     (configin_4_rdy_4_qs)
@@ -3973,8 +3974,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_5_buffer_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_5_buffer_5_we),
@@ -3982,11 +3983,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[5].buffer.q ),
+    .q      (reg2hw.configin[5].buffer.q),
 
     // to register interface (read)
     .qs     (configin_5_buffer_5_qs)
@@ -3999,8 +4000,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_5_size_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_5_size_5_we),
@@ -4008,11 +4009,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[5].size.q ),
+    .q      (reg2hw.configin[5].size.q),
 
     // to register interface (read)
     .qs     (configin_5_size_5_qs)
@@ -4025,8 +4026,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_5_pend_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_5_pend_5_we),
@@ -4034,11 +4035,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[5].pend.de),
-    .d      (hw2reg.configin[5].pend.d ),
+    .d      (hw2reg.configin[5].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[5].pend.q ),
+    .q      (reg2hw.configin[5].pend.q),
 
     // to register interface (read)
     .qs     (configin_5_pend_5_qs)
@@ -4051,8 +4052,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_5_rdy_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_5_rdy_5_we),
@@ -4060,11 +4061,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[5].rdy.de),
-    .d      (hw2reg.configin[5].rdy.d ),
+    .d      (hw2reg.configin[5].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[5].rdy.q ),
+    .q      (reg2hw.configin[5].rdy.q),
 
     // to register interface (read)
     .qs     (configin_5_rdy_5_qs)
@@ -4080,8 +4081,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_6_buffer_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_6_buffer_6_we),
@@ -4089,11 +4090,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[6].buffer.q ),
+    .q      (reg2hw.configin[6].buffer.q),
 
     // to register interface (read)
     .qs     (configin_6_buffer_6_qs)
@@ -4106,8 +4107,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_6_size_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_6_size_6_we),
@@ -4115,11 +4116,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[6].size.q ),
+    .q      (reg2hw.configin[6].size.q),
 
     // to register interface (read)
     .qs     (configin_6_size_6_qs)
@@ -4132,8 +4133,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_6_pend_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_6_pend_6_we),
@@ -4141,11 +4142,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[6].pend.de),
-    .d      (hw2reg.configin[6].pend.d ),
+    .d      (hw2reg.configin[6].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[6].pend.q ),
+    .q      (reg2hw.configin[6].pend.q),
 
     // to register interface (read)
     .qs     (configin_6_pend_6_qs)
@@ -4158,8 +4159,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_6_rdy_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_6_rdy_6_we),
@@ -4167,11 +4168,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[6].rdy.de),
-    .d      (hw2reg.configin[6].rdy.d ),
+    .d      (hw2reg.configin[6].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[6].rdy.q ),
+    .q      (reg2hw.configin[6].rdy.q),
 
     // to register interface (read)
     .qs     (configin_6_rdy_6_qs)
@@ -4187,8 +4188,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_7_buffer_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_7_buffer_7_we),
@@ -4196,11 +4197,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[7].buffer.q ),
+    .q      (reg2hw.configin[7].buffer.q),
 
     // to register interface (read)
     .qs     (configin_7_buffer_7_qs)
@@ -4213,8 +4214,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_7_size_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_7_size_7_we),
@@ -4222,11 +4223,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[7].size.q ),
+    .q      (reg2hw.configin[7].size.q),
 
     // to register interface (read)
     .qs     (configin_7_size_7_qs)
@@ -4239,8 +4240,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_7_pend_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_7_pend_7_we),
@@ -4248,11 +4249,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[7].pend.de),
-    .d      (hw2reg.configin[7].pend.d ),
+    .d      (hw2reg.configin[7].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[7].pend.q ),
+    .q      (reg2hw.configin[7].pend.q),
 
     // to register interface (read)
     .qs     (configin_7_pend_7_qs)
@@ -4265,8 +4266,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_7_rdy_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_7_rdy_7_we),
@@ -4274,11 +4275,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[7].rdy.de),
-    .d      (hw2reg.configin[7].rdy.d ),
+    .d      (hw2reg.configin[7].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[7].rdy.q ),
+    .q      (reg2hw.configin[7].rdy.q),
 
     // to register interface (read)
     .qs     (configin_7_rdy_7_qs)
@@ -4294,8 +4295,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_8_buffer_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_8_buffer_8_we),
@@ -4303,11 +4304,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[8].buffer.q ),
+    .q      (reg2hw.configin[8].buffer.q),
 
     // to register interface (read)
     .qs     (configin_8_buffer_8_qs)
@@ -4320,8 +4321,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_8_size_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_8_size_8_we),
@@ -4329,11 +4330,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[8].size.q ),
+    .q      (reg2hw.configin[8].size.q),
 
     // to register interface (read)
     .qs     (configin_8_size_8_qs)
@@ -4346,8 +4347,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_8_pend_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_8_pend_8_we),
@@ -4355,11 +4356,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[8].pend.de),
-    .d      (hw2reg.configin[8].pend.d ),
+    .d      (hw2reg.configin[8].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[8].pend.q ),
+    .q      (reg2hw.configin[8].pend.q),
 
     // to register interface (read)
     .qs     (configin_8_pend_8_qs)
@@ -4372,8 +4373,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_8_rdy_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_8_rdy_8_we),
@@ -4381,11 +4382,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[8].rdy.de),
-    .d      (hw2reg.configin[8].rdy.d ),
+    .d      (hw2reg.configin[8].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[8].rdy.q ),
+    .q      (reg2hw.configin[8].rdy.q),
 
     // to register interface (read)
     .qs     (configin_8_rdy_8_qs)
@@ -4401,8 +4402,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_9_buffer_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_9_buffer_9_we),
@@ -4410,11 +4411,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[9].buffer.q ),
+    .q      (reg2hw.configin[9].buffer.q),
 
     // to register interface (read)
     .qs     (configin_9_buffer_9_qs)
@@ -4427,8 +4428,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_9_size_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_9_size_9_we),
@@ -4436,11 +4437,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[9].size.q ),
+    .q      (reg2hw.configin[9].size.q),
 
     // to register interface (read)
     .qs     (configin_9_size_9_qs)
@@ -4453,8 +4454,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_9_pend_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_9_pend_9_we),
@@ -4462,11 +4463,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[9].pend.de),
-    .d      (hw2reg.configin[9].pend.d ),
+    .d      (hw2reg.configin[9].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[9].pend.q ),
+    .q      (reg2hw.configin[9].pend.q),
 
     // to register interface (read)
     .qs     (configin_9_pend_9_qs)
@@ -4479,8 +4480,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_9_rdy_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_9_rdy_9_we),
@@ -4488,11 +4489,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[9].rdy.de),
-    .d      (hw2reg.configin[9].rdy.d ),
+    .d      (hw2reg.configin[9].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[9].rdy.q ),
+    .q      (reg2hw.configin[9].rdy.q),
 
     // to register interface (read)
     .qs     (configin_9_rdy_9_qs)
@@ -4508,8 +4509,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_10_buffer_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_10_buffer_10_we),
@@ -4517,11 +4518,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[10].buffer.q ),
+    .q      (reg2hw.configin[10].buffer.q),
 
     // to register interface (read)
     .qs     (configin_10_buffer_10_qs)
@@ -4534,8 +4535,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_10_size_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_10_size_10_we),
@@ -4543,11 +4544,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[10].size.q ),
+    .q      (reg2hw.configin[10].size.q),
 
     // to register interface (read)
     .qs     (configin_10_size_10_qs)
@@ -4560,8 +4561,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_10_pend_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_10_pend_10_we),
@@ -4569,11 +4570,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[10].pend.de),
-    .d      (hw2reg.configin[10].pend.d ),
+    .d      (hw2reg.configin[10].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[10].pend.q ),
+    .q      (reg2hw.configin[10].pend.q),
 
     // to register interface (read)
     .qs     (configin_10_pend_10_qs)
@@ -4586,8 +4587,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_10_rdy_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_10_rdy_10_we),
@@ -4595,11 +4596,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[10].rdy.de),
-    .d      (hw2reg.configin[10].rdy.d ),
+    .d      (hw2reg.configin[10].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[10].rdy.q ),
+    .q      (reg2hw.configin[10].rdy.q),
 
     // to register interface (read)
     .qs     (configin_10_rdy_10_qs)
@@ -4615,8 +4616,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_configin_11_buffer_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_11_buffer_11_we),
@@ -4624,11 +4625,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[11].buffer.q ),
+    .q      (reg2hw.configin[11].buffer.q),
 
     // to register interface (read)
     .qs     (configin_11_buffer_11_qs)
@@ -4641,8 +4642,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_configin_11_size_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_11_size_11_we),
@@ -4650,11 +4651,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[11].size.q ),
+    .q      (reg2hw.configin[11].size.q),
 
     // to register interface (read)
     .qs     (configin_11_size_11_qs)
@@ -4667,8 +4668,8 @@ module usbdev_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_configin_11_pend_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_11_pend_11_we),
@@ -4676,11 +4677,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[11].pend.de),
-    .d      (hw2reg.configin[11].pend.d ),
+    .d      (hw2reg.configin[11].pend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[11].pend.q ),
+    .q      (reg2hw.configin[11].pend.q),
 
     // to register interface (read)
     .qs     (configin_11_pend_11_qs)
@@ -4693,8 +4694,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configin_11_rdy_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configin_11_rdy_11_we),
@@ -4702,11 +4703,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (hw2reg.configin[11].rdy.de),
-    .d      (hw2reg.configin[11].rdy.d ),
+    .d      (hw2reg.configin[11].rdy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configin[11].rdy.q ),
+    .q      (reg2hw.configin[11].rdy.q),
 
     // to register interface (read)
     .qs     (configin_11_rdy_11_qs)
@@ -4724,8 +4725,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_0_we),
@@ -4733,11 +4734,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[0].q ),
+    .q      (reg2hw.iso[0].q),
 
     // to register interface (read)
     .qs     (iso_iso_0_qs)
@@ -4750,8 +4751,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_1_we),
@@ -4759,11 +4760,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[1].q ),
+    .q      (reg2hw.iso[1].q),
 
     // to register interface (read)
     .qs     (iso_iso_1_qs)
@@ -4776,8 +4777,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_2_we),
@@ -4785,11 +4786,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[2].q ),
+    .q      (reg2hw.iso[2].q),
 
     // to register interface (read)
     .qs     (iso_iso_2_qs)
@@ -4802,8 +4803,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_3_we),
@@ -4811,11 +4812,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[3].q ),
+    .q      (reg2hw.iso[3].q),
 
     // to register interface (read)
     .qs     (iso_iso_3_qs)
@@ -4828,8 +4829,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_4_we),
@@ -4837,11 +4838,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[4].q ),
+    .q      (reg2hw.iso[4].q),
 
     // to register interface (read)
     .qs     (iso_iso_4_qs)
@@ -4854,8 +4855,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_5_we),
@@ -4863,11 +4864,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[5].q ),
+    .q      (reg2hw.iso[5].q),
 
     // to register interface (read)
     .qs     (iso_iso_5_qs)
@@ -4880,8 +4881,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_6_we),
@@ -4889,11 +4890,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[6].q ),
+    .q      (reg2hw.iso[6].q),
 
     // to register interface (read)
     .qs     (iso_iso_6_qs)
@@ -4906,8 +4907,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_7_we),
@@ -4915,11 +4916,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[7].q ),
+    .q      (reg2hw.iso[7].q),
 
     // to register interface (read)
     .qs     (iso_iso_7_qs)
@@ -4932,8 +4933,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_8_we),
@@ -4941,11 +4942,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[8].q ),
+    .q      (reg2hw.iso[8].q),
 
     // to register interface (read)
     .qs     (iso_iso_8_qs)
@@ -4958,8 +4959,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_9_we),
@@ -4967,11 +4968,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[9].q ),
+    .q      (reg2hw.iso[9].q),
 
     // to register interface (read)
     .qs     (iso_iso_9_qs)
@@ -4984,8 +4985,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_10_we),
@@ -4993,11 +4994,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[10].q ),
+    .q      (reg2hw.iso[10].q),
 
     // to register interface (read)
     .qs     (iso_iso_10_qs)
@@ -5010,8 +5011,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_iso_iso_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (iso_iso_11_we),
@@ -5019,11 +5020,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.iso[11].q ),
+    .q      (reg2hw.iso[11].q),
 
     // to register interface (read)
     .qs     (iso_iso_11_qs)
@@ -5041,8 +5042,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_0_we),
@@ -5050,12 +5051,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[0].qe),
-    .q      (reg2hw.data_toggle_clear[0].q ),
+    .q      (reg2hw.data_toggle_clear[0].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5066,8 +5068,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_1_we),
@@ -5075,12 +5077,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[1].qe),
-    .q      (reg2hw.data_toggle_clear[1].q ),
+    .q      (reg2hw.data_toggle_clear[1].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5091,8 +5094,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_2_we),
@@ -5100,12 +5103,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[2].qe),
-    .q      (reg2hw.data_toggle_clear[2].q ),
+    .q      (reg2hw.data_toggle_clear[2].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5116,8 +5120,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_3_we),
@@ -5125,12 +5129,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[3].qe),
-    .q      (reg2hw.data_toggle_clear[3].q ),
+    .q      (reg2hw.data_toggle_clear[3].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5141,8 +5146,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_4_we),
@@ -5150,12 +5155,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[4].qe),
-    .q      (reg2hw.data_toggle_clear[4].q ),
+    .q      (reg2hw.data_toggle_clear[4].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5166,8 +5172,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_5_we),
@@ -5175,12 +5181,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[5].qe),
-    .q      (reg2hw.data_toggle_clear[5].q ),
+    .q      (reg2hw.data_toggle_clear[5].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5191,8 +5198,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_6_we),
@@ -5200,12 +5207,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[6].qe),
-    .q      (reg2hw.data_toggle_clear[6].q ),
+    .q      (reg2hw.data_toggle_clear[6].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5216,8 +5224,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_7_we),
@@ -5225,12 +5233,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[7].qe),
-    .q      (reg2hw.data_toggle_clear[7].q ),
+    .q      (reg2hw.data_toggle_clear[7].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5241,8 +5250,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_8_we),
@@ -5250,12 +5259,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[8].qe),
-    .q      (reg2hw.data_toggle_clear[8].q ),
+    .q      (reg2hw.data_toggle_clear[8].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5266,8 +5276,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_9_we),
@@ -5275,12 +5285,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[9].qe),
-    .q      (reg2hw.data_toggle_clear[9].q ),
+    .q      (reg2hw.data_toggle_clear[9].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5291,8 +5302,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_10_we),
@@ -5300,12 +5311,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[10].qe),
-    .q      (reg2hw.data_toggle_clear[10].q ),
+    .q      (reg2hw.data_toggle_clear[10].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5316,8 +5328,8 @@ module usbdev_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_data_toggle_clear_clear_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (data_toggle_clear_clear_11_we),
@@ -5325,12 +5337,13 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.data_toggle_clear[11].qe),
-    .q      (reg2hw.data_toggle_clear[11].q ),
+    .q      (reg2hw.data_toggle_clear[11].q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -5496,8 +5509,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_dp_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_dp_o_we),
@@ -5505,11 +5518,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.dp_o.q ),
+    .q      (reg2hw.phy_pins_drive.dp_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dp_o_qs)
@@ -5522,8 +5535,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_dn_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_dn_o_we),
@@ -5531,11 +5544,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.dn_o.q ),
+    .q      (reg2hw.phy_pins_drive.dn_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dn_o_qs)
@@ -5548,8 +5561,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_d_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_d_o_we),
@@ -5557,11 +5570,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.d_o.q ),
+    .q      (reg2hw.phy_pins_drive.d_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_d_o_qs)
@@ -5574,8 +5587,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_se0_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_se0_o_we),
@@ -5583,11 +5596,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.se0_o.q ),
+    .q      (reg2hw.phy_pins_drive.se0_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_se0_o_qs)
@@ -5600,8 +5613,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_oe_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_oe_o_we),
@@ -5609,11 +5622,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.oe_o.q ),
+    .q      (reg2hw.phy_pins_drive.oe_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_oe_o_qs)
@@ -5626,8 +5639,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_tx_mode_se_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_tx_mode_se_o_we),
@@ -5635,11 +5648,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.tx_mode_se_o.q ),
+    .q      (reg2hw.phy_pins_drive.tx_mode_se_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_tx_mode_se_o_qs)
@@ -5652,8 +5665,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_dp_pullup_en_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_dp_pullup_en_o_we),
@@ -5661,11 +5674,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.dp_pullup_en_o.q ),
+    .q      (reg2hw.phy_pins_drive.dp_pullup_en_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dp_pullup_en_o_qs)
@@ -5678,8 +5691,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_dn_pullup_en_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_dn_pullup_en_o_we),
@@ -5687,11 +5700,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.dn_pullup_en_o.q ),
+    .q      (reg2hw.phy_pins_drive.dn_pullup_en_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dn_pullup_en_o_qs)
@@ -5704,8 +5717,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_suspend_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_suspend_o_we),
@@ -5713,11 +5726,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.suspend_o.q ),
+    .q      (reg2hw.phy_pins_drive.suspend_o.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_suspend_o_qs)
@@ -5730,8 +5743,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_pins_drive_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_en_we),
@@ -5739,11 +5752,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.en.q ),
+    .q      (reg2hw.phy_pins_drive.en.q),
 
     // to register interface (read)
     .qs     (phy_pins_drive_en_qs)
@@ -5758,8 +5771,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_rx_differential_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_rx_differential_mode_we),
@@ -5767,11 +5780,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.rx_differential_mode.q ),
+    .q      (reg2hw.phy_config.rx_differential_mode.q),
 
     // to register interface (read)
     .qs     (phy_config_rx_differential_mode_qs)
@@ -5784,8 +5797,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_tx_differential_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_tx_differential_mode_we),
@@ -5793,11 +5806,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.tx_differential_mode.q ),
+    .q      (reg2hw.phy_config.tx_differential_mode.q),
 
     // to register interface (read)
     .qs     (phy_config_tx_differential_mode_qs)
@@ -5810,8 +5823,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_phy_config_eop_single_bit (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_eop_single_bit_we),
@@ -5819,11 +5832,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.eop_single_bit.q ),
+    .q      (reg2hw.phy_config.eop_single_bit.q),
 
     // to register interface (read)
     .qs     (phy_config_eop_single_bit_qs)
@@ -5836,8 +5849,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_override_pwr_sense_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_override_pwr_sense_en_we),
@@ -5845,11 +5858,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.override_pwr_sense_en.q ),
+    .q      (reg2hw.phy_config.override_pwr_sense_en.q),
 
     // to register interface (read)
     .qs     (phy_config_override_pwr_sense_en_qs)
@@ -5862,8 +5875,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_override_pwr_sense_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_override_pwr_sense_val_we),
@@ -5871,11 +5884,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.override_pwr_sense_val.q ),
+    .q      (reg2hw.phy_config.override_pwr_sense_val.q),
 
     // to register interface (read)
     .qs     (phy_config_override_pwr_sense_val_qs)
@@ -5888,8 +5901,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_pinflip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_pinflip_we),
@@ -5897,11 +5910,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.pinflip.q ),
+    .q      (reg2hw.phy_config.pinflip.q),
 
     // to register interface (read)
     .qs     (phy_config_pinflip_qs)
@@ -5914,8 +5927,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_usb_ref_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_usb_ref_disable_we),
@@ -5923,11 +5936,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.usb_ref_disable.q ),
+    .q      (reg2hw.phy_config.usb_ref_disable.q),
 
     // to register interface (read)
     .qs     (phy_config_usb_ref_disable_qs)
@@ -5940,8 +5953,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_config_tx_osc_test_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_tx_osc_test_mode_we),
@@ -5949,11 +5962,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.tx_osc_test_mode.q ),
+    .q      (reg2hw.phy_config.tx_osc_test_mode.q),
 
     // to register interface (read)
     .qs     (phy_config_tx_osc_test_mode_qs)
@@ -5968,8 +5981,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wake_config_wake_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wake_config_wake_en_we),
@@ -5977,11 +5990,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wake_config.wake_en.q ),
+    .q      (reg2hw.wake_config.wake_en.q),
 
     // to register interface (read)
     .qs     (wake_config_wake_en_qs)
@@ -5994,8 +6007,8 @@ module usbdev_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_wake_config_wake_ack (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wake_config_wake_ack_we),
@@ -6003,11 +6016,11 @@ module usbdev_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wake_config.wake_ack.q ),
+    .q      (reg2hw.wake_config.wake_ack.q),
 
     // to register interface (read)
     .qs     (wake_config_wake_ack_qs)
@@ -6021,15 +6034,16 @@ module usbdev_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (3'h0)
   ) u_wake_debug (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.wake_debug.de),
-    .d      (hw2reg.wake_debug.d ),
+    .d      (hw2reg.wake_debug.d),
 
     // to internal hardware
     .qe     (),

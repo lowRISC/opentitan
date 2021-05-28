@@ -144,8 +144,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_we),
@@ -153,11 +153,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl[0].q ),
+    .q      (reg2hw.ctrl[0].q),
 
     // to register interface (read)
     .qs     (ctrl_qs)
@@ -172,8 +172,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (12'h0)
   ) u_cfg0_prescale (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg0_prescale_we),
@@ -181,11 +181,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg0.prescale.q ),
+    .q      (reg2hw.cfg0.prescale.q),
 
     // to register interface (read)
     .qs     (cfg0_prescale_qs)
@@ -198,8 +198,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h1)
   ) u_cfg0_step (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg0_step_we),
@@ -207,11 +207,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg0.step.q ),
+    .q      (reg2hw.cfg0.step.q),
 
     // to register interface (read)
     .qs     (cfg0_step_qs)
@@ -225,8 +225,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_timer_v_lower0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timer_v_lower0_we),
@@ -234,11 +234,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (hw2reg.timer_v_lower0.de),
-    .d      (hw2reg.timer_v_lower0.d ),
+    .d      (hw2reg.timer_v_lower0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timer_v_lower0.q ),
+    .q      (reg2hw.timer_v_lower0.q),
 
     // to register interface (read)
     .qs     (timer_v_lower0_qs)
@@ -252,8 +252,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_timer_v_upper0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timer_v_upper0_we),
@@ -261,11 +261,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (hw2reg.timer_v_upper0.de),
-    .d      (hw2reg.timer_v_upper0.d ),
+    .d      (hw2reg.timer_v_upper0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timer_v_upper0.q ),
+    .q      (reg2hw.timer_v_upper0.q),
 
     // to register interface (read)
     .qs     (timer_v_upper0_qs)
@@ -279,8 +279,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'hffffffff)
   ) u_compare_lower0_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (compare_lower0_0_we),
@@ -288,11 +288,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.compare_lower0_0.qe),
-    .q      (reg2hw.compare_lower0_0.q ),
+    .q      (reg2hw.compare_lower0_0.q),
 
     // to register interface (read)
     .qs     (compare_lower0_0_qs)
@@ -306,8 +306,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'hffffffff)
   ) u_compare_upper0_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (compare_upper0_0_we),
@@ -315,11 +315,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.compare_upper0_0.qe),
-    .q      (reg2hw.compare_upper0_0.q ),
+    .q      (reg2hw.compare_upper0_0.q),
 
     // to register interface (read)
     .qs     (compare_upper0_0_qs)
@@ -335,8 +335,8 @@ module rv_timer_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable0_we),
@@ -344,11 +344,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable0[0].q ),
+    .q      (reg2hw.intr_enable0[0].q),
 
     // to register interface (read)
     .qs     (intr_enable0_qs)
@@ -364,8 +364,8 @@ module rv_timer_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state0_we),
@@ -373,11 +373,11 @@ module rv_timer_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state0[0].de),
-    .d      (hw2reg.intr_state0[0].d ),
+    .d      (hw2reg.intr_state0[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state0[0].q ),
+    .q      (reg2hw.intr_state0[0].q),
 
     // to register interface (read)
     .qs     (intr_state0_qs)
@@ -397,7 +397,7 @@ module rv_timer_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test0[0].qe),
-    .q      (reg2hw.intr_test0[0].q ),
+    .q      (reg2hw.intr_test0[0].q),
     .qs     ()
   );
 
