@@ -443,124 +443,95 @@ ${bits.msb}\
   % endif
 </%def>\
 <%def name="finst_gen(field, finst_name, fsig_name, hwext, regwen, shadowed)">\
+<%
+    re_expr = f'{finst_name}_re' if field.swaccess.allows_read() else "1'b0"
+
+    if field.swaccess.allows_write():
+      if regwen:
+        we_expr = f'{finst_name}_we & {regwen.lower()}_qs'
+      else:
+        we_expr = f'{finst_name}_we'
+      wd_expr = f'{finst_name}_wd'
+    else:
+      we_expr = "1'b0"
+      wd_expr = "'0"
+
+    if field.hwaccess.allows_write():
+      de_expr = f'hw2reg.{fsig_name}.de'
+      d_expr = f'hw2reg.{fsig_name}.d'
+    else:
+      de_expr = "1'b0"
+      d_expr = "'0"
+
+    qre_expr = f'reg2hw.{fsig_name}.re' if field.hwre or shadowed else ""
+
+    if field.hwaccess.allows_read():
+      qe_expr = f'reg2hw.{fsig_name}.qe' if field.hwqe else ''
+      q_expr = f'reg2hw.{fsig_name}.q'
+    else:
+      qe_expr = ''
+      q_expr = ''
+
+    qs_expr = f'{finst_name}_qs' if field.swaccess.allows_read() else ''
+%>\
   % if hwext:       ## if hwext, instantiate prim_subreg_ext
   prim_subreg_ext #(
     .DW    (${field.bits.width()})
   ) u_${finst_name} (
-    % if field.swaccess.allows_read():
-    .re     (${finst_name}_re),
-    % else:
-    .re     (1'b0),
-    % endif
-    % if field.swaccess.allows_write():
-      % if regwen:
-    .we     (${finst_name}_we & ${regwen.lower()}_qs),
-      % else:
-    .we     (${finst_name}_we),
-      % endif
-    .wd     (${finst_name}_wd),
-    % else:
-    .we     (1'b0),
-    .wd     ('0),
-    % endif
-    % if field.hwaccess.allows_write():
-    .d      (hw2reg.${fsig_name}.d),
-    % else:
-    .d      ('0),
-    % endif
-    % if field.hwre or shadowed:
-    .qre    (reg2hw.${fsig_name}.re),
-    % else:
-    .qre    (),
-    % endif
-    % if not field.hwaccess.allows_read():
-    .qe     (),
-    .q      (),
-    % else:
-      % if field.hwqe:
-    .qe     (reg2hw.${fsig_name}.qe),
-      % else:
-    .qe     (),
-      % endif
-    .q      (reg2hw.${fsig_name}.q),
-    % endif
-    % if field.swaccess.allows_read():
-    .qs     (${finst_name}_qs)
-    % else:
-    .qs     ()
-    % endif
+    .re     (${re_expr}),
+    .we     (${we_expr}),
+    .wd     (${wd_expr}),
+    .d      (${d_expr}),
+    .qre    (${qre_expr}),
+    .qe     (${qe_expr}),
+    .q      (${q_expr}),
+    .qs     (${qs_expr})
   );
-  % else:       ## if not hwext, instantiate prim_subreg, prim_subreg_shadow or constant assign
-    % if ((not field.hwaccess.allows_read() and\
-           not field.hwaccess.allows_write() and\
-           field.swaccess.swrd() == SwRdAccess.RD and\
-           not field.swaccess.allows_write())):
+  % else:
+<%
+      # This isn't a field in a hwext register. Instantiate prim_subreg,
+      # prim_subreg_shadow or constant assign.
+
+      resval_expr = f"{field.bits.width()}'h{field.resval or 0:x}"
+      is_const_reg = not (field.hwaccess.allows_read() or
+                          field.hwaccess.allows_write() or
+                          field.swaccess.allows_write() or
+                          field.swaccess.swrd() != SwRdAccess.RD)
+
+      subreg_block = 'prim_subreg' + ('_shadowed' if shadowed else '')
+%>\
+    % if is_const_reg:
   // constant-only read
-  assign ${finst_name}_qs = ${field.bits.width()}'h${"%x" % (field.resval or 0)};
-    % else:     ## not hwext not constant
-      % if not shadowed:
-  prim_subreg #(
-      % else:
-  prim_subreg_shadow #(
-      % endif
+  assign ${finst_name}_qs = ${resval_expr};
+    % else:
+  ${subreg_block} #(
     .DW      (${field.bits.width()}),
     .SWACCESS("${field.swaccess.value[1].name.upper()}"),
-    .RESVAL  (${field.bits.width()}'h${"%x" % (field.resval or 0)})
+    .RESVAL  (${resval_expr})
   ) u_${finst_name} (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
       % if shadowed:
-    .re     (${finst_name}_re),
+    .re     (${re_expr}),
       % endif
-      % if field.swaccess.allows_write(): ## non-RO types
-        % if regwen:
-    .we     (${finst_name}_we & ${regwen.lower()}_qs),
-        % else:
-    .we     (${finst_name}_we),
-        % endif
-    .wd     (${finst_name}_wd),
-      % else:                             ## RO types
-    .we     (1'b0),
-    .wd     ('0),
-      % endif
+    .we     (${we_expr}),
+    .wd     (${wd_expr}),
 
     // from internal hardware
-      % if field.hwaccess.allows_write():
-    .de     (hw2reg.${fsig_name}.de),
-    .d      (hw2reg.${fsig_name}.d),
-      % else:
-    .de     (1'b0),
-    .d      ('0),
-      % endif
+    .de     (${de_expr}),
+    .d      (${d_expr}),
 
     // to internal hardware
-      % if not field.hwaccess.allows_read():
-    .qe     (),
-    .q      (),
-      % else:
-        % if field.hwqe:
-    .qe     (reg2hw.${fsig_name}.qe),
-        % else:
-    .qe     (),
-        % endif
-    .q      (reg2hw.${fsig_name}.q),
-      % endif
+    .qe     (${qe_expr}),
+    .q      (${q_expr}),
 
     // to register interface (read)
       % if not shadowed:
-        % if field.swaccess.allows_read():
-    .qs     (${finst_name}_qs)
-        % else:
-    .qs     ()
-        % endif
+    .qs     (${qs_expr})
       % else:
-        % if field.swaccess.allows_read():
-    .qs     (${finst_name}_qs),
-        % else:
-    .qs     (),
-        % endif
+    .qs     (${qs_expr}),
 
     // Shadow register error conditions
     .err_update  (reg2hw.${fsig_name}.err_update),
