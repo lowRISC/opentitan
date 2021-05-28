@@ -1,4 +1,6 @@
-# Tock OS
+---
+title: "Tock OS"
+---
 
 Tock OS is a secure embedded operating system for microcontrollers.
 

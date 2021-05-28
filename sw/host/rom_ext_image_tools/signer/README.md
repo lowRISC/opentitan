@@ -1,3 +1,7 @@
+---
+title: "Code Signing Tool"
+---
+
 # Introduction
 
 [OpenTitan Secure Boot][rom-ext-manifest] process consists of several stages.

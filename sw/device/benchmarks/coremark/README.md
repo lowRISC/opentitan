@@ -1,4 +1,8 @@
-# Building CoreMark
+---
+title: "CoreMark Benchmark"
+---
+
+## Building CoreMark
 
 To build CoreMark under meson:
 
@@ -14,7 +18,7 @@ This will give you a .bin and .elf file (suitable for either spiflash or
 giving directly to `--meminit` for Verilator) which can be found in
 `build-bin/sw/device/fpga/benchmarks/coremark`
 
-# CoreMark Options
+## CoreMark Options
 
 The meson build script alters ITERATIONS (specifying how many iterations
 CoreMark does) depending on whether it is a sim-verilator or an fpga build. 1
