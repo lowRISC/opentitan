@@ -182,10 +182,18 @@
                     name:    "EN_ENTROPY_SRC_FW_READ",
                     size:    "1",
                 },
+                {
+                    name:    "EN_ENTROPY_SRC_FW_OVER",
+                    size:    "1",
+                },
             ],
-            desc: '''Hardware configuration bits used to hardwire
-            specific hardware functionality. E.g., raw entropy
-            accessibility or FLASH scrambling bypass range.
+            desc: '''EN_SRAM_IFETCH: TODO: add
+            EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
+            to the NIST internal state per instance.
+            EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
+            to the ENTROPY_DATA register directly.
+            EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
+            to the firmware override FIFO and other related functions.
             '''
         }
         {

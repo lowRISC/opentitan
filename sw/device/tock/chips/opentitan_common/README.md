@@ -1,5 +1,6 @@
-# OpenTitan common peripherals
+---
+title: "OpenTitan common peripherals"
+---
 
 This crate contains various peripherals shared between OpenTitan
 chips (earlgrey, etc...).
-

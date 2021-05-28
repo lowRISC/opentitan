@@ -1,4 +1,6 @@
-# OpenTitan System Tests
+---
+title: "OpenTitan System Tests"
+---
 
 System tests are end-to-end tests for the whole OpenTitan system. They operate
 on build outputs (typically in `build-bin`) and can be used to check that the

@@ -1,3 +1,7 @@
+---
+title: "Signing Keys"
+---
+
 This directory contains ASN1 DER encoded development keys for signing ROM\_EXT
 images. Until we have a more ergonomic tool for working with keys and signatures,
 below snippets can be used for various operations.
@@ -74,7 +78,7 @@ $ openssl rsautl -verify -in test_sig -inkey <basename>.public.der -pubin -keyfo
 0120 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
 0130 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
 0140 - ff ff ff ff ff ff ff ff-ff ff ff ff 00 30 31 30   .............010
-0150 - 0d 06 09 60 86 48 01 65-03 04 02 01 05 00 04 20   ...`.H.e....... 
+0150 - 0d 06 09 60 86 48 01 65-03 04 02 01 05 00 04 20   ...`.H.e.......
 0160 - 9f 86 d0 81 88 4c 7d 65-9a 2f ea a0 c5 5a d0 15   .....L}e./...Z..
 0170 - a3 bf 4f 1b 2b 0b 82 2c-d1 5d 6c 15 b0 f0 0a 08   ..O.+..,.]l.....
 ```
@@ -95,4 +99,3 @@ c55ad015
 884c7d65
 9f86d081
 ```
-

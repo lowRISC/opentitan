@@ -350,6 +350,18 @@
       default: "1",
       local: "true"
     },
+    { name: "EnEntropySrcFwOverOffset",
+      desc: "Offset of EN_ENTROPY_SRC_FW_OVER",
+      type: "int",
+      default: "1571",
+      local: "true"
+    },
+    { name: "EnEntropySrcFwOverSize",
+      desc: "Size of EN_ENTROPY_SRC_FW_OVER",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
     { name: "HwCfgDigestOffset",
       desc: "Offset of HW_CFG_DIGEST",
       type: "int",

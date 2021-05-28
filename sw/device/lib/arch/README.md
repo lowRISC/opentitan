@@ -1,4 +1,6 @@
-# Device-specific Symbols
+---
+title: "arch: Device-specific Symbols"
+---
 
 This subtree provides the header `device.h`, which contains declarations for symbols that represent device-specific information, like the clock frequency.
 
@@ -18,7 +20,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       device_lib,
     ],
   )
-  
+
   # ...
 endforeach
 ```

@@ -21,6 +21,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x620      |     1      |
 |         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x621      |     1      |
 |         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_READ                 |     0x622      |     1      |
+|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_OVER                 |     0x623      |     1      |
 |         |                |            |      64bit       |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6E8      |     8      |
 |    3    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6F0      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x700      |     16     |

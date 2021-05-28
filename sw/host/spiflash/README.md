@@ -1,4 +1,6 @@
-# SPI Flash
+---
+title: "SPI Flash"
+---
 
 `spiflash` is a tool used to update the firmware stored in OpenTitan's embedded flash.
 The tool resets OpenTitan and signals the boot ROM to enter bootstrap mode before sending the update payload.

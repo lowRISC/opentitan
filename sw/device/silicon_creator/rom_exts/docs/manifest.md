@@ -1,16 +1,8 @@
 ---
-title: Reference ROM_EXT Manifest Format
+title: Manifest Format
 aliases:
-- /sw/device/silicon_creator/rom_exts/manifest
+- /sw/device/silicon_creator/manifest
 ---
-
-<p style="text-align: right">
-Contributors(s):
-  <a href="https://github.com/lenary">Sam Elliott</a>,
-  <a href="https://github.com/gkelly">Garret Kelly</a>,
-  <a href="https://github.com/silvestrst">Silvestrs Timofejevs</a>,
-  <a href="https://github.com/moidx">Miguel Osorio</a>
-</p>
 
 <p style="color: red; text-align: right;">
   Status: Draft

@@ -1,4 +1,6 @@
-# The OpenTitan DIF Library
+---
+title: "The OpenTitan DIF Library"
+---
 
 A DIF is a "Device Interface Function". DIFs are low-level routines for
 accessing the hardware functionality directly, and are agnostic to the
