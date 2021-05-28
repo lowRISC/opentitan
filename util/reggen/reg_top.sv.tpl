@@ -274,7 +274,7 @@ ${sig_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed)}\
           fsig_name = r.reg.name.lower() + "[%d]" % k
           k = k + 1
 %>
-${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.regwen, sr.shadowed)}
+${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.shadowed)}
         % else:
           % for f in sr.fields:
 <%
@@ -286,7 +286,7 @@ ${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.regwen, sr.shadowed)}
               fsig_name = r.reg.name.lower() + "[%d]" % k + "." + get_basename(f.name.lower())
 %>
   // F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.regwen, sr.shadowed)}
+${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.shadowed)}
           % endfor
 <%
           if not r.is_homogeneous():
@@ -303,7 +303,7 @@ ${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.regwen, sr.shadowed)}
         finst_name = r.name.lower()
         fsig_name = r.name.lower()
 %>
-${finst_gen(f, finst_name, fsig_name, r.hwext, r.regwen, r.shadowed)}
+${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shadowed)}
 ######################## register with multiple fields ###########################
     % else:
   // R[${r.name.lower()}]: V(${str(r.hwext)})
@@ -313,7 +313,7 @@ ${finst_gen(f, finst_name, fsig_name, r.hwext, r.regwen, r.shadowed)}
         fsig_name = r.name.lower() + "." + f.name.lower()
 %>
   //   F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(f, finst_name, fsig_name, r.hwext, r.regwen, r.shadowed)}
+${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shadowed)}
       % endfor
     % endif
 
@@ -442,7 +442,7 @@ ${bits.msb}\
   logic ${sig_name}_re;
   % endif
 </%def>\
-<%def name="finst_gen(field, finst_name, fsig_name, hwext, regwen, shadowed)">\
+<%def name="finst_gen(field, finst_name, fsig_name, hwext, hwre, hwqe, regwen, shadowed)">\
 <%
     re_expr = f'{finst_name}_re' if field.swaccess.allows_read() else "1'b0"
 
@@ -463,10 +463,10 @@ ${bits.msb}\
       de_expr = "1'b0"
       d_expr = "'0"
 
-    qre_expr = f'reg2hw.{fsig_name}.re' if field.hwre or shadowed else ""
+    qre_expr = f'reg2hw.{fsig_name}.re' if hwre or shadowed else ""
 
     if field.hwaccess.allows_read():
-      qe_expr = f'reg2hw.{fsig_name}.qe' if field.hwqe else ''
+      qe_expr = f'reg2hw.{fsig_name}.qe' if hwqe else ''
       q_expr = f'reg2hw.{fsig_name}.q'
     else:
       qe_expr = ''

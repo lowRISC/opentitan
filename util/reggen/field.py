@@ -50,8 +50,6 @@ class Field:
                  tags: List[str],
                  swaccess: SWAccess,
                  hwaccess: HWAccess,
-                 hwqe: bool,
-                 hwre: bool,
                  bits: Bits,
                  resval: Optional[int],
                  enum: Optional[List[EnumEntry]]):
@@ -60,8 +58,6 @@ class Field:
         self.tags = tags
         self.swaccess = swaccess
         self.hwaccess = hwaccess
-        self.hwqe = hwqe
-        self.hwre = hwre
         self.bits = bits
         self.resval = resval
         self.enum = enum
@@ -74,8 +70,6 @@ class Field:
                  default_hwaccess: HWAccess,
                  reg_resval: Optional[int],
                  reg_width: int,
-                 reg_hwqe: bool,
-                 reg_hwre: bool,
                  params: ReggenParams,
                  raw: object) -> 'Field':
         where = 'field {} of {} register'.format(field_idx, reg_name)
@@ -177,15 +171,13 @@ class Field:
                 enum.append(entry)
                 enum_val_to_name[entry.value] = entry.name
 
-        return Field(name, desc, tags,
-                     swaccess, hwaccess,
-                     reg_hwqe, reg_hwre, bits, resval, enum)
+        return Field(name, desc, tags, swaccess, hwaccess, bits, resval, enum)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
                 len(self.enum) != 1 + self.bits.max_value())
 
-    def get_n_bits(self, hwext: bool, bittype: List[str]) -> int:
+    def get_n_bits(self, hwext: bool, hwqe: bool, hwre: bool, bittype: List[str]) -> int:
         '''Get the size of this field in bits
 
         bittype should be a list of the types of signals to count. The elements
@@ -196,12 +188,6 @@ class Field:
 
         - 'd': A signal for the next value of the field. Only needed if HW can
           write its contents.
-
-        - 'qe': A write enable signal for bus accesses. Only needed if HW can
-          read the field's contents and the field has the hwqe flag.
-
-        - 're': A read enable signal for bus accesses. Only needed if HW can
-          read the field's contents and the field has the hwre flag.
 
         - 'de': A write enable signal for hardware accesses. Only needed if HW
           can write the field's contents and the register data is stored in the
@@ -214,9 +200,9 @@ class Field:
         if "d" in bittype and self.hwaccess.allows_write():
             n_bits += self.bits.width()
         if "qe" in bittype and self.hwaccess.allows_read():
-            n_bits += int(self.hwqe)
+            n_bits += int(hwqe)
         if "re" in bittype and self.hwaccess.allows_read():
-            n_bits += int(self.hwre)
+            n_bits += int(hwre)
         if "de" in bittype and self.hwaccess.allows_write():
             n_bits += int(not hwext)
         return n_bits
@@ -258,7 +244,7 @@ class Field:
 
             ret.append(Field(name, desc,
                              self.tags, self.swaccess, self.hwaccess,
-                             self.hwqe, self.hwre, bits, self.resval, enum))
+                             bits, self.resval, enum))
 
         return ret
 
@@ -272,7 +258,7 @@ class Field:
 
         return Field(self.name + suffix,
                      desc, self.tags, self.swaccess, self.hwaccess,
-                     self.hwqe, self.hwre, self.bits, self.resval, enum)
+                     self.bits, self.resval, enum)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {

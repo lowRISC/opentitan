@@ -239,8 +239,6 @@ class Register(RegBase):
                                  hwaccess,
                                  resval,
                                  reg_width,
-                                 hwqe,
-                                 hwre,
                                  params,
                                  rf)
                   for idx, rf in enumerate(raw_fields)]
@@ -279,7 +277,7 @@ class Register(RegBase):
         return self.swaccess.dv_rights()
 
     def get_n_bits(self, bittype: List[str]) -> int:
-        return sum(field.get_n_bits(self.hwext, bittype)
+        return sum(field.get_n_bits(self.hwext, self.hwqe, self.hwre, bittype)
                    for field in self.fields)
 
     def get_field_list(self) -> List[Field]:
