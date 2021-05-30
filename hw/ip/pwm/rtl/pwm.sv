@@ -49,5 +49,6 @@ module pwm #(
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
   `ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
+  `ASSERT_KNOWN(CioPWMEnKnownO_A, cio_pwm_en_o)
 
 endmodule : pwm
