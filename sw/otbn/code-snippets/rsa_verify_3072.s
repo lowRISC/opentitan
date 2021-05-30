@@ -9,275 +9,6 @@
 
 
 .text
-.globl modexp_var
-
-/**
- * Precomputation of a constant m0' for Montgomery modular arithmetic
- *
- * Word-wise Montgomery modular arithmetic requires a quantity m0' to be
- * precomputed once per modulus M. m0' is the negative of the
- * modular multiplicative inverse of the lowest limb m0 of the modulus M, in
- * the field GF(2^w), where w is the number of bits per limb. w is set to 256
- * in this subroutine.
- *
- * Returns: m0' = -m0^(-1) mod 2^256
- *          with m0 being the lowest limb of the modulus M
- *
- * This subroutine implements the Dusse-Kaliski method for computing the
- * multiplicative modular inverse when the modulus is of the form 2^k.
- * [Dus] DOI https://doi.org/10.1007/3-540-46877-3_21 section 3.2
- *       (Algorithm "Modular Inverse" on p. 235)
- *
- * Flags: When leaving this subroutine, flags of FG0 depend on a
- *        the final subtraction and can be used if needed.
- *        FG0.M, FG0.L, FG0.Z depend directly on the value of the result m0'.
- *        FG0.C is always set.
- *        FG1 is not modified in this subroutine.
- *
- * @param[in]  x16: dptr_m, pointer to modulus M in dmem
- * @param[in]  x17: dptr_m0inv, pointer to dmem location to store m0inv
- * @param[in]  w31: all-zero.
- *
- * clobbered registers: x8, w0, w1, w28, w29
- * clobbered flag groups: FG0
- */
-compute_m0inv:
-
-  /* load lowest limb of modulus to w28 */
-  li       x8, 28
-  bn.lid   x8, 0(x16)
-
-  /* w0 keeps track of loop iterations in one-hot encoding, i.e.
-     w0 = 2^i in the loop body below and initialized here with w0 = 1
-     It is used for both the comparison in step 4 of [Dus] and the
-     addition in step 6 of [Dus] */
-  bn.xor    w0, w0, w0
-  bn.addi   w0, w0, 1
-
-  /* according to [Dus] the result variable y is initialized with 1 */
-  /* w29 = y_0 = 1 */
-  bn.mov    w29, w0
-
-  /* iterate over all 256 bits of m0.
-     i refers to the loop cycle 0..255 in the loop body below. */
-  loopi     256, 13
-
-    /* y_i <= m*y_{i-1] */
-    bn.mulqacc.z          w28.0, w29.0,  0
-    bn.mulqacc            w28.1, w29.0, 64
-    bn.mulqacc.so   w1.L, w28.0, w29.1, 64
-    bn.mulqacc            w28.2, w29.0,  0
-    bn.mulqacc            w28.1, w29.1,  0
-    bn.mulqacc            w28.0, w29.2,  0
-    bn.mulqacc            w28.3, w29.0, 64
-    bn.mulqacc            w28.2, w29.1, 64
-    bn.mulqacc            w28.1, w29.2, 64
-    bn.mulqacc.so   w1.U, w28.0, w29.3, 64
-
-  /* This checks if w1 = y_i = m0*y_(i-1) < 2^(i-1) mod 2^i
-     Due to the mathematical properties it can be shown that y_i at this point,
-     is either 1 or (10..0..01)_(i). Therefore, just probing the i_th bit is
-     the same as the full compare. */
-    bn.and    w1, w1, w0
-
-    /* Compute
-       y_i=w29 <= w1=m0*y_(i-1) < 2^(i-1) mod 2^i y_i ? : y_{i-1}+2^i : y_{i-1}
-       there cannot be overlaps => or'ing is as good as adding */
-    bn.or     w29, w29, w1
-
-    /* double w0 (w0 <= w0 << 1) i.e. w0=2^i */
-    bn.add    w0, w0, w0
-
-  /* finally, compute m0' (negative of inverse)
-     w29 = m0' = -(m0^-1) mod 2^256 = -y_255 = 0 - y_255 = w31 - w29 */
-  bn.sub    w29, w31, w29
-
-    /* Store Montgomery constant in dmem */
-  li       x8, 29
-  bn.sid   x8, 0(x17)
-
-  ret
-
-
-/**
- * Variable time multi-limb bigint compare
- *
- * Compares two bigints (a, b) located in regfile (a) and dmem (b).
- *
- * Flags: When leaving this subroutine, flags of FG1 depend on the comparison
- *        result of the highest unequal limba, or, if all limbs are equal on
- *        those of the lowest limbs.
- *
- * @param[in] x10: constant 3, used as pointer to w3
- * @param[in] x11: constant 2, used as pointer to w2
- * @param[in] x8: rptr_a, pointer to lowest limb of a in regfile
- * @param[in] x9: rptr_a_h, pointer to highest limb of a in regfile
- * @param[in] x17: dptr_b_h, pointer to highest limb of b in dmem
- * @param[out] x3, bit 0: (b > a), equals FG1.C
- * @param[out] x3, bit 3: (a == b), equals FG1.Z
- *
- * clobbered registers: x3, x5, x7, x9, x17, x19, w2, w3
- * clobbered flag groups: FG1
- */
-cmp_dmem_reg_buf:
-
-  addi      x19, x17, 0
-  addi      x7, x9, 0
-
-  cmp_loop:
-
-  /* load limbs from dmem and regfile: w2 <= a[i]; w3 <= b[i] */
-  bn.lid    x10, 0(x19)
-  bn.movr   x11, x7
-
-  /* compare limbs and store comparison result in x3 */
-  bn.cmp    w2, w3, FG1
-  csrrs     x3, 0x7c1, x0
-
-  /* leave loop if lowest limb was reached */
-  beq       x8, x7, cmp_end
-
-  /* reduce limb pointers */
-  addi      x19, x19, -32
-  addi      x7, x7, -1
-
-  /* if limbs were equal (FG1.Z == 1), compare next lower limb */
-  andi      x5, x3, 8
-  bne       x5, x0, cmp_loop
-
-  cmp_end:
-  nop
-  ret
-
-
-/**
-* Compute square of Montgomery modulus
-*
-* Returns RR = R^2 mod M
-*         with M being the Modulus of length 256..4096 bit
-*              R = 2^(256*N), N is the number of limbs per bigint
-*
-* The squared Montgomery modulus (RR) is needed to transform bigints to and
-* from the Montgomery domain.
-*
-* RR is computed in this subroutine by iteratively doubling and reduction.
-*
-* Flags: The states of both FG0 and FG1 depend on intermediate values and are
-*        not usable after return.
-*
-* @param[in]  x16: dptr_n, pointer to first limb of modulus in dmem
-* @param[in]  x18: dptr_rr: dmem pointer to first limb of output buffer for RR
-* @param[in]  x30: N, number of limbs
-* @param[in]  x31: N-1, number of limbs minus 1
-* @param[in]  w31: all-zero
-* @param[out] dmem[x18+N*32:x18]: computed RR
-*
-* clobbered registers: x3, x4, x5, x8, x9, x10, x11, x16, x18, x22, x24
-*                      w0, w2, w3, w4, w5 to w20 depending on N
-* clobbered flag groups: FG0, FG1
-*/
-compute_rr:
-  /* save pointer to modulus x22 <= dptr_m = x16 */
-  addi      x22, x16, 0
-
-  /* x17 = dptr_m + (N-1)*32 points to highest limb of modulus in dmem */
-  slli      x17, x31, 5
-  add       x17, x22, x17
-
-  li        x8, 5
-
-  /* x9 = rptr_buf_h <= rptr_buf + N-1 */
-  add       x9, x31, x8
-
-  /* compute full length of current bigint size in bits
-     N*w = x24 <= N*256 = N*2^8 = x30 << 8 */
-  slli      x24, x30, 8
-
-  /* reg pointers to current limb of buffer and modulus
-  /* x10 = rptr_limb_mod = &w3 */
-  li        x10, 3
-  /* x11 = rptr_limb_buf = &w2 */
-  li        x11, 2
-
-
-  /* clear flags */
-  bn.add    w31, w31, w31
-  /* init buffer with R - m
-     buf = w[5+N-1:5] <= R - m = unsigned(0 - m) */
-
-  loop      x30, 3
-    bn.lid    x10, 0(x16++)
-    bn.subb   w3, w31, w3
-    bn.movr   x8++, x10
-
-  /* Compute R^2 mod M = R*2^(N*w) mod M.
-     R^2 mod M can be computed by performing N*w duplications of R,
-     interleaved with conditional subtractions of modulus. Modulus is
-     subtracted if dobiling result is greater than modulus, i.e. either
-     there was a final carry at the end of the doubling procedure or the lower
-     N*w bits of the result are greater than the modulus. */
-  loop      x24, 27
-
-    /* Duplicate the intermediate bigint result. This can overflow such that
-       bit 2^(N*w) (represented by the carry flag after final loop cycle)
-       is set. */
-    li        x8, 5
-    bn.add    w31, w31, w31, FG1
-    loop      x30, 3
-      bn.movr   x11, x8
-      bn.addc   w2, w2, w2, FG1
-      bn.movr   x8++, x11
-
-    /* In case of final carry in doubling procedure substract modulus */
-    /* Jump to 'rr_sub' if FG1.C == 1 */
-    csrrs     x3, 0x7c1, x0
-    andi      x3, x3, 1
-    bne       x3, x0, rr_sub
-
-    /* In case there was no final carry in the addition, we have to check
-       wether the N*w sized bigint w/o carry is greater than the modulus. */
-    bn.lid    x10, 0(x17)
-    bn.movr   x11, x9
-    bn.cmp    w2, w3, FG1
-    csrrs     x3, 0x7c1, x0
-
-    /* If the highest limbs of buf and mod are equal we have to run a
-       multi-limb comparison. This is very unlikely to happen. If this
-       verification is not used with keys where this situation occurs, the
-       following 3 lines and (if not needed elsewhere) the compare routine
-       can be removed. */
-    andi      x5, x3, 8
-    beq       x5, x0, rr_cmp
-    jal       x1, cmp_dmem_reg_buf
-
-    /* if m > r: jump to end_loop (without subtraction) */
-    rr_cmp:
-    andi      x5, x3, 1
-    bne       x5, x0, rr_end_loop
-
-    /* subtract modulus from current buffer
-       buf = w[5+N-1:5] <= buf - m */
-    rr_sub:
-    li        x8, 5
-    addi      x16, x22, 0
-    bn.add    w31, w31, w31, FG1
-    loop      x30, 4
-      bn.lid    x10, 0(x16++)
-      bn.movr   x11, x8
-      bn.subb   w3, w2, w3, FG1
-      bn.movr   x8++, x10
-
-    rr_end_loop:
-      nop
-
-  /* store computed RR in dmem
-     [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] <= buf = w[5+N-1:5] */
-  li        x8, 5
-  loop      x30, 2
-    bn.sid    x8, 0(x18++)
-    addi      x8, x8, 1
-
-  ret
 
 
 /**
@@ -351,7 +82,7 @@ mul256_w30xw2:
 
 
 /**
- * Main loop body for variable-time Montgomery Modular Multiplication
+ * Main loop body for variable-time 3072-bit Montgomery Modular Multiplication
  *
  * Returns: C <= (C + A*b_i + M*m0'*(C[0] + A[0]*b_i))/(2^WLEN) mod R
  *
@@ -374,7 +105,6 @@ mul256_w30xw2:
  *
  * @param[in]  x16: dmem pointer to first limb of modulus M
  * @param[in]  x19: dmem pointer to first limb operand A
- * @param[in]  x31: N-1, number of limbs minus one
  * @param[in]  w2:  current limb of operand B, b_i
  * @param[in]  w3:  Montgomery constant m0'
  * @param[in]  w31: all-zero
@@ -456,7 +186,7 @@ mont_loop:
      Assume that the variable j runs from 1 to N-1 in the explanations below.
      A cycle 0 is omitted, since the results from the computations above are
      re-used */
-  loop      x31, 14
+  loopi     11, 14
     /* Step 1: First multiplication takes a limb of each of the operands and
        computes the product. The carry word from the previous cycle c_xy and
        the j_th limb of the buffer A, A[j] arre added to the multiplication
@@ -510,7 +240,7 @@ mont_loop:
   li        x13, 24
   addi      x16, x22, 0
   li        x8, 4
-  loop      x30, 4
+  loopi     12, 4
     bn.lid    x13, 0(x16++)
     bn.movr   x12, x8
     bn.subb   w24, w30, w24
@@ -527,7 +257,7 @@ mont_loop:
 
 
 /**
- * Variable-time Montgomery Modular Multiplication
+ * Variable-time 3072-bit Montgomery Modular Multiplication
  *
  * Returns: C = montmul(A,B) = A*B*R^(-1) mod M
  *
@@ -535,23 +265,20 @@ mont_loop:
  * Multiplication Algorithm. This is only a wrapper around the main loop body.
  * For algorithmic implementation details see the mont_loop subroutine.
  *
- * Flags: The states of both FG0 and FG1 depend on intermediate values and are
- *        not usable after return.
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x16: dptr_M, dmem pointer to first limb of modulus M
  * @param[in]  x17: dptr_m0d, dmem pointer to Montgomery Constant m0'
  * @param[in]  x19: dptr_a, dmem pointer to first limb of operand A
  * @param[in]  x20: dptr_b, dmem pointer to first limb of operand B
  * @param[in]  w31: all-zero
- * @param[in]  x30: N, number of limbs
- * @param[in]  x31: N-1, number of limbs minus one
  * @param[in]  x9: pointer to temp reg, must be set to 3
  * @param[in]  x10: pointer to temp reg, must be set to 4
  * @param[in]  x11: pointer to temp reg, must be set to 2
- * @param[out] [w[4+N-1]:w4]: result C
+ * @param[out] [w15:w4]: result C
  *
  * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x17, x19, x20, x21
- *                      w2, w3, w24 to w30, w4 to w[4+N-1]
+ *                      w2, to w15, w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
@@ -560,11 +287,11 @@ montmul:
 
   /* init regfile bigint buffer with zeros */
   bn.mov    w2, w31
-  loop      x30, 1
+  loopi     12, 1
     bn.movr   x10++, x11
 
   /* iterate over limbs of operand B */
-  loop      x30, 8
+  loopi     12, 8
 
     /* load limb of operand b */
     bn.lid    x11, 0(x20++)
@@ -588,62 +315,36 @@ montmul:
 
 
 /**
- * Variable time modular exponentiation with exponent of the form e=2^e'+1
+ * Variable time 3072-bit modular exponentiation with exponent 65537
  *
- * Returns: C = modexp(A,2^e'+1) = A^(2^e'+1) mod M
+ * Returns: C = modexp(A,65537) = mod M
  *
- * This implements the square and multiply algorithm for exponents of the
- * form e=2^e'+1. Thus, the routine can be used for exponentiation with Fermat
- * primes (by setting e'=16 for e=F4=65537 and e'=1 for e=F0=3).
+ * This implements the square and multiply algorithm for the
+ * F4 exponent (65537).
  *
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
- * be precomputed and provided at the appropriate locations in dmem.
+ * be provided at the appropriate locations in dmem.
  *
- * Flags: The states of both FG0 and FG1 depend on intermediate values and are
- *        not usable after return.
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * The base bignum A is expected in the input buffer, the result C is written
  * to the output buffer. Note, that the content of the input buffer is
  * modified during execution.
  *
- * @param[in]  dmem[0] e': number for exponent derivation (e = 2^e+1)
- * @param[in]  dmem[4] N: Number of limbs per bignum
- * @param[in]  dmem[8] dptr_m0inv: pointer to m0' in dmem
- * @param[in]  dmem[12] dptr_rr: pointer to RR in dmem
- * @param[in]  dmem[16] dptr_m: pointer to first limb of modulus M in dmem
- * @param[in]  dmem[20] dptr_sig: pointer to signature in dmem
- * @param[in]  dmem[28] dptr_out: pointer to recovered message
+ * @param[in]  dmem[in_m0inv] pointer to m0' in dmem
+ * @param[in]  dmem[in_rr] pointer to RR in dmem
+ * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[in_buf] pointer to buffer with base bignum
+ * @param[in]  dmem[out_buf] pointer to output buffer
  *
- * clobbered registers: x2, x5 to x13, x16 to x21, x29, x30, x31
-                        w2, w3, w24 to w31, w4 to w[4+N-1]
+ * clobbered registers: x2, x5 to x13, x16 to x21, x29
+                        w2, to w15, w24 to w31
  * clobbered Flag Groups: FG0, FG1
  */
-modexp_var:
+ .globl modexp_var_3072_f4
+modexp_var_3072_f4:
   /* prepare all-zero reg */
   bn.xor    w31, w31, w31
-
-  /* load number of limbs (x30 <= N; x31 = N-1 <= N1) */
-  lw        x30, 4(x0)
-  addi      x31, x30, -1
-
-  /* load pointer to modulus (x16 <= dptr_m) */
-  lw        x16, 16(x0)
-
-  /* load pointer to m0' (x17 <= dptr_m0inv)*/
-  lw        x17, 8(x0)
-
-  /* load pointer to RR (x18 <= dptr_rr) */
-  lw        x18, 12(x0)
-
-  /* load exponent (x29 <= e') */
-  lw        x29, 0(x0)
-
-  /* Compute Montgomery constants and reload clobbered pointers */
-  jal       x1, compute_m0inv
-  jal       x1, compute_rr
-  lw        x16, 16(x0)
-  lw        x17, 8(x0)
-  lw        x18, 12(x0)
 
   /* prepare pointers to temp regs */
   li         x8, 4
@@ -651,49 +352,47 @@ modexp_var:
   li        x10, 4
   li        x11, 2
 
-  /* convert signature to Montgomery domain
-     out_buf = *x28 = *dmem[28]
-         <= montmul(*x19, *x20) = montmul(*dptr_sig, *dptr_rr) = sig*R mod M */
-  lw        x19, 20(x0)
-  lw        x20, 12(x0)
-  lw        x21, 28(x0)
+  /* set pointers to buffers */
+  la        x24, out_buf
+  la        x16, in_mod
+  la        x23, in_buf
+  la        x26, in_rr
+  la        x17, in_m0inv
+
+  /* convert input to Montgomery domain and store in dmem
+     dmem[out_buf] = montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
+  addi      x19, x23, 0
+  addi      x20, x26, 0
+  addi      x21, x24, 0
   jal       x1, montmul
-  /* store result in dmem starting at dmem[dptr_out] */
-  loop      x30, 2
+  loopi     12, 2
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
   /* 16 consecutive Montgomery squares on the outbut buffer, i.e. after loop:
-     out_buf <= out_buf^65536*R mod M */
-  loop      x29, 8
-    /* out_buf  = *x28 = *dmem[28]
-               <= montmul(*x28, *x20) = montmul(*dptr_out, *dptr_out)
-                = out_buf^2*R mod M */
-    lw        x19, 28(x0)
-    lw        x20, 28(x0)
-    lw        x21, 28(x0)
+     dmem[out_buf] <= dmem[out_buf]^65536*R mod M */
+  loopi     16, 8
+    /* dmem[out_buf]  = montmul(dmem[out_buf], dmem[out_buf]) */
+    addi      x19, x24, 0
+    addi      x20, x24, 0
+    addi      x21, x24, 0
     jal       x1, montmul
-    /* Store result in dmem starting at dmem[dptr_out] */
-    loop      x30, 2
+    loopi     12, 2
       bn.sid    x8, 0(x21++)
       addi      x8, x8, 1
     nop
 
   /* final multiplication and conversion of result from Montgomery domain
-     out_buf  = *x28 = *dmem[28]
-             <= montmul(*x28, *x20) = montmul(*dptr_sig, *dptr_out)
-              = out_buf*sig/R mod M = sig^65537 mod M */
-  lw        x19, 20(x0)
-  lw        x20, 28(x0)
-  lw        x21, 28(x0)
+     out_buf  <= montmul(*x28, *x20) = montmul(dmem[in_buf], dmem[out_buf]) */
+  addi      x19, x23, 0
+  addi      x20, x24, 0
+  addi      x21, x24, 0
   jal       x1, montmul
 
-  /* Final conditional subtraction of modulus if mod >= out_buf. This could
-     be done in variable time, but for the sake of reduced code we use a loop
-     with N cycles. */
+  /* Final conditional subtraction of modulus if mod >= dmem[out_buf]. */
   bn.add    w31, w31, w31
   li        x17, 16
-  loop      x30, 4
+  loopi     12, 4
     bn.movr   x11, x8++
     bn.lid    x9, 0(x16++)
     bn.subb   w2, w2, w3
@@ -706,12 +405,40 @@ modexp_var:
   li        x8, 4
   bne       x2, x0, no_sub
   li        x8, 16
+
   no_sub:
 
-   /* store result in dmem starting at dmem[dptr_out] */
-  lw        x21, 28(x0)
-  loop      x30, 2
+  /* store result in output buffer */
+  addi      x21, x24, 0
+  loopi     12, 2
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
   ret
+
+.data
+
+/* Output buffer for the resulting, recovered message. */
+.globl out_buf
+out_buf:
+  .zero 384
+
+/* Input buffer for the modulus. */
+.globl in_mod
+in_mod:
+  .zero 384
+
+/* Input buffer for the signature. */
+.globl in_buf
+in_buf:
+  .zero 384
+
+/* Input buffer for the Montgomery transformation constant R^2. */
+.globl in_rr
+in_rr:
+  .zero 384
+
+/* The Montgomery constant. */
+.globl in_m0inv
+in_m0inv:
+  .zero 32

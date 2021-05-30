@@ -6,23 +6,50 @@
 .text
 
 /**
- * Standalone RSA 1024 encrypt
+ * Standalone test for 3072 bit RSA signature verification
  *
- * Uses OTBN modexp bignum lib to encrypt the message from the .data segment
- * in this file with the public key consisting of e=65537 and modulus from
- * .data segment in this file.
+ * Uses the OTBN RSA 3072-bit only verification implementation to
+ * obtain the message (digest) from a test signature.
  *
- * Copies the encrypted message to wide registers for comparison (starting at
+ * Copies the message to wide registers for comparison (starting at
  * w0). See comment at the end of the file for expected values.
  */
-run_rsa_verify:
-  jal      x1, modexp_var
-  /* pointer to out buffer */
-  lw        x21, 28(x0)
+run_rsa_verify_3072:
+
+  /* copy modulus to input buffer */
+  la x2, in_mod
+  la x3, test_mod
+  loopi    12, 2
+    bn.lid x0, 0(x3++)
+    bn.sid x0, 0(x2++)
+
+  /* copy signature to input buffer */
+  la x2, in_buf
+  la x3, test_sig
+  loopi    12, 2
+    bn.lid x0, 0(x3++)
+    bn.sid x0, 0(x2++)
+
+  /* copy RR to input buffer */
+  la x2, in_rr
+  la x3, test_rr
+  loopi    12, 2
+    bn.lid x0, 0(x3++)
+    bn.sid x0, 0(x2++)
+
+  /* copy m0inv to input buffer */
+  la x2, in_m0inv
+  la x3, test_m0inv
+  bn.lid x0, 0(x3)
+  bn.sid x0, 0(x2)
+
+  /* run modular exponentiation */
+  jal      x1, modexp_var_3072_f4
 
   /* copy all limbs of result to wide reg file */
-  li       x8, 0
-  loop     x30, 2
+  la       x8, 0
+  la       x21, out_buf
+  loopi    12, 2
     bn.lid   x8, 0(x21++)
     addi     x8, x8, 1
 
@@ -31,131 +58,107 @@ run_rsa_verify:
 
 .data
 
-/* exponent of the exponent (e') (Full exponent is e=2^e'+1) */
-.word 0x00000010
-
-/* number of limbs (N) */
-.word 0x0000000C
-
-/* pointer to m0' (dptr_m0d) */
-.word 0x00000280
-
-/* pointer to RR (dptr_rr) */
-.word 0x000002c0
-
-/* load pointer to modulus (dptr_m) */
-.word 0x00000080
-
-/* pointer to base bignum buffer (dptr_in) */
-.word 0x000004c0
-
-/* pointer to exponent buffer (dptr_exp, unused for encrypt) */
-.word 0x000006c0
-
-/* pointer to out buffer (dptr_out) */
-.word 0x000008c0
-
-/* Modulus */
-.org 0x80
-.word 0x6a6a75e1
-.word 0xa018ddc5
-.word 0x687bb168
-.word 0x8e8205a5
-.word 0x7dbfffa7
-.word 0xc8722ac5
-.word 0xf84d21cf
-.word 0xe1312531
-.word 0x0ce3f8a3
-.word 0xa825f988
-.word 0x57f51964
-.word 0xb27e206a
-.word 0x8e1dd008
-.word 0x1c4fb8d7
-.word 0x824fb142
-.word 0x1c8be7b3
-.word 0x7b9d6366
-.word 0xc56ad0f2
-.word 0xef762d5b
-.word 0x4b1431e3
-.word 0x8ae28eb9
-.word 0xd41db7aa
-.word 0x43cccdf7
-.word 0x91b74a84
-.word 0x80183850
-.word 0x30e74d0d
-.word 0xb62ed015
-.word 0x235574d2
-.word 0x8c28f251
-.word 0x4f40def2
-.word 0x24e2efdb
-.word 0x9ebd1ff2
-.word 0xfa7b49ee
-.word 0x2819a938
-.word 0x6e66b8c8
-.word 0x24e41546
-.word 0x4d783a7c
-.word 0xd2947d3d
-.word 0x1ab269e9
-.word 0xfad39f16
-.word 0xaab78f7b
-.word 0x49d8b510
-.word 0x35bf0dfb
-.word 0xeb274754
-.word 0x069eccc9
-.word 0xc13c437e
-.word 0xe3bc0f60
-.word 0xc9e0e12f
-.word 0xc253ac43
-.word 0x89c240e0
-.word 0xc4aba4e5
-.word 0xedf34bc0
-.word 0x5402c462
-.word 0x4021b0bd
-.word 0x996b6241
-.word 0xc3d9945f
-.word 0xa137ac60
-.word 0xf0250bf5
-.word 0xc8c7100f
-.word 0xb70d6b88
-.word 0x78916a8c
-.word 0x33370e5d
-.word 0x3970dcb9
-.word 0xaf4c58b4
-.word 0x5f78cb0d
-.word 0xb02d90b7
-.word 0xeb6c3d05
-.word 0x04afc71a
-.word 0x45185f0f
-.word 0x987caa5b
-.word 0x33976249
-.word 0x565afdbc
-.word 0x80a85056
-.word 0x59e07655
-.word 0x9a29e77d
-.word 0x7a8dfb7f
-.word 0x782e0204
-.word 0x4d6713ff
-.word 0x131000ea
-.word 0xe18e1206
-.word 0x21f57f30
-.word 0xf24f038b
-.word 0x59cf874d
-.word 0x24c50525
-.word 0xb52f170d
-.word 0x46c9adde
-.word 0x90e82c73
-.word 0x1344ceaf
-.word 0x663209f2
-.word 0x24bd4fbf
-.word 0x5e4ed04d
-.word 0x0fce770a
-.word 0x81f78793
-.word 0xa792e13e
-.word 0xa6c7bf58
-.word 0xe1df9be8
+/* Modulus of test key */
+test_mod:
+  .word 0x6a6a75e1
+  .word 0xa018ddc5
+  .word 0x687bb168
+  .word 0x8e8205a5
+  .word 0x7dbfffa7
+  .word 0xc8722ac5
+  .word 0xf84d21cf
+  .word 0xe1312531
+  .word 0x0ce3f8a3
+  .word 0xa825f988
+  .word 0x57f51964
+  .word 0xb27e206a
+  .word 0x8e1dd008
+  .word 0x1c4fb8d7
+  .word 0x824fb142
+  .word 0x1c8be7b3
+  .word 0x7b9d6366
+  .word 0xc56ad0f2
+  .word 0xef762d5b
+  .word 0x4b1431e3
+  .word 0x8ae28eb9
+  .word 0xd41db7aa
+  .word 0x43cccdf7
+  .word 0x91b74a84
+  .word 0x80183850
+  .word 0x30e74d0d
+  .word 0xb62ed015
+  .word 0x235574d2
+  .word 0x8c28f251
+  .word 0x4f40def2
+  .word 0x24e2efdb
+  .word 0x9ebd1ff2
+  .word 0xfa7b49ee
+  .word 0x2819a938
+  .word 0x6e66b8c8
+  .word 0x24e41546
+  .word 0x4d783a7c
+  .word 0xd2947d3d
+  .word 0x1ab269e9
+  .word 0xfad39f16
+  .word 0xaab78f7b
+  .word 0x49d8b510
+  .word 0x35bf0dfb
+  .word 0xeb274754
+  .word 0x069eccc9
+  .word 0xc13c437e
+  .word 0xe3bc0f60
+  .word 0xc9e0e12f
+  .word 0xc253ac43
+  .word 0x89c240e0
+  .word 0xc4aba4e5
+  .word 0xedf34bc0
+  .word 0x5402c462
+  .word 0x4021b0bd
+  .word 0x996b6241
+  .word 0xc3d9945f
+  .word 0xa137ac60
+  .word 0xf0250bf5
+  .word 0xc8c7100f
+  .word 0xb70d6b88
+  .word 0x78916a8c
+  .word 0x33370e5d
+  .word 0x3970dcb9
+  .word 0xaf4c58b4
+  .word 0x5f78cb0d
+  .word 0xb02d90b7
+  .word 0xeb6c3d05
+  .word 0x04afc71a
+  .word 0x45185f0f
+  .word 0x987caa5b
+  .word 0x33976249
+  .word 0x565afdbc
+  .word 0x80a85056
+  .word 0x59e07655
+  .word 0x9a29e77d
+  .word 0x7a8dfb7f
+  .word 0x782e0204
+  .word 0x4d6713ff
+  .word 0x131000ea
+  .word 0xe18e1206
+  .word 0x21f57f30
+  .word 0xf24f038b
+  .word 0x59cf874d
+  .word 0x24c50525
+  .word 0xb52f170d
+  .word 0x46c9adde
+  .word 0x90e82c73
+  .word 0x1344ceaf
+  .word 0x663209f2
+  .word 0x24bd4fbf
+  .word 0x5e4ed04d
+  .word 0x0fce770a
+  .word 0x81f78793
+  .word 0xa792e13e
+  .word 0xa6c7bf58
+  .word 0xe1df9be8
 
 /* Montgomery constant m0' */
-.org 0x280
+test_m0inv:
 .word 0xf09b71df
 .word 0xfd3e34f7
 .word 0x0b908e3b
@@ -174,7 +177,7 @@ run_rsa_verify:
 .word 0x7da9803a
 
 /* Squared Mongomery Radix RR = (2^3072)^2 mod N */
-.org 0x2c0
+test_rr:
 .word 0xa3eb77fa
 .word 0x9db9a2ac
 .word 0x2c19d4ae
@@ -273,7 +276,7 @@ run_rsa_verify:
 .word 0x9e2dcea8
 
 /* signature */
-.org 0x4c0
+test_sig:
 .word 0xceb7e983
 .word 0xe693b200
 .word 0xf9153989
