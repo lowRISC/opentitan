@@ -16,15 +16,15 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [PWM Design Spec]({{<relref "hw/ip/pwm/doc" >}})
-Documentation | [CSR_DEFINED][]                | Not Started |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [PWM Design Spec]({{<relref "." >}})
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
