@@ -35,26 +35,25 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
-RTL           | [AREA_CROSS_CHECK][]    | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Documentation | [NEW_FEATURES][]        | N/A         |
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | N/A         |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Done        |
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC Flow not available yet
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
+Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -63,7 +62,6 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
 [AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area_check" >}}
-[AREA_CROSS_CHECK]:    {{<relref "/doc/project/checklist.md#area_cross_check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}
