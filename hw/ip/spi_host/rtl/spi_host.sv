@@ -600,5 +600,6 @@ module spi_host
   `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
+  `ASSERT_KNOWN(PassthroughKnownO_A, passthrough_o)
 
 endmodule : spi_host

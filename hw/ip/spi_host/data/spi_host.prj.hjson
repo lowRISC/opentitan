@@ -8,8 +8,8 @@
     revisions: [
       {
         version:            "0.5",
-        life_stage:         "L0",
-        design_stage:       "D0",
+        life_stage:         "L1",
+        design_stage:       "D1",
         verification_stage: "V0",
         dif_stage:          "S0",
       }
