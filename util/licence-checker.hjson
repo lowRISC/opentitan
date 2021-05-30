@@ -67,6 +67,7 @@
     'sw/otbn/code-snippets/modexp.s',
     'sw/otbn/code-snippets/p256.s',
     'sw/otbn/code-snippets/rsa_verify.s',
+    'sw/otbn/code-snippets/rsa_verify_3072.s',
     # Mersenne Twister PRNG
     'sw/device/sca/lib/prng.c',
   ],
