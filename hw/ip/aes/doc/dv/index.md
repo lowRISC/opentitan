@@ -96,7 +96,7 @@ Knobs are available to control the balance between reads and writes.
 In either case the status_fsm task is called.
 * **status_fsm**: Read the status of the AES IP and based on the inputs return the status.
 When the task is in control of reading the output register it will poll the status until it indicates that the output is valid.
-It will also track the progress of processing detecting if something has gone differently than expected.
+It will also track the progress of processing, detecting if something has gone differently than expected.
 If this happens it will try to recover.
 
 Using these higher level functions and tasks one can build a highly customized constraint random test without low level knowledge of the test environment and the DUT.
@@ -108,10 +108,10 @@ Most tests use the aes_stress_vseq sequence as test sequence, and achieves diffe
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following cover groups have been developed to prove that the test intent has been adequately met.
 
-* aes_ctrl_cg: this cover group checks that all parts of the control register has been exercised. 
-A few crosses is also included to ensure that we have seen all both forward and inverse for all modes.
+* aes_ctrl_cg: this cover group checks that all parts of the control register have been exercised. 
+A few crosses are also included to ensure that we have seen all both forward and inverse for all modes.
 Similarly that we have tried all possible key_sizes in all modes, and that all have been tried both in auto and manual mode.
-More importantly for AES which is a security critical IP it also verifies that all illegal states has been seen.
+More importantly for AES which is a security critical IP it also verifies that all illegal states have been seen.
 * aes_status_cg: makes sure all possible states has been seen.
 * aes_trigger_cg: verify that all parts of the trigger register was exercised.
 A cross also checks that we tried to clear all fields possible at once.
