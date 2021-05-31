@@ -55,9 +55,9 @@ For packages listed below without a version number we have not determined a mini
 * libusb 1.0 (called libusbx in older distributions)
 * OpenOCD 0.11.0
 * [Verible](https://github.com/google/verible) {{< tool_version "verible" >}}
-* Cmake 2.8.11
+* Cmake 3.3
 * Perl 5.6.1
-* [Go](https://golang.org/) 1.10
+* [Go](https://golang.org/) 1.11
 * [Rust](https://www.rust-lang.org/) {{< tool_version "rust" >}} (x86_64-unknown-linux-gnu)
 
 To synthesize and simulate the hardware components of OpenTitan multiple EDA tools are supported.
@@ -359,7 +359,7 @@ To get started faster we use the web installer in the following.
 8. Choose "Vivado HL Design Edition".
    This is required to enable support for the Xilinx Kintex 7 XC7K410T FPGA device found on the ChipWhisperer CW310 board.
    You'll need a commercial Vivado license for this FPGA device.
-   Without a valid license, you are still able to install the Vivado HL Design Edition but you'll only be able to work with devices supported by the free WebPACK license.  
+   Without a valid license, you are still able to install the Vivado HL Design Edition but you'll only be able to work with devices supported by the free WebPACK license.
    If you don't have a valid license and if you're only planning to work with devices supported by the free WebPACK license, you can also choose "Vivado HL WebPACK" instead.
 
    ![Vivado installation step 5](img/install_vivado/step5.png)
