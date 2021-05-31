@@ -13,7 +13,7 @@ isort
 libcst
 livereload
 mako
-meson >= 0.53.0, <= 0.54 # minimum matches version in meson.build
+meson >= 0.53.0, <= 0.56 # minimum matches version in meson.build
 mistletoe>=0.7.2
 mypy
 premailer
