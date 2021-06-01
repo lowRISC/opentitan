@@ -392,10 +392,4 @@ class SynCfg(OneShotCfg):
             # TODO: add support for pie / bar charts for area splits and
             # QoR history
 
-        # Write results to the scratch area
-        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        with open(results_file, 'w') as f:
-            f.write(self.results_md)
-
-        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md

@@ -272,16 +272,11 @@ class FormalCfg(OneShotCfg):
         if messages is not None:
             results_str += self.parse_dict_to_str(messages)
 
-        # Write results to the scratch area
         self.results_md = results_str
-        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        with open(results_file, 'w') as f:
-            f.write(self.results_md)
 
         # Generate result summary
         self.result_summary[self.name] = summary
 
-        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md
 
     def _publish_results(self):

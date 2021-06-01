@@ -671,14 +671,6 @@ class SimCfg(FlowCfg):
             results_str += "\n".join(create_bucket_report(results.buckets))
 
         self.results_md = results_str
-
-        # Write results to the scratch area
-        results_path = self.scratch_path + "/results_" + self.timestamp + ".md"
-        with open(results_path, 'w') as results_file:
-            results_file.write(self.results_md)
-
-        # Return only the tables
-        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_path)
         return results_str
 
     def gen_results_summary(self):
