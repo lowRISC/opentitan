@@ -24,6 +24,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // Represents the number of blocks that have been filled in sha3pad
   int num_blocks_filled = 0;
 
+  // used solely for coverage sampling, indicates that keccak rounds are currently running
+  bit in_keccak_rounds = 0;
+
   // Whenever the keccak rounds are running, the `complete` signal is raised at the end
   // for a single cycle to signal to sha3 control logic that the keccak engine is completed.
   //
@@ -192,6 +195,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       process_sha3_idle();
       process_sha3_absorb();
       process_sha3_squeeze();
+      if (cfg.en_cov) sample_sha3_status();
       process_initial_digest();
       process_manual_digest_squeeze();
       process_intr_kmac_done();
@@ -303,6 +307,25 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
               app_mode = AppRom;
             end
+
+            // sample sideload-related coverage
+            if (cfg.en_cov) begin
+              // Note that all arguments to the covergroup sample() function are the same,
+              // this is due to the nature of the arguments that this function takes:
+              //
+              // - `en_sideload`: this bit indicates whether sideloading mode is active
+              // - `in_kmac`    : this bit indicates whether we are operating in KMAC mode
+              // - `app_keymgr` : this bit indicates whether we are using the Keymgr-specific App
+              //                  interface
+              //
+              // Checking whether the current application mode is the AppKeymgr mode gives us
+              // sufficient information for all three of these arguments due to the nature of this
+              // particular interface.
+              cov.sideload_cg.sample(app_mode == AppKeymgr,
+                                     app_mode == AppKeymgr,
+                                     app_mode == AppKeymgr);
+            end
+
             @(posedge sha3_idle);
           end
           ,
@@ -311,6 +334,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (cfg.under_reset) begin
         @(negedge cfg.under_reset);
       end
+
     end
   endtask
 
@@ -333,6 +357,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         UVM_HIGH)
               {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} = kmac_app_block_item.h_data;
               kmac_app_block_strb_size = $countones(kmac_app_block_strb);
+
+              // sample coverage
+              if (cfg.en_cov) begin
+                cov.app_cg_wrappers[app_mode].sample(0,
+                                                    kmac_app_block_strb,
+                                                    0,
+                                                    kmac_app_last,
+                                                    in_keccak_rounds);
+              end
+
               got_data_from_kmac_app = 1;
               while (kmac_app_block_strb > 0) begin
                 if (kmac_app_block_strb[0]) begin
@@ -381,6 +415,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               $sformatf("Detected a KMAC_APP response:\n%0s",
                                         kmac_app_rsp.sprint()),
                               UVM_HIGH)
+
+                    // sample coverage
+                    if (cfg.en_cov) begin
+                      cov.app_cg_wrappers[app_mode].sample(
+                        kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
+                        '0,
+                        kmac_app_rsp.rsp_error,
+                        1,
+                        0
+                      );
+                    end
 
                     // safety check that things are working properly and
                     // no random KMAC_APP operations are seen
@@ -510,6 +555,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
           ,
           @(posedge sha3_idle or posedge cfg.under_reset);
+      )
+    end
+  endtask
+
+  // This is a simple task that just polls for any changes in the SHA3 status bits and samples them
+  virtual task sample_sha3_status();
+    forever begin
+      @(negedge cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            @(sha3_idle or sha3_absorb or sha3_squeeze);
+            #0;
+            cov.sha3_status_cg.sample(sha3_idle, sha3_absorb, sha3_squeeze);
+          end
+          ,
+          @(posedge cfg.under_reset);
       )
     end
   endtask
@@ -686,6 +747,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // processing is enabled).
     bit full_entropy_expansion = 0;
 
+    in_keccak_rounds = 1;
+
     // insert zero delay to ensure all entropy-related updates have settled
     //
     // this also helps catch an edge case where EDN returns valid entropy
@@ -789,6 +852,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     keccak_complete_cycle = 1;
     cfg.clk_rst_vif.wait_clks(1);
     keccak_complete_cycle = 0;
+
+    in_keccak_rounds = 0;
 
     `uvm_info(`gfn, "finished waiting for keccak", UVM_HIGH)
   endtask
@@ -1569,6 +1634,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               fifo_empty = (fifo_depth == 0);
               fifo_full  = fifo_depth == KMAC_FIFO_DEPTH;
 
+              // sample coverage on the fifo status
+              if (cfg.en_cov) begin
+                cov.msgfifo_level_cg.sample(fifo_empty, fifo_full, fifo_depth,
+                                            hash_mode, kmac_en);
+              end
+
               `uvm_info(`gfn, $sformatf("fifo_depth: %0d", fifo_depth), UVM_HIGH)
               `uvm_info(`gfn, $sformatf("fifo_empty: %0d", fifo_empty), UVM_HIGH)
               `uvm_info(`gfn, $sformatf("fifo_full: %0d", fifo_full), UVM_HIGH)
@@ -1729,6 +1800,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
 
+          // sample sideload-related coverage
+          if (cfg.en_cov) begin
+            cov.sideload_cg.sample(item.a_data[KmacSideload], kmac_en, 0);
+          end
+
           if (entropy_mode == EntropyModeEdn &&
               item.a_data[KmacEntropyReady] &&
               first_op_after_rst) begin
@@ -1741,8 +1817,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             in_edn_fetch = 1;
             `uvm_info(`gfn, "raised in_edn_fetch after reset", UVM_HIGH)
           end
-
-          // TODO - sample coverage
         end
       end
       "cmd": begin
@@ -1759,6 +1833,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // kmac will now compute the digest
               kmac_cmd = CmdProcess;
 
+              if (cfg.en_cov) begin
+                cov.cmd_process_cg.sample(in_keccak_rounds, keccak_complete_cycle);
+              end
+
               // Raise this bit after a small delay to handle an edge case where
               // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
               // is latched by internal scoreboard logic
@@ -1773,6 +1851,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end
             CmdDone: begin
               kmac_cmd = CmdDone;
+
+              // sample coverage of message length
+              if (cfg.en_cov) begin
+                cov.msg_len_cg.sample(msg.size());
+              end
 
               // Calculate the digest using DPI and check for correctness
               check_digest();
@@ -1902,6 +1985,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("item.a_mask: 0b%0b", item.a_mask), UVM_HIGH)
           `uvm_info(`gfn, $sformatf("full_data: %0p", full_data), UVM_HIGH)
 
+          // sample coverage on the write mask
+          if (cfg.en_cov) begin
+            cov.msgfifo_write_mask_cg.sample(item.a_mask);
+          end
+
           // All writes in big-endian order will be full-word,
           // so we can generalize this to a for-loop that reverses the byte order of each word.
           // This way we can also preserve little-endian ordering.
@@ -1936,6 +2024,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (data_phase_read) begin
         state_mask = item.a_mask;
         digest_word = item.d_data;
+
+        // sample coverage on state read mask
+        if (cfg.en_cov) begin
+          cov.state_read_mask_cg.sample(state_mask, share1_access);
+        end
 
         `uvm_info(`gfn, $sformatf("state read mask: 0b%0b", state_mask), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("digest_word: 0x%0x", digest_word), UVM_HIGH)
@@ -2116,6 +2209,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ_FATAL(digest_share0.size(), output_len_bytes,
           $sformatf("Calculated output length doesn't match actual output length!"))
     end
+
+    if (cfg.en_cov) begin
+      // sample configuration coverage, as only now do we know which KMAC variant is used
+      // (xof/non-xof)
+      cov.sample_cfg(kmac_en, xof_en, strength, hash_mode, key_len,
+                     `gmv(ral.cfg.msg_endianness), `gmv(ral.cfg.state_endianness),
+                     `gmv(ral.cfg.sideload), entropy_mode, entropy_fast_process);
+
+      // sample coverage on the digest length
+      if (cfg.en_cov) begin
+        cov.output_digest_len_cg.sample(output_len_bytes);
+      end
+    end
+
 
     `uvm_info(`gfn, $sformatf("output_len_bytes: %0d", output_len_bytes), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("xof_en: %0d", xof_en), UVM_HIGH)
@@ -2364,6 +2471,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end else begin
       prefix_bytes = {<< 32 {prefix}};
       prefix_bytes = {<< byte {prefix_bytes}};
+    end
+
+    // sample coverage
+    if (cfg.en_cov) begin
+      foreach (prefix_bytes[i]) begin
+        cov.prefix_range_cg.sample(byte'(prefix_bytes[i]));
+      end
     end
 
     `uvm_info(`gfn, $sformatf("prefix: %0p", prefix), UVM_HIGH)
