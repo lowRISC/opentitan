@@ -2189,7 +2189,7 @@ module top_earlgrey #(
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
-      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
 
