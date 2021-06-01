@@ -215,6 +215,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % if pad["connection"] == 'muxed':
     % if pad["name"] in target["pinout"]["remove_pads"]:
   assign mio_in[${pad["idx"]}] = 1'b0;
+  assign mio_in_raw[${pad["idx"]}] = 1'b0;
   assign unused_sig[${loop.index}] = mio_out[${pad["idx"]}] ^ mio_oe[${pad["idx"]}];
     % endif
   % else:
@@ -296,7 +297,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .scanmode_i   ( lc_ctrl_pkg::Off      ),
   % endif
     .dio_in_raw_o ( ),
-    .mio_in_raw_o ( mio_in_raw            ),
     // Chip IOs
     .dio_pad_io ({
 % for pad in list(reversed(dedicated_pads)):
@@ -326,7 +326,7 @@ module chip_${top["name"]}_${target["name"]} #(
       }),
 % endfor
 
-% for port in ["in_o", "out_i", "oe_i", "attr_i"]:
+% for port in ["in_o", "out_i", "oe_i", "attr_i", "in_raw_o"]:
 <%
     sig_name = 'mio_' + port[:-2]
     indices = list(reversed(list(pad['idx'] for pad in muxed_pads)))
