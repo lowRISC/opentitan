@@ -3156,6 +3156,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: aon_timer_aon
+          top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
         {
@@ -6010,6 +6011,7 @@
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
+        aon_timer_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
@@ -13670,6 +13672,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: aon_timer_aon
+        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
