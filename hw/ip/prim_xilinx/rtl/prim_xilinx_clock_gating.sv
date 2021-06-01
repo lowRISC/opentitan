@@ -14,7 +14,9 @@ module prim_xilinx_clock_gating #(
   if (NoFpgaGate) begin : gen_no_gate
     assign clk_o = clk_i;
   end else begin : gen_gate
-    BUFGCE u_bufgce (
+    BUFGCE #(
+      .SIM_DEVICE("7SERIES")
+    ) u_bufgce (
       .I (clk_i),
       .CE(en_i | test_en_i),
       .O (clk_o)
