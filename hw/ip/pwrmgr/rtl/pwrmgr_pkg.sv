@@ -91,7 +91,7 @@ package pwrmgr_pkg;
     logic ip_clk_en;
   } pwr_clk_req_t;
 
-  // clkmgr to powrmgr
+  // clkmgr to pwrmgr
   typedef struct packed {
     logic clk_status;
   } pwr_clk_rsp_t;

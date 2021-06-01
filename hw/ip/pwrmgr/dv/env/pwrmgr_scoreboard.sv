@@ -55,7 +55,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     if (addr_phase_write) begin
       `uvm_info(`gfn, $sformatf("Writing 0x%x to %s", item.a_data, csr.get_full_name()), UVM_LOW)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-      $finish();
     end
 
     // process the csr req

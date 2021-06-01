@@ -25,7 +25,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-  pwrmgr_if pwrmgr_intf(clk, rst_n, rst_slow_n);
+  pwrmgr_if pwrmgr_if(clk, rst_n, clk_slow, rst_slow_n);
 
   // dut
   pwrmgr dut (
@@ -37,37 +37,37 @@ module tb;
     .tl_i                 (tl_if.h2d),
     .tl_o                 (tl_if.d2h),
 
-    .pwr_ast_i            (pwrmgr_intf.pwr_ast_rsp),
-    .pwr_ast_o            (pwrmgr_intf.pwr_ast_req),
+    .pwr_ast_i            (pwrmgr_if.pwr_ast_rsp),
+    .pwr_ast_o            (pwrmgr_if.pwr_ast_req),
 
-    .pwr_rst_i            (pwrmgr_intf.pwr_rst_rsp),
-    .pwr_rst_o            (pwrmgr_intf.pwr_rst_req),
+    .pwr_rst_i            (pwrmgr_if.pwr_rst_rsp),
+    .pwr_rst_o            (pwrmgr_if.pwr_rst_req),
 
-    .pwr_clk_i            (pwrmgr_intf.pwr_clk_rsp),
-    .pwr_clk_o            (pwrmgr_intf.pwr_clk_req),
+    .pwr_clk_i            (pwrmgr_if.pwr_clk_rsp),
+    .pwr_clk_o            (pwrmgr_if.pwr_clk_req),
 
-    .pwr_otp_i            (pwrmgr_intf.pwr_otp_rsp),
-    .pwr_otp_o            (pwrmgr_intf.pwr_otp_req),
+    .pwr_otp_i            (pwrmgr_if.pwr_otp_rsp),
+    .pwr_otp_o            (pwrmgr_if.pwr_otp_req),
 
-    .pwr_lc_i             (pwrmgr_intf.pwr_lc_rsp ),
-    .pwr_lc_o             (pwrmgr_intf.pwr_lc_req ),
+    .pwr_lc_i             (pwrmgr_if.pwr_lc_rsp ),
+    .pwr_lc_o             (pwrmgr_if.pwr_lc_req ),
 
-    .pwr_flash_i          (pwrmgr_intf.pwr_flash  ),
-    .pwr_cpu_i            (pwrmgr_intf.pwr_cpu    ),
+    .pwr_flash_i          (pwrmgr_if.pwr_flash  ),
+    .pwr_cpu_i            (pwrmgr_if.pwr_cpu    ),
 
-    .fetch_en_o           (pwrmgr_intf.fetch_en   ),
-    .wakeups_i            (pwrmgr_intf.wakeups    ),
-    .rstreqs_i            (pwrmgr_intf.rstreqs    ),
+    .fetch_en_o           (pwrmgr_if.fetch_en   ),
+    .wakeups_i            (pwrmgr_if.wakeups_i  ),
+    .rstreqs_i            (pwrmgr_if.rstreqs_i  ),
 
-    .strap_o              (pwrmgr_intf.strap      ),
-    .low_power_o          (pwrmgr_intf.low_power  ),
+    .strap_o              (pwrmgr_if.strap      ),
+    .low_power_o          (pwrmgr_if.low_power  ),
 
-    .rom_ctrl_i           (pwrmgr_intf.rom_ctrl   ),
+    .rom_ctrl_i           (pwrmgr_if.rom_ctrl   ),
 
-    .esc_rst_tx_i         (pwrmgr_intf.esc_rst_tx ),
-    .esc_rst_rx_o         (pwrmgr_intf.esc_rst_rx ),
+    .esc_rst_tx_i         (pwrmgr_if.esc_rst_tx ),
+    .esc_rst_rx_o         (pwrmgr_if.esc_rst_rx ),
 
-    .intr_wakeup_o        (pwrmgr_intf.intr_wakeup)
+    .intr_wakeup_o        (pwrmgr_if.intr_wakeup)
   );
 
   initial begin
@@ -77,8 +77,9 @@ module tb;
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
-    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
+    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
+    uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

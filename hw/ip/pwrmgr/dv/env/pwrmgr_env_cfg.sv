@@ -13,6 +13,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(pwrmgr_reg_block));
 
   // ext interfaces
   virtual clk_rst_if slow_clk_rst_vif;
+  virtual pwrmgr_if pwrmgr_vif;
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
