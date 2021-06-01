@@ -161,7 +161,7 @@ interface mem_bkdr_if #(
   function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      logic [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_word)
         1: begin
           return mem_data[7:0];
@@ -207,7 +207,7 @@ interface mem_bkdr_if #(
 
   // Internal function to write a single byte to the memory (updating no check bits)
   function automatic void _write8_raw(int word_idx, int byte_idx, bit [7:0] data);
-    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+    bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
     rw_data[byte_idx * 8 +: 8] = data;
     `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
   endfunction
@@ -217,7 +217,7 @@ interface mem_bkdr_if #(
                                          int       byte_idx,
                                          bit [7:0] data,
                                          int       inject_num_errors);
-    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+    bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
 
     // Lane is the 9-bit "byte" that should be written into the word.
     bit [MEM_BYTE_MSB-1:0] lane = {~(^data), data};
