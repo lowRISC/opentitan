@@ -108,6 +108,7 @@ module pwm_core #(
       .phase_ctr_i      (phase_ctr_q),
       .clr_blink_cntr_i (clr_blink_cntr[ii]),
       .cycle_end_i      (cycle_end),
+      .dc_resn_i        (dc_resn_sync),
       .pwm_o            (pwm_o[ii])
     );
 

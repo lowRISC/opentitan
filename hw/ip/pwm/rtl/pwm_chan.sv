@@ -19,36 +19,119 @@ module pwm_chan (
   input [15:0] phase_ctr_i,
   input        cycle_end_i,
   input        clr_blink_cntr_i,
+  input [3:0]  dc_resn_i,
 
   output logic pwm_o
 );
 
-  // TODO: This block is currently incomplete, so doesn't use several of its input signals. These
-  //       are waived in pwm.vlt. When implementing the block, delete the waivers there.
+  logic [15:0] duty_cycle_actual;
+  logic [15:0] on_phase;
+  logic [15:0] off_phase;
+  logic        phase_wrap;
+  logic        pwm_int;
 
-   logic [15:0] duty_cycle_actual;
-   logic [15:0] on_phase;
-   logic [15:0] off_phase;
-   logic        phase_wrap;
-   logic        pwm_int;
+  // Standard blink mode
+  logic [15:0] blink_ctr_q;
+  logic [15:0] blink_ctr_d;
+  logic [15:0] duty_cycle_blink;
 
-   // TODO: Implement blink modes
-   assign duty_cycle_actual = duty_cycle_a_i;
+  assign blink_ctr_d = (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) ? 16'h0 :
+                       ((blink_ctr_q == blink_param_x_i + blink_param_y_i + 16'h1) && cycle_end_i)
+                       ? 16'h0 : (cycle_end_i) ? blink_ctr_q + 16'h1 : blink_ctr_q;
 
-   assign on_phase = phase_delay_i;
-   assign {phase_wrap, off_phase} = {1'b0, phase_delay_i} + {1'b0, duty_cycle_actual};
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni || clr_blink_cntr_i) begin
+      blink_ctr_q <= 16'h0;
+    end else begin
+      blink_ctr_q <= (blink_en_i && !htbt_en_i) ? blink_ctr_d : blink_ctr_q;
+    end
+  end
 
-   logic on_phase_exceeded;
-   logic off_phase_exceeded;
+  assign duty_cycle_blink = (blink_en_i && !htbt_en_i && (blink_ctr_q > blink_param_x_i)) ?
+                            duty_cycle_b_i : duty_cycle_a_i;
 
-   assign on_phase_exceeded  = (phase_ctr_i >= on_phase);
-   assign off_phase_exceeded = (phase_ctr_i >= off_phase);
+  // Heartbeat mode
+  logic [15:0] htbt_ctr_q;
+  logic [15:0] htbt_ctr_d;
+  logic [15:0] duty_cycle_htbt;
+  logic [15:0] dc_htbt_d;
+  logic [15:0] dc_htbt_q;
+  logic dc_htbt_end;
 
+  assign htbt_ctr_d = (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) ? 16'h0 :
+                      ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? 16'h0 :
+                      (cycle_end_i) ? htbt_ctr_q + 16'h1 : htbt_ctr_q;
 
-   assign pwm_int = pwm_en_i   ? 1'b0 :
-                    phase_wrap ? on_phase_exceeded | ~off_phase_exceeded :
-                                 on_phase_exceeded & ~off_phase_exceeded;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni || clr_blink_cntr_i) begin
+      htbt_ctr_q <= 16'h0;
+    end else begin
+      htbt_ctr_q <= (blink_en_i && htbt_en_i) ? htbt_ctr_d : htbt_ctr_q;
+    end
+  end
+  assign dc_htbt_end = cycle_end_i & (htbt_ctr_q == blink_param_x_i);
 
-   assign pwm_o = invert_i ? ~pwm_int : pwm_int;
+  logic htbt_direction;
+  logic dc_wrap;
+  logic pos_htbt;
+  logic neg_htbt;
+  assign pos_htbt = (duty_cycle_a_i < duty_cycle_b_i);
+  assign neg_htbt = (duty_cycle_a_i > duty_cycle_b_i);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      htbt_direction <= neg_htbt;
+    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
+      htbt_direction <= 1'b1; // duty cycle counts down
+    end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
+      htbt_direction <= 1'b0; // duty cycle counts up
+    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
+      htbt_direction <= 1'b0; // duty cycle counts up
+    end else if (neg_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
+      htbt_direction <= 1'b1; // duty cycle counts down
+    end else begin
+      htbt_direction <= htbt_direction;
+    end
+  end
+
+  logic pattern_repeat;
+  assign pattern_repeat = (pos_htbt & htbt_direction) | (neg_htbt & ~htbt_direction) |
+                          (~pos_htbt & ~neg_htbt);
+  assign {dc_wrap, dc_htbt_d} = !(htbt_ctr_q == blink_param_x_i) ? {1'b0, dc_htbt_q} :
+                                ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) ?
+                                {1'b0, duty_cycle_a_i} : (htbt_direction) ?
+                                {1'b0, dc_htbt_q} - {1'b0, blink_param_y_i} - 1'b1 :
+                                {1'b0, dc_htbt_q} + {1'b0, blink_param_y_i} + 1'b1;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dc_htbt_q <= duty_cycle_a_i;
+    end else begin
+      dc_htbt_q <= ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? dc_htbt_d : dc_htbt_q;
+    end
+  end
+  assign duty_cycle_htbt = dc_htbt_q;
+
+  assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
+                             (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
+
+  logic [15:0] phase_delay_scaled;
+  logic [15:0] duty_cycle_scaled;
+
+  assign phase_delay_scaled = phase_delay_i << (4'd15 - dc_resn_i);
+  assign duty_cycle_scaled = duty_cycle_actual << (4'd15 - dc_resn_i);
+
+  assign on_phase = phase_delay_scaled;
+  assign {phase_wrap, off_phase} = {1'b0, phase_delay_scaled} + {1'b0, duty_cycle_scaled};
+
+  logic on_phase_exceeded;
+  logic off_phase_exceeded;
+
+  assign on_phase_exceeded  = (phase_ctr_i >= on_phase);
+  assign off_phase_exceeded = (phase_ctr_i >= off_phase);
+
+  assign pwm_int = !pwm_en_i ? 1'b0 :
+                   phase_wrap ? on_phase_exceeded | ~off_phase_exceeded :
+                                on_phase_exceeded & ~off_phase_exceeded;
+
+  assign pwm_o = invert_i ? ~pwm_int : pwm_int;
 
 endmodule : pwm_chan
