@@ -4,6 +4,6 @@
 
 // testplan for the main SRAM variant
 {
-  name: "sram_ctrl_main"
+  variant: "sram_ctrl_main"
   import_testplans: ["hw/ip/sram_ctrl/data/sram_ctrl_base_testplan.hjson"]
 }
