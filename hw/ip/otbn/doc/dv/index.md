@@ -13,7 +13,7 @@ title: "OTBN DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/results.html)
 
 ## Design features
 
@@ -180,6 +180,16 @@ If an instruction can generate flag changes, we expect to see each flag that the
 This needn't be crossed with the two flag groups (that's tracked separately in the "Flags" block above).
 For example, `BN.ADD` can write to each of the flags `C`, `M`, `L` and `Z`.
 This paragraph implies eight coverage points (four flags times two values) for that instruction.
+
+> Again, the code to track this is split by encoding schema in `otbn_env_cov`.
+> The trace interface takes a copy of flag write data.
+> It doesn't bother storing the flag write flags, since these are implied by the instruction anyway.
+> There is a coverage coverpoint tracking both values for each of the flags that can be written.
+> This is then crossed with the instruction mnemonic.
+> For example, the coverpoint for the C flag (bit zero) in the `bnaf` encoding used by `BN.ADD` is called `flags_00_cp`.
+> Some instructions only write the `M`, `L` and `Z` flags.
+> These are found in the `bna`, `bnan`, `bnaqs` and `bnaqw` encoding groups.
+> For these instructions, we only track bits `1`, `2` and `3` of the flags structure.
 
 #### ADD
 
@@ -373,7 +383,7 @@ This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 #### ECALL
 
 This instruction uses the `I` encoding schema, but with every field set to a fixed value.
-Encoding-level coverpoints are tracked in covergroup `enc_fixed_cg`.
+Encoding-level coverpoints are tracked in covergroup `enc_ecall_cg`.
 
 No special coverage points for this instruction.
 

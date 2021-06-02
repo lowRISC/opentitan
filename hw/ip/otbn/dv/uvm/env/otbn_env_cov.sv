@@ -146,6 +146,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 `define DEF_WDR_TOGGLE_COV(BASE, BITS)                      \
   `_DEF_TOGGLE_COV_128(BASE, BITS, 8, 0)                    \
   `_DEF_TOGGLE_COV_128(BASE, BITS, 8, 1)
+`define DEF_FLAGS_TOGGLE_COV(BASE, BITS)                    \
+  `_DEF_TOGGLE_COV_2(BASE, BITS, 2, 0)                      \
+  `_DEF_TOGGLE_COV_2(BASE, BITS, 2, 1)
+`define DEF_MLZ_FLAGS_TOGGLE_COV(BASE, BITS)                \
+  `_DEF_TOGGLE_COV_1(BASE, BITS, 2, 01)                     \
+  `_DEF_TOGGLE_COV_2(BASE, BITS, 2, 1)
 
   // Macros to allow crossing the "toggle" coverpoints defined by the previous macros with the
   // mnemonic coverpoint for some encoding schema. These work just as above and the entry points to
@@ -183,21 +189,22 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 `define DEF_WDR_TOGGLE_CROSS(BASE)                                      \
   `_DEF_TOGGLE_CROSS_128(BASE, 0)                                       \
   `_DEF_TOGGLE_CROSS_128(BASE, 1)
+`define DEF_FLAGS_TOGGLE_CROSS(BASE)                                    \
+  `_DEF_TOGGLE_CROSS_2(BASE, 0)                                         \
+  `_DEF_TOGGLE_CROSS_2(BASE, 1)
+`define DEF_MLZ_FLAGS_TOGGLE_CROSS(BASE)                                \
+  `_DEF_TOGGLE_CROSS_1(BASE, 01)                                        \
+  `_DEF_TOGGLE_CROSS_2(BASE, 1)
 
   // Per-encoding covergroups
   covergroup enc_bna_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_data,
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
                          logic [255:0] wdr_operand_a,
-                         logic [255:0] wdr_operand_b);
+                         logic [255:0] wdr_operand_b,
+                         flags_t       flags_write_data [2]);
 
-    // Used for bna and bnaf encodings (which have the same operand layout: the only difference is
-    // in the layout of the fixed bits)
     mnemonic_cp: coverpoint mnemonic {
-      `DEF_MNEM_BIN(mnem_bn_add);
-      `DEF_MNEM_BIN(mnem_bn_addc);
-      `DEF_MNEM_BIN(mnem_bn_sub);
-      `DEF_MNEM_BIN(mnem_bn_subb);
       `DEF_MNEM_BIN(mnem_bn_and);
       `DEF_MNEM_BIN(mnem_bn_or);
       `DEF_MNEM_BIN(mnem_bn_xor);
@@ -215,12 +222,49 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
     `DEF_WDR_TOGGLE_CROSS(wrs1)
     `DEF_WDR_TOGGLE_CROSS(wrs2)
+
+    // BNA instructions can write the M, L and Z flags, but do not affect the carry flag (bit 0 in
+    // the flags_t struct).
+    `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+    `DEF_MLZ_FLAGS_TOGGLE_CROSS(flags)
+  endgroup
+
+  covergroup enc_bnaf_cg
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         flags_t       flags_write_data [2]);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_add);
+      `DEF_MNEM_BIN(mnem_bn_addc);
+      `DEF_MNEM_BIN(mnem_bn_sub);
+      `DEF_MNEM_BIN(mnem_bn_subb);
+      illegal_bins other = default;
+    }
+
+    sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
+    st_cp: coverpoint insn_data[30];
+    fg_cp: coverpoint insn_data[31];
+    `DEF_MNEM_CROSS(sb)
+    `DEF_MNEM_CROSS(st)
+    `DEF_MNEM_CROSS(fg)
+
+    `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
+    `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+    `DEF_WDR_TOGGLE_CROSS(wrs1)
+    `DEF_WDR_TOGGLE_CROSS(wrs2)
+
+    `DEF_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+    `DEF_FLAGS_TOGGLE_CROSS(flags)
   endgroup
 
   covergroup enc_bnai_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_data,
-                         logic [255:0] wdr_operand_a);
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         flags_t       flags_write_data [2]);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_addi);
@@ -235,6 +279,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
     `DEF_WDR_TOGGLE_CROSS(wrs)
+
+    `DEF_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+    `DEF_FLAGS_TOGGLE_CROSS(flags)
   endgroup
 
   covergroup enc_bnam_cg
@@ -256,9 +303,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup enc_bnan_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_data,
-                         logic [255:0] wdr_operand_a);
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         flags_t       flags_write_data [2]);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_not);
@@ -270,6 +318,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     fg_cp: coverpoint insn_data[31];
 
     `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
+
+    // BN.NOT can write the M, L and Z flags, but does not affect the carry flag (bit 0 in the
+    // flags_t struct).
+    `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
   endgroup
 
   covergroup enc_bnaq_cg
@@ -297,7 +349,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     with function sample(mnem_str_t   mnemonic,
                          logic [31:0] insn_data,
                          logic [255:0] wdr_operand_a,
-                         logic [255:0] wdr_operand_b);
+                         logic [255:0] wdr_operand_b,
+                         flags_t       flags_write_data [2]);
 
     // Used for BN.MULQACC.SO
     mnemonic_cp: coverpoint mnemonic {
@@ -314,13 +367,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+
+    // BN.MULQACC.SO can write the M, L and Z flags, but does not affect the carry flag (bit 0 in
+    // the flags_t struct).
+    `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
   endgroup
 
   covergroup enc_bnaqw_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_data,
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
                          logic [255:0] wdr_operand_a,
-                         logic [255:0] wdr_operand_b);
+                         logic [255:0] wdr_operand_b,
+                         flags_t       flags_write_data [2]);
 
     // Used for BN.MULQACC.WO
     mnemonic_cp: coverpoint mnemonic {
@@ -336,13 +394,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+
+    // BN.MULQACC.WO can write the M, L and Z flags, but does not affect the carry flag (bit 0 in
+    // the flags_t struct).
+    `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
   endgroup
 
   covergroup enc_bnc_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_data,
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
                          logic [255:0] wdr_operand_a,
-                         logic [255:0] wdr_operand_b);
+                         logic [255:0] wdr_operand_b,
+                         flags_t       flags_write_data [2]);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_cmp);
@@ -361,6 +424,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
     `DEF_WDR_TOGGLE_CROSS(wrs1)
     `DEF_WDR_TOGGLE_CROSS(wrs2)
+
+    `DEF_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+    `DEF_FLAGS_TOGGLE_CROSS(flags)
   endgroup
 
   covergroup enc_bnmov_cg
@@ -491,8 +557,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_GPR_TOGGLE_CROSS(grs2)
   endgroup
 
-  covergroup enc_fixed_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
-    // Used for instructions (ECALL) with no immediate or register operands
+  covergroup enc_ecall_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
+    // Used by the ECALL instruction. Although it uses the I encoding in the tooling, it has no
+    // immediate or register operands so we give it a separate covergroup here.
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_ecall);
       illegal_bins other = default;
@@ -672,6 +739,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     super.new(name, parent);
 
     enc_bna_cg = new;
+    enc_bnaf_cg = new;
     enc_bnai_cg = new;
     enc_bnam_cg = new;
     enc_bnan_cg = new;
@@ -685,7 +753,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     enc_bns_cg = new;
     enc_bnxid_cg = new;
     enc_b_cg = new;
-    enc_fixed_cg = new;
+    enc_ecall_cg = new;
     enc_i_cg = new;
     enc_is_cg = new;
     enc_j_cg = new;
@@ -721,7 +789,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_jalr]          = "I";
     insn_encodings[mnem_csrrs]         = "I";
     insn_encodings[mnem_csrrw]         = "I";
-    insn_encodings[mnem_ecall]         = "fixed";
+    insn_encodings[mnem_ecall]         = "ecall";
     insn_encodings[mnem_loop]          = "loop";
     insn_encodings[mnem_loopi]         = "loopi";
     insn_encodings[mnem_bn_add]        = "bnaf";
@@ -779,22 +847,38 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Every instruction mnemonic should have an associated encoding schema.
     encoding = insn_encodings[mnem];
     case (encoding)
-      "bna", "bnaf":
-        enc_bna_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+      "bna":
+        enc_bna_cg.sample(mnem, insn_data,
+                          rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                          rtl_item.flags_write_data);
+      "bnaf":
+        enc_bnaf_cg.sample(mnem, insn_data,
+                           rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                           rtl_item.flags_write_data);
       "bnai":
-        enc_bnai_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
+        enc_bnai_cg.sample(mnem, insn_data,
+                           rtl_item.wdr_operand_a,
+                           rtl_item.flags_write_data);
       "bnam":
         enc_bnam_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bnan":
-        enc_bnan_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
+        enc_bnan_cg.sample(mnem, insn_data,
+                           rtl_item.wdr_operand_a,
+                           rtl_item.flags_write_data);
       "bnaq":
         enc_bnaq_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
-      "bnaqw":
-        enc_bnaqw_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bnaqs":
-        enc_bnaqs_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        enc_bnaqs_cg.sample(mnem, insn_data,
+                            rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                            rtl_item.flags_write_data);
+      "bnaqw":
+        enc_bnaqw_cg.sample(mnem, insn_data,
+                            rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                            rtl_item.flags_write_data);
       "bnc":
-        enc_bnc_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        enc_bnc_cg.sample(mnem, insn_data,
+                          rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                          rtl_item.flags_write_data);
       "bnmov":
         enc_bnmov_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
       "bnmovr":
@@ -807,8 +891,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_bnxid_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
       "B":
         enc_b_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
-      "fixed":
-        enc_fixed_cg.sample(mnem, insn_data);
+      "ecall":
+        enc_ecall_cg.sample(mnem, insn_data);
       "I":
         enc_i_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a);
       "Is":
