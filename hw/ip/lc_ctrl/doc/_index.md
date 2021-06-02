@@ -587,7 +587,7 @@ To arbitrate between the two, a hardware mutex needs to be obtained before eithe
 The hardware mutex internally acts as a mux to block off the unselected path and all accesses to the request interface are blocked until it is claimed.
 If two requests arrive simultaneously, the TAP interface is given priority.
 
-The request interface consists of 4 registers:
+The request interface consists of 5 registers:
 
 1. {{< regref "TRANSITION_TARGET" >}}: Specifies the target state to which the agent wants to transition.
 2. {{< regref "TRANSITION_TOKEN_*" >}}: Any necessary token for conditional transitions.
@@ -605,6 +605,13 @@ If the value is not read back, then the requesting interface should wait and try
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
 This resets the mux to select no one and also holds the request interface in reset.
+
+#### Vendor-specific Test Control Register
+
+Certain OTP macros require special configuration bits to be set during the test phases.
+Hence, the life cycle CSRs include register {{< regref "OTP_TEST_CTRL" >}}, which is reserved for vendor-specific test control bits.
+Its value is only forwarded to the OTP macro in RAW, TEST_* and RMA life cycle states.
+In all other life cycle states, a value of 0 will be sent to the OTP macro.
 
 ### TAP Construction and Isolation
 
