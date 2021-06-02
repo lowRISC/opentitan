@@ -398,12 +398,13 @@ In order to perform life cycle state transitions, the life cycle controller can 
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                      wave: 'p.......'},
-  {name: 'lc_otp_program_i.req',       wave: '01.|..0.'},
-  {name: 'lc_otp_program_i.state',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_i.count',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_o.ack',       wave: '0..|.10.'},
-  {name: 'lc_otp_program_o.err',       wave: '0..|.40.'},
+  {name: 'clk_i',                          wave: 'p.......'},
+  {name: 'lc_otp_program_i.req',           wave: '01.|..0.'},
+  {name: 'lc_otp_program_i.state',         wave: '03.|..0.'},
+  {name: 'lc_otp_program_i.count',         wave: '03.|..0.'},
+  {name: 'lc_otp_program_i.otp_test_ctrl', wave: 'x..|....'},
+  {name: 'lc_otp_program_o.ack',           wave: '0..|.10.'},
+  {name: 'lc_otp_program_o.err',           wave: '0..|.40.'},
 ]}
 {{< /wavejson >}}
 
@@ -412,6 +413,10 @@ An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
 There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding]({{< relref "hw/ip/lc_ctrl/doc/_index.md#life-cycle-manufacturing-state-encodings" >}}) for details.
+
+Note that the behavior of the `lc_otp_program_i.otp_test_ctrl` signal is vendor-specific, and hence the signal is set to `x` in the timing diagram above.
+The purpose of this signal is to control vendor-specific test mechanisms, and its value will only be forwarded to the OTP macro in RAW, TEST_* and RMA states.
+In all other life cycle states this signal will be clamped to zero.
 
 #### Interface to Key Manager
 
@@ -666,7 +671,8 @@ This is behavior illustrated in the example below.
 The OTP IP is wrapped up in a primitive wrapper that exposes a TL-UL interface for testing purposes, and a generalized open-source interface for functional operation (described below).
 Any OTP redundancy mechanism like per-word ECC is assumed to be handled inside the wrapper, which means that the word width exposed as part of the generalized interface is the effective word width.
 
-Note that the register space exposed via the TL-UL interface is dependent on the underlying proprietary OTP IP and hence not further described in this document.
+Note that the register space exposed via the TL-UL test interface, as well as DFT and power-related signals are dependent on the underlying proprietary OTP IP.
+They are therefore not further described in this document.
 
 #### Generalized Open-source Interface
 
@@ -700,8 +706,6 @@ Also, an error signal returns a non-zero error code in case an error occurred wh
 
 Signal                  | Direction        | Type                        | Description
 ------------------------|------------------|-----------------------------|---------------
-`pwr_seq_o`             | `output`         | `logic`                     | Power sequencing signals to AST (on VDD domain).
-`pwr_seq_h_i`           | `input`          | `logic`                     | Power sequencing signals from AST (on VCC domain).
 `ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
 `valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
 `size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
