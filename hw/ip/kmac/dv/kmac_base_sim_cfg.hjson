@@ -30,9 +30,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson"]
-                // TODO uncomment when ready to implement
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["kmac_bind"]
@@ -40,7 +39,7 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  run_opts: ["+test_timeout_ns=4000000000"]
+  run_opts: ["+test_timeout_ns=4_000_000_000"]
 
   // Need to override the default output directory
   overrides: [
@@ -80,7 +79,7 @@
     {
       name: "{variant}_long_msg_and_output"
       uvm_test_seq: kmac_long_msg_and_output_vseq
-      run_opts: ["+test_timeout_ns=10000000000"]
+      run_opts: ["+test_timeout_ns=10_000_000_000"]
     }
     {
       name: "{variant}_sideload"
@@ -139,6 +138,15 @@
     {
       name: "{variant}_app"
       uvm_test_seq: kmac_app_vseq
+    }
+    {
+      name: kmac_stress_all
+      run_opts: ["+test_timeout_ns=10_000_000_000",
+                 "+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: kmac_stress_all_with_rand_reset
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
     }
   ]
 
