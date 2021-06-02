@@ -14,3 +14,4 @@
 `include "kmac_test_vectors_kmac_xof_vseq.sv"
 `include "kmac_burst_write_vseq.sv"
 `include "kmac_app_vseq.sv"
+`include "kmac_stress_all_vseq.sv"
