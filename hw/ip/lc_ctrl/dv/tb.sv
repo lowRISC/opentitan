@@ -19,6 +19,9 @@ module tb;
   wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
 
+  // TODO: need to connect this properly
+  wire [OtpTestCtrlWidth-1:0] otp_test_ctrl;
+
   // interfaces
   clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if      #(1) devmode_if(devmode);
@@ -93,7 +96,7 @@ module tb;
     .pwr_lc_i                   (pwr_lc[LcPwrInitReq]),
     .pwr_lc_o                   (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
 
-    .lc_otp_program_o           ({otp_prog_if.req, otp_prog_if.h_data}),
+    .lc_otp_program_o           ({otp_prog_if.req, otp_prog_if.h_data, otp_test_ctrl}),
     .lc_otp_program_i           ({otp_prog_if.d_data, otp_prog_if.ack}),
 
     .kmac_data_i                (kmac_data_in),

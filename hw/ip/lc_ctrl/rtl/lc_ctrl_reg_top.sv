@@ -154,6 +154,10 @@ module lc_ctrl_reg_top (
   logic [3:0] transition_target_wd;
   logic transition_target_we;
   logic transition_target_re;
+  logic [7:0] otp_test_ctrl_qs;
+  logic [7:0] otp_test_ctrl_wd;
+  logic otp_test_ctrl_we;
+  logic otp_test_ctrl_re;
   logic [3:0] lc_state_qs;
   logic lc_state_re;
   logic [4:0] lc_transition_cnt_qs;
@@ -483,6 +487,23 @@ module lc_ctrl_reg_top (
   );
 
 
+  // R[otp_test_ctrl]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_otp_test_ctrl (
+    .re     (otp_test_ctrl_re),
+    // qualified with register enable
+    .we     (otp_test_ctrl_we & transition_regwen_qs),
+    .wd     (otp_test_ctrl_wd),
+    .d      (hw2reg.otp_test_ctrl.d),
+    .qre    (),
+    .qe     (reg2hw.otp_test_ctrl.qe),
+    .q      (reg2hw.otp_test_ctrl.q ),
+    .qs     (otp_test_ctrl_qs)
+  );
+
+
   // R[lc_state]: V(True)
 
   prim_subreg_ext #(
@@ -663,7 +684,7 @@ module lc_ctrl_reg_top (
 
 
 
-  logic [20:0] addr_hit;
+  logic [21:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == LC_CTRL_ALERT_TEST_OFFSET);
@@ -676,17 +697,18 @@ module lc_ctrl_reg_top (
     addr_hit[ 7] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_2_OFFSET);
     addr_hit[ 8] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_3_OFFSET);
     addr_hit[ 9] = (reg_addr == LC_CTRL_TRANSITION_TARGET_OFFSET);
-    addr_hit[10] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
-    addr_hit[11] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
-    addr_hit[12] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
-    addr_hit[13] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
-    addr_hit[14] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
-    addr_hit[15] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
-    addr_hit[16] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
-    addr_hit[17] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
-    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
-    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
-    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
+    addr_hit[10] = (reg_addr == LC_CTRL_OTP_TEST_CTRL_OFFSET);
+    addr_hit[11] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
+    addr_hit[12] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
+    addr_hit[13] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
+    addr_hit[14] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
+    addr_hit[15] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
+    addr_hit[16] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
+    addr_hit[17] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
+    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
+    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
+    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
+    addr_hit[21] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -714,7 +736,8 @@ module lc_ctrl_reg_top (
                (addr_hit[17] & (|(LC_CTRL_PERMIT[17] & ~reg_be))) |
                (addr_hit[18] & (|(LC_CTRL_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(LC_CTRL_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(LC_CTRL_PERMIT[20] & ~reg_be)))));
+               (addr_hit[20] & (|(LC_CTRL_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(LC_CTRL_PERMIT[21] & ~reg_be)))));
   end
 
   assign alert_test_fatal_prog_error_we = addr_hit[0] & reg_we & !reg_error;
@@ -770,27 +793,31 @@ module lc_ctrl_reg_top (
   assign transition_target_wd = reg_wdata[3:0];
   assign transition_target_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign lc_state_re = addr_hit[10] & reg_re & !reg_error;
+  assign otp_test_ctrl_we = addr_hit[10] & reg_we & !reg_error;
+  assign otp_test_ctrl_wd = reg_wdata[7:0];
+  assign otp_test_ctrl_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign lc_transition_cnt_re = addr_hit[11] & reg_re & !reg_error;
+  assign lc_state_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign lc_id_state_re = addr_hit[12] & reg_re & !reg_error;
+  assign lc_transition_cnt_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign device_id_0_re = addr_hit[13] & reg_re & !reg_error;
+  assign lc_id_state_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign device_id_1_re = addr_hit[14] & reg_re & !reg_error;
+  assign device_id_0_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign device_id_2_re = addr_hit[15] & reg_re & !reg_error;
+  assign device_id_1_re = addr_hit[15] & reg_re & !reg_error;
 
-  assign device_id_3_re = addr_hit[16] & reg_re & !reg_error;
+  assign device_id_2_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign device_id_4_re = addr_hit[17] & reg_re & !reg_error;
+  assign device_id_3_re = addr_hit[17] & reg_re & !reg_error;
 
-  assign device_id_5_re = addr_hit[18] & reg_re & !reg_error;
+  assign device_id_4_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign device_id_6_re = addr_hit[19] & reg_re & !reg_error;
+  assign device_id_5_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign device_id_7_re = addr_hit[20] & reg_re & !reg_error;
+  assign device_id_6_re = addr_hit[20] & reg_re & !reg_error;
+
+  assign device_id_7_re = addr_hit[21] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -846,46 +873,50 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[3:0] = lc_state_qs;
+        reg_rdata_next[7:0] = otp_test_ctrl_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[4:0] = lc_transition_cnt_qs;
+        reg_rdata_next[3:0] = lc_state_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[1:0] = lc_id_state_qs;
+        reg_rdata_next[4:0] = lc_transition_cnt_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[31:0] = device_id_0_qs;
+        reg_rdata_next[1:0] = lc_id_state_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[31:0] = device_id_1_qs;
+        reg_rdata_next[31:0] = device_id_0_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = device_id_2_qs;
+        reg_rdata_next[31:0] = device_id_1_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[31:0] = device_id_3_qs;
+        reg_rdata_next[31:0] = device_id_2_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = device_id_4_qs;
+        reg_rdata_next[31:0] = device_id_3_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = device_id_5_qs;
+        reg_rdata_next[31:0] = device_id_4_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = device_id_6_qs;
+        reg_rdata_next[31:0] = device_id_5_qs;
       end
 
       addr_hit[20]: begin
+        reg_rdata_next[31:0] = device_id_6_qs;
+      end
+
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = device_id_7_qs;
       end
 

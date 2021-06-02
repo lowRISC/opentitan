@@ -25,6 +25,8 @@ module lc_ctrl_signal_decode
   input  fsm_state_e     fsm_state_i,
   // Escalation enable from escalation receiver.
   input                  esc_wipe_secrets_i,
+  // Local life cycle signal
+  output lc_tx_t         lc_test_or_rma_o,
   // Life cycle broadcast outputs.
   output lc_tx_t         lc_dft_en_o,
   output lc_tx_t         lc_nvm_debug_en_o,
@@ -45,6 +47,7 @@ module lc_ctrl_signal_decode
   // Signal Decoder Logic //
   //////////////////////////
 
+  lc_tx_t lc_test_or_rma;
   lc_tx_t lc_dft_en, lc_nvm_debug_en, lc_hw_debug_en, lc_cpu_en, lc_keymgr_en, lc_escalate_en;
   lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en, lc_iso_part_sw_rd_en;
   lc_tx_t lc_iso_part_sw_wr_en, lc_seed_hw_rd_en;
@@ -52,6 +55,7 @@ module lc_ctrl_signal_decode
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
+    lc_test_or_rma           = Off;
     lc_dft_en                = Off;
     lc_nvm_debug_en          = Off;
     lc_hw_debug_en           = Off;
@@ -91,11 +95,13 @@ module lc_ctrl_signal_decode
         if (lc_state_valid_i) begin
           unique case (lc_state_i)
             ///////////////////////////////////////////////////////////////////
-            // RAW and test locked states, nothing to broadcast
+            // Only enable life cycle TAP register for OTP test mechanisms.
             LcStRaw,
             LcStTestLocked0,
             LcStTestLocked1,
-            LcStTestLocked2: ;
+            LcStTestLocked2: begin
+              lc_test_or_rma = On;
+            end
             ///////////////////////////////////////////////////////////////////
             // Enable DFT and debug functionality, including the CPU in the
             // test unlocked states.
@@ -103,6 +109,7 @@ module lc_ctrl_signal_decode
             LcStTestUnlocked1,
             LcStTestUnlocked2,
             LcStTestUnlocked3: begin
+              lc_test_or_rma       = On;
               lc_dft_en            = On;
               lc_nvm_debug_en      = On;
               lc_hw_debug_en       = On;
@@ -152,6 +159,7 @@ module lc_ctrl_signal_decode
             ///////////////////////////////////////////////////////////////////
             // Enable all test and production functions.
             LcStRma: begin
+              lc_test_or_rma           = On;
               lc_dft_en                = On;
               lc_nvm_debug_en          = On;
               lc_hw_debug_en           = On;
@@ -191,6 +199,12 @@ module lc_ctrl_signal_decode
   // Control signal output flops //
   /////////////////////////////////
 
+  prim_lc_sender u_prim_lc_sender_test_or_rma (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_test_or_rma),
+    .lc_en_o(lc_test_or_rma_o)
+  );
   prim_lc_sender u_prim_lc_sender_dft_en (
     .clk_i,
     .rst_ni,
@@ -284,6 +298,7 @@ module lc_ctrl_signal_decode
   `ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i
       |=>
+      lc_test_or_rma_o == Off &&
       lc_dft_en_o == Off &&
       lc_nvm_debug_en_o == Off &&
       lc_hw_debug_en_o == Off &&

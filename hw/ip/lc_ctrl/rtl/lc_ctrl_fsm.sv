@@ -58,6 +58,8 @@ module lc_ctrl_fsm
   output logic                  flash_rma_error_o,
   output logic                  otp_prog_error_o,
   output logic                  state_invalid_error_o,
+  // Local life cycle signal
+  output lc_tx_t                lc_test_or_rma_o,
   // Life cycle broadcast outputs.
   output lc_tx_t                lc_dft_en_o,
   output lc_tx_t                lc_nvm_debug_en_o,
@@ -507,6 +509,7 @@ module lc_ctrl_fsm
     .lc_id_state_i      ( lc_id_state_q    ),
     .fsm_state_i        ( fsm_state_q      ),
     .esc_wipe_secrets_i,
+    .lc_test_or_rma_o,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
     .lc_hw_debug_en_o,

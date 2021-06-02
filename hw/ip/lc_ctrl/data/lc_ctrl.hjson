@@ -80,6 +80,12 @@
       default: "2",
       local:   "true"
     }
+    { name:    "CsrOtpTestCtrlWidth",
+      desc:    "Number of vendor/test specific OTP control bits.",
+      type:    "int"
+      default: "8",
+      local:   "true"
+    }
     { name:    "NumDeviceIdWords",
       desc:    "Number of 32bit words in the Device ID.",
       type:    "int"
@@ -557,7 +563,33 @@
         }
       ]
     }
-
+    //////////////////////////////////
+    // Vendor Specific OTP Settings //
+    //////////////////////////////////
+    { name: "OTP_TEST_CTRL",
+      desc: '''
+      Test/vendor-specific settings for the OTP macro wrapper.
+      These values are only active during RAW, TEST_* and RMA life cycle states.
+      In all other states, these values will be gated to zero before sending
+      them to the OTP macro wrapper - even if this register is programmed to a non-zero value.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      hwext:    "true",
+      regwen:   "TRANSITION_REGWEN",
+      tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+              // CLAIM_TRANSITION_IF, so can not auto predict its value.
+              "excl:CsrNonInitTests:CsrExclCheck"],
+      fields: [
+        { bits: "CsrOtpTestCtrlWidth-1:0",
+          name: "VAL",
+          desc: '''
+          Settings defined by vendor.
+          '''
+        }
+      ]
+    }
     //////////////////
     // LC State CSR //
     //////////////////

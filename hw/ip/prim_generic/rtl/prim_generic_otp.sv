@@ -6,29 +6,40 @@ module prim_generic_otp
   import prim_otp_pkg::*;
 #(
   // Native OTP word size. This determines the size_i granule.
-  parameter  int Width       = 16,
-  parameter  int Depth       = 1024,
+  parameter  int Width         = 16,
+  parameter  int Depth         = 1024,
   // This determines the maximum number of native words that
   // can be transferred accross the interface in one cycle.
-  parameter  int SizeWidth   = 2,
+  parameter  int SizeWidth     = 2,
   // Width of the power sequencing signal.
-  parameter  int PwrSeqWidth = 2,
+  parameter  int PwrSeqWidth   = 2,
   // Number of Test TL-UL words
-  parameter  int TlDepth     = 16,
+  parameter  int TlDepth       = 16,
+  // Width of vendor-specific test control signal
+  parameter  int TestCtrlWidth = 8,
   // Derived parameters
-  localparam int AddrWidth   = prim_util_pkg::vbits(Depth),
-  localparam int IfWidth     = 2**SizeWidth*Width,
+  localparam int AddrWidth     = prim_util_pkg::vbits(Depth),
+  localparam int IfWidth       = 2**SizeWidth*Width,
   // VMEM file to initialize the memory with
-  parameter      MemInitFile = ""
+  parameter      MemInitFile   = ""
 ) (
   input                          clk_i,
   input                          rst_ni,
   // Macro-specific power sequencing signals to/from AST
   output logic [PwrSeqWidth-1:0] pwr_seq_o,
   input        [PwrSeqWidth-1:0] pwr_seq_h_i,
+  // External programming voltage
+  inout wire                     ext_voltage_io,
   // Test interface
+  input [TestCtrlWidth-1:0]      test_ctrl_i,
   input  tlul_pkg::tl_h2d_t      test_tl_i,
   output tlul_pkg::tl_d2h_t      test_tl_o,
+  // Other DFT signals
+  input lc_ctrl_pkg::lc_tx_t     scanmode_i,  // Scan Mode input
+  input                          scan_en_i,   // Scan Shift
+  input                          scan_rst_ni, // Scan Reset
+  // Alert indication
+  output ast_pkg::ast_dif_t      otp_alert_src_o,
   // Ready valid handshake for read/write command
   output logic                   ready_o,
   input                          valid_i,
@@ -39,18 +50,7 @@ module prim_generic_otp
   // Response channel
   output logic                   valid_o,
   output logic [IfWidth-1:0]     rdata_o,
-  output err_e                   err_o,
-  // External programming voltage
-  inout wire ext_voltage_io,
-  input ext_voltage_en_i,
-
-  // alert indication
-  output ast_pkg::ast_dif_t otp_alert_src_o,
-
-  // Scan
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,  // Scan Mode input
-  input scan_en_i,  // Scan Shift
-  input scan_rst_ni  // Scan Reset
+  output err_e                   err_o
 );
 
   // This is only restricted by the supported ECC poly further
@@ -65,8 +65,8 @@ module prim_generic_otp
 
   wire unused_ext_voltage;
   assign unused_ext_voltage = ext_voltage_io;
-  logic unused_ext_voltage_en;
-  assign unused_ext_voltage_en = ext_voltage_en_i;
+  logic unused_test_ctrl_i;
+  assign unused_test_ctrl_i = ^test_ctrl_i;
 
   logic unused_scan;
   assign unused_scan = ^{scanmode_i, scan_en_i, scan_rst_ni};
