@@ -58,7 +58,15 @@ class kmac_base_vseq extends cip_base_vseq #(
   rand bit en_sideload;
 
   // entropy mode
-  rand kmac_pkg::entropy_mode_e entropy_mode;
+  rand kmac_pkg::entropy_mode_e entropy_mode = EntropyModeSw;
+  // We do not want to change the value of `entropy_mode` in between hashing iterations.
+  //
+  // So we use a static entropy mode value to hold the same mode through the whole test,
+  // and constrain `entropy_mode` accordingly.
+  //
+  // Structure it in this way, as timer verification will allow different entropy modes to be used
+  // in different iterations.
+  kmac_pkg::entropy_mode_e static_entropy_mode = EntropyModeSw;
 
   // entropy fast process mode
   rand bit entropy_fast_process;
@@ -142,6 +150,10 @@ class kmac_base_vseq extends cip_base_vseq #(
     (en_sideload) -> key_len == Key256;
   }
 
+  constraint entropy_mode_c {
+    entropy_mode == static_entropy_mode;
+  }
+
   // Set the block size based on the random security strength.
   // This is only relevant for XOF functions (L128 or L256), but will be
   // set for all security strengths.
@@ -206,6 +218,12 @@ class kmac_base_vseq extends cip_base_vseq #(
   virtual task dut_shutdown();
     // check for pending kmac operations and wait for them to complete
     // TODO
+  endtask
+
+  virtual task pre_start();
+    super.pre_start();
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(static_entropy_mode,
+        static_entropy_mode inside {EntropyModeSw, EntropyModeEdn};)
   endtask
 
   // setup basic kmac features

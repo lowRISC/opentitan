@@ -481,7 +481,6 @@ module chip_earlgrey_asic #(
     .clk_scan_i   ( ast_base_clks.clk_sys ),
     .scanmode_i   ( scanmode              ),
     .dio_in_raw_o ( ),
-    .mio_in_raw_o ( mio_in_raw            ),
     // Chip IOs
     .dio_pad_io ({
       IOR9,
@@ -664,7 +663,8 @@ module chip_earlgrey_asic #(
     .mio_in_o (mio_in[46:0]),
     .mio_out_i (mio_out[46:0]),
     .mio_oe_i (mio_oe[46:0]),
-    .mio_attr_i (mio_attr[46:0])
+    .mio_attr_i (mio_attr[46:0]),
+    .mio_in_raw_o (mio_in_raw[46:0])
   );
 
 

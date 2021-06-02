@@ -259,44 +259,62 @@ module chip_earlgrey_cw310 #(
   assign dio_in[DioSpiDeviceSd3] = 1'b0;
   assign unused_sig[18] = dio_out[DioSpiDeviceSd3] ^ dio_oe[DioSpiDeviceSd3];
   assign mio_in[19] = 1'b0;
+  assign mio_in_raw[19] = 1'b0;
   assign unused_sig[40] = mio_out[19] ^ mio_oe[19];
   assign mio_in[20] = 1'b0;
+  assign mio_in_raw[20] = 1'b0;
   assign unused_sig[41] = mio_out[20] ^ mio_oe[20];
   assign mio_in[21] = 1'b0;
+  assign mio_in_raw[21] = 1'b0;
   assign unused_sig[42] = mio_out[21] ^ mio_oe[21];
   assign mio_in[22] = 1'b0;
+  assign mio_in_raw[22] = 1'b0;
   assign unused_sig[43] = mio_out[22] ^ mio_oe[22];
   assign mio_in[23] = 1'b0;
+  assign mio_in_raw[23] = 1'b0;
   assign unused_sig[44] = mio_out[23] ^ mio_oe[23];
   assign mio_in[34] = 1'b0;
+  assign mio_in_raw[34] = 1'b0;
   assign unused_sig[55] = mio_out[34] ^ mio_oe[34];
   assign mio_in[35] = 1'b0;
+  assign mio_in_raw[35] = 1'b0;
   assign unused_sig[56] = mio_out[35] ^ mio_oe[35];
   assign mio_in[36] = 1'b0;
+  assign mio_in_raw[36] = 1'b0;
   assign unused_sig[57] = mio_out[36] ^ mio_oe[36];
   assign mio_in[37] = 1'b0;
+  assign mio_in_raw[37] = 1'b0;
   assign unused_sig[58] = mio_out[37] ^ mio_oe[37];
   assign mio_in[38] = 1'b0;
+  assign mio_in_raw[38] = 1'b0;
   assign unused_sig[59] = mio_out[38] ^ mio_oe[38];
   assign mio_in[39] = 1'b0;
+  assign mio_in_raw[39] = 1'b0;
   assign unused_sig[60] = mio_out[39] ^ mio_oe[39];
   assign mio_in[40] = 1'b0;
+  assign mio_in_raw[40] = 1'b0;
   assign unused_sig[61] = mio_out[40] ^ mio_oe[40];
   assign mio_in[41] = 1'b0;
+  assign mio_in_raw[41] = 1'b0;
   assign unused_sig[62] = mio_out[41] ^ mio_oe[41];
   assign mio_in[42] = 1'b0;
+  assign mio_in_raw[42] = 1'b0;
   assign unused_sig[63] = mio_out[42] ^ mio_oe[42];
   assign dio_in[DioSysrstCtrlAonEcRstOutL] = 1'b0;
   assign unused_sig[64] = dio_out[DioSysrstCtrlAonEcRstOutL] ^ dio_oe[DioSysrstCtrlAonEcRstOutL];
   assign dio_in[DioSysrstCtrlAonPwrbOut] = 1'b0;
   assign unused_sig[65] = dio_out[DioSysrstCtrlAonPwrbOut] ^ dio_oe[DioSysrstCtrlAonPwrbOut];
   assign mio_in[43] = 1'b0;
+  assign mio_in_raw[43] = 1'b0;
   assign unused_sig[66] = mio_out[43] ^ mio_oe[43];
   assign mio_in[44] = 1'b0;
+  assign mio_in_raw[44] = 1'b0;
   assign unused_sig[67] = mio_out[44] ^ mio_oe[44];
   assign mio_in[45] = 1'b0;
+  assign mio_in_raw[45] = 1'b0;
   assign unused_sig[68] = mio_out[45] ^ mio_oe[45];
   assign mio_in[46] = 1'b0;
+  assign mio_in_raw[46] = 1'b0;
   assign unused_sig[69] = mio_out[46] ^ mio_oe[46];
 
   //////////////////////
@@ -367,7 +385,6 @@ module chip_earlgrey_cw310 #(
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( lc_ctrl_pkg::Off      ),
     .dio_in_raw_o ( ),
-    .mio_in_raw_o ( mio_in_raw            ),
     // Chip IOs
     .dio_pad_io ({
       IO_UPHY_DPPULLUP,
@@ -529,6 +546,10 @@ module chip_earlgrey_cw310 #(
     .mio_attr_i ({
         mio_attr[33:24],
         mio_attr[18:0]
+      }),
+    .mio_in_raw_o ({
+        mio_in_raw[33:24],
+        mio_in_raw[18:0]
       })
   );
 

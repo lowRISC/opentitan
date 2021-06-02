@@ -237,7 +237,7 @@ jobs:
         run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:chip_earlgrey_verilator \
-        --verilator_options="--no-threads"
+        --verilator_options="--threads 4"
 
       cp "$OBJ_DIR/hw/sim-verilator/Vchip_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
@@ -285,8 +285,7 @@ jobs:
 
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system (excl. slow tests)
-  pool:
-    vmImage: ubuntu-18.04
+  pool: ci-public
   dependsOn:
     - chip_earlgrey_verilator
     - sw_build
@@ -313,8 +312,7 @@ jobs:
 # This test is in a separate job becuase it takes longer to complete.
 - job: execute_silicon_creator_verilated_test
   displayName: Execute silicon_creator test on the Verilated system
-  pool:
-    vmImage: ubuntu-18.04
+  pool: ci-public
   dependsOn:
     - chip_earlgrey_verilator
     - sw_build

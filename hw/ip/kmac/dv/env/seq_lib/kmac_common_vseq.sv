@@ -12,6 +12,7 @@ class kmac_common_vseq extends kmac_base_vseq;
 
   virtual task pre_start();
     do_kmac_init = 1'b0;
+    entropy_mode_c.constraint_mode(0);
     super.pre_start();
   endtask
 

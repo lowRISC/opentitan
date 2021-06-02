@@ -58,7 +58,7 @@ module alert_handler
           intr_classb_o,
           intr_classa_o} = irq;
 
-  alert_handler_reg_wrap i_reg_wrap (
+  alert_handler_reg_wrap u_reg_wrap (
     .clk_i,
     .rst_ni,
     .tl_i,
@@ -102,7 +102,7 @@ module alert_handler
   alert_handler_ping_timer #(
     .RndCnstLfsrSeed(RndCnstLfsrSeed),
     .RndCnstLfsrPerm(RndCnstLfsrPerm)
-  ) i_ping_timer (
+  ) u_ping_timer (
     .clk_i,
     .rst_ni,
     .entropy_i(entropy),
@@ -133,7 +133,7 @@ module alert_handler
   for (genvar k = 0 ; k < NAlerts ; k++) begin : gen_alerts
     prim_alert_receiver #(
       .AsyncOn(AsyncOn[k])
-    ) i_alert_receiver (
+    ) u_alert_receiver (
       .clk_i                              ,
       .rst_ni                             ,
       .ping_req_i   ( alert_ping_req[k]   ),
@@ -151,7 +151,7 @@ module alert_handler
   // Set alert cause bits and classify //
   ///////////////////////////////////////
 
-  alert_handler_class i_class (
+  alert_handler_class u_class (
     .alert_trig_i      ( alert_trig                  ),
     .loc_alert_trig_i  ( loc_alert_trig              ),
     .alert_en_i        ( reg2hw_wrap.alert_en        ),
@@ -171,7 +171,7 @@ module alert_handler
   logic [N_CLASSES-1:0][N_ESC_SEV-1:0] class_esc_sig_req;
 
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classes
-    alert_handler_accu i_accu (
+    alert_handler_accu u_accu (
       .clk_i,
       .rst_ni,
       .class_en_i   ( reg2hw_wrap.class_en[k]           ),
@@ -182,7 +182,7 @@ module alert_handler
       .accu_trig_o  ( class_accum_trig[k]               )
     );
 
-    alert_handler_esc_timer i_esc_timer (
+    alert_handler_esc_timer u_esc_timer (
       .clk_i,
       .rst_ni,
       .en_i             ( reg2hw_wrap.class_en[k]          ),
@@ -217,7 +217,7 @@ module alert_handler
 
     assign esc_sig_req[k] = |esc_sig_req_trsp[k];
 
-    prim_esc_sender i_esc_sender (
+    prim_esc_sender u_esc_sender (
       .clk_i,
       .rst_ni,
       .ping_req_i   ( esc_ping_req[k]  ),

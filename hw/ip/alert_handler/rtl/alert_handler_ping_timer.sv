@@ -68,7 +68,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .MaxLenSVA   ( MaxLenSVA       ),
     .LockupSVA   ( LockupSVA       ),
     .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
-  ) i_prim_lfsr (
+  ) u_prim_lfsr (
     .clk_i,
     .rst_ni,
     .seed_en_i  ( 1'b0       ),
@@ -117,8 +117,6 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // Ping and Timeout Logic //
   ////////////////////////////
 
-  typedef enum logic [1:0] {Init, RespWait, DoPing} state_e;
-  state_e state_d, state_q;
   logic ping_en, ping_ok;
   logic [NModsToPing-1:0] ping_sel;
   logic [NModsToPing-1:0] spurious_ping;
@@ -145,6 +143,36 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .out_o(spurious_esc_ping)
   );
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
+  //      -s 4178932394 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (66.67%)
+  //  6: |||||||||| (33.33%)
+  //  7: --
+  //  8: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateWidth = 8;
+  typedef enum logic [StateWidth-1:0] {
+    InitSt     = 8'b10001101,
+    RespWaitSt = 8'b10110000,
+    DoPingSt   = 8'b01010110
+  } state_e;
+
+  state_e state_d, state_q;
+
   always_comb begin : p_fsm
     // default
     state_d = state_q;
@@ -160,21 +188,21 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       // wait until activiated
       // we never return to this state
       // once activated!
-      Init: begin
+      InitSt: begin
         cnt_clr = 1'b1;
         if (en_i) begin
-          state_d = RespWait;
+          state_d = RespWaitSt;
         end
       end
       // wait for random amount of cycles
       // draw another ID/wait count if the
       // peripheral ID is not valid
-      RespWait: begin
+      RespWaitSt: begin
         if (!id_vld) begin
           lfsr_en = 1'b1;
           cnt_clr = 1'b1;
         end else if (wait_ge) begin
-          state_d = DoPing;
+          state_d = DoPingSt;
           cnt_clr = 1'b1;
         end else begin
           cnt_en = 1'b1;
@@ -182,11 +210,11 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       end
       // send out ping request and wait for a ping
       // response or a ping timeout (whatever comes first)
-      DoPing: begin
+      DoPingSt: begin
         cnt_en  = 1'b1;
         ping_en = 1'b1;
         if (timeout_ge || ping_ok) begin
-          state_d = RespWait;
+          state_d = RespWaitSt;
           lfsr_en = 1'b1;
           cnt_clr = 1'b1;
           if (timeout_ge) begin
@@ -212,13 +240,24 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // Registers //
   ///////////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(InitSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q <= Init;
       cnt_q   <= '0;
     end else begin
-      state_q <= state_d;
-
       if (cnt_clr) begin
         cnt_q <= '0;
       end else if (cnt_en) begin

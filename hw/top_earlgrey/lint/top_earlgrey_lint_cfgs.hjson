@@ -148,6 +148,17 @@
                     }
                   ]
              },
+             {    name: pwm
+                  fusesoc_core: lowrisc:ip:pwm
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/pwm/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],

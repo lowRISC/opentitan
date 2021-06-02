@@ -24,7 +24,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { protocol: "tlul", direction: "device" }
   ],
   regwidth: "32",
-  hier_path: "i_reg_wrap"
+  hier_path: "u_reg_wrap"
 ##############################################################################
   param_list: [
     // Random netlist constants
@@ -621,6 +621,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           enum: [
                   { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
                   { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+                  { value: "0b010", name: "FsmError", desc: "Terminal error state if FSM has been glitched." },
                   { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
                   { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
                   { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },

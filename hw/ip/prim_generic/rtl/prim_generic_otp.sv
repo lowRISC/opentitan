@@ -41,10 +41,10 @@ module prim_generic_otp
   output logic [IfWidth-1:0]     rdata_o,
   output err_e                   err_o,
   // External programming voltage
-  inout wire ext_voltage_io, //TODO enable it after the change in prim_otp file
-  input ext_voltage_en_i, // TODO
-  //// alert indication
-  //////////////////////////
+  inout wire ext_voltage_io,
+  input ext_voltage_en_i,
+
+  // alert indication
   output ast_pkg::ast_dif_t otp_alert_src_o,
 
   // Scan
@@ -52,6 +52,11 @@ module prim_generic_otp
   input scan_en_i,  // Scan Shift
   input scan_rst_ni  // Scan Reset
 );
+
+  // This is only restricted by the supported ECC poly further
+  // below, and is straightforward to extend, if needed.
+  localparam int EccWidth = 6;
+  `ASSERT_INIT(SecDecWidth_A, Width == 16)
 
   // Not supported in open-source emulation model.
   logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
@@ -160,18 +165,18 @@ module prim_generic_otp
   logic valid_d, valid_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
-  logic [Width-1:0] rdata_d;
-  logic [2**SizeWidth-1:0][Width-1:0] rdata_q, wdata_q;
   logic [AddrWidth-1:0] addr_q;
   logic [SizeWidth-1:0] size_q;
   logic [SizeWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
+  logic read_ecc_on;
+  logic wdata_inconsistent;
+
 
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
   assign valid_o = valid_q;
-  assign rdata_o = rdata_q;
   assign err_o   = err_q;
 
   always_comb begin : p_fsm
@@ -184,6 +189,7 @@ module prim_generic_otp
     wren    = 1'b0;
     cnt_clr = 1'b0;
     cnt_en  = 1'b0;
+    read_ecc_on = 1'b1;
 
     unique case (state_q)
       // Wait here until we receive an initialization command.
@@ -252,37 +258,39 @@ module prim_generic_otp
           end
         end
       end
-      // First, perform a blank check.
+      // First, read out to perform the write blank check and
+      // read-modify-write operation.
       WriteCheckSt: begin
         state_d = WriteWaitSt;
         req     = 1'b1;
+        // Register raw memory contents without correction
+        read_ecc_on = 1'b0;
       end
       // Wait for readout to complete first.
-      // If the write data would clear an already programmed bit, or if we got an uncorrectable
-      // ECC error, the check has failed and we abort the write at this point.
       WriteWaitSt: begin
+        // Register raw memory contents without correction
+        read_ecc_on = 1'b0;
         if (rvalid) begin
           cnt_en = 1'b1;
-          // TODO: this blank check needs to be extended to account for the ECC bits as well.
-          if (rerror[1] || (rdata_d & wdata_q[cnt_q]) != rdata_d) begin
-            state_d = IdleSt;
-            valid_d = 1'b1;
-            err_d = MacroWriteBlankError;
+
+          if (cnt_q == size_q) begin
+            cnt_clr = 1'b1;
+            state_d = WriteSt;
           end else begin
-            if (cnt_q == size_q) begin
-              cnt_clr = 1'b1;
-              state_d = WriteSt;
-            end else begin
-              state_d = WriteCheckSt;
-            end
+            state_d = WriteCheckSt;
           end
         end
       end
-      // Now that the write check was successful, we can write all native words in one go.
+      // If the write data attempts to clear an already programmed bit,
+      // the MacroWriteBlankError needs to be asserted.
       WriteSt: begin
         req = 1'b1;
         wren = 1'b1;
         cnt_en = 1'b1;
+        if (wdata_inconsistent) begin
+          err_d = MacroWriteBlankError;
+        end
+
         if (cnt_q == size_q) begin
           valid_d = 1'b1;
           state_d = IdleSt;
@@ -301,27 +309,59 @@ module prim_generic_otp
   logic [AddrWidth-1:0] addr;
   assign addr = addr_q + AddrWidth'(cnt_q);
 
+  logic [Width-1:0] rdata_corr;
+  logic [Width+EccWidth-1:0] rdata_d, wdata_ecc, rdata_ecc, wdata_rmw;
+  logic [2**SizeWidth-1:0][Width-1:0] wdata_q, rdata_reshaped;
+  logic [2**SizeWidth-1:0][Width+EccWidth-1:0] rdata_q;
+
+  // Use a standard Hamming ECC for OTP.
+  prim_secded_hamming_22_16_enc u_enc (
+    .data_i(wdata_q[cnt_q]),
+    .data_o(wdata_ecc)
+  );
+
+  prim_secded_hamming_22_16_dec u_dec (
+    .data_i     (rdata_ecc),
+    .data_o     (rdata_corr),
+    .syndrome_o ( ),
+    .err_o      (rerror)
+  );
+
+  assign rdata_d = (read_ecc_on) ? {{EccWidth{1'b0}}, rdata_corr}
+                                 : rdata_ecc;
+
+  // Read-modify-write (OTP can only set bits to 1, but not clear to 0).
+  assign wdata_rmw = wdata_ecc | rdata_q[cnt_q];
+  // This indicates if the write data is inconsistent (i.e., if the operation attempts to
+  // clear an already programmed bit to zero).
+  assign wdata_inconsistent = (rdata_q[cnt_q] & wdata_ecc) != rdata_q[cnt_q];
+
+  // Output data without ECC bits.
+  always_comb begin : p_output_map
+    for (int k = 0; k < 2**SizeWidth; k++) begin
+      rdata_reshaped[k] = rdata_q[k][Width-1:0];
+    end
+    rdata_o = rdata_reshaped;
+  end
+
   prim_ram_1p_adv #(
     .Depth                (Depth),
-    .Width                (Width),
+    .Width                (Width + EccWidth),
     .MemInitFile          (MemInitFile),
-    .EnableECC            (1'b1),
     .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1),
-    // Use a standard Hamming ECC for OTP.
-    .HammingECC           (1)
+    .EnableOutputPipeline (1)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
-    .req_i    ( req            ),
-    .write_i  ( wren           ),
-    .addr_i   ( addr           ),
-    .wdata_i  ( wdata_q[cnt_q] ),
-    .wmask_i  ( {Width{1'b1}}  ),
-    .rdata_o  ( rdata_d        ),
-    .rvalid_o ( rvalid         ),
-    .rerror_o ( rerror         ),
-    .cfg_i    ( '0             )
+    .req_i    ( req                    ),
+    .write_i  ( wren                   ),
+    .addr_i   ( addr                   ),
+    .wdata_i  ( wdata_rmw              ),
+    .wmask_i  ( {Width+EccWidth{1'b1}} ),
+    .rdata_o  ( rdata_ecc              ),
+    .rvalid_o ( rvalid                 ),
+    .rerror_o (                        ),
+    .cfg_i    ( '0                     )
   );
 
   // Currently it is assumed that no wrap arounds can occur.
