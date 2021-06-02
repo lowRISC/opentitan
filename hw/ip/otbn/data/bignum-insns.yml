@@ -374,7 +374,7 @@
     Performs a bitwise and operation.
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
     The content of the second source register can be shifted by an immediate before it is consumed by the operation.
-    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+    The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   encoding:
     scheme: bna
     mapping:
@@ -394,7 +394,7 @@
     Performs a bitwise or operation.
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
-    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+    The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   encoding:
     scheme: bna
     mapping:
@@ -421,7 +421,7 @@
   doc: |
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
-    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+    The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   encoding:
     scheme: bnan
     mapping:
@@ -440,7 +440,7 @@
     Performs a bitwise xor operation.
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
-    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+    The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   encoding:
     scheme: bna
     mapping:
