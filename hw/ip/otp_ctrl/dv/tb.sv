@@ -9,6 +9,7 @@ module tb;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import mem_bkdr_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -189,8 +190,8 @@ module tb;
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
-                                      `OTP_CTRL_MEM_HIER.mem_bkdr_if);
+    uvm_config_db#(otp_bkdr_base_if)::set(null, "*.env", "mem_bkdr_vif",
+                                      `OTP_CTRL_MEM_HIER.mem_bkdr_if.getInst());
 
     uvm_config_db#(virtual otp_ctrl_if)::set(null, "*.env", "otp_ctrl_vif", otp_ctrl_if);
     $timeformat(-12, 0, " ps", 12);

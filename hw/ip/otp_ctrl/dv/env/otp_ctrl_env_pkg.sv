@@ -19,6 +19,7 @@ package otp_ctrl_env_pkg;
   import otp_ctrl_part_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
+  import mem_bkdr_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

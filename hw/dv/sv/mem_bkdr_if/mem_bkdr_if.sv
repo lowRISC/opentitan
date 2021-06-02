@@ -61,6 +61,7 @@ interface mem_bkdr_if #(
   import bus_params_pkg::BUS_AW;
   import sram_scrambler_pkg::*;
   import prim_secded_pkg::*;
+  import mem_bkdr_pkg::*;
 
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -108,795 +109,590 @@ interface mem_bkdr_if #(
     rand_split.y = num - rand_split.x;
   endfunction
 
-  function automatic bit [MAX_MEM_WIDTH-1:0] inject_errors(bit [MAX_MEM_WIDTH-1:0] data,
-                                                           int inject_num_errors);
-    bit [MAX_MEM_WIDTH-1:0] err_mask;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask, $countones(err_mask) == inject_num_errors;,
-                                       , path)
-    inject_errors = data ^ err_mask;
-  endfunction
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////// Concrete Implementation of otp_bkdr_base_if for ImplGeneric   ////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  class otp_prim_generic_bkdr_if extends otp_bkdr_base_if;
+    `uvm_component_utils(otp_prim_generic_bkdr_if)
+    
+    function new(string name = "otp_prim_generic_bkdr_if", uvm_component parent);
+      super.new(name, parent);
+    endfunction : new 
 
-  function automatic void init();
-    if (!initialized) begin
-      // Check that both MEM_PARITY and MEM_ECC are not concurrently enabled
-      `DV_CHECK_FATAL(!(MEM_PARITY && MEM_ECC != SecdedNone),
-          "Cannot enable both parity checks and ECC",
-          path)
-      `DV_CHECK_FATAL(MAX_MEM_WIDTH != 0,
-          $sformatf("MEM_ECC %0s is incorrect!", MEM_ECC),
-          path)
+    virtual function automatic bit [MAX_WIDTH-1:0] inject_errors(bit [MAX_WIDTH-1:0] data,
+                                                            int inject_num_errors);
+      /* notice the the error mask will have a different size from the data due to inheritance issues
+      // the implementation guides to use MAX_WIDTH, however we can only corrupt data that is in the range
+      // of MAX_MEM_WIDTH-1:0, so check that MAX_WIDTH > MAX_MEM_WIDTH*/ 
+      bit [MAX_MEM_WIDTH - 1:0] err_mask;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask, $countones(err_mask) == inject_num_errors;,
+                                        , path)
+      inject_errors = data ^ err_mask;
+    endfunction
 
-      mem_depth = $size(`MEM_ARR_PATH_SLICE);
-      mem_width = $bits(`MEM_ARR_PATH_SLICE) / mem_depth;
-      // Need to account for any extra ecc parity bits when doing this calculation
-      mem_bytes_per_word = (mem_width - ECC_PARITY_BITS) / MEM_BYTE_MSB;
-      mem_size_bytes = mem_depth * mem_bytes_per_word;
-      mem_addr_lsb = $clog2(mem_bytes_per_word);
-      mem_addr_width = $clog2(mem_depth);
-      mem_byte_addr_width = mem_addr_width + mem_addr_lsb;
-      `uvm_info(path, $sformatf("mem_depth = %0d", mem_depth), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_addr_width =  %0d", mem_addr_width), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_width = %0d", mem_width), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_bytes_per_word = %0d", mem_bytes_per_word), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_size_bytes = %0d", mem_size_bytes), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_addr_lsb = %0d", mem_addr_lsb), UVM_HIGH)
-      `uvm_info(path, $sformatf("mem_byte_msb = %0d", MEM_BYTE_MSB), UVM_HIGH)
-      `DV_CHECK_LE_FATAL(mem_bytes_per_word, 8, "mem data width > 8 bytes is not supported", path)
-      initialized = 1'b1;
-    end
-  endfunction
+    virtual function automatic void init();
+      if (!initialized) begin
+        // Check that both MEM_PARITY and MEM_ECC are not concurrently enabled
+        `DV_CHECK_FATAL(!(MEM_PARITY && MEM_ECC != SecdedNone),
+            "Cannot enable both parity checks and ECC",
+            path)
+        `DV_CHECK_FATAL(MAX_MEM_WIDTH != 0,
+            $sformatf("MEM_ECC %0s is incorrect!", MEM_ECC),
+            path)
 
-  // input addr is assumed to be the byte addressable address into memory starting at 0
-  // user assumes the responsibility of masking the upper bits
-  function automatic bit is_addr_valid(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    init();
-    if (addr >= mem_size_bytes) begin
-      `uvm_error(path, $sformatf("addr = %0h is out of bounds (size = %0d)", addr, mem_size_bytes))
-      return 1'b0;
-    end
-    return 1'b1;
-  endfunction
+        mem_depth = $size(`MEM_ARR_PATH_SLICE);
+        mem_width = $bits(`MEM_ARR_PATH_SLICE) / mem_depth;
+        // Need to account for any extra ecc parity bits when doing this calculation
+        mem_bytes_per_word = (mem_width - ECC_PARITY_BITS) / MEM_BYTE_MSB;
+        mem_size_bytes = mem_depth * mem_bytes_per_word;
+        mem_addr_lsb = $clog2(mem_bytes_per_word);
+        mem_addr_width = $clog2(mem_depth);
+        mem_byte_addr_width = mem_addr_width + mem_addr_lsb;
+        `uvm_info(path, $sformatf("mem_depth = %0d", mem_depth), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_addr_width =  %0d", mem_addr_width), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_width = %0d", mem_width), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_bytes_per_word = %0d", mem_bytes_per_word), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_size_bytes = %0d", mem_size_bytes), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_addr_lsb = %0d", mem_addr_lsb), UVM_HIGH)
+        `uvm_info(path, $sformatf("mem_byte_msb = %0d", MEM_BYTE_MSB), UVM_HIGH)
+        `DV_CHECK_LE_FATAL(mem_bytes_per_word, 8, "mem data width > 8 bytes is not supported", path)
+        initialized = 1'b1;
+      end
+    endfunction
 
-  // read a single byte at specified address
-  function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+    // input addr is assumed to be the byte addressable address into memory starting at 0
+    // user assumes the responsibility of masking the upper bits
+    virtual function automatic bit is_addr_valid(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      init();
+      if (addr >= mem_size_bytes) begin
+        `uvm_error(path, $sformatf("addr = %0h is out of bounds (size = %0d)", addr, mem_size_bytes))
+        return 1'b0;
+      end
+      return 1'b1;
+    endfunction
+
+    // read a single byte at specified address
+    virtual function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      if (is_addr_valid(addr)) begin
+        int mem_index = addr >> mem_addr_lsb;
+        bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+        case (mem_bytes_per_word)
+          1: begin
+            return mem_data[7:0];
+          end
+          2: begin
+            return mem_data[addr[0] * MEM_BYTE_MSB +: 8];
+          end
+          4: begin
+            return mem_data[addr[1:0] * MEM_BYTE_MSB +: 8];
+          end
+          8: begin
+            return mem_data[addr[2:0] * MEM_BYTE_MSB +: 8];
+          end
+          default: ;
+        endcase
+      end
+      return 'x;
+    endfunction
+
+    virtual function automatic logic [15:0] read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
+      if (is_addr_valid(addr)) begin
+        return {read8(addr + 1), read8(addr)};
+      end
+      return 'x;
+    endfunction
+
+    virtual function automatic logic [31:0] read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
+      if (is_addr_valid(addr)) begin
+        return {read16(addr + 2), read16(addr)};
+      end
+      return 'x;
+    endfunction
+
+    virtual function automatic logic [63:0] read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
+      if (is_addr_valid(addr)) begin
+        return {read32(addr + 4), read32(addr)};
+      end
+      return 'x;
+    endfunction
+
+    // Internal function to write a single byte to the memory (updating no check bits)
+    virtual function automatic void _write8_raw(int word_idx, int byte_idx, bit [7:0] data);
+      logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+      rw_data[byte_idx * 8 +: 8] = data;
+      `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+    endfunction
+
+    // Internal function to write a single byte to the memory, correctly updating its parity bit.
+    virtual function automatic void _write8_parity(int       word_idx,
+                                          int       byte_idx,
+                                          bit [7:0] data,
+                                          int       inject_num_errors);
+      logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+
+      // Lane is the 9-bit "byte" that should be written into the word.
+      bit [MEM_BYTE_MSB-1:0] lane = {~(^data), data};
+
+      // TODO: check with designer, current testbench only support 1 bit parity error.
+      `DV_CHECK_LE(inject_num_errors, 1, "Parity only supports 1 bit error", , path)
+
+      // Note that if memory parity checks are enabled,
+      // we have to write the correct parity bit as well.
+      // Odd parity is used, rather than even parity checking.
+      //
+      // TODO: odd/even parity checks could be made configurable.
+      if (inject_num_errors) begin
+        lane ^= (1 << $urandom_range(0, MEM_BYTE_MSB - 1));
+      end
+
+      // Inject the lane that we've written into the word and then write the word back to the memory.
+      rw_data[byte_idx * MEM_BYTE_MSB +: MEM_BYTE_MSB] = lane;
+      `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+    endfunction
+
+    // Internal function to write a single byte to the memory, correctly updating the ECC bits.
+    virtual function automatic void _write8_ecc(int       word_idx,
+                                        int       byte_idx,
+                                        bit [7:0] data,
+                                        int       inject_num_errors);
+      bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+      rw_data[byte_idx * 8 +: 8] = data;
+
+      // Check the requested number of injected ECC errors is possible.
+      `DV_CHECK_LE(inject_num_errors, MAX_MEM_WIDTH,
+                  $sformatf("Max %0d bits to inject ECC error", MAX_MEM_WIDTH), , path)
+
       case (mem_bytes_per_word)
-        1: begin
-          return mem_data[7:0];
-        end
         2: begin
-          return mem_data[addr[0] * MEM_BYTE_MSB +: 8];
+          case (MEM_ECC)
+            Secded_22_16: begin
+              rw_data = prim_secded_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            SecdedHamming_22_16: begin
+              rw_data = prim_secded_hamming_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            default: begin
+              `uvm_error(path,
+                  $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+            end
+          endcase
         end
         4: begin
-          return mem_data[addr[1:0] * MEM_BYTE_MSB +: 8];
+          case (MEM_ECC)
+            Secded_39_32: begin
+              rw_data = prim_secded_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            SecdedHamming_39_32: begin
+              rw_data = prim_secded_hamming_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            default: begin
+              `uvm_error(path,
+                  $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+            end
+          endcase
         end
         8: begin
-          return mem_data[addr[2:0] * MEM_BYTE_MSB +: 8];
+          case (MEM_ECC)
+            Secded_72_64: begin
+              rw_data = prim_secded_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            SecdedHamming_72_64: begin
+              rw_data = prim_secded_hamming_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+            end
+            default: begin
+              `uvm_error(path,
+                  $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+            end
+          endcase
         end
-        default: ;
+        default: begin
+          `uvm_error(path, $sformatf("ECC is not supported at mem_width[%0d]", mem_width))
+        end
       endcase
-    end
-    return 'x;
-  endfunction
 
-  function automatic logic [15:0] read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
-    if (is_addr_valid(addr)) begin
-      return {read8(addr + 1), read8(addr)};
-    end
-    return 'x;
-  endfunction
+      if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
 
-  function automatic logic [31:0] read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
-    if (is_addr_valid(addr)) begin
-      return {read16(addr + 2), read16(addr)};
-    end
-    return 'x;
-  endfunction
+      `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+    endfunction
 
-  function automatic logic [63:0] read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    if (is_addr_valid(addr)) begin
-      return {read32(addr + 4), read32(addr)};
-    end
-    return 'x;
-  endfunction
-
-  // Internal function to write a single byte to the memory (updating no check bits)
-  function automatic void _write8_raw(int word_idx, int byte_idx, bit [7:0] data);
-    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
-    rw_data[byte_idx * 8 +: 8] = data;
-    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
-  endfunction
-
-  // Internal function to write a single byte to the memory, correctly updating its parity bit.
-  function automatic void _write8_parity(int       word_idx,
-                                         int       byte_idx,
-                                         bit [7:0] data,
-                                         int       inject_num_errors);
-    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
-
-    // Lane is the 9-bit "byte" that should be written into the word.
-    bit [MEM_BYTE_MSB-1:0] lane = {~(^data), data};
-
-    // TODO: check with designer, current testbench only support 1 bit parity error.
-    `DV_CHECK_LE(inject_num_errors, 1, "Parity only supports 1 bit error", , path)
-
-    // Note that if memory parity checks are enabled,
-    // we have to write the correct parity bit as well.
-    // Odd parity is used, rather than even parity checking.
-    //
-    // TODO: odd/even parity checks could be made configurable.
-    if (inject_num_errors) begin
-      lane ^= (1 << $urandom_range(0, MEM_BYTE_MSB - 1));
-    end
-
-    // Inject the lane that we've written into the word and then write the word back to the memory.
-    rw_data[byte_idx * MEM_BYTE_MSB +: MEM_BYTE_MSB] = lane;
-    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
-  endfunction
-
-  // Internal function to write a single byte to the memory, correctly updating the ECC bits.
-  function automatic void _write8_ecc(int       word_idx,
-                                      int       byte_idx,
-                                      bit [7:0] data,
-                                      int       inject_num_errors);
-    bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
-    rw_data[byte_idx * 8 +: 8] = data;
-
-    // Check the requested number of injected ECC errors is possible.
-    `DV_CHECK_LE(inject_num_errors, MAX_MEM_WIDTH,
-                 $sformatf("Max %0d bits to inject ECC error", MAX_MEM_WIDTH), , path)
-
-    case (mem_bytes_per_word)
-      2: begin
-        case (MEM_ECC)
-          Secded_22_16: begin
-            rw_data = prim_secded_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          SecdedHamming_22_16: begin
-            rw_data = prim_secded_hamming_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          default: begin
-            `uvm_error(path,
-                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-          end
-        endcase
-      end
-      4: begin
-        case (MEM_ECC)
-          Secded_39_32: begin
-            rw_data = prim_secded_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          SecdedHamming_39_32: begin
-            rw_data = prim_secded_hamming_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          default: begin
-            `uvm_error(path,
-                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-          end
-        endcase
-      end
-      8: begin
-        case (MEM_ECC)
-          Secded_72_64: begin
-            rw_data = prim_secded_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          SecdedHamming_72_64: begin
-            rw_data = prim_secded_hamming_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-          end
-          default: begin
-            `uvm_error(path,
-                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-          end
-        endcase
-      end
-      default: begin
-        `uvm_error(path, $sformatf("ECC is not supported at mem_width[%0d]", mem_width))
-      end
-    endcase
-
-    if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
-
-    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
-  endfunction
-
-  function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                 input bit [7:0] data,
-                                 input int inject_num_errors = 0);
-    int unsigned word_idx = addr >> mem_addr_lsb;
-    int unsigned byte_idx = addr - (word_idx << mem_addr_lsb);
-
-    if (!is_addr_valid(addr)) begin
-      `uvm_error(path, $sformatf("Address 0x%0h is not a valid address", addr))
-    end
-
-    if (MEM_ECC != SecdedNone) begin
-      _write8_ecc(word_idx, byte_idx, data, inject_num_errors);
-    end else if (MEM_PARITY) begin
-      _write8_parity(word_idx, byte_idx, data, inject_num_errors);
-    end else begin
-      `DV_CHECK_FATAL(inject_num_errors == 0,
-                      "Can't inject errors with no integrity protection.", path)
-      _write8_raw(word_idx, byte_idx, data);
-    end
-  endfunction
-
-  function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [15:0] data,
+    virtual function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                  input bit [7:0] data,
                                   input int inject_num_errors = 0);
-    `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
-    if (is_addr_valid(addr)) begin
+      int unsigned word_idx = addr >> mem_addr_lsb;
+      int unsigned byte_idx = addr - (word_idx << mem_addr_lsb);
+
+      if (!is_addr_valid(addr)) begin
+        `uvm_error(path, $sformatf("Address 0x%0h is not a valid address", addr))
+      end
+
+      if (MEM_ECC != SecdedNone) begin
+        _write8_ecc(word_idx, byte_idx, data, inject_num_errors);
+      end else if (MEM_PARITY) begin
+        _write8_parity(word_idx, byte_idx, data, inject_num_errors);
+      end else begin
+        `DV_CHECK_FATAL(inject_num_errors == 0,
+                        "Can't inject errors with no integrity protection.", path)
+        _write8_raw(word_idx, byte_idx, data);
+      end
+    endfunction
+
+    virtual function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                    input bit [15:0] data,
+                                    input int inject_num_errors = 0);
+      `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
+      if (is_addr_valid(addr)) begin
+        // Split the number of errors into different sub-byte write.
+        int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
+        write8(addr, data[7:0], inject_num_errors_split.x);
+        write8(addr + 1, data[15:8], inject_num_errors_split.y);
+      end
+    endfunction
+
+    virtual function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                    input bit [31:0] data,
+                                    input int inject_num_errors = 0);
+      `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
+      if (is_addr_valid(addr)) begin
+        // Split the number of errors into different sub-byte write.
+        int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
+        write16(addr, data[15:0], inject_num_errors_split.x);
+        write16(addr + 2, data[31:16], inject_num_errors_split.y);
+      end
+    endfunction
+
+    virtual function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                    input bit [63:0] data,
+                                    input int inject_num_errors = 0);
       // Split the number of errors into different sub-byte write.
       int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
-      write8(addr, data[7:0], inject_num_errors_split.x);
-      write8(addr + 1, data[15:8], inject_num_errors_split.y);
-    end
-  endfunction
-
-  function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [31:0] data,
-                                  input int inject_num_errors = 0);
-    `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
-    if (is_addr_valid(addr)) begin
-      // Split the number of errors into different sub-byte write.
-      int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
-      write16(addr, data[15:0], inject_num_errors_split.x);
-      write16(addr + 2, data[31:16], inject_num_errors_split.y);
-    end
-  endfunction
-
-  function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [63:0] data,
-                                  input int inject_num_errors = 0);
-    // Split the number of errors into different sub-byte write.
-    int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
-    `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    write32(addr, data[31:0], inject_num_errors_split.x);
-    write32(addr + 4, data[63:32], inject_num_errors_split.y);
-  endfunction
-
-  /////////////////////////////////////////////////////////
-  // Wrapper functions for memory reads with ECC enabled //
-  /////////////////////////////////////////////////////////
-  // Some notes:
-  // - ECC isn't supported for 8-bit wide memories
-  // - (28, 22) and (64, 57) ECC configurations aren't supported
-
-  // Intended for use with memories which have data width of 16 bits and 6 ECC bits.
-  function automatic secded_22_16_t ecc_read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      // 22-bit wide memory word includes 16-bit data, 6-bit ECC bits
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      case (MEM_ECC)
-        Secded_22_16:        return prim_secded_22_16_dec(mem_data);
-        SecdedHamming_22_16: return prim_secded_hamming_22_16_dec(mem_data);
-        default:             return 'x;
-      endcase
-    end
-    return 'x;
-  endfunction
-
-  // Intended for use with memories which have data width of 32 bits and 7 ECC bits.
-  function automatic secded_39_32_t ecc_read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      // 39-bit wide memory word includes 32-bit data, 7-bit ECC bits
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      case (MEM_ECC)
-        Secded_39_32:        return prim_secded_39_32_dec(mem_data);
-        SecdedHamming_39_32: return prim_secded_hamming_39_32_dec(mem_data);
-        default:             return 'x;
-      endcase
-    end
-    return 'x;
-  endfunction
-
-  // Intended for use with memories which have data width of 64 bits and 8 ECC bits.
-  function automatic secded_72_64_t ecc_read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
-    if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      // 72-bit wide memory word includes 64-bit data, 8-bit ECC bits
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      case (MEM_ECC)
-        Secded_72_64:        return prim_secded_72_64_dec(mem_data);
-        SecdedHamming_72_64: return prim_secded_hamming_72_64_dec(mem_data);
-        default:             return 'x;
-      endcase
-    end
-    return 'x;
-  endfunction
-
-  ///////////////////////////////////////////////////////////
-  // Wrapper functions for encrypted read/write operations //
-  ///////////////////////////////////////////////////////////
-
-  function automatic logic [7:0] sram_encrypt_read8(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                    input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                    input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [7:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
-
-    logic rdata_arr[]       = new[8];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Read memory, and return the decrypted data
-    rdata = read8(bus_addr);
-    rdata_arr = {<< {rdata}};
-
-    rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 8,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    rdata = {<< {rdata_arr}};
-    return rdata;
-  endfunction
-
-  function automatic logic [15:0]
-  sram_encrypt_read16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [15:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
-
-    logic rdata_arr[]       = new[16];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Read memory and return the decrypted data
-    rdata = read16(bus_addr);
-    rdata_arr = {<< {rdata}};
-
-    rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 16,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    rdata = {<< {rdata_arr}};
-    return rdata;
-  endfunction
-
-  function automatic logic [31:0]
-  sram_encrypt_read32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [31:0] rdata = '0;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic rdata_arr[]       = new[32];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    `uvm_info(path, $sformatf("bus_addr: 0x%0x", bus_addr), UVM_HIGH)
-
-    // Read memory and return the decrypted data
-    rdata = read32(bus_addr);
-    rdata_arr = {<< {rdata}};
-
-    rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 32,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    rdata = {<< {rdata_arr}};
-    return rdata;
-
-  endfunction
-
-  function automatic logic [63:0]
-  sram_encrypt_read64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [63:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic rdata_arr[]       = new[64];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Read memory and return the decrypted data
-    rdata = read64(bus_addr);
-    rdata_arr = {<< {rdata}};
-
-    rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 64,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    rdata = {<< {rdata_arr}};
-    return rdata;
-
-  endfunction
-
-  function automatic void sram_encrypt_write8(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                              input logic [7:0]                        data,
-                                              input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                              input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [7:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic wdata_arr[]       = new[8];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Calculate the scrambled data
-    wdata_arr = {<< {data}};
-    wdata_arr = sram_scrambler_pkg::encrypt_sram_data(wdata_arr, 8,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Write the scrambled data to memory
-    scrambled_data = {<< {wdata_arr}};
-    write8(bus_addr, scrambled_data);
-  endfunction
-
-  function automatic void sram_encrypt_write16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [15:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [15:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic wdata_arr[]       = new[16];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Calculate the scrambled data
-    wdata_arr = {<< {data}};
-    wdata_arr = sram_scrambler_pkg::encrypt_sram_data(wdata_arr, 16,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Write the scrambled data to memory
-    scrambled_data = {<< {wdata_arr}};
-    write16(bus_addr, scrambled_data);
-  endfunction
-
-  function automatic void sram_encrypt_write32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [31:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [31:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic wdata_arr[]       = new[32];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Calculate the scrambled data
-    wdata_arr = {<< {data}};
-    wdata_arr = sram_scrambler_pkg::encrypt_sram_data(wdata_arr, 32,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Write the scrambled data to memory
-    scrambled_data = {<< {wdata_arr}};
-    write32(bus_addr, scrambled_data);
-  endfunction
-
-  function automatic void sram_encrypt_write64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [63:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    logic [63:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
-
-    logic wdata_arr[]       = new[64];
-    logic scrambled_addr[]  = new[mem_addr_width];
-    logic sram_addr[]       = new[mem_addr_width];
-    logic key_arr[]         = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      sram_addr[i] = addr[mem_addr_lsb + i];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
-
-    // Calculate the scrambled data
-    wdata_arr = {<< {data}};
-    wdata_arr = sram_scrambler_pkg::encrypt_sram_data(wdata_arr, 64,
-                                                      sram_addr, mem_addr_width,
-                                                      key_arr, nonce_arr);
-    // Construct bus representation of the address
-    for (int i = 0; i < mem_addr_lsb; i++) begin
-      bus_addr[i] = addr[i];
-    end
-    for (int i = 0; i < mem_addr_width; i++) begin
-      bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
-    end
-
-    // Write the scrambled data to memory
-    scrambled_data = {<< {wdata_arr}};
-    write64(bus_addr, scrambled_data);
-  endfunction
-
-  // Wrapper function for encrypted ROM reads
-  // The data decoding is different from SRAM, but most of the underlying SRAM functions are reused
-  // Also note that this function returns the raw data rather than data + syndrome + error because
-  // the rom_ctrl testbench needs this for checking
-  function automatic bit [39:0] rom_encrypt_read32(
-      input bit [bus_params_pkg::BUS_AW-1:0] addr,
-      input logic [SRAM_KEY_WIDTH-1:0]       key,
-      input logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
-      input bit                              unscramble_data);
-
-    logic [bus_params_pkg::BUS_AW-1:0] mem_addr = '0;
-    logic [39:0]                       rdata    = '0;
-
-    logic addr_arr[]       = new[mem_addr_width];
-    logic scrambled_addr[] = new[mem_addr_width];
-    logic rdata_arr[]      = new[40];
-    logic key_arr[]        = new[SRAM_KEY_WIDTH];
-    logic nonce_arr[]      = new[SRAM_BLOCK_WIDTH];
-    logic keystream[]      = new[SRAM_BLOCK_WIDTH];
-    logic zero_key[]       = new[40];
-
-    key_arr   = {<< {key}};
-    nonce_arr = {<< {nonce}};
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      addr_arr[i] = addr[i+mem_addr_lsb];
-    end
-
-    // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, mem_addr_width, nonce_arr);
-
-    for (int i = 0; i < mem_addr_width; i++) begin
-      mem_addr[i] = scrambled_addr[i];
-    end
-
-    // Read memory and get the encrypted data
-    if (!is_addr_valid(mem_addr << mem_addr_lsb)) begin
+      `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
+      write32(addr, data[31:0], inject_num_errors_split.x);
+      write32(addr + 4, data[63:32], inject_num_errors_split.y);
+    endfunction
+
+    /////////////////////////////////////////////////////////
+    // Wrapper functions for memory reads with ECC enabled //
+    /////////////////////////////////////////////////////////
+    // Some notes:
+    // - ECC isn't supported for 8-bit wide memories
+    // - (28, 22) and (64, 57) ECC configurations aren't supported
+
+    // Intended for use with memories which have data width of 16 bits and 6 ECC bits.
+    virtual function automatic secded_22_16_t ecc_read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      if (is_addr_valid(addr)) begin
+        int mem_index = addr >> mem_addr_lsb;
+        // 22-bit wide memory word includes 16-bit data, 6-bit ECC bits
+        bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+        case (MEM_ECC)
+          Secded_22_16:        return prim_secded_22_16_dec(mem_data);
+          SecdedHamming_22_16: return prim_secded_hamming_22_16_dec(mem_data);
+          default:             return 'x;
+        endcase
+      end
       return 'x;
-    end
+    endfunction
 
-    // 39-bit memory word includes 32-bit data + 7-bit ECC
-    rdata = `MEM_ARR_PATH_SLICE[mem_addr];
+    // Intended for use with memories which have data width of 32 bits and 7 ECC bits.
+    virtual function automatic secded_39_32_t ecc_read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      if (is_addr_valid(addr)) begin
+        int mem_index = addr >> mem_addr_lsb;
+        // 39-bit wide memory word includes 32-bit data, 7-bit ECC bits
+        bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+        case (MEM_ECC)
+          Secded_39_32:        return prim_secded_39_32_dec(mem_data);
+          SecdedHamming_39_32: return prim_secded_hamming_39_32_dec(mem_data);
+          default:             return 'x;
+        endcase
+      end
+      return 'x;
+    endfunction
 
-    if (!unscramble_data) begin
+    // Intended for use with memories which have data width of 64 bits and 8 ECC bits.
+    virtual function automatic secded_72_64_t ecc_read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+      if (is_addr_valid(addr)) begin
+        int mem_index = addr >> mem_addr_lsb;
+        // 72-bit wide memory word includes 64-bit data, 8-bit ECC bits
+        bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+        case (MEM_ECC)
+          Secded_72_64:        return prim_secded_72_64_dec(mem_data);
+          SecdedHamming_72_64: return prim_secded_hamming_72_64_dec(mem_data);
+          default:             return 'x;
+        endcase
+      end
+      return 'x;
+    endfunction
+
+    ///////////////////////////////////////////////////////////
+    // Wrapper functions for encrypted read/write operations //
+    ///////////////////////////////////////////////////////////
+
+    virtual function automatic logic [7:0] sram_encrypt_read8(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                                                      input logic [SRAM_KEY_WIDTH-1:0]         key,
+                                                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+      logic [7:0] rdata;
+      logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
+
+      logic rdata_arr[]       = new[8];
+      logic scrambled_addr[]  = new[mem_addr_width];
+      logic sram_addr[]       = new[mem_addr_width];
+      logic key_arr[]         = new[SRAM_KEY_WIDTH];
+      logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
+
+      key_arr   = {<< {key}};
+      nonce_arr = {<< {nonce}};
+
+      for (int i = 0; i < mem_addr_width; i++) begin
+        sram_addr[i] = addr[mem_addr_lsb + i];
+      end
+
+      // Calculate the scrambled address
+      scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
+
+      // Construct bus representation of the address
+      for (int i = 0; i < mem_addr_lsb; i++) begin
+        bus_addr[i] = addr[i];
+      end
+      for (int i = 0; i < mem_addr_width; i++) begin
+        bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
+      end
+
+      // Read memory, and return the decrypted data
+      rdata = read8(bus_addr);
+      rdata_arr = {<< {rdata}};
+
+      rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 8,
+                                                        sram_addr, mem_addr_width,
+                                                        key_arr, nonce_arr);
+      rdata = {<< {rdata_arr}};
       return rdata;
-    end
+    endfunction
 
-    rdata_arr = {<< {rdata}};
+    virtual function automatic logic [15:0]
+    sram_encrypt_read16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                        input logic [SRAM_KEY_WIDTH-1:0]         key,
+                        input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+      logic [15:0] rdata;
+      logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
 
-    // Generate the keystream
-    keystream = sram_scrambler_pkg::gen_keystream(addr_arr, mem_addr_width, key_arr, nonce_arr);
+      logic rdata_arr[]       = new[16];
+      logic scrambled_addr[]  = new[mem_addr_width];
+      logic sram_addr[]       = new[mem_addr_width];
+      logic key_arr[]         = new[SRAM_KEY_WIDTH];
+      logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
 
-    for (int i = 0; i < 40; i++) begin
-      zero_key[i] = '0;
-    end
+      key_arr   = {<< {key}};
+      nonce_arr = {<< {nonce}};
 
-    rdata_arr = sram_scrambler_pkg::sp_decrypt(rdata_arr, 40, zero_key);
-
-    for (int i = 0; i < 40; i++) begin
-      rdata[i] = rdata_arr[i] ^ keystream[i];
-    end
-
-    return rdata;
-
-  endfunction
-
-  // check if input file is read/writable
-  function automatic void check_file(string file, bit wr);
-    string mode = wr ? "w": "r";
-    int fh = $fopen(file, mode);
-    init();
-    if (!fh) begin
-      `uvm_fatal(path, $sformatf("file %0s could not be opened for %0s mode", file, mode))
-    end
-    else begin
-      $fclose(fh);
-    end
-  endfunction
-
-  // load mem from file
-  function automatic void load_mem_from_file(string file);
-    check_file(file, 1'b0);
-    init();
-    `uvm_info(path, $sformatf("Reading mem contents from file:\n%0s", file), UVM_LOW)
-    $readmemh(file, `MEM_ARR_PATH_SLICE);
-  endfunction
-
-  // save mem contents to file
-  function automatic void write_mem_to_file(string file);
-    check_file(file, 1'b1);
-    init();
-    `uvm_info(path, $sformatf("Writing mem contents to file:\n%0s", file), UVM_LOW)
-    $writememh(file, `MEM_ARR_PATH_SLICE, 0, mem_depth - 1);
-  endfunction
-
-  // print mem
-  function automatic void print_mem();
-    init();
-    for (int i = 0; i < mem_depth; i++) begin
-      `uvm_info(path, $sformatf("mem[%0d] = 0x%0h", i, `MEM_ARR_PATH_SLICE[i]), UVM_NONE)
-    end
-  endfunction
-
-  // clear or set memory
-  function automatic void clear_mem();
-    init();
-    `uvm_info(path, "Clear memory", UVM_LOW)
-    if (MEM_PARITY || MEM_ECC != SecdedNone) begin
-      // Have to manually loop over memory and clear to avoid overwriting any parity bits.
-      for (int i = 0; i < mem_size_bytes; i++) begin
-        write8(i, '0);
+      for (int i = 0; i < mem_addr_width; i++) begin
+        sram_addr[i] = addr[mem_addr_lsb + i];
       end
-    end else begin
-      `MEM_ARR_PATH_SLICE = '{default:'0};
-    end
 
-  endfunction // clr_mem
+      // Calculate the scrambled address
+      scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
 
-  function automatic void set_mem();
-    init();
-    `uvm_info(path, "Set memory", UVM_LOW)
-    if (MEM_PARITY || MEM_ECC != SecdedNone) begin
-      // Have to manually loop over memory and set to avoid overwriting any parity bits.
-      for (int i = 0; i < mem_size_bytes; i++) begin
-        write8(i, '1);
+      // Construct bus representation of the address
+      for (int i = 0; i < mem_addr_lsb; i++) begin
+        bus_addr[i] = addr[i];
       end
-    end else begin
-      `MEM_ARR_PATH_SLICE = '{default:'1};
+      for (int i = 0; i < mem_addr_width; i++) begin
+        bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
+      end
+
+      // Read memory and return the decrypted data
+      rdata = read16(bus_addr);
+      rdata_arr = {<< {rdata}};
+
+      rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 16,
+                                                        sram_addr, mem_addr_width,
+                                                        key_arr, nonce_arr);
+      rdata = {<< {rdata_arr}};
+      return rdata;
+    endfunction
+
+    virtual function automatic logic [31:0]
+    sram_encrypt_read32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                        input logic [SRAM_KEY_WIDTH-1:0]         key,
+                        input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+      logic [31:0] rdata = '0;
+      logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+
+      logic rdata_arr[]       = new[32];
+      logic scrambled_addr[]  = new[mem_addr_width];
+      logic sram_addr[]       = new[mem_addr_width];
+      logic key_arr[]         = new[SRAM_KEY_WIDTH];
+      logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
+
+      key_arr   = {<< {key}};
+      nonce_arr = {<< {nonce}};
+
+      for (int i = 0; i < mem_addr_width; i++) begin
+        sram_addr[i] = addr[mem_addr_lsb + i];
+      end
+
+      // Calculate the scrambled address
+      scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
+
+      // Construct bus representation of the address
+      for (int i = 0; i < mem_addr_lsb; i++) begin
+        bus_addr[i] = addr[i];
+      end
+      for (int i = 0; i < mem_addr_width; i++) begin
+        bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
+      end
+
+      `uvm_info(path, $sformatf("bus_addr: 0x%0x", bus_addr), UVM_HIGH)
+
+      // Read memory and return the decrypted data
+      rdata = read32(bus_addr);
+      rdata_arr = {<< {rdata}};
+
+      rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 32,
+                                                        sram_addr, mem_addr_width,
+                                                        key_arr, nonce_arr);
+      rdata = {<< {rdata_arr}};
+      return rdata;
+
+    endfunction
+
+    virtual function automatic logic [63:0]
+    sram_encrypt_read64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                        input logic [SRAM_KEY_WIDTH-1:0]         key,
+                        input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+      logic [63:0] rdata;
+      logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+
+      logic rdata_arr[]       = new[64];
+      logic scrambled_addr[]  = new[mem_addr_width];
+      logic sram_addr[]       = new[mem_addr_width];
+      logic key_arr[]         = new[SRAM_KEY_WIDTH];
+      logic nonce_arr[]       = new[SRAM_BLOCK_WIDTH];
+
+      key_arr   = {<< {key}};
+      nonce_arr = {<< {nonce}};
+
+      for (int i = 0; i < mem_addr_width; i++) begin
+        sram_addr[i] = addr[mem_addr_lsb + i];
+      end
+
+      // Calculate the scrambled address
+      scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, mem_addr_width, nonce_arr);
+
+      // Construct bus representation of the address
+      for (int i = 0; i < mem_addr_lsb; i++) begin
+        bus_addr[i] = addr[i];
+      end
+      for (int i = 0; i < mem_addr_width; i++) begin
+        bus_addr[mem_addr_lsb + i] = scrambled_addr[i];
+      end
+
+      // Read memory and return the decrypted data
+      rdata = read64(bus_addr);
+      rdata_arr = {<< {rdata}};
+
+      rdata_arr = sram_scrambler_pkg::decrypt_sram_data(rdata_arr, 64,
+                                                        sram_addr, mem_addr_width,
+                                                        key_arr, nonce_arr);
+      rdata = {<< {rdata_arr}};
+      return rdata;
+
+    endfunction
+
+    // check if input file is read/writable
+    virtual function automatic void check_file(string file, bit wr);
+      string mode = wr ? "w": "r";
+      int fh = $fopen(file, mode);
+      init();
+      if (!fh) begin
+        `uvm_fatal(path, $sformatf("file %0s could not be opened for %0s mode", file, mode))
+      end
+      else begin
+        $fclose(fh);
+      end
+    endfunction
+
+    // load mem from file
+    virtual function automatic void load_mem_from_file(string file);
+      check_file(file, 1'b0);
+      init();
+      `uvm_info(path, $sformatf("Reading mem contents from file:\n%0s", file), UVM_LOW)
+      $readmemh(file, `MEM_ARR_PATH_SLICE);
+    endfunction
+
+    // save mem contents to file
+    virtual function automatic void write_mem_to_file(string file);
+      check_file(file, 1'b1);
+      init();
+      `uvm_info(path, $sformatf("Writing mem contents to file:\n%0s", file), UVM_LOW)
+      $writememh(file, `MEM_ARR_PATH_SLICE, 0, mem_depth - 1);
+    endfunction
+
+    // print mem
+    virtual function automatic void print_mem();
+      init();
+      for (int i = 0; i < mem_depth; i++) begin
+        `uvm_info(path, $sformatf("mem[%0d] = 0x%0h", i, `MEM_ARR_PATH_SLICE[i]), UVM_NONE)
+      end
+    endfunction
+
+    // clear or set memory
+    virtual function automatic void clear_mem();
+      init();
+      `uvm_info(path, "Clear memory", UVM_LOW)
+      if (MEM_PARITY || MEM_ECC != SecdedNone) begin
+        // Have to manually loop over memory and clear to avoid overwriting any parity bits.
+        for (int i = 0; i < mem_size_bytes; i++) begin
+          write8(i, '0);
+        end
+      end else begin
+        `MEM_ARR_PATH_SLICE = '{default:'0};
+      end
+
+    endfunction // clr_mem
+
+    virtual function automatic void set_mem();
+      init();
+      `uvm_info(path, "Set memory", UVM_LOW)
+      if (MEM_PARITY || MEM_ECC != SecdedNone) begin
+        // Have to manually loop over memory and set to avoid overwriting any parity bits.
+        for (int i = 0; i < mem_size_bytes; i++) begin
+          write8(i, '1);
+        end
+      end else begin
+        `MEM_ARR_PATH_SLICE = '{default:'1};
+      end
+    endfunction
+
+    // randomize the memory
+    virtual function automatic void randomize_mem();
+      logic [7:0] rand_val;
+      init();
+      `uvm_info(path, "Randomizing mem contents", UVM_LOW)
+      for (int i = 0; i < mem_size_bytes; i++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
+        write8(i, rand_val);
+      end
+    endfunction
+
+    // invalidate the memory.
+    virtual function automatic void invalidate_mem();
+      init();
+      `uvm_info(path, "Invalidating (Xs) mem contents", UVM_LOW)
+      `MEM_ARR_PATH_SLICE = '{default:'X};
+    endfunction
+
+  endclass : otp_prim_generic_bkdr_if
+
+  // an instance to the above concrete class
+  otp_prim_generic_bkdr_if mem_bkdr_vif;
+
+  // create (if needed) and return the instance of the concrete class (used for db_config mainly on the TB)
+  function automatic otp_bkdr_base_if getInst();
+    if (mem_bkdr_vif == null) begin
+      mem_bkdr_vif = otp_prim_generic_bkdr_if::type_id::create("mem_bkdr_vif", null);
     end
+    return mem_bkdr_vif;
   endfunction
-
-  // randomize the memory
-  function automatic void randomize_mem();
-    logic [7:0] rand_val;
-    init();
-    `uvm_info(path, "Randomizing mem contents", UVM_LOW)
-    for (int i = 0; i < mem_size_bytes; i++) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
-      write8(i, rand_val);
-    end
-  endfunction
-
-  // invalidate the memory.
-  function automatic void invalidate_mem();
-    init();
-    `uvm_info(path, "Invalidating (Xs) mem contents", UVM_LOW)
-    `MEM_ARR_PATH_SLICE = '{default:'X};
-  endfunction
-
 endinterface

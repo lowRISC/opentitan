@@ -53,7 +53,7 @@ class otp_ctrl_env extends cip_base_env #(
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
 
     // config mem virtual interface
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
+    if (!uvm_config_db#(otp_bkdr_base_if)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
     end
 

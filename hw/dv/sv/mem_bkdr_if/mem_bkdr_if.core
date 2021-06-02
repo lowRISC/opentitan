@@ -15,7 +15,11 @@ filesets:
       - lowrisc:prim:secded:0.1
     files:
       - sram_scrambler_pkg.sv
+      - mem_bkdr_pkg.sv
       - mem_bkdr_if.sv
+      - otp_mem_base_if.sv: {is_include_file: true}
+      - gen_mem_base_if.sv: {is_include_file: true}
+      - otp_bkdr_base_if.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

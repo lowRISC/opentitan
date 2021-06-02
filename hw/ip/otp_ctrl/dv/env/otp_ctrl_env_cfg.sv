@@ -14,7 +14,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
       m_lc_prog_pull_agent_cfg;
 
   // ext interfaces
-  mem_bkdr_vif mem_bkdr_vif;
+  otp_bkdr_base_if mem_bkdr_vif;
   otp_ctrl_vif otp_ctrl_vif;
 
   bit backdoor_clear_mem;
