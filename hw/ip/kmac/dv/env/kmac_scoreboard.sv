@@ -21,6 +21,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  // Represents the number of blocks that have been filled in sha3pad
+  int num_blocks_filled = 0;
+
   // Whenever the keccak rounds are running, the `complete` signal is raised at the end
   // for a single cycle to signal to sha3 control logic that the keccak engine is completed.
   //
@@ -205,54 +208,68 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
-      @(posedge in_edn_fetch);
-      // Entropy interface is native 32 bits - prim_edn_req component internally
-      // does as many EDN fetches as necessary to fill up the required data bus size
-      // of the "host", in this case KMAC needs 64 bits of entropy so prim_edn_req
-      // performs 2 fetches from the EDN network.
-      repeat (kmac_pkg::MsgWidth / cip_base_pkg::EDN_BUS_WIDTH) begin
-        edn_fifo.get(edn_item);
-      end
-      `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
-      // Receiving the last EDN sequence item is synchronized on the EDN clock,
-      // so we need to synchronize into the KMAC clock domain.
-      // This takes 4 clock cycles total, on the last cycle the entropy is marked as valid
-      // to the keccak logic and any pending keccak rounds can begin.
-      cfg.clk_rst_vif.wait_clks(4);
-      in_edn_fetch = 0;
-      `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
-      if (refresh_entropy) begin
-        refresh_entropy = 0;
-        `uvm_info(`gfn, "dropped refresh_entropy", UVM_HIGH)
-      end
-      // after EDN request returns fresh entropy, it only becomes valid after 6 cycles:
-      // - 5 to expand the entropy
-      // - 1 to latch the entropy
-      cfg.clk_rst_vif.wait_clks(CYCLES_TO_FILL_ENTROPY + 1);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            @(posedge in_edn_fetch);
+            // Entropy interface is native 32 bits - prim_edn_req component internally
+            // does as many EDN fetches as necessary to fill up the required data bus size
+            // of the "host", in this case KMAC needs 64 bits of entropy so prim_edn_req
+            // performs 2 fetches from the EDN network.
+            repeat (kmac_pkg::MsgWidth / cip_base_pkg::EDN_BUS_WIDTH) begin
+              edn_fifo.get(edn_item);
+            end
+            `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
+            // Receiving the last EDN sequence item is synchronized on the EDN clock,
+            // so we need to synchronize into the KMAC clock domain.
+            // This takes 4 clock cycles total, on the last cycle the entropy is marked as valid
+            // to the keccak logic and any pending keccak rounds can begin.
+            cfg.clk_rst_vif.wait_clks(4);
+            in_edn_fetch = 0;
+            `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
+            if (refresh_entropy) begin
+              refresh_entropy = 0;
+              `uvm_info(`gfn, "dropped refresh_entropy", UVM_HIGH)
+            end
+            // after EDN request returns fresh entropy, it only becomes valid after 6 cycles:
+            // - 5 to expand the entropy
+            // - 1 to latch the entropy
+            cfg.clk_rst_vif.wait_clks(CYCLES_TO_FILL_ENTROPY + 1);
+          end
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
   // This task will check for any sideload keys that have been provided
   virtual task process_sideload_key();
+    @(negedge cfg.under_reset);
     forever begin
-      // Wait for a valid sideloaded key
-      cfg.sideload_vif.wait_valid(logic'(1'b1));
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // Wait for a valid sideloaded key
+            cfg.sideload_vif.wait_valid(logic'(1'b1));
 
-      // Once valid sideload keys have been seen, update scoreboard state.
-      //
-      // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
+            // Once valid sideload keys have been seen, update scoreboard state.
+            //
+            // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
 
-      sideload_key = cfg.sideload_vif.sideload_key;
+            sideload_key = cfg.sideload_vif.sideload_key;
 
-      `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
 
-      for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
-        keymgr_keys[0][i] = sideload_key.key_share0[i*32 +: 32];
-        keymgr_keys[1][i] = sideload_key.key_share1[i*32 +: 32];
-      end
+            for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
+              keymgr_keys[0][i] = sideload_key.key_share0[i*32 +: 32];
+              keymgr_keys[1][i] = sideload_key.key_share1[i*32 +: 32];
+            end
 
-      // Sequence will drop the sideloaded key after scb can process the digest
-      cfg.sideload_vif.wait_valid(logic'(1'b0));
+            // Sequence will drop the sideloaded key after scb can process the digest
+            cfg.sideload_vif.wait_valid(logic'(1'b0));
+          end
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
@@ -264,28 +281,36 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   virtual task detect_kmac_app_start();
     @(negedge cfg.under_reset);
     forever begin
-      // If we are not in KMAC_APP mode, the next time we see valid is the start
-      // of a KMAC_APP operation.
-      //
-      // Assume that application interface requests do not collide.
-      `uvm_info(`gfn, "waiting for new kmac_app request", UVM_HIGH)
-      wait(!in_kmac_app &&
-           (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
-            `KMAC_APP_VALID_TRANS(AppLc) ||
-            `KMAC_APP_VALID_TRANS(AppRom)));
-      in_kmac_app = 1;
-      `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // If we are not in KMAC_APP mode, the next time we see valid is the start
+            // of a KMAC_APP operation.
+            //
+            // Assume that application interface requests do not collide.
+            `uvm_info(`gfn, "waiting for new kmac_app request", UVM_HIGH)
+            wait(!in_kmac_app &&
+                 (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
+                  `KMAC_APP_VALID_TRANS(AppLc) ||
+                  `KMAC_APP_VALID_TRANS(AppRom)));
+            in_kmac_app = 1;
+            `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
 
-      // we need to choose the correct application interface
-      if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
-        app_mode = AppKeymgr;
-      end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
-        app_mode = AppLc;
-      end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
-        app_mode = AppRom;
+            // we need to choose the correct application interface
+            if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
+              app_mode = AppKeymgr;
+            end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
+              app_mode = AppLc;
+            end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
+              app_mode = AppRom;
+            end
+            @(posedge sha3_idle);
+          end
+          ,
+          wait(cfg.under_reset);
+      )
+      if (cfg.under_reset) begin
+        @(negedge cfg.under_reset);
       end
-
-      @(posedge sha3_idle);
     end
   endtask
 
@@ -340,94 +365,128 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // the KMAC_APP digest and clearing internal state for the next hash operation.
   virtual task process_kmac_app_rsp_fifo();
     kmac_app_item kmac_app_rsp;
-    fork
-      begin
-        forever begin
-          wait(!cfg.under_reset);
-          @(posedge in_kmac_app);
-          `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
-          `DV_SPINWAIT_EXIT(
-              kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
-              `uvm_info(`gfn, $sformatf("Detected a KMAC_APP response:\n%0s", kmac_app_rsp.sprint()), UVM_HIGH)
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          fork
+            begin
+              forever begin
+                wait(!cfg.under_reset);
+                @(posedge in_kmac_app);
+                `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
+                `DV_SPINWAIT_EXIT(
+                    kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
+                    `uvm_info(`gfn,
+                              $sformatf("Detected a KMAC_APP response:\n%0s",
+                                        kmac_app_rsp.sprint()),
+                              UVM_HIGH)
 
-              // safety check that things are working properly and no random KMAC_APP operations are seen
-              `DV_CHECK_FATAL(in_kmac_app == 1, "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
+                    // safety check that things are working properly and
+                    // no random KMAC_APP operations are seen
+                    `DV_CHECK_FATAL(in_kmac_app == 1,
+                        "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-              // TODO error checks
+                    // TODO error checks
 
-              // assign digest values
-              kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-              kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+                    // assign digest values
+                    kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
+                    kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
-              check_digest();
+                    check_digest();
 
-              in_kmac_app = 0;
-              `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
+                    in_kmac_app = 0;
+                    `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
 
-              clear_state();
-              ,
-              wait(cfg.under_reset || !in_kmac_app);
-          )
-        end
-      end
-      begin
-        forever begin
-          wait(!cfg.under_reset);
-          @(posedge in_kmac_app);
-          @(negedge in_kmac_app);
-          if (entropy_mode == EntropyModeEdn) begin
-            cfg.clk_rst_vif.wait_clks(3);
-            in_edn_fetch = cfg.enable_masking;
-            refresh_entropy = cfg.enable_masking;
-            `uvm_info(`gfn, "raised refresh_entropy", UVM_HIGH)
-          end
-        end
-      end
-    join
+                    clear_state();
+                    ,
+                    wait(!in_kmac_app);
+                )
+              end
+            end
+            begin
+              forever begin
+                wait(!cfg.under_reset);
+                @(posedge in_kmac_app);
+                @(negedge in_kmac_app);
+                if (entropy_mode == EntropyModeEdn) begin
+                  cfg.clk_rst_vif.wait_clks(3);
+                  in_edn_fetch = cfg.enable_masking;
+                  refresh_entropy = cfg.enable_masking;
+                  `uvm_info(`gfn, "raised refresh_entropy", UVM_HIGH)
+                end
+              end
+            end
+          join
+          ,
+          wait(cfg.under_reset);
+      )
+    end
   endtask
 
   // This task updates the internal sha3_idle status field
   virtual task process_sha3_idle();
+    @(negedge cfg.under_reset);
     forever begin
-      // sha3_idle drops when CmdStart command is sent or a KMAC_APP op is detected
-      @(posedge in_kmac_app or kmac_cmd == CmdStart);
-      sha3_idle = 0;
-      `uvm_info(`gfn, "dropped sha3_idle", UVM_HIGH)
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // sha3_idle drops when CmdStart command is sent or a KMAC_APP op is detected
+            @(posedge in_kmac_app or kmac_cmd == CmdStart);
+            sha3_idle = 0;
+            `uvm_info(`gfn, "dropped sha3_idle", UVM_HIGH)
 
-      // sha3_idle goes high when either KMAC_APP op is complete or CmdDone command is sent by SW
-      @(negedge in_kmac_app or kmac_cmd == CmdDone);
-      sha3_idle = 1;
-      `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
+            // sha3_idle goes high when either KMAC_APP op is complete or
+            // CmdDone command is sent by SW
+            @(negedge in_kmac_app or kmac_cmd == CmdDone);
+            sha3_idle = 1;
+            `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
+          end
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
   // This task updates the internal sha3_absorb status field
   virtual task process_sha3_absorb();
+    @(negedge cfg.under_reset);
     forever begin
-      // sha3_absorb should go high when CmdStart is written or
-      // when KMAC_APP op is started
-      @(posedge in_kmac_app or kmac_cmd == CmdStart);
-      sha3_absorb = 1;
-      `uvm_info(`gfn, "raised sha3_absorb", UVM_HIGH)
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // sha3_absorb should go high when CmdStart is written or
+            // when KMAC_APP op is started
+            @(posedge in_kmac_app or kmac_cmd == CmdStart);
+            sha3_absorb = 1;
+            `uvm_info(`gfn, "raised sha3_absorb", UVM_HIGH)
 
-      // sha3_absorb should go low one cycle after KMAC has finished calculating digest
-      @(posedge msg_digest_done);
-      cfg.clk_rst_vif.wait_clks(1);
-      sha3_absorb = 0;
-      `uvm_info(`gfn, "dropped sha3_absorb", UVM_HIGH)
+            // sha3_absorb should go low one cycle after KMAC has finished calculating digest
+            @(posedge msg_digest_done);
+            cfg.clk_rst_vif.wait_clks(1);
+            sha3_absorb = 0;
+            `uvm_info(`gfn, "dropped sha3_absorb", UVM_HIGH)
+          end
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
   // This task updates the internal sha3_squeeze status field
   virtual task process_sha3_squeeze();
     bit is_kmac_app_op;
+
+    @(negedge cfg.under_reset);
     forever begin
+      wait(!cfg.under_reset);
       @(negedge sha3_idle);
       `DV_SPINWAIT_EXIT(
           forever begin
             // sha3_squeeze goes high one cycle after KMAC has finished calculating digest,
             @(posedge msg_digest_done);
-            // latch whether we are doing a KMAC_APP op to accurate determine when to raise sha3_squeeze
+            // latch whether we are doing a KMAC_APP op to accurately
+            // determine when to raise sha3_squeeze
             is_kmac_app_op = in_kmac_app;
             // don't have to wait if manually squezing, squeeze status goes high immediately
             // since immediate transition back into processing state
@@ -457,7 +516,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // This task handles asserting the `kmac_done` interrupt bit
   virtual task process_intr_kmac_done();
+    @(negedge cfg.under_reset);
     forever begin
+      wait(!cfg.under_reset);
       @(negedge sha3_idle);
       `DV_SPINWAIT_EXIT(
           wait(sha3_squeeze);
@@ -483,87 +544,96 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // the processing is complete.
   // Naturally this only applies if KMAC mode is enabled.
   virtual task process_prefix_and_keys();
+    @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
-      // Wait for KMAC to move out of IDLE state, meaning that:
-      // - CmdStart has been issued
-      // - KMAC_APP op has been started
       `DV_SPINWAIT_EXIT(
-          @(negedge sha3_idle);
-          ,
-          wait(in_kmac_app == 1);
-      )
-      `uvm_info(`gfn, $sformatf("detected in_kmac_app: %0d", in_kmac_app), UVM_HIGH)
+          forever begin
+            // Wait for KMAC to move out of IDLE state, meaning that:
+            // - CmdStart has been issued
+            // - KMAC_APP op has been started
+            `DV_SPINWAIT_EXIT(
+                @(negedge sha3_idle);
+                ,
+                wait(in_kmac_app == 1);
+            )
+            `uvm_info(`gfn, $sformatf("detected in_kmac_app: %0d", in_kmac_app), UVM_HIGH)
 
-      // Only process prefix/key if using KMAC, or if using the application interface
-      if (kmac_en || in_kmac_app) begin
-        fork
-          if (!in_kmac_app) begin : wait_cmd_process_header
-            // We need to be able to detect if a CmdProcess is asserted in the middle of
-            // processing the prefix and keys, as this changes the timing of how msgfifo
-            // is flushed
-            wait(kmac_cmd == CmdProcess);
-            cmd_process_in_header = 1;
-            `uvm_info(`gfn, "seen CmdProcess during prefix and key processing", UVM_HIGH)
-          end : wait_cmd_process_header
-          if (in_kmac_app) begin : wait_kmac_app_last_header
-            // We need to be able to detect if the last block of a KMAC_APP request is sent
-            // during processing of the prefix and secret keys, as this changes the timing
-            wait(kmac_app_last == 1);
-            kmac_app_last_in_header = 1;
-            `uvm_info(`gfn, "seen kmac_app_last during prefix and key processing", UVM_HIGH)
+            // Only process prefix/key if using KMAC, or if using the application interface
+            if (kmac_en || in_kmac_app) begin
+              fork
+                if (!in_kmac_app) begin : wait_cmd_process_header
+                  // We need to be able to detect if a CmdProcess is asserted in the middle of
+                  // processing the prefix and keys, as this changes the timing of how msgfifo
+                  // is flushed
+                  wait(kmac_cmd == CmdProcess);
+                  cmd_process_in_header = 1;
+                  `uvm_info(`gfn, "seen CmdProcess during prefix and key processing", UVM_HIGH)
+                end : wait_cmd_process_header
+                if (in_kmac_app) begin : wait_kmac_app_last_header
+                  // We need to be able to detect if the last block of a KMAC_APP request is sent
+                  // during processing of the prefix and secret keys, as this changes the timing
+                  wait(kmac_app_last == 1);
+                  kmac_app_last_in_header = 1;
+                  `uvm_info(`gfn, "seen kmac_app_last during prefix and key processing", UVM_HIGH)
+                end
+                begin : wait_process_header
+                  // Denotes the number of keccak rounds we have to wait for to finish
+                  // processing the header (prefix + secret keys).
+                  //
+                  // This is treated as a separate int variable because it is possible for us
+                  // to have to wait only for 1 keccak round - this happens when the ROM or LC
+                  // sends data through the application interface.
+                  int num_keccak_rounds_in_header;
+
+                  // If KMAC mode enabled, wait for the prefix and keys to be absorbed by keccak.
+                  //
+                  // Note that both absorptions will take the same number of cycles
+                  `uvm_info(`gfn, "starting to wait for prefix and key to be processed", UVM_HIGH)
+
+                  // if in_kmac_app is detected, we have sampled it right before the
+                  // rising clock edge in the same simulation timestep.
+                  // We need to synchronize this to the clock edge to avoid having it be caught
+                  // when we're waiting for sha3pad to process everything.
+                  if (in_kmac_app) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+
+                    // wait for prefix and keys if Keymgr is using KMAC hash
+                    // since it sends in secret keys, but only wait for the prefix if
+                    // ROM/LC is using KMAC hash, since they only run CShake hash
+                    num_keccak_rounds_in_header = (app_mode == AppKeymgr) ? 2 : 1;
+                  end else begin
+                    // If not using application interface, always will be running KMAC hash,
+                    // so wait for both prefix and keys to be processed
+                    num_keccak_rounds_in_header = 2;
+                  end
+
+                  for (int i = 0; i < num_keccak_rounds_in_header; i++) begin
+                    // wait either 21 or 17 cycles for sha3pad logic to send the prefix/key
+                    // to the keccak_round logic (this is the keccak rate)
+                    cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
+                    `uvm_info(`gfn, "finished waiting for sha3pad process", UVM_HIGH)
+
+                    // wait for the keccak logic to perform KECCAK_NUM_ROUNDS rounds
+                    wait_keccak_rounds(.is_key_process(
+                      (kmac_en && entropy_fast_process) ? (i == 1) : 0));
+
+                  end
+                  prefix_and_keys_done = 1;
+                  `uvm_info(`gfn, "finished processing prefix and keys", UVM_HIGH)
+                  // Ensure that we can correctly capture scenario where CmdProcess is seen on
+                  // final cycle of prefix/key processing
+                  #0;
+                  disable wait_cmd_process_header;
+                  disable wait_kmac_app_last_header;
+                end : wait_process_header
+              join
+            end
+            @(posedge sha3_idle);
           end
-          begin : wait_process_header
-            // Denotes the number of keccak rounds we have to wait for to finish
-            // processing the header (prefix + secret keys).
-            //
-            // This is treated as a separate int variable because it is possible for us
-            // to have to wait only for 1 keccak round - this happens when the ROM or LC
-            // sends data through the application interface.
-            int num_keccak_rounds_in_header;
-
-            // If KMAC mode enabled, wait for the prefix and keys to be absorbed by keccak.
-            //
-            // Note that both absorptions will take the same number of cycles
-            `uvm_info(`gfn, "starting to wait for prefix and key to be processed", UVM_HIGH)
-
-            // if in_kmac_app is detected, we have sampled it right before the rising clock edge
-            // in the same simulation timestep, need to synchronize to this clock edge
-            // to avoid having it be caught when we're waiting for sha3pad to process everything
-            if (in_kmac_app) begin
-              cfg.clk_rst_vif.wait_clks(1);
-
-              // wait for prefix and keys if Keymgr is using KMAC hash, since it sends in secret
-              // keys, but only wait for the prefix if ROM/LC is using KMAC hash, since they only
-              // run CShake hash
-              num_keccak_rounds_in_header = (app_mode == AppKeymgr) ? 2 : 1;
-            end else begin
-              // If not using application interface, always will be running KMAC hash,
-              // so wait for both prefix and keys to be processed
-              num_keccak_rounds_in_header = 2;
-            end
-
-            for (int i = 0; i < num_keccak_rounds_in_header; i++) begin
-              // wait either 21 or 17 cycles for sha3pad logic to send the prefix/key
-              // to the keccak_round logic (this is the keccak rate)
-              cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
-              `uvm_info(`gfn, "finished waiting for sha3pad process", UVM_HIGH)
-
-              // wait for the keccak logic to perform KECCAK_NUM_ROUNDS rounds
-              wait_keccak_rounds(.is_key_process((kmac_en && entropy_fast_process) ? (i == 1) : 0));
-
-            end
-            prefix_and_keys_done = 1;
-            `uvm_info(`gfn, "finished processing prefix and keys", UVM_HIGH)
-            // Ensure that we can correctly capture scenario where CmdProcess is seen on
-            // final cycle of prefix/key processing
-            #0;
-            disable wait_cmd_process_header;
-            disable wait_kmac_app_last_header;
-          end : wait_process_header
-        join
-      end
-      @(posedge sha3_idle);
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
@@ -742,8 +812,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // size, as KMAC will append the 3-byte encoded output length before
     // pushing into the msgfifo
     bit partial_msg;
-
-    int num_blocks_filled = 0;
 
     bit block_ready_after_flush_keccak = 0;
 
@@ -928,7 +996,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             num_blocks_filled++;
                           end
 
-                          `uvm_info(`gfn, $sformatf("increment num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                          `uvm_info(`gfn,
+                                    $sformatf("increment num_blocks_filled: %0d",
+                                              num_blocks_filled),
+                                    UVM_HIGH)
                           `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
                           `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
 
@@ -942,12 +1013,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             //    some data left in msgfifo/sha3pad
                             //  - we've seen CmdProcess while processing prefix and secret keys
                             //    (only in KMAC mode)
-                            //  - we are in KMAC_APP mode (meaning that kmac_app_last was seen during
-                            //    prefix/key processing or during a keccak data hashing round)
+                            //  - we are in KMAC_APP mode (meaning that kmac_app_last was seen
+                            //    during prefix/key processing or during a
+                            //    keccak data hashing round)
                             //
                             // Wait for the fifo to correctly transition through flush states,
-                            // waiting an extra cycle delay if the `incr_fifo_wr_in_process` condition
-                            // was met.
+                            // waiting an extra cycle delay if the `incr_fifo_wr_in_process`
+                            // condition was met.
                             if (in_kmac_app || cmd_process_in_keccak_and_blocks_left ||
                                 cmd_process_in_header || !cmd_process_fifo_depth) begin
                               cfg.clk_rst_vif.wait_clks(3);
@@ -975,7 +1047,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             // pushing into the msgfifo
                             partial_msg = `CALC_PARTIAL_MSG;
 
-                            `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
+                            `uvm_info(`gfn,
+                                      "all blocks full while flushing fifo, running keccak rounds",
+                                      UVM_HIGH)
                             `uvm_info(`gfn, $sformatf("partial_msg: %0d", partial_msg), UVM_HIGH)
 
                             // fifo_rd_ptr can keep incrementing as the keccak rounds start
@@ -1022,7 +1096,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           cfg.clk_rst_vif.wait_n_clks(1);
                           do_increment = 0;
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
-                            `uvm_info(`gfn, "filled up blocks while processing full kmac_app_last block", UVM_HIGH)
+                            `uvm_info(`gfn,
+                                      "filled up blocks while processing full kmac_app_last block",
+                                      UVM_HIGH)
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
                             // if need to run keccak rounds, fifo_rd_ptr increments one cycle later
@@ -1037,12 +1113,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           do_increment = 1;
                           cfg.clk_rst_vif.wait_n_clks(1);
                           do_increment = 0;
-                        end else if (kmac_app_block_strb_size + 3 < keymgr_pkg::KmacDataIfWidth/8) begin
+                        end else if (kmac_app_block_strb_size + 3 <
+                                     keymgr_pkg::KmacDataIfWidth/8) begin
                           cfg.clk_rst_vif.wait_clks(2);
                           do_increment = 1;
                           cfg.clk_rst_vif.wait_n_clks(1);
                           do_increment = 0;
-                        end else if (kmac_app_block_strb_size + 3 >= keymgr_pkg::KmacDataIfWidth/8) begin
+                        end else if (kmac_app_block_strb_size + 3 >=
+                                     keymgr_pkg::KmacDataIfWidth/8) begin
                           cfg.clk_rst_vif.wait_clks(1);
                           do_increment = 1;
                           num_blocks_filled++;
@@ -1056,7 +1134,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           end
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
                             wait_kmac_app_flush = 0;
-                            `uvm_info(`gfn, "filled up blocks while processing overflow kmac_app_last block", UVM_HIGH)
+                            `uvm_info(`gfn,
+                                      "filled up blocks while processing overflow kmac_app_last block",
+                                      UVM_HIGH)
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
                             cfg.clk_rst_vif.wait_clks(2);
@@ -1103,13 +1183,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     // Add a zero delay here to ensure all fifo-related state is correctly updated
                     #0;
                     `uvm_info(`gfn, "don't have a full set of blocks yet", UVM_HIGH)
-                    `uvm_info(`gfn, $sformatf("num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                    `uvm_info(`gfn,
+                              $sformatf("num_blocks_filled: %0d",
+                                        num_blocks_filled),
+                              UVM_HIGH)
                     `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
                     `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
                     if (fifo_wr_ptr > fifo_rd_ptr) begin
                       `uvm_info(`gfn, "have enough to fill another block", UVM_HIGH)
                       num_blocks_filled++;
-                      `uvm_info(`gfn, $sformatf("increment num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                      `uvm_info(`gfn,
+                                $sformatf("increment num_blocks_filled: %0d",
+                                          num_blocks_filled),
+                                UVM_HIGH)
                       do_increment = 1;
                     end
 
@@ -1130,14 +1216,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   //
                   // During the time that keccak logic is active, need to detect an incoming
                   // CmdProcess request (only if not in KMAC_APP mode).
-                  // If we see a CmdProcess be written, we can assert `msg_digest_done` after the current
-                  // hash is complete.
+                  // If we see a CmdProcess be written, we can assert `msg_digest_done`
+                  // after the current hash is complete.
 
                   bit sw_process_seen_in_keccak = 0;
 
                   bit sw_process_and_keccak_complete = 0;
 
-                  `uvm_info(`gfn, "filled up keccak input blocks, sending to keccak to process", UVM_HIGH)
+                  `uvm_info(`gfn,
+                            "filled up keccak input blocks, sending to keccak to process",
+                            UVM_HIGH)
 
                   fork
                     begin : wait_for_cmd_process
@@ -1261,6 +1349,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // Note that squeezing more output can never happen during KMAC_APP operation
   virtual task process_manual_digest_squeeze();
+    @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
       @(negedge sha3_idle);
@@ -1908,7 +1997,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     clear_state();
 
+    kmac_cmd = CmdNone;
+
     first_op_after_rst = 1;
+
+    num_blocks_filled = 0;
 
     // status tracking bits
     sha3_idle     = ral.status.sha3_idle.get_reset();
