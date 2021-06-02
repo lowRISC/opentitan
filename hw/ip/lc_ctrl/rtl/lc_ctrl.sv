@@ -97,6 +97,7 @@ module lc_ctrl
   `ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
   `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == DecLcIdStateWidth)
   `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
+  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
 
   /////////////
   // Regfile //
@@ -256,6 +257,9 @@ module lc_ctrl
 
   logic lc_idle_d;
 
+  // OTP Vendor control bits
+  logic [CsrOtpTestCtrlWidth-1:0] otp_test_ctrl_d, otp_test_ctrl_q;
+
   always_comb begin : p_csr_assign_outputs
     hw2reg = '0;
     hw2reg.status.ready                  = lc_idle_d;
@@ -281,6 +285,7 @@ module lc_ctrl
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
       hw2reg.transition_regwen = lc_idle_d;
+      hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
@@ -288,6 +293,7 @@ module lc_ctrl
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
       tap_hw2reg.transition_regwen = lc_idle_d;
+      tap_hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
     end
   end
 
@@ -297,6 +303,7 @@ module lc_ctrl
     transition_token_d        = transition_token_q;
     transition_target_d       = transition_target_q;
     transition_cmd            = 1'b0;
+    otp_test_ctrl_d           = otp_test_ctrl_q;
 
     // SW mutex claim.
     if (tap_claim_transition_if_q != 8'hA5 &&
@@ -324,6 +331,10 @@ module lc_ctrl
         if (tap_reg2hw.transition_target.qe) begin
           transition_target_d = dec_lc_state_e'(tap_reg2hw.transition_target.q);
         end
+
+        if (tap_reg2hw.otp_test_ctrl.qe) begin
+          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.q;
+        end
       end else if (sw_claim_transition_if_q == 8'hA5) begin
         transition_cmd = reg2hw.transition_cmd.q &
                          reg2hw.transition_cmd.qe;
@@ -336,6 +347,10 @@ module lc_ctrl
 
         if (reg2hw.transition_target.qe) begin
           transition_target_d = dec_lc_state_e'(reg2hw.transition_target.q);
+        end
+
+        if (reg2hw.otp_test_ctrl.qe) begin
+          otp_test_ctrl_d = reg2hw.otp_test_ctrl.q;
         end
       end
     end
@@ -355,6 +370,7 @@ module lc_ctrl
       transition_token_q        <= '0;
       transition_target_q       <= DecLcStRaw;
       otp_part_error_q          <= '0;
+      otp_test_ctrl_q           <= '0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d        | trans_success_q;
@@ -370,10 +386,15 @@ module lc_ctrl
       tap_claim_transition_if_q <= tap_claim_transition_if_d;
       transition_token_q        <= transition_token_d;
       transition_target_q       <= transition_target_d;
+      otp_test_ctrl_q           <= otp_test_ctrl_d;
     end
   end
 
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
+
+  // Output the vendor specific test ctrl bits only in TEST* or RMA states.
+  lc_tx_t lc_test_or_rma;
+  assign lc_otp_program_o.otp_test_ctrl = (lc_test_or_rma == On) ? otp_test_ctrl_q : '0;
 
   //////////////////
   // Alert Sender //
@@ -540,6 +561,7 @@ module lc_ctrl
     .flash_rma_error_o      ( flash_rma_error_d               ),
     .otp_prog_error_o       ( otp_prog_error_d                ),
     .state_invalid_error_o  ( state_invalid_error_d           ),
+    .lc_test_or_rma_o       ( lc_test_or_rma                  ),
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
     .lc_hw_debug_en_o,

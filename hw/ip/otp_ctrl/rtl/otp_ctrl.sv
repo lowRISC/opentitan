@@ -625,11 +625,11 @@ module otp_ctrl
     .ready_i ( otp_arb_ready       )
   );
 
-  prim_otp_pkg::err_e    part_otp_err;
-  logic [OtpIfWidth-1:0] part_otp_rdata;
-  logic                  otp_rvalid;
-  tlul_pkg::tl_h2d_t     tl_win_h2d_gated;
-  tlul_pkg::tl_d2h_t     tl_win_d2h_gated;
+  prim_otp_pkg::err_e          part_otp_err;
+  logic [OtpIfWidth-1:0]       part_otp_rdata;
+  logic                        otp_rvalid;
+  tlul_pkg::tl_h2d_t           tl_win_h2d_gated;
+  tlul_pkg::tl_d2h_t           tl_win_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
   assign tl_win_h2d_gated              = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
@@ -637,43 +637,42 @@ module otp_ctrl
   assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
 
-  // TODO: correctly connect this to life cycle
-  logic ext_voltage_en;
-  assign ext_voltage_en = 1'b0;
-
   prim_otp #(
-    .Width       ( OtpWidth            ),
-    .Depth       ( OtpDepth            ),
-    .SizeWidth   ( OtpSizeWidth        ),
-    .PwrSeqWidth ( OtpPwrSeqWidth      ),
-    .TlDepth     ( NumDebugWindowWords ),
-    .MemInitFile ( MemInitFile         )
+    .Width         ( OtpWidth            ),
+    .Depth         ( OtpDepth            ),
+    .SizeWidth     ( OtpSizeWidth        ),
+    .PwrSeqWidth   ( OtpPwrSeqWidth      ),
+    .TlDepth       ( NumDebugWindowWords ),
+    .TestCtrlWidth ( OtpTestCtrlWidth    ),
+    .MemInitFile   ( MemInitFile         )
   ) u_otp (
     .clk_i,
     .rst_ni,
     // Power sequencing signals to/from AST
-    .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq     ),
-    .pwr_seq_h_i ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
+    .pwr_seq_o        ( otp_ast_pwr_seq_o.pwr_seq      ),
+    .pwr_seq_h_i      ( otp_ast_pwr_seq_h_i.pwr_seq_h  ),
+    .ext_voltage_io   ( otp_ext_voltage_h_io           ),
     // Test interface
-    .test_tl_i   ( tl_win_h2d_gated              ),
-    .test_tl_o   ( tl_win_d2h_gated              ),
-    // Read / Write command interface
-    .ready_o     ( otp_arb_ready                 ),
-    .valid_i     ( otp_arb_valid                 ),
-    .cmd_i       ( otp_arb_bundle.cmd            ),
-    .size_i      ( otp_arb_bundle.size           ),
-    .addr_i      ( otp_arb_bundle.addr           ),
-    .wdata_i     ( otp_arb_bundle.wdata          ),
-    // Read data out
-    .valid_o     ( otp_rvalid                    ),
-    .rdata_o     ( part_otp_rdata                ),
-    .err_o       ( part_otp_err                  ),
-    .ext_voltage_io   ( otp_ext_voltage_h_io     ),
-    .ext_voltage_en_i ( ext_voltage_en           ),
-    .otp_alert_src_o  ( otp_alert_o              ),
+    .test_ctrl_i      ( lc_otp_program_i.otp_test_ctrl ),
+    .test_tl_i        ( tl_win_h2d_gated               ),
+    .test_tl_o        ( tl_win_d2h_gated               ),
+    // Other DFT signals
     .scan_en_i,
     .scan_rst_ni,
-    .scanmode_i
+    .scanmode_i,
+    // Alerts
+    .otp_alert_src_o  ( otp_alert_o          ),
+    // Read / Write command interface
+    .ready_o          ( otp_arb_ready        ),
+    .valid_i          ( otp_arb_valid        ),
+    .cmd_i            ( otp_arb_bundle.cmd   ),
+    .size_i           ( otp_arb_bundle.size  ),
+    .addr_i           ( otp_arb_bundle.addr  ),
+    .wdata_i          ( otp_arb_bundle.wdata ),
+    // Read data out
+    .valid_o          ( otp_rvalid           ),
+    .rdata_o          ( part_otp_rdata       ),
+    .err_o            ( part_otp_err         )
   );
 
   logic otp_fifo_valid;
