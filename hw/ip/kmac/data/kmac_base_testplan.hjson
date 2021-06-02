@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: kmac_base
+  name: kmac
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
@@ -42,7 +42,7 @@
                 correctly
             '''
       milestone: V1
-      tests: ["{name}_smoke"]
+      tests: ["{variant}_smoke"]
     }
     {
       name: long_msg_and_output
@@ -60,7 +60,7 @@
             applicable).
             '''
       milestone: V2
-      tests: ["{name}_long_msg_and_output"]
+      tests: ["{variant}_long_msg_and_output"]
     }
     {
       name: burst_write
@@ -69,7 +69,7 @@
             into the msg_fifo, and disable intermediate status/CSR checks.
             '''
       milestone: V2
-      tests: ["{name}_burst_write"]
+      tests: ["{variant}_burst_write"]
     }
     {
       name: test_vectors
@@ -78,10 +78,10 @@
             the output against the expected digest values.
             '''
       milestone: V2
-      tests: ["{name}_test_vectors_sha3_224", "{name}_test_vectors_sha3_256",
-              "{name}_test_vectors_sha3_384", "{name}_test_vectors_sha3_512",
-              "{name}_test_vectors_shake_128", "{name}_test_vectors_shake_256",
-              "{name}_test_vectors_kmac", "{name}_test_vectors_kmac_xof"]
+      tests: ["{variant}_test_vectors_sha3_224", "{variant}_test_vectors_sha3_256",
+              "{variant}_test_vectors_sha3_384", "{variant}_test_vectors_sha3_512",
+              "{variant}_test_vectors_shake_128", "{variant}_test_vectors_shake_256",
+              "{variant}_test_vectors_kmac", "{variant}_test_vectors_kmac_xof"]
     }
     {
       name: sideload
@@ -91,7 +91,7 @@
             KMAC should operate on the sideloaded key.
             '''
       milestone: V2
-      tests: ["{name}_sideload"]
+      tests: ["{variant}_sideload"]
     }
     {
       name: app
@@ -106,7 +106,7 @@
             blocked and will return 0.
             '''
       milestone: V2
-      tests: ["{name}_app"]
+      tests: ["{variant}_app"]
     }
     {
       name: error
@@ -129,7 +129,7 @@
             //       So this might be split into several error tests later on.
             '''
       milestone: V2
-      tests: ["{name}_error"]
+      tests: ["{variant}_error"]
     }
     {
       name: entropy_timers
@@ -146,7 +146,7 @@
             This will be checked in the scoreboard using the cycle acurate model.
             '''
       milestone: V3
-      tests: ["{name}_entropy"]
+      tests: ["{variant}_entropy"]
     }
     {
       name: throughput
@@ -155,7 +155,7 @@
             to the expected throughput range for the design.
             '''
       milestone: V3
-      tests: ["{name}_throughput"]
+      tests: ["{variant}_throughput"]
     }
   ]
 }
