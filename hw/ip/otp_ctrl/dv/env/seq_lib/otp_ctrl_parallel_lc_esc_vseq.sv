@@ -6,7 +6,7 @@
 // After lc_escalate_en is On, this sequence will continue run base sequence to check if all state
 // machines are locked to `ErrorSt`.
 
-class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_errs_vseq;
+class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_parallel_lc_esc_vseq)
 
   `uvm_object_new
@@ -59,9 +59,9 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_errs_vseq;
     // Wait 5 clock cycles until async lc_escalate_en propogate to each state machine.
     cfg.clk_rst_vif.wait_clks(5);
 
-    // After LC_escalate is On, we trigger the dai_errs_vseq to check interfaces will return
+    // After LC_escalate is On, we trigger the dai_lock_vseq to check interfaces will return
     // default values and the design won't hang.
-    otp_ctrl_dai_errs_vseq::body();
+    otp_ctrl_dai_lock_vseq::body();
   endtask
 
   virtual task post_start();

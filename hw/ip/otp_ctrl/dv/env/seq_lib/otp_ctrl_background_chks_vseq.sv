@@ -4,7 +4,7 @@
 
 // This simple sequence checks if the background check can be triggered once the period is set.
 
-class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_errs_vseq;
+class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_background_chks_vseq)
 
   `uvm_object_new

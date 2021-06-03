@@ -8,7 +8,7 @@
 // 2. Another sequence is an empty task that needs to be override, this could be: key_request
 //    sequences or lc_request sequences.
 
-class otp_ctrl_parallel_base_vseq extends otp_ctrl_dai_errs_vseq;
+class otp_ctrl_parallel_base_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_parallel_base_vseq)
 
   `uvm_object_new
