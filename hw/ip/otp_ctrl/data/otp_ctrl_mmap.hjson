@@ -141,7 +141,19 @@
                 }
                 {
                     name: "ROM_ALERT_CLASSIFICATION",
-                    size: "128"
+                    size: "192"
+                }
+                {
+                    name: "ROM_ALERT_ACCUM_THRESH",
+                    size: "16"
+                }
+                {
+                    name: "ROM_ALERT_TIMEOUT_CYCLES",
+                    size: "16"
+                }
+                {
+                    name: "ROM_ALERT_PHASE_CYCLES",
+                    size: "64"
                 }
             ],
             desc: '''Software configuration partition for
