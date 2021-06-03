@@ -267,13 +267,35 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     illegal_bins bad  = default;       \
   }
 
+  // An equivalent of remap_csr / DEF_CSR_CP, but specialized to WSRs.
+  function int remap_wsr(logic [7:0] wsr_idx);
+    case (wsr_idx)
+      8'h00: return 0;     // MOD
+      8'h01: return 1;     // RND
+      8'h02: return 2;     // ACC
+      8'h03: return 3;     // URND
+      default: return -1;  // (invalid)
+    endcase
+  endfunction
+
+`define DEF_WSR_CP(NAME, EXPR)         \
+  NAME: coverpoint (remap_wsr(EXPR)) { \
+    bins mod         = {0};            \
+    bins rnd         = {1};            \
+    bins acc         = {2};            \
+    bins urnd        = {3};            \
+    bins invalid     = {-1};           \
+    illegal_bins bad = default;        \
+  }
+
   // Per-encoding covergroups //////////////////////////////////////////////////
   covergroup enc_bna_cg
     with function sample(mnem_str_t    mnemonic,
                          logic [31:0]  insn_data,
                          logic [255:0] wdr_operand_a,
                          logic [255:0] wdr_operand_b,
-                         flags_t       flags_write_data [2]);
+                         flags_t       flags_write_data [2],
+                         logic [255:0] wdr_write_data);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_and);
@@ -282,11 +304,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
+    // The shifted version of wdr_operand_b is nonzero
+    `DEF_SEEN_CP(nz_shifted_cp,
+                 0 != (insn_data[30] ?
+                       (wdr_operand_b >> {insn_data[29:25], 3'b0}) :
+                       (wdr_operand_b << {insn_data[29:25], 3'b0})))
+
     sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
     st_cp: coverpoint insn_data[30];
     fg_cp: coverpoint insn_data[31];
-    `DEF_MNEM_CROSS(sb)
-    `DEF_MNEM_CROSS(st)
+    // Crossing st_cp, sb_cp and nz_shifted_cp means that we see extremal values of shift in both
+    // directions, restricted to cases where the result is nonzero (so the shift actually did
+    // something).
+    `DEF_MNEM_CROSS3(st, sb, nz_shifted)
     `DEF_MNEM_CROSS(fg)
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
@@ -298,6 +328,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // the flags_t struct).
     `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
     `DEF_MLZ_FLAGS_TOGGLE_CROSS(flags)
+
+    // Toggle coverage of the output result
+    `DEF_WDR_TOGGLE_COV(wrd, wdr_write_data)
+    `DEF_WDR_TOGGLE_CROSS(wrd)
   endgroup
 
   covergroup enc_bnaf_cg
@@ -315,11 +349,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
+    // The shifted version of wdr_operand_b is nonzero
+    `DEF_SEEN_CP(nz_shifted_cp,
+                 0 != (insn_data[30] ?
+                       (wdr_operand_b >> {insn_data[29:25], 3'b0}) :
+                       (wdr_operand_b << {insn_data[29:25], 3'b0})))
+
     sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
     st_cp: coverpoint insn_data[30];
     fg_cp: coverpoint insn_data[31];
-    `DEF_MNEM_CROSS(sb)
-    `DEF_MNEM_CROSS(st)
+    // Crossing st_cp, sb_cp and nz_shifted_cp means that we see extremal values of shift in both
+    // directions, restricted to cases where the result is nonzero (so the shift actually did
+    // something).
+    `DEF_MNEM_CROSS3(st, sb, nz_shifted)
     `DEF_MNEM_CROSS(fg)
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
@@ -329,6 +371,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
     `DEF_FLAGS_TOGGLE_CROSS(flags)
+
+    // This checks for a nonzero right shift where the top bit of wrs2 is set (ensuring we do a
+    // logical shift, not an arithmetic shift).
+    `DEF_SEEN_CP(srl_cp,
+                 (insn_data[29:25] != 0) && insn_data[30] && wdr_operand_b[255])
+    `DEF_MNEM_CROSS(srl)
   endgroup
 
   covergroup enc_bnai_cg
@@ -377,22 +425,37 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     with function sample(mnem_str_t    mnemonic,
                          logic [31:0]  insn_data,
                          logic [255:0] wdr_operand_a,
-                         flags_t       flags_write_data [2]);
+                         flags_t       flags_write_data [2],
+                         logic [255:0] wdr_write_data);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_not);
       illegal_bins other = default;
     }
 
+    // The shifted version of wdr_operand_a is nonzero
+    `DEF_SEEN_CP(nz_shifted_cp,
+                 0 != (insn_data[30] ?
+                       (wdr_operand_a >> {insn_data[29:25], 3'b0}) :
+                       (wdr_operand_a << {insn_data[29:25], 3'b0})))
+
     sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
     st_cp: coverpoint insn_data[30];
     fg_cp: coverpoint insn_data[31];
+    // Crossing st_cp, sb_cp and nz_shifted_cp means that we see extremal values of shift in both
+    // directions, restricted to cases where the result is nonzero (so the shift actually did
+    // something).
+    `DEF_MNEM_CROSS3(st, sb, nz_shifted)
 
+    // Toggle coverage of the input result
     `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
 
     // BN.NOT can write the M, L and Z flags, but does not affect the carry flag (bit 0 in the
     // flags_t struct).
     `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+
+    // Toggle coverage of the output result
+    `DEF_WDR_TOGGLE_COV(wrd, wdr_write_data)
   endgroup
 
   covergroup enc_bnaq_cg
@@ -411,6 +474,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     shift_cp: coverpoint insn_data[14:13] { bins extremes[] = {'0, '1}; }
     q1_cp: coverpoint insn_data[26:25] { bins extremes[] = {'0, '1}; }
     q2_cp: coverpoint insn_data[28:27] { bins extremes[] = {'0, '1}; }
+
+    qwsel_cross: cross q1_cp, q2_cp;
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
@@ -436,12 +501,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     dh_cp: coverpoint insn_data[29];
     fg_cp: coverpoint insn_data[31];
 
+    qwsel_cross: cross q1_cp, q2_cp;
+
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
 
     // BN.MULQACC.SO can write the M, L and Z flags, but does not affect the carry flag (bit 0 in
     // the flags_t struct).
     `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+
+    // Cross the M, L, Z flag coverpoints above with wrd_hwsel (the "dh" field)
+    flags_01_cross: cross dh_cp, flags_01_cp;
+    flags_10_cross: cross dh_cp, flags_10_cp;
+    flags_11_cross: cross dh_cp, flags_11_cp;
   endgroup
 
   covergroup enc_bnaqw_cg
@@ -462,6 +534,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     q1_cp: coverpoint insn_data[26:25] { bins extremes[] = {'0, '1}; }
     q2_cp: coverpoint insn_data[28:27] { bins extremes[] = {'0, '1}; }
     fg_cp: coverpoint insn_data[31];
+
+    qwsel_cross: cross q1_cp, q2_cp;
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
@@ -484,11 +558,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
+    // The shifted version of wdr_operand_b is nonzero
+    `DEF_SEEN_CP(nz_shifted_cp,
+                 0 != (insn_data[30] ?
+                       (wdr_operand_b >> {insn_data[29:25], 3'b0}) :
+                       (wdr_operand_b << {insn_data[29:25], 3'b0})))
+
     sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
     st_cp: coverpoint insn_data[30];
     fg_cp: coverpoint insn_data[31];
-    `DEF_MNEM_CROSS(sb)
-    `DEF_MNEM_CROSS(st)
+    // Crossing st_cp, sb_cp and nz_shifted_cp means that we see extremal values of shift in both
+    // directions, restricted to cases where the result is nonzero (so the shift actually did
+    // something).
+    `DEF_MNEM_CROSS3(st, sb, nz_shifted)
     `DEF_MNEM_CROSS(fg)
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
@@ -498,6 +580,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
     `DEF_FLAGS_TOGGLE_CROSS(flags)
+
+    // This checks for a nonzero right shift where the top bit of wrs2 is set (ensuring we do a
+    // logical shift, not an arithmetic shift).
+    `DEF_SEEN_CP(srl_cp,
+                 (insn_data[29:25] != 0) && insn_data[30] && wdr_operand_b[255])
+    `DEF_MNEM_CROSS(srl)
   endgroup
 
   covergroup enc_bnmov_cg
@@ -526,6 +614,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     grd_inc_cp: coverpoint insn_data[7];
     grs_inc_cp: coverpoint insn_data[9];
+    // See all possible combinations of grd_inc and grs_inc (including the illegal one where both are set)
+    inc_cross: cross grd_inc_cp, grs_inc_cp;
 
     `DEF_GPR_CP(grs_cp, 19:15)
     `DEF_GPR_CP(grd_cp, 24:20)
@@ -533,6 +623,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_GPR_TOGGLE_COV(grs, gpr_operand_a)
     `DEF_GPR_TOGGLE_COV(grd, gpr_operand_b)
+
+    big_grd_cp: coverpoint (gpr_operand_a >= 32);
+    big_grs_cp: coverpoint (gpr_operand_b >= 32);
+    big_gpr_cross: cross big_grd_cp, big_grs_cp;
   endgroup
 
   covergroup enc_bnr_cg
@@ -556,18 +650,23 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     with function sample(mnem_str_t   mnemonic,
                          logic [31:0] insn_data,
                          logic [255:0] wdr_operand_a,
-                         logic [255:0] wdr_operand_b);
+                         logic [255:0] wdr_operand_b,
+                         flags_t      flags_read_data[2]);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_sel);
       illegal_bins other = default;
     }
 
-    flag_cp: coverpoint insn_data[26:25] { bins extremes[] = {'0, '1}; }
+    // Note: We cover each of the 4 flags here, not just the extremes
+    flag_cp: coverpoint insn_data[26:25];
     fg_cp: coverpoint insn_data[31];
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+
+    flag_value_cp: coverpoint flags_read_data[insn_data[31]][insn_data[26:25]];
+    flag_cross: cross fg_cp, flag_cp, flag_value_cp;
   endgroup
 
   covergroup enc_bnxid_cg
@@ -585,8 +684,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     incd_cp: coverpoint insn_data[7];
     inc1_cp: coverpoint insn_data[8];
     off_cp: coverpoint {insn_data[31:25], insn_data[11:9]} { bins extremes[] = {'0, '1}; }
-    `DEF_MNEM_CROSS(incd)
-    `DEF_MNEM_CROSS(inc1)
+    // See all possible combinations of incd and inc1 (including the illegal one where both are set)
+    `DEF_MNEM_CROSS2(incd, inc1)
     `DEF_MNEM_CROSS(off)
 
     `DEF_GPR_CP(grs1_cp, 19:15)
@@ -599,6 +698,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_GPR_TOGGLE_COV(grs2, gpr_operand_b)
     `DEF_GPR_TOGGLE_CROSS(grs1)
     `DEF_GPR_TOGGLE_CROSS(grs2)
+
+    // Cross the three types of GPR for GRS1 with grs1_inc
+    `DEF_MNEM_CROSS2(grs1, inc1)
+    // Cross the three types of GPR for GRD/GRS2 with grd_inc/grs2_inc
+    `DEF_MNEM_CROSS2(grx, incd)
   endgroup
 
   covergroup enc_b_cg
@@ -799,7 +903,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
-    wsr_cp: coverpoint insn_data[27:20] { bins extremes[] = {'0, '1}; }
+    wsr_imm_cp: coverpoint insn_data[27:20] { bins extremes[] = {'0, '1}; }
+    `DEF_MNEM_CROSS(wsr_imm)
+
+    `DEF_WSR_CP(wsr_cp, insn_data[27:20])
     `DEF_MNEM_CROSS(wsr)
   endgroup
 
@@ -1151,6 +1258,203 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  (current_loop_end == insn_addr + 32'(insn_data[31:20])))
   endgroup
 
+  covergroup insn_bn_addc_cg
+    with function sample(logic [31:0] insn_data,
+                         flags_t      flags_read_data[2]);
+
+    // Execute with both values of the carry flag for both flag groups
+    fg_cp: coverpoint insn_data[31];
+    carry_flag_cp: coverpoint flags_read_data[insn_data[31]].C;
+    carry_cross: cross fg_cp, carry_flag_cp;
+
+  endgroup
+
+  covergroup insn_bn_addm_cg
+    with function sample(logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [255:0] mod);
+
+    // Extreme values of MOD
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1}; }
+
+    // Sum less than MOD (so we don't do a subtraction). Here, and below, we zero-extend explicitly
+    // in the sum, which uses 257 bits internally.
+    `DEF_SEEN_CP(sum_lt_cp,
+                 (mod != 0) && ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} < {1'b0, mod}))
+
+    // Sum exactly equals a nonzero MOD (subtracting down to zero)
+    `DEF_SEEN_CP(sum_eq_cp,
+                 (mod != 0) && ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} == {1'b0, mod}))
+
+    // Sum is greater than a nonzero MOD, but not twice as big.
+    `DEF_SEEN_CP(sum_gt_cp,
+                 (mod != 0) &&
+                 ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} > {1'b0, mod}) &&
+                 ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} < {mod, 1'b0}))
+
+    // Sum is at least twice a nonzero MOD.
+    `DEF_SEEN_CP(sum_gt2_cp,
+                 (mod != 0) &&
+                 ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} >= {mod, 1'b0}))
+
+    // The intermediate sum overflows 256 bits
+    `DEF_SEEN_CP(overflow_cp,
+                 (({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b}) >> 256) != 0)
+
+    // Wrap after subtraction?
+    wrap_after_mod_cp: coverpoint ((({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} > {1'b0, mod}) ?
+                                    ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b} - {1'b0, mod}) :
+                                    ({1'b0, wdr_operand_a} + {1'b0, wdr_operand_b})) >> 256) != 0;
+
+    overflow_wrap_cross: cross overflow_cp, wrap_after_mod_cp;
+  endgroup
+
+  covergroup insn_bn_mulqaccx_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [256:0] new_acc_extended);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_mulqacc);
+      `DEF_MNEM_BIN(mnem_bn_mulqacc_so);
+      `DEF_MNEM_BIN(mnem_bn_mulqacc_wo);
+      illegal_bins other = default;
+    }
+
+    // ACC will be truncated (the sum overflowed)
+    `DEF_SEEN_CP(overflow_cp, new_acc_extended[256])
+    `DEF_MNEM_CROSS(overflow)
+
+  endgroup
+
+  covergroup insn_bn_subcmpb_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [31:0] insn_data,
+                         flags_t      flags_read_data[2]);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_subb);
+      `DEF_MNEM_BIN(mnem_bn_cmpb);
+      illegal_bins other = default;
+    }
+
+    // Execute with both values of the carry flag (borrow here!) for both flag groups
+    fg_cp: coverpoint insn_data[31];
+    carry_flag_cp: coverpoint flags_read_data[insn_data[31]].C;
+    `DEF_MNEM_CROSS2(fg, carry_flag)
+
+  endgroup
+
+  covergroup insn_bn_subm_cg
+    with function sample(logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [255:0] mod);
+
+    // Extreme values of MOD
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1}; }
+
+    // A non-negative difference with a nonzero MOD.
+    `DEF_SEEN_CP(diff_nonneg_cp,
+                 (mod != 0) && ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} < {1'b1, 256'b0}))
+
+    // Difference exactly equals a nonzero -MOD (adding back up to zero)
+    `DEF_SEEN_CP(diff_minus_mod_cp,
+                 (mod != 0) &&
+                 ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} + {1'b0, mod} == 0))
+
+    // Difference is between -MOD and -1.
+    `DEF_SEEN_CP(diff_neg_cp,
+                 (mod != 0) &&
+                 ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} >= {1'b1, 256'b0}) &&
+                 ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} + {1'b0, mod} < {1'b1, 256'b0}))
+
+    // Difference is less than -MOD
+    `DEF_SEEN_CP(diff_neg2_cp,
+                 (mod != 0) &&
+                 (mod != 0) &&
+                 ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} >= {1'b1, 256'b0}) &&
+                 ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} + {1'b0, mod} >= {1'b1, 256'b0}))
+  endgroup
+
+  // Used by BN.LID and BN.SID
+  covergroup insn_bn_xid_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [14:0] offset,
+                         logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_lid);
+      `DEF_MNEM_BIN(mnem_bn_sid);
+      illegal_bins other = default;
+    }
+
+    // Access a valid address, where grs1 is above the top of memory and a negative offset brings
+    // the address in range.
+    `DEF_SEEN_CP(oob_base_neg_off_cp,
+                 ($signed(operand_a) > DmemSizeByte) &&
+                 ($signed(offset) < 0) &&
+                 (0 <= ($signed(operand_a) + $signed(offset))) &&
+                 (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+    `DEF_MNEM_CROSS(oob_base_neg_off)
+
+    // Access a valid address, where grs1 is negative and a positive offset brings the address in
+    // range.
+    `DEF_SEEN_CP(neg_base_pos_off_cp,
+                 ($signed(operand_a) < 0) &&
+                 ($signed(offset) > 0) &&
+                 (0 <= ($signed(operand_a) + $signed(offset))) &&
+                 (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+    `DEF_MNEM_CROSS(neg_base_pos_off)
+
+    // Access address zero
+    `DEF_SEEN_CP(addr0_cp, $signed(operand_a) + $signed(offset) == 0)
+    `DEF_MNEM_CROSS(addr0)
+
+    // Access the top word of memory
+    `DEF_SEEN_CP(top_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte - 32)
+    `DEF_MNEM_CROSS(top_addr)
+
+    // Access an invalid address (aligned but above the top of memory)
+    `DEF_SEEN_CP(oob_addr_cp,
+                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 32) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+    `DEF_MNEM_CROSS(oob_addr)
+
+    // Misaligned address tracking (see DV document for why we have these exact crosses)
+    grs1_align_cp:
+      coverpoint operand_a[4:0] {
+         bins zero = {0};
+         bins middling = {[1:30]};
+         bins high = {31};
+      }
+    offset_align_cp:
+      coverpoint offset[4:0] {
+         bins zero = {0};
+         bins middling = {[1:30]};
+         bins high = {31};
+      }
+    addr_align_cp: coverpoint operand_a[4:0] + offset[4:0];
+
+    part_align_cross:
+      cross mnemonic_cp, grs1_align_cp, offset_align_cp
+        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
+             (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte));
+    addr_align_cross:
+      cross mnemonic_cp, addr_align_cp
+        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
+             (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte));
+
+    // See operand_b >= 32. This is grs2 for BN.SID and grd for BN.LID: in either case, it causes an
+    // error.
+    `DEF_SEEN_CP(bigb_cp, operand_b >= 32)
+    `DEF_MNEM_CROSS(bigb)
+
+  endgroup
+
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -1200,6 +1504,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_csrrw_cg = new;
     insn_loop_cg = new;
     insn_loopi_cg = new;
+    insn_bn_addc_cg = new;
+    insn_bn_addm_cg = new;
+    insn_bn_mulqaccx_cg = new;
+    insn_bn_subcmpb_cg = new;
+    insn_bn_subm_cg = new;
+    insn_bn_xid_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -1287,7 +1597,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       "bna":
         enc_bna_cg.sample(mnem, insn_data,
                           rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
-                          rtl_item.flags_write_data);
+                          rtl_item.flags_write_data, rtl_item.wdr_write_data);
       "bnaf":
         enc_bnaf_cg.sample(mnem, insn_data,
                            rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
@@ -1301,7 +1611,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       "bnan":
         enc_bnan_cg.sample(mnem, insn_data,
                            rtl_item.wdr_operand_a,
-                           rtl_item.flags_write_data);
+                           rtl_item.flags_write_data,
+                           rtl_item.wdr_write_data);
       "bnaq":
         enc_bnaq_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bnaqs":
@@ -1323,7 +1634,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       "bnr":
         enc_bnr_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bns":
-        enc_bns_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        enc_bns_cg.sample(mnem, insn_data,
+                          rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                          rtl_item.flags_read_data);
       "bnxid":
         enc_bnxid_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
       "B":
@@ -1413,6 +1726,31 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                              rtl_item.loop_stack_fullness,
                              rtl_item.current_loop_end,
                              rtl_item.at_current_loop_end_insn);
+      mnem_bn_addc:
+        insn_bn_addc_cg.sample(insn_data,
+                               rtl_item.flags_read_data);
+      mnem_bn_addm:
+        insn_bn_addm_cg.sample(insn_data,
+                               rtl_item.wdr_operand_a,
+                               rtl_item.wdr_operand_b,
+                               rtl_item.mod);
+      mnem_bn_mulqacc, mnem_bn_mulqacc_so, mnem_bn_mulqacc_wo:
+        insn_bn_mulqaccx_cg.sample(mnem,
+                                   rtl_item.new_acc_extended);
+      mnem_bn_subb, mnem_bn_cmpb:
+        insn_bn_subcmpb_cg.sample(mnem,
+                                  insn_data,
+                                  rtl_item.flags_read_data);
+      mnem_bn_subm:
+        insn_bn_subm_cg.sample(insn_data,
+                               rtl_item.wdr_operand_a,
+                               rtl_item.wdr_operand_b,
+                               rtl_item.mod);
+      mnem_bn_lid, mnem_bn_sid:
+        insn_bn_xid_cg.sample(mnem,
+                              {insn_data[11:9], insn_data[31:25], 5'b0},
+                              rtl_item.gpr_operand_a,
+                              rtl_item.gpr_operand_b);
       default:
         // No special handling for this instruction yet.
         ;

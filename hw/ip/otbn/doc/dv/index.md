@@ -338,17 +338,17 @@ This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
 
 - Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range. 
-  Tracked as `oob_base_neg_off_cp`.
+  Tracked as `oob_base_neg_off_cross`.
 - Load from a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
-  Tracked as `neg_base_pos_off_cp`.
+  Tracked as `neg_base_pos_off_cross`.
 - Load from address zero.
-  Tracked as `addr0_cp`.
+  Tracked as `addr0_cross`.
 - Load from the top word of memory
-  Tracked as `top_addr_cp`.
+  Tracked as `top_addr_cross`.
 - Load from an invalid address (aligned but above the top of memory)
-  Tracked as `oob_addr_cp`.
+  Tracked as `oob_addr_cross`.
 - Load from a "barely invalid" address (aligned but overlapping the top of memory)
-  Tracked as `barely_oob_addr_cp`.
+  Tracked as `barely_oob_addr_cross`.
 - Misaligned address tracking.
   Track loads from addresses that are in range for the size of the memory.
   Cross the different values modulo 4 for `grs1` and `offset`.
@@ -360,17 +360,17 @@ This instruction uses the `I` encoding schema, with covergroup `enc_s_cg`.
 The instruction-specific covergroup is `insn_xw_cg` (shared with `LW`).
 
 - Store to a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
-  Tracked as `oob_base_neg_off_cp`.
+  Tracked as `oob_base_neg_off_cross`.
 - Store to a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
-  Tracked as `neg_base_pos_off_cp`.
+  Tracked as `neg_base_pos_off_cross`.
 - Store to address zero
-  Tracked as `addr0_cp`.
+  Tracked as `addr0_cross`.
 - Store to the top word of memory
-  Tracked as `top_addr_cp`.
+  Tracked as `top_addr_cross`.
 - Store to an invalid address (aligned but above the top of memory)
-  Tracked as `oob_addr_cp`.
+  Tracked as `oob_addr_cross`.
 - Store to a "barely invalid" address (aligned but overlapping the top of memory)
-  Tracked as `barely_oob_addr_cp`.
+  Tracked as `barely_oob_addr_cross`.
 - Misaligned address tracking.
   Track stores from addresses that are in range for the size of the memory.
   Cross the different values modulo 4 for `grs1` and `offset`.
@@ -530,202 +530,303 @@ The instruction-specific covergroup is `insn_loopi_cg`.
 
 #### BN.ADD
 
-This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
+There is no instruction-specific covergroup.
 
-- Extremal values of shift for both directions where the shifted value is nonzero
+- Extremal values of shift for both directions where the shifted value is nonzero.
+  This is tracked in `enc_bnaf_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  This is tracked in `enc_bnaf_cg` as `srl_cross`.
 
 #### BN.ADDC
 
-This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
+The instruction-specific covergroup is `insn_bn_addc_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  This is tracked in `enc_bnaf_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  This is tracked in `enc_bnaf_cg` as `srl_cross`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
+  Tracked as `carry_cross`.
 
 #### BN.ADDI
 
 This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
+There is no instruction-specific covergroup.
 
 No special coverage.
 
 #### BN.ADDM
 
 This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
+The instruction-specific covergroup is `insn_bn_addm_cg`.
 
 - Execute with the two extreme values of `MOD` (zero and all ones)
-- Perform a subtraction (because the sum is at least `MOD`) when `MOD` is nonzero.
+  Tracked as `mod_cp`.
 - Don't perform a subtraction (because the sum is less than `MOD`) when `MOD` is nonzero.
-- Perform a subtraction where the sum is at least twice a nonzero value of `MOD`.
+  Tracked as `sum_lt_cp`.
 - A calculation where the sum exactly equals a nonzero `MOD`
+  Tracked as `sum_eq_cp`.
+- A calculation where the sum is greater than a nonzero `MOD`.
+  Tracked as `sum_gt_cp`.
+- Perform a subtraction where the sum is at least twice a nonzero value of `MOD`.
+  Tracked as `sum_gt2_cp`.
 - A calculation where the intermediate sum is greater than `2^256-1`, crossed with whether the subtraction of `MOD` results in a value that will wrap.
+  Tracked as `overflow_wrap_cross`.
 
 #### BN.MULQACC
 
 This instruction uses the `bnaq` encoding schema, with covergroup `enc_bnaq_cg`.
+The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the other `BN.MULQACC*` instructions).
 
 - Cross `wrs1_qwsel` with `wrs2_qwsel` to make sure they are applied to the right inputs
+  This is tracked in `enc_bnaq_cg` as `qwsel_cross`.
 - See the accumulator overflow
+  This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 
 #### BN.MULQACC.WO
 
 This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
 Encoding-level coverpoints are tracked in covergroup `enc_bnaqw_cg`.
+The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the other `BN.MULQACC*` instructions).
 
 - Cross `wrs1_qwsel` with `wrs2_qwsel` to make sure they are applied to the right inputs
+  This is tracked in `enc_bnaqw_cg` as `qwsel_cross`.
 - See the accumulator overflow
+  This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 
 #### BN.MULQACC.SO
 
 This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
 Encoding-level coverpoints are tracked in covergroup `enc_bnaqs_cg`.
+The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the other `BN.MULQACC*` instructions).
 
 - Cross `wrs1_qwsel` with `wrs2_qwsel` to make sure they are applied to the right inputs
+  This is tracked in `enc_bnaqs_cg` as `qwsel_cross`.
 - See the accumulator overflow
+  This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 - Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
+  This is tracked in `enc_bnaqs_cg` as `flags_01_cross`, `flags_10_cross` and `flags_11_cross`.
 
 #### BN.SUB
 
-This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  This is tracked in `enc_bnaf_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  This is tracked in `enc_bnaf_cg` as `srl_cross`.
 
 #### BN.SUBB
 
-This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
+The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  This is tracked in `enc_bnaf_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  This is tracked in `enc_bnaf_cg` as `srl_cross`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
+  Tracked as `fg_carry_flag_cross`.
 
 #### BN.SUBI
 
 This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
+There is no instruction-specific covergroup.
 
 No special coverage.
 
 #### BN.SUBM
 
 This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
+The instruction-specific covergroup is `insn_bn_subm_cg`.
 
 - Execute with the two extreme values of `MOD` (zero and all ones)
+  Tracked as `mod_cp`.
 - A non-negative intermediate result with a nonzero `MOD` (so `MOD` is not added).
-- A negative intermediate result with a nonzero `MOD` (so `MOD` is added).
-- A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set)
+  Tracked as `diff_nonneg_cp`.
 - An intermediate result that exactly equals a nonzero `-MOD`.
+  Tracked as `diff_minus_mod_cp`.
+- A negative intermediate result with a nonzero `MOD`, so `MOD` is added and the result is positive.
+  Tracked as `diff_neg_cp`.
+- A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set)
+  Tracked as `diff_neg2_cp`.
 
 #### BN.AND
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bna_cg` as `st_sb_nz_shifted_cross`.
 - Toggle coverage of the output result (to ensure we're not just AND'ing things with zero)
+  Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
 #### BN.OR
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bna_cg` as `st_sb_nz_shifted_cross`.
 - Toggle coverage of the output result (to ensure we're not just OR'ing things with zero)
+  Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
 #### BN.NOT
 
 This instruction uses the `bnan` encoding schema, with covergroup `enc_bnan_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bnan_cg` as `st_sb_nz_shifted_cross`.
 - Toggle coverage of the output result (to ensure nothing gets clamped)
+  Tracked in `enc_bnan_cg` as `wrd_XXXXXXXX_cp`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
 #### BN.XOR
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bna_cg` as `st_sb_nz_shifted_cross`.
 - Toggle coverage of the output result (to ensure we're not just XOR'ing things with zero)
+  Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
 #### BN.RSHI
 
 This instruction uses the `bnr` encoding schema, with covergroup `enc_bnr_cg`.
+There is no instruction-specific covergroup.
 
 No special coverage.
 
 #### BN.SEL
 
 This instruction uses the `bns` encoding schema, with covergroup `enc_bns_cg`.
+There is no instruction-specific covergroup.
 
 - Cross flag group, flag and flag value (2 times 4 times 2 points)
+  Tracked in `enc_bns_cg` as `flag_cross`.
 
 #### BN.CMP
 
 This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
+There is no instruction-specific covergroup.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bnc_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  Tracked in `enc_bnc_cg` as `srl_cross`.
 
 #### BN.CMPB
 
 This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
+The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bnc_cg` as `st_sb_nz_shifted_cross`.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
+  Tracked in `enc_bnc_cg` as `srl_cross`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
+  Tracked as `fg_carry_flag_cross`.
 
 #### BN.LID
 
 This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
+The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.SID`).
 
 - Load from a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
+  Tracked as `oob_base_neg_off_cross`.
 - Load from a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
+  Tracked as `neg_base_pos_off_cross`.
 - Load from address zero
+  Tracked as `addr0_cross`.
 - Load from the top word of memory
+  Tracked as `top_addr_cross`.
 - Load from an invalid address (aligned but above the top of memory)
-- Load from a misaligned address
+  Tracked as `oob_addr_cross`.
+- Misaligned address tracking.
+  Track loads from addresses that are in range for the size of the memory.
+  Crossing the possible misalignments for operand_a and offset would give a big cross (`32^2 = 1024`).
+  Instead, we split those alignments into 3 bins: 0, 1-30 and 31.
+  Crossing them gives 9 combinations, tracked as `part_align_cross`.
+  We also track all possible alignments of the sum as `addr_align_cross`.
 - See an invalid instruction with both increments specified
+  Tracked in `enc_bnxid_cg` as a bin of `incd_inc1_cross`.
 - See `grd` greater than 31, giving an illegal instruction error
+  Tracked as `bigb_cross`.
 - Cross the three types of GPR for `grd` with `grd_inc`
+  Tracked in `enc_bnxid_cg` as `grx_incd_cross`.
 - Cross the three types of GPR for `grs1` with `grd_inc`
+  Tracked in `enc_bnxid_cg` as `grs1_inc1_cross`.
 
 #### BN.SID
 
 This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
+The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.LID`).
 
 - Store to a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
+  Tracked as `oob_base_neg_off_cross`.
 - Store to a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
+  Tracked as `neg_base_pos_off_cross`.
 - Store to address zero
+  Tracked as `addr0_cross`.
 - Store to the top word of memory
+  Tracked as `top_addr_cross`.
 - Store to an invalid address (aligned but above the top of memory)
-- Store to a misaligned address
+  Tracked as `oob_addr_cross`.
+- Misaligned address tracking.
+  Track stores to addresses that are in range for the size of the memory.
+  Crossing the possible misalignments for operand_a and offset would give a big cross (`32^2 = 1024`).
+  Instead, we split those alignments into 3 bins: 0, 1-30 and 31.
+  Crossing them gives 9 combinations, tracked as `part_align_cross`.
+  We also track all possible alignments of the sum as `addr_align_cross`.
 - See an invalid instruction with both increments specified
+  Tracked in `enc_bnxid_cg` as a bin of `incd_inc1_cross`.
 - See `grd` greater than 31, giving an illegal instruction error
+  Tracked as `bigb_cross`.
 - Cross the three types of GPR for `grs2` with `grs2_inc`
+  Tracked in `enc_bnxid_cg` as `grx_incd_cross`.
 - Cross the three types of GPR for `grs1` with `grd_inc`
+  Tracked in `enc_bnxid_cg` as `grs1_inc1_cross`.
 
 #### BN.MOV
 
 This instruction uses the `bnmov` encoding schema, with covergroup `enc_bnmov_cg`.
+There is no instruction-specific covergroup.
 
 No special coverage otherwise.
 
 #### BN.MOVR
 
 This instruction uses the `bnmovr` encoding schema, with covergroup `enc_bnmovr_cg`.
+There is no instruction-specific covergroup.
 
 - See an invalid instruction with both increments specified
+  Tracked in `enc_bnmovr_cg` as a bin of `incd_inc1_cross`.
 - Since MOVR signals an error if either of its source registers has a value greater than 31, cross whether the input register value at `grd` is greater than 31 with whether the register value at `grs` is greater than 31
+  Tracked in `enc_bnmovr_cg` as `big_gpr_cross`.
 
 #### BN.WSRR
 
 This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
+There is no instruction-specific covergroup.
 
 - Read from each valid WSR
 - Read from an invalid WSR
 
+These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
+
 #### BN.WSRW
 
 This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
+There is no instruction-specific covergroup.
 
 - Write to each valid WSR, including read-only WSRs.
 - Write to an invalid WSR
+
+These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
 
 ## Self-checking strategy
 ### Scoreboard

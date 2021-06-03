@@ -35,11 +35,15 @@ class otbn_trace_monitor extends dv_base_monitor #(
           item.gpr_operand_b = cfg.trace_vif.rf_base_rd_data_b;
           item.wdr_operand_a = cfg.trace_vif.rf_bignum_rd_data_a;
           item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
+          item.flags_read_data = cfg.trace_vif.flags_read_data;
           item.flags_write_data = cfg.trace_vif.flags_write_data;
           item.gpr_write_data = cfg.trace_vif.rf_base_wr_data;
+          item.wdr_write_data = cfg.trace_vif.rf_bignum_wr_data;
           item.loop_stack_fullness = cfg.loop_vif.get_fullness();
           item.current_loop_end = cfg.loop_vif.current_loop_end;
           item.at_current_loop_end_insn = cfg.loop_vif.at_current_loop_end_insn;
+          item.mod = cfg.alu_bignum_vif.mod_q;
+          item.new_acc_extended = cfg.mac_bignum_vif.get_sum_value();
 
           `uvm_info(`gfn, $sformatf("saw trace item:\n%0s", item.sprint()), UVM_HIGH)
           analysis_port.write(item);

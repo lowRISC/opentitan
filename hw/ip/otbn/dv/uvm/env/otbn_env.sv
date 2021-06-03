@@ -31,6 +31,14 @@ class otbn_env extends cip_base_env #(
     if (!uvm_config_db#(virtual otbn_loop_if)::get(this, "", "loop_vif", cfg.loop_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_loop_if handle from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual otbn_alu_bignum_if)::get(this, "", "alu_bignum_vif",
+                                                         cfg.alu_bignum_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otbn_bignum_if handle from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual otbn_mac_bignum_if)::get(this, "", "mac_bignum_vif",
+                                                         cfg.mac_bignum_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otbn_bignum_if handle from uvm_config_db")
+    end
 
     trace_monitor = otbn_trace_monitor::type_id::create("trace_monitor", this);
     trace_monitor.cfg = cfg;
