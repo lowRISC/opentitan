@@ -16,10 +16,12 @@ class otbn_trace_item extends uvm_sequence_item;
   logic [255:0] wdr_operand_b;
 
   // Flag output data
+  otbn_pkg::flags_t flags_read_data [2];
   otbn_pkg::flags_t flags_write_data [2];
 
-  // GPR write data
-  logic [31:0] gpr_write_data;
+  // GPR and WDR write data
+  logic [31:0]  gpr_write_data;
+  logic [255:0] wdr_write_data;
 
   // Enum value that shows how full the loop stack is
   loop_stack_fullness_e loop_stack_fullness;
@@ -32,6 +34,12 @@ class otbn_trace_item extends uvm_sequence_item;
   // cause an if it's a jump, branch or another loop/loopi.
   logic        at_current_loop_end_insn;
 
+  // MOD ispr
+  logic [255:0] mod;
+
+  // Intermediate value for MULQACC instructions
+  logic [256:0] new_acc_extended;
+
   `uvm_object_utils_begin(otbn_trace_item)
     `uvm_field_int        (insn_addr,                UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (insn_data,                UVM_DEFAULT | UVM_HEX)
@@ -39,11 +47,15 @@ class otbn_trace_item extends uvm_sequence_item;
     `uvm_field_int        (gpr_operand_b,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_operand_a,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_operand_b,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_sarray_int (flags_read_data,          UVM_DEFAULT | UVM_HEX)
     `uvm_field_sarray_int (flags_write_data,         UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (gpr_write_data,           UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_write_data,           UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (current_loop_end,         UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (at_current_loop_end_insn, UVM_DEFAULT)
     `uvm_field_int        (loop_stack_fullness,      UVM_DEFAULT)
+    `uvm_field_int        (mod,                      UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (new_acc_extended,         UVM_DEFAULT | UVM_HEX)
   `uvm_object_utils_end
 
   `uvm_object_new

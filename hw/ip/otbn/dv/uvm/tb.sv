@@ -100,6 +100,9 @@ module tb;
       .current_loop_end (32'(current_loop_q.loop_end))
     );
 
+  bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
+
   // OTBN model, wrapping an ISS.
   //
   // Note that we pull the "start" signal out of the DUT. This is because it's much more difficult
@@ -151,6 +154,12 @@ module tb;
     uvm_config_db#(virtual otbn_loop_if)::set(
       null, "*.env", "loop_vif",
       dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.i_otbn_loop_if);
+    uvm_config_db#(virtual otbn_alu_bignum_if)::set(
+      null, "*.env", "alu_bignum_vif",
+      dut.u_otbn_core.u_otbn_alu_bignum.i_otbn_alu_bignum_if);
+    uvm_config_db#(virtual otbn_mac_bignum_if)::set(
+      null, "*.env", "mac_bignum_vif",
+      dut.u_otbn_core.u_otbn_mac_bignum.i_otbn_mac_bignum_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
