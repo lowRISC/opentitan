@@ -192,3 +192,57 @@ test('sw_silicon_creator_lib_driver_rstmgr_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM alert handler driver
+sw_silicon_creator_lib_driver_alert = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_alert',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      'alert.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_alert_unittest', executable(
+    'sw_silicon_creator_lib_driver_alert_unittest',
+    sources: [
+      'alert_unittest.cc',
+      hw_ip_alert_handler_reg_h,
+      'alert.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
+
+sw_silicon_creator_lib_driver_alert_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_alert_functest',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+      hw_ip_alert_handler_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      'alert_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_alert,
+      sw_silicon_creator_lib_driver_rstmgr,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_alert_functest': {
+    'library': sw_silicon_creator_lib_driver_alert_functest,
+  }
+}

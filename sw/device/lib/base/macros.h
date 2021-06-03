@@ -15,6 +15,11 @@
  */
 
 /**
+ * A annotation that a switch/case fallthrough is the intended behavior.
+ */
+#define FALLTHROUGH_INTENDED __attribute__((fallthrough))
+
+/**
  * A variable-argument macro that expands to the number of arguments passed into
  * it, between 0 and 31 arguments.
  *

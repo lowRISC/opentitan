@@ -21,12 +21,13 @@ extern "C" {
  */
 enum module_ {
   kModuleUnknown = 0,
-  kModuleUart = 0x4155,         // ASCII "UA".
-  kModuleHmac = 0x4d48,         // ASCII "HM".
-  kModuleSigverify = 0x5653,    // ASCII "SV".
-  kModuleKeymgr = 0x4d4b,       // ASCII "KM".
-  kModuleManifest = 0x414d,     // ASCII "MA".
-  kModuleRomextimage = 0x4552,  // ASCII "RE".
+  kModuleAlertHandler = 0x4148,  // ASCII "AH".
+  kModuleUart = 0x4155,          // ASCII "UA".
+  kModuleHmac = 0x4d48,          // ASCII "HM".
+  kModuleSigverify = 0x5653,     // ASCII "SV".
+  kModuleKeymgr = 0x4d4b,        // ASCII "KM".
+  kModuleManifest = 0x414d,      // ASCII "MA".
+  kModuleRomextimage = 0x4552,   // ASCII "RE".
 };
 
 /**
@@ -54,6 +55,10 @@ enum module_ {
   X(kErrorManifestInternal,           ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorRomextimageInvalidArgument, ERROR_(1, kModuleRomextimage, kInvalidArgument)), \
   X(kErrorRomextimageInternal,        ERROR_(2, kModuleRomextimage, kInternal)), \
+  X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
+  X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
+  X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
+  X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
@@ -82,5 +87,4 @@ typedef enum rom_error {
 #ifdef __cplusplus
 }
 #endif
-
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
