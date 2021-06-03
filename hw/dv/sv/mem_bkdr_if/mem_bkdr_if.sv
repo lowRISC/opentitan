@@ -161,7 +161,7 @@ interface mem_bkdr_if #(
   function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      logic [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_word)
         1: begin
           return mem_data[7:0];
