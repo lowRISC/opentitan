@@ -8,8 +8,23 @@ interface otbn_loop_if (
   input              clk_i,
   input              rst_ni,
 
-  input logic [31:0] insn_addr,
-  input logic        at_current_loop_end_insn
+  // Signal names from the otbn_loop_controller module (where we are bound)
+  input logic [31:0] insn_addr_i,
+  input logic        at_current_loop_end_insn,
+  input logic        loop_active_q,
+  input logic        loop_stack_full,
+
+  input logic [31:0] current_loop_end
 );
+
+  function automatic otbn_env_pkg::loop_stack_fullness_e get_fullness();
+    if (loop_stack_full) begin
+      return otbn_env_pkg::LoopStackFull;
+    end
+    if (loop_active_q) begin
+      return otbn_env_pkg::LoopStackPartial;
+    end
+    return otbn_env_pkg::LoopStackEmpty;
+  endfunction
 
 endinterface

@@ -86,12 +86,18 @@ module tb;
 
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
-      .clk_i                    (clk_i),
-      .rst_ni                   (rst_ni),
+      .clk_i,
+      .rst_ni,
       // The insn_addr_i signal in the loop controller is of width ImemAddrWidth. We expand it to a
       // 32-bit address here to avoid having to parameterise the type of the interface.
-      .insn_addr                (32'(insn_addr_i)),
-      .at_current_loop_end_insn (at_current_loop_end_insn)
+      .insn_addr_i (32'(insn_addr_i)),
+      .at_current_loop_end_insn,
+      .loop_active_q,
+      .loop_stack_full,
+      // As with insn_addr_i, we expand this to 32 bits. Also, current_loop_q has a type that's not
+      // exposed outside of the loop controller module so we need to extract the loop_end field
+      // here.
+      .current_loop_end (32'(current_loop_q.loop_end))
     );
 
   // OTBN model, wrapping an ISS.

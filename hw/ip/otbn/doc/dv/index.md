@@ -497,25 +497,36 @@ No special coverage points for this instruction.
 #### LOOP
 
 This instruction uses the `loop` encoding schema, with covergroup `enc_loop_cg`.
+The instruction-specific covergroup is `insn_loop_cg`.
 
 - Loop with a zero iteration count (causing an error)
+  Tracked as the `'0` bin of `iterations_cp`.
 - Loop with a count of `'1` (the maximal value)
+  Tracked as the `'1` bin of `iterations_cp`.
 - Loop when the loop end address would be above the top of memory.
+  Tracked as `oob_end_addr_cp`.
 - Loop when the loop stack is full, causing an overflow.
+  Tracked as `loop_stack_fullness_cp`.
 - Loop at the end of a loop.
+  Tracked as `at_loop_end_cp`.
 - Duplicate loop end address, matching top of stack
-- Duplicate loop end address, further down stack
+  Tracked as `duplicate_loop_end_cp`.
 
 #### LOOPI
 
 This instruction uses the `loopi` encoding schema, with covergroup `enc_loopi_cg`.
+The instruction-specific covergroup is `insn_loopi_cg`.
 
 - Loop with a zero iteration count (causing an error)
+  This is tracked in `enc_loopi_cg` with the `'0` bin of `iterations_cp`.
 - Loop when the loop end address would be above the top of memory.
+  Tracked as `oob_end_addr_cp`.
 - Loop when the loop stack is full, causing an overflow.
+  Tracked as `loop_stack_fullness_cp`.
 - Loop at the end of a loop.
+  Tracked as `at_loop_end_cp`.
 - Duplicate loop end address, matching top of stack
-- Duplicate loop end address, further down stack
+  Tracked as `duplicate_loop_end_cp`.
 
 #### BN.ADD
 
