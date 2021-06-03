@@ -26,7 +26,7 @@
               - access unmapped address, expect `d_error = 1` when `devmode_i == 1`
               - write a CSR with unaligned address, e.g. `a_address[1:0] != 0`
               - write a CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
-              - write a memory with `a_mask = '1` when it doesn't support partial accesses
+              - write a memory with `a_mask != '1` when it doesn't support partial accesses
               - read a WO (write-only) memory'''
       milestone: V2
       tests: ["{name}_tl_errors"]
