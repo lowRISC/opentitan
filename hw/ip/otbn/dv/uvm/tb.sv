@@ -77,14 +77,12 @@ module tb;
     .edn_urnd_i ( edn_urnd_rsp )
   );
 
-  bind otbn_core otbn_trace_if #(
+  bind dut.u_otbn_core otbn_trace_if #(
     .ImemAddrWidth (ImemAddrWidth),
     .DmemAddrWidth (DmemAddrWidth)
   ) i_otbn_trace_if (.*);
 
-  bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
-
-  bind otbn_core otbn_trace_uvm_injector u_trace_injector (.otbn_trace(i_otbn_trace_if));
+  bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   // OTBN model, wrapping an ISS.
   //
@@ -131,6 +129,9 @@ module tb;
     uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
+
+    uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
+                                               dut.u_otbn_core.i_otbn_trace_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
