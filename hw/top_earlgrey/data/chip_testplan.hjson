@@ -121,28 +121,47 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_spi_device_pass_through
+      desc: '''Verifies the pass through mode from an end-to-end perspective.
+
+            - Configure the SPI device and host in pass through mode.
+            - Send a random payload over the SPI device interface (chip IOs) from the testbench.
+            - Verify the integrity of the payload received on the SPI host interface, also at chip
+              IOs.
+            - Run with min and max SPI clk frequencies. Run with single, dual and quad SPI modes.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_spi_device_pass_through_filter
+      desc: '''Verifies the command filtering mechanism in passthrough mode.
+
+            - Extend the chip_spi_device_pass_through test.
+            - Program the cmd_filter_* CSRs to filter out certain commands.
+            - Verify that only the payloads that are not filtered show up on the SPI host interface
+              at chip IOs.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // SPI_HOST (pre-verified IP) integration tests:
     {
       name: chip_spi_host_tx_rx
       desc: '''Verify the transmission of data on the chip's SPI host port.
 
-             Details TBD. Run with min and max SPI clk frequencies. Also, run with single, dual,
-             and quad SPI modes.
+            - Program the SPI host to send a known payload out of the chip on the SPI host ports.
+            - At the same time, the testbench transfers a known payload from device to host on the
+              SPI host interface.
+            - The SPI device monitor in the testbench grabs the host payload and verifies its
+              integrity.
+            - The SW verifies the device payload for integrity and services the SPI event interrupt.
+            - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
 
+            Verify all SPI host instances in the chip.
             '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_spi_pass_through
-      desc: '''Verifies the pass through mode from an end-to-end perspective.
-
-            SW configures the SPI device and host in pass through mode. The testbench sends a random
-            payload over the SPI device interface and verifies its integrity on the SPI host
-            interface.  Run with min and max SPI clk frequencies. Also, run with single, dual,
-            and quad SPI modes. Details TBD.
-      '''
       milestone: V2
       tests: []
     }
@@ -152,12 +171,13 @@
       name: chip_i2c_host_tx_rx
       desc: '''Verify the transmission of data over the chip's I2C host interface.
 
-            The SW test writes a known data over the chip's I2C host interface, which is verified by
-            the testbench (which acts as the I2C device). Likewise, SW test then reads and verifies
-            a known data. SW validates the reception of RX watermark, FMT overflow, RX overflow,
-            NAK, FMT watermark and trans complete interrupts (the SW test / testbench work together
-            to create those scenarios).
-            Verify all instances of I2C in the chip independently.
+            - Program the I2C to be in host mode.
+            - The SW test writes a known payload over the chip's I2C host interface, which is
+              received and verified by the testbench for correctness.
+            - SW validates the reception of FMT watermark and trans complete interrupts.
+            - Verify the virtual / true open drain capability.
+
+            Verify all instances of I2C in the chip.
             '''
       milestone: V2
       tests: []
@@ -166,11 +186,13 @@
       name: chip_i2c_device_tx_rx
       desc: '''Verify the transmission of data over the chip's I2C device interface.
 
-            The testbench writes a known data over the chip's I2C device interface, which is
-            verified by the SW test for correctness. Testbench then reads and verifies
-            a known data. SW validates the reception of TBD interrupts (the SW test / testbench
-            create those scenarios).
-            Verify all instances of I2C in the chip independently.
+            - Program the I2C to be in device mode.
+            - The testbench writes a known payload over the chip's I2C device interface, which is
+              received and verified by the SW test for correctness.
+            - SW validates the reception of RX watermark and trans complete interrupts.
+            - Verify the virtual / true open drain capability.
+
+            Verify all instances of I2C in the chip.
             '''
       milestone: V2
       tests: []
@@ -278,9 +300,11 @@
       name: chip_pattgen_ios
       desc: '''Verify pattern generation to chip output pads.
 
-            SW programs pattgen to generate distinct patterns on both groups. SW programs pinmux to
-            select pattgen outputs to be routed. SW validates the reception of patt_done interrupts.
-            Testbench verifies the correctness of the pattern seen on the IO pins.
+            - Program the pattgen to generate a known pattern in each lane.
+            - Program the pinmux to route the chosen output to the chip IOs.
+            - Verify that the correct pattern is seen on the IOs by hooking up the pattgen monitor.
+            - Validate the reception of the done interrupt.
+            - Verify both pattgen channels independently.
             '''
       milestone: V2
       tests: []
@@ -288,11 +312,16 @@
 
     // PWM (pre-verified IP) integration tests:
     {
-      name: chip_sleep_pwm_ios_val
-      desc: '''Verify PWM signaling to chip output pads during deep sleep
+      name: chip_sleep_pwm_pulses
+      desc: '''Verify PWM signaling to chip output pads during deep sleep.
 
-            PWM is in the AON domain. During deep sleep, we should be able to signal the 3 external
-            LEDs that are connected to the PWM signals. Details TBD.
+            - Program each PWM output to pulse in a known pattern.
+            - Program the pinmux to route the chosen PWM output to the chip IOs.
+            - Program the pwrmgr to go to deep sleep state, with AON timer wakeup.
+            - Initiate the sleep state by issuing a WFI.
+            - Verify that in the sleep state, the PWM signals are active and pulsing correctly, by
+              hooking up the PWM monitor.
+            - Repeat the steps for all 6 PWM signals.
             '''
       milestone: V2
       tests: []
