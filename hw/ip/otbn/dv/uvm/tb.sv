@@ -84,6 +84,16 @@ module tb;
 
   bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
+  bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
+    otbn_loop_if i_otbn_loop_if (
+      .clk_i                    (clk_i),
+      .rst_ni                   (rst_ni),
+      // The insn_addr_i signal in the loop controller is of width ImemAddrWidth. We expand it to a
+      // 32-bit address here to avoid having to parameterise the type of the interface.
+      .insn_addr                (32'(insn_addr_i)),
+      .at_current_loop_end_insn (at_current_loop_end_insn)
+    );
+
   // OTBN model, wrapping an ISS.
   //
   // Note that we pull the "start" signal out of the DUT. This is because it's much more difficult
@@ -132,6 +142,9 @@ module tb;
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);
+    uvm_config_db#(virtual otbn_loop_if)::set(
+      null, "*.env", "loop_vif",
+      dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.i_otbn_loop_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

@@ -392,7 +392,7 @@ All points should be crossed with branch taken / branch not taken.
 - Branch backwards to an invalid address (wrapping past zero)
   Tracked as `eq_neg_cross`.
 - Branch instruction at end of a loop.
-  **TODO: Loop state tracking**
+  Tracked as `eq_at_loop_end_cross` (which also crosses with whether the branch was taken or not).
 
 The "branch to current address" item is problematic if we want to take the branch.
 Probably we need some tests with short timeouts to handle this properly.
@@ -413,7 +413,7 @@ All points should be crossed with branch taken / branch not taken.
 - Branch backwards to an invalid address (wrapping past zero)
   Tracked as `eq_neg_cross`.
 - Branch instruction at end of a loop.
-  **TODO: Loop state tracking**
+  Tracked as `eq_at_loop_end_cross` (which also crosses with whether the branch was taken or not).
 
 The "branch to current address" item is problematic if we want to take the branch.
 Probably we need some tests with short timeouts to handle this properly.
@@ -434,7 +434,7 @@ The instruction-specific covergroup is `insn_jal_cg`.
 - Jump when the current PC is the top word in IMEM.
   Tracked as `from_top_cp`.
 - Jump instruction at end of a loop.
-  **TODO: Loop state tracking**
+  Tracked as `at_loop_end_cp`.
 
 Note that the "jump to current address" item won't be a problem to test since it will quickly overflow the call stack.
 
@@ -460,7 +460,7 @@ The instruction-specific covergroup is `insn_jalr_cg`.
 - Jump when the current PC is the top word in IMEM.
   Tracked as `from_top_cp`.
 - Jump instruction at end of a loop.
-  **TODO: Loop state tracking**
+  Tracked as `at_loop_end_cp`.
 
 Note that the "jump to current address" item won't be a problem to test since it will quickly over- or underflow the call stack, provided `<grd>` and `<grs1>` aren't both `x1`.
 
