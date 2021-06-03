@@ -34,6 +34,7 @@ class aes_seq_item extends uvm_sequence_item;
   bit [3:0]       iv_vld;
   aes_mode_e      mode;
   bit             en_b2b_transactions  = 1;
+  int             b2b_pct              = 80;
 
   // percentage of items that will// clear one or more registers
   int             clear_reg_pct = 0;
@@ -112,6 +113,15 @@ class aes_seq_item extends uvm_sequence_item;
 
   }
 
+  constraint back2back_c {
+    if (en_b2b_transactions) {
+      do_b2b dist { 0 :/ (100-b2b_pct),
+                    1 :/ b2b_pct };
+    } else {
+      do_b2b == 0
+    };
+  }
+
 
   function new( string name="aes_sequence_item");
     super.new(name);
@@ -135,7 +145,6 @@ class aes_seq_item extends uvm_sequence_item;
       endcase // case (key_len)
     end
 
-    if (!en_b2b_transactions) do_b2b = 0;
 
     // mask unused data bits
     if (data_len != 0) begin
@@ -283,6 +292,7 @@ class aes_seq_item extends uvm_sequence_item;
     clear_reg_w_rand = rhs_.clear_reg_w_rand;
     key_mask         = rhs_.key_mask;
     aes_mode         = rhs_.aes_mode;
+    do_b2b           = rhs_.do_b2b;
     clear_reg        = rhs_.clear_reg;
     start_item       = rhs_.start_item;
     split_item       = rhs_.split_item;

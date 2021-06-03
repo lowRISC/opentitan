@@ -146,8 +146,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
       VeryFast: begin
         m_tl_agent_cfg.d_ready_delay_min = 0;
         m_tl_agent_cfg.d_ready_delay_max = 0;
+        zero_delays                      = 1;
       end
-    endcase
+    endcase // case (host_resp_speed)
 
     if (config_error_type[0] == 1'b1) num_corrupt_messages += 1;
   endfunction
