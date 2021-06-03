@@ -1100,6 +1100,57 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     csr_cross: cross csr_cp, grd_cp;
   endgroup
 
+  covergroup insn_loop_cg
+    with function sample(logic [31:0]          insn_addr,
+                         logic [31:0]          insn_data,
+                         logic [31:0]          operand_a,
+                         loop_stack_fullness_e loop_stack_fullness,
+                         logic [31:0]          current_loop_end,
+                         logic                 at_loop_end);
+    // Extremes for iteration count
+    iterations_cp: coverpoint operand_a { bins extremes[] = {'0, '1}; }
+
+    // Is the loop end address above the top of memory?
+    oob_end_addr_cp: coverpoint insn_addr + 32'(insn_data[31:20]) >= ImemSizeByte;
+
+    // Current state of the loop stack (empty, half full, full)
+    loop_stack_fullness_cp: coverpoint loop_stack_fullness;
+
+    // Is this loop the last instruction of the current loop?
+    at_loop_end_cp: coverpoint at_loop_end;
+
+    // Does the loop end for this instruction match the top of a nonempty loop stack? (Note that the
+    // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
+    // the encoding of the size field. This is the same thing as is stored as current_loop_end).
+    `DEF_SEEN_CP(duplicate_loop_end_cp,
+                 (loop_stack_fullness != LoopStackEmpty) &&
+                 (current_loop_end == insn_addr + 32'(insn_data[31:20])))
+  endgroup
+
+  covergroup insn_loopi_cg
+    with function sample(logic [31:0]          insn_addr,
+                         logic [31:0]          insn_data,
+                         loop_stack_fullness_e loop_stack_fullness,
+                         logic [31:0]          current_loop_end,
+                         logic                 at_loop_end);
+
+    // Is the loop end address above the top of memory?
+    oob_end_addr_cp: coverpoint insn_addr + 32'(insn_data[31:20]) >= ImemSizeByte;
+
+    // Current state of the loop stack (empty, half full, full)
+    loop_stack_fullness_cp: coverpoint loop_stack_fullness;
+
+    // Is this loop the last instruction of the current loop?
+    at_loop_end_cp: coverpoint at_loop_end;
+
+    // Does the loop end for this instruction match the top of a nonempty loop stack? (Note that the
+    // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
+    // the encoding of the size field. This is the same thing as is stored as current_loop_end).
+    `DEF_SEEN_CP(duplicate_loop_end_cp,
+                 (loop_stack_fullness != LoopStackEmpty) &&
+                 (current_loop_end == insn_addr + 32'(insn_data[31:20])))
+  endgroup
+
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -1147,6 +1198,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_jalr_cg = new;
     insn_csrrs_cg = new;
     insn_csrrw_cg = new;
+    insn_loop_cg = new;
+    insn_loopi_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -1347,6 +1400,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         insn_csrrs_cg.sample(insn_data, rtl_item.gpr_operand_a);
       mnem_csrrw:
         insn_csrrw_cg.sample(insn_data);
+      mnem_loop:
+        insn_loop_cg.sample(rtl_item.insn_addr,
+                            insn_data,
+                            rtl_item.gpr_operand_a,
+                            rtl_item.loop_stack_fullness,
+                            rtl_item.current_loop_end,
+                            rtl_item.at_current_loop_end_insn);
+      mnem_loopi:
+        insn_loopi_cg.sample(rtl_item.insn_addr,
+                             insn_data,
+                             rtl_item.loop_stack_fullness,
+                             rtl_item.current_loop_end,
+                             rtl_item.at_current_loop_end_insn);
       default:
         // No special handling for this instruction yet.
         ;

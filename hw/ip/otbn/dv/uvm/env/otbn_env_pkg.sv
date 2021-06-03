@@ -52,6 +52,11 @@ package otbn_env_pkg;
 
   } otbn_loaded_word;
 
+  typedef enum {
+    LoopStackEmpty,
+    LoopStackPartial,
+    LoopStackFull
+  } loop_stack_fullness_e;
 
   // package sources
   `include "otbn_env_cfg.sv"

@@ -26,7 +26,7 @@ class otbn_trace_monitor extends dv_base_monitor #(
         if (cfg.trace_vif.insn_valid && !cfg.trace_vif.insn_stall) begin
           // Belt-and-braces check to make sure that the trace_vif and loop_vif are talking about
           // the same instruction.
-          `DV_CHECK_EQ_FATAL(cfg.trace_vif.insn_addr, cfg.loop_vif.insn_addr)
+          `DV_CHECK_EQ_FATAL(cfg.trace_vif.insn_addr, cfg.loop_vif.insn_addr_i)
 
           item = otbn_trace_item::type_id::create("item");
           item.insn_addr = cfg.trace_vif.insn_addr;
@@ -37,6 +37,8 @@ class otbn_trace_monitor extends dv_base_monitor #(
           item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
           item.flags_write_data = cfg.trace_vif.flags_write_data;
           item.gpr_write_data = cfg.trace_vif.rf_base_wr_data;
+          item.loop_stack_fullness = cfg.loop_vif.get_fullness();
+          item.current_loop_end = cfg.loop_vif.current_loop_end;
           item.at_current_loop_end_insn = cfg.loop_vif.at_current_loop_end_insn;
 
           `uvm_info(`gfn, $sformatf("saw trace item:\n%0s", item.sprint()), UVM_HIGH)
