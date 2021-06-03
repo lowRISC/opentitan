@@ -46,7 +46,6 @@ class aes_alert_reset_vseq extends aes_base_vseq;
             end else if (cfg.error_types.reset && (cfg.flip_rst == Pull_reset)) begin
               // only do reset injection if we are not already
               // injecting other errors (which will pull reset anyway)
-
               aes_reset();
               #10ps;
               wait(!cfg.under_reset);
@@ -60,6 +59,7 @@ class aes_alert_reset_vseq extends aes_base_vseq;
         // make sure we don't wait for a reset that never comes
         // in case the inject happened efter test finished
         wait (finished_all_msgs);
+        wait_no_outstanding_access();
         disable fork;
       end // fork
     join

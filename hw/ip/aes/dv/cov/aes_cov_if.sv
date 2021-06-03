@@ -6,7 +6,7 @@
 
 interface aes_cov_if
   (
-   input logic clk_i // not sure I will use this yet
+   input logic clk_i
    );
 
   import uvm_pkg::*;
@@ -112,6 +112,11 @@ interface aes_cov_if
     option.per_instance = 1;
     option.name         = "aes_test_alert_cg";
   endgroup // aes_alert_cg
+
+
+  ///////////////////////////////////
+  // transition coverage           //
+  ///////////////////////////////////
 
 
   ///////////////////////////////////

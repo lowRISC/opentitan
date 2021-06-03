@@ -37,7 +37,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
   // once an operation is started the item is put here to wait for the resuting output
   aes_seq_item                      rcv_item_q[$];
 
-
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     msg_fifo    = new();
@@ -461,6 +460,7 @@ virtual task rebuild_message();
     aes_seq_item       full_item;
     aes_message_stat_t msg_state = MSG_START;
 
+
     message = new();
 
     fork
@@ -622,8 +622,11 @@ virtual task rebuild_message();
     while (item_fifo.try_get(seq_item));
     while (msg_fifo.try_get(msg_item));
 
-    skipped_cnt = 0;
-    good_cnt    = 0;
+    skipped_cnt   = 0;
+    good_cnt      = 0;
+    cfg.split_cnt = 0;
+    // if split is set before reset make sure to cancel
+    input_item.split_item = 0;
     // reset compare task to start
     reset_compare = 1;
   endfunction

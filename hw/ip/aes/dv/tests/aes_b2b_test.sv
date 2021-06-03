@@ -10,17 +10,16 @@ class aes_b2b_test extends aes_base_test;
    virtual function void build_phase(uvm_phase phase);
      super.build_phase(phase);
      configure_env();
-     `DV_CHECK_RANDOMIZE_FATAL(cfg)
+     `DV_CHECK_RANDOMIZE_WITH_FATAL(cfg, cfg.host_resp_speed == VeryFast;)
   endfunction
 
   virtual function void configure_env();
-    //   cfg.ref_model          = OpenSSL;
-    // env related knobs
-
-    // TODO fix manual mode so we can randomize speeds
-
     cfg.num_messages_min         = 1;
-    cfg.num_messages_max         = 5;
+    cfg.num_messages_max         = 10;
+    //enable writing as fast as DUT permits
+    cfg.unbalanced               = 1;
+    cfg.write_prob               = 100;
+    cfg.read_prob                = 100;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;
@@ -45,5 +44,6 @@ class aes_b2b_test extends aes_base_test;
     cfg.random_data_key_iv_order = 1;
 
     cfg.manual_operation_pct     = 0;
+
   endfunction // configure_env
 endclass : aes_b2b_test
