@@ -12,8 +12,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   `uvm_object_new
 
-  // Handle used by otbn_trace_monitor
+  // Handles used by otbn_trace_monitor
   virtual otbn_trace_if trace_vif;
+  virtual otbn_loop_if  loop_vif;
 
   // The directory in which to look for ELF files (set by the test in build_phase; controlled by the
   // +otbn_elf_dir plusarg).

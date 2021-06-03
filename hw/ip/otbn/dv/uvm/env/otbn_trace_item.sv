@@ -21,15 +21,20 @@ class otbn_trace_item extends uvm_sequence_item;
   // GPR write data
   logic [31:0] gpr_write_data;
 
+  // Flag which is true if the current instruction is at the end of the innermost loop. This will
+  // cause an if it's a jump, branch or another loop/loopi.
+  logic        at_current_loop_end_insn;
+
   `uvm_object_utils_begin(otbn_trace_item)
-    `uvm_field_int        (insn_addr,        UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (insn_data,        UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (gpr_operand_a,    UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (gpr_operand_b,    UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (wdr_operand_a,    UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (wdr_operand_b,    UVM_DEFAULT | UVM_HEX)
-    `uvm_field_sarray_int (flags_write_data, UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int        (gpr_write_data,   UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (insn_addr,                UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (insn_data,                UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (gpr_operand_a,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (gpr_operand_b,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_operand_a,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_operand_b,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_sarray_int (flags_write_data,         UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (gpr_write_data,           UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (at_current_loop_end_insn, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

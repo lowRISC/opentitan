@@ -990,7 +990,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [31:0] insn_addr,
                          logic [11:0] offset,
                          logic [31:0] operand_a,
-                         logic [31:0] operand_b);
+                         logic [31:0] operand_b,
+                         logic        at_current_loop_end_insn);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_beq);
@@ -1011,11 +1012,15 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
     `DEF_MNEM_CROSS2(eq, neg)
+
+    at_loop_end_cp: coverpoint at_current_loop_end_insn;
+    `DEF_MNEM_CROSS2(eq, at_loop_end)
   endgroup
 
   covergroup insn_jal_cg
     with function sample(logic [31:0] insn_addr,
-                         logic [20:0] offset);
+                         logic [20:0] offset,
+                         logic        at_current_loop_end_insn);
 
     `DEF_SIGN_CP(dir_cp, offset, 21)
     offset_align_cp: coverpoint offset[1:0] {
@@ -1026,12 +1031,15 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
     `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
     `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
+
+    at_loop_end_cp: coverpoint at_current_loop_end_insn;
   endgroup
 
   covergroup insn_jalr_cg
     with function sample(logic [31:0] insn_addr,
                          logic [11:0] offset,
-                         logic [31:0] operand_a);
+                         logic [31:0] operand_a,
+                         logic        at_current_loop_end_insn);
 
     `DEF_SIGN_CP(off_dir_cp, offset, 12)
 
@@ -1068,6 +1076,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     // Jump when the current PC is the top word in IMEM.
     `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
+
+    // Is this jump the last instruction of the current loop?
+    at_loop_end_cp: coverpoint at_current_loop_end_insn;
   endgroup
 
   covergroup insn_csrrs_cg
@@ -1320,13 +1331,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                            rtl_item.insn_addr,
                            {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8]},
                            rtl_item.gpr_operand_a,
-                           rtl_item.gpr_operand_b);
+                           rtl_item.gpr_operand_b,
+                           rtl_item.at_current_loop_end_insn);
       mnem_jal:
         insn_jal_cg.sample(rtl_item.insn_addr,
                            {insn_data[31], insn_data[19:12],
-                            insn_data[20], insn_data[30:21], 1'b0});
+                            insn_data[20], insn_data[30:21], 1'b0},
+                           rtl_item.at_current_loop_end_insn);
       mnem_jalr:
-        insn_jalr_cg.sample(rtl_item.insn_addr, insn_data[31:20], rtl_item.gpr_operand_a);
+        insn_jalr_cg.sample(rtl_item.insn_addr,
+                            insn_data[31:20],
+                            rtl_item.gpr_operand_a,
+                            rtl_item.at_current_loop_end_insn);
       mnem_csrrs:
         insn_csrrs_cg.sample(insn_data, rtl_item.gpr_operand_a);
       mnem_csrrw:
