@@ -17,7 +17,6 @@ filesets:
       - lowrisc:ip:edn_pkg
     files:
       - tb.sv
-      - otbn_trace_uvm_injector.sv
     file_type: systemVerilogSource
 
 targets:
