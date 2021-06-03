@@ -369,9 +369,9 @@ interface keymgr_if(input clk, input rst_n);
   // consider async handshaking and a few cycles to start the req. allow no more than 20 tolerance
   // error on the cnt
   `ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
-          edn_wait_cnt - edn_interval < 20, clk, !rst_n)
+          (edn_wait_cnt > edn_interval) && (edn_wait_cnt - edn_interval < 20), clk, !rst_n)
 
-  `ASSERT(CheckEdn2ndReq, $fell(edn_req_sync) && edn_req_cnt == 1 |-> edn_wait_cnt < 20,
+  `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |-> edn_wait_cnt < 20,
           clk, !rst_n)
 
   `undef KM_ASSERT
