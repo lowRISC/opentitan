@@ -5,7 +5,7 @@
 // otp_ctrl_marco_errs_vseq is create OTP macro errors including:
 // - ECC correctable errors
 // - ECC uncorrectable errors
-class otp_ctrl_macro_errs_vseq extends otp_ctrl_dai_errs_vseq;
+class otp_ctrl_macro_errs_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_macro_errs_vseq)
 
   `uvm_object_new

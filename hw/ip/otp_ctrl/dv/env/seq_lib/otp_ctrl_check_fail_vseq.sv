@@ -6,7 +6,7 @@
 // 1. Check timeout
 // 2. Correctable ECC check error
 // 3. TODO: add when support
-class otp_ctrl_check_fail_vseq extends otp_ctrl_dai_errs_vseq;
+class otp_ctrl_check_fail_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_check_fail_vseq)
 
   `uvm_object_new
