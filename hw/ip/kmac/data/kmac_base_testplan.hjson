@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: kmac_base
+  name: kmac
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
@@ -42,7 +42,7 @@
                 correctly
             '''
       milestone: V1
-      tests: ["{name}_smoke"]
+      tests: ["{variant}_smoke"]
     }
     {
       name: long_msg_and_output
@@ -60,7 +60,7 @@
             applicable).
             '''
       milestone: V2
-      tests: ["{name}_long_msg_and_output"]
+      tests: ["{variant}_long_msg_and_output"]
     }
     {
       name: burst_write
@@ -69,7 +69,7 @@
             into the msg_fifo, and disable intermediate status/CSR checks.
             '''
       milestone: V2
-      tests: ["{name}_burst_write"]
+      tests: ["{variant}_burst_write"]
     }
     {
       name: test_vectors
@@ -78,10 +78,10 @@
             the output against the expected digest values.
             '''
       milestone: V2
-      tests: ["{name}_test_vectors_sha3_224", "{name}_test_vectors_sha3_256",
-              "{name}_test_vectors_sha3_384", "{name}_test_vectors_sha3_512",
-              "{name}_test_vectors_shake_128", "{name}_test_vectors_shake_256",
-              "{name}_test_vectors_kmac", "{name}_test_vectors_kmac_xof"]
+      tests: ["{variant}_test_vectors_sha3_224", "{variant}_test_vectors_sha3_256",
+              "{variant}_test_vectors_sha3_384", "{variant}_test_vectors_sha3_512",
+              "{variant}_test_vectors_shake_128", "{variant}_test_vectors_shake_256",
+              "{variant}_test_vectors_kmac", "{variant}_test_vectors_kmac_xof"]
     }
     {
       name: sideload
@@ -91,7 +91,7 @@
             KMAC should operate on the sideloaded key.
             '''
       milestone: V2
-      tests: ["{name}_sideload"]
+      tests: ["{variant}_sideload"]
     }
     {
       name: app
@@ -106,7 +106,7 @@
             blocked and will return 0.
             '''
       milestone: V2
-      tests: ["{name}_app"]
+      tests: ["{variant}_app"]
     }
     {
       name: error
@@ -129,7 +129,7 @@
             //       So this might be split into several error tests later on.
             '''
       milestone: V2
-      tests: ["{name}_error"]
+      tests: ["{variant}_error"]
     }
     {
       name: entropy_timers
@@ -146,7 +146,7 @@
             This will be checked in the scoreboard using the cycle acurate model.
             '''
       milestone: V3
-      tests: ["{name}_entropy"]
+      tests: ["{variant}_entropy"]
     }
     {
       name: throughput
@@ -155,7 +155,119 @@
             to the expected throughput range for the design.
             '''
       milestone: V3
-      tests: ["{name}_throughput"]
+      tests: ["{variant}_throughput"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: config_cg
+      desc: '''
+            Covers that all valid configuration settings for the KMAC have been tested.
+            Individual config settings that will be covered include:
+            - hashing mode (sha3/shake/kmac)
+            - security strength (128/224/256/384/512)
+            - key length (128/192/256/384/512)
+            - message endianness enable/disable
+            - digest endianness enable/disable
+            - XOF mode when using KMAC hashing
+            All valid combinations of the above will also be crossed.
+            '''
+    }
+    {
+      name: msg_len_cg
+      desc: '''
+            Covers various input message length ranges, to ensure that KMAC can operate successfully
+            on different sized messages.
+            The minimum tested msg length is 0 bytes, and the maximum length is 10_000 bytes,
+            we will cover that an acceptable distribution of lengths has been seen, and specifically
+            cover some corner cases (like length 0).
+            '''
+    }
+    {
+      name: output_digest_len_cg
+      desc: '''
+            Similar to the `msg_len_cg`, we also want to cover various output digest lengths to
+            ensure that KMAC can successfully produce outputs of varying sizes.
+            Note that this only applies to XOF functions, as SHA3 functions have a fixed output
+            length.
+            '''
+    }
+    {
+      name: prefix_range_cg
+      desc: '''
+            The prefix used for CSHAKE and KMAC (function_name + customization_string) are only
+            allowed to be valid alphabet letters, or a space character.
+            This covergroup covers that all of these characters have appeared in a prefix value.
+            '''
+    }
+    {
+      name: msgfifo_write_mask_cg
+      desc: '''
+            Covers that the msgfifo has been written using all possible TLUL masks.
+            '''
+    }
+    {
+      name: msgfifo_level_cg
+      desc: '''
+            Covers that all possible fifo statuses have been seen when running different hash
+            operations (like sha3/shake/cshake/kmac), such as various fifo depths, fifo full, and
+            fifo empty.
+            '''
+    }
+    {
+      name: sha3_status_cg
+      desc: '''
+            Covers that all sha3-related status fields have eventually been seen.
+            '''
+    }
+    {
+      name: state_read_mask_cg
+      desc: '''
+            Covers that the state windows have been read using all possible TLUL masks.
+            '''
+    }
+    {
+      name: cmd_process_cg
+      desc: '''
+            Covers that the KMAC can handle seeing a `CmdProcess` command during the following sets
+            of scenarios:
+            - various msgfifo status (full/empty/in between)
+            - while keccak rounds are currently active/inactive
+            '''
+    }
+    {
+      name: sideload_cg
+      desc: '''
+            Covers that the KMAC sees scenarios where the sideloaded key is provided and should be
+            used (`en_sideload==1`, `app_mode==AppKeymgr`), and scenarios where the sideloaded key is
+            provided but should not be used.
+            '''
+    }
+    {
+      name: app_cg
+      desc: '''
+            Covers several scenarios related to the app interface:
+            - A single data beat is sent
+            - All partial data lengths have been seen (only applies to the last data beat)
+            - Errors are reported through this interface
+            - `Done` signal is sent while keccak rounds are currently active/inactive
+
+            Note that this covergroup will be duplicated once per app interface.
+            '''
+    }
+    {
+      name: edn_cg
+      desc: '''
+            Covers that EDN entropy can be received by KMAC while keccak rounds are active/inactive,
+            crossed with a few entropy configuration values (fast entropy, etc...).
+            '''
+    }
+    {
+      name: error_cg
+      desc: '''
+            Covers that all errors have been seen by the KMAC.
+            '''
     }
   ]
 }

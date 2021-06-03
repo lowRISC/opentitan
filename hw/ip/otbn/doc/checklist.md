@@ -41,7 +41,7 @@ Documentation | [DOC_INTERFACE][]       | Not Started |
 Documentation | [MISSING_FUNC][]        | Not Started |
 Documentation | [FEATURE_FROZEN][]      | Not Started |
 RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CROSS_CHECK][]    | Not Started |
+RTL           | [AREA_CHECK][]          | Not Started |
 RTL           | [PORT_FROZEN][]         | Not Started |
 RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
 RTL           | [REVIEW_TODO][]         | Not Started |
@@ -61,7 +61,7 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[AREA_CROSS_CHECK]:    {{<relref "/doc/project/checklist.md#area_cross_check" >}}
+[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area_check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}

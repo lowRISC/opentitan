@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "sram_ctrl_base"
+  name: "sram_ctrl"
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
@@ -24,7 +24,7 @@
                 were executed correctly using the `mem_bkdr_if`
             '''
       milestone: V1
-      tests: ["{name}_smoke"]
+      tests: ["{variant}_smoke"]
     }
     {
       name: multiple_keys
@@ -42,7 +42,7 @@
                 intervals
             '''
       milestone: V2
-      tests: ["{name}_multiple_keys"]
+      tests: ["{variant}_multiple_keys"]
     }
     {
       name: stress_pipeline
@@ -52,7 +52,7 @@
             stress the encryption pipeline.
             '''
       milestone: V2
-      tests: ["{name}_stress_pipeline"]
+      tests: ["{variant}_stress_pipeline"]
     }
     {
       name: bijection
@@ -73,7 +73,7 @@
             This process will be repeated for a number of new key seeds.
             '''
       milestone: V2
-      tests: ["{name}_bijection"]
+      tests: ["{variant}_bijection"]
     }
     {
       name: mem_tl_errors
@@ -82,7 +82,7 @@
             SRAM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
             '''
       milestone: V2
-      tests: ["{name}_mem_tl_errors"]
+      tests: ["{variant}_mem_tl_errors"]
     }
     {
       name: access_during_key_req
@@ -95,7 +95,7 @@
                   should be reflected in TB.
             '''
       milestone: V2
-      tests: ["{name}_access_during_key_req"]
+      tests: ["{variant}_access_during_key_req"]
     }
     {
       name: lc_escalation
@@ -110,7 +110,7 @@
             couple of memory accesses just to make sure everything is still in working order.
             '''
       milestone: V2
-      tests: ["{name}_lc_escalation"]
+      tests: ["{variant}_lc_escalation"]
     }
     {
       name: executable
@@ -128,7 +128,7 @@
             configured to be executable.
             '''
       milestone: V2
-      tests: ["{name}_executable"]
+      tests: ["{variant}_executable"]
     }
     {
       name: parity
@@ -144,7 +144,7 @@
             some memory accesses to make sure everything comes back online correctly.
             '''
       milestone: V3
-      tests: ["{name}_parity"]
+      tests: ["{variant}_parity"]
     }
   ]
 

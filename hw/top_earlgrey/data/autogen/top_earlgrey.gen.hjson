@@ -3156,6 +3156,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: aon_timer_aon
+          top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
         {
@@ -4566,6 +4567,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: csrng
+          top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
         }
         {
@@ -5993,6 +5995,7 @@
         sram_ctrl_main.lc_hw_debug_en
         sram_ctrl_ret_aon.lc_hw_debug_en
         pinmux_aon.lc_hw_debug_en
+        csrng.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
       [
@@ -6008,6 +6011,7 @@
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
+        aon_timer_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
@@ -13668,6 +13672,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: aon_timer_aon
+        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
@@ -14417,6 +14422,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: csrng
+        top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
       }
       {

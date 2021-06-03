@@ -1886,7 +1886,7 @@ module top_earlgrey #(
       // Inter-module signals
       .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
-      .lc_escalate_en_i(lc_ctrl_pkg::Off),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .sleep_mode_i(pwrmgr_aon_low_power),
       .tl_i(aon_timer_aon_tl_req),
       .tl_o(aon_timer_aon_tl_rsp),
@@ -2189,7 +2189,7 @@ module top_earlgrey #(
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
-      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
 
