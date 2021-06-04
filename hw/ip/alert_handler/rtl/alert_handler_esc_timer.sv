@@ -23,7 +23,8 @@ module alert_handler_esc_timer import alert_pkg::*; (
   input                        rst_ni,
   input                        en_i,           // enables timeout/escalation
   input                        clr_i,          // aborts escalation
-  input                        accum_trig_i,   // this will trigger escalation
+  input                        accu_trig_i,    // this will trigger escalation
+  input                        accu_fail_i,    // this will move the FSM into a terminal error state
   input                        timeout_en_i,   // enables timeout
   input        [EscCntDw-1:0]  timeout_cyc_i,  // interrupt timeout. 0 = disabled
   input        [N_ESC_SEV-1:0] esc_en_i,       // escalation signal enables
@@ -119,7 +120,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         cnt_clr = 1'b1;
         esc_state_o = Idle;
 
-        if (accum_trig_i && en_i && !clr_i) begin
+        if (accu_trig_i && en_i && !clr_i) begin
           state_d    = Phase0St;
           cnt_en     = 1'b1;
           esc_trig_o = 1'b1;
@@ -139,7 +140,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       TimeoutSt: begin
         esc_state_o = Timeout;
 
-        if ((accum_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
+        if ((accu_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
           state_d    = Phase0St;
           cnt_en     = 1'b1;
           cnt_clr    = 1'b1;
@@ -240,6 +241,12 @@ module alert_handler_esc_timer import alert_pkg::*; (
         esc_state_o = FsmError;
       end
     endcase
+
+    // if the tandem accumulator counters have an inconsistent state
+    // we move into the terminal FSM error state.
+    if (accu_fail_i) begin
+      state_d = FsmErrorSt;
+    end
   end
 
   logic [N_ESC_SEV-1:0][N_PHASES-1:0] esc_map_oh;
@@ -289,26 +296,30 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
   // a clear should always bring us back to idle
   `ASSERT(CheckClr_A,
+      !accu_fail_i &&
       clr_i &&
       !(state_q inside {IdleSt, TimeoutSt, FsmErrorSt})
       |=>
       state_q == IdleSt)
   // if currently in idle and not enabled, must remain here
   `ASSERT(CheckEn_A,
+      !accu_fail_i &&
       state_q == IdleSt &&
       !en_i
       |=>
       state_q == IdleSt)
   // Check if accumulation trigger correctly captured
   `ASSERT(CheckAccumTrig0_A,
-      accum_trig_i &&
+      !accu_fail_i &&
+      accu_trig_i &&
       state_q == IdleSt &&
       en_i &&
       !clr_i
       |=>
       state_q == Phase0St)
   `ASSERT(CheckAccumTrig1_A,
-      accum_trig_i &&
+      !accu_fail_i &&
+      accu_trig_i &&
       state_q == TimeoutSt &&
       en_i &&
       !clr_i
@@ -316,28 +327,32 @@ module alert_handler_esc_timer import alert_pkg::*; (
       state_q == Phase0St)
   // Check if timeout correctly captured
   `ASSERT(CheckTimeout0_A,
+      !accu_fail_i &&
       state_q == IdleSt &&
       timeout_en_i &&
       en_i &&
       timeout_cyc_i != 0 &&
-      !accum_trig_i
+      !accu_trig_i
       |=>
       state_q == TimeoutSt)
   `ASSERT(CheckTimeoutSt1_A,
+      !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
       cnt_q < timeout_cyc_i &&
-      !accum_trig_i
+      !accu_trig_i
       |=>
       state_q == TimeoutSt)
   `ASSERT(CheckTimeoutSt2_A,
+      !accu_fail_i &&
       state_q == TimeoutSt &&
       !timeout_en_i &&
-      !accum_trig_i
+      !accu_trig_i
       |=>
       state_q == IdleSt)
   // Check if timeout correctly triggers escalation
   `ASSERT(CheckTimeoutStTrig_A,
+      !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
       cnt_q == timeout_cyc_i
@@ -345,28 +360,44 @@ module alert_handler_esc_timer import alert_pkg::*; (
       state_q == Phase0St)
   // Check whether escalation phases are correctly switched
   `ASSERT(CheckPhase0_A,
+      !accu_fail_i &&
       state_q == Phase0St &&
       !clr_i &&
       cnt_q >= phase_cyc_i[0]
       |=>
       state_q == Phase1St)
   `ASSERT(CheckPhase1_A,
+      !accu_fail_i &&
       state_q == Phase1St &&
       !clr_i &&
       cnt_q >= phase_cyc_i[1]
       |=>
       state_q == Phase2St)
   `ASSERT(CheckPhase2_A,
+      !accu_fail_i &&
       state_q == Phase2St &&
       !clr_i &&
       cnt_q >= phase_cyc_i[2]
       |=>
       state_q == Phase3St)
   `ASSERT(CheckPhase3_A,
+      !accu_fail_i &&
       state_q == Phase3St &&
       !clr_i &&
       cnt_q >= phase_cyc_i[3]
       |=>
       state_q == TerminalSt)
+  `ASSERT(AccuFailToFsmError_A,
+      accu_fail_i
+      |=>
+      state_q == FsmErrorSt)
+  `ASSERT(ErrorStIsTerminal_A,
+      state_q == FsmErrorSt
+      |=>
+      state_q == FsmErrorSt)
+  `ASSERT(ErrorStAllEscAsserted_A,
+      state_q == FsmErrorSt
+      |->
+      esc_sig_req_o == '1)
 
 endmodule : alert_handler_esc_timer

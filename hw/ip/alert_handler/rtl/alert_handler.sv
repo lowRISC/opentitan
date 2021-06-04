@@ -168,38 +168,40 @@ module alert_handler
   // Escalation Handling of Classes //
   ////////////////////////////////////
 
-  logic [N_CLASSES-1:0] class_accum_trig;
   logic [N_CLASSES-1:0][N_ESC_SEV-1:0] class_esc_sig_req;
 
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classes
+    logic class_accu_fail, class_accu_trig;
     alert_handler_accu u_accu (
       .clk_i,
       .rst_ni,
-      .class_en_i   ( reg2hw_wrap.class_en[k]           ),
-      .clr_i        ( reg2hw_wrap.class_clr[k]          ),
-      .class_trig_i ( hw2reg_wrap.class_trig[k]         ),
-      .thresh_i     ( reg2hw_wrap.class_accum_thresh[k] ),
-      .accu_cnt_o   ( hw2reg_wrap.class_accum_cnt[k]    ),
-      .accu_trig_o  ( class_accum_trig[k]               )
+      .class_en_i    ( reg2hw_wrap.class_en[k]           ),
+      .clr_i         ( reg2hw_wrap.class_clr[k]          ),
+      .class_trig_i  ( hw2reg_wrap.class_trig[k]         ),
+      .thresh_i      ( reg2hw_wrap.class_accum_thresh[k] ),
+      .accu_cnt_o    ( hw2reg_wrap.class_accum_cnt[k]    ),
+      .accu_trig_o   ( class_accu_trig                   ),
+      .accu_fail_o   ( class_accu_fail                   )
     );
 
     alert_handler_esc_timer u_esc_timer (
       .clk_i,
       .rst_ni,
-      .en_i             ( reg2hw_wrap.class_en[k]          ),
+      .en_i              ( reg2hw_wrap.class_en[k]          ),
       // this clear does not apply to interrupts
-      .clr_i            ( reg2hw_wrap.class_clr[k]         ),
+      .clr_i             ( reg2hw_wrap.class_clr[k]         ),
       // an interrupt enables the timeout
-      .timeout_en_i     ( irq[k]                           ),
-      .accum_trig_i     ( class_accum_trig[k]              ),
-      .timeout_cyc_i    ( reg2hw_wrap.class_timeout_cyc[k] ),
-      .esc_en_i         ( reg2hw_wrap.class_esc_en[k]      ),
-      .esc_map_i        ( reg2hw_wrap.class_esc_map[k]     ),
-      .phase_cyc_i      ( reg2hw_wrap.class_phase_cyc[k]   ),
-      .esc_trig_o       ( hw2reg_wrap.class_esc_trig[k]    ),
-      .esc_cnt_o        ( hw2reg_wrap.class_esc_cnt[k]     ),
-      .esc_state_o      ( hw2reg_wrap.class_esc_state[k]   ),
-      .esc_sig_req_o    ( class_esc_sig_req[k]             )
+      .timeout_en_i      ( irq[k]                           ),
+      .accu_trig_i       ( class_accu_trig                  ),
+      .accu_fail_i       ( class_accu_fail                  ),
+      .timeout_cyc_i     ( reg2hw_wrap.class_timeout_cyc[k] ),
+      .esc_en_i          ( reg2hw_wrap.class_esc_en[k]      ),
+      .esc_map_i         ( reg2hw_wrap.class_esc_map[k]     ),
+      .phase_cyc_i       ( reg2hw_wrap.class_phase_cyc[k]   ),
+      .esc_trig_o        ( hw2reg_wrap.class_esc_trig[k]    ),
+      .esc_cnt_o         ( hw2reg_wrap.class_esc_cnt[k]     ),
+      .esc_state_o       ( hw2reg_wrap.class_esc_state[k]   ),
+      .esc_sig_req_o     ( class_esc_sig_req[k]             )
     );
   end
 
