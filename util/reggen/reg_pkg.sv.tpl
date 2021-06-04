@@ -169,8 +169,14 @@ packbit = 0
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1
     packbit += struct_width
+    name_and_comment = f'{r0.name.lower()}; // [{msb}:{lsb}]'
 %>\
-    ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
+  % if 4 + len(struct_type) + 1 + len(name_and_comment) <= 100:
+    ${struct_type} ${name_and_comment}
+  % else:
+    ${struct_type}
+        ${name_and_comment}
+  % endif
   % endif
 % endfor
   } ${gen_rtl.get_iface_tx_type(block, iface_name, False)};
@@ -199,8 +205,14 @@ packbit = 0
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1
     packbit += struct_width
+    name_and_comment = f'{r0.name.lower()}; // [{msb}:{lsb}]'
 %>\
-    ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
+  % if 4 + len(struct_type) + 1 + len(name_and_comment) <= 100:
+    ${struct_type} ${name_and_comment}
+  % else:
+    ${struct_type}
+        ${name_and_comment}
+  % endif
   % endif
 % endfor
   } ${gen_rtl.get_iface_tx_type(block, iface_name, True)};
