@@ -436,48 +436,125 @@
     // RV_TIMER (pre-verified IP) integration tests:
     {
       name: chip_timer
-      desc: '''Verify the timeout interrupt from all timer instances.
+      desc: '''Verify the timeout interrupt assertion.
 
-            The SW test configures the RV_TIMER to generate interrupt after a set timeout. The SW
-            test validates the received interrupt. The testbench verifies that the interrupt was
-            fired only after the timeout elapsed.
+            - Configure the RV_TIMER to generate interrupt after a set timeout.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from rv_timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
             '''
       milestone: V2
       tests: ["chip_sw_rv_timer_irq"]
     }
-    {
-      name: chip_sleep_aon_timer_wake
-      desc: '''Verify the timer in the AON domain can wake up the chip from sleep.
-            '''
-      milestone: V2
-      tests: []
-    }
 
-    // WATCHDOG (pre-verified IP) integration tests:
+    // AON_TIMER (pre-verified IP) integration tests:
     {
-      name: chip_wdog_bark
-      desc: '''Verify the watchdog bark reception in awake state.
+      name: chip_aon_timer_wakeup_irq
+      desc: '''Verify the AON timer wake up interrupt in normal operating state.
+
+            - Program the PLIC to let the AON time wake up interrupt the CPU.
+            - Program the AON timer to generate the wake up timeout interrupt after some time.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from AON timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_wdog_bite
-      desc: '''Verify the watchdog bite causing reset in awake state.
+      name: chip_aon_timer_sleep_wakeup
+      desc: '''Verify that AON timer can wake up the chip from a deep sleep state.
+
+            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
+              phase.
+            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
+            - Program the AON timer to wake up the chip in a reasonable amount of time.
+            - Have the CPU issue WFI to signal the pwrmgr to go into sleep state.
+            - Verify via assertion checks, the wake up request occurs after the timeout has elapsed.
+            - After reset followed by AON timer wake up, read the reset cause register to confirm
+              the AON timer wake up phase.
+            - After the test sequence is complete, read the wake up threshold register - it should
+              not be reset.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sleep_wdog_bark_wake
-      desc: '''Verify the watchdog bark wake up from sleep state.
+      name: chip_aon_timer_clks_resets
+      desc: '''Verify that the correct clocks and resets are connected to the AON timer.
+
+            - The chip_aon_timer_deep_sleep_wakeup achieves this goal.
+            - Verify via connectivity assertion checks, the right clocks and resets from clkmgr and
+              rstmgr are connected to AON timer.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sleep_wdog_bite_wake
-      desc: '''Verify the watchdog bite reset from sleep state.
+      name: chip_aon_timer_wdog_bark_irq
+      desc: '''Verify the watchdog bark reception in normal state.
+
+            - Program the PLIC to let the wdog bark signal interrupt the CPU.
+            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
+            - Service the bark interrupt upon reception.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aon_timer_wdog_lc_escalate
+      desc: '''Verify that the LC escalation signal disables the AON timer wdog.
+
+            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
+            - Program the alert handler to escalate on alerts upto phase 1 (i.e. stop after wipe
+              secrets).
+            - Trigger an alert to cause an escalation condition before the wakeup signal asserts.
+            - Wait for sufficiently long time to ensure that the bark interrupt does not trigger,
+              to prove that the wdog was disabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aon_timer_wdog_bite_reset
+      desc: '''Verify the watchdog bite causing reset in the normal state.
+
+            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
+              phase.
+            - Program the AON timer wdog to 'bark' after some time.
+            - Let the bark escalate to bite, which should result in a reset request.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the wdog reset phase.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aon_timer_sleep_wdog_bite_reset
+      desc: '''Verify the watchdog bite causing reset in sleep state.
+
+            - Repeat the steps in chip_aon_timer_wdog_bite_reset test, but with following changes:
+            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
+            - Issue a WFI after programming the wdog, so that the reset request due to bite occurs
+              during deep sleep state.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the wdog reset phase.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aon_timer_sleep_wdog_sleep_pause
+      desc: '''Verify that the wdog can be paused in sleep state.
+
+            - Repeat the steps in chip_aon_timer_sleep_wakeup test, but with following changes:
+            - Program the wdog to 'bite' a little sooner than the AON timer wake up.
+            - Also, program the wdog to pause during sleep.
+            - Issue a WFI after programming the wdog, so that the reset request occurs during deep
+              sleep state.
+            - After reset followed by AON timer wake up, read the reset cause register to confirm
+              that the AON timer woke up the chip, not the wdog reset.
+            - Un-pause the wdog and service the bark interrupt.
             '''
       milestone: V2
       tests: []
@@ -1326,29 +1403,55 @@
       tests: []
     }
 
-    ////////////////////////////////////////////////
-    // Memory & Controllers                       //
-    // ROM, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
-    ////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    // Memory & Controllers                            //
+    // ROM_CTRL, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
+    /////////////////////////////////////////////////////
 
-    // ROM (pre-verified IP) integration tests:
-    // TODO: Not sure if this will really be a pre-verified IP. If not, then more tests are needed
-    // at the chip level.
+    // ROM_CTRL (pre-verified IP) integration tests:
     {
       name: chip_rom_access
-      desc: '''Verify access to the rom.
+      desc: '''Verify that the CPU can access the rom contents.
 
-            Verify that the CPU can fetch instructions from the ROM. Nothing extra needs to be done
-            here - all SW tests do this anyway.
+            - Verify that the CPU can fetch instructions from the ROM.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_rom_security_features
-      desc: '''Verify ROM security / ECC features if available.
+      name: chip_rom_ctrl_ast_cfg
+      desc: '''Verify the connectivity of AST cfg signals to the ROM ctrl.
 
-            Details TBD.
+            - In open source, this is verified by a simple connectivity assertion check.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rom_ctrl_integrity_check
+      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
+
+            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
+              the ROM. Verify that we can successfully power up the chip in this case.
+            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
+              digest does not match the top 8 words of the ROM.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rom_ctrl_reset_glitch
+      desc: '''Verify that a glitch on the ROM ctrl's reset input is triggered as a fatal alert.
+
+            - In normal boot up from POR, the ROM contents are checked for validity using KMAC.
+            - After boot up, read the reset cause register in rstmgr to confirm POR reset phase.
+            - SW goes into idle state (nothing to do).
+            - The testbench randomly glitches the ROM ctrl's reset input, which causes ROM ctrl to
+              re-check the contents for validity.
+            - Verify that the KMAC detects the repeat presentation of data from ROM ctrl as a fatal
+              alert and the chip is rebooted via the alert escalation path.
+            - After boot up, read the reset cause register in rstmgr to confirm reset due to alert
+              phase.
             '''
       milestone: V2
       tests: []
