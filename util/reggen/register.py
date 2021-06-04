@@ -11,6 +11,8 @@ from .lib import (check_keys, check_str, check_name, check_bool,
 from .params import ReggenParams
 from .reg_base import RegBase
 
+import re
+
 REQUIRED_FIELDS = {
     'name': ['s', "name of the register"],
     'desc': ['t', "description of the register"],
@@ -122,7 +124,8 @@ class Register(RegBase):
         self.tags = tags
 
         self.shadowed = shadowed
-        sounds_shadowy = self.name.lower().endswith('_shadowed')
+        pattern = r'^[a-z0-9_]+_shadowed(?:_[0-9]+)?'
+        sounds_shadowy = re.match(pattern, self.name.lower())
         if self.shadowed and not sounds_shadowy:
             raise ValueError("Register {} has the shadowed flag but its name "
                              "doesn't end with the _shadowed suffix."
