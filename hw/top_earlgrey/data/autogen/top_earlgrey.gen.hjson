@@ -3156,7 +3156,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: aon_timer_aon
-          top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
         {
@@ -4567,7 +4566,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: csrng
-          top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
         }
         {
@@ -4680,6 +4678,18 @@
           inst_name: entropy_src
           default: ""
           top_signame: entropy_src_otp_en_entropy_src_fw_read
+          index: -1
+        }
+        {
+          name: otp_en_entropy_src_fw_over
+          struct: otp_en
+          package: otp_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          top_signame: entropy_src_otp_en_entropy_src_fw_over
           index: -1
         }
         {
@@ -5995,7 +6005,6 @@
         sram_ctrl_main.lc_hw_debug_en
         sram_ctrl_ret_aon.lc_hw_debug_en
         pinmux_aon.lc_hw_debug_en
-        csrng.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
       [
@@ -6011,7 +6020,6 @@
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
-        aon_timer_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
@@ -6264,6 +6272,7 @@
       otp_ctrl.otp_hw_cfg
       csrng.otp_en_csrng_sw_app_read
       entropy_src.otp_en_entropy_src_fw_read
+      entropy_src.otp_en_entropy_src_fw_over
       lc_ctrl.otp_device_id
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
@@ -13672,7 +13681,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: aon_timer_aon
-        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
@@ -14422,7 +14430,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: csrng
-        top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
       }
       {
@@ -14495,6 +14502,18 @@
         inst_name: entropy_src
         default: ""
         top_signame: entropy_src_otp_en_entropy_src_fw_read
+        index: -1
+      }
+      {
+        name: otp_en_entropy_src_fw_over
+        struct: otp_en
+        package: otp_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        top_signame: entropy_src_otp_en_entropy_src_fw_over
         index: -1
       }
       {
@@ -18523,6 +18542,15 @@
         package: otp_ctrl_pkg
         struct: otp_en
         signame: entropy_src_otp_en_entropy_src_fw_read
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: entropy_src_otp_en_entropy_src_fw_over
         width: 1
         type: uni
         end_idx: -1

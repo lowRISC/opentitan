@@ -24,6 +24,7 @@ module entropy_src
 
   // OTP Interface
   input  otp_ctrl_pkg::otp_en_t otp_en_entropy_src_fw_read_i,
+  input  otp_ctrl_pkg::otp_en_t otp_en_entropy_src_fw_over_i,
 
   // RNG Interface
   output logic rng_fips_o,
@@ -122,8 +123,8 @@ module entropy_src
   logic efuse_es_sw_reg_en;
   logic efuse_es_sw_ov_en;
   assign efuse_es_sw_reg_en = (otp_en_entropy_src_fw_read_i == otp_ctrl_pkg::Enabled);
-  // TODO: replace fw_read below with a unique name
-  assign efuse_es_sw_ov_en = (otp_en_entropy_src_fw_read_i == otp_ctrl_pkg::Enabled);
+
+  assign efuse_es_sw_ov_en = (otp_en_entropy_src_fw_over_i == otp_ctrl_pkg::Enabled);
 
   entropy_src_core #(
     .EsFifoDepth(EsFifoDepth)

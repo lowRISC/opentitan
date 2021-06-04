@@ -648,6 +648,7 @@ module top_earlgrey #(
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   otp_ctrl_pkg::otp_en_t       csrng_otp_en_csrng_sw_app_read;
   otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_read;
+  otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_over;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
@@ -689,6 +690,7 @@ module top_earlgrey #(
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
   assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
@@ -1886,7 +1888,7 @@ module top_earlgrey #(
       // Inter-module signals
       .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
-      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .sleep_mode_i(pwrmgr_aon_low_power),
       .tl_i(aon_timer_aon_tl_req),
       .tl_o(aon_timer_aon_tl_rsp),
@@ -2189,7 +2191,7 @@ module top_earlgrey #(
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
-      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
 
@@ -2223,6 +2225,7 @@ module top_earlgrey #(
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .otp_en_entropy_src_fw_read_i(entropy_src_otp_en_entropy_src_fw_read),
+      .otp_en_entropy_src_fw_over_i(entropy_src_otp_en_entropy_src_fw_over),
       .rng_fips_o(es_rng_fips_o),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),
