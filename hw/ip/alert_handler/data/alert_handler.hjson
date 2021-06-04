@@ -83,9 +83,9 @@
       local: "true"
     },
     { name: "N_LOC_ALERT",
-      desc: "Number of local alerts phases",
+      desc: "Number of local alerts",
       type: "int",
-      default: "5",
+      default: "7",
       local: "true"
     },
     { name: "PING_CNT_DW",
@@ -212,10 +212,11 @@
         },
       ]
     },
-    { name:     "PING_TIMEOUT_CYC",
+    { name:     "PING_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Ping timeout cycle count.
                 '''
+      shadowed: "true",
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "PING_TIMER_REGWEN",
@@ -230,10 +231,11 @@
         }
       ]
     }
-    { name:     "PING_TIMER_EN",
+    { name:     "PING_TIMER_EN_SHADOWED",
       desc:     '''
                 Ping timer enable.
                 '''
+      shadowed: "true",
       swaccess: "rw1s",
       hwaccess: "hro",
       regwen:   "PING_TIMER_REGWEN",
@@ -274,11 +276,12 @@
                   ]
                 }
     },
-    { multireg: { name:     "ALERT_EN",
+    { multireg: { name:     "ALERT_EN_SHADOWED",
                   desc:     '''Enable register for alerts.
                   ''',
                   count:    "NAlerts",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "ALERT_REGWEN",
@@ -300,11 +303,12 @@
                   ]
                 }
     },
-    { multireg: { name:     "ALERT_CLASS",
+    { multireg: { name:     "ALERT_CLASS_SHADOWED",
                   desc:     '''Class assignment of alerts.
                   ''',
                   count:    "NAlerts",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "ALERT_REGWEN",
@@ -365,12 +369,18 @@
                   ]
                 }
     },
-    { multireg: { name:     "LOC_ALERT_EN",
-                  desc:     '''Enable register for the aggregated local alerts "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+    { multireg: { name:     "LOC_ALERT_EN_SHADOWED",
+                  desc:
+                  '''
+                  Enable register for the local alerts
+                  "alert pingfail" (0), "escalation pingfail" (1),
+                  "alert integfail" (2), "escalation integfail" (3),
+                  "bus integrity failure" (4), "shadow reg update error" (5)
+                  and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "LOC_ALERT_REGWEN",
@@ -389,12 +399,17 @@
                   ]
                 }
     },
-    { multireg: { name:     "LOC_ALERT_CLASS",
-                  desc:     '''Class assignment of local alerts. "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+    { multireg: { name:     "LOC_ALERT_CLASS_SHADOWED",
+                  desc:     '''
+                  Class assignment of the local alerts
+                  "alert pingfail" (0), "escalation pingfail" (1),
+                  "alert integfail" (2), "escalation integfail" (3),
+                  "bus integrity failure" (4), "shadow reg update error" (5)
+                  and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "LOC_ALERT_REGWEN",
@@ -418,8 +433,11 @@
     },
     { multireg: {
       name: "LOC_ALERT_CAUSE",
-      desc: '''Alert Cause Register for Local Alerts. "alert
-      pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+      desc: '''Alert Cause Register for the local alerts
+      "alert pingfail" (0), "escalation pingfail" (1),
+      "alert integfail" (2), "escalation integfail" (3),
+      "bus integrity failure" (4), "shadow reg update error" (5)
+      and "shadow reg storage error" (6).
       ''',
       count: "N_LOC_ALERT",
       compact:  "false",
@@ -455,11 +473,12 @@
         }
       ]
     },
-    { name:     "CLASSA_CTRL",
+    { name:     "CLASSA_CTRL_SHADOWED",
       desc:     "Escalation control register for alert Class A. Can not be modified if !!CLASSA_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
+      shadowed: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -572,12 +591,13 @@
              // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSA_ACCUM_THRESH",
+    { name:     "CLASSA_ACCUM_THRESH_SHADOWED",
       desc:     '''
                 Accumulation threshold value for alert Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
@@ -588,12 +608,13 @@
         }
       ]
     },
-    { name:     "CLASSA_TIMEOUT_CYC",
+    { name:     "CLASSA_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Interrupt timeout in cycles.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
@@ -606,12 +627,13 @@
         }
       ]
     },
-    { name:     "CLASSA_PHASE0_CYC",
+    { name:     "CLASSA_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -620,12 +642,13 @@
         }
       ]
     }
-    { name:     "CLASSA_PHASE1_CYC",
+    { name:     "CLASSA_PHASE1_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 1 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -634,12 +657,13 @@
         }
       ]
     }
-    { name:     "CLASSA_PHASE2_CYC",
+    { name:     "CLASSA_PHASE2_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 2 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -648,12 +672,13 @@
         }
       ]
     }
-    { name:     "CLASSA_PHASE3_CYC",
+    { name:     "CLASSA_PHASE3_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 3 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -730,11 +755,12 @@
         }
       ]
     },
-    { name:     "CLASSB_CTRL",
+    { name:     "CLASSB_CTRL_SHADOWED",
       desc:     "Escalation control register for alert Class B. Can not be modified if !!CLASSB_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
+      shadowed: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -847,12 +873,13 @@
              // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSB_ACCUM_THRESH",
+    { name:     "CLASSB_ACCUM_THRESH_SHADOWED",
       desc:     '''
                 Accumulation threshold value for alert Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
@@ -863,12 +890,13 @@
         }
       ]
     },
-    { name:     "CLASSB_TIMEOUT_CYC",
+    { name:     "CLASSB_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Interrupt timeout in cycles.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
@@ -881,12 +909,13 @@
         }
       ]
     },
-    { name:     "CLASSB_PHASE0_CYC",
+    { name:     "CLASSB_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -895,12 +924,13 @@
         }
       ]
     }
-    { name:     "CLASSB_PHASE1_CYC",
+    { name:     "CLASSB_PHASE1_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 1 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -909,12 +939,13 @@
         }
       ]
     }
-    { name:     "CLASSB_PHASE2_CYC",
+    { name:     "CLASSB_PHASE2_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 2 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -923,12 +954,13 @@
         }
       ]
     }
-    { name:     "CLASSB_PHASE3_CYC",
+    { name:     "CLASSB_PHASE3_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 3 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1005,11 +1037,12 @@
         }
       ]
     },
-    { name:     "CLASSC_CTRL",
+    { name:     "CLASSC_CTRL_SHADOWED",
       desc:     "Escalation control register for alert Class C. Can not be modified if !!CLASSC_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
+      shadowed: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -1122,12 +1155,13 @@
              // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSC_ACCUM_THRESH",
+    { name:     "CLASSC_ACCUM_THRESH_SHADOWED",
       desc:     '''
                 Accumulation threshold value for alert Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
@@ -1138,12 +1172,13 @@
         }
       ]
     },
-    { name:     "CLASSC_TIMEOUT_CYC",
+    { name:     "CLASSC_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Interrupt timeout in cycles.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
@@ -1156,12 +1191,13 @@
         }
       ]
     },
-    { name:     "CLASSC_PHASE0_CYC",
+    { name:     "CLASSC_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1170,12 +1206,13 @@
         }
       ]
     }
-    { name:     "CLASSC_PHASE1_CYC",
+    { name:     "CLASSC_PHASE1_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 1 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1184,12 +1221,13 @@
         }
       ]
     }
-    { name:     "CLASSC_PHASE2_CYC",
+    { name:     "CLASSC_PHASE2_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 2 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1198,12 +1236,13 @@
         }
       ]
     }
-    { name:     "CLASSC_PHASE3_CYC",
+    { name:     "CLASSC_PHASE3_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 3 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1280,11 +1319,12 @@
         }
       ]
     },
-    { name:     "CLASSD_CTRL",
+    { name:     "CLASSD_CTRL_SHADOWED",
       desc:     "Escalation control register for alert Class D. Can not be modified if !!CLASSD_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
+      shadowed: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -1397,12 +1437,13 @@
              // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSD_ACCUM_THRESH",
+    { name:     "CLASSD_ACCUM_THRESH_SHADOWED",
       desc:     '''
                 Accumulation threshold value for alert Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
@@ -1413,12 +1454,13 @@
         }
       ]
     },
-    { name:     "CLASSD_TIMEOUT_CYC",
+    { name:     "CLASSD_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Interrupt timeout in cycles.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
@@ -1431,12 +1473,13 @@
         }
       ]
     },
-    { name:     "CLASSD_PHASE0_CYC",
+    { name:     "CLASSD_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1445,12 +1488,13 @@
         }
       ]
     }
-    { name:     "CLASSD_PHASE1_CYC",
+    { name:     "CLASSD_PHASE1_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 1 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1459,12 +1503,13 @@
         }
       ]
     }
-    { name:     "CLASSD_PHASE2_CYC",
+    { name:     "CLASSD_PHASE2_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 2 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
@@ -1473,12 +1518,13 @@
         }
       ]
     }
-    { name:     "CLASSD_PHASE3_CYC",
+    { name:     "CLASSD_PHASE3_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 3 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,

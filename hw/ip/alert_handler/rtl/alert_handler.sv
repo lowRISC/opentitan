@@ -70,10 +70,12 @@ module alert_handler
     .fatal_integ_alert_o(loc_alert_trig[4])
   );
 
+  assign loc_alert_trig[5] = reg2hw_wrap.shadowed_err_update;
+  assign loc_alert_trig[6] = reg2hw_wrap.shadowed_err_storage;
+
   ////////////////
   // Ping Timer //
   ////////////////
-
 
   logic [NAlerts-1:0]   alert_ping_req;
   logic [NAlerts-1:0]   alert_ping_ok;

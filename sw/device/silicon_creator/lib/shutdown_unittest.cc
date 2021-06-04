@@ -339,7 +339,7 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(ShutdownTest, InitializeProd) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
@@ -352,7 +352,7 @@ TEST_F(ShutdownTest, InitializeProd) {
 
 TEST_F(ShutdownTest, InitializeProdWithError) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
@@ -369,7 +369,7 @@ TEST_F(ShutdownTest, InitializeProdWithError) {
 
 TEST_F(ShutdownTest, InitializeProdEnd) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prodend;
     alert_enable_t en = RomAlertClassEnable(cls);
@@ -382,7 +382,7 @@ TEST_F(ShutdownTest, InitializeProdEnd) {
 
 TEST_F(ShutdownTest, InitializeDev) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.dev;
     alert_enable_t en = RomAlertClassEnable(cls);
@@ -395,7 +395,7 @@ TEST_F(ShutdownTest, InitializeDev) {
 
 TEST_F(ShutdownTest, InitializeRma) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.rma;
     alert_enable_t en = RomAlertClassEnable(cls);

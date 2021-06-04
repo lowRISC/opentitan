@@ -87,9 +87,9 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       local: "true"
     },
     { name: "N_LOC_ALERT",
-      desc: "Number of local alerts phases",
+      desc: "Number of local alerts",
       type: "int",
-      default: "5",
+      default: "7",
       local: "true"
     },
     { name: "PING_CNT_DW",
@@ -211,10 +211,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         },
       ]
     },
-    { name:     "PING_TIMEOUT_CYC",
+    { name:     "PING_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Ping timeout cycle count.
                 '''
+      shadowed: "true",
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "PING_TIMER_REGWEN",
@@ -229,10 +230,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     }
-    { name:     "PING_TIMER_EN",
+    { name:     "PING_TIMER_EN_SHADOWED",
       desc:     '''
                 Ping timer enable.
                 '''
+      shadowed: "true",
       swaccess: "rw1s",
       hwaccess: "hro",
       regwen:   "PING_TIMER_REGWEN",
@@ -274,11 +276,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
-    { multireg: { name:     "ALERT_EN",
+    { multireg: { name:     "ALERT_EN_SHADOWED",
                   desc:     '''Enable register for alerts.
                   ''',
                   count:    "NAlerts",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "ALERT_REGWEN",
@@ -300,11 +303,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
-    { multireg: { name:     "ALERT_CLASS",
+    { multireg: { name:     "ALERT_CLASS_SHADOWED",
                   desc:     '''Class assignment of alerts.
                   ''',
                   count:    "NAlerts",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "ALERT_REGWEN",
@@ -365,12 +369,18 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
-    { multireg: { name:     "LOC_ALERT_EN",
-                  desc:     '''Enable register for the aggregated local alerts "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+    { multireg: { name:     "LOC_ALERT_EN_SHADOWED",
+                  desc:
+                  '''
+                  Enable register for the local alerts
+                  "alert pingfail" (0), "escalation pingfail" (1),
+                  "alert integfail" (2), "escalation integfail" (3),
+                  "bus integrity failure" (4), "shadow reg update error" (5)
+                  and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "LOC_ALERT_REGWEN",
@@ -389,12 +399,17 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
-    { multireg: { name:     "LOC_ALERT_CLASS",
-                  desc:     '''Class assignment of local alerts. "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+    { multireg: { name:     "LOC_ALERT_CLASS_SHADOWED",
+                  desc:     '''
+                  Class assignment of the local alerts
+                  "alert pingfail" (0), "escalation pingfail" (1),
+                  "alert integfail" (2), "escalation integfail" (3),
+                  "bus integrity failure" (4), "shadow reg update error" (5)
+                  and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
+                  shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "LOC_ALERT_REGWEN",
@@ -417,8 +432,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
     { multireg: {
       name: "LOC_ALERT_CAUSE",
-      desc: '''Alert Cause Register for Local Alerts. "alert
-      pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
+      desc: '''Alert Cause Register for the local alerts
+      "alert pingfail" (0), "escalation pingfail" (1),
+      "alert integfail" (2), "escalation integfail" (3),
+      "bus integrity failure" (4), "shadow reg update error" (5)
+      and "shadow reg storage error" (6).
       ''',
       count: "N_LOC_ALERT",
       compact:  "false",
@@ -456,11 +474,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     },
-    { name:     "CLASS${chars[i]}_CTRL",
+    { name:     "CLASS${chars[i]}_CTRL_SHADOWED",
       desc:     "Escalation control register for alert Class ${chars[i]}. Can not be modified if !!CLASS${chars[i]}_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
+      shadowed: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -573,12 +592,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
              // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASS${chars[i]}_ACCUM_THRESH",
+    { name:     "CLASS${chars[i]}_ACCUM_THRESH_SHADOWED",
       desc:     '''
                 Accumulation threshold value for alert Class ${chars[i]}.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
@@ -589,12 +609,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     },
-    { name:     "CLASS${chars[i]}_TIMEOUT_CYC",
+    { name:     "CLASS${chars[i]}_TIMEOUT_CYC_SHADOWED",
       desc:     '''
                 Interrupt timeout in cycles.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
@@ -608,12 +629,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       ]
     },
 % for k in range(4):
-    { name:     "CLASS${chars[i]}_PHASE${k}_CYC",
+    { name:     "CLASS${chars[i]}_PHASE${k}_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase ${k} for Class ${chars[i]}.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,

@@ -150,6 +150,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // This function retrieves all shadowed registers in the design, then check:
   // - If the update error and storage error alerts are assigned to each shadowed register
   // - If input alert names are within the cfg.list_of_alerts
+  // - Note that shadow alerts originating inside the alert_handler are not checked here
+  //   since these are wired up as "local" alerts within the alert_handler.
   virtual function void check_shadow_reg_alerts();
     dv_base_reg shadowed_csrs[$];
     string update_err_alert_name, storage_err_alert_name;
@@ -165,11 +167,13 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       end
 
       // check if alert names are valid
-      if (!(update_err_alert_name inside {list_of_alerts})) begin
+      if (!(update_err_alert_name inside {list_of_alerts} ||
+          update_err_alert_name == "alert_handler_")) begin
         `uvm_fatal(shadowed_csrs[i].get_full_name, $sformatf(
                    "update_err alert name %0s not in list_of_alerts", update_err_alert_name))
       end
-      if (!(storage_err_alert_name inside {list_of_alerts})) begin
+      if (!(storage_err_alert_name inside {list_of_alerts} ||
+          storage_err_alert_name == "alert_handler_")) begin
         `uvm_fatal(shadowed_csrs[i].get_full_name, $sformatf(
                    "storage_err alert name %0s not in list_of_alerts", storage_err_alert_name))
       end
