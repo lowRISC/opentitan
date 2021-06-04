@@ -142,7 +142,7 @@ class SnippetGens:
     def _gens(self,
               model: Model,
               program: Program,
-              ecall: bool) -> Tuple[List[Snippet], Optional[Model]]:
+              ecall: bool) -> Tuple[List[Snippet], Model]:
         '''Generate some snippets to continue program.
 
         This will try to run down model.fuel and program.size. If ecall is
@@ -153,10 +153,7 @@ class SnippetGens:
 
         '''
         children = []  # type: List[Snippet]
-        next_model = model  # type: Optional[Model]
         while True:
-            assert next_model is not None
-
             must_stop = False
             # If we've run out of space and ecall is False, we stop
             # immediately. If ecall is True, we need to generate one last ECALL
@@ -167,10 +164,10 @@ class SnippetGens:
                 else:
                     break
 
-            old_fuel = next_model.fuel
+            old_fuel = model.fuel
             gen_res = None
             if not must_stop:
-                gen_res = self.gen(next_model, program, ecall)
+                gen_res = self.gen(model, program, ecall)
 
             if gen_res is None:
                 # We failed to generate another snippet. If ecall is False,
@@ -178,20 +175,19 @@ class SnippetGens:
                 # If ecall is True, that's bad news: we can't just leave the
                 # program unfinished. In that case, force an ECALL instruction.
                 if ecall:
-                    children.append(self._gen_ecall(next_model.pc, program))
-                    next_model = None
+                    children.append(self._gen_ecall(model.pc, program))
                 break
 
-            snippet, next_model = gen_res
+            snippet, done, model = gen_res
             children.append(snippet)
 
-            if next_model is None:
+            if done:
                 assert ecall
                 break
 
-            assert next_model.fuel < old_fuel
+            assert model.fuel < old_fuel
 
-        return (children, next_model)
+        return (children, model)
 
     def gens(self,
              model: Model,
@@ -209,12 +205,16 @@ class SnippetGens:
         snippet = Snippet.merge_list(snippets) if snippets else None
         return (snippet, next_model)
 
-    def gen_rest(self, model: Model, program: Program) -> Snippet:
-        '''Generate the rest of the program, ending with an ECALL'''
+    def gen_rest(self, model: Model, program: Program) -> Tuple[Snippet, int]:
+        '''Generate the rest of the program, ending with an ECALL
+
+        Returns a pair (snippet, end_addr) where snippet is the Snippet object
+        representing the program and end_addr is the address of the final
+        instruction that should be executed.
+
+        '''
         snippets, next_model = self._gens(model, program, True)
-        # Since _gens() has finished with an ECALL, it always returns None for
-        # next_model. It also always generates at least one snippet (containing
-        # the ECALL).
-        assert next_model is None
+        # _gens() always generates at least one snippet (containing the final
+        # ECALL). The model it returns points at the ECALL instruction's PC.
         assert snippets
-        return Snippet.merge_list(snippets)
+        return (Snippet.merge_list(snippets), next_model.pc)

@@ -131,7 +131,7 @@ class Branch(SnippetGen):
             psnip.insert_into_program(program)
             model.update_for_insn(branch_insn)
             model.pc += 4
-            return (psnip, model)
+            return (psnip, False, model)
 
         # Decide how much of our remaining fuel to give the code below the
         # branch. Each side gets the same amount because only one side appears
@@ -248,4 +248,4 @@ class Branch(SnippetGen):
 
         snippet = BranchSnippet(model.pc, branch_insn, snippet0, snippet1)
         snippet.insert_into_program(program)
-        return (snippet, model0)
+        return (snippet, False, model0)

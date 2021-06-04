@@ -11,8 +11,8 @@ from shared.operand import ImmOperandType, RegOperandType
 from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import ProgSnippet, Snippet
-from ..snippet_gen import GenCont, GenRet, SnippetGen
+from ..snippet import ProgSnippet
+from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
 
 class Jump(SnippetGen):
@@ -65,12 +65,12 @@ class Jump(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        return self.gen_tgt(model, program, None)
+        return SnippetGen._unsimple_genret(self.gen_tgt(model, program, None))
 
     def gen_tgt(self,
                 model: Model,
                 program: Program,
-                tgt_addr: Optional[int]) -> Optional[Tuple[Snippet, Model]]:
+                tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
 
         # Decide whether to generate JALR or JAL. If we try to generate a JALR
         # and fail, try to generate a JAL instead: in practice that might well
@@ -159,7 +159,7 @@ class Jump(SnippetGen):
                      link_reg_idx: int,
                      new_pc: int,
                      model: Model,
-                     program: Program) -> GenRet:
+                     program: Program) -> SimpleGenRet:
         '''Generate a 1-instruction snippet for prog_insn; finish generation'''
         # Generate our one-instruction snippet and add it to the program
         snippet = ProgSnippet(model.pc, [prog_insn])
@@ -186,7 +186,7 @@ class Jump(SnippetGen):
     def gen_jal(self,
                 model: Model,
                 program: Program,
-                tgt_addr: Optional[int]) -> Optional[GenRet]:
+                tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
         '''Generate a random JAL instruction'''
         assert len(self.jal.operands) == 2
         offset_optype = self.jal.operands[1].op_type
@@ -204,7 +204,7 @@ class Jump(SnippetGen):
     def gen_jalr(self,
                  model: Model,
                  program: Program,
-                 tgt_addr: Optional[int]) -> Optional[GenRet]:
+                 tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
         '''Generate a random JALR instruction'''
 
         assert len(self.jalr.operands) == 3
