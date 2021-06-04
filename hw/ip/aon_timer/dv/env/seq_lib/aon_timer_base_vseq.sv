@@ -16,7 +16,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // If this is set, the AON clock starts first and then the fast clock starts sometime later. If
   // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is
   // that it starts first.
-  rand bit reset_aon_first;
+  // TODO: Issue #6821: temp set to 1 to avoid assertion error.
+  // rand bit reset_aon_first;
+  bit reset_aon_first = 1;
 
   // Should the escalation signal be enabled at the start of time?
   rand bit initial_lc_escalate_en;
