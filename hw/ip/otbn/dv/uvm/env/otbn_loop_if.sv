@@ -17,14 +17,14 @@ interface otbn_loop_if (
   input logic [31:0] current_loop_end
 );
 
-  function automatic otbn_env_pkg::loop_stack_fullness_e get_fullness();
+  function automatic otbn_env_pkg::stack_fullness_e get_fullness();
     if (loop_stack_full) begin
-      return otbn_env_pkg::LoopStackFull;
+      return otbn_env_pkg::StackFull;
     end
     if (loop_active_q) begin
-      return otbn_env_pkg::LoopStackPartial;
+      return otbn_env_pkg::StackPartial;
     end
-    return otbn_env_pkg::LoopStackEmpty;
+    return otbn_env_pkg::StackEmpty;
   endfunction
 
 endinterface

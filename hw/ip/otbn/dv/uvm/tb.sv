@@ -102,6 +102,7 @@ module tb;
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
   // OTBN model, wrapping an ISS.
   //
@@ -163,6 +164,9 @@ module tb;
     uvm_config_db#(virtual otbn_mac_bignum_if)::set(
       null, "*.env", "mac_bignum_vif",
       dut.u_otbn_core.u_otbn_mac_bignum.i_otbn_mac_bignum_if);
+    uvm_config_db#(virtual otbn_rf_base_if)::set(
+      null, "*.env", "rf_base_vif",
+      dut.u_otbn_core.u_otbn_rf_base.i_otbn_rf_base_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
