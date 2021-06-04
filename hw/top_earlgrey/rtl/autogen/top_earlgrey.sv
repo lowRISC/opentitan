@@ -648,6 +648,7 @@ module top_earlgrey #(
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   otp_ctrl_pkg::otp_en_t       csrng_otp_en_csrng_sw_app_read;
   otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_read;
+  otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_over;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
@@ -689,6 +690,7 @@ module top_earlgrey #(
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
   assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
@@ -2223,6 +2225,7 @@ module top_earlgrey #(
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .otp_en_entropy_src_fw_read_i(entropy_src_otp_en_entropy_src_fw_read),
+      .otp_en_entropy_src_fw_over_i(entropy_src_otp_en_entropy_src_fw_over),
       .rng_fips_o(es_rng_fips_o),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),

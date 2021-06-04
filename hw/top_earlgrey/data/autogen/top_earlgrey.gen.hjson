@@ -4683,6 +4683,18 @@
           index: -1
         }
         {
+          name: otp_en_entropy_src_fw_over
+          struct: otp_en
+          package: otp_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          top_signame: entropy_src_otp_en_entropy_src_fw_over
+          index: -1
+        }
+        {
           name: rng_fips
           struct: logic
           type: uni
@@ -6264,6 +6276,7 @@
       otp_ctrl.otp_hw_cfg
       csrng.otp_en_csrng_sw_app_read
       entropy_src.otp_en_entropy_src_fw_read
+      entropy_src.otp_en_entropy_src_fw_over
       lc_ctrl.otp_device_id
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
@@ -14498,6 +14511,18 @@
         index: -1
       }
       {
+        name: otp_en_entropy_src_fw_over
+        struct: otp_en
+        package: otp_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        top_signame: entropy_src_otp_en_entropy_src_fw_over
+        index: -1
+      }
+      {
         name: rng_fips
         struct: logic
         type: uni
@@ -18523,6 +18548,15 @@
         package: otp_ctrl_pkg
         struct: otp_en
         signame: entropy_src_otp_en_entropy_src_fw_read
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: entropy_src_otp_en_entropy_src_fw_over
         width: 1
         type: uni
         end_idx: -1
