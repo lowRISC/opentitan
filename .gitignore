@@ -69,3 +69,8 @@ hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
 # Rust Cargo build system files.
 Cargo.lock
 sw/host/**/target
+
+# Direnv
+.direnv/
+.envrc
+
