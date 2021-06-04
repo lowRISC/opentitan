@@ -240,10 +240,10 @@ module  i2c_core (
 
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
-      2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 6'd1);
-      2'h1:    fmt_watermark_d = (fmt_fifo_depth <= 6'd4);
-      2'h2:    fmt_watermark_d = (fmt_fifo_depth <= 6'd8);
-      default: fmt_watermark_d = (fmt_fifo_depth <= 6'd16);
+      2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 7'd1);
+      2'h1:    fmt_watermark_d = (fmt_fifo_depth <= 7'd4);
+      2'h2:    fmt_watermark_d = (fmt_fifo_depth <= 7'd8);
+      default: fmt_watermark_d = (fmt_fifo_depth <= 7'd16);
     endcase
   end
 
@@ -251,11 +251,11 @@ module  i2c_core (
 
   always_comb begin
     unique case(i2c_fifo_rxilvl)
-      3'h0:    rx_watermark_d = (rx_fifo_depth >= 6'd1);
-      3'h1:    rx_watermark_d = (rx_fifo_depth >= 6'd4);
-      3'h2:    rx_watermark_d = (rx_fifo_depth >= 6'd8);
-      3'h3:    rx_watermark_d = (rx_fifo_depth >= 6'd16);
-      3'h4:    rx_watermark_d = (rx_fifo_depth >= 6'd30);
+      3'h0:    rx_watermark_d = (rx_fifo_depth >= 7'd1);
+      3'h1:    rx_watermark_d = (rx_fifo_depth >= 7'd4);
+      3'h2:    rx_watermark_d = (rx_fifo_depth >= 7'd8);
+      3'h3:    rx_watermark_d = (rx_fifo_depth >= 7'd16);
+      3'h4:    rx_watermark_d = (rx_fifo_depth >= 7'd30);
       default: rx_watermark_d = 1'b0;
     endcase
   end

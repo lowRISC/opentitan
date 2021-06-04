@@ -475,16 +475,16 @@ package i2c_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  d;
+      logic [6:0]  d;
     } fmtlvl;
     struct packed {
-      logic [5:0]  d;
+      logic [6:0]  d;
     } txlvl;
     struct packed {
-      logic [5:0]  d;
+      logic [6:0]  d;
     } rxlvl;
     struct packed {
-      logic [5:0]  d;
+      logic [6:0]  d;
     } acqlvl;
   } i2c_hw2reg_fifo_status_reg_t;
 
@@ -542,10 +542,10 @@ package i2c_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [119:88]
-    i2c_hw2reg_status_reg_t status; // [87:78]
-    i2c_hw2reg_rdata_reg_t rdata; // [77:70]
-    i2c_hw2reg_fifo_status_reg_t fifo_status; // [69:46]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [123:92]
+    i2c_hw2reg_status_reg_t status; // [91:82]
+    i2c_hw2reg_rdata_reg_t rdata; // [81:74]
+    i2c_hw2reg_fifo_status_reg_t fifo_status; // [73:46]
     i2c_hw2reg_val_reg_t val; // [45:14]
     i2c_hw2reg_acqdata_reg_t acqdata; // [13:4]
     i2c_hw2reg_stretch_ctrl_reg_t stretch_ctrl; // [3:0]
@@ -601,7 +601,7 @@ package i2c_reg_pkg;
   parameter logic [0:0] I2C_STATUS_TXEMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] I2C_STATUS_ACQEMPTY_RESVAL = 1'h 1;
   parameter logic [7:0] I2C_RDATA_RESVAL = 8'h 0;
-  parameter logic [29:0] I2C_FIFO_STATUS_RESVAL = 30'h 0;
+  parameter logic [30:0] I2C_FIFO_STATUS_RESVAL = 31'h 0;
   parameter logic [31:0] I2C_VAL_RESVAL = 32'h 0;
   parameter logic [9:0] I2C_ACQDATA_RESVAL = 10'h 0;
 

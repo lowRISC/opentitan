@@ -550,7 +550,7 @@ TEST_F(FifoTest, GetLevels) {
   uint8_t rx, fmt;
   EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
   EXPECT_EQ(dif_i2c_get_fifo_levels(&i2c_, &rx, &fmt), kDifI2cOk);
-  EXPECT_EQ(rx, 0x7);
+  EXPECT_EQ(rx, 0x47);
   EXPECT_EQ(fmt, 0x29);
 
   rx = 0, fmt = 0;
@@ -562,7 +562,7 @@ TEST_F(FifoTest, GetLevels) {
   rx = 0, fmt = 0;
   EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
   EXPECT_EQ(dif_i2c_get_fifo_levels(&i2c_, &rx, nullptr), kDifI2cOk);
-  EXPECT_EQ(rx, 0x7);
+  EXPECT_EQ(rx, 0x47);
   EXPECT_EQ(fmt, 0x0);
 }
 
