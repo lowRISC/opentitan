@@ -285,19 +285,19 @@
       hwaccess: "hwo"
       hwext: "true"
       fields: [
-        { bits: "5:0"
+        { bits: "6:0"
           name: "FMTLVL"
           desc: "Current fill level of FMT fifo"
         }
-        { bits: "21:16"
+        { bits: "22:16"
           name: "RXLVL"
           desc: "Current fill level of RX fifo"
         }
-        { bits: "13:8"
+        { bits: "14:8"
           name: "TXLVL"
           desc: "Current fill level of TX fifo"
         }
-        { bits: "29:24"
+        { bits: "30:24"
           name: "ACQLVL"
           desc: "Current fill level of ACQ fifo"
         }

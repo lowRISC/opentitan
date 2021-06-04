@@ -289,13 +289,13 @@ module i2c_reg_top (
   logic fifo_ctrl_acqrst_we;
   logic fifo_ctrl_txrst_wd;
   logic fifo_ctrl_txrst_we;
-  logic [5:0] fifo_status_fmtlvl_qs;
+  logic [6:0] fifo_status_fmtlvl_qs;
   logic fifo_status_fmtlvl_re;
-  logic [5:0] fifo_status_txlvl_qs;
+  logic [6:0] fifo_status_txlvl_qs;
   logic fifo_status_txlvl_re;
-  logic [5:0] fifo_status_rxlvl_qs;
+  logic [6:0] fifo_status_rxlvl_qs;
   logic fifo_status_rxlvl_re;
-  logic [5:0] fifo_status_acqlvl_qs;
+  logic [6:0] fifo_status_acqlvl_qs;
   logic fifo_status_acqlvl_re;
   logic ovrd_txovrden_qs;
   logic ovrd_txovrden_wd;
@@ -2025,9 +2025,9 @@ module i2c_reg_top (
 
   // R[fifo_status]: V(True)
 
-  //   F[fmtlvl]: 5:0
+  //   F[fmtlvl]: 6:0
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (7)
   ) u_fifo_status_fmtlvl (
     .re     (fifo_status_fmtlvl_re),
     .we     (1'b0),
@@ -2040,9 +2040,9 @@ module i2c_reg_top (
   );
 
 
-  //   F[txlvl]: 13:8
+  //   F[txlvl]: 14:8
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (7)
   ) u_fifo_status_txlvl (
     .re     (fifo_status_txlvl_re),
     .we     (1'b0),
@@ -2055,9 +2055,9 @@ module i2c_reg_top (
   );
 
 
-  //   F[rxlvl]: 21:16
+  //   F[rxlvl]: 22:16
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (7)
   ) u_fifo_status_rxlvl (
     .re     (fifo_status_rxlvl_re),
     .we     (1'b0),
@@ -2070,9 +2070,9 @@ module i2c_reg_top (
   );
 
 
-  //   F[acqlvl]: 29:24
+  //   F[acqlvl]: 30:24
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (7)
   ) u_fifo_status_acqlvl (
     .re     (fifo_status_acqlvl_re),
     .we     (1'b0),
@@ -3282,10 +3282,10 @@ module i2c_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[5:0] = fifo_status_fmtlvl_qs;
-        reg_rdata_next[13:8] = fifo_status_txlvl_qs;
-        reg_rdata_next[21:16] = fifo_status_rxlvl_qs;
-        reg_rdata_next[29:24] = fifo_status_acqlvl_qs;
+        reg_rdata_next[6:0] = fifo_status_fmtlvl_qs;
+        reg_rdata_next[14:8] = fifo_status_txlvl_qs;
+        reg_rdata_next[22:16] = fifo_status_rxlvl_qs;
+        reg_rdata_next[30:24] = fifo_status_acqlvl_qs;
       end
 
       addr_hit[9]: begin
