@@ -306,6 +306,38 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   endgroup
 
+  covergroup flag_write_cg
+    with function sample(bit     flag_group,
+                         flags_t read_data,
+                         flags_t write_data);
+
+    // The following coverpoints track writes to the different flags in the flag group that set or
+    // clear the flag, respectively. These are then crossed with fg_cp because we want to see each
+    // event with each flag group.
+
+    fg_cp: coverpoint flag_group;
+
+    `DEF_SEEN_CP(set_Z_cp, write_data.Z & ~read_data.Z)
+    `DEF_SEEN_CP(set_L_cp, write_data.L & ~read_data.L)
+    `DEF_SEEN_CP(set_M_cp, write_data.M & ~read_data.M)
+    `DEF_SEEN_CP(set_C_cp, write_data.C & ~read_data.C)
+
+    `DEF_SEEN_CP(clr_Z_cp, read_data.Z & ~write_data.Z)
+    `DEF_SEEN_CP(clr_L_cp, read_data.L & ~write_data.L)
+    `DEF_SEEN_CP(clr_M_cp, read_data.M & ~write_data.M)
+    `DEF_SEEN_CP(clr_C_cp, read_data.C & ~write_data.C)
+
+    set_Z_cross: cross fg_cp, set_Z_cp;
+    set_L_cross: cross fg_cp, set_L_cp;
+    set_M_cross: cross fg_cp, set_M_cp;
+    set_C_cross: cross fg_cp, set_C_cp;
+
+    clr_Z_cross: cross fg_cp, clr_Z_cp;
+    clr_L_cross: cross fg_cp, clr_L_cp;
+    clr_M_cross: cross fg_cp, clr_M_cp;
+    clr_C_cross: cross fg_cp, clr_C_cp;
+  endgroup
+
   // Per-encoding covergroups //////////////////////////////////////////////////
   covergroup enc_bna_cg
     with function sample(mnem_str_t    mnemonic,
@@ -1480,6 +1512,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     super.new(name, parent);
 
     call_stack_cg = new;
+    flag_write_cg = new;
 
     enc_bna_cg = new;
     enc_bnaf_cg = new;
@@ -1612,6 +1645,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     // Call stack tracking.
     call_stack_cg.sample(rtl_item.call_stack_flags, rtl_item.call_stack_fullness);
+
+    // Flag set/clear tracking
+    for (int fg = 0; fg < 2; fg++) begin
+      if (rtl_item.flags_write_valid[fg]) begin
+        flag_write_cg.sample(fg[0], rtl_item.flags_read_data[fg], rtl_item.flags_write_data[fg]);
+      end
+    end
 
     // Per-encoding coverage. First, use insn_encodings to find the encoding for the instruction.
     // Every instruction mnemonic should have an associated encoding schema.

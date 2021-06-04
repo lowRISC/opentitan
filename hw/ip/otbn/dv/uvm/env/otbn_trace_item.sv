@@ -15,8 +15,9 @@ class otbn_trace_item extends uvm_sequence_item;
   logic [255:0] wdr_operand_a;
   logic [255:0] wdr_operand_b;
 
-  // Flag output data
+  // Flag read/write data
   otbn_pkg::flags_t flags_read_data [2];
+  logic [1:0]       flags_write_valid;
   otbn_pkg::flags_t flags_write_data [2];
 
   // GPR and WDR write data
@@ -52,6 +53,7 @@ class otbn_trace_item extends uvm_sequence_item;
     `uvm_field_int        (wdr_operand_a,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_operand_b,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_sarray_int (flags_read_data,          UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (flags_write_valid,        UVM_DEFAULT | UVM_BIN)
     `uvm_field_sarray_int (flags_write_data,         UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (gpr_write_data,           UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_write_data,           UVM_DEFAULT | UVM_HEX)

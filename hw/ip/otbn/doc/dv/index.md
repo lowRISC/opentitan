@@ -134,6 +134,11 @@ Important events for it are tracked at those instructions, rather than separatel
 Each flag in each flag group should be set to one from zero by some instruction.
 Similarly, each flag in each flag group should be cleared to zero from one by some instruction.
 
+> These events are tracked in `flag_write_cg`.
+> This is called from `on_insn()` once for each flag group that is being written.
+> The covergroup contains eight coverpoints (for each flag set and cleared).
+> These are then crossed with the flag group.
+
 ### Instruction-based coverage
 
 As a processor, much of OTBN's coverage points are described in terms of instructions being executed.
