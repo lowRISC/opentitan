@@ -128,7 +128,8 @@ virtual task tl_write_mem_less_than_word(string ral_name);
         addr[1:0] == 0; // word aligned
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr : loc_mem_ranges[mem_idx].end_addr]};
-        mask != '1 || size < 2;
+        mask != '1 || size < 2;, ,
+        p_sequencer.tl_sequencer_hs[ral_name]
         )
   end
 endtask
@@ -147,7 +148,8 @@ virtual task tl_read_mem_err(string ral_name);
         opcode == tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr :
-              loc_mem_ranges[mem_idx].end_addr]};
+              loc_mem_ranges[mem_idx].end_addr]};, ,
+        p_sequencer.tl_sequencer_hs[ral_name]
         )
   end
 endtask
