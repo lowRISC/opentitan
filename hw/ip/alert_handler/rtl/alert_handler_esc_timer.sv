@@ -271,7 +271,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
   // switch interrupt / escalation mode
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      cnt_q   <= '0;
+      cnt_q <= '0;
     end else begin
       if (cnt_en && cnt_clr) begin
         cnt_q <= EscCntDw'(1'b1);
@@ -288,34 +288,85 @@ module alert_handler_esc_timer import alert_pkg::*; (
   ////////////////
 
   // a clear should always bring us back to idle
-  `ASSERT(CheckClr, clr_i && !(state_q inside {IdleSt, TimeoutSt}) |=>
+  `ASSERT(CheckClr_A,
+      clr_i &&
+      !(state_q inside {IdleSt, TimeoutSt, FsmErrorSt})
+      |=>
       state_q == IdleSt)
   // if currently in idle and not enabled, must remain here
-  `ASSERT(CheckEn,  state_q == IdleSt && !en_i |=>
+  `ASSERT(CheckEn_A,
+      state_q == IdleSt &&
+      !en_i
+      |=>
       state_q == IdleSt)
   // Check if accumulation trigger correctly captured
-  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == IdleSt && en_i && !clr_i |=>
+  `ASSERT(CheckAccumTrig0_A,
+      accum_trig_i &&
+      state_q == IdleSt &&
+      en_i &&
+      !clr_i
+      |=>
       state_q == Phase0St)
-  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == TimeoutSt && en_i && !clr_i |=>
+  `ASSERT(CheckAccumTrig1_A,
+      accum_trig_i &&
+      state_q == TimeoutSt &&
+      en_i &&
+      !clr_i
+      |=>
       state_q == Phase0St)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, state_q == IdleSt && timeout_en_i && en_i && timeout_cyc_i != 0 &&
-      !accum_trig_i |=> state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt1, state_q == TimeoutSt && timeout_en_i && cnt_q < timeout_cyc_i &&
-      !accum_trig_i |=> state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt2, state_q == TimeoutSt && !timeout_en_i && !accum_trig_i |=>
+  `ASSERT(CheckTimeout0_A,
+      state_q == IdleSt &&
+      timeout_en_i &&
+      en_i &&
+      timeout_cyc_i != 0 &&
+      !accum_trig_i
+      |=>
+      state_q == TimeoutSt)
+  `ASSERT(CheckTimeoutSt1_A,
+      state_q == TimeoutSt &&
+      timeout_en_i &&
+      cnt_q < timeout_cyc_i &&
+      !accum_trig_i
+      |=>
+      state_q == TimeoutSt)
+  `ASSERT(CheckTimeoutSt2_A,
+      state_q == TimeoutSt &&
+      !timeout_en_i &&
+      !accum_trig_i
+      |=>
       state_q == IdleSt)
   // Check if timeout correctly triggers escalation
-  `ASSERT(CheckTimeoutStTrig, state_q == TimeoutSt && timeout_en_i &&
-      cnt_q == timeout_cyc_i |=> state_q == Phase0St)
+  `ASSERT(CheckTimeoutStTrig_A,
+      state_q == TimeoutSt &&
+      timeout_en_i &&
+      cnt_q == timeout_cyc_i
+      |=>
+      state_q == Phase0St)
   // Check whether escalation phases are correctly switched
-  `ASSERT(CheckPhase0, state_q == Phase0St && !clr_i && cnt_q >= phase_cyc_i[0] |=>
+  `ASSERT(CheckPhase0_A,
+      state_q == Phase0St &&
+      !clr_i &&
+      cnt_q >= phase_cyc_i[0]
+      |=>
       state_q == Phase1St)
-  `ASSERT(CheckPhase1, state_q == Phase1St && !clr_i && cnt_q >= phase_cyc_i[1] |=>
+  `ASSERT(CheckPhase1_A,
+      state_q == Phase1St &&
+      !clr_i &&
+      cnt_q >= phase_cyc_i[1]
+      |=>
       state_q == Phase2St)
-  `ASSERT(CheckPhase2, state_q == Phase2St && !clr_i && cnt_q >= phase_cyc_i[2] |=>
+  `ASSERT(CheckPhase2_A,
+      state_q == Phase2St &&
+      !clr_i &&
+      cnt_q >= phase_cyc_i[2]
+      |=>
       state_q == Phase3St)
-  `ASSERT(CheckPhase3, state_q == Phase3St && !clr_i && cnt_q >= phase_cyc_i[3] |=>
+  `ASSERT(CheckPhase3_A,
+      state_q == Phase3St &&
+      !clr_i &&
+      cnt_q >= phase_cyc_i[3]
+      |=>
       state_q == TerminalSt)
 
 endmodule : alert_handler_esc_timer
