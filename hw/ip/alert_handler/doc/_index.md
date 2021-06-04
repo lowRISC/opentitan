@@ -156,7 +156,8 @@ instance `<number>`.
 Signal                  | Direction        | Type                      | Description
 ------------------------|------------------|----------------           |---------------
 `crashdump_o`           | `output`         | packed `struct`           | This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
-`entropy_i`             | `input`          | `logic`                   | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
+`otp_edn_o`             | `output`         | `otp_edn_req_t`           | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`otp_edn_i`             | `input`          | `otp_edn_rsp_t`           | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
 `alert_tx_i[<number>]`  | `input`          | packed `alert_tx_t` array | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
 `alert_rx_o[<number>]`  | `output`         | packed `alert_rx_t` array | Outgoing alert acknowledgment and ping requests, differentially encoded. Index range: `[NAlerts-1:0]`
 `esc_tx_o[<sev>]`       | `output`         | packed `esc_tx_t` array   | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
@@ -810,15 +811,19 @@ In addition to the differential alert and escalation signalling scheme, the inte
 
 1. Ping Timer:
   - The FSM is sparsely encoded.
-  - The LFSR counter is duplicated (**TODO**).
+  - The LFSR and the counter are duplicated.
   - If the FSM or counter are glitched into an invalid state, all internal ping fail alerts will be permanently asserted.
 
 2. Escalation Timers:
   - The escalation timer FSMs are sparsely encoded.
-  - The escalation timer counters are duplicated (**TODO**).
-  - The escalation accumulators are duplicated (**TODO**).
+  - The escalation timer counters are duplicated.
+  - The escalation accumulators are duplicated.
   - If one of these FSMs, counters or accumulators are glitched into an invalid state, all escalation actions will be triggered and the affected FSM goes into a terminal `FsmError` state.
 
+3. CSRs (**TODO: this is TBD and not implemented yet**):
+  - Critical configuration CSRs are shadowed.
+  - The shadow CSRs can trigger additional internal alerts for CSR storage and update failures.
+    These internal alerts are fed back into the alert classifier in the same manner as the ping and integrity failure alerts.
 
 # Programmers Guide
 
