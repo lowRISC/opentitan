@@ -406,46 +406,38 @@ staggered level changes appear at most 1 cycle apart from each other.
 
 ### LFSR Timer
 
-The `ping_req_i` inputs of all signaling modules (`prim_alert_receiver`, `prim_esc_sender`) instantiated within the alert handler are connected to a central ping timer that determines the random amount of wait cycles between ping requests.
-Further, this ping timer also randomly selects a particular line to be pinged.
+The `ping_req_i` inputs of all signaling modules (`prim_alert_receiver`, `prim_esc_sender`) instantiated within the alert handler are connected to a central ping timer that alternatingly pings either an alert line or an escalation line after waiting for a pseudo-random amount of clock cycles.
+Further, this ping timer also randomly selects a particular alert line to be pinged (escalation senders are always pinged in-order due to the [ping monitoring mechanism]({{< relref "#monitoring-of-pings-at-the-escalation-receiver-side" >}}) on the escalation side).
 That should make it more difficult to predict the next ping occurrence based on past observations.
 
-The ping timer is implemented using an
-[LFSR-based PRNG of Galois type]({{< relref "hw/ip/prim/doc/prim_lfsr.md" >}}). In order
-to increase the entropy of the pseudo random sequence, 1 random bit from the
-TRNG is XOR'ed into the LFSR state every time a new random number is drawn
-(which happens every few 10k cycles). The LFSR is 32bits wide, but only 24bits
-of its state are actually being used to generate the random timer count and
-select the alert/escalation line to be pinged. I.e., the 32bits first go through
-a fixed permutation function, and then bits `[23:16]` are used to determine which
-peripheral to ping. The random cycle count is created by splitting bits `[15:0]`
-and concatenating them as follows:
+The ping timer is implemented using an [LFSR-based PRNG of Galois type]({{< relref "hw/ip/prim/doc/prim_lfsr.md" >}}).
+This ping timer is reseeded with fresh entropy from EDN roughly every 500k cycles which corresponds to around 16 ping operations on average.
+The LFSR is 32bits wide, but only 24bits of its state are actually being used to generate the random timer count and select the alert line to be pinged.
+I.e., the 32bits first go through a fixed permutation function, and then bits `[23:16]` are used to determine which alert line to ping.
+The random cycle count is created by OR'ing bits `[15:0]` with the constant `3'b100` as follows:
 
 ```
-cycle_cnt = {permuted[15:2], 8'b01, permuted[1:0]}
+cycle_cnt = permuted[15:0] | 3'b100;
 ```
 
-This constant DC offset introduces a minimum ping spacing of 4 cycles (1 cycle +
-margin) to ensure that the handshake protocols of the sender receiver pairs work.
+This constant DC offset introduces a minimum ping spacing of 4 cycles (1 cycle + margin) to ensure that the handshake protocols of the sender/receiver pairs work.
 
-After selecting one of the peripherals to ping, the LFSR timer waits until
-either the corresponding `*_ping_ok[<number>]`  signal is asserted, or until the
-programmable ping timeout value is reached. In both cases, the LFSR timer
-proceeds with the next ping, but in the second case it will additionally raise a
-"pingfail" alert. The ping enable signal remains asserted during the time where
-the LFSR counter waits.
+After selecting one of the peripherals to ping, the LFSR timer waits until either the corresponding `*_ping_ok[<number>]`  signal is asserted, or until the programmable ping timeout value is reached.
+In both cases, the LFSR timer proceeds with the next ping, but in the second case it will additionally raise a "pingfail" alert.
+The ping enable signal remains asserted during the time where the LFSR counter waits.
 
-The timeout value is a function of the ratios between the alert handler clock
-and peripheral clocks present in the system, and can be programmed at startup
-time via the register {{< regref "PING_TIMEOUT_CYC" >}}. Note that this register is locked in
-together with the alert enable and disable configuration.
+The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register {{< regref "PING_TIMEOUT_CYC" >}}.
 
-The ping timer starts as soon as the initial configuration phase is over and the
-registers have been locked in.
+Note that the ping timer directly flags a "pingfail" alert if a spurious "ping ok" message comes in that has not been requested.
 
-Note that the ping timer directly flags a "pingfail" alert if a spurious "ping
-ok" message comes in that has not been requested.
 
+As described in the programmers guide below, the ping timer has to be enabled explicitly.
+Only alerts that have been *enabled and locked* will be pinged in order to avoid spurious alerts.
+Escalation channels are always enabled, and hence will always be pinged once this mechanism has been turned on.
+
+In addition to the ping timer mechanism described above, the escalation receivers contain monitoring  counters that monitor the liveness of the alert handler (described in more detail in [this section]({{< relref "#monitoring-of-pings-at-the-escalation-receiver-side" >}})).
+This mechanism requires that the maximum wait time between escalation receiver pings is bounded.
+To that end, escalation senders are pinged in-order every second ping operation (i.e., the wait time is randomized, but the selection of the escalation line is not).
 
 ### Alert Receiving
 
@@ -804,6 +796,21 @@ An ongoing ping sequence will be aborted immediately.
 Another thing to note is that the ping and escalation response sequences have to start _exactly_ one cycle after either a ping or escalation event has been signalled.
 Otherwise the escalation sender will assert `integ_fail_o` immediately.
 
+### Monitoring of Pings at the Escalation Receiver Side
+
+Escalation receivers contain a mechanism to monitor the liveness of the alert handler itself.
+In particular, the receivers passively monitor the ping requests sent out by the alert handler using a timeout counter.
+If ping requests are absent for too long, the corresponding escalation action will be automatically asserted until reset.
+
+The monitoring mechanism builds on top of the following properties of the alert handler system:
+1. the ping mechanism can only be enabled, but not disabled.
+This allows us to start the timeout counter once the first ping request arrives at a particular escalation receiver.
+
+2. the escalation receivers are in the same clock/reset domain as the alert handler.
+This ensures that we are seeing the same clock frequency, and the mechanism is properly reset together with the alert handler logic.
+
+3. the maximum cycle count between subsequent pings on the same escalation line is bounded, even though the wait counts are randomized.
+This allows us to compute a safe and fixed timeout threshold based on design constants.
 
 ### Hardening Against Glitch Attacks
 
@@ -1010,25 +1017,3 @@ added in the future.
   from the peripheral IPs which can pause ping testing IFF this low-power mode
   has been enabled during initial configuration.
 
-- Support for LFSR cross checking. This feature adds a second redundant LFSR to
-  enable continuous comparison of the timer states. If they are not consistent
-  (e.g. due to a glitch attack), a local alert will be raised. One idea would be
-  to operate a Galois and Fibonacci implementation in parallel, since under
-  certain circumstances they are guaranteed to produce the same sequence - yet
-  with a differently wired logic and hence different response to glitching
-  attacks. This needs some further theoretical work in order to validate whether
-  this can work (there may be restrictions on the polynomials that can be used,
-  and the initial states of the two LFSRs need to be correctly computed).
-
-- Monitoring of the pings in order to make sure that every peripheral has been
-  pinged during a certain time window. Since a full histogram approach would be
-  expensive and is not really needed, the idea is to add a bank of set regs (one
-  for each peripheral) which are set whenever a peripheral has successfully been
-  pinged. Every now and then, these registers need to be checked. They could be
-  exposed to SW in a similar manner as the cause / interrupt state bits such
-  that SW can do the checking. HW could check these registers after a certain
-  amount of correctly executed pings, and raise a local alert if not all
-  peripherals have been exercised. Note however that since we have an entropy
-  input in the LFSR timer, there is no way to guarantee a safe #pings threshold
-  in this case. I.e., there is always a small probability of triggering false
-  positives which have to be handled in SW.
