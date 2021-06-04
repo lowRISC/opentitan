@@ -141,6 +141,27 @@ package kmac_env_pkg;
     AppRom
   } kmac_app_e;
 
+  // state values of the App FSM
+  typedef enum bit [3:0] {
+    StIdle                  = 4'b0000,
+    StAppCfg                = 4'b1110,
+    StAppMsg                = 4'b0101,
+    StAppOutLen             = 4'b0110,
+    StAppProcess            = 4'b1010,
+    StAppWait               = 4'b0111,
+    StSw                    = 4'b0100,
+    StKeyMgrErrKeyNotValid  = 4'b1111
+  } kmac_app_st_e;
+
+  // states of the error FSM
+  typedef enum bit [2:0] {
+    ErrStIdle,
+    ErrStMsgFeed,
+    ErrStProcessing,
+    ErrStAbsorbed,
+    ErrStSqueezing
+  } kmac_err_st_e;
+
   typedef virtual pins_if#(1)       idle_vif;
   typedef virtual kmac_sideload_if  sideload_vif;
 
