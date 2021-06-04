@@ -54,7 +54,9 @@ extern "C" {
  * An mmio_region_t is an opaque handle to an MMIO region; it should only be
  * modified using the functions provided in this header.
  */
-typedef struct mmio_region { volatile void *base; } mmio_region_t;
+typedef struct mmio_region {
+  volatile void *base;
+} mmio_region_t;
 
 /**
  * Create a new `mmio_region_t` from the given address.
@@ -118,6 +120,23 @@ inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
 }
 
 /**
+ * Writes an aligned uint8_t to the MMIO region `base` at the given byte
+ * offset via two subsequent write operations.
+ *
+ * This function is guaranteed to commit a write to memory, and will not be
+ * reordered with respect to other region manipulations.
+ *
+ * @param base the region to write to.
+ * @param offset the offset to write at, in bytes.
+ * @param value the value to write.
+ */
+inline void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                        uint8_t value) {
+  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
+  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
+}
+
+/**
  * Writes an aligned uint32_t to the MMIO region `base` at the given byte
  * offset.
  *
@@ -132,6 +151,23 @@ inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
                                 uint32_t value) {
   ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
 }
+
+/**
+ * Writes an aligned uint32_t to the MMIO region `base` at the given byte
+ * offset via two subsequent write operations.
+ *
+ * This function is guaranteed to commit a write to memory, and will not be
+ * reordered with respect to other region manipulations.
+ *
+ * @param base the region to write to.
+ * @param offset the offset to write at, in bytes.
+ * @param value the value to write.
+ */
+inline void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                         uint32_t value) {
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+}
 #else   // MOCK_MMIO
 /**
  * "Instrumented" mmio_region_t.
@@ -141,7 +177,9 @@ inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
  * version of `mmio_region_t`, which prevents users from being able to access
  * the pointer inside.
  */
-typedef struct mmio_region { void *mock; } mmio_region_t;
+typedef struct mmio_region {
+  void *mock;
+} mmio_region_t;
 
 /**
  * Stubbed-out read/write operations for overriding by a testing library.
@@ -155,6 +193,10 @@ uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
 
 void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value);
 void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value);
+void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                 uint8_t value);
+void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                  uint32_t value);
 #endif  // MOCK_MMIO
 
 /**

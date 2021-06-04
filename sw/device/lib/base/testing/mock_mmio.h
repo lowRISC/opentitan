@@ -202,6 +202,22 @@ class MmioTest {
   EXPECT_WRITE8_AT(this->dev(), offset, __VA_ARGS__);
 
 /**
+ * Expect a shadowed write to the given offset with the given 8-bit value.
+ *
+ * The value may be given as an integer, a pointer to little-endian data,
+ * or a `std::initializer_list<BitField>`.
+ *
+ * This function is only available in tests using a fixture that derives
+ * `MmioTest`.
+ *
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
+ * calls.
+ */
+#define EXPECT_WRITE8_SHADOWED(offset, ...) \
+  EXPECT_WRITE8(offset, __VA_ARGS__);       \
+  EXPECT_WRITE8(offset, __VA_ARGS__);
+
+/**
  * Expect a write to the given offset with the given 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
@@ -215,6 +231,22 @@ class MmioTest {
  */
 #define EXPECT_WRITE32(offset, ...) \
   EXPECT_WRITE32_AT(this->dev(), offset, __VA_ARGS__);
+
+/**
+ * Expect a shadowed write to the given offset with the given 32-bit value.
+ *
+ * The value may be given as an integer, a pointer to little-endian data,
+ * or a `std::initializer_list<BitField>`.
+ *
+ * This function is only available in tests using a fixture that derives
+ * `MmioTest`.
+ *
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
+ * calls.
+ */
+#define EXPECT_WRITE32_SHADOWED(offset, ...) \
+  EXPECT_WRITE32(offset, __VA_ARGS__);       \
+  EXPECT_WRITE32(offset, __VA_ARGS__);
 
 #define EXPECT_MASK_INTERNAL_(width, dev, off, ...)                        \
   do {                                                                     \
