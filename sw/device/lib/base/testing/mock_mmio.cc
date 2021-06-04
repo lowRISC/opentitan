@@ -31,8 +31,22 @@ void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value) {
   dev->Write8(offset, value);
 }
 
+void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                 uint8_t value) {
+  auto *dev = static_cast<MockDevice *>(base.mock);
+  dev->Write8(offset, value);
+  dev->Write8(offset, value);
+}
+
 void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value) {
   auto *dev = static_cast<MockDevice *>(base.mock);
+  dev->Write32(offset, value);
+}
+
+void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                  uint32_t value) {
+  auto *dev = static_cast<MockDevice *>(base.mock);
+  dev->Write32(offset, value);
   dev->Write32(offset, value);
 }
 }  // extern "C"

@@ -128,6 +128,10 @@ extern void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
                                uint8_t value);
 extern void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
                                 uint32_t value);
+extern void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                        uint8_t value);
+extern void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
+                                         uint32_t value);
 extern uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
                                         uint32_t mask, uint32_t mask_index);
 extern bool mmio_region_get_bit32(mmio_region_t base, ptrdiff_t offset,
