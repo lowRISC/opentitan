@@ -10,13 +10,15 @@
 module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   input                   clk_i,
   input                   rst_ni,
-  input                   entropy_i,
+  input                   edn_req_o,
+  input                   edn_ack_i,
+  input [LfsrWidth-1:0]   edn_data_i,
   input                   en_i,
-  input [NAlerts-1:0]     alert_en_i,
+  input [NAlerts-1:0]     alert_ping_en_i,
   input [PING_CNT_DW-1:0] ping_timeout_cyc_i,
   input [PING_CNT_DW-1:0] wait_cyc_mask_i,
-  input [NAlerts-1:0]     alert_ping_en_o,
-  input [N_ESC_SEV-1:0]   esc_ping_en_o,
+  input [NAlerts-1:0]     alert_ping_req_o,
+  input [N_ESC_SEV-1:0]   esc_ping_req_o,
   input [NAlerts-1:0]     alert_ping_ok_i,
   input [N_ESC_SEV-1:0]   esc_ping_ok_i,
   input                   alert_ping_fail_o,
@@ -25,8 +27,8 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
 
   logic [N_ESC_SEV+NAlerts-1:0] ping_en_vector, ping_en_mask, ping_ok_vector;
 
-  assign ping_en_vector = {esc_ping_en_o, alert_ping_en_o};
-  assign ping_en_mask   = {N_ESC_SEV'('1), alert_en_i};
+  assign ping_en_vector = {esc_ping_req_o, alert_ping_req_o};
+  assign ping_en_mask   = {N_ESC_SEV'('1), alert_ping_en_i};
   assign ping_ok_vector = {esc_ping_ok_i, alert_ping_ok_i};
 
   /////////////////
@@ -39,7 +41,7 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   `ASSUME_FPV(PingEnSelStable_M, ##1 $stable(ping_en_sel))
   // assume that the alert enable configuration is locked once en_i is high
   // this is ensured by the CSR regfile on the outside
-  `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_en_i) [*]))
+  `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_ping_en_i) [*]))
   `ASSUME_FPV(ConfigLocked1_M, en_i |-> ($stable(ping_timeout_cyc_i) [*]))
   // enable stays high forever, once it has been asserted
   // this can be enabled in DV as well
@@ -52,10 +54,10 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   ////////////////////////
 
   // no pings on disabled alerts
-  `ASSERT(DisabledNoAlertPings_A, ((~alert_en_i) & alert_ping_en_o) == 0)
+  `ASSERT(DisabledNoAlertPings_A, ((~alert_ping_en_i) & alert_ping_req_o) == 0)
   // no pings when not enabled
-  `ASSERT(NoPingsWhenDisabled0_A, !en_i |-> !alert_ping_en_o)
-  `ASSERT(NoPingsWhenDisabled1_A, !en_i |-> !esc_ping_en_o)
+  `ASSERT(NoPingsWhenDisabled0_A, !en_i |-> !alert_ping_req_o)
+  `ASSERT(NoPingsWhenDisabled1_A, !en_i |-> !esc_ping_req_o)
   `ASSERT(NoPingsWhenDisabled2_A, en_i && !ping_en_mask[ping_en_sel] |->
       !ping_en_vector[ping_en_sel])
 
@@ -77,8 +79,8 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   /////////////////////////
 
   // no pings when not enabled
-  `ASSERT(NoPingsWhenDisabledBkwd0_A, alert_ping_en_o |-> en_i)
-  `ASSERT(NoPingsWhenDisabledBkwd1_A, esc_ping_en_o   |-> en_i)
+  `ASSERT(NoPingsWhenDisabledBkwd0_A, alert_ping_req_o |-> en_i)
+  `ASSERT(NoPingsWhenDisabledBkwd1_A, esc_ping_req_o   |-> en_i)
 
   // spurious pings (i.e. pings that where not requested)
   // on alert channels

@@ -55,6 +55,8 @@ declare -a blocks=(
   "pinmux_fpv"
   "rv_plic_fpv"
   "rv_plic_generic_fpv"
+  "alert_handler_esc_timer_fpv"
+  "alert_handler_ping_timer_fpv"
 )
 
 #-------------------------------------------------------------------------
