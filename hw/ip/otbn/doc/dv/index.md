@@ -127,7 +127,18 @@ All four of these events should be crossed with the three states of the call sta
 #### Loop stack
 
 The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
-Important events for it are tracked at those instructions, rather than separately.
+Events concerning the start of loops are tracked at those instructions, but we can't track things like loop completion there.
+
+We expect to:
+- Complete a loop.
+- Complete the last loop on the stack (emptying it) after the stack has been full.
+- Complete a loop with one instruction and an iteration count of one.
+- Complete a loop with the maximal number of iterations.
+  Obviously, this isn't a reasonable thing to do for real in a test (there's a 32-bit iteration counter!).
+  The testbench will have to force a signal to skip past some iterations.
+- Run through a "badly nested" loop, where the body contains the final instruction from an outer loop (checking that we don't wrongly skip back).
+- Jump into a loop body from outside.
+- Jump/branch to the final instruction of a loop
 
 #### Flags
 
