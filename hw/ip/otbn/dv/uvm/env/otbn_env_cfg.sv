@@ -17,6 +17,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   virtual otbn_loop_if       loop_vif;
   virtual otbn_alu_bignum_if alu_bignum_vif;
   virtual otbn_mac_bignum_if mac_bignum_vif;
+  virtual otbn_rf_base_if    rf_base_vif;
 
   // The directory in which to look for ELF files (set by the test in build_phase; controlled by the
   // +otbn_elf_dir plusarg).

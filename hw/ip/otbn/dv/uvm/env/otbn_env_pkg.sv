@@ -53,10 +53,16 @@ package otbn_env_pkg;
   } otbn_loaded_word;
 
   typedef enum {
-    LoopStackEmpty,
-    LoopStackPartial,
-    LoopStackFull
-  } loop_stack_fullness_e;
+    StackEmpty,
+    StackPartial,
+    StackFull
+  } stack_fullness_e;
+
+  typedef struct packed {
+    logic pop_a;
+    logic pop_b;
+    logic push;
+  } call_stack_flags_t;
 
   // package sources
   `include "otbn_env_cfg.sv"

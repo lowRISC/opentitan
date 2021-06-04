@@ -119,6 +119,11 @@ We expect to see the following events:
 
 All four of these events should be crossed with the three states of the call stack: empty, partially full, and full.
 
+> Coverage for these points is tracked in the `call_stack_cg` covergroup.
+> We track all possible combinations of push/pop flags (8 possibilities) in `flags_cp`.
+> The 3 different fullness states are tracked as `fullness_cp`.
+> These are then crossed to give `flags_fullness_cross`.
+
 #### Loop stack
 
 The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.

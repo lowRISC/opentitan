@@ -288,6 +288,24 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     illegal_bins bad = default;        \
   }
 
+  // Non-instruction covergroups ///////////////////////////////////////////////
+
+  covergroup call_stack_cg
+    with function sample(call_stack_flags_t flags,
+                         stack_fullness_e   fullness);
+
+    // There are 3 different flags in flags (two "read ports" and a "write port"). Cross them to see
+    // all 8 possible values.
+    flags_cp: coverpoint flags;
+
+    // 3 possible values of fullness (empty, partially full, full)
+    fullness_cp: coverpoint fullness;
+
+    // Cross push/pop behaviour with fullness of the call stack to give 8 * 3 = 24 bins.
+    flags_fullness_cross: cross flags_cp, fullness_cp;
+
+  endgroup
+
   // Per-encoding covergroups //////////////////////////////////////////////////
   covergroup enc_bna_cg
     with function sample(mnem_str_t    mnemonic,
@@ -1208,12 +1226,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_loop_cg
-    with function sample(logic [31:0]          insn_addr,
-                         logic [31:0]          insn_data,
-                         logic [31:0]          operand_a,
-                         loop_stack_fullness_e loop_stack_fullness,
-                         logic [31:0]          current_loop_end,
-                         logic                 at_loop_end);
+    with function sample(logic [31:0]     insn_addr,
+                         logic [31:0]     insn_data,
+                         logic [31:0]     operand_a,
+                         stack_fullness_e loop_stack_fullness,
+                         logic [31:0]     current_loop_end,
+                         logic            at_loop_end);
     // Extremes for iteration count
     iterations_cp: coverpoint operand_a { bins extremes[] = {'0, '1}; }
 
@@ -1230,16 +1248,16 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
     // the encoding of the size field. This is the same thing as is stored as current_loop_end).
     `DEF_SEEN_CP(duplicate_loop_end_cp,
-                 (loop_stack_fullness != LoopStackEmpty) &&
+                 (loop_stack_fullness != StackEmpty) &&
                  (current_loop_end == insn_addr + 32'(insn_data[31:20])))
   endgroup
 
   covergroup insn_loopi_cg
-    with function sample(logic [31:0]          insn_addr,
-                         logic [31:0]          insn_data,
-                         loop_stack_fullness_e loop_stack_fullness,
-                         logic [31:0]          current_loop_end,
-                         logic                 at_loop_end);
+    with function sample(logic [31:0]     insn_addr,
+                         logic [31:0]     insn_data,
+                         stack_fullness_e loop_stack_fullness,
+                         logic [31:0]     current_loop_end,
+                         logic            at_loop_end);
 
     // Is the loop end address above the top of memory?
     oob_end_addr_cp: coverpoint insn_addr + 32'(insn_data[31:20]) >= ImemSizeByte;
@@ -1254,7 +1272,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
     // the encoding of the size field. This is the same thing as is stored as current_loop_end).
     `DEF_SEEN_CP(duplicate_loop_end_cp,
-                 (loop_stack_fullness != LoopStackEmpty) &&
+                 (loop_stack_fullness != StackEmpty) &&
                  (current_loop_end == insn_addr + 32'(insn_data[31:20])))
   endgroup
 
@@ -1461,6 +1479,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   function new(string name, uvm_component parent);
     super.new(name, parent);
 
+    call_stack_cg = new;
+
     enc_bna_cg = new;
     enc_bnaf_cg = new;
     enc_bnai_cg = new;
@@ -1589,6 +1609,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     mnem = mnem_str_t'(iss_item.mnemonic);
     insn_data = rtl_item.insn_data;
+
+    // Call stack tracking.
+    call_stack_cg.sample(rtl_item.call_stack_flags, rtl_item.call_stack_fullness);
 
     // Per-encoding coverage. First, use insn_encodings to find the encoding for the instruction.
     // Every instruction mnemonic should have an associated encoding schema.
