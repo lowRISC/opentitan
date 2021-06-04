@@ -353,16 +353,16 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } enableaddr;
+    } en_addr_tx;
     struct packed {
       logic        q;
-    } enabletx;
+    } en_addr_acq;
     struct packed {
       logic        q;
-    } enableacq;
+    } stop_tx;
     struct packed {
       logic        q;
-    } stop;
+    } stop_acq;
   } i2c_reg2hw_stretch_ctrl_reg_t;
 
   typedef struct packed {
@@ -510,7 +510,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } stop;
+    } stop_tx;
+    struct packed {
+      logic        d;
+      logic        de;
+    } stop_acq;
   } i2c_hw2reg_stretch_ctrl_reg_t;
 
   // Register -> HW type
@@ -538,13 +542,13 @@ package i2c_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [117:86]
-    i2c_hw2reg_status_reg_t status; // [85:76]
-    i2c_hw2reg_rdata_reg_t rdata; // [75:68]
-    i2c_hw2reg_fifo_status_reg_t fifo_status; // [67:44]
-    i2c_hw2reg_val_reg_t val; // [43:12]
-    i2c_hw2reg_acqdata_reg_t acqdata; // [11:2]
-    i2c_hw2reg_stretch_ctrl_reg_t stretch_ctrl; // [1:0]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [119:88]
+    i2c_hw2reg_status_reg_t status; // [87:78]
+    i2c_hw2reg_rdata_reg_t rdata; // [77:70]
+    i2c_hw2reg_fifo_status_reg_t fifo_status; // [69:46]
+    i2c_hw2reg_val_reg_t val; // [45:14]
+    i2c_hw2reg_acqdata_reg_t acqdata; // [13:4]
+    i2c_hw2reg_stretch_ctrl_reg_t stretch_ctrl; // [3:0]
   } i2c_hw2reg_t;
 
   // Register offsets

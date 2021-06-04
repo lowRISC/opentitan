@@ -364,18 +364,18 @@ module i2c_reg_top (
   logic acqdata_signal_re;
   logic [7:0] txdata_wd;
   logic txdata_we;
-  logic stretch_ctrl_enableaddr_qs;
-  logic stretch_ctrl_enableaddr_wd;
-  logic stretch_ctrl_enableaddr_we;
-  logic stretch_ctrl_enabletx_qs;
-  logic stretch_ctrl_enabletx_wd;
-  logic stretch_ctrl_enabletx_we;
-  logic stretch_ctrl_enableacq_qs;
-  logic stretch_ctrl_enableacq_wd;
-  logic stretch_ctrl_enableacq_we;
-  logic stretch_ctrl_stop_qs;
-  logic stretch_ctrl_stop_wd;
-  logic stretch_ctrl_stop_we;
+  logic stretch_ctrl_en_addr_tx_qs;
+  logic stretch_ctrl_en_addr_tx_wd;
+  logic stretch_ctrl_en_addr_tx_we;
+  logic stretch_ctrl_en_addr_acq_qs;
+  logic stretch_ctrl_en_addr_acq_wd;
+  logic stretch_ctrl_en_addr_acq_we;
+  logic stretch_ctrl_stop_tx_qs;
+  logic stretch_ctrl_stop_tx_wd;
+  logic stretch_ctrl_stop_tx_we;
+  logic stretch_ctrl_stop_acq_qs;
+  logic stretch_ctrl_stop_acq_wd;
+  logic stretch_ctrl_stop_acq_we;
   logic [31:0] host_timeout_ctrl_qs;
   logic [31:0] host_timeout_ctrl_wd;
   logic host_timeout_ctrl_we;
@@ -2677,18 +2677,18 @@ module i2c_reg_top (
 
   // R[stretch_ctrl]: V(False)
 
-  //   F[enableaddr]: 0:0
+  //   F[en_addr_tx]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_stretch_ctrl_enableaddr (
+  ) u_stretch_ctrl_en_addr_tx (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (stretch_ctrl_enableaddr_we),
-    .wd     (stretch_ctrl_enableaddr_wd),
+    .we     (stretch_ctrl_en_addr_tx_we),
+    .wd     (stretch_ctrl_en_addr_tx_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2696,25 +2696,25 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.enableaddr.q ),
+    .q      (reg2hw.stretch_ctrl.en_addr_tx.q ),
 
     // to register interface (read)
-    .qs     (stretch_ctrl_enableaddr_qs)
+    .qs     (stretch_ctrl_en_addr_tx_qs)
   );
 
 
-  //   F[enabletx]: 1:1
+  //   F[en_addr_acq]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_stretch_ctrl_enabletx (
+  ) u_stretch_ctrl_en_addr_acq (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (stretch_ctrl_enabletx_we),
-    .wd     (stretch_ctrl_enabletx_wd),
+    .we     (stretch_ctrl_en_addr_acq_we),
+    .wd     (stretch_ctrl_en_addr_acq_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2722,62 +2722,62 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.enabletx.q ),
+    .q      (reg2hw.stretch_ctrl.en_addr_acq.q ),
 
     // to register interface (read)
-    .qs     (stretch_ctrl_enabletx_qs)
+    .qs     (stretch_ctrl_en_addr_acq_qs)
   );
 
 
-  //   F[enableacq]: 2:2
+  //   F[stop_tx]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_stretch_ctrl_enableacq (
+  ) u_stretch_ctrl_stop_tx (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (stretch_ctrl_enableacq_we),
-    .wd     (stretch_ctrl_enableacq_wd),
+    .we     (stretch_ctrl_stop_tx_we),
+    .wd     (stretch_ctrl_stop_tx_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stretch_ctrl.stop_tx.de),
+    .d      (hw2reg.stretch_ctrl.stop_tx.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.enableacq.q ),
+    .q      (reg2hw.stretch_ctrl.stop_tx.q ),
 
     // to register interface (read)
-    .qs     (stretch_ctrl_enableacq_qs)
+    .qs     (stretch_ctrl_stop_tx_qs)
   );
 
 
-  //   F[stop]: 3:3
+  //   F[stop_acq]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_stretch_ctrl_stop (
+  ) u_stretch_ctrl_stop_acq (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (stretch_ctrl_stop_we),
-    .wd     (stretch_ctrl_stop_wd),
+    .we     (stretch_ctrl_stop_acq_we),
+    .wd     (stretch_ctrl_stop_acq_wd),
 
     // from internal hardware
-    .de     (hw2reg.stretch_ctrl.stop.de),
-    .d      (hw2reg.stretch_ctrl.stop.d ),
+    .de     (hw2reg.stretch_ctrl.stop_acq.de),
+    .d      (hw2reg.stretch_ctrl.stop_acq.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.stop.q ),
+    .q      (reg2hw.stretch_ctrl.stop_acq.q ),
 
     // to register interface (read)
-    .qs     (stretch_ctrl_stop_qs)
+    .qs     (stretch_ctrl_stop_acq_qs)
   );
 
 
@@ -3153,17 +3153,17 @@ module i2c_reg_top (
   assign txdata_we = addr_hit[19] & reg_we & !reg_error;
   assign txdata_wd = reg_wdata[7:0];
 
-  assign stretch_ctrl_enableaddr_we = addr_hit[20] & reg_we & !reg_error;
-  assign stretch_ctrl_enableaddr_wd = reg_wdata[0];
+  assign stretch_ctrl_en_addr_tx_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_en_addr_tx_wd = reg_wdata[0];
 
-  assign stretch_ctrl_enabletx_we = addr_hit[20] & reg_we & !reg_error;
-  assign stretch_ctrl_enabletx_wd = reg_wdata[1];
+  assign stretch_ctrl_en_addr_acq_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_en_addr_acq_wd = reg_wdata[1];
 
-  assign stretch_ctrl_enableacq_we = addr_hit[20] & reg_we & !reg_error;
-  assign stretch_ctrl_enableacq_wd = reg_wdata[2];
+  assign stretch_ctrl_stop_tx_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_stop_tx_wd = reg_wdata[2];
 
-  assign stretch_ctrl_stop_we = addr_hit[20] & reg_we & !reg_error;
-  assign stretch_ctrl_stop_wd = reg_wdata[3];
+  assign stretch_ctrl_stop_acq_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_stop_acq_wd = reg_wdata[3];
 
   assign host_timeout_ctrl_we = addr_hit[21] & reg_we & !reg_error;
   assign host_timeout_ctrl_wd = reg_wdata[31:0];
@@ -3335,10 +3335,10 @@ module i2c_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[0] = stretch_ctrl_enableaddr_qs;
-        reg_rdata_next[1] = stretch_ctrl_enabletx_qs;
-        reg_rdata_next[2] = stretch_ctrl_enableacq_qs;
-        reg_rdata_next[3] = stretch_ctrl_stop_qs;
+        reg_rdata_next[0] = stretch_ctrl_en_addr_tx_qs;
+        reg_rdata_next[1] = stretch_ctrl_en_addr_acq_qs;
+        reg_rdata_next[2] = stretch_ctrl_stop_tx_qs;
+        reg_rdata_next[3] = stretch_ctrl_stop_acq_qs;
       end
 
       addr_hit[21]: begin

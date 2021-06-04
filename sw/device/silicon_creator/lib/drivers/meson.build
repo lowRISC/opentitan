@@ -160,3 +160,35 @@ test('sw_silicon_creator_lib_driver_otp_unittest', executable(
     ),
   suite: 'mask_rom',
 )
+
+# Mask ROM rstmgr driver
+sw_silicon_creator_lib_driver_rstmgr = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_rstmgr',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'rstmgr.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_rstmgr_unittest', executable(
+    'sw_silicon_creator_lib_driver_rstmgr_unittest',
+    sources: [
+      'rstmgr_unittest.cc',
+      hw_ip_rstmgr_reg_h,
+      'rstmgr.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)

@@ -5,6 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+
 /**
  * @file
  * @brief Generic preprocessor macros that don't really fit anywhere else.
@@ -35,5 +39,25 @@
                               x20, x21, x22, x23, x24, x25, x26, x27, x28, \
                               x29, x30, x31, n, ...)                       \
   n
+
+/**
+ * A macro that expands to an assertion for the offset of a struct member.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param offset Expected offset of the member.
+ */
+#define OT_ASSERT_MEMBER_OFFSET(type, member, offset)       \
+  static_assert(offsetof(type, member) == UINT32_C(offset), \
+                "Unexpected offset for " #type "." #member)
+
+/**
+ * A macro that expands to an assertion for the size of a type.
+ *
+ * @param type A type.
+ * @param size Expected size of the type.
+ */
+#define OT_ASSERT_SIZE(type, size) \
+  static_assert(sizeof(type) == UINT32_C(size), "Unexpected size for " #type)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

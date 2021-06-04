@@ -28,6 +28,16 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
   ),
 )
 
+# ROM_EXT image.
+sw_silicon_creator_mask_rom_romextimage = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_mask_rom_romextimage',
+    sources: [
+      'romextimage.c',
+    ],
+  ),
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
@@ -43,8 +53,9 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
+      sw_silicon_creator_lib_manifest,
       sw_silicon_creator_mask_rom_sigverify,
-      rom_ext_manifest_parser,
+      sw_silicon_creator_mask_rom_romextimage,
       sw_lib_crt,
       sw_lib_pinmux,
       sw_lib_runtime_print,
@@ -52,7 +63,6 @@ mask_rom_lib = declare_dependency(
     link_with: static_library(
       'mask_rom_lib',
       sources: [
-        rom_exts_manifest_offsets_header,
         'mask_rom.c'
       ],
       link_depends: [rom_linkfile],
@@ -153,6 +163,22 @@ test('sw_silicon_creator_mask_rom_sig_verify_unittest', executable(
       sw_vendor_gtest,
     ],
     native: true,
+  ),
+  suite: 'mask_rom',
+)
+
+test('sw_silicon_creator_mask_rom_romextimage_unittest', executable(
+    'sw_silicon_creator_mask_rom_romextimage_unittest',
+    sources: [
+      'romextimage_unittest.cc',
+      'romextimage.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )

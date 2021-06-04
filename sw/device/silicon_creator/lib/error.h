@@ -21,11 +21,12 @@ extern "C" {
  */
 enum module_ {
   kModuleUnknown = 0,
-  kModuleUart = 0x4155,       // ASCII "UA".
-  kModuleHmac = 0x4d48,       // ASCII "HM".
-  kModuleSigverify = 0x5653,  // ASCII "SV".
-  kModuleOtp = 0x504f,        // ASCII "OP".
-  kModuleKeymgr = 0x4d4b,     // ASCII "KM".
+  kModuleUart = 0x4155,         // ASCII "UA".
+  kModuleHmac = 0x4d48,         // ASCII "HM".
+  kModuleSigverify = 0x5653,    // ASCII "SV".
+  kModuleKeymgr = 0x4d4b,       // ASCII "KM".
+  kModuleManifest = 0x414d,     // ASCII "MA".
+  kModuleRomextimage = 0x4552,  // ASCII "RE".
 };
 
 /**
@@ -45,13 +46,14 @@ enum module_ {
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
   X(kErrorOk, 0x739), \
-  X(kErrorUartInvalidArgument,      ERROR_(1, kModuleUart, kInvalidArgument)), \
-  X(kErrorUartBadBaudRate,          ERROR_(2, kModuleUart, kInvalidArgument)), \
-  X(kErrorHmacInvalidArgument,      ERROR_(1, kModuleHmac, kInvalidArgument)), \
-  X(kErrorSigverifyInvalidArgument, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
-  X(kErrorOtpBusy,                  ERROR_(1, kModuleOtp, kUnavailable)),  \
-  X(kErrorOtpUnknown,               ERROR_(2, kModuleOtp, kUnknown)), \
-  X(kErrorKeymgrInternal,           ERROR_(1, kModuleKeymgr, kInternal)), \
+  X(kErrorUartInvalidArgument,        ERROR_(1, kModuleUart, kInvalidArgument)), \
+  X(kErrorUartBadBaudRate,            ERROR_(2, kModuleUart, kInvalidArgument)), \
+  X(kErrorHmacInvalidArgument,        ERROR_(1, kModuleHmac, kInvalidArgument)), \
+  X(kErrorSigverifyInvalidArgument,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
+  X(kErrorManifestInternal,           ERROR_(1, kModuleManifest, kInternal)), \
+  X(kErrorRomextimageInvalidArgument, ERROR_(1, kModuleRomextimage, kInvalidArgument)), \
+  X(kErrorRomextimageInternal,        ERROR_(2, kModuleRomextimage, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
