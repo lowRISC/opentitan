@@ -56,15 +56,25 @@ module prim_alert_receiver
   /////////////////////////////////
   // decode differential signals //
   /////////////////////////////////
-  logic alert_level, alert_sigint;
+  logic alert_level, alert_sigint, alert_p, alert_n;
+
+  // This prevents further tool optimizations of the differential signal.
+  prim_buf #(
+    .Width(2)
+  ) u_prim_buf (
+    .in_i({alert_tx_i.alert_n,
+           alert_tx_i.alert_p}),
+    .out_o({alert_n,
+            alert_p})
+  );
 
   prim_diff_decode #(
     .AsyncOn(AsyncOn)
-  ) i_decode_alert (
+  ) u_decode_alert (
     .clk_i,
     .rst_ni,
-    .diff_pi  ( alert_tx_i.alert_p ),
-    .diff_ni  ( alert_tx_i.alert_n ),
+    .diff_pi  ( alert_p            ),
+    .diff_ni  ( alert_n            ),
     .level_o  ( alert_level        ),
     .rise_o   (                    ),
     .fall_o   (                    ),
@@ -78,33 +88,43 @@ module prim_alert_receiver
   typedef enum logic [1:0] {Idle, HsAckWait, Pause0, Pause1} state_e;
   state_e state_d, state_q;
   logic ping_rise;
-  logic ping_tog, ping_tog_dp, ping_tog_qp, ping_tog_dn, ping_tog_qn;
-  logic ack, ack_dp, ack_qp, ack_dn, ack_qn;
+  logic ping_tog_pd, ping_tog_pq, ping_tog_dn, ping_tog_nq;
+  logic ack_pd, ack_pq, ack_dn, ack_nq;
   logic ping_req_d, ping_req_q;
   logic ping_pending_d, ping_pending_q;
 
   // signal ping request upon positive transition on ping_req_i
   // signalling is performed by a level change event on the diff output
   assign ping_req_d  = ping_req_i;
-  assign ping_rise  = ping_req_i && !ping_req_q;
-  assign ping_tog = (ping_rise) ? ~ping_tog_qp : ping_tog_qp;
+  assign ping_rise   = ping_req_i && !ping_req_q;
+  assign ping_tog_pd = (ping_rise) ? ~ping_tog_pq : ping_tog_pq;
+
+  assign ack_dn = ~ack_pd;
+  assign ping_tog_dn = ~ping_tog_pd;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf u_prim_buf_ack_p (
-    .in_i(ack),
-    .out_o(ack_dp)
+  prim_generic_flop #(
+    .Width     (2),
+    .ResetValue(2'b10)
+  ) u_prim_generic_flop_ack (
+    .clk_i,
+    .rst_ni,
+    .d_i({ack_dn,
+          ack_pd}),
+    .q_o({ack_nq,
+          ack_pq})
   );
-  prim_buf u_prim_buf_ack_n (
-    .in_i(~ack),
-    .out_o(ack_dn)
-  );
-  prim_buf u_prim_buf_ping_p (
-    .in_i(ping_tog),
-    .out_o(ping_tog_dp)
-  );
-  prim_buf u_prim_buf_ping_n (
-    .in_i(~ping_tog),
-    .out_o(ping_tog_dn)
+
+  prim_generic_flop #(
+    .Width     (2),
+    .ResetValue(2'b10)
+  ) u_prim_generic_flop_ping (
+    .clk_i,
+    .rst_ni,
+    .d_i({ping_tog_dn,
+          ping_tog_pd}),
+    .q_o({ping_tog_nq,
+          ping_tog_pq})
   );
 
   // the ping pending signal is used to in the FSM to distinguish whether the
@@ -115,11 +135,11 @@ module prim_alert_receiver
   assign ping_pending_d = ping_rise | ((~ping_ok_o) & ping_req_i & ping_pending_q);
 
   // diff pair outputs
-  assign alert_rx_o.ack_p = ack_qp;
-  assign alert_rx_o.ack_n = ack_qn;
+  assign alert_rx_o.ack_p = ack_pq;
+  assign alert_rx_o.ack_n = ack_nq;
 
-  assign alert_rx_o.ping_p = ping_tog_qp;
-  assign alert_rx_o.ping_n = ping_tog_qn;
+  assign alert_rx_o.ping_p = ping_tog_pq;
+  assign alert_rx_o.ping_n = ping_tog_nq;
 
   // this FSM receives the four phase handshakes from the alert receiver
   // note that the latency of the alert_p/n input diff pair is at least one
@@ -128,7 +148,7 @@ module prim_alert_receiver
   always_comb begin : p_fsm
     // default
     state_d      = state_q;
-    ack          = 1'b0;
+    ack_pd       = 1'b0;
     ping_ok_o    = 1'b0;
     integ_fail_o = 1'b0;
     alert_o      = 1'b0;
@@ -138,7 +158,7 @@ module prim_alert_receiver
         // wait for handshake to be initiated
         if (alert_level) begin
           state_d = HsAckWait;
-          ack     = 1'b1;
+          ack_pd  = 1'b1;
           // signal either an alert or ping received on the output
           if (ping_pending_q) begin
             ping_ok_o = 1'b1;
@@ -152,7 +172,7 @@ module prim_alert_receiver
         if (!alert_level) begin
           state_d  = Pause0;
         end else begin
-          ack      = 1'b1;
+          ack_pd = 1'b1;
         end
       end
       // pause cycles between back-to-back handshakes
@@ -164,7 +184,7 @@ module prim_alert_receiver
     // override in case of sigint
     if (alert_sigint) begin
       state_d      = Idle;
-      ack          = 1'b0;
+      ack_pd       = 1'b0;
       ping_ok_o    = 1'b0;
       integ_fail_o = 1'b1;
       alert_o      = 1'b0;
@@ -174,18 +194,10 @@ module prim_alert_receiver
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
       state_q        <= Idle;
-      ack_qp         <= 1'b0;
-      ack_qn         <= 1'b1;
-      ping_tog_qp    <= 1'b0;
-      ping_tog_qn    <= 1'b1;
       ping_req_q     <= 1'b0;
       ping_pending_q <= 1'b0;
     end else begin
       state_q        <= state_d;
-      ack_qp         <= ack_dp;
-      ack_qn         <= ack_dn;
-      ping_tog_qp    <= ping_tog_dp;
-      ping_tog_qn    <= ping_tog_dn;
       ping_req_q     <= ping_req_d;
       ping_pending_q <= ping_pending_d;
     end
