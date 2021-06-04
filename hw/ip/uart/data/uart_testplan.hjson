@@ -177,6 +177,15 @@
       tests: ["uart_rx_oversample"]
     }
     {
+      name: long_b2b_transfer
+      desc: '''
+            - Reduce delay to fill TX fifo and read RX fifo to ensure back2back transfers
+            - Use long back2back transfer to ensure clock difference won't be accumulated across transactions
+            - Uart monitor checks the clock offset between sender and receiver is never over 1/4 of the period'''
+      milestone: V2
+      tests: ["uart_long_xfer_wo_dly"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence and
