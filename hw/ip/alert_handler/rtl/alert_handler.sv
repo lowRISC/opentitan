@@ -80,23 +80,24 @@ module alert_handler
   logic [N_ESC_SEV-1:0] esc_ping_req;
   logic [N_ESC_SEV-1:0] esc_ping_ok;
 
-  logic entropy;
+  logic edn_req, edn_ack;
+  logic [LfsrWidth-1:0] edn_data;
 
-  // This module pings for entropy excessively at the moment,
-  // but this will be addressed later using a refresh rate
   prim_edn_req #(
-    .OutWidth(1)
+    .OutWidth(LfsrWidth)
   ) u_edn_req (
+    // Alert handler side
     .clk_i,
     .rst_ni,
-    .req_i(1'b0),
-    .ack_o(),
-    .data_o(entropy),
-    .fips_o(),
+    .req_i       ( edn_req  ),
+    .ack_o       ( edn_ack  ),
+    .data_o      ( edn_data ),
+    .fips_o      (          ),
+    // EDN side
     .clk_edn_i,
     .rst_edn_ni,
-    .edn_o(edn_o),
-    .edn_i(edn_i)
+    .edn_o       ( edn_o    ),
+    .edn_i       ( edn_i    )
   );
 
   alert_handler_ping_timer #(
@@ -105,9 +106,9 @@ module alert_handler
   ) u_ping_timer (
     .clk_i,
     .rst_ni,
-    .entropy_i(entropy),
-    // we enable ping testing as soon as the config
-    // regs have been locked
+    .edn_req_o          ( edn_req                      ),
+    .edn_ack_i          ( edn_ack                      ),
+    .edn_data_i         ( edn_data                     ),
     .en_i               ( reg2hw_wrap.ping_enable      ),
     .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en    ),
     .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
