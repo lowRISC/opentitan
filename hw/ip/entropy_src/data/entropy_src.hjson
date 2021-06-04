@@ -47,6 +47,12 @@
       act:     "rcv"
       package: "otp_ctrl_pkg"
     }
+    { struct:  "otp_en"
+      type:    "uni"
+      name:    "otp_en_entropy_src_fw_over"
+      act:     "rcv"
+      package: "otp_ctrl_pkg"
+    }
     { struct:  "logic"
       type:    "uni"
       name:    "rng_fips"

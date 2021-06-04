@@ -32,6 +32,8 @@ module tb;
   // TODO: Hack to enable otp values
   otp_ctrl_pkg::otp_en_t otp_en_entropy_src_fw_read;
   assign otp_en_entropy_src_fw_read = efuse_es_sw_reg_en ? otp_ctrl_pkg::Enabled : '0;
+  otp_ctrl_pkg::otp_en_t otp_en_entropy_src_fw_over;
+  assign otp_en_entropy_src_fw_over = efuse_es_sw_reg_en ? otp_ctrl_pkg::Enabled : '0;
 
   `DV_ALERT_IF_CONNECT
 
@@ -44,6 +46,7 @@ module tb;
     .tl_o                         (tl_if.d2h  ),
 
     .otp_en_entropy_src_fw_read_i (otp_en_entropy_src_fw_read ),
+    .otp_en_entropy_src_fw_over_i (otp_en_entropy_src_fw_over ),
 
     .entropy_src_hw_if_o          ({csrng_if.ack,
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0],
