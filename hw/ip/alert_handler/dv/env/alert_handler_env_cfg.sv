@@ -47,4 +47,10 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
     m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
+  // Override shadow register naming checks. The alert handler does not expose any alert signals,
+  // hence no alerts are defined in Hjson.
+  virtual function void check_shadow_reg_alerts();
+    // Nothing to check.
+  endfunction
+
 endclass

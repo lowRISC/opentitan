@@ -98,7 +98,7 @@ TEST_F(ConfigTest, Locked) {
       .ping_timeout = 0,
   };
 
-  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET, 1);
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
 
   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
             kDifAlertHandlerConfigLocked);
@@ -109,12 +109,15 @@ TEST_F(ConfigTest, NoClassInit) {
       .ping_timeout = 50,
   };
 
-  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET,
-                {{ALERT_HANDLER_PING_TIMER_EN_PING_TIMER_EN_BIT, false}});
+  EXPECT_READ32(
+      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+        false}});
 
-  EXPECT_WRITE32(
-      ALERT_HANDLER_PING_TIMEOUT_CYC_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_OFFSET, 50}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_OFFSET,
+        50}});
 
   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
             kDifAlertHandlerConfigOk);
@@ -122,7 +125,9 @@ TEST_F(ConfigTest, NoClassInit) {
 
 TEST_F(ConfigTest, TimeoutTooBig) {
   dif_alert_handler_config_t config = {
-      .ping_timeout = ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_MASK + 1,
+      .ping_timeout =
+          ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK +
+          1,
   };
 
   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
@@ -207,8 +212,9 @@ TEST_F(ConfigTest, BadClassPtr) {
 //       .classes_len = classes.size(),
 //   };
 
-//   EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET,
-//                 {{ALERT_HANDLER_PING_TIMER_EN_PING_TIMER_EN_BIT, true}});
+//   EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+//                 {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+//                 true}});
 
 //   // Unfortunately, we can't use EXPECT_MASK for these reads and writes,
 //   // since there are not sequenced exactly.
@@ -318,8 +324,9 @@ TEST_F(ConfigTest, BadClassPtr) {
 //   EXPECT_WRITE32(ALERT_HANDLER_CLASSB_PHASE3_CYC_REG_OFFSET, 150000);
 
 //   EXPECT_WRITE32(
-//       ALERT_HANDLER_PING_TIMEOUT_CYC_REG_OFFSET,
-//       {{ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_OFFSET, 50}});
+//       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+//       {{ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_OFFSET,
+//       50}});
 
 //   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
 //             kDifAlertHandlerConfigOk);
@@ -571,20 +578,26 @@ class LockTest : public AlertTest {};
 TEST_F(LockTest, IsLocked) {
   bool flag;
 
-  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET,
-                {{ALERT_HANDLER_PING_TIMER_EN_PING_TIMER_EN_BIT, false}});
+  EXPECT_READ32(
+      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+        false}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET,
-                {{ALERT_HANDLER_PING_TIMER_EN_PING_TIMER_EN_BIT, true}});
+  EXPECT_READ32(
+      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+        true}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 }
 
 TEST_F(LockTest, Lock) {
-  EXPECT_WRITE32(ALERT_HANDLER_PING_TIMER_EN_REG_OFFSET,
-                 {{ALERT_HANDLER_PING_TIMER_EN_PING_TIMER_EN_BIT, true}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+        true}});
   EXPECT_EQ(dif_alert_handler_lock(&handler_), kDifAlertHandlerOk);
 }
 

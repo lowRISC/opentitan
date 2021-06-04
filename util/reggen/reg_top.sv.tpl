@@ -522,7 +522,7 @@ ${bits.msb}\
                           field.swaccess.allows_write() or
                           field.swaccess.swrd() != SwRdAccess.RD)
 
-      subreg_block = 'prim_subreg' + ('_shadowed' if reg.shadowed else '')
+      subreg_block = 'prim_subreg' + ('_shadow' if reg.shadowed else '')
 %>\
     % if is_const_reg:
   // constant-only read

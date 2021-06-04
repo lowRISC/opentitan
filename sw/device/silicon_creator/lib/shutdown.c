@@ -22,7 +22,7 @@
 #include "otp_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
 
-static_assert(ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT <=
+static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
                   OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_SIZE / 4,
               "More alerts than alert classification OTP words!");
 
@@ -110,7 +110,8 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // For each alert, read its corresponding OTP word and extract the class
   // configuration for the current lifecycle state.
   rom_error_t error = kErrorOk;
-  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     uint32_t value = otp_read32(OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_OFFSET +
                                 i * sizeof(uint32_t));
     alert_class_t cls = (alert_class_t)bitfield_field32_read(

@@ -2,23 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define RAND_AND_WR_CLASS_PHASES_CYCLE(i) \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase0_cyc, \
-                                 class``i``_phase0_cyc.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase1_cyc, \
-                                 class``i``_phase1_cyc.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase2_cyc, \
-                                 class``i``_phase2_cyc.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase3_cyc, \
-                                 class``i``_phase3_cyc.value inside {[0: max_phase_cyc]};); \
-  csr_update(ral.class``i``_phase0_cyc); \
-  csr_update(ral.class``i``_phase1_cyc); \
-  csr_update(ral.class``i``_phase2_cyc); \
-  csr_update(ral.class``i``_phase3_cyc);
+`define RAND_AND_WR_CLASS_PHASES_CYCLE(i)                                 \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase0_cyc_shadowed,      \
+      class``i``_phase0_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase1_cyc_shadowed,      \
+      class``i``_phase1_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase2_cyc_shadowed,      \
+      class``i``_phase2_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase3_cyc_shadowed,      \
+      class``i``_phase3_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
+  csr_update(ral.class``i``_phase0_cyc_shadowed, .en_shadow_wr(1'b1));    \
+  csr_update(ral.class``i``_phase1_cyc_shadowed, .en_shadow_wr(1'b1));    \
+  csr_update(ral.class``i``_phase2_cyc_shadowed, .en_shadow_wr(1'b1));    \
+  csr_update(ral.class``i``_phase3_cyc_shadowed, .en_shadow_wr(1'b1));
 
 `define RAND_WRITE_CLASS_CTRL(i, lock_bit) \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == lock_bit;) \
-  csr_wr(.ptr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl_shadowed, lock.value == lock_bit;)  \
+  csr_wr(.ptr(ral.class``i``_ctrl_shadowed), .value(ral.class``i``_ctrl_shadowed.get()), \
+         .en_shadow_wr(1'b1));
 
 class alert_handler_base_vseq extends cip_base_vseq #(
     .CFG_T               (alert_handler_env_cfg),
@@ -52,10 +53,14 @@ class alert_handler_base_vseq extends cip_base_vseq #(
                                   bit [NUM_LOCAL_ALERTS-1:0]             loc_alert_en = '1,
                                   bit [NUM_ALERT_CLASSES-1:0][TL_DW-1:0] loc_alert_class = 'h0);
     csr_wr(.ptr(ral.intr_enable), .value(intr_en));
-    foreach (alert_en[i])        csr_wr(.ptr(ral.alert_en[i]), .value(alert_en[i]));
-    foreach (alert_class[i])     csr_wr(.ptr(ral.alert_class[i]), .value(alert_class[i]));
-    foreach (loc_alert_en[i])    csr_wr(.ptr(ral.loc_alert_en[i]), .value(loc_alert_en[i]));
-    foreach (loc_alert_class[i]) csr_wr(.ptr(ral.loc_alert_class[i]), .value(loc_alert_class[i]));
+    foreach (alert_en[i])        csr_wr(.ptr(ral.alert_en_shadowed[i]),
+                                        .value(alert_en[i]));
+    foreach (alert_class[i])     csr_wr(.ptr(ral.alert_class_shadowed[i]),
+                                        .value(alert_class[i]));
+    foreach (loc_alert_en[i])    csr_wr(.ptr(ral.loc_alert_en_shadowed[i]),
+                                        .value(loc_alert_en[i]));
+    foreach (loc_alert_class[i]) csr_wr(.ptr(ral.loc_alert_class_shadowed[i]),
+                                        .value(loc_alert_class[i]));
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_CLASSES-1:0] lock_bit);
@@ -77,7 +82,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // If not set, this task has 50% of chance to write value 1 to ping_timer_en register.
   virtual task lock_config(bit do_lock_config);
     if (do_lock_config || $urandom_range(0, 1)) begin
-      csr_wr(.ptr(ral.ping_timer_en), .value(do_lock_config));
+      csr_wr(.ptr(ral.ping_timer_en_shadowed), .value(do_lock_config), .en_shadow_wr(1'b1));
     end
   endtask
 
@@ -231,21 +236,21 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_CLASSES]);
-    csr_wr(.ptr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
-    csr_wr(.ptr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
-    csr_wr(.ptr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
-    csr_wr(.ptr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
+    csr_wr(.ptr(ral.classa_timeout_cyc_shadowed), .value(intr_timeout_cyc[0]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classb_timeout_cyc_shadowed), .value(intr_timeout_cyc[1]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classc_timeout_cyc_shadowed), .value(intr_timeout_cyc[2]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classd_timeout_cyc_shadowed), .value(intr_timeout_cyc[3]), .en_shadow_wr(1'b1));
   endtask
 
   virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_CLASSES]);
-    csr_wr(.ptr(ral.classa_accum_thresh), .value(accum_thresh[0]));
-    csr_wr(.ptr(ral.classb_accum_thresh), .value(accum_thresh[1]));
-    csr_wr(.ptr(ral.classc_accum_thresh), .value(accum_thresh[2]));
-    csr_wr(.ptr(ral.classd_accum_thresh), .value(accum_thresh[3]));
+    csr_wr(.ptr(ral.classa_accum_thresh_shadowed), .value(accum_thresh[0]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classb_accum_thresh_shadowed), .value(accum_thresh[1]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classc_accum_thresh_shadowed), .value(accum_thresh[2]), .en_shadow_wr(1'b1));
+    csr_wr(.ptr(ral.classd_accum_thresh_shadowed), .value(accum_thresh[3]), .en_shadow_wr(1'b1));
   endtask
 
   virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
-    csr_wr(.ptr(ral.ping_timeout_cyc), .value(timeout_val));
+    csr_wr(.ptr(ral.ping_timeout_cyc_shadowed), .value(timeout_val), .en_shadow_wr(1'b1));
     if (!config_locked) begin
       if (timeout_val == 0) timeout_val = 1;
       foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;

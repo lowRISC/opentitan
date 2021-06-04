@@ -62,6 +62,9 @@ package alert_pkg;
   } hw2reg_wrap_t;
 
   typedef struct packed {
+    // aggregated shadow reg errors (trigger internal alerts)
+    logic                                              shadowed_err_update;
+    logic                                              shadowed_err_storage;
     // ping config
     logic                                              ping_enable;        // ping timer enable
     logic [PING_CNT_DW-1:0]                            ping_timeout_cyc;   // ping timeout config
