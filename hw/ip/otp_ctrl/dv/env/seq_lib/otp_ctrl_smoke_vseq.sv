@@ -13,7 +13,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   rand bit                           do_req_keys, do_lc_trans;
   rand bit                           access_locked_parts;
-  rand bit [TL_AW-1:0]               dai_addr;
+  rand bit [TL_DW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
   rand otp_ctrl_part_pkg::part_idx_e part_idx;
