@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/runtime/epmp.h"
+#include "sw/device/silicon_creator/lib/epmp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"

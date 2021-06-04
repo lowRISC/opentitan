@@ -21,6 +21,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
 #include "sw/device/silicon_creator/mask_rom/romextimage.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
@@ -61,6 +62,10 @@ rom_error_t mask_rom_boot(void) {
   lifecycle_state_t lc_state = lifecycle_state_get();
   shutdown_init(lc_state);
 
+  // Initiaize shadow copy of the ePMP register configuration.
+  epmp_state_t epmp;
+  mask_rom_epmp_state_init(&epmp);
+
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
 
@@ -80,10 +85,6 @@ rom_error_t mask_rom_boot(void) {
   // Clean Device State Part 2.
   // See "Cleaning Device State" Below.
   // clean_device_state_part_2(boot_reason); // Chip-Specific Startup Module
-
-  // Enable Memory Protection
-  // - PMP Initial Region (if not done in power on)
-  // enable_memory_protection();  // Lockdown Module
 
   // Chip-specific startup functionality (NOTE: we expect this portion of
   // initialization to be done in assembly before C runtime init.  Delete
@@ -187,11 +188,18 @@ rom_error_t mask_rom_boot(void) {
     // if (!final_jump_to_rom_ext(current_rom_ext_manifest)) { // Hardened Jump
     // Module
     if (true) {
+      // Unlock execution of ROM_EXT executable code (text) sections.
+      RETURN_IF_ERROR(epmp_state_check(&epmp));
+      epmp_region_t rom_ext_text;
+      RETURN_IF_ERROR(manifest_code_region_get(manifest, &rom_ext_text));
+      mask_rom_epmp_unlock_rom_ext_rx(&epmp, rom_ext_text);
+      RETURN_IF_ERROR(epmp_state_check(&epmp));
+
+      // Jump to ROM_EXT entry point.
       uintptr_t entry_point;
       if (manifest_entry_point_get(manifest, &entry_point) != kErrorOk) {
         break;
       }
-      // Jump to ROM_EXT entry point.
       base_printf("rom_ext_entry: %p\r\n", entry_point);
       ((romextimage_entry_point *)entry_point)();
       // NOTE: never expecting a return, but if something were to go wrong

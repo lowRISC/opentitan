@@ -37,6 +37,19 @@ _chip_info_start = _chip_info_end - _chip_info_size;
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
 
+/**
+ * Physical Memory Protection (PMP) encoded address register values.
+ *
+ * Some addresses required for PMP entries are known only at link time.
+ * These addresses are encoded here so that no calculations need to be
+ * performed at runtime.
+ *
+ * See The RISC-V Instruction Set Manual Volume II: Privileged Architecture
+ * for more information about PMP address register encodings.
+ */
+_epmp_text_tor_lo = _text_start / 4;
+_epmp_text_tor_hi = _text_end / 4;
+_epmp_stack_guard_na4 = _stack_start / 4;
 
 ENTRY(_mask_rom_start_boot);
 
@@ -52,6 +65,7 @@ SECTIONS {
    * reset handler correctly.
    */
   .vectors _mask_rom_boot_address : ALIGN(256) {
+    _text_start = .;
     KEEP(*(.vectors))
   } > rom
 
@@ -71,6 +85,10 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+    _text_end = .;
   } > rom
 
   /**
