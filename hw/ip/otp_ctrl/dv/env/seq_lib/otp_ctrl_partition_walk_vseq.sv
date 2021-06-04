@@ -15,9 +15,9 @@ class otp_ctrl_partition_walk_vseq extends otp_ctrl_base_vseq;
 
       // granularity of 64 bits
       if (is_secret(dai_addr) || is_digest(dai_addr)) begin
-        if (dai_addr % 2 || !is_sw_digest(dai_addr)) continue;
+        if (addr % 2) continue;
         dai_wr(dai_addr, dai_addr, dai_addr + 1);
-        dai_rd_check(dai_addr, dai_addr, dai_addr + 1);
+        if (!is_digest(dai_addr)) dai_rd_check(dai_addr, dai_addr, dai_addr + 1);
 
       // granularity of 32 bits
       end else begin
