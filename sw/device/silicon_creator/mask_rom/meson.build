@@ -6,6 +6,7 @@
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
 # parameters.
+
 rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
@@ -36,6 +37,20 @@ sw_silicon_creator_mask_rom_romextimage = declare_dependency(
   ),
 )
 
+# Mask ROM ePMP library
+sw_silicon_creator_mask_rom_epmp = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_mask_rom_epmp',
+    sources: [
+      'mask_rom_epmp.S',
+      'mask_rom_epmp.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_epmp,
+    ],
+  )
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
@@ -54,6 +69,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_lib_shutdown,
+      sw_silicon_creator_mask_rom_epmp,
       sw_silicon_creator_mask_rom_sigverify,
       sw_silicon_creator_mask_rom_romextimage,
       sw_lib_crt,
@@ -63,7 +79,7 @@ mask_rom_lib = declare_dependency(
     link_with: static_library(
       'mask_rom_lib',
       sources: [
-        'mask_rom.c'
+        'mask_rom.c',
       ],
       link_depends: [rom_linkfile],
   )

@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/runtime/epmp.h"
+#include "sw/device/silicon_creator/lib/epmp.h"
 
 namespace manifest_unittest {
 namespace {
