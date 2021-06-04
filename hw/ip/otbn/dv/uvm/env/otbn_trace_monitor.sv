@@ -36,6 +36,7 @@ class otbn_trace_monitor extends dv_base_monitor #(
           item.wdr_operand_a = cfg.trace_vif.rf_bignum_rd_data_a;
           item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
           item.flags_read_data = cfg.trace_vif.flags_read_data;
+          item.flags_write_valid = cfg.trace_vif.flags_write;
           item.flags_write_data = cfg.trace_vif.flags_write_data;
           item.gpr_write_data = cfg.trace_vif.rf_base_wr_data;
           item.wdr_write_data = cfg.trace_vif.rf_bignum_wr_data;
