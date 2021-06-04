@@ -2031,7 +2031,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_done_o          (sha3_done),
     .cs_aes_halt_req_o    (cs_aes_halt_req),
     .cs_aes_halt_ack_i    (cs_aes_halt_i.cs_aes_halt_ack),
+    .set_startup_alert_o  (),
     .main_sm_idle_o       (es_main_sm_idle),
+    .main_sm_startup_o    (),
     .main_sm_state_o      (es_main_sm_state),
     .main_sm_err_o        (es_main_sm_err)
   );
