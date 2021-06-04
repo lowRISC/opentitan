@@ -32,86 +32,154 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // (the SVA will be unreachable in such cases)
   parameter bit                LockupSVA  = 1'b1
 ) (
-  input                          clk_i,
-  input                          rst_ni,
-  input                          entropy_i,          // from TRNG
-  input                          en_i,               // enable ping testing
-  input        [NAlerts-1:0]     alert_ping_en_i,    // determines which alerts to ping
-  input        [PING_CNT_DW-1:0] ping_timeout_cyc_i, // timeout in cycles
-  input        [PING_CNT_DW-1:0] wait_cyc_mask_i,    // wait cycles mask
-  output logic [NAlerts-1:0]     alert_ping_req_o,   // request to alert receivers
-  output logic [N_ESC_SEV-1:0]   esc_ping_req_o,     // enable to esc senders
-  input        [NAlerts-1:0]     alert_ping_ok_i,    // response from alert receivers
-  input        [N_ESC_SEV-1:0]   esc_ping_ok_i,      // response from esc senders
-  output logic                   alert_ping_fail_o,  // any of the alert receivers failed
-  output logic                   esc_ping_fail_o     // any of the esc senders failed
+  input                            clk_i,
+  input                            rst_ni,
+  output logic                     edn_req_o,          // request to EDN
+  input                            edn_ack_i,          // ack from EDN
+  input        [LfsrWidth-1:0]     edn_data_i,         // from EDN
+  input                            en_i,               // enable ping testing
+  input        [NAlerts-1:0]       alert_ping_en_i,    // determines which alerts to ping
+  input        [PING_CNT_DW-1:0]   ping_timeout_cyc_i, // timeout in cycles
+  input        [PING_CNT_DW-1:0]   wait_cyc_mask_i,    // wait cycles mask
+  output logic [NAlerts-1:0]       alert_ping_req_o,   // request to alert receivers
+  output logic [N_ESC_SEV-1:0]     esc_ping_req_o,     // enable to esc senders
+  input        [NAlerts-1:0]       alert_ping_ok_i,    // response from alert receivers
+  input        [N_ESC_SEV-1:0]     esc_ping_ok_i,      // response from esc senders
+  output logic                     alert_ping_fail_o,  // any of the alert receivers failed
+  output logic                     esc_ping_fail_o     // any of the esc senders failed
 );
 
   localparam int unsigned NModsToPing = NAlerts + N_ESC_SEV;
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
-  //////////
-  // PRNG //
-  //////////
+  ////////////////////
+  // Reseed counter //
+  ////////////////////
 
-  logic lfsr_en;
-  logic [31:0] lfsr_state;
+  // TODO: update this to account for escalation reverse ping.
+  logic reseed_en;
+  logic unused_edn_ack;
+  assign edn_req_o = 1'b0;
+  assign reseed_en = 1'b0;
+  assign unused_edn_ack = edn_ack_i;
+
+  ///////////////////////////
+  // Tandem LFSR Instances //
+  ///////////////////////////
+
+  logic lfsr_en, lfsr_en_unbuf;
+  logic [LfsrWidth-1:0] entropy_unbuf;
+  logic [1:0][LfsrWidth-1:0] lfsr_state;
   logic [16-IdDw-1:0] unused_lfsr_state;
 
-  prim_lfsr #(
-    .LfsrDw      ( 32              ),
-    .EntropyDw   ( 1               ),
-    .StateOutDw  ( 32              ),
-    .DefaultSeed ( RndCnstLfsrSeed ),
-    .StatePermEn ( 1'b1            ),
-    .StatePerm   ( RndCnstLfsrPerm ),
-    .MaxLenSVA   ( MaxLenSVA       ),
-    .LockupSVA   ( LockupSVA       ),
-    .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
-  ) u_prim_lfsr (
-    .clk_i,
-    .rst_ni,
-    .seed_en_i  ( 1'b0       ),
-    .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en    ),
-    .entropy_i,
-    .state_o    ( lfsr_state )
-  );
+  assign lfsr_en_unbuf = reseed_en || lfsr_en;
+  assign entropy_unbuf = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
+
+  // We employ two redundant LFSRs to guard against FI attacks.
+  // If any of the two is glitched and the two LFSR states do not agree,
+  // the FSM below is moved into a terminal error state and all ping alerts
+  // are permanently asserted.
+  for (genvar k = 0; k < 2; k++) begin : gen_double_lfsr
+    // Instantiate size_only buffers to prevent
+    // optimization / merging of redundant logic.
+    logic lfsr_en_buf;
+    logic [LfsrWidth-1:0] entropy_buf, lfsr_state_unbuf;
+    prim_buf #(
+      .Width(LfsrWidth)
+    ) u_prim_buf_entropy (
+      .in_i(entropy_unbuf),
+      .out_o(entropy_buf)
+    );
+
+    prim_buf u_prim_buf_lfsr_en (
+      .in_i(lfsr_en_unbuf),
+      .out_o(lfsr_en_buf)
+    );
+
+    prim_buf #(
+      .Width(LfsrWidth)
+    ) u_prim_buf_state (
+      .in_i(lfsr_state_unbuf),
+      .out_o(lfsr_state[k])
+    );
+
+    prim_lfsr #(
+      .LfsrDw      ( LfsrWidth       ),
+      .EntropyDw   ( LfsrWidth       ),
+      .StateOutDw  ( LfsrWidth       ),
+      .DefaultSeed ( RndCnstLfsrSeed ),
+      .StatePermEn ( 1'b1            ),
+      .StatePerm   ( RndCnstLfsrPerm ),
+      .MaxLenSVA   ( MaxLenSVA       ),
+      .LockupSVA   ( LockupSVA       ),
+      .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
+    ) u_prim_lfsr (
+      .clk_i,
+      .rst_ni,
+      .seed_en_i  ( 1'b0             ),
+      .seed_i     ( '0               ),
+      .lfsr_en_i  ( lfsr_en_buf      ),
+      .entropy_i  ( entropy_buf      ),
+      .state_o    ( lfsr_state_unbuf )
+    );
+  end
 
   logic [IdDw-1:0] id_to_ping;
   logic [PING_CNT_DW-1:0] wait_cyc;
   // we only use bits up to 23, as IdDw is 8bit maximum
-  assign id_to_ping = lfsr_state[16 +: IdDw];
+  assign id_to_ping = lfsr_state[0][16 +: IdDw];
 
   // to avoid lint warnings
-  assign unused_lfsr_state = lfsr_state[31:16+IdDw];
+  assign unused_lfsr_state = lfsr_state[0][31:16+IdDw];
 
   // concatenate with constant offset, introduce some stagger
-  // by concatenating the lower bits below
-  assign wait_cyc   = PING_CNT_DW'({lfsr_state[15:2], 8'h01, lfsr_state[1:0]}) & wait_cyc_mask_i;
+  // by concatenating the lower bits below. this ensures some
+  // minimum cycle spacing between pings.
+  assign wait_cyc = PING_CNT_DW'({lfsr_state[0][15:2],
+                                  8'h01,
+                                  lfsr_state[0][1:0]}) & wait_cyc_mask_i;
 
   logic [2**IdDw-1:0] enable_mask;
   always_comb begin : p_enable_mask
-    enable_mask                        = '0;         // tie off unused
+    enable_mask                        = '0;              // tie off unused
     enable_mask[NAlerts-1:0]           = alert_ping_en_i; // alerts
-    enable_mask[NModsToPing-1:NAlerts] = '1;         // escalation senders
+    enable_mask[NModsToPing-1:NAlerts] = '1;              // escalation senders are always enabled
   end
 
   logic id_vld;
   // check if the randomly drawn ID is actually valid and the alert is enabled
   assign id_vld  = enable_mask[id_to_ping];
 
-  /////////////
-  // Counter //
-  /////////////
+  //////////////////////////////
+  // Tandem Counter Instances //
+  //////////////////////////////
 
-  logic [PING_CNT_DW-1:0] cnt_d, cnt_q;
+  logic [1:0][PING_CNT_DW-1:0] cnt_q;
   logic cnt_en, cnt_clr;
   logic wait_ge, timeout_ge;
 
-  assign cnt_d      = cnt_q + 1'b1;
-  assign wait_ge    = (cnt_q >= wait_cyc);
-  assign timeout_ge = (cnt_q >= ping_timeout_cyc_i);
+  assign wait_ge    = (cnt_q[0] >= wait_cyc);
+  assign timeout_ge = (cnt_q[0] >= ping_timeout_cyc_i);
+
+  // We employ two redundant counters to guard against FI attacks.
+  // If any of the two is glitched and the two counter states do not agree,
+  // the FSM below is moved into a terminal error state and all ping alerts
+  // are permanently asserted.
+  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
+
+    logic [PING_CNT_DW-1:0] cnt_d;
+    assign cnt_d = cnt_q[k] + 1'b1;
+
+    prim_flop_en #(
+      .Width(PING_CNT_DW)
+    ) u_prim_flop_en (
+      .clk_i,
+      .rst_ni,
+      .en_i  ( cnt_clr | cnt_en                ),
+      .d_i   ( cnt_d & {PING_CNT_DW{~cnt_clr}} ),
+      .q_o   ( cnt_q[k]                        )
+    );
+  end
 
   ////////////////////////////
   // Ping and Timeout Logic //
@@ -123,7 +191,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic spurious_alert_ping, spurious_esc_ping;
 
   // generate ping enable vector
-  assign ping_sel        = NModsToPing'(ping_en) << id_to_ping;
+  assign ping_sel         = NModsToPing'(ping_en) << id_to_ping;
   assign alert_ping_req_o = ping_sel[NAlerts-1:0];
   assign esc_ping_req_o   = ping_sel[NModsToPing-1:NAlerts];
 
@@ -144,8 +212,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   );
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
-  //      -s 4178932394 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 8 \
+  //      -s 97540418 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -161,14 +229,15 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 3
-  // Maximum Hamming weight: 4
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
-    InitSt     = 8'b10001101,
-    RespWaitSt = 8'b10110000,
-    DoPingSt   = 8'b01010110
+    InitSt     = 8'b11111000,
+    RespWaitSt = 8'b11000110,
+    DoPingSt   = 8'b00100001,
+    FsmErrorSt = 8'b00011111
   } state_e;
 
   state_e state_d, state_q;
@@ -226,24 +295,35 @@ module alert_handler_ping_timer import alert_pkg::*; #(
           end
         end
       end
-      // this should never happen
+      // terminal FSM error state.
       // if we for some reason end up in this state (e.g. malicious glitching)
       // we are going to assert both ping fails continuously
-      default: begin
+      FsmErrorSt: begin
         alert_ping_fail_o = 1'b1;
         esc_ping_fail_o   = 1'b1;
       end
+      default: begin
+        state_d = FsmErrorSt;
+      end
     endcase
+
+    // if the two LFSR or counter states do not agree,
+    // we move into the terminal state.
+    if (lfsr_state[0] != lfsr_state[1] ||
+        cnt_q[0] != cnt_q[1]) begin
+       state_d = FsmErrorSt;
+    end
   end
 
-  ///////////////
-  // Registers //
-  ///////////////
+  ///////////////////
+  // FSM Registers //
+  ///////////////////
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
+
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(InitSt))
@@ -253,18 +333,6 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .d_i ( state_d     ),
     .q_o ( state_raw_q )
   );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      cnt_q   <= '0;
-    end else begin
-      if (cnt_clr) begin
-        cnt_q <= '0;
-      end else if (cnt_en) begin
-        cnt_q <= cnt_d;
-      end
-    end
-  end
 
   ////////////////
   // Assertions //
