@@ -18,17 +18,17 @@ from .snippet import Snippet
 def gen_program(config: Config,
                 start_addr: int,
                 fuel: int,
-                insns_file: InsnsFile) -> Tuple[InitData, Snippet]:
+                insns_file: InsnsFile) -> Tuple[InitData, Snippet, int]:
     '''Generate a random program for OTBN
 
     start_addr is the reset address (the value that should be programmed into
     the START_ADDR register). fuel gives a rough upper bound for the number of
     instructions that will be executed by the generated program.
 
-    Returns (init_data, snippets, program). init_data is a dict mapping (4-byte
+    Returns (init_data, snippet, end_addr). init_data is a dict mapping (4-byte
     aligned) address to u32s that should be loaded into data memory before
-    starting the program. snippets is a list of instruction snippets. program
-    is the generated program (from flattening them both).
+    starting the program. snippets is a tree of instruction snippets. end_addr
+    is the expected end address.
 
     '''
 
@@ -58,5 +58,5 @@ def gen_program(config: Config,
         raise RuntimeError('Failed to initialise snippet generators: {}'
                            .format(err)) from None
 
-    snippet = gens.gen_rest(model, program)
-    return init_data, snippet
+    snippet, end_addr = gens.gen_rest(model, program)
+    return init_data, snippet, end_addr

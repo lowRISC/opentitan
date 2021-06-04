@@ -283,12 +283,15 @@ class Program:
 
     def dump_linker_script(self,
                            out_file: TextIO,
-                           dsegs: Dict[int, List[int]]) -> None:
+                           dsegs: Dict[int, List[int]],
+                           end_addr: int) -> None:
         '''Write a linker script to link the program
 
         This lays out the sections generated in dump_asm().
 
         '''
+        assert end_addr >= 0
+
         seg_descs = []
         for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             seg_descs.append(('dseg{:04}'.format(idx),
@@ -309,6 +312,8 @@ class Program:
         for seg, vma, lma, sec, comment in seg_descs:
             out_file.write('    {} PT_LOAD AT ( {:#x} );\n'.format(seg, lma))
         out_file.write('}\n\n')
+
+        out_file.write('_expected_end_addr = {:#x};\n\n'.format(end_addr))
 
         out_file.write('SECTIONS\n'
                        '{\n')

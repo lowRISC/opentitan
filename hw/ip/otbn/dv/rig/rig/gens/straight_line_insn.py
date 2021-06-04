@@ -13,7 +13,7 @@ from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import ProgSnippet, Snippet
-from ..snippet_gen import GenCont, GenRet, SnippetGen
+from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
 
 class StraightLineInsn(SnippetGen):
@@ -64,12 +64,12 @@ class StraightLineInsn(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        return self._gen(model, program)
+        return SnippetGen._unsimple_genret(self._gen(model, program))
 
     def gen_some(self,
                  count: int,
                  model: Model,
-                 program: Program) -> Optional[Tuple[Snippet, Model]]:
+                 program: Program) -> Optional[SimpleGenRet]:
         '''Generate a block of count straight-line instructions'''
         assert 0 < count
 
@@ -89,7 +89,7 @@ class StraightLineInsn(SnippetGen):
 
     def _gen(self,
              model: Model,
-             program: Program) -> Optional[Tuple[Snippet, Model]]:
+             program: Program) -> Optional[SimpleGenRet]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
         #

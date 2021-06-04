@@ -14,7 +14,7 @@ from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import LoopSnippet, Snippet
-from ..snippet_gen import GenCont, GenRet, SnippetGen
+from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
 
 class Loop(SnippetGen):
@@ -193,7 +193,7 @@ class Loop(SnippetGen):
                   bogus_insn: ProgInsn,
                   cont: GenCont,
                   model: Model,
-                  program: Program) -> Optional[Tuple[Snippet, Model]]:
+                  program: Program) -> Optional[SimpleGenRet]:
         '''Generate the body of a loop
 
         The model is currently sitting at the start of the loop body.
@@ -451,4 +451,4 @@ class Loop(SnippetGen):
             # we computed before.
             model.fuel = fuel_afterwards
 
-        return (snippet, model)
+        return (snippet, False, model)
