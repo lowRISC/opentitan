@@ -23,7 +23,7 @@ class sram_ctrl_bijection_vseq extends sram_ctrl_smoke_vseq;
 
   virtual task body();
 
-    int sram_depth = cfg.mem_bkdr_vif.mem_depth;
+    int sram_depth = cfg.mem_bkdr_util_h.get_depth();
 
     `uvm_info(`gfn, $sformatf("sram_depth: %0d", sram_depth), UVM_HIGH)
 

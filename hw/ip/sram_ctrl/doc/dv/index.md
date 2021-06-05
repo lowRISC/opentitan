@@ -63,8 +63,6 @@ parameter int KDI_PROPAGATION_CYCLES = 4;
 // a LC escalation request needs 3 cycles to be fully propagated through the DUT
 parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
 
-typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_vif;
-
 typedef enum bit {
   SramCtrlRenewScrKey = 0,
   SramCtrlInit        = 1
@@ -105,7 +103,7 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 
 ### Reference models
 The SRAM_CTRL testbench uses a SystemVerilog golden model of its address and data scrambling to ensure that internal encryption and decryption are performed correctly.
-This golden model, [`sram_scrambler_pkg`]({{<relref "hw/dv/sv/mem_bkdr_if/README.md" >}}) is tightly integrated with the mem_bkdr_if for ease of use such that we can choose to enable encryption on any backdoor access.
+This golden model, [`sram_scrambler_pkg`]({{<relref "hw/dv/sv/mem_bkdr_util/README.md" >}}) is tightly integrated with the mem_bkdr_util for ease of use such that we can choose to enable encryption on any backdoor access.
 
 ### Stimulus strategy
 #### Test sequences
@@ -160,7 +158,7 @@ typedef struct {
 
 All CSR accesses made to the SRAM_CTRL register file are tracked and predicted by the scoreboard.
 
-Verifying memory accesses is somewhat involved, and makes heavy use of the [`mem_bkdr_if`]({{< relref "hw/dv/sv/mem_bkdr_if/README.md" >}}).
+Verifying memory accesses is somewhat involved, and makes heavy use of the [`mem_bkdr_util`]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}}).
 
 At a high level, whenever a TL access is made to memory, all relevant information is stored in an `sram_trans_t` struct.
 
