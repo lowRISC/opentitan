@@ -437,7 +437,7 @@ class RunTest(Deploy):
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
         self.job_name += f"_{self.build_mode}"
         if self.sim_cfg.cov:
-            self.output_dirs += [self.cov_db_test_dir]
+            self.output_dirs += [self.cov_db_dir]
 
         # In GUI mode, the log file is not updated; hence, nothing to check.
         if not self.sim_cfg.gui:
