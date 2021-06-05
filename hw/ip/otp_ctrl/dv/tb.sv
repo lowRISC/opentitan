@@ -9,6 +9,7 @@ module tb;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import mem_bkdr_util_pkg::mem_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -139,17 +140,22 @@ module tb;
   assign flash_data_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
   assign flash_addr_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
 
-  // bind mem_bkdr_if
-  `define OTP_CTRL_MEM_HIER \
-      dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic
-
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  bind `OTP_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16))
-      mem_bkdr_if();
+  // Instantitate the memory backdoor util instance.
+  `define OTP_CTRL_MEM_HIER \
+      tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
 
   initial begin
+    mem_bkdr_util m_mem_bkdr_util;
+    m_mem_bkdr_util = new(.name  ("mem_bkdr_util"),
+                          .path  (`DV_STRINGIFY(`OTP_CTRL_MEM_HIER)),
+                          .depth ($size(`OTP_CTRL_MEM_HIER)),
+                          .n_bits($bits(`OTP_CTRL_MEM_HIER)),
+                          .parity(1'b0),
+                          .ecc   (prim_secded_pkg::SecdedHamming_22_16));
+
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
     // 2 values.
     // If it's not Off, it should be On.
@@ -192,8 +198,7 @@ module tb;
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
-                                      `OTP_CTRL_MEM_HIER.mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
 
     uvm_config_db#(virtual otp_ctrl_if)::set(null, "*.env", "otp_ctrl_vif", otp_ctrl_if);
     $timeformat(-12, 0, " ps", 12);

@@ -20,6 +20,7 @@ package otp_ctrl_env_pkg;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -160,7 +161,6 @@ package otp_ctrl_env_pkg;
     OtpMacroAlert
   } otp_alert_e;
 
-  typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16)) mem_bkdr_vif;
   typedef virtual otp_ctrl_if otp_ctrl_vif;
 
   parameter otp_err_code_e OTP_TERMINAL_ERRS[4] = {OtpMacroEccUncorrError,
