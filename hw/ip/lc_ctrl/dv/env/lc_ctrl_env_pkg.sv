@@ -26,7 +26,7 @@ package lc_ctrl_env_pkg;
 
   // parameters
   parameter string LIST_OF_ALERTS[] = {"fatal_prog_error", "fatal_state_error"};
-  parameter uint   NUM_ALERTS = 2;
+  parameter uint   NUM_ALERTS = 3;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
   parameter uint   NUM_STATES = 16;
 

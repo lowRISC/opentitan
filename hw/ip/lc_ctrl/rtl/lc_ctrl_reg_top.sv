@@ -108,6 +108,8 @@ module lc_ctrl_reg_top (
   logic alert_test_fatal_prog_error_we;
   logic alert_test_fatal_state_error_wd;
   logic alert_test_fatal_state_error_we;
+  logic alert_test_fatal_bus_integ_error_wd;
+  logic alert_test_fatal_bus_integ_error_we;
   logic status_ready_qs;
   logic status_ready_re;
   logic status_transition_successful_qs;
@@ -124,6 +126,8 @@ module lc_ctrl_reg_top (
   logic status_otp_error_re;
   logic status_state_error_qs;
   logic status_state_error_re;
+  logic status_bus_integ_error_qs;
+  logic status_bus_integ_error_re;
   logic status_otp_partition_error_qs;
   logic status_otp_partition_error_re;
   logic [7:0] claim_transition_if_qs;
@@ -210,6 +214,21 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_state_error.qe),
     .q      (reg2hw.alert_test.fatal_state_error.q ),
+    .qs     ()
+  );
+
+
+  //   F[fatal_bus_integ_error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_bus_integ_error (
+    .re     (1'b0),
+    .we     (alert_test_fatal_bus_integ_error_we),
+    .wd     (alert_test_fatal_bus_integ_error_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_bus_integ_error.qe),
+    .q      (reg2hw.alert_test.fatal_bus_integ_error.q ),
     .qs     ()
   );
 
@@ -336,7 +355,22 @@ module lc_ctrl_reg_top (
   );
 
 
-  //   F[otp_partition_error]: 8:8
+  //   F[bus_integ_error]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_bus_integ_error (
+    .re     (status_bus_integ_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.bus_integ_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_bus_integ_error_qs)
+  );
+
+
+  //   F[otp_partition_error]: 9:9
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_partition_error (
@@ -746,6 +780,9 @@ module lc_ctrl_reg_top (
   assign alert_test_fatal_state_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_state_error_wd = reg_wdata[1];
 
+  assign alert_test_fatal_bus_integ_error_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_fatal_bus_integ_error_wd = reg_wdata[2];
+
   assign status_ready_re = addr_hit[1] & reg_re & !reg_error;
 
   assign status_transition_successful_re = addr_hit[1] & reg_re & !reg_error;
@@ -761,6 +798,8 @@ module lc_ctrl_reg_top (
   assign status_otp_error_re = addr_hit[1] & reg_re & !reg_error;
 
   assign status_state_error_re = addr_hit[1] & reg_re & !reg_error;
+
+  assign status_bus_integ_error_re = addr_hit[1] & reg_re & !reg_error;
 
   assign status_otp_partition_error_re = addr_hit[1] & reg_re & !reg_error;
 
@@ -826,6 +865,7 @@ module lc_ctrl_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[1]: begin
@@ -837,7 +877,8 @@ module lc_ctrl_reg_top (
         reg_rdata_next[5] = status_flash_rma_error_qs;
         reg_rdata_next[6] = status_otp_error_qs;
         reg_rdata_next[7] = status_state_error_qs;
-        reg_rdata_next[8] = status_otp_partition_error_qs;
+        reg_rdata_next[8] = status_bus_integ_error_qs;
+        reg_rdata_next[9] = status_otp_partition_error_qs;
       end
 
       addr_hit[2]: begin

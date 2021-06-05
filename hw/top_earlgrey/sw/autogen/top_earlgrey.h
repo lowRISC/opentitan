@@ -1122,40 +1122,41 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdOtpCtrlFatalCheckError = 3, /**< otp_ctrl_fatal_check_error */
   kTopEarlgreyAlertIdLcCtrlFatalProgError = 4, /**< lc_ctrl_fatal_prog_error */
   kTopEarlgreyAlertIdLcCtrlFatalStateError = 5, /**< lc_ctrl_fatal_state_error */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovAs = 6, /**< sensor_ctrl_aon_recov_as */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovCg = 7, /**< sensor_ctrl_aon_recov_cg */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovGd = 8, /**< sensor_ctrl_aon_recov_gd */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovTsHi = 9, /**< sensor_ctrl_aon_recov_ts_hi */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovTsLo = 10, /**< sensor_ctrl_aon_recov_ts_lo */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovFla = 11, /**< sensor_ctrl_aon_recov_fla */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovOtp = 12, /**< sensor_ctrl_aon_recov_otp */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovOt0 = 13, /**< sensor_ctrl_aon_recov_ot0 */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovOt1 = 14, /**< sensor_ctrl_aon_recov_ot1 */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovOt2 = 15, /**< sensor_ctrl_aon_recov_ot2 */
-  kTopEarlgreyAlertIdSensorCtrlAonRecovOt3 = 16, /**< sensor_ctrl_aon_recov_ot3 */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError = 17, /**< sram_ctrl_ret_aon_fatal_intg_error */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError = 18, /**< sram_ctrl_ret_aon_fatal_parity_error */
-  kTopEarlgreyAlertIdFlashCtrlRecovErr = 19, /**< flash_ctrl_recov_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 20, /**< flash_ctrl_recov_mp_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 21, /**< flash_ctrl_recov_ecc_err */
-  kTopEarlgreyAlertIdFlashCtrlFatalIntgErr = 22, /**< flash_ctrl_fatal_intg_err */
-  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 23, /**< aes_recov_ctrl_update_err */
-  kTopEarlgreyAlertIdAesFatalFault = 24, /**< aes_fatal_fault */
-  kTopEarlgreyAlertIdHmacFatalFault = 25, /**< hmac_fatal_fault */
-  kTopEarlgreyAlertIdKmacFatalFault = 26, /**< kmac_fatal_fault */
-  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 27, /**< keymgr_fatal_fault_err */
-  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 28, /**< keymgr_recov_operation_err */
-  kTopEarlgreyAlertIdCsrngFatalAlert = 29, /**< csrng_fatal_alert */
-  kTopEarlgreyAlertIdEntropySrcRecovAlert = 30, /**< entropy_src_recov_alert */
-  kTopEarlgreyAlertIdEntropySrcFatalAlert = 31, /**< entropy_src_fatal_alert */
-  kTopEarlgreyAlertIdEdn0FatalAlert = 32, /**< edn0_fatal_alert */
-  kTopEarlgreyAlertIdEdn1FatalAlert = 33, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 34, /**< sram_ctrl_main_fatal_intg_error */
-  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 35, /**< sram_ctrl_main_fatal_parity_error */
-  kTopEarlgreyAlertIdOtbnFatal = 36, /**< otbn_fatal */
-  kTopEarlgreyAlertIdOtbnRecov = 37, /**< otbn_recov */
-  kTopEarlgreyAlertIdRomCtrlFatal = 38, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdLast = 38, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdLcCtrlFatalBusIntegError = 6, /**< lc_ctrl_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovAs = 7, /**< sensor_ctrl_aon_recov_as */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovCg = 8, /**< sensor_ctrl_aon_recov_cg */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovGd = 9, /**< sensor_ctrl_aon_recov_gd */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovTsHi = 10, /**< sensor_ctrl_aon_recov_ts_hi */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovTsLo = 11, /**< sensor_ctrl_aon_recov_ts_lo */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovFla = 12, /**< sensor_ctrl_aon_recov_fla */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovOtp = 13, /**< sensor_ctrl_aon_recov_otp */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovOt0 = 14, /**< sensor_ctrl_aon_recov_ot0 */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovOt1 = 15, /**< sensor_ctrl_aon_recov_ot1 */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovOt2 = 16, /**< sensor_ctrl_aon_recov_ot2 */
+  kTopEarlgreyAlertIdSensorCtrlAonRecovOt3 = 17, /**< sensor_ctrl_aon_recov_ot3 */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError = 18, /**< sram_ctrl_ret_aon_fatal_intg_error */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError = 19, /**< sram_ctrl_ret_aon_fatal_parity_error */
+  kTopEarlgreyAlertIdFlashCtrlRecovErr = 20, /**< flash_ctrl_recov_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 21, /**< flash_ctrl_recov_mp_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 22, /**< flash_ctrl_recov_ecc_err */
+  kTopEarlgreyAlertIdFlashCtrlFatalIntgErr = 23, /**< flash_ctrl_fatal_intg_err */
+  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 24, /**< aes_recov_ctrl_update_err */
+  kTopEarlgreyAlertIdAesFatalFault = 25, /**< aes_fatal_fault */
+  kTopEarlgreyAlertIdHmacFatalFault = 26, /**< hmac_fatal_fault */
+  kTopEarlgreyAlertIdKmacFatalFault = 27, /**< kmac_fatal_fault */
+  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 28, /**< keymgr_fatal_fault_err */
+  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 29, /**< keymgr_recov_operation_err */
+  kTopEarlgreyAlertIdCsrngFatalAlert = 30, /**< csrng_fatal_alert */
+  kTopEarlgreyAlertIdEntropySrcRecovAlert = 31, /**< entropy_src_recov_alert */
+  kTopEarlgreyAlertIdEntropySrcFatalAlert = 32, /**< entropy_src_fatal_alert */
+  kTopEarlgreyAlertIdEdn0FatalAlert = 33, /**< edn0_fatal_alert */
+  kTopEarlgreyAlertIdEdn1FatalAlert = 34, /**< edn1_fatal_alert */
+  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 35, /**< sram_ctrl_main_fatal_intg_error */
+  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 36, /**< sram_ctrl_main_fatal_parity_error */
+  kTopEarlgreyAlertIdOtbnFatal = 37, /**< otbn_fatal */
+  kTopEarlgreyAlertIdOtbnRecov = 38, /**< otbn_recov */
+  kTopEarlgreyAlertIdRomCtrlFatal = 39, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdLast = 39, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1165,7 +1166,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[39];
+    top_earlgrey_alert_for_peripheral[40];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

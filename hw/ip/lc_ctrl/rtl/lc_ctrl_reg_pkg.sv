@@ -13,7 +13,7 @@ package lc_ctrl_reg_pkg;
   parameter int CsrLcIdStateWidth = 2;
   parameter int CsrOtpTestCtrlWidth = 8;
   parameter int NumDeviceIdWords = 8;
-  parameter int NumAlerts = 2;
+  parameter int NumAlerts = 3;
 
   // Address widths within the block
   parameter int BlockAw = 7;
@@ -31,6 +31,10 @@ package lc_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } fatal_state_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_bus_integ_error;
   } lc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -85,6 +89,9 @@ package lc_ctrl_reg_pkg;
     } state_error;
     struct packed {
       logic        d;
+    } bus_integ_error;
+    struct packed {
+      logic        d;
     } otp_partition_error;
   } lc_ctrl_hw2reg_status_reg_t;
 
@@ -126,7 +133,7 @@ package lc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [160:157]
+    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [162:157]
     lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [156:148]
     lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [147:146]
     lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [145:14]
@@ -136,7 +143,7 @@ package lc_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [424:416]
+    lc_ctrl_hw2reg_status_reg_t status; // [425:416]
     lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [415:408]
     lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [407:407]
     lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [406:279]
@@ -173,10 +180,11 @@ package lc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 54;
 
   // Reset values for hwext registers and their fields
-  parameter logic [1:0] LC_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [2:0] LC_CTRL_ALERT_TEST_RESVAL = 3'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
-  parameter logic [8:0] LC_CTRL_STATUS_RESVAL = 9'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
+  parameter logic [9:0] LC_CTRL_STATUS_RESVAL = 10'h 0;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_RESVAL = 1'h 0;
