@@ -226,5 +226,20 @@ TEST_F(TransitionTest, NullArgs) {
   EXPECT_EQ(dif_lc_ctrl_transition(nullptr, kDifLcCtrlStateProd, &token),
             kDifLcCtrlMutexBadArg);
 }
+
+class OtpTestRegTest : public LcTest {};
+
+TEST_F(OtpTestRegTest, Read) {
+  uint32_t settings_read = 0;
+  EXPECT_READ32(LC_CTRL_OTP_TEST_CTRL_REG_OFFSET, 0x5A);
+  EXPECT_EQ(dif_lc_ctrl_get_otp_test_reg(&lc_, &settings_read), kDifLcCtrlOk);
+  EXPECT_EQ(settings_read, 0x5A);
+}
+
+TEST_F(OtpTestRegTest, Write) {
+  EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
+  EXPECT_WRITE32(LC_CTRL_OTP_TEST_CTRL_REG_OFFSET, 0xA5);
+  EXPECT_EQ(dif_lc_ctrl_set_otp_test_reg(&lc_, 0xA5), kDifLcCtrlMutexOk);
+}
 }  // namespace
 }  // namespace dif_lc_ctrl_unittest
