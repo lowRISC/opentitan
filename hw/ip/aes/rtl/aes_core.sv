@@ -41,6 +41,7 @@ module aes_core
   input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,
 
   // Alerts
+  input  logic                        intg_err_alert_i,
   output logic                        alert_recov_o,
   output logic                        alert_fatal_o,
 
@@ -849,7 +850,11 @@ module aes_core
   assign ctrl_err_storage = ctrl_err_storage_d | ctrl_err_storage_q;
 
   // Collect fatal alert signals.
-  assign alert_fatal_o = ctrl_err_storage | ctr_alert | cipher_alert | ctrl_alert;
+  assign alert_fatal_o = ctrl_err_storage |
+                         ctr_alert        |
+                         cipher_alert     |
+                         ctrl_alert       |
+                         intg_err_alert_i;
 
   // Make the fatal alert observable via status register.
   assign hw2reg.status.alert_fatal_fault.d  = alert_fatal_o;
