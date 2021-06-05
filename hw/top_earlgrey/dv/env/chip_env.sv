@@ -49,42 +49,11 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(rom_mem_bkdr_vif)::get(this, "", "rom_bkdr_vif", cfg.rom_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get rom_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(parity_mem_bkdr_vif)::get(this, "", "ram_main_bkdr_vif",
-        cfg.ram_main_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get ram_main_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(parity_mem_bkdr_vif)::get(this, "", "ram_ret_bkdr_vif",
-        cfg.ram_ret_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get ram_ret_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_bank0_bkdr_vif",
-        cfg.flash_bank0_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get flash_bank0_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_bank1_bkdr_vif",
-        cfg.flash_bank1_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get flash_bank1_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_info0_bkdr_vif",
-        cfg.flash_info0_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get flash_info0_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_info1_bkdr_vif",
-        cfg.flash_info1_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get flash_info1_bkdr_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(otp_mem_bkdr_vif)::get(this, "", "otp_bkdr_vif", cfg.otp_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get otp_bkdr_vif from uvm_config_db")
+    for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
+      if (!uvm_config_db#(mem_bkdr_util)::get(
+          this, "", $sformatf("mem_bkdr_util[%0s]", mem.name()), cfg.mem_bkdr_util_h[mem])) begin
+        `uvm_fatal(`gfn, $sformatf("failed to get mem_bkdr_util[%0s] from uvm_config_db", mem))
+      end
     end
 
     // get the handle to the sw log monitor for available sw_images.

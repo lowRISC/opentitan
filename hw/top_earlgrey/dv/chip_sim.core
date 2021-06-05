@@ -21,6 +21,7 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
+      - lowrisc:dv:mem_bkdr_util
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}
       - autogen/tb__xbar_connect.sv: {is_include_file: true}

@@ -34,7 +34,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
     // Backdoor load the OTP image.
-    cfg.otp_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
+    cfg.mem_bkdr_util_h[Otp].load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
     wait (cfg.rst_n_mon_vif.pins[0] === 1);
     cfg.clk_rst_vif.wait_clks(100);
   endtask

@@ -23,6 +23,7 @@ package chip_env_pkg;
   import xbar_env_pkg::*;
   import bus_params_pkg::*;
   import str_utils_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -45,23 +46,16 @@ package chip_env_pkg;
   typedef virtual sw_logger_if          sw_logger_vif;
   typedef virtual sw_test_status_if     sw_test_status_vif;
 
-  // backdoors
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
-  typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) parity_mem_bkdr_vif;
-  typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16)) otp_mem_bkdr_vif;
-  typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::Secded_39_32)) rom_mem_bkdr_vif;
-
   // Types of memories in the chip.
   typedef enum {
-    Rom,
-    RamMain,
-    RamRet,
-    FlashBank0,
-    FlashBank1,
+    FlashBank0Data,
+    FlashBank1Data,
     FlashBank0Info,
     FlashBank1Info,
     Otp,
-    SpiMem
+    RamMain,
+    RamRet,
+    Rom
   } chip_mem_e;
 
   // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
@@ -72,23 +66,6 @@ package chip_env_pkg;
     SwTypeOtbn, // Otbn SW.
     SwTypeOtp   // OTP image.
   } sw_type_e;
-
-  // functions
-  function automatic bit [bus_params_pkg::BUS_AW-1:0] get_chip_mem_base_addr(chip_mem_e mem);
-    case (mem)
-      Rom:    return top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR;
-      RamMain:return top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR;
-      RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-      FlashBank0, FlashBank0Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR;
-      FlashBank1, FlashBank1Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-                                         flash_ctrl_pkg::PagesPerBank *
-                                         flash_ctrl_pkg::WordsPerPage *
-                                         flash_ctrl_pkg::DataWidth / 8;
-      SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR
-                      + spi_device_reg_pkg::SPI_DEVICE_BUFFER_OFFSET ; // TODO
-      default:`uvm_fatal("chip_env_pkg", {"Invalid input: ", mem.name()})
-    endcase
-  endfunction
 
   // Extracts the address and size of a const symbol in a SW test (supplied as an ELF file).
   //
