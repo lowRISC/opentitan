@@ -27,6 +27,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit default_req_blocking = 1;
   bit lc_prog_blocking     = 1;
 
+  // Collect current lc_state and lc_cnt. This is used to create next lc_state and lc_cnt without
+  // error.
+  lc_ctrl_state_pkg::lc_state_e lc_state;
+  lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
+
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -63,6 +68,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.mem_bkdr_vif.clear_mem();
     cfg.backdoor_clear_mem = 1;
     used_dai_addr_q.delete();
+    lc_state = 0;
+    lc_cnt   = 0;
   endtask
 
   // some registers won't set to default value until otp_init is done
@@ -414,15 +421,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
-  virtual task req_lc_transition(bit check_intr = 0, bit blocking = default_req_blocking);
+  virtual task req_lc_transition(bit check_intr = 0,
+                                 bit blocking = default_req_blocking,
+                                 bit wr_blank_err = 0);
     if (cfg.m_lc_prog_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
-      req_lc_transition_sub(check_intr);
+      req_lc_transition_sub(check_intr, wr_blank_err);
     end else begin
       fork
         begin
-          req_lc_transition_sub(check_intr);
+          req_lc_transition_sub(check_intr, wr_blank_err);
         end
       join_none;
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -430,22 +439,29 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_lc_transition_sub(bit check_intr = 0);
-    lc_ctrl_state_pkg::lc_state_e lc_state;
-    lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
-    bit [TL_DW-1:0]               intr_val;
+  virtual task req_lc_transition_sub(bit check_intr = 0, bit wr_blank_err = 0);
+    lc_ctrl_state_pkg::lc_cnt_e       next_lc_cnt;
+    lc_ctrl_state_pkg::dec_lc_state_e next_lc_state, lc_state_dec;
+    bit [TL_DW-1:0]                   intr_val;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
     wait(cfg.under_reset == 0);
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
 
-    // Even though OTP does not check input lc_state or lc_cnt is valid enum,
-    // this sequence will have 90% chance that the input data is correctly encoded
-    if (!$urandom_range(0, 9)) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
-      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_state, lc_cnt});
+    if (!wr_blank_err) begin
+      // Find valid next state and next cnt using lc_ctrl_dv_utils_pkg.
+      // If terminal state or max LcCnt reaches, will not program any new data.
+      if ((lc_state != LcStScrap) && (lc_cnt != LcCnt16)) begin
+        lc_state_dec = lc_ctrl_dv_utils_pkg::dec_lc_state(lc_state);
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
+                                           next_lc_state inside {VALID_NEXT_STATES[lc_state_dec]};)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_cnt, next_lc_cnt > lc_cnt;)
+        lc_state = lc_ctrl_dv_utils_pkg::encode_lc_state(next_lc_state);
+        lc_cnt   = next_lc_cnt;
+      end
+      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_cnt, lc_state});
     end
+
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
     `uvm_send(lc_prog_pull_seq)
 
