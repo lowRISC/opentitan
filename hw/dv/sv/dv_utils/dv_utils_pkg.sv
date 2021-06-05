@@ -24,6 +24,13 @@ package dv_utils_pkg;
   typedef bit [31:0] uint32;
   typedef bit [63:0] uint64;
 
+  // TODO: The above typedefs violate the name rule, which is fixed below. Cleanup the codebase to
+  // use the typedefs below and remove the ones above.
+  typedef bit [7:0]  uint8_t;
+  typedef bit [15:0] uint16_t;
+  typedef bit [31:0] uint32_t;
+  typedef bit [63:0] uint64_t;
+
   // typedef parameterized pins_if for ease of implementation for interrupts and alerts
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
   typedef virtual pins_if #(1)                  devmode_vif;
