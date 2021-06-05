@@ -43,8 +43,8 @@ class otp_ctrl_env extends cip_base_env #(
         this, "m_flash_addr_pull_agent", "cfg", cfg.m_flash_addr_pull_agent_cfg);
     m_flash_data_pull_agent = push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id::create(
         "m_flash_data_pull_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(this, "m_flash_data_pull_agent",
-        "cfg", cfg.m_flash_data_pull_agent_cfg);
+    uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(
+        this, "m_flash_data_pull_agent", "cfg", cfg.m_flash_data_pull_agent_cfg);
 
     // build lc-otp program pull agent
     m_lc_prog_pull_agent = push_pull_agent#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
@@ -53,8 +53,8 @@ class otp_ctrl_env extends cip_base_env #(
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
 
     // config mem virtual interface
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
+    if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
+      `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
     end
 
     // config otp_ctrl output data virtual interface

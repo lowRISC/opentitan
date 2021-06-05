@@ -11,6 +11,7 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:otp_ctrl_test
       - lowrisc:dv:otp_ctrl_sva
       - lowrisc:dv:otp_ctrl_cov

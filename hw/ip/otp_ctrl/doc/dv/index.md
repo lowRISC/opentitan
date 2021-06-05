@@ -56,8 +56,6 @@ All common types and methods defined at the package level can be found in
     OtpCheckFailError,
     OtpFsmStateError
   } otp_err_code_e;
-
-  typedef virtual mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_vif;
 ```
 
 ### TL_agent
@@ -73,7 +71,7 @@ OTP_CTRL design has specific inputs and outputs to communicate with other IPs in
 This interface is created to initialize, use simple task to drive, and use assertions to monitor these signals.
 
 ### Memory backdoor interface
-OTP_CTRL testbench binds design's non-volatile OTP memory with a [`mem_bkdr_if`]({{< relref "hw/dv/sv/mem_bkdr_if/README.md" >}}), which supports read, write, and injection of ECC errors to design's OTP memory.
+OTP_CTRL testbench binds design's non-volatile OTP memory with a [`mem_bkdr_util`]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}}), which supports read, write, and injection of ECC errors to design's OTP memory.
 
 ### UVM RAL model
 The OTP_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.

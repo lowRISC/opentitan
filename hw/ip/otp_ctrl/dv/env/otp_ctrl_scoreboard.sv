@@ -113,8 +113,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
             if (dai_digest_ip != LifeCycleIdx) begin
               bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
-              otp_a[otp_addr]   = cfg.mem_bkdr_vif.read32(otp_addr << 2);
-              otp_a[otp_addr+1] = cfg.mem_bkdr_vif.read32((otp_addr << 2) + 4);
+              otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
+              otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
               dai_digest_ip = LifeCycleIdx;
             end
             predict_digest_csrs();
@@ -222,7 +222,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       #1ps;
       if (cfg.otp_ctrl_vif.rst_ni == 0) begin
         for (int i = 0; i < LC_PROG_DATA_SIZE/32; i++) begin
-          otp_lc_data[i*32+:32] = cfg.mem_bkdr_vif.read32(LifeCycleOffset+i*4);
+          otp_lc_data[i*32+:32] = cfg.mem_bkdr_util_h.read32(LifeCycleOffset+i*4);
         end
       end
     end
@@ -446,7 +446,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE]}) begin
       if (data_phase_read) begin
         bit [TL_AW-1:0] otp_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR) >> 2;
-        // TODO: macro ecc uncorrectable error once mem_bkdr_if supports
+        // TODO: macro ecc uncorrectable error once mem_bkdr_util supports
         //`DV_CHECK_EQ(item.d_data, 0,
         //             $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
         //             csr_addr, otp_addr << 2))
@@ -549,7 +549,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                   // DAI interface access error, even though injected ECC error, it won't be read
-                  // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_if)
+                  // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_util)
                   cfg.ecc_err = OtpNoEccErr;
 
                 end else begin
@@ -790,8 +790,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function bit [1:0] read_a_word_with_ecc(bit [TL_DW-1:0] dai_addr,
                                                   ref bit [TL_DW-1:0] readout_word);
-    prim_secded_pkg::secded_28_22_t ecc_rd_data0 = cfg.mem_bkdr_vif.ecc_read16(dai_addr);
-    prim_secded_pkg::secded_28_22_t ecc_rd_data1 = cfg.mem_bkdr_vif.ecc_read16(dai_addr + 2);
+    prim_secded_pkg::secded_28_22_t ecc_rd_data0 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr);
+    prim_secded_pkg::secded_28_22_t ecc_rd_data1 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr + 2);
     readout_word[15:0]  = ecc_rd_data0.data;
     readout_word[31:16] = ecc_rd_data1.data;
     return max2(ecc_rd_data0.err, ecc_rd_data1.err);
