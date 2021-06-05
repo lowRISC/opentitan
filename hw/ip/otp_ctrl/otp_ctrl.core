@@ -16,6 +16,7 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
       - lowrisc:prim:buf
+      - lowrisc:prim:flop
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:ip:pwrmgr_pkg

@@ -72,30 +72,62 @@ module otp_ctrl_lfsr_timer
   assign edn_req_o = (reseed_timer_q == '0);
   assign reseed_en = edn_req_o & edn_ack_i;
 
-  //////////
-  // PRNG //
-  //////////
+  ///////////////////////////
+  // Tandem LFSR Instances //
+  ///////////////////////////
 
-  logic lfsr_en;
-  logic [LfsrWidth-1:0] lfsr_state;
+  logic lfsr_en, lfsr_en_unbuf;
+  logic [LfsrWidth-1:0] entropy_unbuf;
+  logic [1:0][LfsrWidth-1:0] lfsr_state;
 
-  prim_lfsr #(
-    .LfsrDw      ( LfsrWidth      ),
-    .EntropyDw   ( LfsrWidth      ),
-    .StateOutDw  ( LfsrWidth      ),
-    .DefaultSeed ( RndCnstLfsrSeed ),
-    .StatePermEn ( 1'b1            ),
-    .StatePerm   ( RndCnstLfsrPerm ),
-    .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
-  ) i_prim_lfsr (
-    .clk_i,
-    .rst_ni,
-    .seed_en_i  ( 1'b0       ),
-    .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en | reseed_en                                ),
-    .entropy_i  ( edn_data_i[LfsrWidth-1:0] & {LfsrWidth{reseed_en}} ),
-    .state_o    ( lfsr_state )
-  );
+  assign lfsr_en_unbuf = reseed_en || lfsr_en;
+  assign entropy_unbuf = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
+
+  // We employ two redundant LFSRs to guard against FI attacks.
+  // If any of the two is glitched and the two LFSR states do not agree,
+  // the FSM below is moved into a terminal error state.
+  for (genvar k = 0; k < 2; k++) begin : gen_double_lfsr
+    // Instantiate size_only buffers to prevent
+    // optimization / merging of redundant logic.
+    logic lfsr_en_buf;
+    logic [LfsrWidth-1:0] entropy_buf, lfsr_state_unbuf;
+    prim_buf #(
+      .Width(LfsrWidth)
+    ) u_prim_buf_entropy (
+      .in_i(entropy_unbuf),
+      .out_o(entropy_buf)
+    );
+
+    prim_buf u_prim_buf_lfsr_en (
+      .in_i(lfsr_en_unbuf),
+      .out_o(lfsr_en_buf)
+    );
+
+    prim_buf #(
+      .Width(LfsrWidth)
+    ) u_prim_buf_state (
+      .in_i(lfsr_state_unbuf),
+      .out_o(lfsr_state[k])
+    );
+
+    prim_lfsr #(
+      .LfsrDw      ( LfsrWidth      ),
+      .EntropyDw   ( LfsrWidth      ),
+      .StateOutDw  ( LfsrWidth      ),
+      .DefaultSeed ( RndCnstLfsrSeed ),
+      .StatePermEn ( 1'b1            ),
+      .StatePerm   ( RndCnstLfsrPerm ),
+      .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
+    ) u_prim_lfsr (
+      .clk_i,
+      .rst_ni,
+      .seed_en_i  ( 1'b0             ),
+      .seed_i     ( '0               ),
+      .lfsr_en_i  ( lfsr_en_buf      ),
+      .entropy_i  ( entropy_buf      ),
+      .state_o    ( lfsr_state_unbuf )
+    );
+  end
 
   // Not all entropy bits are used.
   logic unused_seed;
@@ -103,37 +135,82 @@ module otp_ctrl_lfsr_timer
 
   `ASSERT_INIT(EdnIsWideEnough_A, EdnDataWidth >= LfsrWidth)
 
-  //////////////
-  // Counters //
-  //////////////
+  //////////////////////////////
+  // Tandem Counter Instances //
+  //////////////////////////////
 
-  logic [LfsrWidth-1:0] integ_cnt_d, integ_cnt_q;
-  logic [LfsrWidth-1:0] cnsty_cnt_d, cnsty_cnt_q;
-  logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
+  logic [1:0][LfsrWidth-1:0] integ_cnt_q;
+  logic [1:0][LfsrWidth-1:0] cnsty_cnt_q;
   logic integ_load_period, integ_load_timeout, integ_cnt_zero;
   logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
-  logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
 
+  logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
   assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
   assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
 
-  assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
-                       (integ_load_timeout) ? LfsrWidth'(timeout_i)   :
-                       (integ_cnt_zero)     ? '0                      :
-                                              integ_cnt_q - 1'b1;
-
-
-  assign cnsty_cnt_d = (cnsty_load_period)  ? lfsr_state & cnsty_mask :
-                       (cnsty_load_timeout) ? LfsrWidth'(timeout_i)   :
-                       (cnsty_cnt_zero)     ? '0                      :
-                       (cnsty_cnt_pause)    ? cnsty_cnt_q             :
-                                              cnsty_cnt_q - 1'b1;
-
+  logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
   assign timeout_zero   = (timeout_i == '0);
   assign integ_msk_zero = (integ_period_msk_i == '0);
   assign cnsty_msk_zero = (cnsty_period_msk_i == '0);
-  assign integ_cnt_zero = (integ_cnt_q == '0);
-  assign cnsty_cnt_zero = (cnsty_cnt_q == '0);
+  assign integ_cnt_zero = (integ_cnt_q[0] == '0);
+  assign cnsty_cnt_zero = (cnsty_cnt_q[0] == '0);
+
+  // We employ redundant counters to guard against FI attacks.
+  // If any of them is glitched and the redundant counter states do not agree,
+  // the FSM below is moved into a terminal error state.
+  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
+    // Instantiate size_only buffers to prevent
+    // optimization / merging of redundant logic.
+    logic integ_load_period_buf, integ_load_timeout_buf;
+    logic cnsty_load_period_buf, cnsty_load_timeout_buf, cnsty_cnt_pause_buf;
+
+    prim_buf #(
+      .Width(5)
+    ) u_prim_buf (
+      .in_i({integ_load_period,
+             integ_load_timeout,
+             cnsty_load_period,
+             cnsty_load_timeout,
+             cnsty_cnt_pause}),
+      .out_o({integ_load_period_buf,
+              integ_load_timeout_buf,
+              cnsty_load_period_buf,
+              cnsty_load_timeout_buf,
+              cnsty_cnt_pause_buf})
+    );
+
+    logic [LfsrWidth-1:0] integ_cnt_d;
+    logic [LfsrWidth-1:0] cnsty_cnt_d;
+    assign integ_cnt_d = (integ_load_period_buf)  ? lfsr_state[k] & integ_mask :
+                         (integ_load_timeout_buf) ? LfsrWidth'(timeout_i)      :
+                         (integ_cnt_q[k] == '0)   ? '0                         :
+                                                    integ_cnt_q[k] - 1'b1;
+
+
+    assign cnsty_cnt_d = (cnsty_load_period_buf)  ? lfsr_state[k] & cnsty_mask :
+                         (cnsty_load_timeout_buf) ? LfsrWidth'(timeout_i)      :
+                         (cnsty_cnt_q[k] == '0)   ? '0                         :
+                         (cnsty_cnt_pause_buf)    ? cnsty_cnt_q[k]             :
+                                                    cnsty_cnt_q[k] - 1'b1;
+
+    prim_flop #(
+      .Width(LfsrWidth)
+    ) u_prim_flop_integ_cnt (
+      .clk_i,
+      .rst_ni,
+      .d_i   ( integ_cnt_d    ),
+      .q_o   ( integ_cnt_q[k] )
+    );
+
+    prim_flop #(
+      .Width(LfsrWidth)
+    ) u_prim_flop_cnsty_cnt (
+      .clk_i,
+      .rst_ni,
+      .d_i   ( cnsty_cnt_d    ),
+      .q_o   ( cnsty_cnt_q[k] )
+    );
+  end
 
   /////////////////////
   // Request signals //
@@ -299,9 +376,13 @@ module otp_ctrl_lfsr_timer
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
-      state_d = ErrorSt;
+    // Unconditionally jump into the terminal error state in case of escalation,
+    // or if the two LFSR or counter states do not agree.
+    if (lfsr_state[0] != lfsr_state[1] ||
+        integ_cnt_q[0] != integ_cnt_q[1] ||
+        cnsty_cnt_q[0] != cnsty_cnt_q[1] ||
+        escalate_en_i != lc_ctrl_pkg::Off) begin
+       state_d = ErrorSt;
     end
   end
 
@@ -325,8 +406,6 @@ module otp_ctrl_lfsr_timer
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      integ_cnt_q <= '0;
-      cnsty_cnt_q <= '0;
       integ_chk_req_q <= '0;
       cnsty_chk_req_q <= '0;
       chk_timeout_q   <= 1'b0;
@@ -334,8 +413,6 @@ module otp_ctrl_lfsr_timer
       integ_chk_trig_q <= 1'b0;
       cnsty_chk_trig_q <= 1'b0;
     end else begin
-      integ_cnt_q <= integ_cnt_d;
-      cnsty_cnt_q <= cnsty_cnt_d;
       integ_chk_req_q <= integ_chk_req_d;
       cnsty_chk_req_q <= cnsty_chk_req_d;
       chk_timeout_q   <= chk_timeout_d;
