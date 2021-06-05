@@ -12,7 +12,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:mem_bkdr_if
+      - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:kmac_app_agent
     files:
       - rom_ctrl_env_pkg.sv

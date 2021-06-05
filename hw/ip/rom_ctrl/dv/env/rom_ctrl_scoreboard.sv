@@ -66,7 +66,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     while (dword < byte_data_q.size()) begin
       bit [kmac_pkg::MsgWidth-1:0] exp, act;
       bit [ROM_MEM_W-1:0]          mem_data;
-      mem_data = cfg.mem_bkdr_vif.rom_encrypt_read32(
+      mem_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
           addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
       exp = {{kmac_pkg::MsgWidth-ROM_MEM_W{1'b0}}, mem_data};
       for (int i = 0; i < kmac_pkg::MsgWidth / 8; i++) begin
@@ -105,7 +105,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     // The digest is the top 8 words in memory (unscrambled)
     dig_addr = MAX_CHECK_ADDR;
     for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
-      bit [ROM_MEM_W-1:0] mem_data = cfg.mem_bkdr_vif.rom_encrypt_read32(
+      bit [ROM_MEM_W-1:0] mem_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
           dig_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
       digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
       dig_addr += (TL_DW / 8);
@@ -173,7 +173,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function void check_mem_read(tl_seq_item item);
     bit [ROM_MEM_W-1:0] exp_data;
 
-    exp_data = cfg.mem_bkdr_vif.rom_encrypt_read32(
+    exp_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
         item.a_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b1);
 
     `DV_CHECK_EQ(item.d_error, item.get_exp_d_error(), "TLUL ROM read error incorrect")

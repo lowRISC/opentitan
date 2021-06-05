@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rom_ctrl_env_pkg::*;
   import rom_ctrl_test_pkg::*;
+  import mem_bkdr_util_pkg::mem_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -62,23 +63,27 @@ module tb;
     .kmac_data_o          (kmac_data_out)
   );
 
-  // bind mem_bkdr_if
+  // Instantitate the memory backdoor util instance.
   `define ROM_CTRL_MEM_HIER \
-    dut.u_rom.u_rom.u_prim_rom
-
-  bind `ROM_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::Secded_39_32)) mem_bkdr_if ();
+    tb.dut.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
 
   initial begin
+    mem_bkdr_util m_mem_bkdr_util;
+    m_mem_bkdr_util = new(.name  ("mem_bkdr_util"),
+                          .path  (`DV_STRINGIFY(`ROM_CTRL_MEM_HIER)),
+                          .depth ($size(`ROM_CTRL_MEM_HIER)),
+                          .n_bits($bits(`ROM_CTRL_MEM_HIER)),
+                          .parity(1'b0),
+                          .ecc   (prim_secded_pkg::Secded_39_32));
+
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_rom_tl_agent*", "vif", tl_rom_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
-        `ROM_CTRL_MEM_HIER.mem_bkdr_if);
-    uvm_config_db#(virtual kmac_app_intf)::set(null,
-        "*.env.m_kmac_agent*", "vif", kmac_app_if);
+    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
+    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", rom_ctrl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
