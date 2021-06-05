@@ -49,6 +49,10 @@ typedef enum dif_lc_ctrl_status_code {
    */
   kDifLcCtrlStatusCodeBadToken,
   /**
+   * Indicates a flash RMA request error.
+   */
+  kDifLcCtrlStatusCodeFlashRmaError,
+  /**
    * Indicates an error during an OTP operation.
    *
    * This error will raise an alert.
@@ -60,6 +64,16 @@ typedef enum dif_lc_ctrl_status_code {
    * This error will raise an alert.
    */
   kDifLcCtrlStatusCodeCorrupt,
+  /**
+   * Indicates a bus integrity error.
+   *
+   * This error will raise an alert.
+   */
+  kDifLcCtrlStatusCodeBusIntegError,
+  /**
+   * Indicates an ECC error in the lifecycle OTP partition.
+   */
+  kDifLcCtrlStatusCodeOtpPartError,
 } dif_lc_ctrl_status_code_t;
 
 /**
@@ -310,6 +324,10 @@ typedef enum dif_lc_ctrl_alert {
    * The alert triggered by a `kDifLcCtrlStatusCodeCorrupt`.
    */
   kDifLcCtrlAlertCorrupt,
+  /**
+   * The alert triggered by a `kDifLcCtrlStatusCodeBusIntegError`.
+   */
+  kDifLcCtrlAlertBus,
 } dif_lc_ctrl_alert_t;
 
 /**
