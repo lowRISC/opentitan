@@ -106,15 +106,16 @@ module lc_ctrl
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
 
+  logic fatal_bus_integ_error_q, fatal_bus_integ_error_d;
   lc_ctrl_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
     .tl_o,
-    .reg2hw    ( reg2hw ),
-    .hw2reg    ( hw2reg ),
-    .intg_err_o(        ),
-    .devmode_i ( 1'b1   )
+    .reg2hw    ( reg2hw                  ),
+    .hw2reg    ( hw2reg                  ),
+    .intg_err_o( fatal_bus_integ_error_d ),
+    .devmode_i ( 1'b1                    )
   );
 
   ////////////////////
@@ -271,6 +272,7 @@ module lc_ctrl
     hw2reg.status.otp_error              = fatal_prog_error_q;
     hw2reg.status.state_error            = fatal_state_error_q;
     hw2reg.status.otp_partition_error    = otp_part_error_q;
+    hw2reg.status.bus_integ_error        = fatal_bus_integ_error_q;
     hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
@@ -369,18 +371,20 @@ module lc_ctrl
       tap_claim_transition_if_q <= '0;
       transition_token_q        <= '0;
       transition_target_q       <= DecLcStRaw;
-      otp_part_error_q          <= '0;
+      otp_part_error_q          <= 1'b0;
+      fatal_bus_integ_error_q   <= 1'b0;
       otp_test_ctrl_q           <= '0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
-      trans_success_q           <= trans_success_d        | trans_success_q;
-      trans_cnt_oflw_error_q    <= trans_cnt_oflw_error_d | trans_cnt_oflw_error_q;
-      trans_invalid_error_q     <= trans_invalid_error_d  | trans_invalid_error_q;
-      token_invalid_error_q     <= token_invalid_error_d  | token_invalid_error_q;
-      flash_rma_error_q         <= flash_rma_error_d      | flash_rma_error_q;
-      fatal_prog_error_q        <= otp_prog_error_d       | fatal_prog_error_q;
-      fatal_state_error_q       <= state_invalid_error_d  | fatal_state_error_q;
-      otp_part_error_q          <= otp_lc_data_i.error    | otp_part_error_q;
+      trans_success_q           <= trans_success_d         | trans_success_q;
+      trans_cnt_oflw_error_q    <= trans_cnt_oflw_error_d  | trans_cnt_oflw_error_q;
+      trans_invalid_error_q     <= trans_invalid_error_d   | trans_invalid_error_q;
+      token_invalid_error_q     <= token_invalid_error_d   | token_invalid_error_q;
+      flash_rma_error_q         <= flash_rma_error_d       | flash_rma_error_q;
+      fatal_prog_error_q        <= otp_prog_error_d        | fatal_prog_error_q;
+      fatal_state_error_q       <= state_invalid_error_d   | fatal_state_error_q;
+      otp_part_error_q          <= otp_lc_data_i.error     | otp_part_error_q;
+      fatal_bus_integ_error_q   <= fatal_bus_integ_error_d | fatal_bus_integ_error_q;
       // Other regs, gated by mutex further below.
       sw_claim_transition_if_q  <= sw_claim_transition_if_d;
       tap_claim_transition_if_q <= tap_claim_transition_if_d;
@@ -405,11 +409,14 @@ module lc_ctrl
   logic [NumAlerts-1:0] tap_alert_test;
 
   assign alerts = {
+    fatal_bus_integ_error_q,
     fatal_state_error_q,
     fatal_prog_error_q
   };
 
   assign alert_test = {
+    reg2hw.alert_test.fatal_bus_integ_error.q &
+    reg2hw.alert_test.fatal_bus_integ_error.qe,
     reg2hw.alert_test.fatal_state_error.q &
     reg2hw.alert_test.fatal_state_error.qe,
     reg2hw.alert_test.fatal_prog_error.q &
@@ -417,6 +424,8 @@ module lc_ctrl
   };
 
    assign tap_alert_test = {
+    tap_reg2hw.alert_test.fatal_bus_integ_error.q &
+    tap_reg2hw.alert_test.fatal_bus_integ_error.qe,
     tap_reg2hw.alert_test.fatal_state_error.q &
     tap_reg2hw.alert_test.fatal_state_error.qe,
     tap_reg2hw.alert_test.fatal_prog_error.q &

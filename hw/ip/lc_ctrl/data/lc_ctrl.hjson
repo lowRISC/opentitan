@@ -29,6 +29,9 @@
     { name: "fatal_state_error",
       desc: "This alert triggers if an error in the life cycle state or life cycle controller FSM is detected.",
     }
+    { name: "fatal_bus_integ_error",
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the LC_CTRL unit."
+    }
   ],
 
   ////////////////
@@ -380,6 +383,13 @@
                 '''
         }
         { bits: "8"
+          name: "BUS_INTEG_ERROR"
+          desc: '''
+                This bit is set to 1 if a fatal bus integrity fault is detected.
+                This error triggers a fatal_bus_fault alert.
+                '''
+        }
+        { bits: "9"
           name: "OTP_PARTITION_ERROR"
           desc: '''
                 This bit is set to 1 if the life cycle partition in OTP is in error state.

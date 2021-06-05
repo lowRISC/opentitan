@@ -11586,6 +11586,13 @@
       module_name: lc_ctrl
     }
     {
+      name: lc_ctrl_fatal_bus_integ_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: lc_ctrl
+    }
+    {
       name: sensor_ctrl_aon_recov_as
       width: 1
       type: alert
