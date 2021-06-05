@@ -25,7 +25,9 @@ package lc_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"fatal_prog_error", "fatal_state_error"};
+  parameter string LIST_OF_ALERTS[] = {"fatal_prog_error",
+                                       "fatal_state_error",
+                                       "fatal_bus_integ_error"};
   parameter uint   NUM_ALERTS = 3;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
   parameter uint   NUM_STATES = 16;

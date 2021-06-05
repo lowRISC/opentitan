@@ -137,6 +137,11 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeBadToken, true);
   }
 
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT)) {
+    status_word = bitfield_bit32_write(status_word,
+                                       kDifLcCtrlStatusCodeFlashRmaError, true);
+  }
+
   if (bitfield_bit32_read(reg, LC_CTRL_STATUS_OTP_ERROR_BIT)) {
     status_word =
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeOtpError, true);
@@ -145,6 +150,16 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
   if (bitfield_bit32_read(reg, LC_CTRL_STATUS_STATE_ERROR_BIT)) {
     status_word =
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeCorrupt, true);
+  }
+
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT)) {
+    status_word = bitfield_bit32_write(status_word,
+                                       kDifLcCtrlStatusCodeBusIntegError, true);
+  }
+
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT)) {
+    status_word = bitfield_bit32_write(status_word,
+                                       kDifLcCtrlStatusCodeOtpPartError, true);
   }
 
   *status = status_word;
@@ -189,6 +204,9 @@ dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
       break;
     case kDifLcCtrlAlertCorrupt:
       alert_idx = LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_BIT;
+      break;
+    case kDifLcCtrlAlertBus:
+      alert_idx = LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT;
       break;
     default:
       return kDifLcCtrlBadArg;
