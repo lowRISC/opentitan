@@ -81,6 +81,7 @@ module aes
   ////////////
 
   // Register interface
+  logic intg_err_alert;
   aes_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -88,7 +89,7 @@ module aes
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(intg_err_alert),
     .devmode_i(1'b1)
   );
 
@@ -165,6 +166,7 @@ module aes
 
     .lc_escalate_en_i       ( lc_escalate_en       ),
 
+    .intg_err_alert_i       ( intg_err_alert       ),
     .alert_recov_o          ( alert[0]             ),
     .alert_fatal_o          ( alert[1]             ),
 

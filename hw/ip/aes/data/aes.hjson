@@ -181,7 +181,13 @@
     { name: "fatal_fault",
       desc: '''
         This fatal alert is triggered upon detecting a fatal fault inside the AES unit.
-        Examples for such faults include i) storage errors in the shadowed Control Register, ii) any internal FSM entering an invalid state, iii) any sparsely encoded signal taking on an invalid value, iv) errors in the internal round counter, and v) escalations triggered by the life cycle controller.
+        Examples for such faults include
+        i) storage errors in the shadowed Control Register,
+        ii) any internal FSM entering an invalid state,
+        iii) any sparsely encoded signal taking on an invalid value,
+        iv) errors in the internal round counter,
+        v) escalations triggered by the life cycle controller, and
+        vi) fatal integrity failures on the TL-UL bus.
         The AES unit cannot recover from such an error and needs to be reset.
       '''
     }
@@ -585,7 +591,13 @@
         desc:  '''
           No fatal fault has occurred inside the AES unit (0).
           A fatal fault has occurred and the AES unit needs to be reset (1).
-          Examples for fatal faults include i) storage errors in the Control Register, ii) if any internal FSM enters an invalid state, iii) if any sparsely encoded signal takes on an invalid value, iv) errors in the internal round counter, and v) escalations triggered by the life cycle controller.
+          Examples for fatal faults include
+          i) storage errors in the Control Register,
+          ii) if any internal FSM enters an invalid state,
+          iii) if any sparsely encoded signal takes on an invalid value,
+          iv) errors in the internal round counter,
+          v) escalations triggered by the life cycle controller, and
+          vi) fatal integrity failures on the TL-UL bus.
         '''
       }
     ]
