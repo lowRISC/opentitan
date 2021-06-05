@@ -84,7 +84,7 @@
             - rx error
             - overflow/underflow'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_intr"]
     }
     {
       name: abort
