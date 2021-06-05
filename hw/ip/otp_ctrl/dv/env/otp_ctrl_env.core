@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_if
       - lowrisc:dv:crypto_dpi_present
+      - lowrisc:dv:lc_ctrl_dv_utils
     files:
       - otp_ctrl_env_pkg.sv
       - otp_ctrl_if.sv
