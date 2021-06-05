@@ -35,7 +35,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   // Task to build a random rom in memory
   virtual task rom_ctrl_mem_init();
     // randomize the memory contents
-    cfg.mem_bkdr_vif.randomize_mem();
+    cfg.mem_bkdr_util_h.randomize_mem();
   endtask
 
   // Task to perform `num_ops` fully randomized memory transactions.

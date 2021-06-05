@@ -29,7 +29,7 @@ It instantiates the `rom_ctrl` DUT module `hw/ip/rom_ctrl/rtl/rom_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-* [Memory backdoor interface]({{< relref "hw/dv/sv/mem_bkdr_if/README.md" >}})
+* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}})
 * `rom_ctrl` IOs
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 

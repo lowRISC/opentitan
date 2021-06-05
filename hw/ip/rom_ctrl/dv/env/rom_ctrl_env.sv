@@ -21,8 +21,8 @@ class rom_ctrl_env extends cip_base_env #(
     super.build_phase(phase);
 
     // Get the mem_bkdr interface
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
+    if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
+      `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
     end
     // Get the rom_ctrl interface
     if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif)) begin

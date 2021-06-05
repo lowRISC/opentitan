@@ -14,6 +14,7 @@ package rom_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import rom_ctrl_regs_ral_pkg::*;
   import kmac_app_agent_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -34,7 +35,6 @@ package rom_ctrl_env_pkg;
   parameter uint ROM_MEM_W = 40;
 
   // types
-  typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::Secded_39_32)) mem_bkdr_vif;
   typedef virtual rom_ctrl_if rom_ctrl_vif;
 
   // functions
