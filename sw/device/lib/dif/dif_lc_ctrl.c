@@ -314,3 +314,35 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
                       1);
   return kDifLcCtrlMutexOk;
 }
+
+dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
+                                                        uint32_t settings) {
+  if (lc == NULL) {
+    return kDifLcCtrlMutexBadArg;
+  }
+
+  uint32_t busy = mmio_region_read32(lc->params.base_addr,
+                                     LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
+  if (busy == 0) {
+    return kDifLcCtrlMutexAlreadyTaken;
+  }
+
+  mmio_region_write32(lc->params.base_addr, LC_CTRL_OTP_TEST_CTRL_REG_OFFSET,
+                      settings);
+
+  return kDifLcCtrlMutexOk;
+}
+
+dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_test_reg(const dif_lc_ctrl_t *lc,
+                                                  uint32_t *settings) {
+  if (lc == NULL || settings == NULL) {
+    return kDifLcCtrlBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(lc->params.base_addr,
+                                    LC_CTRL_OTP_TEST_CTRL_REG_OFFSET);
+
+  *settings = bitfield_field32_read(reg, LC_CTRL_OTP_TEST_CTRL_VAL_FIELD);
+
+  return kDifLcCtrlOk;
+}

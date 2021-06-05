@@ -425,6 +425,28 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
     const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
     const dif_lc_ctrl_token_t *token);
 
+/**
+ * Writes settings to the vendor-specific OTP test control register.
+ *
+ * @param lc A lifecycle handle.
+ * @param settings The settings to write to the register.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
+                                                        uint32_t settings);
+
+/**
+ * Reads settings from the vendor-specific OTP test control register.
+ *
+ * @param lc A lifecycle handle.
+ * @param settings Output parameter for the settings.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_test_reg(const dif_lc_ctrl_t *lc,
+                                                  uint32_t *settings);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
