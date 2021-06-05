@@ -48,13 +48,12 @@ class chip_base_vseq extends cip_base_vseq #(
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
     // Initialize flash seeds
-    cfg.flash_info0_bkdr_vif.set_mem();
-    cfg.flash_info1_bkdr_vif.set_mem();
+    cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
+    cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
-    cfg.otp_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
+    cfg.mem_bkdr_util_h[Otp].load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
     // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
-    cfg.rom_bkdr_vif.randomize_mem();
-
+    cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
   endtask
