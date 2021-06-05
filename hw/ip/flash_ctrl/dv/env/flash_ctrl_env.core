@@ -11,7 +11,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:mem_bkdr_if
+      - lowrisc:dv:mem_bkdr_util
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:constants:top_pkg
     files:

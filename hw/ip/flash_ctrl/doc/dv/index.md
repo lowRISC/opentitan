@@ -35,7 +35,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* [Memory backdoor interfaces]({{< relref "hw/dv/sv/mem_bkdr_if/README.md" >}})
+* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}})
 
 In future, as the design (and DV) matures, the following interfaces will be
 instantiated and hooked up to the DUT:

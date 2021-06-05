@@ -296,12 +296,12 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     case (flash_op.op)
       flash_ctrl_pkg::FlashOpRead: begin
         // Initialize the targeted mem region with random data.
-        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitRandomize));
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       flash_ctrl_pkg::FlashOpProgram: begin
         // Initialize the targeted mem region with all 1s. This is required because the flash
         // needs to be erased to all 1s between each successive programming.
-        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitSet));
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
       end
     endcase
   endfunction

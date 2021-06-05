@@ -10,6 +10,7 @@ module tb;
   import flash_ctrl_pkg::*;
   import flash_ctrl_env_pkg::*;
   import flash_ctrl_test_pkg::*;
+  import mem_bkdr_util_pkg::mem_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -101,56 +102,68 @@ module tb;
     end
   end
 
-
-  // -----------------------------------
+  // Instantitate the memory backdoor util instances.
   //
+  // This only applies to the generic eflash. A unique memory backdoor util instance is created for
+  // each type of flash partition in each bank.
+  //
+  // For eflash of a specific vendor implementation, set the hierarchy to the memory element
+  // correctly when creating these instances in the extended testbench.
+  `define FLASH_DATA_MEM_HIER(i)                                                        \
+      tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i]. \
+      u_prim_flash_bank.u_mem.gen_generic.u_impl_generic.mem
 
-  `define FLASH_DATA_MEM_HIER(i)                                              \
-      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.                  \
-      gen_prim_flash_banks[i].u_prim_flash_bank.u_mem
+  `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
+      $sformatf({"tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.",           \
+                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.gen_generic.",      \
+                 "u_impl_generic.mem"}, i)
 
-  `define FLASH_INFO_MEM_HIER(i, j)                                           \
-      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.                  \
-      gen_prim_flash_banks[i].u_prim_flash_bank.gen_info_types[j].u_info_mem
+  `define FLASH_INFO_MEM_HIER(i, j)                                                     \
+      tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i]. \
+      u_prim_flash_bank.gen_info_types[j].u_info_mem.gen_generic.u_impl_generic.mem
 
-  for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_mem_bkdr_if_i
+  `define FLASH_INFO_MEM_HIER_STR(i, j)                                                 \
+      $sformatf({"tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.",           \
+                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
+                 "u_info_mem.gen_generic.u_impl_generic.mem"}, i, j)
 
-    if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_generic // If using open-source flash
-
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+    for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_each_bank
       flash_dv_part_e part = part.first();
 
-      bind `FLASH_DATA_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
-      for(genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++)
-        bind `FLASH_INFO_MEM_HIER(i, j) mem_bkdr_if mem_bkdr_if();
-
       initial begin
-
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-            part.name(), i), `FLASH_DATA_MEM_HIER(i).mem_bkdr_if);
+        mem_bkdr_util m_mem_bkdr_util;
+        m_mem_bkdr_util = new(.name  ($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+                              .path  (`FLASH_DATA_MEM_HIER_STR(i)),
+                              .depth ($size(`FLASH_DATA_MEM_HIER(i))),
+                              .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
+                              .parity(1'b0),
+                              .ecc   (prim_secded_pkg::SecdedNone));
+        uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                           m_mem_bkdr_util);
         part = part.next();
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-              part.name(), i), `FLASH_INFO_MEM_HIER(i, 0).mem_bkdr_if);
-        part = part.next();
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-              part.name(), i), `FLASH_INFO_MEM_HIER(i, 1).mem_bkdr_if);
-        part = part.next();
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-              part.name(), i), `FLASH_INFO_MEM_HIER(i, 2).mem_bkdr_if);
-
       end
 
-    end : gen_generic
+      for (genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++) begin : gen_each_info_type
+        initial begin
+          mem_bkdr_util m_mem_bkdr_util;
+          m_mem_bkdr_util = new(.name  ($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+                                .path  (`FLASH_INFO_MEM_HIER_STR(i, j)),
+                                .depth ($size(`FLASH_INFO_MEM_HIER(i, j))),
+                                .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
+                                .parity(1'b0),
+                                .ecc   (prim_secded_pkg::SecdedNone));
+          uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                             m_mem_bkdr_util);
+          part = part.next();
+        end
+      end : gen_each_info_type
 
-  end : gen_mem_bkdr_if_i
-
-
-
+    end : gen_each_bank
+  end : gen_generic
 
   `undef FLASH_DATA_MEM_HIER
   `undef FLASH_INFO_MEM_HIER
-
-  // -----------------------------------
-
 
   // Connect the interrupts
   assign interrupts[FlashCtrlIntrProgEmpty] = intr_prog_empty;
