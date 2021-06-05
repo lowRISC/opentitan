@@ -21,6 +21,9 @@ package gpio_env_pkg;
   parameter uint NUM_GPIOS     = 32;
   // no. of cycles for noise filter
   parameter uint FILTER_CYCLES = 16;
+  // No. of alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef class gpio_env_cfg;
