@@ -14,6 +14,7 @@ package flash_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import flash_ctrl_pkg::*;
   import flash_ctrl_core_ral_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -91,8 +92,6 @@ package flash_ctrl_env_pkg;
     uint            num_words;  // number of words to read or program (TL_DW)
     bit [TL_AW-1:0] addr;       // starting addr for the op
   } flash_op_t;
-
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
 
   // functions
 
