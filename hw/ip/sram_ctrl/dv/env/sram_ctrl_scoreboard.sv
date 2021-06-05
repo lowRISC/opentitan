@@ -114,7 +114,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     addr1 = word_align_addr(addr1);
     addr2 = word_align_addr(addr2);
 
-    for (int i = 0; i < cfg.mem_bkdr_vif.mem_addr_width + 2; i++) begin
+    for (int i = 0; i < cfg.mem_bkdr_util_h.get_addr_width() + 2; i++) begin
       addr_mask[i] = 1;
     end
 
@@ -290,7 +290,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       //
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space
-      cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_vif.mem_depth);
+      cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
       in_init = 0;
       `uvm_info(`gfn, "dropped in_init", UVM_HIGH)
     end
@@ -611,7 +611,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
             in_raw_hazard = 1;
             held_trans = data_trans;
             waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
-            held_data = cfg.mem_bkdr_vif.sram_encrypt_read32(waddr, data_trans.key, data_trans.nonce);
+            held_data = cfg.mem_bkdr_util_h.sram_encrypt_read32(waddr, data_trans.key,
+                                                                data_trans.nonce);
 
             // sample covergroup
             if (cfg.en_cov) begin
@@ -673,7 +674,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // This task continuously pulls items from the completed_trans_mbox
-  // and checks them for correctness by using the mem_bkdr_if.
+  // and checks them for correctness by using the mem_bkdr_util.
   //
   // TLUL allows partial reads and writes, so we first need to construct a bit-mask
   // based off of the TLUL mask field.
@@ -700,7 +701,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Given a complete memory transaction item as input,
   // this function compares against the SRAM for correctness
-  // using the mem_bkdr_if.
+  // using the mem_bkdr_util.
   //
   // TLUL allows partial reads and writes, so we first need to construct a bit-mask
   // based off of the TLUL mask field.
@@ -723,7 +724,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     bit_mask = expand_bit_mask(t.mask);
 
     // backdoor read the mem
-    exp_data = cfg.mem_bkdr_vif.sram_encrypt_read32(word_addr, t.key, t.nonce);
+    exp_data = cfg.mem_bkdr_util_h.sram_encrypt_read32(word_addr, t.key, t.nonce);
     `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_HIGH)
 
     exp_masked_data = exp_data & bit_mask;

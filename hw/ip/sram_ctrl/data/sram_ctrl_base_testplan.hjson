@@ -21,7 +21,7 @@
                 - A valid key is received
                 - The key seed used by OTP is valid
               - Perform a number of random memory accesses to the SRAM, verify that all accesses
-                were executed correctly using the `mem_bkdr_if`
+                were executed correctly using the `mem_bkdr_util`
             '''
       milestone: V1
       tests: ["{variant}_smoke"]

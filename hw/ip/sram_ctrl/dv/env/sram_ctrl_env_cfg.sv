@@ -17,7 +17,7 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
   virtual clk_rst_if otp_clk_rst_vif;
   virtual sram_ctrl_lc_if lc_vif;
   virtual sram_ctrl_exec_if exec_vif;
-  mem_bkdr_vif mem_bkdr_vif;
+  mem_bkdr_util mem_bkdr_util_h;
 
   // otp clk freq
   rand dv_utils_pkg::clk_freq_mhz_e otp_freq_mhz;

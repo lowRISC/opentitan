@@ -17,6 +17,7 @@ package sram_ctrl_env_pkg;
   import otp_ctrl_pkg::*;
   import lc_ctrl_pkg::*;
   import crypto_dpi_prince_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -38,7 +39,6 @@ package sram_ctrl_env_pkg;
   parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
 
   // types
-  typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_vif;
   typedef virtual sram_ctrl_lc_if lc_vif;
   typedef virtual sram_ctrl_exec_if exec_vif;
 

@@ -9,6 +9,7 @@ module tb;
   import sram_ctrl_pkg::*;
   import sram_ctrl_env_pkg::*;
   import sram_ctrl_test_pkg::*;
+  import mem_bkdr_util_pkg::mem_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -106,13 +107,19 @@ module tb;
   // key, nonce, seed_valid all driven by push_pull Device interface
   assign {key, nonce, seed_valid} = kdi_if.d_data;
 
-  // bind mem_bkdr_if
+  // Instantitate the memory backdoor util instance.
   `define SRAM_CTRL_MEM_HIER \
-    dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem
-
-  bind `SRAM_CTRL_MEM_HIER mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_if ();
+      tb.dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
 
   initial begin
+    mem_bkdr_util m_mem_bkdr_util;
+    m_mem_bkdr_util = new(.name  ("mem_bkdr_util"),
+                          .path  (`DV_STRINGIFY(`SRAM_CTRL_MEM_HIER)),
+                          .depth ($size(`SRAM_CTRL_MEM_HIER)),
+                          .n_bits($bits(`SRAM_CTRL_MEM_HIER)),
+                          .parity(1'b1),
+                          .ecc   (prim_secded_pkg::SecdedNone));
+
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     otp_clk_rst_if.set_active(.drive_rst_n_val(1'b0));
@@ -128,11 +135,12 @@ module tb;
     uvm_config_db#(virtual sram_ctrl_exec_if)::set(null, "*.env", "exec_vif", exec_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_sram_tl_agent*", "vif", sram_tl_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
-      `SRAM_CTRL_MEM_HIER.mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+
+  `undef SRAM_CTRL_MEM_HIER
 
 endmodule

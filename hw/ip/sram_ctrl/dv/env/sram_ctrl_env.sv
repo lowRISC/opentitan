@@ -22,7 +22,8 @@ class sram_ctrl_env extends cip_base_env #(
     super.build_phase(phase);
 
     // Get the OTP clk/rst interface
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif", cfg.otp_clk_rst_vif)) begin
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif",
+        cfg.otp_clk_rst_vif)) begin
       `uvm_fatal(`gfn, "failed to get otp_clk_rst_if from uvm_config_db")
     end
     cfg.otp_clk_rst_vif.set_freq_mhz(cfg.otp_freq_mhz);
@@ -38,8 +39,8 @@ class sram_ctrl_env extends cip_base_env #(
     end
 
     // Get the mem_bkdr interface
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
-      `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
+    if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
+      `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
     end
 
     // Build the TLUL SRAM agent
