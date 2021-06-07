@@ -139,6 +139,9 @@ module tb;
     .edn_urnd_data_valid_i (edn_urnd_data_valid)
   );
 
+  // Pull the final PC out of the DUT
+  assign model_if.stop_pc = u_model.stop_pc_q;
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

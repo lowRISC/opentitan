@@ -101,6 +101,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
   // Start OTBN and then wait until done
   protected task run_otbn();
+    int exp_end_addr;
     uvm_reg_data_t cmd_val;
 
     // Set the "start" bit in cmd_val and write it to the "cmd" register to start OTBN.
@@ -115,6 +116,14 @@ class otbn_base_vseq extends cip_base_vseq #(
     csr_utils_pkg::csr_spinwait(.ptr(ral.status.busy), .exp_data(1'b0));
 
     `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
+
+    // If there was an expected end address, compare it with the model. This isn't really a test of
+    // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
+    // it expects.
+    exp_end_addr = OtbnMemUtilGetExpEndAddr(cfg.mem_util);
+    if (exp_end_addr >= 0) begin
+      `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
+    end
    endtask
 
   virtual protected function string pick_elf_path();
