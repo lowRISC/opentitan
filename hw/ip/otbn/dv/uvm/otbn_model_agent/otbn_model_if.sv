@@ -12,11 +12,14 @@ interface otbn_model_if #(
   input logic rst_ni
 );
 
+  // Inputs to DUT
   logic                     start;        // Start the operation
   logic [ImemAddrWidth-1:0] start_addr;   // Start byte address in IMEM
 
+  // Outputs from DUT
   bit                       done;         // Operation done
   bit                       err;          // Something went wrong
+  bit [31:0]                stop_pc;      // PC at end of operation
 
   // Wait until done goes high. Stops early on reset
   task automatic wait_done();
