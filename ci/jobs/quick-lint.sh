@@ -36,7 +36,7 @@ ci/scripts/check-licence-headers.sh $tgt_branch
 echo -e "\n### Check executable bits"
 ci/scripts/exec-check.sh
 
-echo -e "\n### Check executable bits"
+echo -e "\n### Check for non-ASCII characters in source code"
 ci/scripts/check-ascii.sh
 
 echo -e "\n### Run Python lint (flake8)"
