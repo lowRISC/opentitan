@@ -188,16 +188,26 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // SW digest data are calculated in sw and won't be checked in OTP.
-  // Here to simplify testbench, write random data to sw digest
+  // Here to simplify testbench, write random data to sw digest.
+  // If `collect_used_addr` is set, make sure the sw digests have not been written in previous
+  // `dai_wr` methods. Otherwise might trigger `write_blank_err`.
   virtual task write_sw_digests(bit [1:0] wr_digest = $urandom());
     bit [TL_DW*2-1:0] wdata;
     if (wr_digest[0]) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      if (collect_used_addr && CreatorSwCfgDigestOffset inside {used_dai_addr_q}) begin
+        `uvm_info(`gfn, "Creator SW digest is already written!", UVM_HIGH)
+      end else begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+        dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      end
     end
     if (wr_digest[1]) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      if (collect_used_addr && OwnerSwCfgDigestOffset inside {used_dai_addr_q}) begin
+        `uvm_info(`gfn, "Owner SW digest is already written!", UVM_HIGH)
+      end else begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+        dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+     end
     end
   endtask
 
