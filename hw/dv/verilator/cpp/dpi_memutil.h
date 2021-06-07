@@ -13,6 +13,9 @@
 #include "mem_area.h"
 #include "ranged_map.h"
 
+// Forward declaration for the Elf type from libelf.
+struct Elf;
+
 enum MemImageType {
   kMemImageUnknown = 0,
   kMemImageElf,
@@ -59,6 +62,8 @@ class StagedMem {
  */
 class DpiMemUtil {
  public:
+  virtual ~DpiMemUtil() {}
+
   /**
    * Register a memory as instantiated by generic ram
    *
@@ -127,6 +132,14 @@ class DpiMemUtil {
    * Get the contents of the staging area by memory name
    */
   const StagedMem &GetMemoryData(const std::string &mem_name) const;
+
+ protected:
+  /**
+   * A hook for subclasses to do extra computations with loaded ELF data. This
+   * runs as part of StageElf: after loading the ELF file, but before reading
+   * in the segments.
+   */
+  virtual void OnElfLoaded(Elf *elf_file) {}
 
  private:
   // Memory area registry. The maps give indices pointing into the vectors

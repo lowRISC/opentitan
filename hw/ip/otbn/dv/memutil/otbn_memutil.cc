@@ -3,13 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "otbn_memutil.h"
-#include "ecc32_mem_area.h"
 
 #include <cassert>
 #include <cstring>
+#include <gelf.h>
 #include <iostream>
+#include <libelf.h>
 #include <limits>
 #include <stdexcept>
+
+#include "ecc32_mem_area.h"
 
 // join two, possibly relative, scopes correctly.
 static std::string join_scopes(const std::string &a, const std::string &b) {
@@ -24,7 +27,8 @@ OtbnMemUtil::OtbnMemUtil(const std::string &top_scope)
     : imem_(join_scopes(top_scope, "u_imem.u_mem.gen_generic.u_impl_generic"),
             4096 / 4, 4 / 4),
       dmem_(join_scopes(top_scope, "u_dmem.u_mem.gen_generic.u_impl_generic"),
-            4096 / 32, 32 / 4) {
+            4096 / 32, 32 / 4),
+      expected_end_addr_(-1) {
   RegisterMemoryArea("imem", 0x4000, &imem_);
   RegisterMemoryArea("dmem", 0x8000, &dmem_);
 }
@@ -35,6 +39,42 @@ void OtbnMemUtil::LoadElf(const std::string &elf_path) {
 
 const StagedMem::SegMap &OtbnMemUtil::GetSegs(bool is_imem) const {
   return GetMemoryData(is_imem ? "imem" : "dmem").GetSegs();
+}
+
+void OtbnMemUtil::OnElfLoaded(Elf *elf_file) {
+  assert(elf_file);
+
+  // Look through the symbol table of elf_file for a symbol called
+  // "_expected_end_addr". If found, use it to set the expected_end_addr_
+  // field.
+  expected_end_addr_ = -1;
+  Elf_Scn *scn = nullptr;
+  while ((scn = elf_nextscn(elf_file, scn))) {
+    Elf32_Shdr *shdr = elf32_getshdr(scn);
+    assert(shdr);
+    if (shdr->sh_type != SHT_SYMTAB)
+      continue;
+
+    Elf_Data *sec_data = elf_getdata(scn, nullptr);
+    assert(sec_data);
+
+    int num_syms = shdr->sh_size / shdr->sh_entsize;
+    for (int i = 0; i < num_syms; ++i) {
+      GElf_Sym sym;
+      gelf_getsym(sec_data, i, &sym);
+
+      const char *sym_name = elf_strptr(elf_file, shdr->sh_link, sym.st_name);
+      if (!sym_name)
+        continue;
+
+      if (0 == strcmp(sym_name, "_expected_end_addr")) {
+        // Ahah! We've found the magic symbol!
+        expected_end_addr_ = sym.st_value;
+        break;
+      }
+    }
+    break;
+  }
 }
 
 extern "C" OtbnMemUtil *OtbnMemUtilMake(const char *top_scope) {
@@ -181,4 +221,9 @@ extern "C" svBit OtbnMemUtilGetSegData(
   // Now copy that uint32_t into data_value and return success.
   memcpy(data_value, &data, 4);
   return sv_1;
+}
+
+int OtbnMemUtilGetExpEndAddr(OtbnMemUtil *mem_util) {
+  assert(mem_util);
+  return mem_util->GetExpEndAddr();
 }

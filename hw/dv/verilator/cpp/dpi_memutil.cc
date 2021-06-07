@@ -458,6 +458,9 @@ void DpiMemUtil::StageElf(bool verbose, const std::string &path) {
 
   ElfFile elf(path);
 
+  // Allow subclasses to get at the loaded ELF data if they need it
+  OnElfLoaded(elf.ptr_);
+
   size_t file_size;
   const char *file_data = elf_rawfile(elf.ptr_, &file_size);
   assert(file_data);
