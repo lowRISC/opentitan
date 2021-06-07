@@ -11536,6 +11536,7 @@
     sram_ctrl_ret_aon
     flash_ctrl
     aes
+    hmac
     kmac
     keymgr
     csrng
@@ -11708,6 +11709,13 @@
       type: alert
       async: "1"
       module_name: aes
+    }
+    {
+      name: hmac_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: hmac
     }
     {
       name: kmac_fatal_fault

@@ -33,6 +33,10 @@ package hmac_env_pkg;
   // 1 cycles to write a msg word to hmac_msg_fifo
   parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   typedef enum {
     HmacDone,
     HmacMsgFifoEmpty,

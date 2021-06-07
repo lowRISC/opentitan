@@ -28,6 +28,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   hmac dut (
     .clk_i              ( clk            ),
@@ -35,6 +37,9 @@ module tb;
 
     .tl_i               ( tl_if.h2d      ),
     .tl_o               ( tl_if.d2h      ),
+
+    .alert_rx_i         ( alert_rx       ),
+    .alert_tx_o         ( alert_tx       ),
 
     .intr_hmac_done_o   ( intr_hmac_done ),
     .intr_fifo_empty_o  ( intr_fifo_empty ),
