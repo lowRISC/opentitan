@@ -42,13 +42,20 @@ def main() -> int:
     collect_stats = args.dump_stats is not None
 
     sim = OTBNSim()
-    load_elf(sim, args.elf)
+    exp_end_addr = load_elf(sim, args.elf)
 
     sim.state.ext_regs.write('START_ADDR', 0, False)
     sim.state.ext_regs.commit()
 
     sim.start()
     sim.run(verbose=args.verbose, collect_stats=collect_stats)
+
+    if exp_end_addr is not None:
+        if sim.state.pc != exp_end_addr:
+            print('Run stopped at PC {:#x}, but _expected_end_addr was {:#x}.'
+                  .format(sim.state.pc, exp_end_addr),
+                  file=sys.stderr)
+            return 1
 
     if args.dump_dmem is not None:
         args.dump_dmem.write(sim.dump_data())

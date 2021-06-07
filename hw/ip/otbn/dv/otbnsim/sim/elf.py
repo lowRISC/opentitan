@@ -4,9 +4,9 @@
 
 '''OTBN ELF file handling'''
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
-from elftools.elf.elffile import ELFFile  # type: ignore
+from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
 
 from shared.mem_layout import get_memory_layout
 
@@ -55,10 +55,10 @@ def _flatten_segments(segments: _SegList, mem_desc: _MemDesc) -> bytes:
     return b''.join(chunks)
 
 
-def _get_elf_segments(path: str,
+def _get_elf_mem_data(elf_file: ELFFile,
                       imem_desc: _MemDesc,
-                      dmem_desc: _MemDesc) -> Tuple[_SegList, _SegList]:
-    '''Load the ELF file at path and get imem/dmem segments'''
+                      dmem_desc: _MemDesc) -> Tuple[bytes, bytes]:
+    '''Extract imem/dmem segments from elf_file'''
     imem_segments = []
     dmem_segments = []
 
@@ -71,61 +71,91 @@ def _get_elf_segments(path: str,
     assert imem_lma <= imem_top
     assert dmem_lma <= dmem_top
 
+    for segment in elf_file.iter_segments():
+        seg_type = segment['p_type']
+
+        # We're only interested in PT_LOAD segments
+        if seg_type != 'PT_LOAD':
+            continue
+
+        seg_lma = segment['p_paddr']
+        seg_top = seg_lma + segment['p_memsz']
+
+        # Does this match an expected imem or dmem address?
+        if imem_lma <= seg_lma <= imem_top:
+            if seg_top > imem_top:
+                raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
+                                   'which intersects the IMEM range '
+                                   '({:#x}..{:#x}), but is not fully '
+                                   'contained in it.'
+                                   .format(seg_lma, seg_top,
+                                           imem_lma, imem_top))
+            imem_segments.append((seg_lma, segment.data()))
+            continue
+
+        if dmem_lma <= seg_lma <= dmem_top:
+            if seg_top > dmem_top:
+                raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
+                                   'which intersects the DMEM range '
+                                   '({:#x}..{:#x}), but is not fully '
+                                   'contained in it.'
+                                   .format(seg_lma, seg_top,
+                                           dmem_lma, dmem_top))
+            dmem_segments.append((seg_lma, segment.data()))
+            continue
+
+        # We shouldn't have any loadable segments that don't look like
+        # either IMEM or DMEM.
+        raise RuntimeError("Segment has LMA {:#x}, which doesn't start in "
+                           "IMEM range (base {:#x}) or DMEM range "
+                           "(base {:#x})."
+                           .format(seg_lma, imem_lma, dmem_lma))
+
+    imem_bytes = _flatten_segments(imem_segments, imem_desc)
+    dmem_bytes = _flatten_segments(dmem_segments, dmem_desc)
+
+    return (imem_bytes, dmem_bytes)
+
+
+def _get_exp_end_addr(elf_file: ELFFile) -> Optional[int]:
+    '''Get the expected end address for a run of this binary
+
+    This is the value of the ELF symbol _expected_end_addr. If the symbol
+    doesn't exist, returns None.
+
+    '''
+    section = elf_file.get_section_by_name('.symtab')
+    if section is None:
+        # No symbol table found
+        return None
+
+    if not isinstance(section, SymbolTableSection):
+        # Huh? The .symtab section isn't a symbol table?? Oh well, nevermind.
+        return None
+
+    for sym in section.iter_symbols():
+        if sym.name == '_expected_end_addr':
+            assert isinstance(sym['st_value'], int)
+            return sym['st_value']
+
+    return None
+
+
+def _read_elf(path: str,
+              imem_desc: _MemDesc,
+              dmem_desc: _MemDesc) -> Tuple[bytes, bytes, Optional[int]]:
+    '''Load the ELF file at path.
+
+    Returns a tuple (imem_bytes, dmem_bytes, exp_end_addr). The first two
+    coordinates are as returned by _get_elf_mem_data. exp_end_addr is as
+    returned by _get_exp_end_addr.
+
+    '''
     with open(path, 'rb') as handle:
         elf_file = ELFFile(handle)
-        for segment in elf_file.iter_segments():
-            seg_type = segment['p_type']
-
-            # We're only interested in PT_LOAD segments
-            if seg_type != 'PT_LOAD':
-                continue
-
-            seg_lma = segment['p_paddr']
-            seg_top = seg_lma + segment['p_memsz']
-
-            # Does this match an expected imem or dmem address?
-            if imem_lma <= seg_lma <= imem_top:
-                if seg_top > imem_top:
-                    raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
-                                       'which intersects the IMEM range '
-                                       '({:#x}..{:#x}), but is not fully '
-                                       'contained in it.'
-                                       .format(seg_lma, seg_top,
-                                               imem_lma, imem_top))
-                imem_segments.append((seg_lma, segment.data()))
-                continue
-
-            if dmem_lma <= seg_lma <= dmem_top:
-                if seg_top > dmem_top:
-                    raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
-                                       'which intersects the DMEM range '
-                                       '({:#x}..{:#x}), but is not fully '
-                                       'contained in it.'
-                                       .format(seg_lma, seg_top,
-                                               dmem_lma, dmem_top))
-                dmem_segments.append((seg_lma, segment.data()))
-                continue
-
-            # We shouldn't have any loadable segments that don't look like
-            # either IMEM or DMEM.
-            raise RuntimeError("Segment has LMA {:#x}, which doesn't start in "
-                               "IMEM range (base {:#x}) or DMEM range "
-                               "(base {:#x})."
-                               .format(seg_lma, imem_lma, dmem_lma))
-
-    return (imem_segments, dmem_segments)
-
-
-def load_elf(sim: OTBNSim, path: str) -> None:
-    '''Load contents of ELF file at path'''
-    mems = get_memory_layout()
-    imem_desc = mems['IMEM']
-    dmem_desc = mems['DMEM']
-
-    imem_segs, dmem_segs = _get_elf_segments(path, imem_desc, dmem_desc)
-
-    imem_bytes = _flatten_segments(imem_segs, imem_desc)
-    dmem_bytes = _flatten_segments(dmem_segs, dmem_desc)
+        imem_bytes, dmem_bytes = _get_elf_mem_data(elf_file,
+                                                   imem_desc, dmem_desc)
+        exp_end_addr = _get_exp_end_addr(elf_file)
 
     assert len(imem_bytes) <= imem_desc[1]
     if len(imem_bytes) & 3:
@@ -133,7 +163,22 @@ def load_elf(sim: OTBNSim, path: str) -> None:
                            'not a multiple of 4.'
                            .format(path, len(imem_bytes)))
 
+    return (imem_bytes, dmem_bytes, exp_end_addr)
+
+
+def load_elf(sim: OTBNSim, path: str) -> Optional[int]:
+    '''Load ELF file at path and inject its contents into sim
+
+    Returns the expected end address, if set, otherwise None.
+
+    '''
+    mems = get_memory_layout()
+    imem_desc = mems['IMEM']
+    dmem_desc = mems['DMEM']
+
+    imem_bytes, dmem_bytes, exp_end = _read_elf(path, imem_desc, dmem_desc)
     imem_insns = decode_bytes(0, imem_bytes)
 
     sim.load_program(imem_insns)
     sim.load_data(dmem_bytes)
+    return exp_end
