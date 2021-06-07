@@ -20,6 +20,7 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   virtual clk_rst_if clk_rst_core_vif;
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = spi_host_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
     // create spi_host agent config obj

@@ -28,6 +28,10 @@ package spi_host_env_pkg;
     NumSpiHostIntr   = 2
   } spi_host_intr_e;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   // functions
 
   // package sources

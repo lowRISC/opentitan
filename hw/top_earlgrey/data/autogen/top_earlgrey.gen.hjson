@@ -11530,6 +11530,8 @@
   ]
   alert_module:
   [
+    spi_host0
+    spi_host1
     otp_ctrl
     lc_ctrl
     sensor_ctrl_aon
@@ -11549,6 +11551,20 @@
   ]
   alert:
   [
+    {
+      name: spi_host0_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: spi_host0
+    }
+    {
+      name: spi_host1_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: spi_host1
+    }
     {
       name: otp_ctrl_fatal_macro_error
       width: 1
