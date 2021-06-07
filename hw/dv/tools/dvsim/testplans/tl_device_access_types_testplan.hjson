@@ -54,13 +54,13 @@
               "{name}_same_csr_outstanding"]
     }
     {
-      name: tl_integrity_check
+      name: tl_intg_err
       desc: ''' Verify that the data integrity check violation generates an alert.
 
             Randomly inject errors on the control, data, or the ECC bits during CSR accesses.
             Verify that triggers the correct fatal alert.'''
       milestone: V3
-      tests: []
+      tests: ["{name}_tl_intg_err"]
     }
   ]
 }

@@ -232,4 +232,39 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
   end // for
 endtask : run_tl_errors_vseq_sub
 
+virtual task run_tl_intg_err_vseq(int num_times = 1);
+  `loop_ral_models_to_create_threads(run_tl_intg_err_vseq_sub(num_times, ral_name);)
+  csr_utils_pkg::wait_no_outstanding_access();
+endtask
+
+virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+  for (int trans = 1; trans <= num_times; trans++) begin
+    `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
+              UVM_LOW)
+    fork
+      // run csr_rw seq to send some normal CSR accesses in the parallel
+      begin
+        `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
+        run_csr_vseq("rw");
+      end
+      begin
+        bit [BUS_DW-1:0] data = $urandom;
+        tl_intg_err_e    tl_intg_err_type;
+
+        #($urandom_range(10, 1000) * 1ns);
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
+                                           tl_intg_err_type != TlIntgErrNone;
+                                           // TODO, #6887
+                                           // Data intg check hasn't been implemented in DUT
+                                           tl_intg_err_type != TlIntgErrData;)
+
+        tl_access(.addr($urandom), .write($urandom_range(0, 1)), .data(data),
+                  .tl_intg_err_type(tl_intg_err_type));
+
+        // TODO, check alert occurs and issue reset to recover
+        // design hasn't implmented the alert for intg error
+      end
+    join
+  end
+endtask
 `undef create_tl_access_error_case

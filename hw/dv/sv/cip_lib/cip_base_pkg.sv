@@ -31,6 +31,13 @@ package cip_base_pkg;
     err_storage
   } shadow_reg_alert_e;
 
+  typedef enum bit [1:0] {
+    TlIntgErrNone,
+    TlIntgErrCmd,
+    TlIntgErrData,
+    TlIntgErrBoth // have both payload and data intg errors
+  } tl_intg_err_e;
+
   typedef class cip_tl_seq_item;
 
   // functions
