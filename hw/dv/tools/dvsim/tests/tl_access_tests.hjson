@@ -16,5 +16,12 @@
       run_opts: ["+run_tl_errors"]
       reseed: 20
     }
+    {
+      name: "{name}_tl_intg_err"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_tl_intg_err", "+en_scb=0"]
+      reseed: 20
+    }
   ]
 }
