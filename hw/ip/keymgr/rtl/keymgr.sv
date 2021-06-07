@@ -75,6 +75,7 @@ module keymgr
   keymgr_reg2hw_t reg2hw;
   keymgr_hw2reg_t hw2reg;
 
+  logic fatal_integ_alert;
   keymgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -82,7 +83,7 @@ module keymgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (),
+    .intg_err_o (fatal_integ_alert),
     .devmode_i  (1'b1) // connect to real devmode signal in the future
   );
 
@@ -495,7 +496,7 @@ module keymgr
   logic fault_errs, fault_err_req_q, fault_err_req_d, fault_err_ack;
   logic op_errs, op_err_req_q, op_err_req_d, op_err_ack;
 
-  assign fault_errs = err_code[ErrInvalidOut] | err_code[ErrInvalidCmd];
+  assign fault_errs = err_code[ErrInvalidOut] | err_code[ErrInvalidCmd] | fatal_integ_alert;
   assign fault_err_req_d = fault_errs    ? 1'b1 :
                            fault_err_ack ? 1'b0 : fault_err_req_q;
 
