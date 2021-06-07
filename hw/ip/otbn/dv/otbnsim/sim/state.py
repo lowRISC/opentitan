@@ -193,7 +193,14 @@ class OTBNState:
         # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
         self.ext_regs.clear_bits('STATUS', 1 << 0)
 
+        # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
+
+        # Make the final PC visible. This isn't currently in the RTL, but is
+        # useful in simulations that want to track whether we stopped where we
+        # expected to stop.
+        self.ext_regs.write('STOP_PC', self.pc, True)
+
         self.running = False
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:

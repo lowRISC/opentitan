@@ -59,7 +59,8 @@ module otbn_core_model
                                  logic            edn_rnd_data_valid,
                                  logic [WLEN-1:0] edn_rnd_data,
                                  logic            edn_urnd_data_valid,
-                                 inout bit [31:0] err_code);
+                                 inout bit [31:0] err_bits,
+                                 inout bit [31:0] stop_pc);
 
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
@@ -106,11 +107,14 @@ module otbn_core_model
 
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit unused_raw_err_bits;
+
+  bit [31:0] stop_pc_d, stop_pc_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      // Clear status (stop running, and forget any errors)
+      // Clear status (stop running, and forget any errors and final PC)
       status <= 0;
       raw_err_bits_q <= 0;
+      stop_pc_q <= 0;
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
@@ -118,8 +122,10 @@ module otbn_core_model
                                   status,
                                   edn_rnd_data_valid_i, edn_rnd_data_i,
                                   edn_urnd_data_valid_i,
-                                  raw_err_bits_d);
+                                  raw_err_bits_d,
+                                  stop_pc_d);
         raw_err_bits_q <= raw_err_bits_d;
+        stop_pc_q <= stop_pc_d;
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.
       end
@@ -170,6 +176,13 @@ module otbn_core_model
   end
 
   assign err_o = failed_step | failed_cmp;
+
+  // Make stop_pc available over DPI. This is handy for Verilator simulations (where the top-level
+  // is in C++).
+  export "DPI-C" function otbn_core_get_stop_pc;
+  function automatic int otbn_core_get_stop_pc();
+    return stop_pc_q;
+  endfunction
 
 endmodule
 `endif // SYNTHESIS
