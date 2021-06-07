@@ -75,7 +75,10 @@
       desc: "This alert is triggered upon the alert health test threshold criteria not met."
     }
     { name: "fatal_alert",
-      desc: "This alert triggers if an illegal state machine state is reached."
+      desc: '''
+            This alert triggers (i) if an illegal state machine state is reached, or
+            (ii) if a fatal integrity failure is detected on the TL-UL bus.
+            ''',
     }
   ],
 
