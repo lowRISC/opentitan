@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "opentitanlib"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0"
+lazy_static = "1.4.0"
+regex = "1"
+nix = "0.17.0"
+bitflags = "1.0"
+log = "0.4"
