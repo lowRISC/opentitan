@@ -29,8 +29,14 @@ class OtbnMemUtil : public DpiMemUtil {
     return is_imem ? imem_ : dmem_;
   }
 
+  // Get the expected end address, if set. Otherwise returns -1.
+  int GetExpEndAddr() const { return expected_end_addr_; }
+
  private:
+  void OnElfLoaded(Elf *elf_file) override;
+
   Ecc32MemArea imem_, dmem_;
+  int expected_end_addr_;
 };
 
 // DPI-accessible wrappers
@@ -66,6 +72,21 @@ svBit OtbnMemUtilGetSegInfo(OtbnMemUtil *mem_util, svBit is_imem, int seg_idx,
 // message to stderr and returns 1'b0.
 svBit OtbnMemUtilGetSegData(OtbnMemUtil *mem_util, svBit is_imem, int word_off,
                             /* output bit[31:0] */ svBitVecVal *data_value);
+
+// Get an "expected end address". This is a belt-and-braces check, where the
+// producer of the ELF file knows what address they expect to finish at (either
+// an ECALL or a known-bad faulting instruction). They can put this as a magic
+// symbol in the ELF file and then we check at simulation time that we really
+// did stop there.
+//
+// Note: This functionality doesn't provide any extra check of OTBN itself.
+// Rather, it's helpful for debugging the random instruction generator, which
+// is supposed to be able to predict (roughly) what its instruction streams
+// will do.
+//
+// Returns the output address as an integer. A negative result means that no
+// such address is present in the ELF file.
+int OtbnMemUtilGetExpEndAddr(OtbnMemUtil *mem_util);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MEMUTIL_OTBN_MEMUTIL_H_

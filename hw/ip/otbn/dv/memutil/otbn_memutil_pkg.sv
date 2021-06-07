@@ -24,5 +24,7 @@ package otbn_memutil_pkg;
   import "DPI-C" function bit OtbnMemUtilGetSegData(chandle mem_util, bit is_imem, int word_off,
                                                     output bit [31:0] data_value);
 
+  import "DPI-C" function int OtbnMemUtilGetExpEndAddr(chandle mem_util);
+
 endpackage
 `endif // SYNTHESIS
