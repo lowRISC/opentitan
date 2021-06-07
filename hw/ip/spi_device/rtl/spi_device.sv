@@ -7,13 +7,21 @@
 
 `include "prim_assert.sv"
 
-module spi_device (
+module spi_device
+  import spi_device_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input clk_i,
   input rst_ni,
 
   // Register interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // SPI Interface
   input              cio_sck_i,
@@ -45,7 +53,6 @@ module spi_device (
 );
 
   import spi_device_pkg::*;
-  import spi_device_reg_pkg::*;
 
   localparam int FifoWidth = $bits(spi_byte_t);
   localparam int FifoDepth = 8; // 2 DWords
@@ -947,6 +954,7 @@ module spi_device (
   );
 
   // Register module
+  logic [NumAlerts-1:0] alert_test, alerts;
   spi_device_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -960,9 +968,31 @@ module spi_device (
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o (),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
+
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
@@ -974,5 +1004,7 @@ module spi_device (
   `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rxerr_o      )
   `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rxoverflow_o )
   `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_txunderflow_o)
+
+  `ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
 
 endmodule

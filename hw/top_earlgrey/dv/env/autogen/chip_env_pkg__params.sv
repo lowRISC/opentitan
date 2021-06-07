@@ -6,6 +6,7 @@
 
 parameter string LIST_OF_ALERTS[] = {
   "gpio_fatal_fault",
+  "spi_device_fatal_fault",
   "spi_host0_fatal_fault",
   "spi_host1_fatal_fault",
   "pattgen_fatal_fault",
@@ -49,4 +50,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 42;
+parameter uint NUM_ALERTS = 43;

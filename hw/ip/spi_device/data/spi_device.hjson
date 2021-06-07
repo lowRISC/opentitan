@@ -29,6 +29,13 @@
     { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
     { name: "txunderflow", desc: "TX Async FIFO underflow" },
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the SPI_DEVICE unit.
+      '''
+    }
+  ],
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
