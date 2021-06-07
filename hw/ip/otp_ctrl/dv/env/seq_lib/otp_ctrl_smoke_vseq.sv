@@ -13,6 +13,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   rand bit                           do_req_keys, do_lc_trans;
   rand bit                           access_locked_parts;
+  rand bit                           rand_wr, rand_rd, rd_sw_tlul_rd;
   rand bit [TL_DW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
@@ -136,18 +137,19 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
                   i, num_dai_op, dai_addr, part_idx), UVM_HIGH)
 
         // OTP write via DAI
-        if ($urandom_range(0, 1) && !digest_calculated[part_idx]) begin
+        if (rand_wr && !digest_calculated[part_idx]) begin
           dai_wr(dai_addr, wdata0, wdata1);
           if (collect_used_addr) used_dai_addr_q.push_back(dai_addr);
+          if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
         end
 
-        if ($urandom_range(0, 1)) begin
+        if (rand_rd) begin
           // OTP read via DAI, check data in scb
           dai_rd(dai_addr, ecc_otp_err, rdata0, rdata1);
         end
 
         // if write sw partitions, check tlul window
-        if (is_sw_part(dai_addr) && ($urandom_range(0, 1))) begin
+        if (is_sw_part(dai_addr) && rd_sw_tlul_rd) begin
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           // tlul error rsp is checked in scoreboard
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
