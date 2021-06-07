@@ -40,6 +40,8 @@ module tb;
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
 
   kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
@@ -49,6 +51,10 @@ module tb;
     // TLUL interface
     .tl_i               (tl_if.h2d                    ),
     .tl_o               (tl_if.d2h                    ),
+
+    // Alerts
+    .alert_rx_i         (alert_rx                     ),
+    .alert_tx_o         (alert_tx                     ),
 
     // KeyMgr sideload key interface
     .keymgr_key_i       (sideload_if.sideload_key     ),

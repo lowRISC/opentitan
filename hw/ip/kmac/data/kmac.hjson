@@ -22,6 +22,13 @@
       desc: "KMAC/SHA3 error occurred. ERR_CODE register shows the details"
     }
   ]
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the KMAC unit.
+      '''
+    }
+  ],
   param_list: [
     { name:    "EnMasking"
       type:    "bit"

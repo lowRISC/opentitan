@@ -8,6 +8,7 @@
 
 module kmac
   import kmac_pkg::*;
+  import kmac_reg_pkg::*;
 #(
   // EnMasking: Enable masking security hardening inside keccak_round
   // If it is enabled, the result digest will be two set of 1600bit.
@@ -17,7 +18,9 @@ module kmac
   // entropy, not 1600bit of entropy at every round. It uses adjacent shares
   // as entropy inside Domain-Oriented Masking AND logic.
   // This parameter only affects when `EnMasking` is set.
-  parameter bit ReuseShare = 0
+  parameter bit ReuseShare = 0,
+
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input clk_i,
   input rst_ni,
@@ -27,6 +30,10 @@ module kmac
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // KeyMgr sideload (secret key) interface
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
@@ -47,8 +54,6 @@ module kmac
   // Idle signal
   output logic idle_o
 );
-
-  import kmac_reg_pkg::*;
 
   ////////////////
   // Parameters //
@@ -895,6 +900,7 @@ module kmac
   end
 
   // Register top
+  logic [NumAlerts-1:0] alert_test, alerts;
   kmac_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -907,9 +913,31 @@ module kmac
 
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(alerts[0]),
     .devmode_i (devmode)
   );
+
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////
   // Assertions //
@@ -921,6 +949,7 @@ module kmac
   `ASSERT_KNOWN(KmacErr_A, intr_kmac_err_o)
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   // Parameter as desired
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
