@@ -181,6 +181,8 @@ module kmac_reg_top (
   logic intr_test_fifo_empty_we;
   logic intr_test_kmac_err_wd;
   logic intr_test_kmac_err_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic cfg_regwen_qs;
   logic cfg_regwen_re;
   logic cfg_kmac_en_qs;
@@ -544,6 +546,22 @@ module kmac_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.kmac_err.qe),
     .q      (reg2hw.intr_test.kmac_err.q ),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q ),
     .qs     ()
   );
 
@@ -1911,64 +1929,65 @@ module kmac_reg_top (
 
 
 
-  logic [54:0] addr_hit;
+  logic [55:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == KMAC_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KMAC_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == KMAC_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == KMAC_CFG_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == KMAC_CFG_OFFSET);
-    addr_hit[ 5] = (reg_addr == KMAC_CMD_OFFSET);
-    addr_hit[ 6] = (reg_addr == KMAC_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == KMAC_ENTROPY_PERIOD_OFFSET);
-    addr_hit[ 8] = (reg_addr == KMAC_ENTROPY_SEED_LOWER_OFFSET);
-    addr_hit[ 9] = (reg_addr == KMAC_ENTROPY_SEED_UPPER_OFFSET);
-    addr_hit[10] = (reg_addr == KMAC_KEY_SHARE0_0_OFFSET);
-    addr_hit[11] = (reg_addr == KMAC_KEY_SHARE0_1_OFFSET);
-    addr_hit[12] = (reg_addr == KMAC_KEY_SHARE0_2_OFFSET);
-    addr_hit[13] = (reg_addr == KMAC_KEY_SHARE0_3_OFFSET);
-    addr_hit[14] = (reg_addr == KMAC_KEY_SHARE0_4_OFFSET);
-    addr_hit[15] = (reg_addr == KMAC_KEY_SHARE0_5_OFFSET);
-    addr_hit[16] = (reg_addr == KMAC_KEY_SHARE0_6_OFFSET);
-    addr_hit[17] = (reg_addr == KMAC_KEY_SHARE0_7_OFFSET);
-    addr_hit[18] = (reg_addr == KMAC_KEY_SHARE0_8_OFFSET);
-    addr_hit[19] = (reg_addr == KMAC_KEY_SHARE0_9_OFFSET);
-    addr_hit[20] = (reg_addr == KMAC_KEY_SHARE0_10_OFFSET);
-    addr_hit[21] = (reg_addr == KMAC_KEY_SHARE0_11_OFFSET);
-    addr_hit[22] = (reg_addr == KMAC_KEY_SHARE0_12_OFFSET);
-    addr_hit[23] = (reg_addr == KMAC_KEY_SHARE0_13_OFFSET);
-    addr_hit[24] = (reg_addr == KMAC_KEY_SHARE0_14_OFFSET);
-    addr_hit[25] = (reg_addr == KMAC_KEY_SHARE0_15_OFFSET);
-    addr_hit[26] = (reg_addr == KMAC_KEY_SHARE1_0_OFFSET);
-    addr_hit[27] = (reg_addr == KMAC_KEY_SHARE1_1_OFFSET);
-    addr_hit[28] = (reg_addr == KMAC_KEY_SHARE1_2_OFFSET);
-    addr_hit[29] = (reg_addr == KMAC_KEY_SHARE1_3_OFFSET);
-    addr_hit[30] = (reg_addr == KMAC_KEY_SHARE1_4_OFFSET);
-    addr_hit[31] = (reg_addr == KMAC_KEY_SHARE1_5_OFFSET);
-    addr_hit[32] = (reg_addr == KMAC_KEY_SHARE1_6_OFFSET);
-    addr_hit[33] = (reg_addr == KMAC_KEY_SHARE1_7_OFFSET);
-    addr_hit[34] = (reg_addr == KMAC_KEY_SHARE1_8_OFFSET);
-    addr_hit[35] = (reg_addr == KMAC_KEY_SHARE1_9_OFFSET);
-    addr_hit[36] = (reg_addr == KMAC_KEY_SHARE1_10_OFFSET);
-    addr_hit[37] = (reg_addr == KMAC_KEY_SHARE1_11_OFFSET);
-    addr_hit[38] = (reg_addr == KMAC_KEY_SHARE1_12_OFFSET);
-    addr_hit[39] = (reg_addr == KMAC_KEY_SHARE1_13_OFFSET);
-    addr_hit[40] = (reg_addr == KMAC_KEY_SHARE1_14_OFFSET);
-    addr_hit[41] = (reg_addr == KMAC_KEY_SHARE1_15_OFFSET);
-    addr_hit[42] = (reg_addr == KMAC_KEY_LEN_OFFSET);
-    addr_hit[43] = (reg_addr == KMAC_PREFIX_0_OFFSET);
-    addr_hit[44] = (reg_addr == KMAC_PREFIX_1_OFFSET);
-    addr_hit[45] = (reg_addr == KMAC_PREFIX_2_OFFSET);
-    addr_hit[46] = (reg_addr == KMAC_PREFIX_3_OFFSET);
-    addr_hit[47] = (reg_addr == KMAC_PREFIX_4_OFFSET);
-    addr_hit[48] = (reg_addr == KMAC_PREFIX_5_OFFSET);
-    addr_hit[49] = (reg_addr == KMAC_PREFIX_6_OFFSET);
-    addr_hit[50] = (reg_addr == KMAC_PREFIX_7_OFFSET);
-    addr_hit[51] = (reg_addr == KMAC_PREFIX_8_OFFSET);
-    addr_hit[52] = (reg_addr == KMAC_PREFIX_9_OFFSET);
-    addr_hit[53] = (reg_addr == KMAC_PREFIX_10_OFFSET);
-    addr_hit[54] = (reg_addr == KMAC_ERR_CODE_OFFSET);
+    addr_hit[ 3] = (reg_addr == KMAC_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == KMAC_CFG_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == KMAC_CFG_OFFSET);
+    addr_hit[ 6] = (reg_addr == KMAC_CMD_OFFSET);
+    addr_hit[ 7] = (reg_addr == KMAC_STATUS_OFFSET);
+    addr_hit[ 8] = (reg_addr == KMAC_ENTROPY_PERIOD_OFFSET);
+    addr_hit[ 9] = (reg_addr == KMAC_ENTROPY_SEED_LOWER_OFFSET);
+    addr_hit[10] = (reg_addr == KMAC_ENTROPY_SEED_UPPER_OFFSET);
+    addr_hit[11] = (reg_addr == KMAC_KEY_SHARE0_0_OFFSET);
+    addr_hit[12] = (reg_addr == KMAC_KEY_SHARE0_1_OFFSET);
+    addr_hit[13] = (reg_addr == KMAC_KEY_SHARE0_2_OFFSET);
+    addr_hit[14] = (reg_addr == KMAC_KEY_SHARE0_3_OFFSET);
+    addr_hit[15] = (reg_addr == KMAC_KEY_SHARE0_4_OFFSET);
+    addr_hit[16] = (reg_addr == KMAC_KEY_SHARE0_5_OFFSET);
+    addr_hit[17] = (reg_addr == KMAC_KEY_SHARE0_6_OFFSET);
+    addr_hit[18] = (reg_addr == KMAC_KEY_SHARE0_7_OFFSET);
+    addr_hit[19] = (reg_addr == KMAC_KEY_SHARE0_8_OFFSET);
+    addr_hit[20] = (reg_addr == KMAC_KEY_SHARE0_9_OFFSET);
+    addr_hit[21] = (reg_addr == KMAC_KEY_SHARE0_10_OFFSET);
+    addr_hit[22] = (reg_addr == KMAC_KEY_SHARE0_11_OFFSET);
+    addr_hit[23] = (reg_addr == KMAC_KEY_SHARE0_12_OFFSET);
+    addr_hit[24] = (reg_addr == KMAC_KEY_SHARE0_13_OFFSET);
+    addr_hit[25] = (reg_addr == KMAC_KEY_SHARE0_14_OFFSET);
+    addr_hit[26] = (reg_addr == KMAC_KEY_SHARE0_15_OFFSET);
+    addr_hit[27] = (reg_addr == KMAC_KEY_SHARE1_0_OFFSET);
+    addr_hit[28] = (reg_addr == KMAC_KEY_SHARE1_1_OFFSET);
+    addr_hit[29] = (reg_addr == KMAC_KEY_SHARE1_2_OFFSET);
+    addr_hit[30] = (reg_addr == KMAC_KEY_SHARE1_3_OFFSET);
+    addr_hit[31] = (reg_addr == KMAC_KEY_SHARE1_4_OFFSET);
+    addr_hit[32] = (reg_addr == KMAC_KEY_SHARE1_5_OFFSET);
+    addr_hit[33] = (reg_addr == KMAC_KEY_SHARE1_6_OFFSET);
+    addr_hit[34] = (reg_addr == KMAC_KEY_SHARE1_7_OFFSET);
+    addr_hit[35] = (reg_addr == KMAC_KEY_SHARE1_8_OFFSET);
+    addr_hit[36] = (reg_addr == KMAC_KEY_SHARE1_9_OFFSET);
+    addr_hit[37] = (reg_addr == KMAC_KEY_SHARE1_10_OFFSET);
+    addr_hit[38] = (reg_addr == KMAC_KEY_SHARE1_11_OFFSET);
+    addr_hit[39] = (reg_addr == KMAC_KEY_SHARE1_12_OFFSET);
+    addr_hit[40] = (reg_addr == KMAC_KEY_SHARE1_13_OFFSET);
+    addr_hit[41] = (reg_addr == KMAC_KEY_SHARE1_14_OFFSET);
+    addr_hit[42] = (reg_addr == KMAC_KEY_SHARE1_15_OFFSET);
+    addr_hit[43] = (reg_addr == KMAC_KEY_LEN_OFFSET);
+    addr_hit[44] = (reg_addr == KMAC_PREFIX_0_OFFSET);
+    addr_hit[45] = (reg_addr == KMAC_PREFIX_1_OFFSET);
+    addr_hit[46] = (reg_addr == KMAC_PREFIX_2_OFFSET);
+    addr_hit[47] = (reg_addr == KMAC_PREFIX_3_OFFSET);
+    addr_hit[48] = (reg_addr == KMAC_PREFIX_4_OFFSET);
+    addr_hit[49] = (reg_addr == KMAC_PREFIX_5_OFFSET);
+    addr_hit[50] = (reg_addr == KMAC_PREFIX_6_OFFSET);
+    addr_hit[51] = (reg_addr == KMAC_PREFIX_7_OFFSET);
+    addr_hit[52] = (reg_addr == KMAC_PREFIX_8_OFFSET);
+    addr_hit[53] = (reg_addr == KMAC_PREFIX_9_OFFSET);
+    addr_hit[54] = (reg_addr == KMAC_PREFIX_10_OFFSET);
+    addr_hit[55] = (reg_addr == KMAC_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2030,7 +2049,8 @@ module kmac_reg_top (
                (addr_hit[51] & (|(KMAC_PERMIT[51] & ~reg_be))) |
                (addr_hit[52] & (|(KMAC_PERMIT[52] & ~reg_be))) |
                (addr_hit[53] & (|(KMAC_PERMIT[53] & ~reg_be))) |
-               (addr_hit[54] & (|(KMAC_PERMIT[54] & ~reg_be)))));
+               (addr_hit[54] & (|(KMAC_PERMIT[54] & ~reg_be))) |
+               (addr_hit[55] & (|(KMAC_PERMIT[55] & ~reg_be)))));
   end
 
   assign intr_state_kmac_done_we = addr_hit[0] & reg_we & !reg_error;
@@ -2060,195 +2080,198 @@ module kmac_reg_top (
   assign intr_test_kmac_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_kmac_err_wd = reg_wdata[2];
 
-  assign cfg_regwen_re = addr_hit[3] & reg_re & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
 
-  assign cfg_kmac_en_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
+
+  assign cfg_kmac_en_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_kmac_en_wd = reg_wdata[0];
 
-  assign cfg_kstrength_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_kstrength_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_kstrength_wd = reg_wdata[3:1];
 
-  assign cfg_mode_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_mode_wd = reg_wdata[5:4];
 
-  assign cfg_msg_endianness_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_msg_endianness_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_msg_endianness_wd = reg_wdata[8];
 
-  assign cfg_state_endianness_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_state_endianness_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_state_endianness_wd = reg_wdata[9];
 
-  assign cfg_sideload_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_sideload_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_sideload_wd = reg_wdata[12];
 
-  assign cfg_entropy_mode_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_entropy_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_mode_wd = reg_wdata[17:16];
 
-  assign cfg_entropy_fast_process_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_entropy_fast_process_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_fast_process_wd = reg_wdata[19];
 
-  assign cfg_entropy_ready_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_entropy_ready_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_ready_wd = reg_wdata[24];
 
-  assign cfg_err_processed_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_err_processed_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_err_processed_wd = reg_wdata[25];
 
-  assign cmd_we = addr_hit[5] & reg_we & !reg_error;
+  assign cmd_we = addr_hit[6] & reg_we & !reg_error;
   assign cmd_wd = reg_wdata[3:0];
 
-  assign status_sha3_idle_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_sha3_idle_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_sha3_absorb_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_sha3_absorb_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_sha3_squeeze_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_sha3_squeeze_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_fifo_depth_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_fifo_depth_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_fifo_empty_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_fifo_empty_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_fifo_full_re = addr_hit[6] & reg_re & !reg_error;
+  assign status_fifo_full_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign entropy_period_entropy_timer_we = addr_hit[7] & reg_we & !reg_error;
+  assign entropy_period_entropy_timer_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_period_entropy_timer_wd = reg_wdata[15:0];
 
-  assign entropy_period_wait_timer_we = addr_hit[7] & reg_we & !reg_error;
+  assign entropy_period_wait_timer_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_period_wait_timer_wd = reg_wdata[31:16];
 
-  assign entropy_seed_lower_we = addr_hit[8] & reg_we & !reg_error;
+  assign entropy_seed_lower_we = addr_hit[9] & reg_we & !reg_error;
   assign entropy_seed_lower_wd = reg_wdata[31:0];
 
-  assign entropy_seed_upper_we = addr_hit[9] & reg_we & !reg_error;
+  assign entropy_seed_upper_we = addr_hit[10] & reg_we & !reg_error;
   assign entropy_seed_upper_wd = reg_wdata[31:0];
 
-  assign key_share0_0_we = addr_hit[10] & reg_we & !reg_error;
+  assign key_share0_0_we = addr_hit[11] & reg_we & !reg_error;
   assign key_share0_0_wd = reg_wdata[31:0];
 
-  assign key_share0_1_we = addr_hit[11] & reg_we & !reg_error;
+  assign key_share0_1_we = addr_hit[12] & reg_we & !reg_error;
   assign key_share0_1_wd = reg_wdata[31:0];
 
-  assign key_share0_2_we = addr_hit[12] & reg_we & !reg_error;
+  assign key_share0_2_we = addr_hit[13] & reg_we & !reg_error;
   assign key_share0_2_wd = reg_wdata[31:0];
 
-  assign key_share0_3_we = addr_hit[13] & reg_we & !reg_error;
+  assign key_share0_3_we = addr_hit[14] & reg_we & !reg_error;
   assign key_share0_3_wd = reg_wdata[31:0];
 
-  assign key_share0_4_we = addr_hit[14] & reg_we & !reg_error;
+  assign key_share0_4_we = addr_hit[15] & reg_we & !reg_error;
   assign key_share0_4_wd = reg_wdata[31:0];
 
-  assign key_share0_5_we = addr_hit[15] & reg_we & !reg_error;
+  assign key_share0_5_we = addr_hit[16] & reg_we & !reg_error;
   assign key_share0_5_wd = reg_wdata[31:0];
 
-  assign key_share0_6_we = addr_hit[16] & reg_we & !reg_error;
+  assign key_share0_6_we = addr_hit[17] & reg_we & !reg_error;
   assign key_share0_6_wd = reg_wdata[31:0];
 
-  assign key_share0_7_we = addr_hit[17] & reg_we & !reg_error;
+  assign key_share0_7_we = addr_hit[18] & reg_we & !reg_error;
   assign key_share0_7_wd = reg_wdata[31:0];
 
-  assign key_share0_8_we = addr_hit[18] & reg_we & !reg_error;
+  assign key_share0_8_we = addr_hit[19] & reg_we & !reg_error;
   assign key_share0_8_wd = reg_wdata[31:0];
 
-  assign key_share0_9_we = addr_hit[19] & reg_we & !reg_error;
+  assign key_share0_9_we = addr_hit[20] & reg_we & !reg_error;
   assign key_share0_9_wd = reg_wdata[31:0];
 
-  assign key_share0_10_we = addr_hit[20] & reg_we & !reg_error;
+  assign key_share0_10_we = addr_hit[21] & reg_we & !reg_error;
   assign key_share0_10_wd = reg_wdata[31:0];
 
-  assign key_share0_11_we = addr_hit[21] & reg_we & !reg_error;
+  assign key_share0_11_we = addr_hit[22] & reg_we & !reg_error;
   assign key_share0_11_wd = reg_wdata[31:0];
 
-  assign key_share0_12_we = addr_hit[22] & reg_we & !reg_error;
+  assign key_share0_12_we = addr_hit[23] & reg_we & !reg_error;
   assign key_share0_12_wd = reg_wdata[31:0];
 
-  assign key_share0_13_we = addr_hit[23] & reg_we & !reg_error;
+  assign key_share0_13_we = addr_hit[24] & reg_we & !reg_error;
   assign key_share0_13_wd = reg_wdata[31:0];
 
-  assign key_share0_14_we = addr_hit[24] & reg_we & !reg_error;
+  assign key_share0_14_we = addr_hit[25] & reg_we & !reg_error;
   assign key_share0_14_wd = reg_wdata[31:0];
 
-  assign key_share0_15_we = addr_hit[25] & reg_we & !reg_error;
+  assign key_share0_15_we = addr_hit[26] & reg_we & !reg_error;
   assign key_share0_15_wd = reg_wdata[31:0];
 
-  assign key_share1_0_we = addr_hit[26] & reg_we & !reg_error;
+  assign key_share1_0_we = addr_hit[27] & reg_we & !reg_error;
   assign key_share1_0_wd = reg_wdata[31:0];
 
-  assign key_share1_1_we = addr_hit[27] & reg_we & !reg_error;
+  assign key_share1_1_we = addr_hit[28] & reg_we & !reg_error;
   assign key_share1_1_wd = reg_wdata[31:0];
 
-  assign key_share1_2_we = addr_hit[28] & reg_we & !reg_error;
+  assign key_share1_2_we = addr_hit[29] & reg_we & !reg_error;
   assign key_share1_2_wd = reg_wdata[31:0];
 
-  assign key_share1_3_we = addr_hit[29] & reg_we & !reg_error;
+  assign key_share1_3_we = addr_hit[30] & reg_we & !reg_error;
   assign key_share1_3_wd = reg_wdata[31:0];
 
-  assign key_share1_4_we = addr_hit[30] & reg_we & !reg_error;
+  assign key_share1_4_we = addr_hit[31] & reg_we & !reg_error;
   assign key_share1_4_wd = reg_wdata[31:0];
 
-  assign key_share1_5_we = addr_hit[31] & reg_we & !reg_error;
+  assign key_share1_5_we = addr_hit[32] & reg_we & !reg_error;
   assign key_share1_5_wd = reg_wdata[31:0];
 
-  assign key_share1_6_we = addr_hit[32] & reg_we & !reg_error;
+  assign key_share1_6_we = addr_hit[33] & reg_we & !reg_error;
   assign key_share1_6_wd = reg_wdata[31:0];
 
-  assign key_share1_7_we = addr_hit[33] & reg_we & !reg_error;
+  assign key_share1_7_we = addr_hit[34] & reg_we & !reg_error;
   assign key_share1_7_wd = reg_wdata[31:0];
 
-  assign key_share1_8_we = addr_hit[34] & reg_we & !reg_error;
+  assign key_share1_8_we = addr_hit[35] & reg_we & !reg_error;
   assign key_share1_8_wd = reg_wdata[31:0];
 
-  assign key_share1_9_we = addr_hit[35] & reg_we & !reg_error;
+  assign key_share1_9_we = addr_hit[36] & reg_we & !reg_error;
   assign key_share1_9_wd = reg_wdata[31:0];
 
-  assign key_share1_10_we = addr_hit[36] & reg_we & !reg_error;
+  assign key_share1_10_we = addr_hit[37] & reg_we & !reg_error;
   assign key_share1_10_wd = reg_wdata[31:0];
 
-  assign key_share1_11_we = addr_hit[37] & reg_we & !reg_error;
+  assign key_share1_11_we = addr_hit[38] & reg_we & !reg_error;
   assign key_share1_11_wd = reg_wdata[31:0];
 
-  assign key_share1_12_we = addr_hit[38] & reg_we & !reg_error;
+  assign key_share1_12_we = addr_hit[39] & reg_we & !reg_error;
   assign key_share1_12_wd = reg_wdata[31:0];
 
-  assign key_share1_13_we = addr_hit[39] & reg_we & !reg_error;
+  assign key_share1_13_we = addr_hit[40] & reg_we & !reg_error;
   assign key_share1_13_wd = reg_wdata[31:0];
 
-  assign key_share1_14_we = addr_hit[40] & reg_we & !reg_error;
+  assign key_share1_14_we = addr_hit[41] & reg_we & !reg_error;
   assign key_share1_14_wd = reg_wdata[31:0];
 
-  assign key_share1_15_we = addr_hit[41] & reg_we & !reg_error;
+  assign key_share1_15_we = addr_hit[42] & reg_we & !reg_error;
   assign key_share1_15_wd = reg_wdata[31:0];
 
-  assign key_len_we = addr_hit[42] & reg_we & !reg_error;
+  assign key_len_we = addr_hit[43] & reg_we & !reg_error;
   assign key_len_wd = reg_wdata[2:0];
 
-  assign prefix_0_we = addr_hit[43] & reg_we & !reg_error;
+  assign prefix_0_we = addr_hit[44] & reg_we & !reg_error;
   assign prefix_0_wd = reg_wdata[31:0];
 
-  assign prefix_1_we = addr_hit[44] & reg_we & !reg_error;
+  assign prefix_1_we = addr_hit[45] & reg_we & !reg_error;
   assign prefix_1_wd = reg_wdata[31:0];
 
-  assign prefix_2_we = addr_hit[45] & reg_we & !reg_error;
+  assign prefix_2_we = addr_hit[46] & reg_we & !reg_error;
   assign prefix_2_wd = reg_wdata[31:0];
 
-  assign prefix_3_we = addr_hit[46] & reg_we & !reg_error;
+  assign prefix_3_we = addr_hit[47] & reg_we & !reg_error;
   assign prefix_3_wd = reg_wdata[31:0];
 
-  assign prefix_4_we = addr_hit[47] & reg_we & !reg_error;
+  assign prefix_4_we = addr_hit[48] & reg_we & !reg_error;
   assign prefix_4_wd = reg_wdata[31:0];
 
-  assign prefix_5_we = addr_hit[48] & reg_we & !reg_error;
+  assign prefix_5_we = addr_hit[49] & reg_we & !reg_error;
   assign prefix_5_wd = reg_wdata[31:0];
 
-  assign prefix_6_we = addr_hit[49] & reg_we & !reg_error;
+  assign prefix_6_we = addr_hit[50] & reg_we & !reg_error;
   assign prefix_6_wd = reg_wdata[31:0];
 
-  assign prefix_7_we = addr_hit[50] & reg_we & !reg_error;
+  assign prefix_7_we = addr_hit[51] & reg_we & !reg_error;
   assign prefix_7_wd = reg_wdata[31:0];
 
-  assign prefix_8_we = addr_hit[51] & reg_we & !reg_error;
+  assign prefix_8_we = addr_hit[52] & reg_we & !reg_error;
   assign prefix_8_wd = reg_wdata[31:0];
 
-  assign prefix_9_we = addr_hit[52] & reg_we & !reg_error;
+  assign prefix_9_we = addr_hit[53] & reg_we & !reg_error;
   assign prefix_9_wd = reg_wdata[31:0];
 
-  assign prefix_10_we = addr_hit[53] & reg_we & !reg_error;
+  assign prefix_10_we = addr_hit[54] & reg_we & !reg_error;
   assign prefix_10_wd = reg_wdata[31:0];
 
   // Read data return
@@ -2274,10 +2297,14 @@ module kmac_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = cfg_regwen_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[0] = cfg_regwen_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = cfg_kmac_en_qs;
         reg_rdata_next[3:1] = cfg_kstrength_qs;
         reg_rdata_next[5:4] = cfg_mode_qs;
@@ -2290,11 +2317,11 @@ module kmac_reg_top (
         reg_rdata_next[25] = cfg_err_processed_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[3:0] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = status_sha3_idle_qs;
         reg_rdata_next[1] = status_sha3_absorb_qs;
         reg_rdata_next[2] = status_sha3_squeeze_qs;
@@ -2303,21 +2330,17 @@ module kmac_reg_top (
         reg_rdata_next[15] = status_fifo_full_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[15:0] = entropy_period_entropy_timer_qs;
         reg_rdata_next[31:16] = entropy_period_wait_timer_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = entropy_seed_lower_qs;
       end
 
-      addr_hit[9]: begin
-        reg_rdata_next[31:0] = entropy_seed_upper_qs;
-      end
-
       addr_hit[10]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = entropy_seed_upper_qs;
       end
 
       addr_hit[11]: begin
@@ -2445,54 +2468,58 @@ module kmac_reg_top (
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[2:0] = '0;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[31:0] = prefix_0_qs;
+        reg_rdata_next[2:0] = '0;
       end
 
       addr_hit[44]: begin
-        reg_rdata_next[31:0] = prefix_1_qs;
+        reg_rdata_next[31:0] = prefix_0_qs;
       end
 
       addr_hit[45]: begin
-        reg_rdata_next[31:0] = prefix_2_qs;
+        reg_rdata_next[31:0] = prefix_1_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[31:0] = prefix_3_qs;
+        reg_rdata_next[31:0] = prefix_2_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[31:0] = prefix_4_qs;
+        reg_rdata_next[31:0] = prefix_3_qs;
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = prefix_5_qs;
+        reg_rdata_next[31:0] = prefix_4_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = prefix_6_qs;
+        reg_rdata_next[31:0] = prefix_5_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[31:0] = prefix_7_qs;
+        reg_rdata_next[31:0] = prefix_6_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[31:0] = prefix_8_qs;
+        reg_rdata_next[31:0] = prefix_7_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = prefix_9_qs;
+        reg_rdata_next[31:0] = prefix_8_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = prefix_10_qs;
+        reg_rdata_next[31:0] = prefix_9_qs;
       end
 
       addr_hit[54]: begin
+        reg_rdata_next[31:0] = prefix_10_qs;
+      end
+
+      addr_hit[55]: begin
         reg_rdata_next[31:0] = err_code_qs;
       end
 

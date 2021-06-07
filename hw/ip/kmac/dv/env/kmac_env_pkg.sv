@@ -62,6 +62,10 @@ package kmac_env_pkg;
   // `right_encode()` or `left_encode()`.
   parameter int MAX_ENCODE_WIDTH = 2040;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   /////////////////////////////
   // Timing Model Parameters //
   /////////////////////////////

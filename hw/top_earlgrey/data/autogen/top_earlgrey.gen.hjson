@@ -11536,6 +11536,7 @@
     sram_ctrl_ret_aon
     flash_ctrl
     aes
+    kmac
     keymgr
     csrng
     entropy_src
@@ -11707,6 +11708,13 @@
       type: alert
       async: "1"
       module_name: aes
+    }
+    {
+      name: kmac_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: kmac
     }
     {
       name: keymgr_fatal_fault_err
