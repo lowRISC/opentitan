@@ -1459,42 +1459,12 @@
 
     // SRAM (pre-verified IP) integration tests:
     {
-      name: chip_sram_access
-      desc: '''Verify access to the SRAM.
+      name: chip_sram_scrambled_access
+      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
 
-            Verify that the CPU can fetch data from the SRAM. Nothing extra needs to be done
-            here - all SW tests do this anyway.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sram_scramble
-      desc: '''Verify scrambling of the SRAM data.
-
-            SW enables scrambling within the SRAM. Ensure that the data written to the SRAM is
-            scrambled and likewise, when read from the SRAM is de-scrambled correctly via backdoor.
-            The key and nonce for the scrambling is supplied by the OTP.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sram_ret_access
-      desc: '''Verify access to the retention SRAM.
-
-            Verify that the CPU can fetch data from the retention SRAM.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sram_ret_scramble
-      desc: '''Verify scrambling of the retention SRAM data.
-
-            SW enables scrambling within the retention SRAM. Ensure that the data written to the
-            SRAM is scrambled and likewise, when read from the SRAM is de-scrambled correctly via
-            backdoor. The key and nonce for the scrambling is supplied by the OTP.
+            - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
+            - Drive the CPU to perform random accesses to both RAMs and verify these operations
+              complete successfully by using the backdoor interface
             '''
       milestone: V2
       tests: []
@@ -1507,6 +1477,31 @@
             variations.
 
             TODO: how to deal with the scramble keys on low power exit?
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_execution
+      desc: '''Verify that CPU can fetch data from both SRAMs when in executable mode.
+
+            - Load instruction data into the SRAMs.
+            - Configure main/ret SRAMs to allow instruction execution.
+            - Have the CPU fetch the instruction data from the SRAMs and verify that SW can finish
+              the test successfully.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_lc_escalation
+      desc: '''Verify the LC escalation path to the SRAMs.
+
+            - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
+            - Verify that the SRAMs stop accepting and responding to new memory requests.
+            - Reset the system to exit the terminal escalation state.
+            - Re-initialize the SRAMs and verify that they can now respond correctly to
+              any further memory requests.
             '''
       milestone: V2
       tests: []
@@ -1976,6 +1971,18 @@
 
              Details TBD.
              '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_nmi_wipe
+      desc: '''Verify SRAM behavior during an NMI escalation.
+
+            - Trigger an NMI through the alert handler path to cause a system shutdown.
+            - SW should trigger a memory "initialization", fully randomizing RAM contents
+              and initiating another key request.
+            - Verify that the RAMs are "wiped" once this operation completes.
+            '''
       milestone: V2
       tests: []
     }
