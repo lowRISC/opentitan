@@ -62,7 +62,7 @@ trap 'rm -f "$TMPFILE"' EXIT
 git ls-files | \
     grep -v "${excl_re}" | \
     grep -v "${suff_re}" | \
-    env LC_ALL=C xargs grep -P '[^\0-\x7f]' >"$TMPFILE" || true
+    env LC_ALL=C xargs grep -d skip -P '[^\0-\x7f]' >"$TMPFILE" || true
 if [ -s "$TMPFILE" ]; then
     echo -n "##vso[task.logissue type=error]"
     echo "One or more files have unexpected non-ASCII text:"
