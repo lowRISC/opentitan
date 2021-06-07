@@ -123,7 +123,7 @@
             - If keymgr in disabled state, check the behavior is consistent with normal behavior.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_lc_disable"]
     }
     {
       name: invalid_cmd
@@ -144,10 +144,10 @@
               StDisabled.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_cmd_invalid"]
     }
     {
-      name: kmac_error
+      name: kmac_error_response
       desc: '''
             Verify `keymgr` behavior on error response received from `KMAC` after sending data to
             it.
@@ -159,7 +159,7 @@
             Same as above entry - "invalid_cmd".
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_kmac_rsp_err"]
     }
     {
       name: invalid_kmac_input
@@ -176,7 +176,7 @@
             - Check KMAC output key is corrupted and working state remains the same.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_sw_invalid_input"]
     }
     {
       name: invalid_kmac_data
@@ -192,7 +192,7 @@
             - Check SW output isn't updated and working state remains the same.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_hwsw_invalid_input"]
     }
     {
       name: stress_all
