@@ -14,6 +14,7 @@
 #include "otbn_memutil.h"
 #include "otbn_trace_checker.h"
 #include "otbn_trace_source.h"
+#include "sv_scoped.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
@@ -177,6 +178,18 @@ int main(int argc, char **argv) {
 
     std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 0)
               << std::endl;
+  }
+
+  int exp_stop_pc = otbn_memutil.GetExpEndAddr();
+  if (exp_stop_pc >= 0) {
+    SVScoped core_scope("TOP.otbn_top_sim.u_otbn_core_model");
+    int act_stop_pc = otbn_core_get_stop_pc();
+    if (exp_stop_pc != act_stop_pc) {
+      std::cerr << "ERROR: Expected stop PC from ELF file was 0x" << std::hex
+                << exp_stop_pc << ", but simulation actually stopped at 0x"
+                << act_stop_pc << ".\n";
+      return 1;
+    }
   }
 
   return 0;
