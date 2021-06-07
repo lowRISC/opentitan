@@ -11522,6 +11522,10 @@
   ]
   alert_module:
   [
+    uart0
+    uart1
+    uart2
+    uart3
     gpio
     spi_device
     spi_host0
@@ -11547,6 +11551,34 @@
   ]
   alert:
   [
+    {
+      name: uart0_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: uart0
+    }
+    {
+      name: uart1_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: uart1
+    }
+    {
+      name: uart2_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: uart2
+    }
+    {
+      name: uart3_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: uart3
+    }
     {
       name: gpio_fatal_fault
       width: 1
