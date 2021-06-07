@@ -515,7 +515,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "direct_access_cmd": begin
         if (addr_phase_write && !cfg.otp_ctrl_vif.under_error_states()) begin
           // here only normalize to 2 lsb, if is secret, will be reduced further
-          bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          bit [TL_AW-1:0] dai_addr = normalize_dai_addr(`gmv(ral.direct_access_address));
           int part_idx = get_part_index(dai_addr);
           void'(ral.direct_access_regwen.predict(0));
           under_dai_access = 1;
@@ -554,25 +554,40 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
-                  if (cfg.ecc_err == OtpNoEccErr) begin
+                  // Check if write has any write_blank_error, then potentially read might have ECC
+                  // error.
+                  bit [TL_DW-1:0] err_code = `gmv(ral.err_code);
+                  if (get_field_val(ral.err_code.err_code_7, err_code) == OtpMacroWriteBlankError ||
+                      cfg.ecc_err != OtpNoEccErr) begin
+                    bit [TL_DW-1:0] read_out;
+                    int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
+                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
+                      ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out), ecc_err);
+                    end
+
+                    if (ecc_err == OtpEccCorrErr) begin
+                      predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
+                      backdoor_update_otp_array(dai_addr);
+                      predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                    otp_a[otp_addr], otp_a[otp_addr+1]);
+                    end else if (ecc_err == OtpEccUncorrErr) begin
+                      predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
+                      // Max wait 20 clock cycles because scb did not know when exactly OTP will
+                      // finish reading and reporting the uncorrectable error.
+                      set_exp_alert("fatal_macro_error", 1, 20);
+                      predict_rdata(1, 0, 0);
+                    end else begin
+                      predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                    otp_a[otp_addr], otp_a[otp_addr+1]);
+                    end
+
+                    // In sequence, we backdoor write back to non-error value, so here scb reset
+                    // the ecc_err back to NoErr.
+                    if (cfg.ecc_err == OtpEccCorrErr) cfg.ecc_err = OtpNoEccErr;
+                  end else begin
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                   otp_a[otp_addr], otp_a[otp_addr+1]);
-                  end else if (cfg.ecc_err == OtpEccCorrErr) begin
-                    predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
-                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                  otp_a[otp_addr], otp_a[otp_addr+1]);
-                    // In sequence, we backdoor write back to non-error value, so here scb reset
-                    // the ecc_err back to NoErr.
-                    cfg.ecc_err = OtpNoEccErr;
-
-                  // OTP macro uncorrectable error: DAI interface goes to error state
-                  end else begin
-                    predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
-                    // Max wait 20 clock cycles because scb did not know when exactly OTP will
-                    // finish reading and reporting the uncorrectable error.
-                    set_exp_alert("fatal_macro_error", 1, 20);
-                    predict_rdata(1, 0, 0);
                   end
                 end
               end
@@ -591,10 +606,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     curr_digest = {`gmv(ral.direct_access_wdata_1),
                                    `gmv(ral.direct_access_wdata_0)};
                     prev_digest = {otp_a[otp_addr+1], otp_a[otp_addr]};
+                    dai_wr_ip = 1;
                     // allow bit write
                     if ((prev_digest & curr_digest) == prev_digest) begin
                       update_digest_to_otp(part_idx, curr_digest);
-                      dai_wr_ip = 1;
                     end else begin
                       predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                     end
@@ -749,17 +764,37 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     if (dai_wr_ip) begin
       bit [TL_DW-1:0] otp_addr = get_scb_otp_addr();
       bit [TL_DW-1:0] dai_addr = otp_addr << 2;
-      otp_a[otp_addr] = cfg.mem_bkdr_vif.read32(dai_addr);
-
-      if (is_secret(dai_addr)) begin
-        int part_idx = get_part_index(dai_addr);
-        bit [TL_DW*2-1:0] mem_rd_val      = cfg.mem_bkdr_vif.read64(dai_addr);
-        bit [TL_DW*2-1:0] descrabmled_val = descramble_data(mem_rd_val, part_idx);
-        otp_a[otp_addr+1] = descrabmled_val[TL_DW*2-1:TL_DW];
-        otp_a[otp_addr]   = descrabmled_val[TL_DW-1:0];
-      end
+      backdoor_update_otp_array(dai_addr);
       dai_wr_ip = 0;
     end
+  endfunction
+
+  virtual function void backdoor_update_otp_array(bit [TL_DW-1:0] dai_addr);
+    bit [TL_DW-1:0] otp_addr = dai_addr >> 2;
+    bit [TL_DW-1:0] readout_word, readout_word1;
+    void'(read_a_word_with_ecc(dai_addr,     readout_word));
+    void'(read_a_word_with_ecc(dai_addr + 4, readout_word1));
+    otp_a[otp_addr] = readout_word;
+
+    if (is_digest(dai_addr)) begin
+      otp_a[otp_addr+1] = readout_word1;
+    end else if (is_secret(dai_addr)) begin
+      int part_idx = get_part_index(dai_addr);
+      bit [TL_DW*2-1:0] mem_rd_val, descrambled_val;
+      mem_rd_val        = {readout_word1 ,readout_word};
+      descrambled_val   = descramble_data(mem_rd_val, part_idx);
+      otp_a[otp_addr+1] = descrambled_val[TL_DW*2-1:TL_DW];
+      otp_a[otp_addr]   = descrambled_val[TL_DW-1:0];
+    end
+  endfunction
+
+  virtual function bit [1:0] read_a_word_with_ecc(bit [TL_DW-1:0] dai_addr,
+                                                  ref bit [TL_DW-1:0] readout_word);
+    prim_secded_pkg::secded_28_22_t ecc_rd_data0 = cfg.mem_bkdr_vif.ecc_read16(dai_addr);
+    prim_secded_pkg::secded_28_22_t ecc_rd_data1 = cfg.mem_bkdr_vif.ecc_read16(dai_addr + 2);
+    readout_word[15:0]  = ecc_rd_data0.data;
+    readout_word[31:16] = ecc_rd_data1.data;
+    return max2(ecc_rd_data0.err, ecc_rd_data1.err);
   endfunction
 
   virtual function void reset(string kind = "HARD");
@@ -1005,10 +1040,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
   endfunction
 
-  function bit [TL_AW-1:0] get_scb_otp_addr();
+  // Get address for scoreboard's otp_a array from the `direct_access_address` CSR
+  function bit [TL_DW-1:0] get_scb_otp_addr();
     bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address);
-    get_scb_otp_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 1 :
-                                                                      dai_addr >> 2;
+    get_scb_otp_addr = normalize_dai_addr(dai_addr) >> 2;
+  endfunction
+
+  function bit [TL_DW-1:0] normalize_dai_addr(bit [TL_DW-1:0] dai_addr);
+    normalize_dai_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 3 :
+                                                                        dai_addr >> 2 << 2;
   endfunction
 
   // This function predict OTP error related registers: intr_state, status, and err_code

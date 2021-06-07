@@ -423,7 +423,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_lc_transition(bit check_intr = 0,
                                  bit blocking = default_req_blocking,
-                                 bit wr_blank_err = 0);
+                                 bit wr_blank_err = !collect_used_addr);
     if (cfg.m_lc_prog_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
@@ -439,7 +439,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_lc_transition_sub(bit check_intr = 0, bit wr_blank_err = 0);
+  virtual task req_lc_transition_sub(bit check_intr = 0, bit wr_blank_err = !collect_used_addr);
     lc_ctrl_state_pkg::lc_cnt_e       next_lc_cnt;
     lc_ctrl_state_pkg::dec_lc_state_e next_lc_state, lc_state_dec;
     bit [TL_DW-1:0]                   intr_val;

@@ -8,6 +8,8 @@
 //            - macro_errs_vseq and check_fail_vseq: require to write back to OTP once fatal
 //              error is triggered, thus does not handle random reset
 //            - partition_walk_vseq: assume OTP initial value is 0
+//            - dai_errs_vseq: write_blank_err will cause otp_init to fail, and requires to wipe
+//              out otp memory.
 class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_stress_all_vseq)
 
@@ -31,7 +33,6 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
 
   task body();
     string seq_names[] = {"otp_ctrl_common_vseq",
-                          "otp_ctrl_dai_errs_vseq",
                           "otp_ctrl_dai_lock_vseq",
                           "otp_ctrl_smoke_vseq",
                           "otp_ctrl_test_access_vseq",
@@ -63,7 +64,6 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
       end
 
       // Pass local variables to next sequence due to randomly issued reset.
-      otp_ctrl_vseq.collect_used_addr = 0;
       otp_ctrl_vseq.is_valid_dai_op = 0;
       otp_ctrl_vseq.lc_prog_blocking = this.lc_prog_blocking;
       otp_ctrl_vseq.digest_calculated = this.digest_calculated;
