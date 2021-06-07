@@ -200,6 +200,8 @@ module spi_device_reg_top (
   logic intr_test_rxoverflow_we;
   logic intr_test_txunderflow_wd;
   logic intr_test_txunderflow_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic control_abort_qs;
   logic control_abort_wd;
   logic control_abort_we;
@@ -1839,6 +1841,22 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.txunderflow.qe),
     .q      (reg2hw.intr_test.txunderflow.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -12643,47 +12661,48 @@ module spi_device_reg_top (
 
 
 
-  logic [37:0] addr_hit;
+  logic [38:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == SPI_DEVICE_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == SPI_DEVICE_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == SPI_DEVICE_CONTROL_OFFSET);
-    addr_hit[ 4] = (reg_addr == SPI_DEVICE_CFG_OFFSET);
-    addr_hit[ 5] = (reg_addr == SPI_DEVICE_FIFO_LEVEL_OFFSET);
-    addr_hit[ 6] = (reg_addr == SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET);
-    addr_hit[ 7] = (reg_addr == SPI_DEVICE_STATUS_OFFSET);
-    addr_hit[ 8] = (reg_addr == SPI_DEVICE_RXF_PTR_OFFSET);
-    addr_hit[ 9] = (reg_addr == SPI_DEVICE_TXF_PTR_OFFSET);
-    addr_hit[10] = (reg_addr == SPI_DEVICE_RXF_ADDR_OFFSET);
-    addr_hit[11] = (reg_addr == SPI_DEVICE_TXF_ADDR_OFFSET);
-    addr_hit[12] = (reg_addr == SPI_DEVICE_CMD_FILTER_0_OFFSET);
-    addr_hit[13] = (reg_addr == SPI_DEVICE_CMD_FILTER_1_OFFSET);
-    addr_hit[14] = (reg_addr == SPI_DEVICE_CMD_FILTER_2_OFFSET);
-    addr_hit[15] = (reg_addr == SPI_DEVICE_CMD_FILTER_3_OFFSET);
-    addr_hit[16] = (reg_addr == SPI_DEVICE_CMD_FILTER_4_OFFSET);
-    addr_hit[17] = (reg_addr == SPI_DEVICE_CMD_FILTER_5_OFFSET);
-    addr_hit[18] = (reg_addr == SPI_DEVICE_CMD_FILTER_6_OFFSET);
-    addr_hit[19] = (reg_addr == SPI_DEVICE_CMD_FILTER_7_OFFSET);
-    addr_hit[20] = (reg_addr == SPI_DEVICE_ADDR_SWAP_MASK_OFFSET);
-    addr_hit[21] = (reg_addr == SPI_DEVICE_ADDR_SWAP_DATA_OFFSET);
-    addr_hit[22] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
-    addr_hit[23] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
-    addr_hit[24] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
-    addr_hit[25] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
-    addr_hit[26] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
-    addr_hit[27] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
-    addr_hit[28] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
-    addr_hit[29] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
-    addr_hit[30] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
-    addr_hit[31] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
-    addr_hit[32] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
-    addr_hit[33] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
-    addr_hit[34] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
-    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
-    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
-    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
+    addr_hit[ 3] = (reg_addr == SPI_DEVICE_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == SPI_DEVICE_CONTROL_OFFSET);
+    addr_hit[ 5] = (reg_addr == SPI_DEVICE_CFG_OFFSET);
+    addr_hit[ 6] = (reg_addr == SPI_DEVICE_FIFO_LEVEL_OFFSET);
+    addr_hit[ 7] = (reg_addr == SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET);
+    addr_hit[ 8] = (reg_addr == SPI_DEVICE_STATUS_OFFSET);
+    addr_hit[ 9] = (reg_addr == SPI_DEVICE_RXF_PTR_OFFSET);
+    addr_hit[10] = (reg_addr == SPI_DEVICE_TXF_PTR_OFFSET);
+    addr_hit[11] = (reg_addr == SPI_DEVICE_RXF_ADDR_OFFSET);
+    addr_hit[12] = (reg_addr == SPI_DEVICE_TXF_ADDR_OFFSET);
+    addr_hit[13] = (reg_addr == SPI_DEVICE_CMD_FILTER_0_OFFSET);
+    addr_hit[14] = (reg_addr == SPI_DEVICE_CMD_FILTER_1_OFFSET);
+    addr_hit[15] = (reg_addr == SPI_DEVICE_CMD_FILTER_2_OFFSET);
+    addr_hit[16] = (reg_addr == SPI_DEVICE_CMD_FILTER_3_OFFSET);
+    addr_hit[17] = (reg_addr == SPI_DEVICE_CMD_FILTER_4_OFFSET);
+    addr_hit[18] = (reg_addr == SPI_DEVICE_CMD_FILTER_5_OFFSET);
+    addr_hit[19] = (reg_addr == SPI_DEVICE_CMD_FILTER_6_OFFSET);
+    addr_hit[20] = (reg_addr == SPI_DEVICE_CMD_FILTER_7_OFFSET);
+    addr_hit[21] = (reg_addr == SPI_DEVICE_ADDR_SWAP_MASK_OFFSET);
+    addr_hit[22] = (reg_addr == SPI_DEVICE_ADDR_SWAP_DATA_OFFSET);
+    addr_hit[23] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
+    addr_hit[24] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
+    addr_hit[25] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
+    addr_hit[26] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
+    addr_hit[27] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
+    addr_hit[28] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
+    addr_hit[29] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
+    addr_hit[30] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
+    addr_hit[31] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
+    addr_hit[32] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
+    addr_hit[33] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
+    addr_hit[34] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
+    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
+    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
+    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
+    addr_hit[38] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -12728,7 +12747,8 @@ module spi_device_reg_top (
                (addr_hit[34] & (|(SPI_DEVICE_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(SPI_DEVICE_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(SPI_DEVICE_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(SPI_DEVICE_PERMIT[37] & ~reg_be)))));
+               (addr_hit[37] & (|(SPI_DEVICE_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(SPI_DEVICE_PERMIT[38] & ~reg_be)))));
   end
 
   assign intr_state_rxf_we = addr_hit[0] & reg_we & !reg_error;
@@ -12785,1235 +12805,1238 @@ module spi_device_reg_top (
   assign intr_test_txunderflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_txunderflow_wd = reg_wdata[5];
 
-  assign control_abort_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+
+  assign control_abort_we = addr_hit[4] & reg_we & !reg_error;
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_mode_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_mode_we = addr_hit[4] & reg_we & !reg_error;
   assign control_mode_wd = reg_wdata[5:4];
 
-  assign control_rst_txfifo_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_rst_txfifo_we = addr_hit[4] & reg_we & !reg_error;
   assign control_rst_txfifo_wd = reg_wdata[16];
 
-  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_rst_rxfifo_we = addr_hit[4] & reg_we & !reg_error;
   assign control_rst_rxfifo_wd = reg_wdata[17];
 
-  assign control_sram_clk_en_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_sram_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_sram_clk_en_wd = reg_wdata[31];
 
-  assign cfg_cpol_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_cpol_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_cpol_wd = reg_wdata[0];
 
-  assign cfg_cpha_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_cpha_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_cpha_wd = reg_wdata[1];
 
-  assign cfg_tx_order_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_tx_order_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_tx_order_wd = reg_wdata[2];
 
-  assign cfg_rx_order_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_rx_order_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_rx_order_wd = reg_wdata[3];
 
-  assign cfg_timer_v_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_timer_v_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_timer_v_wd = reg_wdata[15:8];
 
-  assign cfg_addr_4b_en_we = addr_hit[4] & reg_we & !reg_error;
+  assign cfg_addr_4b_en_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_addr_4b_en_wd = reg_wdata[16];
 
-  assign fifo_level_rxlvl_we = addr_hit[5] & reg_we & !reg_error;
+  assign fifo_level_rxlvl_we = addr_hit[6] & reg_we & !reg_error;
   assign fifo_level_rxlvl_wd = reg_wdata[15:0];
 
-  assign fifo_level_txlvl_we = addr_hit[5] & reg_we & !reg_error;
+  assign fifo_level_txlvl_we = addr_hit[6] & reg_we & !reg_error;
   assign fifo_level_txlvl_wd = reg_wdata[31:16];
 
-  assign async_fifo_level_rxlvl_re = addr_hit[6] & reg_re & !reg_error;
+  assign async_fifo_level_rxlvl_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign async_fifo_level_txlvl_re = addr_hit[6] & reg_re & !reg_error;
+  assign async_fifo_level_txlvl_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_rxf_full_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_rxf_full_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign status_rxf_empty_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_rxf_empty_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign status_txf_full_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_txf_full_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign status_txf_empty_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_txf_empty_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign status_abort_done_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_abort_done_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign status_csb_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_csb_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & !reg_error;
+  assign rxf_ptr_rptr_we = addr_hit[9] & reg_we & !reg_error;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
 
-  assign txf_ptr_wptr_we = addr_hit[9] & reg_we & !reg_error;
+  assign txf_ptr_wptr_we = addr_hit[10] & reg_we & !reg_error;
   assign txf_ptr_wptr_wd = reg_wdata[31:16];
 
-  assign rxf_addr_base_we = addr_hit[10] & reg_we & !reg_error;
+  assign rxf_addr_base_we = addr_hit[11] & reg_we & !reg_error;
   assign rxf_addr_base_wd = reg_wdata[15:0];
 
-  assign rxf_addr_limit_we = addr_hit[10] & reg_we & !reg_error;
+  assign rxf_addr_limit_we = addr_hit[11] & reg_we & !reg_error;
   assign rxf_addr_limit_wd = reg_wdata[31:16];
 
-  assign txf_addr_base_we = addr_hit[11] & reg_we & !reg_error;
+  assign txf_addr_base_we = addr_hit[12] & reg_we & !reg_error;
   assign txf_addr_base_wd = reg_wdata[15:0];
 
-  assign txf_addr_limit_we = addr_hit[11] & reg_we & !reg_error;
+  assign txf_addr_limit_we = addr_hit[12] & reg_we & !reg_error;
   assign txf_addr_limit_wd = reg_wdata[31:16];
 
-  assign cmd_filter_0_filter_0_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_0_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_0_wd = reg_wdata[0];
 
-  assign cmd_filter_0_filter_1_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_1_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_1_wd = reg_wdata[1];
 
-  assign cmd_filter_0_filter_2_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_2_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_2_wd = reg_wdata[2];
 
-  assign cmd_filter_0_filter_3_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_3_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_3_wd = reg_wdata[3];
 
-  assign cmd_filter_0_filter_4_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_4_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_4_wd = reg_wdata[4];
 
-  assign cmd_filter_0_filter_5_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_5_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_5_wd = reg_wdata[5];
 
-  assign cmd_filter_0_filter_6_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_6_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_6_wd = reg_wdata[6];
 
-  assign cmd_filter_0_filter_7_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_7_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_7_wd = reg_wdata[7];
 
-  assign cmd_filter_0_filter_8_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_8_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_8_wd = reg_wdata[8];
 
-  assign cmd_filter_0_filter_9_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_9_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_9_wd = reg_wdata[9];
 
-  assign cmd_filter_0_filter_10_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_10_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_10_wd = reg_wdata[10];
 
-  assign cmd_filter_0_filter_11_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_11_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_11_wd = reg_wdata[11];
 
-  assign cmd_filter_0_filter_12_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_12_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_12_wd = reg_wdata[12];
 
-  assign cmd_filter_0_filter_13_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_13_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_13_wd = reg_wdata[13];
 
-  assign cmd_filter_0_filter_14_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_14_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_14_wd = reg_wdata[14];
 
-  assign cmd_filter_0_filter_15_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_15_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_15_wd = reg_wdata[15];
 
-  assign cmd_filter_0_filter_16_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_16_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_16_wd = reg_wdata[16];
 
-  assign cmd_filter_0_filter_17_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_17_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_17_wd = reg_wdata[17];
 
-  assign cmd_filter_0_filter_18_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_18_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_18_wd = reg_wdata[18];
 
-  assign cmd_filter_0_filter_19_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_19_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_19_wd = reg_wdata[19];
 
-  assign cmd_filter_0_filter_20_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_20_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_20_wd = reg_wdata[20];
 
-  assign cmd_filter_0_filter_21_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_21_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_21_wd = reg_wdata[21];
 
-  assign cmd_filter_0_filter_22_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_22_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_22_wd = reg_wdata[22];
 
-  assign cmd_filter_0_filter_23_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_23_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_23_wd = reg_wdata[23];
 
-  assign cmd_filter_0_filter_24_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_24_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_24_wd = reg_wdata[24];
 
-  assign cmd_filter_0_filter_25_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_25_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_25_wd = reg_wdata[25];
 
-  assign cmd_filter_0_filter_26_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_26_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_26_wd = reg_wdata[26];
 
-  assign cmd_filter_0_filter_27_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_27_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_27_wd = reg_wdata[27];
 
-  assign cmd_filter_0_filter_28_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_28_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_28_wd = reg_wdata[28];
 
-  assign cmd_filter_0_filter_29_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_29_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_29_wd = reg_wdata[29];
 
-  assign cmd_filter_0_filter_30_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_30_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_30_wd = reg_wdata[30];
 
-  assign cmd_filter_0_filter_31_we = addr_hit[12] & reg_we & !reg_error;
+  assign cmd_filter_0_filter_31_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_31_wd = reg_wdata[31];
 
-  assign cmd_filter_1_filter_32_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_32_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_32_wd = reg_wdata[0];
 
-  assign cmd_filter_1_filter_33_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_33_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_33_wd = reg_wdata[1];
 
-  assign cmd_filter_1_filter_34_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_34_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_34_wd = reg_wdata[2];
 
-  assign cmd_filter_1_filter_35_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_35_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_35_wd = reg_wdata[3];
 
-  assign cmd_filter_1_filter_36_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_36_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_36_wd = reg_wdata[4];
 
-  assign cmd_filter_1_filter_37_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_37_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_37_wd = reg_wdata[5];
 
-  assign cmd_filter_1_filter_38_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_38_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_38_wd = reg_wdata[6];
 
-  assign cmd_filter_1_filter_39_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_39_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_39_wd = reg_wdata[7];
 
-  assign cmd_filter_1_filter_40_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_40_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_40_wd = reg_wdata[8];
 
-  assign cmd_filter_1_filter_41_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_41_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_41_wd = reg_wdata[9];
 
-  assign cmd_filter_1_filter_42_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_42_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_42_wd = reg_wdata[10];
 
-  assign cmd_filter_1_filter_43_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_43_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_43_wd = reg_wdata[11];
 
-  assign cmd_filter_1_filter_44_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_44_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_44_wd = reg_wdata[12];
 
-  assign cmd_filter_1_filter_45_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_45_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_45_wd = reg_wdata[13];
 
-  assign cmd_filter_1_filter_46_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_46_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_46_wd = reg_wdata[14];
 
-  assign cmd_filter_1_filter_47_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_47_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_47_wd = reg_wdata[15];
 
-  assign cmd_filter_1_filter_48_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_48_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_48_wd = reg_wdata[16];
 
-  assign cmd_filter_1_filter_49_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_49_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_49_wd = reg_wdata[17];
 
-  assign cmd_filter_1_filter_50_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_50_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_50_wd = reg_wdata[18];
 
-  assign cmd_filter_1_filter_51_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_51_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_51_wd = reg_wdata[19];
 
-  assign cmd_filter_1_filter_52_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_52_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_52_wd = reg_wdata[20];
 
-  assign cmd_filter_1_filter_53_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_53_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_53_wd = reg_wdata[21];
 
-  assign cmd_filter_1_filter_54_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_54_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_54_wd = reg_wdata[22];
 
-  assign cmd_filter_1_filter_55_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_55_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_55_wd = reg_wdata[23];
 
-  assign cmd_filter_1_filter_56_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_56_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_56_wd = reg_wdata[24];
 
-  assign cmd_filter_1_filter_57_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_57_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_57_wd = reg_wdata[25];
 
-  assign cmd_filter_1_filter_58_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_58_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_58_wd = reg_wdata[26];
 
-  assign cmd_filter_1_filter_59_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_59_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_59_wd = reg_wdata[27];
 
-  assign cmd_filter_1_filter_60_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_60_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_60_wd = reg_wdata[28];
 
-  assign cmd_filter_1_filter_61_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_61_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_61_wd = reg_wdata[29];
 
-  assign cmd_filter_1_filter_62_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_62_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_62_wd = reg_wdata[30];
 
-  assign cmd_filter_1_filter_63_we = addr_hit[13] & reg_we & !reg_error;
+  assign cmd_filter_1_filter_63_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_63_wd = reg_wdata[31];
 
-  assign cmd_filter_2_filter_64_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_64_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_64_wd = reg_wdata[0];
 
-  assign cmd_filter_2_filter_65_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_65_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_65_wd = reg_wdata[1];
 
-  assign cmd_filter_2_filter_66_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_66_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_66_wd = reg_wdata[2];
 
-  assign cmd_filter_2_filter_67_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_67_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_67_wd = reg_wdata[3];
 
-  assign cmd_filter_2_filter_68_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_68_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_68_wd = reg_wdata[4];
 
-  assign cmd_filter_2_filter_69_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_69_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_69_wd = reg_wdata[5];
 
-  assign cmd_filter_2_filter_70_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_70_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_70_wd = reg_wdata[6];
 
-  assign cmd_filter_2_filter_71_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_71_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_71_wd = reg_wdata[7];
 
-  assign cmd_filter_2_filter_72_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_72_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_72_wd = reg_wdata[8];
 
-  assign cmd_filter_2_filter_73_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_73_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_73_wd = reg_wdata[9];
 
-  assign cmd_filter_2_filter_74_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_74_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_74_wd = reg_wdata[10];
 
-  assign cmd_filter_2_filter_75_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_75_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_75_wd = reg_wdata[11];
 
-  assign cmd_filter_2_filter_76_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_76_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_76_wd = reg_wdata[12];
 
-  assign cmd_filter_2_filter_77_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_77_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_77_wd = reg_wdata[13];
 
-  assign cmd_filter_2_filter_78_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_78_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_78_wd = reg_wdata[14];
 
-  assign cmd_filter_2_filter_79_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_79_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_79_wd = reg_wdata[15];
 
-  assign cmd_filter_2_filter_80_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_80_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_80_wd = reg_wdata[16];
 
-  assign cmd_filter_2_filter_81_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_81_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_81_wd = reg_wdata[17];
 
-  assign cmd_filter_2_filter_82_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_82_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_82_wd = reg_wdata[18];
 
-  assign cmd_filter_2_filter_83_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_83_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_83_wd = reg_wdata[19];
 
-  assign cmd_filter_2_filter_84_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_84_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_84_wd = reg_wdata[20];
 
-  assign cmd_filter_2_filter_85_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_85_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_85_wd = reg_wdata[21];
 
-  assign cmd_filter_2_filter_86_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_86_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_86_wd = reg_wdata[22];
 
-  assign cmd_filter_2_filter_87_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_87_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_87_wd = reg_wdata[23];
 
-  assign cmd_filter_2_filter_88_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_88_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_88_wd = reg_wdata[24];
 
-  assign cmd_filter_2_filter_89_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_89_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_89_wd = reg_wdata[25];
 
-  assign cmd_filter_2_filter_90_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_90_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_90_wd = reg_wdata[26];
 
-  assign cmd_filter_2_filter_91_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_91_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_91_wd = reg_wdata[27];
 
-  assign cmd_filter_2_filter_92_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_92_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_92_wd = reg_wdata[28];
 
-  assign cmd_filter_2_filter_93_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_93_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_93_wd = reg_wdata[29];
 
-  assign cmd_filter_2_filter_94_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_94_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_94_wd = reg_wdata[30];
 
-  assign cmd_filter_2_filter_95_we = addr_hit[14] & reg_we & !reg_error;
+  assign cmd_filter_2_filter_95_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_95_wd = reg_wdata[31];
 
-  assign cmd_filter_3_filter_96_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_96_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_96_wd = reg_wdata[0];
 
-  assign cmd_filter_3_filter_97_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_97_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_97_wd = reg_wdata[1];
 
-  assign cmd_filter_3_filter_98_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_98_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_98_wd = reg_wdata[2];
 
-  assign cmd_filter_3_filter_99_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_99_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_99_wd = reg_wdata[3];
 
-  assign cmd_filter_3_filter_100_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_100_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_100_wd = reg_wdata[4];
 
-  assign cmd_filter_3_filter_101_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_101_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_101_wd = reg_wdata[5];
 
-  assign cmd_filter_3_filter_102_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_102_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_102_wd = reg_wdata[6];
 
-  assign cmd_filter_3_filter_103_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_103_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_103_wd = reg_wdata[7];
 
-  assign cmd_filter_3_filter_104_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_104_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_104_wd = reg_wdata[8];
 
-  assign cmd_filter_3_filter_105_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_105_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_105_wd = reg_wdata[9];
 
-  assign cmd_filter_3_filter_106_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_106_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_106_wd = reg_wdata[10];
 
-  assign cmd_filter_3_filter_107_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_107_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_107_wd = reg_wdata[11];
 
-  assign cmd_filter_3_filter_108_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_108_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_108_wd = reg_wdata[12];
 
-  assign cmd_filter_3_filter_109_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_109_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_109_wd = reg_wdata[13];
 
-  assign cmd_filter_3_filter_110_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_110_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_110_wd = reg_wdata[14];
 
-  assign cmd_filter_3_filter_111_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_111_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_111_wd = reg_wdata[15];
 
-  assign cmd_filter_3_filter_112_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_112_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_112_wd = reg_wdata[16];
 
-  assign cmd_filter_3_filter_113_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_113_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_113_wd = reg_wdata[17];
 
-  assign cmd_filter_3_filter_114_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_114_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_114_wd = reg_wdata[18];
 
-  assign cmd_filter_3_filter_115_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_115_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_115_wd = reg_wdata[19];
 
-  assign cmd_filter_3_filter_116_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_116_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_116_wd = reg_wdata[20];
 
-  assign cmd_filter_3_filter_117_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_117_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_117_wd = reg_wdata[21];
 
-  assign cmd_filter_3_filter_118_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_118_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_118_wd = reg_wdata[22];
 
-  assign cmd_filter_3_filter_119_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_119_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_119_wd = reg_wdata[23];
 
-  assign cmd_filter_3_filter_120_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_120_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_120_wd = reg_wdata[24];
 
-  assign cmd_filter_3_filter_121_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_121_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_121_wd = reg_wdata[25];
 
-  assign cmd_filter_3_filter_122_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_122_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_122_wd = reg_wdata[26];
 
-  assign cmd_filter_3_filter_123_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_123_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_123_wd = reg_wdata[27];
 
-  assign cmd_filter_3_filter_124_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_124_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_124_wd = reg_wdata[28];
 
-  assign cmd_filter_3_filter_125_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_125_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_125_wd = reg_wdata[29];
 
-  assign cmd_filter_3_filter_126_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_126_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_126_wd = reg_wdata[30];
 
-  assign cmd_filter_3_filter_127_we = addr_hit[15] & reg_we & !reg_error;
+  assign cmd_filter_3_filter_127_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_127_wd = reg_wdata[31];
 
-  assign cmd_filter_4_filter_128_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_128_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_128_wd = reg_wdata[0];
 
-  assign cmd_filter_4_filter_129_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_129_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_129_wd = reg_wdata[1];
 
-  assign cmd_filter_4_filter_130_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_130_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_130_wd = reg_wdata[2];
 
-  assign cmd_filter_4_filter_131_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_131_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_131_wd = reg_wdata[3];
 
-  assign cmd_filter_4_filter_132_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_132_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_132_wd = reg_wdata[4];
 
-  assign cmd_filter_4_filter_133_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_133_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_133_wd = reg_wdata[5];
 
-  assign cmd_filter_4_filter_134_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_134_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_134_wd = reg_wdata[6];
 
-  assign cmd_filter_4_filter_135_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_135_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_135_wd = reg_wdata[7];
 
-  assign cmd_filter_4_filter_136_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_136_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_136_wd = reg_wdata[8];
 
-  assign cmd_filter_4_filter_137_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_137_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_137_wd = reg_wdata[9];
 
-  assign cmd_filter_4_filter_138_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_138_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_138_wd = reg_wdata[10];
 
-  assign cmd_filter_4_filter_139_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_139_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_139_wd = reg_wdata[11];
 
-  assign cmd_filter_4_filter_140_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_140_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_140_wd = reg_wdata[12];
 
-  assign cmd_filter_4_filter_141_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_141_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_141_wd = reg_wdata[13];
 
-  assign cmd_filter_4_filter_142_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_142_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_142_wd = reg_wdata[14];
 
-  assign cmd_filter_4_filter_143_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_143_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_143_wd = reg_wdata[15];
 
-  assign cmd_filter_4_filter_144_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_144_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_144_wd = reg_wdata[16];
 
-  assign cmd_filter_4_filter_145_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_145_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_145_wd = reg_wdata[17];
 
-  assign cmd_filter_4_filter_146_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_146_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_146_wd = reg_wdata[18];
 
-  assign cmd_filter_4_filter_147_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_147_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_147_wd = reg_wdata[19];
 
-  assign cmd_filter_4_filter_148_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_148_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_148_wd = reg_wdata[20];
 
-  assign cmd_filter_4_filter_149_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_149_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_149_wd = reg_wdata[21];
 
-  assign cmd_filter_4_filter_150_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_150_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_150_wd = reg_wdata[22];
 
-  assign cmd_filter_4_filter_151_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_151_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_151_wd = reg_wdata[23];
 
-  assign cmd_filter_4_filter_152_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_152_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_152_wd = reg_wdata[24];
 
-  assign cmd_filter_4_filter_153_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_153_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_153_wd = reg_wdata[25];
 
-  assign cmd_filter_4_filter_154_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_154_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_154_wd = reg_wdata[26];
 
-  assign cmd_filter_4_filter_155_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_155_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_155_wd = reg_wdata[27];
 
-  assign cmd_filter_4_filter_156_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_156_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_156_wd = reg_wdata[28];
 
-  assign cmd_filter_4_filter_157_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_157_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_157_wd = reg_wdata[29];
 
-  assign cmd_filter_4_filter_158_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_158_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_158_wd = reg_wdata[30];
 
-  assign cmd_filter_4_filter_159_we = addr_hit[16] & reg_we & !reg_error;
+  assign cmd_filter_4_filter_159_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_159_wd = reg_wdata[31];
 
-  assign cmd_filter_5_filter_160_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_160_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_160_wd = reg_wdata[0];
 
-  assign cmd_filter_5_filter_161_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_161_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_161_wd = reg_wdata[1];
 
-  assign cmd_filter_5_filter_162_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_162_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_162_wd = reg_wdata[2];
 
-  assign cmd_filter_5_filter_163_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_163_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_163_wd = reg_wdata[3];
 
-  assign cmd_filter_5_filter_164_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_164_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_164_wd = reg_wdata[4];
 
-  assign cmd_filter_5_filter_165_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_165_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_165_wd = reg_wdata[5];
 
-  assign cmd_filter_5_filter_166_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_166_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_166_wd = reg_wdata[6];
 
-  assign cmd_filter_5_filter_167_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_167_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_167_wd = reg_wdata[7];
 
-  assign cmd_filter_5_filter_168_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_168_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_168_wd = reg_wdata[8];
 
-  assign cmd_filter_5_filter_169_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_169_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_169_wd = reg_wdata[9];
 
-  assign cmd_filter_5_filter_170_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_170_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_170_wd = reg_wdata[10];
 
-  assign cmd_filter_5_filter_171_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_171_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_171_wd = reg_wdata[11];
 
-  assign cmd_filter_5_filter_172_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_172_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_172_wd = reg_wdata[12];
 
-  assign cmd_filter_5_filter_173_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_173_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_173_wd = reg_wdata[13];
 
-  assign cmd_filter_5_filter_174_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_174_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_174_wd = reg_wdata[14];
 
-  assign cmd_filter_5_filter_175_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_175_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_175_wd = reg_wdata[15];
 
-  assign cmd_filter_5_filter_176_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_176_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_176_wd = reg_wdata[16];
 
-  assign cmd_filter_5_filter_177_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_177_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_177_wd = reg_wdata[17];
 
-  assign cmd_filter_5_filter_178_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_178_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_178_wd = reg_wdata[18];
 
-  assign cmd_filter_5_filter_179_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_179_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_179_wd = reg_wdata[19];
 
-  assign cmd_filter_5_filter_180_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_180_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_180_wd = reg_wdata[20];
 
-  assign cmd_filter_5_filter_181_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_181_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_181_wd = reg_wdata[21];
 
-  assign cmd_filter_5_filter_182_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_182_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_182_wd = reg_wdata[22];
 
-  assign cmd_filter_5_filter_183_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_183_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_183_wd = reg_wdata[23];
 
-  assign cmd_filter_5_filter_184_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_184_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_184_wd = reg_wdata[24];
 
-  assign cmd_filter_5_filter_185_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_185_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_185_wd = reg_wdata[25];
 
-  assign cmd_filter_5_filter_186_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_186_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_186_wd = reg_wdata[26];
 
-  assign cmd_filter_5_filter_187_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_187_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_187_wd = reg_wdata[27];
 
-  assign cmd_filter_5_filter_188_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_188_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_188_wd = reg_wdata[28];
 
-  assign cmd_filter_5_filter_189_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_189_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_189_wd = reg_wdata[29];
 
-  assign cmd_filter_5_filter_190_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_190_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_190_wd = reg_wdata[30];
 
-  assign cmd_filter_5_filter_191_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_5_filter_191_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_191_wd = reg_wdata[31];
 
-  assign cmd_filter_6_filter_192_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_192_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_192_wd = reg_wdata[0];
 
-  assign cmd_filter_6_filter_193_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_193_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_193_wd = reg_wdata[1];
 
-  assign cmd_filter_6_filter_194_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_194_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_194_wd = reg_wdata[2];
 
-  assign cmd_filter_6_filter_195_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_195_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_195_wd = reg_wdata[3];
 
-  assign cmd_filter_6_filter_196_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_196_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_196_wd = reg_wdata[4];
 
-  assign cmd_filter_6_filter_197_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_197_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_197_wd = reg_wdata[5];
 
-  assign cmd_filter_6_filter_198_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_198_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_198_wd = reg_wdata[6];
 
-  assign cmd_filter_6_filter_199_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_199_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_199_wd = reg_wdata[7];
 
-  assign cmd_filter_6_filter_200_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_200_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_200_wd = reg_wdata[8];
 
-  assign cmd_filter_6_filter_201_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_201_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_201_wd = reg_wdata[9];
 
-  assign cmd_filter_6_filter_202_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_202_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_202_wd = reg_wdata[10];
 
-  assign cmd_filter_6_filter_203_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_203_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_203_wd = reg_wdata[11];
 
-  assign cmd_filter_6_filter_204_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_204_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_204_wd = reg_wdata[12];
 
-  assign cmd_filter_6_filter_205_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_205_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_205_wd = reg_wdata[13];
 
-  assign cmd_filter_6_filter_206_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_206_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_206_wd = reg_wdata[14];
 
-  assign cmd_filter_6_filter_207_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_207_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_207_wd = reg_wdata[15];
 
-  assign cmd_filter_6_filter_208_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_208_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_208_wd = reg_wdata[16];
 
-  assign cmd_filter_6_filter_209_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_209_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_209_wd = reg_wdata[17];
 
-  assign cmd_filter_6_filter_210_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_210_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_210_wd = reg_wdata[18];
 
-  assign cmd_filter_6_filter_211_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_211_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_211_wd = reg_wdata[19];
 
-  assign cmd_filter_6_filter_212_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_212_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_212_wd = reg_wdata[20];
 
-  assign cmd_filter_6_filter_213_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_213_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_213_wd = reg_wdata[21];
 
-  assign cmd_filter_6_filter_214_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_214_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_214_wd = reg_wdata[22];
 
-  assign cmd_filter_6_filter_215_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_215_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_215_wd = reg_wdata[23];
 
-  assign cmd_filter_6_filter_216_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_216_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_216_wd = reg_wdata[24];
 
-  assign cmd_filter_6_filter_217_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_217_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_217_wd = reg_wdata[25];
 
-  assign cmd_filter_6_filter_218_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_218_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_218_wd = reg_wdata[26];
 
-  assign cmd_filter_6_filter_219_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_219_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_219_wd = reg_wdata[27];
 
-  assign cmd_filter_6_filter_220_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_220_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_220_wd = reg_wdata[28];
 
-  assign cmd_filter_6_filter_221_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_221_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_221_wd = reg_wdata[29];
 
-  assign cmd_filter_6_filter_222_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_222_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_222_wd = reg_wdata[30];
 
-  assign cmd_filter_6_filter_223_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_6_filter_223_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_223_wd = reg_wdata[31];
 
-  assign cmd_filter_7_filter_224_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_224_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_224_wd = reg_wdata[0];
 
-  assign cmd_filter_7_filter_225_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_225_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_225_wd = reg_wdata[1];
 
-  assign cmd_filter_7_filter_226_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_226_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_226_wd = reg_wdata[2];
 
-  assign cmd_filter_7_filter_227_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_227_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_227_wd = reg_wdata[3];
 
-  assign cmd_filter_7_filter_228_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_228_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_228_wd = reg_wdata[4];
 
-  assign cmd_filter_7_filter_229_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_229_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_229_wd = reg_wdata[5];
 
-  assign cmd_filter_7_filter_230_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_230_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_230_wd = reg_wdata[6];
 
-  assign cmd_filter_7_filter_231_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_231_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_231_wd = reg_wdata[7];
 
-  assign cmd_filter_7_filter_232_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_232_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_232_wd = reg_wdata[8];
 
-  assign cmd_filter_7_filter_233_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_233_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_233_wd = reg_wdata[9];
 
-  assign cmd_filter_7_filter_234_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_234_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_234_wd = reg_wdata[10];
 
-  assign cmd_filter_7_filter_235_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_235_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_235_wd = reg_wdata[11];
 
-  assign cmd_filter_7_filter_236_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_236_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_236_wd = reg_wdata[12];
 
-  assign cmd_filter_7_filter_237_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_237_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_237_wd = reg_wdata[13];
 
-  assign cmd_filter_7_filter_238_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_238_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_238_wd = reg_wdata[14];
 
-  assign cmd_filter_7_filter_239_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_239_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_239_wd = reg_wdata[15];
 
-  assign cmd_filter_7_filter_240_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_240_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_240_wd = reg_wdata[16];
 
-  assign cmd_filter_7_filter_241_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_241_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_241_wd = reg_wdata[17];
 
-  assign cmd_filter_7_filter_242_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_242_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_242_wd = reg_wdata[18];
 
-  assign cmd_filter_7_filter_243_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_243_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_243_wd = reg_wdata[19];
 
-  assign cmd_filter_7_filter_244_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_244_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_244_wd = reg_wdata[20];
 
-  assign cmd_filter_7_filter_245_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_245_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_245_wd = reg_wdata[21];
 
-  assign cmd_filter_7_filter_246_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_246_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_246_wd = reg_wdata[22];
 
-  assign cmd_filter_7_filter_247_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_247_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_247_wd = reg_wdata[23];
 
-  assign cmd_filter_7_filter_248_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_248_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_248_wd = reg_wdata[24];
 
-  assign cmd_filter_7_filter_249_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_249_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_249_wd = reg_wdata[25];
 
-  assign cmd_filter_7_filter_250_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_250_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_250_wd = reg_wdata[26];
 
-  assign cmd_filter_7_filter_251_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_251_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_251_wd = reg_wdata[27];
 
-  assign cmd_filter_7_filter_252_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_252_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_252_wd = reg_wdata[28];
 
-  assign cmd_filter_7_filter_253_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_253_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_253_wd = reg_wdata[29];
 
-  assign cmd_filter_7_filter_254_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_254_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_254_wd = reg_wdata[30];
 
-  assign cmd_filter_7_filter_255_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_7_filter_255_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_255_wd = reg_wdata[31];
 
-  assign addr_swap_mask_we = addr_hit[20] & reg_we & !reg_error;
+  assign addr_swap_mask_we = addr_hit[21] & reg_we & !reg_error;
   assign addr_swap_mask_wd = reg_wdata[31:0];
 
-  assign addr_swap_data_we = addr_hit[21] & reg_we & !reg_error;
+  assign addr_swap_data_we = addr_hit[22] & reg_we & !reg_error;
   assign addr_swap_data_wd = reg_wdata[31:0];
 
-  assign cmd_info_0_opcode_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_opcode_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_opcode_0_wd = reg_wdata[7:0];
 
-  assign cmd_info_0_addr_en_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_addr_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_en_0_wd = reg_wdata[8];
 
-  assign cmd_info_0_addr_swap_en_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_addr_swap_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_swap_en_0_wd = reg_wdata[9];
 
-  assign cmd_info_0_addr_4b_affected_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_addr_4b_affected_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_4b_affected_0_wd = reg_wdata[10];
 
-  assign cmd_info_0_dummy_size_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_dummy_size_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_dummy_size_0_wd = reg_wdata[14:12];
 
-  assign cmd_info_0_dummy_en_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_dummy_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_dummy_en_0_wd = reg_wdata[15];
 
-  assign cmd_info_0_payload_en_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_payload_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_payload_en_0_wd = reg_wdata[19:16];
 
-  assign cmd_info_0_payload_dir_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_info_0_payload_dir_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_payload_dir_0_wd = reg_wdata[20];
 
-  assign cmd_info_1_opcode_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_opcode_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
 
-  assign cmd_info_1_addr_en_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_addr_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_en_1_wd = reg_wdata[8];
 
-  assign cmd_info_1_addr_swap_en_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_addr_swap_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_swap_en_1_wd = reg_wdata[9];
 
-  assign cmd_info_1_addr_4b_affected_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_addr_4b_affected_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_4b_affected_1_wd = reg_wdata[10];
 
-  assign cmd_info_1_dummy_size_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_dummy_size_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_dummy_size_1_wd = reg_wdata[14:12];
 
-  assign cmd_info_1_dummy_en_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_dummy_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_dummy_en_1_wd = reg_wdata[15];
 
-  assign cmd_info_1_payload_en_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_payload_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_payload_en_1_wd = reg_wdata[19:16];
 
-  assign cmd_info_1_payload_dir_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_info_1_payload_dir_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_payload_dir_1_wd = reg_wdata[20];
 
-  assign cmd_info_2_opcode_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_opcode_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
 
-  assign cmd_info_2_addr_en_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_addr_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_en_2_wd = reg_wdata[8];
 
-  assign cmd_info_2_addr_swap_en_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_addr_swap_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_swap_en_2_wd = reg_wdata[9];
 
-  assign cmd_info_2_addr_4b_affected_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_addr_4b_affected_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_4b_affected_2_wd = reg_wdata[10];
 
-  assign cmd_info_2_dummy_size_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_dummy_size_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_dummy_size_2_wd = reg_wdata[14:12];
 
-  assign cmd_info_2_dummy_en_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_dummy_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_dummy_en_2_wd = reg_wdata[15];
 
-  assign cmd_info_2_payload_en_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_payload_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_payload_en_2_wd = reg_wdata[19:16];
 
-  assign cmd_info_2_payload_dir_2_we = addr_hit[24] & reg_we & !reg_error;
+  assign cmd_info_2_payload_dir_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_payload_dir_2_wd = reg_wdata[20];
 
-  assign cmd_info_3_opcode_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_opcode_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
 
-  assign cmd_info_3_addr_en_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_addr_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_en_3_wd = reg_wdata[8];
 
-  assign cmd_info_3_addr_swap_en_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_addr_swap_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_swap_en_3_wd = reg_wdata[9];
 
-  assign cmd_info_3_addr_4b_affected_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_addr_4b_affected_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_4b_affected_3_wd = reg_wdata[10];
 
-  assign cmd_info_3_dummy_size_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_dummy_size_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_dummy_size_3_wd = reg_wdata[14:12];
 
-  assign cmd_info_3_dummy_en_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_dummy_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_dummy_en_3_wd = reg_wdata[15];
 
-  assign cmd_info_3_payload_en_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_payload_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_payload_en_3_wd = reg_wdata[19:16];
 
-  assign cmd_info_3_payload_dir_3_we = addr_hit[25] & reg_we & !reg_error;
+  assign cmd_info_3_payload_dir_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_payload_dir_3_wd = reg_wdata[20];
 
-  assign cmd_info_4_opcode_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_opcode_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
 
-  assign cmd_info_4_addr_en_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_addr_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_en_4_wd = reg_wdata[8];
 
-  assign cmd_info_4_addr_swap_en_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_addr_swap_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_swap_en_4_wd = reg_wdata[9];
 
-  assign cmd_info_4_addr_4b_affected_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_addr_4b_affected_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_4b_affected_4_wd = reg_wdata[10];
 
-  assign cmd_info_4_dummy_size_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_dummy_size_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_dummy_size_4_wd = reg_wdata[14:12];
 
-  assign cmd_info_4_dummy_en_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_dummy_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_dummy_en_4_wd = reg_wdata[15];
 
-  assign cmd_info_4_payload_en_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_payload_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_payload_en_4_wd = reg_wdata[19:16];
 
-  assign cmd_info_4_payload_dir_4_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_4_payload_dir_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_payload_dir_4_wd = reg_wdata[20];
 
-  assign cmd_info_5_opcode_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_opcode_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
 
-  assign cmd_info_5_addr_en_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_addr_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_en_5_wd = reg_wdata[8];
 
-  assign cmd_info_5_addr_swap_en_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_addr_swap_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_swap_en_5_wd = reg_wdata[9];
 
-  assign cmd_info_5_addr_4b_affected_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_addr_4b_affected_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_4b_affected_5_wd = reg_wdata[10];
 
-  assign cmd_info_5_dummy_size_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_dummy_size_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_dummy_size_5_wd = reg_wdata[14:12];
 
-  assign cmd_info_5_dummy_en_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_dummy_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_dummy_en_5_wd = reg_wdata[15];
 
-  assign cmd_info_5_payload_en_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_payload_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_payload_en_5_wd = reg_wdata[19:16];
 
-  assign cmd_info_5_payload_dir_5_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_5_payload_dir_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_payload_dir_5_wd = reg_wdata[20];
 
-  assign cmd_info_6_opcode_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_opcode_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
 
-  assign cmd_info_6_addr_en_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_addr_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_en_6_wd = reg_wdata[8];
 
-  assign cmd_info_6_addr_swap_en_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_addr_swap_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_swap_en_6_wd = reg_wdata[9];
 
-  assign cmd_info_6_addr_4b_affected_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_addr_4b_affected_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_4b_affected_6_wd = reg_wdata[10];
 
-  assign cmd_info_6_dummy_size_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_dummy_size_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_dummy_size_6_wd = reg_wdata[14:12];
 
-  assign cmd_info_6_dummy_en_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_dummy_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_dummy_en_6_wd = reg_wdata[15];
 
-  assign cmd_info_6_payload_en_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_payload_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_payload_en_6_wd = reg_wdata[19:16];
 
-  assign cmd_info_6_payload_dir_6_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_6_payload_dir_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_payload_dir_6_wd = reg_wdata[20];
 
-  assign cmd_info_7_opcode_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_opcode_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
 
-  assign cmd_info_7_addr_en_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_addr_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_en_7_wd = reg_wdata[8];
 
-  assign cmd_info_7_addr_swap_en_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_addr_swap_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_swap_en_7_wd = reg_wdata[9];
 
-  assign cmd_info_7_addr_4b_affected_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_addr_4b_affected_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_4b_affected_7_wd = reg_wdata[10];
 
-  assign cmd_info_7_dummy_size_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_dummy_size_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_dummy_size_7_wd = reg_wdata[14:12];
 
-  assign cmd_info_7_dummy_en_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_dummy_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_dummy_en_7_wd = reg_wdata[15];
 
-  assign cmd_info_7_payload_en_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_payload_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_payload_en_7_wd = reg_wdata[19:16];
 
-  assign cmd_info_7_payload_dir_7_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_7_payload_dir_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_payload_dir_7_wd = reg_wdata[20];
 
-  assign cmd_info_8_opcode_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_opcode_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
 
-  assign cmd_info_8_addr_en_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_addr_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_en_8_wd = reg_wdata[8];
 
-  assign cmd_info_8_addr_swap_en_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_addr_swap_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_swap_en_8_wd = reg_wdata[9];
 
-  assign cmd_info_8_addr_4b_affected_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_addr_4b_affected_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_4b_affected_8_wd = reg_wdata[10];
 
-  assign cmd_info_8_dummy_size_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_dummy_size_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_dummy_size_8_wd = reg_wdata[14:12];
 
-  assign cmd_info_8_dummy_en_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_dummy_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_dummy_en_8_wd = reg_wdata[15];
 
-  assign cmd_info_8_payload_en_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_payload_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_payload_en_8_wd = reg_wdata[19:16];
 
-  assign cmd_info_8_payload_dir_8_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_8_payload_dir_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_payload_dir_8_wd = reg_wdata[20];
 
-  assign cmd_info_9_opcode_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_opcode_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
 
-  assign cmd_info_9_addr_en_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_addr_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_en_9_wd = reg_wdata[8];
 
-  assign cmd_info_9_addr_swap_en_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_addr_swap_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_swap_en_9_wd = reg_wdata[9];
 
-  assign cmd_info_9_addr_4b_affected_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_addr_4b_affected_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_4b_affected_9_wd = reg_wdata[10];
 
-  assign cmd_info_9_dummy_size_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_dummy_size_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_dummy_size_9_wd = reg_wdata[14:12];
 
-  assign cmd_info_9_dummy_en_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_dummy_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_dummy_en_9_wd = reg_wdata[15];
 
-  assign cmd_info_9_payload_en_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_payload_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_payload_en_9_wd = reg_wdata[19:16];
 
-  assign cmd_info_9_payload_dir_9_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_9_payload_dir_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_payload_dir_9_wd = reg_wdata[20];
 
-  assign cmd_info_10_opcode_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_opcode_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
 
-  assign cmd_info_10_addr_en_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_addr_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_en_10_wd = reg_wdata[8];
 
-  assign cmd_info_10_addr_swap_en_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_addr_swap_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_swap_en_10_wd = reg_wdata[9];
 
-  assign cmd_info_10_addr_4b_affected_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_addr_4b_affected_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_4b_affected_10_wd = reg_wdata[10];
 
-  assign cmd_info_10_dummy_size_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_dummy_size_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_dummy_size_10_wd = reg_wdata[14:12];
 
-  assign cmd_info_10_dummy_en_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_dummy_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_dummy_en_10_wd = reg_wdata[15];
 
-  assign cmd_info_10_payload_en_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_payload_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_payload_en_10_wd = reg_wdata[19:16];
 
-  assign cmd_info_10_payload_dir_10_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_10_payload_dir_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_payload_dir_10_wd = reg_wdata[20];
 
-  assign cmd_info_11_opcode_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_opcode_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
 
-  assign cmd_info_11_addr_en_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_addr_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_en_11_wd = reg_wdata[8];
 
-  assign cmd_info_11_addr_swap_en_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_addr_swap_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_swap_en_11_wd = reg_wdata[9];
 
-  assign cmd_info_11_addr_4b_affected_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_addr_4b_affected_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_4b_affected_11_wd = reg_wdata[10];
 
-  assign cmd_info_11_dummy_size_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_dummy_size_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_dummy_size_11_wd = reg_wdata[14:12];
 
-  assign cmd_info_11_dummy_en_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_dummy_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_dummy_en_11_wd = reg_wdata[15];
 
-  assign cmd_info_11_payload_en_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_payload_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_payload_en_11_wd = reg_wdata[19:16];
 
-  assign cmd_info_11_payload_dir_11_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_11_payload_dir_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_payload_dir_11_wd = reg_wdata[20];
 
-  assign cmd_info_12_opcode_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_opcode_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
 
-  assign cmd_info_12_addr_en_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_addr_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_en_12_wd = reg_wdata[8];
 
-  assign cmd_info_12_addr_swap_en_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_addr_swap_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_swap_en_12_wd = reg_wdata[9];
 
-  assign cmd_info_12_addr_4b_affected_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_addr_4b_affected_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_4b_affected_12_wd = reg_wdata[10];
 
-  assign cmd_info_12_dummy_size_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_dummy_size_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_dummy_size_12_wd = reg_wdata[14:12];
 
-  assign cmd_info_12_dummy_en_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_dummy_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_dummy_en_12_wd = reg_wdata[15];
 
-  assign cmd_info_12_payload_en_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_payload_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_payload_en_12_wd = reg_wdata[19:16];
 
-  assign cmd_info_12_payload_dir_12_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_12_payload_dir_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_payload_dir_12_wd = reg_wdata[20];
 
-  assign cmd_info_13_opcode_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_opcode_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
 
-  assign cmd_info_13_addr_en_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_addr_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_en_13_wd = reg_wdata[8];
 
-  assign cmd_info_13_addr_swap_en_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_addr_swap_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_swap_en_13_wd = reg_wdata[9];
 
-  assign cmd_info_13_addr_4b_affected_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_addr_4b_affected_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_4b_affected_13_wd = reg_wdata[10];
 
-  assign cmd_info_13_dummy_size_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_dummy_size_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_dummy_size_13_wd = reg_wdata[14:12];
 
-  assign cmd_info_13_dummy_en_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_dummy_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_dummy_en_13_wd = reg_wdata[15];
 
-  assign cmd_info_13_payload_en_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_payload_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_payload_en_13_wd = reg_wdata[19:16];
 
-  assign cmd_info_13_payload_dir_13_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_13_payload_dir_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_payload_dir_13_wd = reg_wdata[20];
 
-  assign cmd_info_14_opcode_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_opcode_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
 
-  assign cmd_info_14_addr_en_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_addr_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_en_14_wd = reg_wdata[8];
 
-  assign cmd_info_14_addr_swap_en_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_addr_swap_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_swap_en_14_wd = reg_wdata[9];
 
-  assign cmd_info_14_addr_4b_affected_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_addr_4b_affected_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_4b_affected_14_wd = reg_wdata[10];
 
-  assign cmd_info_14_dummy_size_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_dummy_size_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_dummy_size_14_wd = reg_wdata[14:12];
 
-  assign cmd_info_14_dummy_en_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_dummy_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_dummy_en_14_wd = reg_wdata[15];
 
-  assign cmd_info_14_payload_en_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_payload_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_payload_en_14_wd = reg_wdata[19:16];
 
-  assign cmd_info_14_payload_dir_14_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_14_payload_dir_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_payload_dir_14_wd = reg_wdata[20];
 
-  assign cmd_info_15_opcode_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_opcode_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
 
-  assign cmd_info_15_addr_en_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_addr_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_en_15_wd = reg_wdata[8];
 
-  assign cmd_info_15_addr_swap_en_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_addr_swap_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_swap_en_15_wd = reg_wdata[9];
 
-  assign cmd_info_15_addr_4b_affected_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_addr_4b_affected_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_4b_affected_15_wd = reg_wdata[10];
 
-  assign cmd_info_15_dummy_size_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_dummy_size_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_dummy_size_15_wd = reg_wdata[14:12];
 
-  assign cmd_info_15_dummy_en_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_dummy_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_dummy_en_15_wd = reg_wdata[15];
 
-  assign cmd_info_15_payload_en_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_payload_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_payload_en_15_wd = reg_wdata[19:16];
 
-  assign cmd_info_15_payload_dir_15_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_15_payload_dir_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_payload_dir_15_wd = reg_wdata[20];
 
   // Read data return
@@ -14048,6 +14071,10 @@ module spi_device_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = control_abort_qs;
         reg_rdata_next[5:4] = control_mode_qs;
         reg_rdata_next[16] = control_rst_txfifo_qs;
@@ -14055,7 +14082,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = control_sram_clk_en_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = cfg_cpol_qs;
         reg_rdata_next[1] = cfg_cpha_qs;
         reg_rdata_next[2] = cfg_tx_order_qs;
@@ -14064,17 +14091,17 @@ module spi_device_reg_top (
         reg_rdata_next[16] = cfg_addr_4b_en_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[15:0] = fifo_level_rxlvl_qs;
         reg_rdata_next[31:16] = fifo_level_txlvl_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[7:0] = async_fifo_level_rxlvl_qs;
         reg_rdata_next[23:16] = async_fifo_level_txlvl_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = status_rxf_full_qs;
         reg_rdata_next[1] = status_rxf_empty_qs;
         reg_rdata_next[2] = status_txf_full_qs;
@@ -14083,27 +14110,27 @@ module spi_device_reg_top (
         reg_rdata_next[5] = status_csb_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[15:0] = rxf_ptr_rptr_qs;
         reg_rdata_next[31:16] = rxf_ptr_wptr_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[15:0] = txf_ptr_rptr_qs;
         reg_rdata_next[31:16] = txf_ptr_wptr_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[15:0] = rxf_addr_base_qs;
         reg_rdata_next[31:16] = rxf_addr_limit_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[15:0] = txf_addr_base_qs;
         reg_rdata_next[31:16] = txf_addr_limit_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = cmd_filter_0_filter_0_qs;
         reg_rdata_next[1] = cmd_filter_0_filter_1_qs;
         reg_rdata_next[2] = cmd_filter_0_filter_2_qs;
@@ -14138,7 +14165,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_0_filter_31_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = cmd_filter_1_filter_32_qs;
         reg_rdata_next[1] = cmd_filter_1_filter_33_qs;
         reg_rdata_next[2] = cmd_filter_1_filter_34_qs;
@@ -14173,7 +14200,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_1_filter_63_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = cmd_filter_2_filter_64_qs;
         reg_rdata_next[1] = cmd_filter_2_filter_65_qs;
         reg_rdata_next[2] = cmd_filter_2_filter_66_qs;
@@ -14208,7 +14235,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_2_filter_95_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[0] = cmd_filter_3_filter_96_qs;
         reg_rdata_next[1] = cmd_filter_3_filter_97_qs;
         reg_rdata_next[2] = cmd_filter_3_filter_98_qs;
@@ -14243,7 +14270,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_3_filter_127_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[0] = cmd_filter_4_filter_128_qs;
         reg_rdata_next[1] = cmd_filter_4_filter_129_qs;
         reg_rdata_next[2] = cmd_filter_4_filter_130_qs;
@@ -14278,7 +14305,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_4_filter_159_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = cmd_filter_5_filter_160_qs;
         reg_rdata_next[1] = cmd_filter_5_filter_161_qs;
         reg_rdata_next[2] = cmd_filter_5_filter_162_qs;
@@ -14313,7 +14340,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_5_filter_191_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = cmd_filter_6_filter_192_qs;
         reg_rdata_next[1] = cmd_filter_6_filter_193_qs;
         reg_rdata_next[2] = cmd_filter_6_filter_194_qs;
@@ -14348,7 +14375,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_6_filter_223_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = cmd_filter_7_filter_224_qs;
         reg_rdata_next[1] = cmd_filter_7_filter_225_qs;
         reg_rdata_next[2] = cmd_filter_7_filter_226_qs;
@@ -14383,15 +14410,15 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_7_filter_255_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = addr_swap_mask_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = addr_swap_data_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[7:0] = cmd_info_0_opcode_0_qs;
         reg_rdata_next[8] = cmd_info_0_addr_en_0_qs;
         reg_rdata_next[9] = cmd_info_0_addr_swap_en_0_qs;
@@ -14402,7 +14429,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_0_payload_dir_0_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[7:0] = cmd_info_1_opcode_1_qs;
         reg_rdata_next[8] = cmd_info_1_addr_en_1_qs;
         reg_rdata_next[9] = cmd_info_1_addr_swap_en_1_qs;
@@ -14413,7 +14440,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_1_payload_dir_1_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[7:0] = cmd_info_2_opcode_2_qs;
         reg_rdata_next[8] = cmd_info_2_addr_en_2_qs;
         reg_rdata_next[9] = cmd_info_2_addr_swap_en_2_qs;
@@ -14424,7 +14451,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_2_payload_dir_2_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[7:0] = cmd_info_3_opcode_3_qs;
         reg_rdata_next[8] = cmd_info_3_addr_en_3_qs;
         reg_rdata_next[9] = cmd_info_3_addr_swap_en_3_qs;
@@ -14435,7 +14462,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_3_payload_dir_3_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[7:0] = cmd_info_4_opcode_4_qs;
         reg_rdata_next[8] = cmd_info_4_addr_en_4_qs;
         reg_rdata_next[9] = cmd_info_4_addr_swap_en_4_qs;
@@ -14446,7 +14473,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_4_payload_dir_4_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[7:0] = cmd_info_5_opcode_5_qs;
         reg_rdata_next[8] = cmd_info_5_addr_en_5_qs;
         reg_rdata_next[9] = cmd_info_5_addr_swap_en_5_qs;
@@ -14457,7 +14484,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_5_payload_dir_5_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[7:0] = cmd_info_6_opcode_6_qs;
         reg_rdata_next[8] = cmd_info_6_addr_en_6_qs;
         reg_rdata_next[9] = cmd_info_6_addr_swap_en_6_qs;
@@ -14468,7 +14495,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_6_payload_dir_6_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[7:0] = cmd_info_7_opcode_7_qs;
         reg_rdata_next[8] = cmd_info_7_addr_en_7_qs;
         reg_rdata_next[9] = cmd_info_7_addr_swap_en_7_qs;
@@ -14479,7 +14506,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_7_payload_dir_7_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[7:0] = cmd_info_8_opcode_8_qs;
         reg_rdata_next[8] = cmd_info_8_addr_en_8_qs;
         reg_rdata_next[9] = cmd_info_8_addr_swap_en_8_qs;
@@ -14490,7 +14517,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_8_payload_dir_8_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[7:0] = cmd_info_9_opcode_9_qs;
         reg_rdata_next[8] = cmd_info_9_addr_en_9_qs;
         reg_rdata_next[9] = cmd_info_9_addr_swap_en_9_qs;
@@ -14501,7 +14528,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_9_payload_dir_9_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[7:0] = cmd_info_10_opcode_10_qs;
         reg_rdata_next[8] = cmd_info_10_addr_en_10_qs;
         reg_rdata_next[9] = cmd_info_10_addr_swap_en_10_qs;
@@ -14512,7 +14539,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_10_payload_dir_10_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[7:0] = cmd_info_11_opcode_11_qs;
         reg_rdata_next[8] = cmd_info_11_addr_en_11_qs;
         reg_rdata_next[9] = cmd_info_11_addr_swap_en_11_qs;
@@ -14523,7 +14550,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_11_payload_dir_11_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next[7:0] = cmd_info_12_opcode_12_qs;
         reg_rdata_next[8] = cmd_info_12_addr_en_12_qs;
         reg_rdata_next[9] = cmd_info_12_addr_swap_en_12_qs;
@@ -14534,7 +14561,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_12_payload_dir_12_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next[7:0] = cmd_info_13_opcode_13_qs;
         reg_rdata_next[8] = cmd_info_13_addr_en_13_qs;
         reg_rdata_next[9] = cmd_info_13_addr_swap_en_13_qs;
@@ -14545,7 +14572,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_13_payload_dir_13_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[37]: begin
         reg_rdata_next[7:0] = cmd_info_14_opcode_14_qs;
         reg_rdata_next[8] = cmd_info_14_addr_en_14_qs;
         reg_rdata_next[9] = cmd_info_14_addr_swap_en_14_qs;
@@ -14556,7 +14583,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_14_payload_dir_14_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[38]: begin
         reg_rdata_next[7:0] = cmd_info_15_opcode_15_qs;
         reg_rdata_next[8] = cmd_info_15_addr_en_15_qs;
         reg_rdata_next[9] = cmd_info_15_addr_swap_en_15_qs;

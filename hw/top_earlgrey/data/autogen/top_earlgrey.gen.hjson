@@ -11523,6 +11523,7 @@
   alert_module:
   [
     gpio
+    spi_device
     spi_host0
     spi_host1
     pattgen
@@ -11551,6 +11552,13 @@
       type: alert
       async: "0"
       module_name: gpio
+    }
+    {
+      name: spi_device_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: spi_device
     }
     {
       name: spi_host0_fatal_fault
