@@ -55,7 +55,15 @@ struct ISSWrapper {
   //
   // err_bits is zero unless the simulation just came to a halt, in which case
   // it's the value of the ERR_BITS register.
-  std::pair<int, uint32_t> step(bool gen_trace);
+  int step(bool gen_trace);
+
+  // Get the err_bits from a run that's just finished. This should be
+  // called just after step() returns 1.
+  uint32_t get_err_bits() const { return err_bits_; }
+
+  // Get the final PC from a run that's just finished. This should be
+  // called just after step() returns 1.
+  uint32_t get_stop_pc() const { return stop_pc_; }
 
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);
@@ -84,6 +92,10 @@ struct ISSWrapper {
 
   // A temporary directory for communicating with the child process
   std::unique_ptr<TmpDir> tmpdir;
+
+  // ERR_BITS and STOP_PC values from a run that's just finished.
+  uint32_t err_bits_;
+  uint32_t stop_pc_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_ISS_WRAPPER_H_

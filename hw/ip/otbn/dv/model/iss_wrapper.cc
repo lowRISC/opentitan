@@ -230,7 +230,7 @@ static std::string wlen_val_to_hex_str(uint32_t val[8]) {
   return oss.str();
 }
 
-ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
+ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()), err_bits_(0), stop_pc_(0) {
   std::string model_path(find_otbn_model());
 
   // We want two pipes: one for writing to the child process, and the other for
@@ -344,7 +344,7 @@ void ISSWrapper::edn_urnd_reseed_complete() {
   run_command("edn_urnd_reseed_complete\n", nullptr);
 }
 
-std::pair<int, uint32_t> ISSWrapper::step(bool gen_trace) {
+int ISSWrapper::step(bool gen_trace) {
   std::vector<std::string> lines;
   bool mismatch = false;
 
@@ -356,10 +356,16 @@ std::pair<int, uint32_t> ISSWrapper::step(bool gen_trace) {
   // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
   // if we see a write that sets the value to an even number.
   bool done = (read_ext_reg("STATUS", lines, 1) & 1) == 0;
-  uint32_t err_bits = done ? read_ext_reg("ERR_BITS", lines, 0) : 0;
 
-  int ret_code = mismatch ? -1 : (done ? 1 : 0);
-  return std::make_pair(ret_code, err_bits);
+  // If we've just finished, try to read ERR_BITS and STOP_PC, storing
+  // them into fields on this structure. The caller will retrieve them
+  // after we've returned.
+  if (done) {
+    err_bits_ = read_ext_reg("ERR_BITS", lines, 0);
+    stop_pc_ = read_ext_reg("STOP_PC", lines, 0);
+  }
+
+  return mismatch ? -1 : (done ? 1 : 0);
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,

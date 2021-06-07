@@ -126,7 +126,8 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 extern "C" unsigned otbn_model_step(
     OtbnModel *model, svLogic start, unsigned start_addr, unsigned status,
     svLogic edn_rnd_data_valid, svLogicVecVal *edn_rnd_data, /* logic [255:0] */
-    svLogic edn_urnd_data_valid, svBitVecVal *err_bits /* bit [31:0] */);
+    svLogic edn_urnd_data_valid, svBitVecVal *err_bits /* bit [31:0] */,
+    svBitVecVal *stop_pc /* bit [31:0] */);
 
 static std::vector<uint8_t> read_vector_from_file(const std::string &path,
                                                   size_t num_bytes) {
@@ -235,7 +236,8 @@ static bool is_xz(svLogic l) { return l == sv_x || l == sv_z; }
 static int step_model(OtbnModel &model, svLogic edn_rnd_data_valid,
                       svLogicVecVal *edn_rnd_data, /* logic [255:0] */
                       svLogic edn_urnd_data_valid, bool gen_trace,
-                      svBitVecVal *err_bits /* bit [31:0] */) {
+                      svBitVecVal *err_bits /* bit [31:0] */,
+                      svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(err_bits);
 
   ISSWrapper *iss = model.get_wrapper(true);
@@ -256,16 +258,16 @@ static int step_model(OtbnModel &model, svLogic edn_rnd_data_valid,
       iss->edn_urnd_reseed_complete();
     }
 
-    std::pair<int, uint32_t> ret = iss->step(gen_trace);
-    switch (ret.first) {
+    switch (iss->step(gen_trace)) {
       case -1:
         // Something went wrong, such as a trace mismatch. We've already printed
         // a message to stderr so can just return -1.
         return -1;
 
       case 1:
-        // The simulation has stopped. Fill in err_bits
-        set_sv_u32(err_bits, ret.second);
+        // The simulation has stopped. Fill in err_bits and stop_pc.
+        set_sv_u32(err_bits, iss->get_err_bits());
+        set_sv_u32(stop_pc, iss->get_stop_pc());
         return 1;
 
       case 0:
@@ -565,8 +567,8 @@ int check_model(OtbnModel *model) {
 extern "C" unsigned otbn_model_step(
     OtbnModel *model, svLogic start, unsigned start_addr, unsigned status,
     svLogic edn_rnd_data_valid, svLogicVecVal *edn_rnd_data, /* logic [255:0] */
-    svLogic edn_urnd_data_valid, svBitVecVal *err_bits       /* bit [31:0] */
-) {
+    svLogic edn_urnd_data_valid, svBitVecVal *err_bits /* bit [31:0] */,
+    svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model && err_bits);
 
   // Run model checks if needed. This usually happens just after an operation
@@ -612,7 +614,7 @@ extern "C" unsigned otbn_model_step(
 
   // Step the model once
   switch (step_model(*model, edn_rnd_data_valid, edn_rnd_data,
-                     edn_urnd_data_valid, check_rtl, err_bits)) {
+                     edn_urnd_data_valid, check_rtl, err_bits, stop_pc)) {
     case 0:
       // Still running: no change
       break;
