@@ -232,6 +232,8 @@ module i2c_reg_top (
   logic intr_test_ack_stop_we;
   logic intr_test_host_timeout_wd;
   logic intr_test_host_timeout_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic ctrl_enablehost_qs;
   logic ctrl_enablehost_wd;
   logic ctrl_enablehost_we;
@@ -1455,6 +1457,22 @@ module i2c_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.host_timeout.qe),
     .q      (reg2hw.intr_test.host_timeout.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -2821,31 +2839,32 @@ module i2c_reg_top (
 
 
 
-  logic [21:0] addr_hit;
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == I2C_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == I2C_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == I2C_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == I2C_STATUS_OFFSET);
-    addr_hit[ 5] = (reg_addr == I2C_RDATA_OFFSET);
-    addr_hit[ 6] = (reg_addr == I2C_FDATA_OFFSET);
-    addr_hit[ 7] = (reg_addr == I2C_FIFO_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == I2C_FIFO_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == I2C_OVRD_OFFSET);
-    addr_hit[10] = (reg_addr == I2C_VAL_OFFSET);
-    addr_hit[11] = (reg_addr == I2C_TIMING0_OFFSET);
-    addr_hit[12] = (reg_addr == I2C_TIMING1_OFFSET);
-    addr_hit[13] = (reg_addr == I2C_TIMING2_OFFSET);
-    addr_hit[14] = (reg_addr == I2C_TIMING3_OFFSET);
-    addr_hit[15] = (reg_addr == I2C_TIMING4_OFFSET);
-    addr_hit[16] = (reg_addr == I2C_TIMEOUT_CTRL_OFFSET);
-    addr_hit[17] = (reg_addr == I2C_TARGET_ID_OFFSET);
-    addr_hit[18] = (reg_addr == I2C_ACQDATA_OFFSET);
-    addr_hit[19] = (reg_addr == I2C_TXDATA_OFFSET);
-    addr_hit[20] = (reg_addr == I2C_STRETCH_CTRL_OFFSET);
-    addr_hit[21] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
+    addr_hit[ 3] = (reg_addr == I2C_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == I2C_CTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == I2C_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == I2C_RDATA_OFFSET);
+    addr_hit[ 7] = (reg_addr == I2C_FDATA_OFFSET);
+    addr_hit[ 8] = (reg_addr == I2C_FIFO_CTRL_OFFSET);
+    addr_hit[ 9] = (reg_addr == I2C_FIFO_STATUS_OFFSET);
+    addr_hit[10] = (reg_addr == I2C_OVRD_OFFSET);
+    addr_hit[11] = (reg_addr == I2C_VAL_OFFSET);
+    addr_hit[12] = (reg_addr == I2C_TIMING0_OFFSET);
+    addr_hit[13] = (reg_addr == I2C_TIMING1_OFFSET);
+    addr_hit[14] = (reg_addr == I2C_TIMING2_OFFSET);
+    addr_hit[15] = (reg_addr == I2C_TIMING3_OFFSET);
+    addr_hit[16] = (reg_addr == I2C_TIMING4_OFFSET);
+    addr_hit[17] = (reg_addr == I2C_TIMEOUT_CTRL_OFFSET);
+    addr_hit[18] = (reg_addr == I2C_TARGET_ID_OFFSET);
+    addr_hit[19] = (reg_addr == I2C_ACQDATA_OFFSET);
+    addr_hit[20] = (reg_addr == I2C_TXDATA_OFFSET);
+    addr_hit[21] = (reg_addr == I2C_STRETCH_CTRL_OFFSET);
+    addr_hit[22] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2874,7 +2893,8 @@ module i2c_reg_top (
                (addr_hit[18] & (|(I2C_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(I2C_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(I2C_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be)))));
+               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(I2C_PERMIT[22] & ~reg_be)))));
   end
 
   assign intr_state_fmt_watermark_we = addr_hit[0] & reg_we & !reg_error;
@@ -3021,162 +3041,165 @@ module i2c_reg_top (
   assign intr_test_host_timeout_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_host_timeout_wd = reg_wdata[15];
 
-  assign ctrl_enablehost_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+
+  assign ctrl_enablehost_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_enablehost_wd = reg_wdata[0];
 
-  assign ctrl_enabletarget_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_enabletarget_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_enabletarget_wd = reg_wdata[1];
 
-  assign ctrl_llpbk_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_llpbk_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_llpbk_wd = reg_wdata[2];
 
-  assign status_fmtfull_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_fmtfull_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_rxfull_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_rxfull_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_fmtempty_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_fmtempty_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_hostidle_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_hostidle_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_targetidle_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_targetidle_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_rxempty_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_rxempty_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_txfull_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_txfull_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_acqfull_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_acqfull_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_txempty_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_txempty_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_acqempty_re = addr_hit[4] & reg_re & !reg_error;
+  assign status_acqempty_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign rdata_re = addr_hit[5] & reg_re & !reg_error;
+  assign rdata_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign fdata_fbyte_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_fbyte_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_fbyte_wd = reg_wdata[7:0];
 
-  assign fdata_start_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_start_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_start_wd = reg_wdata[8];
 
-  assign fdata_stop_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_stop_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_stop_wd = reg_wdata[9];
 
-  assign fdata_read_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_read_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_read_wd = reg_wdata[10];
 
-  assign fdata_rcont_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_rcont_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_rcont_wd = reg_wdata[11];
 
-  assign fdata_nakok_we = addr_hit[6] & reg_we & !reg_error;
+  assign fdata_nakok_we = addr_hit[7] & reg_we & !reg_error;
   assign fdata_nakok_wd = reg_wdata[12];
 
-  assign fifo_ctrl_rxrst_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_rxrst_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
-  assign fifo_ctrl_fmtrst_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_fmtrst_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_fmtrst_wd = reg_wdata[1];
 
-  assign fifo_ctrl_rxilvl_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_rxilvl_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
-  assign fifo_ctrl_fmtilvl_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_fmtilvl_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_fmtilvl_wd = reg_wdata[6:5];
 
-  assign fifo_ctrl_acqrst_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_acqrst_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_acqrst_wd = reg_wdata[7];
 
-  assign fifo_ctrl_txrst_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_txrst_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_txrst_wd = reg_wdata[8];
 
-  assign fifo_status_fmtlvl_re = addr_hit[8] & reg_re & !reg_error;
+  assign fifo_status_fmtlvl_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign fifo_status_txlvl_re = addr_hit[8] & reg_re & !reg_error;
+  assign fifo_status_txlvl_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign fifo_status_rxlvl_re = addr_hit[8] & reg_re & !reg_error;
+  assign fifo_status_rxlvl_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign fifo_status_acqlvl_re = addr_hit[8] & reg_re & !reg_error;
+  assign fifo_status_acqlvl_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign ovrd_txovrden_we = addr_hit[9] & reg_we & !reg_error;
+  assign ovrd_txovrden_we = addr_hit[10] & reg_we & !reg_error;
   assign ovrd_txovrden_wd = reg_wdata[0];
 
-  assign ovrd_sclval_we = addr_hit[9] & reg_we & !reg_error;
+  assign ovrd_sclval_we = addr_hit[10] & reg_we & !reg_error;
   assign ovrd_sclval_wd = reg_wdata[1];
 
-  assign ovrd_sdaval_we = addr_hit[9] & reg_we & !reg_error;
+  assign ovrd_sdaval_we = addr_hit[10] & reg_we & !reg_error;
   assign ovrd_sdaval_wd = reg_wdata[2];
 
-  assign val_scl_rx_re = addr_hit[10] & reg_re & !reg_error;
+  assign val_scl_rx_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign val_sda_rx_re = addr_hit[10] & reg_re & !reg_error;
+  assign val_sda_rx_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign timing0_thigh_we = addr_hit[11] & reg_we & !reg_error;
+  assign timing0_thigh_we = addr_hit[12] & reg_we & !reg_error;
   assign timing0_thigh_wd = reg_wdata[15:0];
 
-  assign timing0_tlow_we = addr_hit[11] & reg_we & !reg_error;
+  assign timing0_tlow_we = addr_hit[12] & reg_we & !reg_error;
   assign timing0_tlow_wd = reg_wdata[31:16];
 
-  assign timing1_t_r_we = addr_hit[12] & reg_we & !reg_error;
+  assign timing1_t_r_we = addr_hit[13] & reg_we & !reg_error;
   assign timing1_t_r_wd = reg_wdata[15:0];
 
-  assign timing1_t_f_we = addr_hit[12] & reg_we & !reg_error;
+  assign timing1_t_f_we = addr_hit[13] & reg_we & !reg_error;
   assign timing1_t_f_wd = reg_wdata[31:16];
 
-  assign timing2_tsu_sta_we = addr_hit[13] & reg_we & !reg_error;
+  assign timing2_tsu_sta_we = addr_hit[14] & reg_we & !reg_error;
   assign timing2_tsu_sta_wd = reg_wdata[15:0];
 
-  assign timing2_thd_sta_we = addr_hit[13] & reg_we & !reg_error;
+  assign timing2_thd_sta_we = addr_hit[14] & reg_we & !reg_error;
   assign timing2_thd_sta_wd = reg_wdata[31:16];
 
-  assign timing3_tsu_dat_we = addr_hit[14] & reg_we & !reg_error;
+  assign timing3_tsu_dat_we = addr_hit[15] & reg_we & !reg_error;
   assign timing3_tsu_dat_wd = reg_wdata[15:0];
 
-  assign timing3_thd_dat_we = addr_hit[14] & reg_we & !reg_error;
+  assign timing3_thd_dat_we = addr_hit[15] & reg_we & !reg_error;
   assign timing3_thd_dat_wd = reg_wdata[31:16];
 
-  assign timing4_tsu_sto_we = addr_hit[15] & reg_we & !reg_error;
+  assign timing4_tsu_sto_we = addr_hit[16] & reg_we & !reg_error;
   assign timing4_tsu_sto_wd = reg_wdata[15:0];
 
-  assign timing4_t_buf_we = addr_hit[15] & reg_we & !reg_error;
+  assign timing4_t_buf_we = addr_hit[16] & reg_we & !reg_error;
   assign timing4_t_buf_wd = reg_wdata[31:16];
 
-  assign timeout_ctrl_val_we = addr_hit[16] & reg_we & !reg_error;
+  assign timeout_ctrl_val_we = addr_hit[17] & reg_we & !reg_error;
   assign timeout_ctrl_val_wd = reg_wdata[30:0];
 
-  assign timeout_ctrl_en_we = addr_hit[16] & reg_we & !reg_error;
+  assign timeout_ctrl_en_we = addr_hit[17] & reg_we & !reg_error;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
-  assign target_id_address0_we = addr_hit[17] & reg_we & !reg_error;
+  assign target_id_address0_we = addr_hit[18] & reg_we & !reg_error;
   assign target_id_address0_wd = reg_wdata[6:0];
 
-  assign target_id_mask0_we = addr_hit[17] & reg_we & !reg_error;
+  assign target_id_mask0_we = addr_hit[18] & reg_we & !reg_error;
   assign target_id_mask0_wd = reg_wdata[13:7];
 
-  assign target_id_address1_we = addr_hit[17] & reg_we & !reg_error;
+  assign target_id_address1_we = addr_hit[18] & reg_we & !reg_error;
   assign target_id_address1_wd = reg_wdata[20:14];
 
-  assign target_id_mask1_we = addr_hit[17] & reg_we & !reg_error;
+  assign target_id_mask1_we = addr_hit[18] & reg_we & !reg_error;
   assign target_id_mask1_wd = reg_wdata[27:21];
 
-  assign acqdata_abyte_re = addr_hit[18] & reg_re & !reg_error;
+  assign acqdata_abyte_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign acqdata_signal_re = addr_hit[18] & reg_re & !reg_error;
+  assign acqdata_signal_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign txdata_we = addr_hit[19] & reg_we & !reg_error;
+  assign txdata_we = addr_hit[20] & reg_we & !reg_error;
   assign txdata_wd = reg_wdata[7:0];
 
-  assign stretch_ctrl_en_addr_tx_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_en_addr_tx_we = addr_hit[21] & reg_we & !reg_error;
   assign stretch_ctrl_en_addr_tx_wd = reg_wdata[0];
 
-  assign stretch_ctrl_en_addr_acq_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_en_addr_acq_we = addr_hit[21] & reg_we & !reg_error;
   assign stretch_ctrl_en_addr_acq_wd = reg_wdata[1];
 
-  assign stretch_ctrl_stop_tx_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_stop_tx_we = addr_hit[21] & reg_we & !reg_error;
   assign stretch_ctrl_stop_tx_wd = reg_wdata[2];
 
-  assign stretch_ctrl_stop_acq_we = addr_hit[20] & reg_we & !reg_error;
+  assign stretch_ctrl_stop_acq_we = addr_hit[21] & reg_we & !reg_error;
   assign stretch_ctrl_stop_acq_wd = reg_wdata[3];
 
-  assign host_timeout_ctrl_we = addr_hit[21] & reg_we & !reg_error;
+  assign host_timeout_ctrl_we = addr_hit[22] & reg_we & !reg_error;
   assign host_timeout_ctrl_wd = reg_wdata[31:0];
 
   // Read data return
@@ -3241,12 +3264,16 @@ module i2c_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = ctrl_enablehost_qs;
         reg_rdata_next[1] = ctrl_enabletarget_qs;
         reg_rdata_next[2] = ctrl_llpbk_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = status_fmtfull_qs;
         reg_rdata_next[1] = status_rxfull_qs;
         reg_rdata_next[2] = status_fmtempty_qs;
@@ -3259,11 +3286,11 @@ module i2c_reg_top (
         reg_rdata_next[9] = status_acqempty_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[7:0] = rdata_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[7:0] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
@@ -3272,7 +3299,7 @@ module i2c_reg_top (
         reg_rdata_next[12] = '0;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
@@ -3281,78 +3308,78 @@ module i2c_reg_top (
         reg_rdata_next[8] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[6:0] = fifo_status_fmtlvl_qs;
         reg_rdata_next[14:8] = fifo_status_txlvl_qs;
         reg_rdata_next[22:16] = fifo_status_rxlvl_qs;
         reg_rdata_next[30:24] = fifo_status_acqlvl_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = ovrd_txovrden_qs;
         reg_rdata_next[1] = ovrd_sclval_qs;
         reg_rdata_next[2] = ovrd_sdaval_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[15:0] = val_scl_rx_qs;
         reg_rdata_next[31:16] = val_sda_rx_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[15:0] = timing0_thigh_qs;
         reg_rdata_next[31:16] = timing0_tlow_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[15:0] = timing1_t_r_qs;
         reg_rdata_next[31:16] = timing1_t_f_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[15:0] = timing2_tsu_sta_qs;
         reg_rdata_next[31:16] = timing2_thd_sta_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[15:0] = timing3_tsu_dat_qs;
         reg_rdata_next[31:16] = timing3_thd_dat_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[15:0] = timing4_tsu_sto_qs;
         reg_rdata_next[31:16] = timing4_t_buf_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[30:0] = timeout_ctrl_val_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[6:0] = target_id_address0_qs;
         reg_rdata_next[13:7] = target_id_mask0_qs;
         reg_rdata_next[20:14] = target_id_address1_qs;
         reg_rdata_next[27:21] = target_id_mask1_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[7:0] = acqdata_abyte_qs;
         reg_rdata_next[9:8] = acqdata_signal_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[0] = stretch_ctrl_en_addr_tx_qs;
         reg_rdata_next[1] = stretch_ctrl_en_addr_acq_qs;
         reg_rdata_next[2] = stretch_ctrl_stop_tx_qs;
         reg_rdata_next[3] = stretch_ctrl_stop_acq_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = host_timeout_ctrl_qs;
       end
 

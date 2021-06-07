@@ -62,7 +62,14 @@
     { name: "host_timeout"
       desc: "raised if the host stops sending the clock during an ongoing transaction."
     }
-  ]
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the I2C unit.
+      '''
+    }
+  ],
 
   // REGISTER definition
   regwidth: "32"

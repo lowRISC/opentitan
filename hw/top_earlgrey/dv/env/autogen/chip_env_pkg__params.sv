@@ -13,6 +13,9 @@ parameter string LIST_OF_ALERTS[] = {
   "spi_device_fatal_fault",
   "spi_host0_fatal_fault",
   "spi_host1_fatal_fault",
+  "i2c0_fatal_fault",
+  "i2c1_fatal_fault",
+  "i2c2_fatal_fault",
   "pattgen_fatal_fault",
   "otp_ctrl_fatal_macro_error",
   "otp_ctrl_fatal_check_error",
@@ -55,4 +58,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 48;
+parameter uint NUM_ALERTS = 51;
