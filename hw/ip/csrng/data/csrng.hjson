@@ -27,7 +27,11 @@
   ],
   alert_list: [
     { name: "fatal_alert",
-      desc: "This alert triggers if an illegal state machine state is reached, or if an AES fatal alert condition occurs.",
+      desc: '''
+            This alert triggers (i) if an illegal state machine state is reached, or
+            (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity
+            failure is detected on the TL-UL bus.
+            '''
     }
   ],
   inter_signal_list: [
