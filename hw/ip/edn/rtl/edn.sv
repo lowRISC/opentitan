@@ -46,6 +46,7 @@ module edn
 
   logic  alert;
   logic  alert_test;
+  logic  intg_err_alert;
 
   edn_reg_top u_reg (
     .clk_i,
@@ -54,7 +55,7 @@ module edn
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(intg_err_alert),
     .devmode_i(1'b1)
   );
 
@@ -89,12 +90,12 @@ module edn
   ) u_prim_alert_sender (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test    ),
-    .alert_req_i   ( alert         ),
-    .alert_ack_o   (               ),
-    .alert_state_o (               ),
-    .alert_rx_i    ( alert_rx_i[0] ),
-    .alert_tx_o    ( alert_tx_o[0] )
+    .alert_test_i  ( alert_test              ),
+    .alert_req_i   ( alert || intg_err_alert ),
+    .alert_ack_o   (                         ),
+    .alert_state_o (                         ),
+    .alert_rx_i    ( alert_rx_i[0]           ),
+    .alert_tx_o    ( alert_tx_o[0]           )
   );
 
   // Assertions

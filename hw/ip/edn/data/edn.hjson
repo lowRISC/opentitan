@@ -14,7 +14,10 @@
   ],
   alert_list: [
     { name: "fatal_alert",
-      desc: "This alert triggers if an illegal state machine state is reached.",
+      desc: '''
+            This alert triggers (i) if an illegal state machine state is reached, or
+            (ii) if a fatal integrity failure is detected on the TL-UL bus.
+            ''',
     }
   ],
   inter_signal_list: [
