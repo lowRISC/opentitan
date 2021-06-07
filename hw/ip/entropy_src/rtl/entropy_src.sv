@@ -109,6 +109,9 @@ module entropy_src
   // core entropy operation
   ///////////////////////////
 
+  logic [NumAlerts-1:0] intg_err_alert;
+  assign intg_err_alert[0] = 1'b0;
+
   entropy_src_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -116,7 +119,7 @@ module entropy_src
     .tl_o,
     .reg2hw,
     .hw2reg(hw2reg),
-    .intg_err_o(),
+    .intg_err_o(intg_err_alert[1]), // Assign this alert to the fatal alert index.
     .devmode_i(1'b1)
   );
 
@@ -232,12 +235,12 @@ module entropy_src
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alert[i]      ),
-      .alert_ack_o   (               ),
-      .alert_state_o (               ),
-      .alert_rx_i    ( alert_rx_i[i] ),
-      .alert_tx_o    ( alert_tx_o[i] )
+      .alert_test_i  ( alert_test[i]                 ),
+      .alert_req_i   ( alert[i] || intg_err_alert[i] ),
+      .alert_ack_o   (                               ),
+      .alert_state_o (                               ),
+      .alert_rx_i    ( alert_rx_i[i]                 ),
+      .alert_tx_o    ( alert_tx_o[i]                 )
     );
   end
 
