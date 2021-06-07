@@ -6,13 +6,21 @@
 
 `include "prim_assert.sv"
 
-module i2c (
+module i2c
+  import i2c_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input                     clk_i,
   input                     rst_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Generic IO
   input                     cio_scl_i,
@@ -46,6 +54,8 @@ module i2c (
   i2c_reg2hw_t reg2hw;
   i2c_hw2reg_t hw2reg;
 
+  logic [NumAlerts-1:0] alert_test, alerts;
+
   i2c_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -53,9 +63,30 @@ module i2c (
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(alerts[0]),
     .devmode_i(1'b1)
   );
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   logic scl_int;
   logic sda_int;
@@ -101,6 +132,7 @@ module i2c (
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
   `ASSERT_KNOWN(CioSclKnownO_A, cio_scl_o)
   `ASSERT_KNOWN(CioSclEnKnownO_A, cio_scl_en_o)
   `ASSERT_KNOWN(CioSdaKnownO_A, cio_sda_o)

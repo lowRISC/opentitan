@@ -48,6 +48,8 @@ module tb;
   tl_if tl_if(.clk(clk_i), .rst_n(rst_ni));
   i2c_if i2c_if();
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   i2c dut (
     .clk_i                   (clk_i      ),
@@ -55,6 +57,9 @@ module tb;
 
     .tl_i                    (tl_if.h2d  ),
     .tl_o                    (tl_if.d2h  ),
+
+    .alert_rx_i              (alert_rx   ),
+    .alert_tx_o              (alert_tx   ),
 
     .cio_scl_i               (cio_scl_i             ),
     .cio_scl_o               (cio_scl_o             ),

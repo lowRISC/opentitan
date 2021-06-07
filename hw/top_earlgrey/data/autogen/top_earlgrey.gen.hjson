@@ -11530,6 +11530,9 @@
     spi_device
     spi_host0
     spi_host1
+    i2c0
+    i2c1
+    i2c2
     pattgen
     otp_ctrl
     lc_ctrl
@@ -11606,6 +11609,27 @@
       type: alert
       async: "0"
       module_name: spi_host1
+    }
+    {
+      name: i2c0_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: i2c0
+    }
+    {
+      name: i2c1_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: i2c1
+    }
+    {
+      name: i2c2_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: i2c2
     }
     {
       name: pattgen_fatal_fault
