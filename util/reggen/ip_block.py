@@ -253,7 +253,7 @@ class IpBlock:
                                 'scan_reset field of ' + what)
 
         scan_en = check_bool(rd.get('scan_en', False),
-                                'scan_en field of ' + what)
+                             'scan_en field of ' + what)
 
         # Check that register blocks are in bijection with device interfaces
         reg_block_names = reg_blocks.keys()
