@@ -9,12 +9,17 @@
 module hmac
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
-(
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input clk_i,
   input rst_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   output logic intr_hmac_done_o,
   output logic intr_fifo_empty_o,
@@ -430,6 +435,8 @@ module hmac
     .idle             (sha_core_idle)
   );
 
+  // Register top
+  logic [NumAlerts-1:0] alert_test, alerts;
   hmac_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -443,9 +450,31 @@ module hmac
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o (),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
+
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   /////////////////////////
   // HMAC Error Handling //
@@ -590,6 +619,7 @@ module hmac
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR
