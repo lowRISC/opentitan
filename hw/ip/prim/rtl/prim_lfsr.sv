@@ -354,6 +354,9 @@ module prim_lfsr #(
   // Unknown //
   /////////////
   end else begin : gen_unknown_type
+    assign coeffs = '0;
+    assign next_lfsr_state = '0;
+    assign lockup = 1'b0;
     `ASSERT_INIT(UnknownLfsrType_A, 0)
   end
 
