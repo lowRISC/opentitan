@@ -40,6 +40,8 @@ module tb;
   tl_if        tl_if(.clk(clk), .rst_n(rst_n));
   spi_if       spi_if(.rst_n(rst_core_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   spi_host spi_host (
     .clk_i                (clk),
@@ -48,6 +50,9 @@ module tb;
     // tl i/f
     .tl_i                 (tl_if.h2d),
     .tl_o                 (tl_if.d2h),
+    // alerts
+    .alert_rx_i           (alert_rx),
+    .alert_tx_o           (alert_tx),
     // scan mode
     .clk_core_i           (clk_core),
     .rst_core_ni          (rst_core_n),

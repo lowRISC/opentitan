@@ -118,7 +118,7 @@ module spi_host_reg_top (
     reg_steer = 1;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 32 && tl_i.a_address[AW-1:0] < 36) begin
+    if (tl_i.a_address[AW-1:0] >= 36 && tl_i.a_address[AW-1:0] < 40) begin
       reg_steer = 0;
     end
     if (intg_err) begin
@@ -168,6 +168,8 @@ module spi_host_reg_top (
   logic intr_test_error_we;
   logic intr_test_spi_event_wd;
   logic intr_test_spi_event_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic [7:0] control_rx_watermark_qs;
   logic [7:0] control_rx_watermark_wd;
   logic control_rx_watermark_we;
@@ -418,6 +420,22 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.spi_event.qe),
     .q      (reg2hw.intr_test.spi_event.q ),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q ),
     .qs     ()
   );
 
@@ -1625,20 +1643,21 @@ module spi_host_reg_top (
 
 
 
-  logic [10:0] addr_hit;
+  logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_HOST_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == SPI_HOST_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == SPI_HOST_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == SPI_HOST_CONTROL_OFFSET);
-    addr_hit[ 4] = (reg_addr == SPI_HOST_STATUS_OFFSET);
-    addr_hit[ 5] = (reg_addr == SPI_HOST_CONFIGOPTS_OFFSET);
-    addr_hit[ 6] = (reg_addr == SPI_HOST_CSID_OFFSET);
-    addr_hit[ 7] = (reg_addr == SPI_HOST_COMMAND_OFFSET);
-    addr_hit[ 8] = (reg_addr == SPI_HOST_ERROR_ENABLE_OFFSET);
-    addr_hit[ 9] = (reg_addr == SPI_HOST_ERROR_STATUS_OFFSET);
-    addr_hit[10] = (reg_addr == SPI_HOST_EVENT_ENABLE_OFFSET);
+    addr_hit[ 3] = (reg_addr == SPI_HOST_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == SPI_HOST_CONTROL_OFFSET);
+    addr_hit[ 5] = (reg_addr == SPI_HOST_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == SPI_HOST_CONFIGOPTS_OFFSET);
+    addr_hit[ 7] = (reg_addr == SPI_HOST_CSID_OFFSET);
+    addr_hit[ 8] = (reg_addr == SPI_HOST_COMMAND_OFFSET);
+    addr_hit[ 9] = (reg_addr == SPI_HOST_ERROR_ENABLE_OFFSET);
+    addr_hit[10] = (reg_addr == SPI_HOST_ERROR_STATUS_OFFSET);
+    addr_hit[11] = (reg_addr == SPI_HOST_EVENT_ENABLE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1656,7 +1675,8 @@ module spi_host_reg_top (
                (addr_hit[ 7] & (|(SPI_HOST_PERMIT[ 7] & ~reg_be))) |
                (addr_hit[ 8] & (|(SPI_HOST_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(SPI_HOST_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(SPI_HOST_PERMIT[10] & ~reg_be)))));
+               (addr_hit[10] & (|(SPI_HOST_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(SPI_HOST_PERMIT[11] & ~reg_be)))));
   end
 
   assign intr_state_error_we = addr_hit[0] & reg_we & !reg_error;
@@ -1677,103 +1697,106 @@ module spi_host_reg_top (
   assign intr_test_spi_event_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_spi_event_wd = reg_wdata[1];
 
-  assign control_rx_watermark_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+
+  assign control_rx_watermark_we = addr_hit[4] & reg_we & !reg_error;
   assign control_rx_watermark_wd = reg_wdata[7:0];
 
-  assign control_tx_watermark_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_tx_watermark_we = addr_hit[4] & reg_we & !reg_error;
   assign control_tx_watermark_wd = reg_wdata[15:8];
 
-  assign control_passthru_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_passthru_we = addr_hit[4] & reg_we & !reg_error;
   assign control_passthru_wd = reg_wdata[29];
 
-  assign control_sw_rst_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_sw_rst_we = addr_hit[4] & reg_we & !reg_error;
   assign control_sw_rst_wd = reg_wdata[30];
 
-  assign control_spien_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_spien_we = addr_hit[4] & reg_we & !reg_error;
   assign control_spien_wd = reg_wdata[31];
 
-  assign configopts_clkdiv_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_clkdiv_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_clkdiv_0_wd = reg_wdata[15:0];
 
-  assign configopts_csnidle_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_csnidle_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csnidle_0_wd = reg_wdata[19:16];
 
-  assign configopts_csntrail_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_csntrail_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csntrail_0_wd = reg_wdata[23:20];
 
-  assign configopts_csnlead_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_csnlead_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csnlead_0_wd = reg_wdata[27:24];
 
-  assign configopts_fullcyc_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_fullcyc_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_fullcyc_0_wd = reg_wdata[29];
 
-  assign configopts_cpha_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_cpha_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_cpha_0_wd = reg_wdata[30];
 
-  assign configopts_cpol_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign configopts_cpol_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_cpol_0_wd = reg_wdata[31];
 
-  assign csid_we = addr_hit[6] & reg_we & !reg_error;
+  assign csid_we = addr_hit[7] & reg_we & !reg_error;
   assign csid_wd = reg_wdata[31:0];
 
-  assign command_len_we = addr_hit[7] & reg_we & !reg_error;
+  assign command_len_we = addr_hit[8] & reg_we & !reg_error;
   assign command_len_wd = reg_wdata[8:0];
 
-  assign command_csaat_we = addr_hit[7] & reg_we & !reg_error;
+  assign command_csaat_we = addr_hit[8] & reg_we & !reg_error;
   assign command_csaat_wd = reg_wdata[9];
 
-  assign command_speed_we = addr_hit[7] & reg_we & !reg_error;
+  assign command_speed_we = addr_hit[8] & reg_we & !reg_error;
   assign command_speed_wd = reg_wdata[11:10];
 
-  assign command_direction_we = addr_hit[7] & reg_we & !reg_error;
+  assign command_direction_we = addr_hit[8] & reg_we & !reg_error;
   assign command_direction_wd = reg_wdata[13:12];
 
-  assign error_enable_cmdbusy_we = addr_hit[8] & reg_we & !reg_error;
+  assign error_enable_cmdbusy_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_cmdbusy_wd = reg_wdata[0];
 
-  assign error_enable_overflow_we = addr_hit[8] & reg_we & !reg_error;
+  assign error_enable_overflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_overflow_wd = reg_wdata[1];
 
-  assign error_enable_underflow_we = addr_hit[8] & reg_we & !reg_error;
+  assign error_enable_underflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_underflow_wd = reg_wdata[2];
 
-  assign error_enable_cmdinval_we = addr_hit[8] & reg_we & !reg_error;
+  assign error_enable_cmdinval_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_cmdinval_wd = reg_wdata[3];
 
-  assign error_enable_csidinval_we = addr_hit[8] & reg_we & !reg_error;
+  assign error_enable_csidinval_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_csidinval_wd = reg_wdata[4];
 
-  assign error_status_cmdbusy_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_status_cmdbusy_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_cmdbusy_wd = reg_wdata[0];
 
-  assign error_status_overflow_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_status_overflow_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_overflow_wd = reg_wdata[1];
 
-  assign error_status_underflow_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_status_underflow_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_underflow_wd = reg_wdata[2];
 
-  assign error_status_cmdinval_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_status_cmdinval_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_cmdinval_wd = reg_wdata[3];
 
-  assign error_status_csidinval_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_status_csidinval_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_csidinval_wd = reg_wdata[4];
 
-  assign event_enable_rxfull_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_rxfull_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_rxfull_wd = reg_wdata[0];
 
-  assign event_enable_txempty_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_txempty_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_txempty_wd = reg_wdata[1];
 
-  assign event_enable_rxwm_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_rxwm_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_rxwm_wd = reg_wdata[2];
 
-  assign event_enable_txwm_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_txwm_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_txwm_wd = reg_wdata[3];
 
-  assign event_enable_ready_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_ready_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_ready_wd = reg_wdata[4];
 
-  assign event_enable_idle_we = addr_hit[10] & reg_we & !reg_error;
+  assign event_enable_idle_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_idle_wd = reg_wdata[5];
 
   // Read data return
@@ -1796,6 +1819,10 @@ module spi_host_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[7:0] = control_rx_watermark_qs;
         reg_rdata_next[15:8] = control_tx_watermark_qs;
         reg_rdata_next[29] = control_passthru_qs;
@@ -1803,7 +1830,7 @@ module spi_host_reg_top (
         reg_rdata_next[31] = control_spien_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[7:0] = status_txqd_qs;
         reg_rdata_next[15:8] = status_rxqd_qs;
         reg_rdata_next[20] = status_rxwm_qs;
@@ -1819,7 +1846,7 @@ module spi_host_reg_top (
         reg_rdata_next[31] = status_ready_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[15:0] = configopts_clkdiv_0_qs;
         reg_rdata_next[19:16] = configopts_csnidle_0_qs;
         reg_rdata_next[23:20] = configopts_csntrail_0_qs;
@@ -1829,18 +1856,18 @@ module spi_host_reg_top (
         reg_rdata_next[31] = configopts_cpol_0_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = csid_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[8:0] = command_len_qs;
         reg_rdata_next[9] = command_csaat_qs;
         reg_rdata_next[11:10] = command_speed_qs;
         reg_rdata_next[13:12] = command_direction_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = error_enable_cmdbusy_qs;
         reg_rdata_next[1] = error_enable_overflow_qs;
         reg_rdata_next[2] = error_enable_underflow_qs;
@@ -1848,7 +1875,7 @@ module spi_host_reg_top (
         reg_rdata_next[4] = error_enable_csidinval_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = error_status_cmdbusy_qs;
         reg_rdata_next[1] = error_status_overflow_qs;
         reg_rdata_next[2] = error_status_underflow_qs;
@@ -1856,7 +1883,7 @@ module spi_host_reg_top (
         reg_rdata_next[4] = error_status_csidinval_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = event_enable_rxfull_qs;
         reg_rdata_next[1] = event_enable_txempty_qs;
         reg_rdata_next[2] = event_enable_rxwm_qs;
