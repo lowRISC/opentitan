@@ -13,11 +13,6 @@ class otp_ctrl_parallel_base_vseq extends otp_ctrl_dai_lock_vseq;
 
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans  inside {[1:5]};
-    num_dai_op inside {[1:500]};
-  }
-
   virtual task body();
     bit base_vseq_done;
 
