@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otbn_base_test extends dv_base_test #(
+class otbn_base_test extends cip_base_test #(
     .CFG_T(otbn_env_cfg),
     .ENV_T(otbn_env)
   );
