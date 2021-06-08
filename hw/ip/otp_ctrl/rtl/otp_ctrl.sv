@@ -1023,7 +1023,7 @@ module otp_ctrl
         .cnsty_chk_ack_o   ( cnsty_chk_ack[k]                ),
         .escalate_en_i     ( lc_escalate_en[k]               ),
         // Only supported by life cycle partition (see further below).
-        .check_byp_en_i ( lc_ctrl_pkg::Off                ),
+        .check_byp_en_i    ( lc_ctrl_pkg::Off                ),
         .error_o           ( part_error[k]                   ),
         .access_i          ( part_access_csrs[k]             ),
         .access_o          ( part_access_dai[k]              ),
@@ -1070,7 +1070,13 @@ module otp_ctrl
         .integ_chk_ack_o   ( integ_chk_ack[k]                ),
         .cnsty_chk_req_i   ( cnsty_chk_req[k]                ),
         .cnsty_chk_ack_o   ( cnsty_chk_ack[k]                ),
-        .escalate_en_i     ( lc_escalate_en[k]               ),
+        // This is the only partition that does not support external escalation.
+        // The reason for this is that the "life cycle scrap" escalation action is 1) implemented
+        // directly inside the life cycle controller, and 2) this action may follow a different
+        // escalation protocol timing than the "wipe secrets" action activated via escalate_en_i.
+        // Note that glitch errors within this partition still lead to immediate invalidation
+        // of the life cycle vector.
+        .escalate_en_i     ( lc_ctrl_pkg::Off                ),
         // This is only supported by the life cycle partition. We need to prevent this partition
         // from escalating once the life cycle state in memory is being updated (and hence not
         // consistent with the values in the buffer regs anymore).
@@ -1119,6 +1125,9 @@ module otp_ctrl
       assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
                                          part_scrmbl_req_ready[k],
                                          part_scrmbl_rsp_valid[k]};
+
+      logic unused_escalate_en_sig;
+      assign unused_escalate_en_sig = ^lc_escalate_en[k];
 
     end else begin : gen_invalid
       // This is invalid and should break elaboration
