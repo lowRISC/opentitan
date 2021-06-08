@@ -1672,6 +1672,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           if (item.a_data[KmacDone])      intr_kmac_done = 0;
           if (item.a_data[KmacFifoEmpty]) intr_fifo_empty = 0;
           if (item.a_data[KmacErr])       intr_kmac_err = 0;
+        end else if (data_phase_read) begin
+          // sample intr coverage
+          if (cfg.en_cov) begin
+            bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
+            bit [KmacNumIntrs-1:0]  intr_exp = `gmv(ral.intr_state);
+            foreach (intr_exp[i]) begin
+              cov.intr_cg.sample(i, intr_en[i], item.d_data);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
+          end
         end else if (addr_phase_read) begin
 
           void'(ral.intr_state.kmac_done.predict(
