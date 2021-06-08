@@ -34,6 +34,7 @@ OPTIONAL_FIELDS = {
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
+    'expose_reg_if': ['pb', 'if set, expose reg interface in reg2hw signal'],
     'hier_path': [
         None,
         'additional hierarchy path before the reg block instance'
@@ -92,6 +93,7 @@ class IpBlock:
                               Sequence[Signal]],
                  wakeups: Sequence[Signal],
                  reset_requests: Sequence[Signal],
+                 expose_reg_if: bool,
                  scan_reset: bool,
                  scan_en: bool):
         assert reg_blocks
@@ -123,6 +125,7 @@ class IpBlock:
         self.xputs = xputs
         self.wakeups = wakeups
         self.reset_requests = reset_requests
+        self.expose_reg_if = expose_reg_if
         self.scan_reset = scan_reset
         self.scan_en = scan_en
 
@@ -249,6 +252,9 @@ class IpBlock:
         rst_reqs = Signal.from_raw_list('reset_request_list for block ' + name,
                                         rd.get('reset_request_list', []))
 
+        expose_reg_if = check_bool(rd.get('expose_reg_if', False),
+                                   'expose_reg_if field of ' + what)
+
         scan_reset = check_bool(rd.get('scan_reset', False),
                                 'scan_reset field of ' + what)
 
@@ -272,7 +278,7 @@ class IpBlock:
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
                        hier_path, clock_signals, reset_signals, xputs,
-                       wakeups, rst_reqs, scan_reset, scan_en)
+                       wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en)
 
     @staticmethod
     def from_text(txt: str,

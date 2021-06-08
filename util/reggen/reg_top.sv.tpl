@@ -241,6 +241,14 @@ module ${mod_name} (
     .error_i (reg_error)
   );
 
+  % if block.expose_reg_if:
+  assign reg2hw.reg_if.reg_we    = reg_we;
+  assign reg2hw.reg_if.reg_re    = reg_re;
+  assign reg2hw.reg_if.reg_addr  = reg_addr;
+  assign reg2hw.reg_if.reg_wdata = reg_wdata;
+  assign reg2hw.reg_if.reg_be    = reg_be;
+
+  % endif
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
 
