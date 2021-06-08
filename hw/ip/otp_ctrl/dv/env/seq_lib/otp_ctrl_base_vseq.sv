@@ -83,6 +83,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
     bit [TL_DW-1:0] val;
+    if (collect_used_addr)  used_dai_addr_q.push_back(addr);
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
@@ -114,6 +115,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       output bit [TL_DW-1:0] rdata1);
     bit [TL_DW-1:0] val, backdoor_rd_val;
     bit backdoor_wr;
+    if (collect_used_addr) used_dai_addr_q.push_back(addr);
     addr = randomize_dai_addr(addr);
 
     // Here we won't backdoor write to corrupt ECC bits if:

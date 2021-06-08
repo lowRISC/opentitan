@@ -139,7 +139,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         // OTP write via DAI
         if (rand_wr && !digest_calculated[part_idx]) begin
           dai_wr(dai_addr, wdata0, wdata1);
-          if (collect_used_addr) used_dai_addr_q.push_back(dai_addr);
           if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
         end
 

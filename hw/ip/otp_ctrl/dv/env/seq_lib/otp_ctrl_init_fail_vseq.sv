@@ -142,6 +142,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
         // Create LC check failure.
         `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
+        // Clear backdoor injected errors.
+        cfg.mem_bkdr_util_h.clear_mem();
         exp_status[OtpDaiIdleIdx] = 0;
         cfg.otp_ctrl_vif.lc_check_byp_en = 0;
         req_lc_transition(1);
