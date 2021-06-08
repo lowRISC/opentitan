@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 .PHONY: all
-all: lint asm-check
+all: lint
 
 # We need a directory to build stuff and use the "rom_ctrl/util" namespace
 # in the top-level build-out directory.
