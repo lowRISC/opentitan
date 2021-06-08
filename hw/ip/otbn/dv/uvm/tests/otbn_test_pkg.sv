@@ -5,7 +5,7 @@
 package otbn_test_pkg;
   // dep packages
   import uvm_pkg::*;
-  import dv_lib_pkg::*;
+  import cip_base_pkg::*;
   import otbn_env_pkg::*;
   import otbn_memutil_pkg::*;
 
