@@ -236,8 +236,6 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
     assert 0 <= key < (1 << 128)
     assert 0 <= num_rounds_half <= 5
 
-    # TODO: This matches the RTL in prim_prince.sv, but seems to be the other
-    #       way around in the original paper.
     k1 = key & ((1 << 64) - 1)
     k0 = key >> 64
 
