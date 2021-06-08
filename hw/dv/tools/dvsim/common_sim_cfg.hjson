@@ -21,7 +21,9 @@
 
   // pass and fail patterns
   build_pass_patterns: []
-  build_fail_patterns: ["^ERROR:.*$"] // fusesoc build error
+  // TODO: Add back FuseSoC fail pattern after
+  // https://github.com/lowRISC/opentitan/issues/7348 is resolved.
+  build_fail_patterns: []
   run_pass_patterns:   ["^TEST PASSED (UVM_)?CHECKS$"]
   run_fail_patterns:   ["^UVM_ERROR\\s[^:].*$",
                         "^UVM_FATAL\\s[^:].*$",
