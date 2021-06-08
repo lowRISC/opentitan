@@ -7,6 +7,7 @@
 parameter string LIST_OF_ALERTS[] = {
   "spi_host0_fatal_fault",
   "spi_host1_fatal_fault",
+  "pattgen_fatal_fault",
   "otp_ctrl_fatal_macro_error",
   "otp_ctrl_fatal_check_error",
   "lc_ctrl_fatal_prog_error",
@@ -47,4 +48,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 40;
+parameter uint NUM_ALERTS = 41;

@@ -24,6 +24,13 @@
       desc: "raise if pattern generation on Channel 1 is complete"
     }
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the PATTGEN unit.
+      '''
+    }
+  ],
   param_list: [
     { name:    "NumRegsData",
       type:    "int",

@@ -11524,6 +11524,7 @@
   [
     spi_host0
     spi_host1
+    pattgen
     otp_ctrl
     lc_ctrl
     sensor_ctrl_aon
@@ -11556,6 +11557,13 @@
       type: alert
       async: "0"
       module_name: spi_host1
+    }
+    {
+      name: pattgen_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: pattgen
     }
     {
       name: otp_ctrl_fatal_macro_error

@@ -38,6 +38,10 @@ package pattgen_env_pkg;
     Disable     = 1'b0
   } channel_status_e;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   // package sources
   `include "pattgen_seq_cfg.sv"
   `include "pattgen_channel_cfg.sv"
