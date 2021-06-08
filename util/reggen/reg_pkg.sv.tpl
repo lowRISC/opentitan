@@ -145,16 +145,47 @@ ${hdr}
   } ${gen_rtl.get_reg_tx_type(block, r, True)};
   % endif
 % endfor
+% if block.expose_reg_if:
+<%
+    lpfx = gen_rtl.get_type_name_pfx(block, iface_name)
+    addr_width = rb.get_addr_width()
+    data_width = block.regwidth
+    data_byte_width = data_width // 8
+
+    # This will produce strings like "[0:0] " to let us keep
+    # everything lined up whether there's 1 or 2 digits in the MSB.
+    aw_bits = f'[{addr_width-1}:0]'.ljust(6)
+    dw_bits = f'[{data_width-1}:0]'.ljust(6)
+    dbw_bits = f'[{data_byte_width-1}:0]'.ljust(6)
+%>\
+
+  typedef struct packed {
+    logic        reg_we;
+    logic        reg_re;
+    logic ${aw_bits} reg_addr;
+    logic ${dw_bits} reg_wdata;
+    logic ${dbw_bits} reg_be;
+  } ${lpfx}_reg2hw_reg_if_t;
+% endif
 </%def>\
 <%def name="reg2hw_for_iface(iface_name, iface_desc, for_iface, rb)">\
 <%
+lpfx = gen_rtl.get_type_name_pfx(block, iface_name)
 nbits = rb.get_n_bits(["q", "qe", "re"])
 packbit = 0
+
+addr_width = rb.get_addr_width()
+data_width = block.regwidth
+data_byte_width = data_width // 8
+reg_if_width = 2 + addr_width + data_width + data_byte_width
 %>\
 % if nbits > 0:
 
   // Register -> HW type${for_iface}
   typedef struct packed {
+% if block.expose_reg_if:
+    ${lpfx}_reg2hw_reg_if_t reg_if; // [${reg_if_width + nbits - 1}:${nbits}]
+% endif
 % for r in rb.all_regs:
   % if r.get_n_bits(["q"]):
 <%
