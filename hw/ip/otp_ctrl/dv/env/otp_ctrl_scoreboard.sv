@@ -61,6 +61,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      process_wipe_mem();
       process_otp_power_up();
       process_lc_esc();
       process_lc_prog_req();
@@ -72,6 +73,36 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+  // Once sequence uses backdoor method to clear memory, this task resets internal otp_a and
+  // resets `cfg.backdoor_clear_mem` to 0.
+  virtual task process_wipe_mem();
+    forever begin
+      @(posedge cfg.backdoor_clear_mem) begin
+        bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
+        otp_a        = '{default:0};
+        otp_lc_data  = '{default:0};
+        // secret partitions have been scrambled before writing to OTP.
+        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
+          otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                      data[TL_DW-1:0];
+        end
+        data = descramble_data(0, Secret1Idx);
+        for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
+          otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                      data[TL_DW-1:0];
+        end
+        data = descramble_data(0, Secret2Idx);
+        for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
+          otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                      data[TL_DW-1:0];
+        end
+        `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
+        cfg.backdoor_clear_mem = 0;
+      end
+    end
+  endtask
+
   // This task process the following logic in during otp_power_up:
   // 1. After reset deasserted, otp access is locked until pwr_otp_done_o is set
   // 2. After reset deasserted, if power otp_init request is on, and if testbench uses backdoor to
@@ -79,31 +110,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual task process_otp_power_up();
     if (cfg.en_scb) begin
       forever begin
-        @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i) begin
-          if (cfg.backdoor_clear_mem) begin
-            bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
-            otp_a        = '{default:0};
-            otp_lc_data  = '{default:0};
-            // secret partitions have been scrambled before writing to OTP.
-            // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
-            for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
-              otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                          data[TL_DW-1:0];
-            end
-            data = descramble_data(0, Secret1Idx);
-            for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
-              otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                          data[TL_DW-1:0];
-            end
-            data = descramble_data(0, Secret2Idx);
-            for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
-              otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                          data[TL_DW-1:0];
-            end
-            predict_digest_csrs();
-            `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
-          end
-        end
         @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
                   cfg.otp_ctrl_vif.alert_reqs) begin
           if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs) begin
