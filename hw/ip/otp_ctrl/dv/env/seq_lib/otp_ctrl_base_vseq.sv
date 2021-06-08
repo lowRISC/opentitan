@@ -65,15 +65,24 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // setup basic otp_ctrl features
   virtual task otp_ctrl_init();
     // reset memory to avoid readout X
-    cfg.mem_bkdr_util_h.clear_mem();
-    cfg.backdoor_clear_mem = 1;
-    used_dai_addr_q.delete();
+    clear_otp_memory();
     lc_state = 0;
     lc_cnt   = 0;
   endtask
 
-  // some registers won't set to default value until otp_init is done
+  virtual function void clear_otp_memory();
+    cfg.mem_bkdr_util_h.clear_mem();
+    cfg.backdoor_clear_mem = 1;
+    used_dai_addr_q.delete();
+  endfunction
+
+  // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
+  // 1). Some registers won't set to default value until otp_init is done
+  // 2). Clear memory for next sequence to run. This can avoid ECC injection error and
+  //     write_blank error
   virtual task read_and_check_all_csrs_after_reset();
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
+    clear_otp_memory();
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
