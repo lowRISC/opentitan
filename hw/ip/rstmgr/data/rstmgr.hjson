@@ -221,7 +221,7 @@
         cname: "RSTMGR_SW_RST",
         name:  "SW_RST_REGEN",
         desc:  '''
-          Register write enable for software controllabe resets.
+          Register write enable for software controllable resets.
           When a particular bit value is 0, the corresponding value in !SW_RST_CTRL can no longer be changed.
           When a particular bit value is 1, the corresponding value in !SW_RST_CTRL can be changed.
         ''',
@@ -245,7 +245,7 @@
         cname: "RSTMGR_SW_RST",
         name:  "SW_RST_CTRL_N",
         desc:  '''
-          Software controllabe resets.
+          Software controllable resets.
           When a particular bit value is 0, the corresponding module is held in reset.
           When a particular bit value is 1, the corresponding module is not held in reset.
         ''',

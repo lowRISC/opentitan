@@ -94,11 +94,11 @@ Once these steps are complete, the slow FSM transitions to a low power state and
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
 Once received, the fast FSM releases the life cycle reset stage (see [reset controller](https://docs.google.com/document/d/1oprdDwbm-_opDwMuu-kmmaFVwt4-f1EGqCf0nkO8VpM/edit?usp=sharing) for more details).
-This allows the [OTP]() to begin sensing.
+This allows the [OTP]({{< relref "hw/ip/otp_ctrl/doc" >}}) to begin sensing.
 Once OTP sensing completes , the life cycle controller is initialized.
-The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](https://docs.google.com/document/d/1H6jHtX2xYgy3nmkWKeHMkYcP0vsPq9duyUtLu5imX2E/edit?usp=sharing) for more details).
+The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details).
 
-Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](https://docs.google.com/document/d/1j8H9ikPO2TKTRQvRFItjE5myiba1825PD-Yhy-yaLt0/edit?usp=sharing) for more details) and initiates strap sampling.
+Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller]({{< relref "hw/ip/clkmgr/doc" >}}) for more details) and initiates strap sampling.
 For more details on what exactly the strap samples, please see [here](https://docs.google.com/spreadsheets/d/1pH8T1MhQ7TXtP_bFNT85T9jSVIHlxHAfbMnPbsMdjc0/edit?usp=sharing).
 
 Once strap sampling is complete, the system is ready to begin normal operations (note flash initialization is explicitly not done here, please see [sections below](#Flash-Handling) for more details).
