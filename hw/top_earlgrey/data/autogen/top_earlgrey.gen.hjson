@@ -11529,6 +11529,7 @@
     pattgen
     otp_ctrl
     lc_ctrl
+    pinmux_aon
     sensor_ctrl_aon
     sram_ctrl_ret_aon
     flash_ctrl
@@ -11615,6 +11616,13 @@
       type: alert
       async: "0"
       module_name: lc_ctrl
+    }
+    {
+      name: pinmux_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: pinmux_aon
     }
     {
       name: sensor_ctrl_aon_recov_as

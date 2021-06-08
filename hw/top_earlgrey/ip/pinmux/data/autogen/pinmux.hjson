@@ -27,6 +27,14 @@
   regwidth: "32",
   scan: "true",
 
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the PINMUX unit.
+      '''
+    }
+  ],
+
   wakeup_list: [
     { name: "aon_wkup_req",
       desc: "pin wake request"

@@ -202,7 +202,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[43] = {
+    top_earlgrey_alert_for_peripheral[44] = {
   [kTopEarlgreyAlertIdGpioFatalFault] = kTopEarlgreyAlertPeripheralGpio,
   [kTopEarlgreyAlertIdSpiDeviceFatalFault] = kTopEarlgreyAlertPeripheralSpiDevice,
   [kTopEarlgreyAlertIdSpiHost0FatalFault] = kTopEarlgreyAlertPeripheralSpiHost0,
@@ -213,6 +213,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdLcCtrlFatalProgError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalStateError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalBusIntegError] = kTopEarlgreyAlertPeripheralLcCtrl,
+  [kTopEarlgreyAlertIdPinmuxAonFatalFault] = kTopEarlgreyAlertPeripheralPinmuxAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovAs] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovCg] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovGd] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
