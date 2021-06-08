@@ -120,6 +120,8 @@ module pattgen_reg_top (
   logic intr_test_done_ch0_we;
   logic intr_test_done_ch1_wd;
   logic intr_test_done_ch1_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic ctrl_enable_ch0_qs;
   logic ctrl_enable_ch0_wd;
   logic ctrl_enable_ch0_we;
@@ -300,6 +302,22 @@ module pattgen_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.done_ch1.qe),
     .q      (reg2hw.intr_test.done_ch1.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -684,20 +702,21 @@ module pattgen_reg_top (
 
 
 
-  logic [10:0] addr_hit;
+  logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PATTGEN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == PATTGEN_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == PATTGEN_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == PATTGEN_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == PATTGEN_PREDIV_CH0_OFFSET);
-    addr_hit[ 5] = (reg_addr == PATTGEN_PREDIV_CH1_OFFSET);
-    addr_hit[ 6] = (reg_addr == PATTGEN_DATA_CH0_0_OFFSET);
-    addr_hit[ 7] = (reg_addr == PATTGEN_DATA_CH0_1_OFFSET);
-    addr_hit[ 8] = (reg_addr == PATTGEN_DATA_CH1_0_OFFSET);
-    addr_hit[ 9] = (reg_addr == PATTGEN_DATA_CH1_1_OFFSET);
-    addr_hit[10] = (reg_addr == PATTGEN_SIZE_OFFSET);
+    addr_hit[ 3] = (reg_addr == PATTGEN_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == PATTGEN_CTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == PATTGEN_PREDIV_CH0_OFFSET);
+    addr_hit[ 6] = (reg_addr == PATTGEN_PREDIV_CH1_OFFSET);
+    addr_hit[ 7] = (reg_addr == PATTGEN_DATA_CH0_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == PATTGEN_DATA_CH0_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == PATTGEN_DATA_CH1_0_OFFSET);
+    addr_hit[10] = (reg_addr == PATTGEN_DATA_CH1_1_OFFSET);
+    addr_hit[11] = (reg_addr == PATTGEN_SIZE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -715,7 +734,8 @@ module pattgen_reg_top (
                (addr_hit[ 7] & (|(PATTGEN_PERMIT[ 7] & ~reg_be))) |
                (addr_hit[ 8] & (|(PATTGEN_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(PATTGEN_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(PATTGEN_PERMIT[10] & ~reg_be)))));
+               (addr_hit[10] & (|(PATTGEN_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(PATTGEN_PERMIT[11] & ~reg_be)))));
   end
 
   assign intr_state_done_ch0_we = addr_hit[0] & reg_we & !reg_error;
@@ -736,46 +756,49 @@ module pattgen_reg_top (
   assign intr_test_done_ch1_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_done_ch1_wd = reg_wdata[1];
 
-  assign ctrl_enable_ch0_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+
+  assign ctrl_enable_ch0_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_enable_ch0_wd = reg_wdata[0];
 
-  assign ctrl_enable_ch1_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_enable_ch1_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_enable_ch1_wd = reg_wdata[1];
 
-  assign ctrl_polarity_ch0_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_polarity_ch0_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_polarity_ch0_wd = reg_wdata[2];
 
-  assign ctrl_polarity_ch1_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_polarity_ch1_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_polarity_ch1_wd = reg_wdata[3];
 
-  assign prediv_ch0_we = addr_hit[4] & reg_we & !reg_error;
+  assign prediv_ch0_we = addr_hit[5] & reg_we & !reg_error;
   assign prediv_ch0_wd = reg_wdata[31:0];
 
-  assign prediv_ch1_we = addr_hit[5] & reg_we & !reg_error;
+  assign prediv_ch1_we = addr_hit[6] & reg_we & !reg_error;
   assign prediv_ch1_wd = reg_wdata[31:0];
 
-  assign data_ch0_0_we = addr_hit[6] & reg_we & !reg_error;
+  assign data_ch0_0_we = addr_hit[7] & reg_we & !reg_error;
   assign data_ch0_0_wd = reg_wdata[31:0];
 
-  assign data_ch0_1_we = addr_hit[7] & reg_we & !reg_error;
+  assign data_ch0_1_we = addr_hit[8] & reg_we & !reg_error;
   assign data_ch0_1_wd = reg_wdata[31:0];
 
-  assign data_ch1_0_we = addr_hit[8] & reg_we & !reg_error;
+  assign data_ch1_0_we = addr_hit[9] & reg_we & !reg_error;
   assign data_ch1_0_wd = reg_wdata[31:0];
 
-  assign data_ch1_1_we = addr_hit[9] & reg_we & !reg_error;
+  assign data_ch1_1_we = addr_hit[10] & reg_we & !reg_error;
   assign data_ch1_1_wd = reg_wdata[31:0];
 
-  assign size_len_ch0_we = addr_hit[10] & reg_we & !reg_error;
+  assign size_len_ch0_we = addr_hit[11] & reg_we & !reg_error;
   assign size_len_ch0_wd = reg_wdata[5:0];
 
-  assign size_reps_ch0_we = addr_hit[10] & reg_we & !reg_error;
+  assign size_reps_ch0_we = addr_hit[11] & reg_we & !reg_error;
   assign size_reps_ch0_wd = reg_wdata[15:6];
 
-  assign size_len_ch1_we = addr_hit[10] & reg_we & !reg_error;
+  assign size_len_ch1_we = addr_hit[11] & reg_we & !reg_error;
   assign size_len_ch1_wd = reg_wdata[21:16];
 
-  assign size_reps_ch1_we = addr_hit[10] & reg_we & !reg_error;
+  assign size_reps_ch1_we = addr_hit[11] & reg_we & !reg_error;
   assign size_reps_ch1_wd = reg_wdata[31:22];
 
   // Read data return
@@ -798,37 +821,41 @@ module pattgen_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = ctrl_enable_ch0_qs;
         reg_rdata_next[1] = ctrl_enable_ch1_qs;
         reg_rdata_next[2] = ctrl_polarity_ch0_qs;
         reg_rdata_next[3] = ctrl_polarity_ch1_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = prediv_ch0_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = prediv_ch1_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = data_ch0_0_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = data_ch0_1_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = data_ch1_0_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = data_ch1_1_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[5:0] = size_len_ch0_qs;
         reg_rdata_next[15:6] = size_reps_ch0_qs;
         reg_rdata_next[21:16] = size_len_ch1_qs;
