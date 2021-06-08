@@ -17,7 +17,9 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // hw2reg
   input  hw2reg_wrap_t         hw2reg_wrap,
   // reg2hw
-  output reg2hw_wrap_t         reg2hw_wrap
+  output reg2hw_wrap_t         reg2hw_wrap,
+  // bus integrity alert
+  output logic                 fatal_integ_alert_o
 );
 
 
@@ -36,7 +38,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(fatal_integ_alert_o),
     .devmode_i(1'b1)
   );
 

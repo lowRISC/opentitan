@@ -48,11 +48,11 @@ module alert_handler
   // Regfile Breakout and Mapping //
   //////////////////////////////////
 
+  logic [N_LOC_ALERT-1:0] loc_alert_trig;
   logic [N_CLASSES-1:0] irq;
   hw2reg_wrap_t hw2reg_wrap;
   reg2hw_wrap_t reg2hw_wrap;
 
-  // TODO: make this fully parametric at some point
   assign {intr_classd_o,
           intr_classc_o,
           intr_classb_o,
@@ -66,14 +66,14 @@ module alert_handler
     .irq_o ( irq ),
     .crashdump_o,
     .hw2reg_wrap,
-    .reg2hw_wrap
+    .reg2hw_wrap,
+    .fatal_integ_alert_o(loc_alert_trig[4])
   );
 
   ////////////////
   // Ping Timer //
   ////////////////
 
-  logic [N_LOC_ALERT-1:0] loc_alert_trig;
 
   logic [NAlerts-1:0]   alert_ping_req;
   logic [NAlerts-1:0]   alert_ping_ok;

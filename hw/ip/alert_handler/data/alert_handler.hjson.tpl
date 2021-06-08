@@ -86,7 +86,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "N_LOC_ALERT",
       desc: "Number of local alerts phases",
       type: "int",
-      default: "4",
+      default: "5",
       local: "true"
     },
     { name: "PING_CNT_DW",
@@ -306,7 +306,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 # local alerts
     { multireg: { name:     "LOC_ALERT_REGWEN",
                   desc:     "Register write enable for alert enable bits.",
-                  count:    "NAlerts",
+                  count:    "N_LOC_ALERT",
                   compact:  "false",
                   swaccess: "rw0c",
                   hwaccess: "none",
@@ -328,7 +328,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
     { multireg: { name:     "LOC_ALERT_EN",
                   desc:     '''Enable register for the aggregated local alerts "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
@@ -352,7 +352,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
     { multireg: { name:     "LOC_ALERT_CLASS",
                   desc:     '''Class assignment of local alerts. "alert
-                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
                   ''',
                   count:    "N_LOC_ALERT",
                   compact:  "false",
@@ -379,7 +379,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { multireg: {
       name: "LOC_ALERT_CAUSE",
       desc: '''Alert Cause Register for Local Alerts. "alert
-      pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+      pingfail" (0), "escalation pingfail" (1), "alert integfail" (2), "escalation integfail" (3), and "bus integrity failure (4)".
       ''',
       count: "N_LOC_ALERT",
       compact:  "false",
