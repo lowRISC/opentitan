@@ -11,8 +11,7 @@ module rom_ctrl
   parameter                       BootRomInitFile = "",
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit [63:0]            RndCnstScrNonce = '0,
-  parameter bit [127:0]           RndCnstScrKey = '0,
-  parameter bit                   SkipCheck = 1'b1
+  parameter bit [127:0]           RndCnstScrKey = '0
 ) (
   input  clk_i,
   input  rst_ni,
@@ -224,8 +223,7 @@ module rom_ctrl
 
   rom_ctrl_fsm #(
     .RomDepth (RomSizeWords),
-    .TopCount (8),
-    .SkipCheck (SkipCheck)
+    .TopCount (8)
   ) u_checker_fsm (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),

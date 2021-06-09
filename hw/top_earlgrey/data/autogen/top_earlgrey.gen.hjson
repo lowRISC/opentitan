@@ -5240,14 +5240,6 @@
           default: 0x23c074e020fd502869582e71443c8be0
           randwidth: 128
         }
-        {
-          name: SkipCheck
-          desc: Skip rom power up check
-          type: bit
-          default: "1"
-          expose: "true"
-          name_top: RomCtrlSkipCheck
-        }
       ]
       inter_signal_list:
       [

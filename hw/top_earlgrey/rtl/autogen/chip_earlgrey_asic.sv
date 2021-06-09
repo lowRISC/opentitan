@@ -9,10 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-module chip_earlgrey_asic #(
-  // TODO: Remove this 0 once infra is ready
-  parameter bit RomCtrlSkipCheck = 1
-) (
+module chip_earlgrey_asic (
   // Dedicated Pads
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
@@ -1084,8 +1081,7 @@ module chip_earlgrey_asic #(
     .KmacReuseShare(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
-    .RomCtrlSkipCheck(RomCtrlSkipCheck)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       ( aon_pok                    ),
     // ast connections
