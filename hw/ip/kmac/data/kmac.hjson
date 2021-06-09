@@ -106,7 +106,7 @@
           name: "en"
           desc: "Configuration enable."
           resval: "1"
-        } // f : en 
+        } // f : en
       ]
       tags: [// This regwen is completely under HW management and thus cannot be manipulated
              // by software.
@@ -275,7 +275,7 @@
           '''
           hwaccess: "hrw"
           tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrNonInitTests:CsrExclCheck"]
+                 "excl:CsrAllTests:CsrExclWrite"]
         } // f: entropy_ready
         { bits: "25"
           name: err_processed
