@@ -721,8 +721,8 @@
      id="namedview2851"
      showgrid="true"
      inkscape:zoom="0.89639071"
-     inkscape:cx="618.51993"
-     inkscape:cy="404.18023"
+     inkscape:cx="731.59928"
+     inkscape:cy="332.63027"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -754,11 +754,6 @@
      height="779.99994"
      x="0"
      y="0" />
-  <path
-     style="fill:#fdffee;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:4, 8;stroke-dashoffset:0;stroke-opacity:1"
-     d="M 760,460.00001 V 30.000008 h 580 V 460.00001 Z"
-     id="path3087"
-     sodipodi:nodetypes="ccccc" />
   <g
      id="g3916"
      transform="translate(119.99996,-189.99999)">
@@ -1619,33 +1614,6 @@
      style="fill:#fbeaa7;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      d="M 449.99998,575.00001 H 179.99996 v -10 l -10,15 10,15 v -10 h 270.00002 z"
      sodipodi:nodetypes="cccccccc" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;vector-effect:none;fill:#404040;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
-     x="404.47656"
-     y="50"
-     id="text3119"
-     transform="rotate(-20.341946,2525.2315,-1543.1693)"><tspan
-       sodipodi:role="line"
-       x="404.47656"
-       y="50"
-       id="tspan3117">The current plan is to implement</tspan><tspan
-       sodipodi:role="line"
-       x="404.47656"
-       y="70"
-       id="tspan3143">the shaded yellow area with a</tspan><tspan
-       sodipodi:role="line"
-       x="404.47656"
-       y="90"
-       id="tspan3147">parameterised primitive, also used</tspan><tspan
-       sodipodi:role="line"
-       x="404.47656"
-       y="110"
-       id="tspan3149">for sram_ctrl.</tspan></text>
-  <path
-     style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#404040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker3232);stop-color:#000000;stop-opacity:1"
-     d="m 1180,630.00001 c -30,-50 -40,-90 -40,-160"
-     id="path3199" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:12px;font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:end;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:end;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
