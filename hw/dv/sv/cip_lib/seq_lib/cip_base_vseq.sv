@@ -110,13 +110,27 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
-  virtual task apply_reset(string kind = "HARD");
+  // The concurrent_deassert_resets knob is used for stress_all_with_rand_reset sequence, which
+  // will kill the child sequence immediately when dut reset is deasserted.
+  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
     if (kind == "HARD") begin
-      // If DUT is connected to `edn_rst_ni`, assert resets with random delays
-      fork
-        if (cfg.has_edn) apply_edn_reset(kind);
-        super.apply_reset(kind);
-      join
+      if (!concurrent_deassert_resets) begin
+        // If DUT is connected to `edn_rst_ni`, assert resets with random delays
+        fork
+          if (cfg.has_edn) apply_edn_reset(kind);
+          super.apply_reset(kind);
+        join
+      end else if (cfg.has_edn) begin
+        fork begin // isolation_fork
+          fork
+            apply_edn_reset(kind);
+            super.apply_reset(kind);
+          join_any
+          disable fork;
+          cfg.clk_rst_vif.drive_rst_pin(1);
+          cfg.edn_clk_rst_vif.drive_rst_pin(1);
+        end join
+      end
     end
   endtask
 
@@ -561,7 +575,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
-              apply_reset("HARD");
+              apply_reset("HARD", .concurrent_deassert_resets(1));
               ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
             end

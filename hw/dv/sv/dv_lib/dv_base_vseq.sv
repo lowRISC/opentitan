@@ -84,7 +84,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     #1ps;
   endtask
 
-  virtual task apply_reset(string kind = "HARD");
+  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+    bit one_reset_deasserted;
     if (kind == "HARD") begin
       if (cfg.clk_rst_vifs.size > 0) begin
         fork
@@ -93,9 +94,16 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
               automatic string ral_name = i;
               fork
                 cfg.clk_rst_vifs[ral_name].apply_reset();
+                one_reset_deasserted = 1;
               join_none
             end
-            wait fork;
+            if (concurrent_deassert_resets) begin
+              wait(one_reset_deasserted);
+              disable fork;
+              foreach(cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[ral_name].drive_rst_pin(1);
+            end else begin
+              wait fork;
+            end
           end : isolation_fork
         join
       end else begin // no ral model and only has default clk_rst_vif
