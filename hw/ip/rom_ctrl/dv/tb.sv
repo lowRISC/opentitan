@@ -38,7 +38,6 @@ module tb;
 
   // dut
   rom_ctrl #(
-    .SkipCheck            (1'b0),
     .RndCnstScrNonce      (RND_CNST_SCR_NONCE),
     .RndCnstScrKey        (RND_CNST_SCR_KEY)
    ) dut (

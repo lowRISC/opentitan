@@ -27,7 +27,6 @@ module top_earlgrey #(
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter  RomCtrlBootRomInitFile = "",
-  parameter bit RomCtrlSkipCheck = 1,
 
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
@@ -2372,8 +2371,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[38:38]),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey),
-    .SkipCheck(RomCtrlSkipCheck)
+    .RndCnstScrKey(RndCnstRomCtrlScrKey)
   ) u_rom_ctrl (
       // [38]: fatal
       .alert_tx_o  ( alert_tx[38:38] ),

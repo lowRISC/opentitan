@@ -32,15 +32,6 @@
       randcount: "128",
       randtype:  "data"
     }
-
-    { name:      "SkipCheck",
-      type:      "bit",
-      desc:      "Skip rom power up check"
-      // TODO: flip this to 0 when infrastructure is ready
-      default:   "1"
-      local:     "false",
-      expose:    "true"
-    }
   ]
   alert_list: [
     { name: "fatal"

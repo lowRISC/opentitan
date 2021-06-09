@@ -17,8 +17,7 @@
 `include "prim_assert.sv"
 
 module rom_ctrl_compare #(
-  parameter int NumWords = 2,
-  parameter bit SkipCheck = 1'b1
+  parameter int NumWords = 2
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
@@ -147,7 +146,7 @@ module rom_ctrl_compare #(
   assign matches_d = matches_q && (digest_word == exp_digest_word);
 
   assign done_o = (state_q == Done);
-  assign good_o = matches_q | SkipCheck;
+  assign good_o = matches_q;
 
   assign alert_o = fsm_alert | start_alert | wait_addr_alert | done_addr_alert;
 

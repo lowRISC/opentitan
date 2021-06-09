@@ -80,15 +80,10 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter BootRomInitFile = "boot_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem",
-  // TODO: Remove this 0 once infra is ready
-  parameter bit RomCtrlSkipCheck = 1
+  parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 ) (
 % else:
-module chip_${top["name"]}_${target["name"]} #(
-  // TODO: Remove this 0 once infra is ready
-  parameter bit RomCtrlSkipCheck = 1
-) (
+module chip_${top["name"]}_${target["name"]} (
 % endif
 <%
 
@@ -940,8 +935,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacReuseShare(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
-    .RomCtrlSkipCheck(RomCtrlSkipCheck)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
     .rst_ni                       ( aon_pok                    ),
     // ast connections
