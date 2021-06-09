@@ -309,6 +309,23 @@ class tl_seq_item extends uvm_sequence_item;
       `uvm_error(`gfn, $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch", a_source, d_source))
   endfunction
 
+  // Compute and check the integrity of the a_channel payload.
+  //
+  // The TL agent is generic and adheres to the TLUL spec, which does not define
+  // how the integrity of the payload on each channel is computed / checked. That
+  // is up to the chip implementation. Typically, parity / ECC scheme is used, with
+  // the redundant bits transmitted through *_user.
+  //
+  // Returns 1 if the integrity of a_channel is maintained, 0 otherwise. This base
+  // class implementation vacuously returns 1.
+  virtual function bit is_a_chan_intg_ok(bit throw_error = 1'b1);
+    return 1;
+  endfunction
+
+  // d_channel version of the function above
+  virtual function bit is_d_chan_intg_ok(bit throw_error = 1'b1);
+    return 1;
+  endfunction
 endclass
 
 `undef chk_prot_a_opcode

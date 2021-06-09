@@ -255,7 +255,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
     bit csr_aligned_err, csr_size_err, tl_item_err;
     bit has_intg_err;
-    cip_tl_seq_item cip_tl_item;
 
     if (!is_tl_access_mapped_addr(item, ral_name)) begin
       is_tl_unmapped_addr = 1;
@@ -269,8 +268,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     csr_aligned_err = !is_tl_csr_write_addr_word_aligned(item, ral_name);
     csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err     = item.get_exp_d_error();
-    `downcast(cip_tl_item, item)
-    has_intg_err = !cip_tl_item.is_a_user_ok(.throw_error(0));
+
+    if (cfg.en_tl_intg_gen) has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
 
     if (!is_tl_err && (mem_access_err || csr_aligned_err || csr_size_err || tl_item_err ||
                        has_intg_err)) begin

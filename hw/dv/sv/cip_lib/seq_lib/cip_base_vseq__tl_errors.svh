@@ -243,6 +243,8 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
 endtask
 
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+  `DV_CHECK_EQ(cfg.en_tl_intg_gen, 1)
+
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)

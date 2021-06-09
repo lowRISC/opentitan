@@ -25,6 +25,7 @@ package cip_base_pkg;
   string msg_id = "cip_base_pkg";
   parameter uint EDN_BUS_WIDTH = 32;
   parameter uint EDN_DATA_WIDTH = EDN_BUS_WIDTH + 1; // 32 bits bus data, 1 bit fips
+  parameter uint MAX_TL_ECC_ERRORS = 3;
 
   typedef enum {
     err_update,
@@ -35,7 +36,7 @@ package cip_base_pkg;
     TlIntgErrNone,
     TlIntgErrCmd,
     TlIntgErrData,
-    TlIntgErrBoth // have both payload and data intg errors
+    TlIntgErrBoth  // Inject errors in both command and data.
   } tl_intg_err_e;
 
   typedef class cip_tl_seq_item;

@@ -196,6 +196,10 @@ Some examples:
   cases, including unmapped address error, protocol error, memory access error
   etc. All the items sent in this task will trigger d_error and won't change the
   CSR/memory value.
+* **task run_tl_intg_err_vseq**: This task will test TLUL integrity error. It contains
+  2 parallel threads. One thread calls `csr_rw` seq to do random CSR accesses. The
+  other issues a TLUL item with integrity error on `a_user` and then check the fatal
+  alert is triggered.
 * **task run_stress_all_with_rand_reset_vseq**: This task runs 3 parallel threads,
   which are ip_stress_all_vseq, run_tl_errors_vseq and reset sequence. After
   reset occurs, the other threads will be killed and then all the CSRs will be read
@@ -249,6 +253,13 @@ specific to that IP.
 class cip_base_test #(type CFG_T = cip_base_env_cfg,
                       type ENV_T = cip_base_env) extends uvm_test;
 ```
+
+### cip_tl_seq_item
+This is extended class of tl_seq_item to generate correct integrity values in
+a_user and d_user. If DUT relies on the agent to generate integrity for TLUL, set
+`cfg.en_tl_intg_gen = 1`, cip_tl_seq_item will override tl_seq_item, and integrity
+values will be generated. If TLUL integrity is handled in the DUT, set
+`cfg.en_tl_intg_gen = 0`, then `a_user` and `d_user` will be fully randomized.
 
 ## Extending from CIP library classes
 Let's say we are verifying an actual comportable IP `uart` which has `uart_tx`
