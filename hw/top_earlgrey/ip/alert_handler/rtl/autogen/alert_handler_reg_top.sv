@@ -139,8 +139,8 @@ module alert_handler_reg_top (
   logic ping_timer_regwen_qs;
   logic ping_timer_regwen_wd;
   logic ping_timer_regwen_we;
-  logic [23:0] ping_timeout_cyc_qs;
-  logic [23:0] ping_timeout_cyc_wd;
+  logic [15:0] ping_timeout_cyc_qs;
+  logic [15:0] ping_timeout_cyc_wd;
   logic ping_timeout_cyc_we;
   logic ping_timer_en_qs;
   logic ping_timer_en_wd;
@@ -1419,9 +1419,9 @@ module alert_handler_reg_top (
   // R[ping_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (24),
+    .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (24'h20)
+    .RESVAL  (16'h20)
   ) u_ping_timeout_cyc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10828,7 +10828,7 @@ module alert_handler_reg_top (
   assign ping_timer_regwen_wd = reg_wdata[0];
 
   assign ping_timeout_cyc_we = addr_hit[4] & reg_we & !reg_error;
-  assign ping_timeout_cyc_wd = reg_wdata[23:0];
+  assign ping_timeout_cyc_wd = reg_wdata[15:0];
 
   assign ping_timer_en_we = addr_hit[5] & reg_we & !reg_error;
   assign ping_timer_en_wd = reg_wdata[0];
@@ -11835,7 +11835,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[23:0] = ping_timeout_cyc_qs;
+        reg_rdata_next[15:0] = ping_timeout_cyc_qs;
       end
 
       addr_hit[5]: begin

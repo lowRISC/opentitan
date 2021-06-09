@@ -92,7 +92,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "PING_CNT_DW",
       desc: "Width of ping counter",
       type: "int",
-      default: "24",
+      default: "16",
       local: "true"
     },
     { name: "PHASE_DW",
@@ -528,7 +528,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "${accu_cnt_dw - 1}:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -542,7 +542,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${accu_cnt_dw - 1}:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
           register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
@@ -558,7 +558,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
@@ -577,7 +577,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASS${chars[i]}_REGWEN is false.'''
         }
@@ -592,7 +592,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASS${chars[i]}_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 

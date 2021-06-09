@@ -70,7 +70,6 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic lfsr_en, lfsr_en_unbuf;
   logic [LfsrWidth-1:0] entropy_unbuf;
   logic [1:0][LfsrWidth-1:0] lfsr_state;
-  logic [16-IdDw-1:0] unused_lfsr_state;
 
   assign lfsr_en_unbuf = reseed_en || lfsr_en;
   assign entropy_unbuf = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
@@ -126,18 +125,15 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
   logic [IdDw-1:0] id_to_ping;
   logic [PING_CNT_DW-1:0] wait_cyc;
-  // we only use bits up to 23, as IdDw is 8bit maximum
-  assign id_to_ping = lfsr_state[0][16 +: IdDw];
+  assign id_to_ping = lfsr_state[0][PING_CNT_DW +: IdDw];
 
   // to avoid lint warnings
-  assign unused_lfsr_state = lfsr_state[0][31:16+IdDw];
+  logic unused_lfsr_state;
+  assign unused_lfsr_state = ^{lfsr_state[0][LfsrWidth - 1 : PING_CNT_DW + IdDw],
+                               lfsr_state[0][2]}; // [2] is masked due to the constant offset below.
 
-  // concatenate with constant offset, introduce some stagger
-  // by concatenating the lower bits below. this ensures some
-  // minimum cycle spacing between pings.
-  assign wait_cyc = PING_CNT_DW'({lfsr_state[0][15:2],
-                                  8'h01,
-                                  lfsr_state[0][1:0]}) & wait_cyc_mask_i;
+  // the constant offset ensures a minimum cycle spacing between pings.
+  assign wait_cyc = (lfsr_state[0][0 +: PING_CNT_DW] | PING_CNT_DW'(3'b100)) & wait_cyc_mask_i;
 
   logic [2**IdDw-1:0] enable_mask;
   always_comb begin : p_enable_mask
@@ -337,6 +333,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   ////////////////
   // Assertions //
   ////////////////
+
+  // make sure the ID width is within bounds
+  `ASSERT_INIT(MaxIdDw_A, IdDw <= (LfsrWidth - PING_CNT_DW))
 
   // internals
   `ASSERT(PingOH0_A, $onehot0(ping_sel))

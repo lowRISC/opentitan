@@ -88,7 +88,7 @@
     { name: "PING_CNT_DW",
       desc: "Width of ping counter",
       type: "int",
-      default: "24",
+      default: "16",
       local: "true"
     },
     { name: "PHASE_DW",
@@ -533,7 +533,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "15:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -547,7 +547,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "15:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class A begins. Note that this
           register can not be modified if !!CLASSA_REGWEN is false.
@@ -563,7 +563,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class A. The timeout is set to zero
@@ -581,7 +581,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSA_REGWEN is false.'''
         }
@@ -595,7 +595,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSA_REGWEN is false.'''
         }
@@ -609,7 +609,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSA_REGWEN is false.'''
         }
@@ -623,7 +623,7 @@
       hwaccess: "hro",
       regwen:   "CLASSA_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSA_REGWEN is false.'''
         }
@@ -637,7 +637,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASSA_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 
@@ -808,7 +808,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "15:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -822,7 +822,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "15:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class B begins. Note that this
           register can not be modified if !!CLASSB_REGWEN is false.
@@ -838,7 +838,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class B. The timeout is set to zero
@@ -856,7 +856,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSB_REGWEN is false.'''
         }
@@ -870,7 +870,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSB_REGWEN is false.'''
         }
@@ -884,7 +884,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSB_REGWEN is false.'''
         }
@@ -898,7 +898,7 @@
       hwaccess: "hro",
       regwen:   "CLASSB_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSB_REGWEN is false.'''
         }
@@ -912,7 +912,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASSB_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 
@@ -1083,7 +1083,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "15:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -1097,7 +1097,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "15:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class C begins. Note that this
           register can not be modified if !!CLASSC_REGWEN is false.
@@ -1113,7 +1113,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class C. The timeout is set to zero
@@ -1131,7 +1131,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSC_REGWEN is false.'''
         }
@@ -1145,7 +1145,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSC_REGWEN is false.'''
         }
@@ -1159,7 +1159,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSC_REGWEN is false.'''
         }
@@ -1173,7 +1173,7 @@
       hwaccess: "hro",
       regwen:   "CLASSC_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSC_REGWEN is false.'''
         }
@@ -1187,7 +1187,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASSC_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 
@@ -1358,7 +1358,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "15:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -1372,7 +1372,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "15:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class D begins. Note that this
           register can not be modified if !!CLASSD_REGWEN is false.
@@ -1388,7 +1388,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class D. The timeout is set to zero
@@ -1406,7 +1406,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSD_REGWEN is false.'''
         }
@@ -1420,7 +1420,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSD_REGWEN is false.'''
         }
@@ -1434,7 +1434,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSD_REGWEN is false.'''
         }
@@ -1448,7 +1448,7 @@
       hwaccess: "hro",
       regwen:   "CLASSD_REGWEN",
       fields: [
-        { bits: "31:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASSD_REGWEN is false.'''
         }
@@ -1462,7 +1462,7 @@
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "31:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASSD_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 

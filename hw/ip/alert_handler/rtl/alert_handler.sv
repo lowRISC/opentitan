@@ -114,7 +114,7 @@ module alert_handler
     .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
     // this determines the range of the randomly generated
     // wait period between ping. maximum mask width is PING_CNT_DW.
-    .wait_cyc_mask_i    ( PING_CNT_DW'(24'hFFFFFF)     ),
+    .wait_cyc_mask_i    ( PING_CNT_DW'(16'hFFFFFF)     ),
     .alert_ping_req_o   ( alert_ping_req               ),
     .esc_ping_req_o     ( esc_ping_req                 ),
     .alert_ping_ok_i    ( alert_ping_ok                ),
