@@ -6,11 +6,11 @@
 
 from typing import Callable, Dict, List, Optional, Sequence, TypeVar
 
-import yaml
+import yaml  # type: ignore
 try:
     from yaml import CSafeLoader as YamlLoader
 except ImportError:
-    from yaml import SafeLoader as YamlLoader  # type: ignore
+    from yaml import SafeLoader as YamlLoader
 
 
 T = TypeVar('T')

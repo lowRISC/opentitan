@@ -31,6 +31,10 @@ pyyaml
 tabulate
 yapf
 
+# Type stubs for mypy checking. types-dataclasses is only needed for Python <= 3.6.
+types-dataclasses
+types-tabulate
+
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot#egg=fusesoc >= 1.11.0
 
