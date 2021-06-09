@@ -15,7 +15,7 @@ package alert_handler_reg_pkg;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
   parameter int N_LOC_ALERT = 5;
-  parameter int PING_CNT_DW = 24;
+  parameter int PING_CNT_DW = 16;
   parameter int PHASE_DW = 2;
   parameter int CLASS_DW = 2;
 
@@ -76,7 +76,7 @@ package alert_handler_reg_pkg;
   } alert_handler_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic [23:0] q;
+    logic [15:0] q;
   } alert_handler_reg2hw_ping_timeout_cyc_reg_t;
 
   typedef struct packed {
@@ -458,10 +458,10 @@ package alert_handler_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [848:845]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [844:841]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [840:833]
-    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [832:809]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [840:837]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [836:833]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [832:825]
+    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [824:809]
     alert_handler_reg2hw_ping_timer_en_reg_t ping_timer_en; // [808:808]
     alert_handler_reg2hw_alert_regwen_mreg_t [3:0] alert_regwen; // [807:804]
     alert_handler_reg2hw_alert_en_mreg_t [3:0] alert_en; // [803:800]
@@ -746,7 +746,7 @@ package alert_handler_reg_pkg;
     4'b 0001, // index[ 1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[ 2] ALERT_HANDLER_INTR_TEST
     4'b 0001, // index[ 3] ALERT_HANDLER_PING_TIMER_REGWEN
-    4'b 0111, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
+    4'b 0011, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
     4'b 0001, // index[ 5] ALERT_HANDLER_PING_TIMER_EN
     4'b 0001, // index[ 6] ALERT_HANDLER_ALERT_REGWEN_0
     4'b 0001, // index[ 7] ALERT_HANDLER_ALERT_REGWEN_1
