@@ -78,11 +78,11 @@ The ROM checker runs immediately after reset.
 Until it is done, it controls ROM address requests (through the green multiplexer).
 The select signal for this multiplexer has a redundant encoding to protect it against fault injection attacks.
 If the select signal has an invalid value, this will trigger a fatal alert.
-Before starting to read data, it starts a cSHAKE operation on the [KMAC]({{< relref "hw/ip/kmac/doc" >}}) module using `kmac_cmd_o`.
+Before starting to read data, it starts a cSHAKE operation on the [KMAC]({{< relref "hw/ip/kmac/doc" >}}) module using one of its application interfaces.
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
 Each read produces 39 bits of data, which are padded with zeros to 64 bits to match the interface expected by the KMAC block.
-The checker FSM loops through almost all the words in ROM (from bottom to top), passing each to the KMAC block with the ready/valid interface and setting the `kmac_rom_last_o` bit for the last word that is sent.
+The checker FSM loops through almost all the words in ROM (from bottom to top), passing each to the KMAC block with the ready/valid interface and setting the `kmac_data_o.last` bit for the last word that is sent.
 Once the last word has been sent, the FSM releases the multiplexer; this now switches over permanently to allow access through the TL-UL SRAM adapter.
 
 The top eight words in ROM (by logical address) are interpreted as a 256-bit expected hash.
@@ -91,8 +91,8 @@ This is taken by the checker FSM (ignoring ECC bits) and will be compared with t
 
 Once it comes back, the digest is forwarded directly to the [Key Manager]({{< relref "hw/ip/keymgr/doc" >}}).
 It is also compared with the hash that was read from the top eight words of ROM.
-On a match, `check_good_o` is signalled as `On`.
-In either case, `check_done_o` goes high when the calculation is complete.
+On a match, `pwrmgr_data_o.good` is signalled as `On`.
+In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
 
 The diagram below shows the operation of the simple FSM.
 
@@ -113,14 +113,15 @@ See \[SKO-05\][^SKO-05], section 2.1.1, for a description of mask ROMs and attac
 Since the code in ROM is the first thing to execute, an attacker that modifies it undetected can completely subvert the chain of trust.
 As such, OpenTitan needs some form of ROM integrity checking and the ROM checker is the module in charge of providing it.
 
-After bringing the ROM controller module out of reset, the power manager must wait until `check_done_o` is asserted before starting the host processor.
-In PROD state, it will also check that `check_good_o` is `On`: if not, it will refuse to boot.
+After bringing the ROM controller module out of reset, the power manager must wait until `pwrgr_data_o.done` is asserted before starting the host processor.
+In PROD state, it will also check that `pwrmgr_data_o.good` is `On`: if not, it will refuse to boot.
 This provides an extra safety check, but the real security comes from key manager integration described below.
 
 The simple KMAC interface assumes that KMAC is pre-configured to run the cSHAKE algorithm with a prefix specific to the ROM checker.
-The ROM checker will not assert `kmac_rom_vld_o` after finishing the one and only hash computation, but KMAC may wish to ignore the signal after then to allow very simple arbitration that still has robustness against fault injection attacks.
+The ROM checker will not assert `kmac_data_o.valid` after finishing the one and only digest computation.
+The KMAC module may choose to add a check for this, to detect reset glitches affecting the `rom_ctrl` block.
 
-The integration with the key manager is based on forwarding the digest data in `kmac_digest_share0_i` and `kmac_digest_share1_i` as `keymgr_digest_data_o`.
+The integration with the key manager is based on forwarding the digest data in `kmac_data_i` as `keymgr_data_o.data`.
 This 256-bit digest will be incorporated into the [`CreatorRootKey`]({{< relref "doc/security/specs/identities_and_root_keys#creator-root-key" >}}).
 The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
