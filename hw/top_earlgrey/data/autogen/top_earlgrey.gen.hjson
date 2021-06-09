@@ -4496,6 +4496,26 @@
       param_list:
       [
         {
+          name: RndCnstCsKeymgrDivNonProduction
+          desc: Compile-time random bits for csrng state group diversification value
+          type: csrng_pkg::cs_keymgr_div_t
+          randcount: 384
+          randtype: data
+          name_top: RndCnstCsrngCsKeymgrDivNonProduction
+          default: 0x3a1955e3d4549f3608232d03f93eed0fe9d1b1f891dcab64f5a52883a710b72b92e47f6e0845f450ead8f3095ff32c32
+          randwidth: 384
+        }
+        {
+          name: RndCnstCsKeymgrDivProduction
+          desc: Compile-time random bits for csrng state group diversification value
+          type: csrng_pkg::cs_keymgr_div_t
+          randcount: 384
+          randtype: data
+          name_top: RndCnstCsrngCsKeymgrDivProduction
+          default: 0x220e25ba7743095f2c1194fb74487a86b6fee0311af608b7123f603c251a36ab2e658548c5420be549da272d96ae771b
+          randwidth: 384
+        }
+        {
           name: SBoxImpl
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
@@ -4907,7 +4927,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramKey
-          default: 0x92e47f6e0845f450ead8f3095ff32c32
+          default: 0xfe8c330ca072829f9970f91074501568
           randwidth: 128
         }
         {
@@ -4917,7 +4937,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramNonce
-          default: 0xe9d1b1f891dcab64f5a52883a710b72b
+          default: 0xcb942155264f8c121b7387a0a07db44
           randwidth: 128
         }
         {
@@ -4927,7 +4947,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMainSramLfsrPerm
-          default: 0x33d0bedd4d8c36cb029c0cfd5cb87f2170991f42
+          default: 0x2bc503fee4ec68862f5c4db196cc15df82a1c8ce
           randwidth: 160
         }
         {
@@ -5105,7 +5125,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtbnUrndLfsrSeed
-          default: 0x1102be301eb1a8d04814ac33b45de425069e5959df06d42254a25afae52a5963
+          default: 0x44c7bd9e98eb2847fa1a35f74a8586d23e3bd765866c6f6363a02ed345973cf
           randwidth: 256
         }
         {
@@ -5115,7 +5135,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstOtbnUrndChunkLfsrPerm
-          default: 0x96c27a70b8a45cfd2d3b52b1f040db79a46ed80e5942bc02513fbdfd5a98a66805bc17dded6ccd3271a3e37a08c92847
+          default: 0xc12f0e2b9ea5a371fd0f691ca53bf257b7531e119cef75b206a2ca62f4d02ee4a4029144fe8521d5f36637ee6805c7a
           randwidth: 384
         }
       ]
@@ -5227,7 +5247,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrlScrNonce
-          default: 0xfc00de9d9734c3fe
+          default: 0x5a0d6e7185eaa2e0
           randwidth: 64
         }
         {
@@ -5237,7 +5257,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrlScrKey
-          default: 0x23c074e020fd502869582e71443c8be0
+          default: 0x3ae54e9e45da6e662fb69c3aab936b41
           randwidth: 128
         }
       ]

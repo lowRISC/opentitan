@@ -197,21 +197,36 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
+  // csrng
+  ////////////////////////////////////////////
+  // Compile-time random bits for csrng state group diversification value
+  parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivNonProduction = {
+    128'h3A1955E3D4549F3608232D03F93EED0F,
+    256'hE9D1B1F891DCAB64F5A52883A710B72B92E47F6E0845F450EAD8F3095FF32C32
+  };
+
+  // Compile-time random bits for csrng state group diversification value
+  parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivProduction = {
+    128'h220E25BA7743095F2C1194FB74487A86,
+    256'hB6FEE0311AF608B7123F603C251A36AB2E658548C5420BE549DA272D96AE771B
+  };
+
+  ////////////////////////////////////////////
   // sram_ctrl_main
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'h92E47F6E0845F450EAD8F3095FF32C32
+    128'hFE8C330CA072829F9970F91074501568
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    128'hE9D1B1F891DCAB64F5A52883A710B72B
+    128'h0CB942155264F8C121B7387A0A07DB44
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainSramLfsrPerm = {
-    160'h33D0BEDD4D8C36CB029C0CFD5CB87F2170991F42
+    160'h2BC503FEE4EC68862F5C4DB196CC15DF82A1C8CE
   };
 
   ////////////////////////////////////////////
@@ -219,13 +234,13 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
   parameter otbn_pkg::urnd_lfsr_seed_t RndCnstOtbnUrndLfsrSeed = {
-    256'h1102BE301EB1A8D04814AC33B45DE425069E5959DF06D42254A25AFAE52A5963
+    256'h044C7BD9E98EB2847FA1A35F74A8586D23E3BD765866C6F6363A02ED345973CF
   };
 
   // Permutation applied to the LFSR chunks of the PRNG used for URND.
   parameter otbn_pkg::urnd_chunk_lfsr_perm_t RndCnstOtbnUrndChunkLfsrPerm = {
-    128'h96C27A70B8A45CFD2D3B52B1F040DB79,
-    256'hA46ED80E5942BC02513FBDFD5A98A66805BC17DDED6CCD3271A3E37A08C92847
+    128'h0C12F0E2B9EA5A371FD0F691CA53BF25,
+    256'h7B7531E119CEF75B206A2CA62F4D02EE4A4029144FE8521D5F36637EE6805C7A
   };
 
   ////////////////////////////////////////////
@@ -233,12 +248,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrlScrNonce = {
-    64'hFC00DE9D9734C3FE
+    64'h5A0D6E7185EAA2E0
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrlScrKey = {
-    128'h23C074E020FD502869582E71443C8BE0
+    128'h3AE54E9E45DA6E662FB69C3AAB936B41
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg

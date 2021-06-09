@@ -2249,6 +2249,8 @@ module top_earlgrey #(
 
   csrng #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42:42]),
+    .RndCnstCsKeymgrDivNonProduction(RndCnstCsrngCsKeymgrDivNonProduction),
+    .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction),
     .SBoxImpl(CsrngSBoxImpl)
   ) u_csrng (
 

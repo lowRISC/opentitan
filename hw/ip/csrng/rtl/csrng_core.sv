@@ -8,7 +8,9 @@
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int NHwApps = 2
+  parameter int NHwApps = 2,
+  parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
+  parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
 ) (
   input logic        clk_i,
   input logic        rst_ni,
@@ -89,6 +91,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [AppCmdWidth-1:0] acmd_bus;
 
   logic [SeedLen-1:0]     packer_adata;
+  logic [SeedLen-1:0]     seed_diversification;
 
   logic                   cmd_entropy_req;
   logic                   cmd_entropy_avail;
@@ -327,8 +330,6 @@ module csrng_core import csrng_pkg::*; #(
   logic        flag0_q, flag0_d;
   logic        statedb_wr_select_q, statedb_wr_select_d;
   logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  logic        lc_hw_debug_not_on_q, lc_hw_debug_not_on_d;
-  logic        lc_hw_debug_on_q, lc_hw_debug_on_d;
   logic        cmd_req_dly_q, cmd_req_dly_d;
   logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic           cs_aes_halt_q, cs_aes_halt_d;
@@ -344,8 +345,6 @@ module csrng_core import csrng_pkg::*; #(
       flag0_q <= '0;
       statedb_wr_select_q <= '0;
       genbits_stage_fips_sw_q <= '0;
-      lc_hw_debug_not_on_q <= '0;
-      lc_hw_debug_on_q <= '0;
       cmd_req_dly_q <= '0;
       cmd_req_ccmd_dly_q <= '0;
       cs_aes_halt_q <= '0;
@@ -359,8 +358,6 @@ module csrng_core import csrng_pkg::*; #(
       flag0_q <= flag0_d;
       statedb_wr_select_q <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
-      lc_hw_debug_not_on_q <= lc_hw_debug_not_on_d;
-      lc_hw_debug_on_q <= lc_hw_debug_on_d;
       cmd_req_dly_q <= cmd_req_dly_d;
       cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q <= cs_aes_halt_d;
@@ -963,7 +960,7 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_res_ctr_i(state_db_wr_rc),
     .state_db_wr_sts_i(state_db_wr_sts),
 
-    .state_db_lc_en_i(lc_hw_debug_on_q),
+    .state_db_lc_en_i(lc_hw_debug_on),
     .state_db_reg_rd_sel_i(state_db_reg_rd_sel),
     .state_db_reg_rd_id_pulse_i(state_db_reg_rd_id_pulse),
     .state_db_reg_rd_val_o(state_db_reg_rd_val),
@@ -1002,10 +999,14 @@ module csrng_core import csrng_pkg::*; #(
   assign entropy_src_hw_if_o.es_req = cs_enable &&
          cmd_entropy_req;
 
+
+  assign seed_diversification = lc_hw_debug_on ? RndCnstCsKeymgrDivNonProduction :
+                                                 RndCnstCsKeymgrDivProduction;
+
   // Capture entropy from entropy_src
   assign entropy_src_seed_d =
          (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
-         cmd_entropy_avail ? entropy_src_hw_if_i.es_bits :
+         cmd_entropy_avail ? (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
          (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
@@ -1228,14 +1229,6 @@ module csrng_core import csrng_pkg::*; #(
   assign      lc_hw_debug_not_on = (lc_hw_debug_en_out[0] != lc_ctrl_pkg::On);
   assign      lc_hw_debug_on = (lc_hw_debug_en_out[1] == lc_ctrl_pkg::On);
 
-  // flop for better timing
-  assign      lc_hw_debug_not_on_d =
-              (!cs_enable) ? '0 :
-              lc_hw_debug_not_on;
-
-  assign      lc_hw_debug_on_d =
-              (!cs_enable) ? '0 :
-              lc_hw_debug_on;
 
   //-------------------------------------
   // csrng_block_encrypt instantiation
@@ -1258,7 +1251,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni(rst_ni),
     .block_encrypt_bypass_i(!aes_cipher_enable),
     .block_encrypt_enable_i(cs_enable),
-    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on_q),
+    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),
