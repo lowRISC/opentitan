@@ -30,9 +30,8 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
   function void pre_randomize();
     this.dai_wr_blank_addr_c.constraint_mode(0);
     this.no_access_err_c.constraint_mode(0);
-    this.num_iterations_up_to_num_valid_addr_c.constraint_mode(0);
     this.dai_wr_digests_c.constraint_mode(0);
-    collect_used_addr = 0;
+    write_unused_addr = 0;
   endfunction
 
   task body();

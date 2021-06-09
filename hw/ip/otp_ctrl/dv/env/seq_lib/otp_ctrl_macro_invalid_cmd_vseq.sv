@@ -63,7 +63,6 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
         end
 
       dai_wr(dai_addr, wdata0, wdata1);
-      used_dai_addr_q.push_back(dai_addr);
 
       // OTP read via DAI, check data in scb
       dai_rd(dai_addr, 0, wdata0, wdata1);

@@ -58,7 +58,6 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
       // OTP write via DAI
       dai_wr(dai_addr, wdata0, wdata1);
-      used_dai_addr_q.push_back(dai_addr);
 
       if (i > num_to_lock_digests && part_idx inside {[HwCfgIdx: Secret2Idx]}) begin
         init_chk_err[part_idx] = 1;

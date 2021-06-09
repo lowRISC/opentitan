@@ -13,10 +13,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_otp_ctrl_init = 1'b1;
   bit do_otp_pwr_init  = 1'b1;
-  bit collect_used_addr = 1;
+
+  // To only write unused OTP address, sequence will collect all the written addresses to an
+  // associative array to avoid `write_blank_addr_error`.
+  bit write_unused_addr = 1;
+  static bit used_dai_addrs[bit [OTP_ADDR_WIDTH - 1 : 0]];
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
-  bit [TL_AW-1:0] used_dai_addr_q[$];
   bit is_valid_dai_op = 1;
 
   // According to spec, the period between digest calculation and reset should not issue any write.
@@ -73,7 +76,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual function void clear_otp_memory();
     cfg.mem_bkdr_util_h.clear_mem();
     cfg.backdoor_clear_mem = 1;
-    used_dai_addr_q.delete();
+    used_dai_addrs.delete();
   endfunction
 
   // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
@@ -92,8 +95,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
     bit [TL_DW-1:0] val;
-    if (collect_used_addr)  used_dai_addr_q.push_back(addr);
+    if (write_unused_addr) begin
+      if (used_dai_addrs.exists(addr[OTP_ADDR_WIDTH - 1 : 0])) begin
+        `uvm_info(`gfn, $sformatf("addr %0h is already written!", addr), UVM_MEDIUM)
+        return;
+      end else begin
+        used_dai_addrs[addr] = 1;
+      end
+    end
     addr = randomize_dai_addr(addr);
+    `uvm_info(`gfn, $sformatf("dai write addr %0h, data %0h", addr, wdata0), UVM_HIGH)
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
     if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata_1, wdata1);
@@ -124,7 +135,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       output bit [TL_DW-1:0] rdata1);
     bit [TL_DW-1:0] val, backdoor_rd_val;
     bit backdoor_wr;
-    if (collect_used_addr) used_dai_addr_q.push_back(addr);
     addr = randomize_dai_addr(addr);
 
     // Here we won't backdoor write to corrupt ECC bits if:
@@ -200,25 +210,15 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // SW digest data are calculated in sw and won't be checked in OTP.
   // Here to simplify testbench, write random data to sw digest.
-  // If `collect_used_addr` is set, make sure the sw digests have not been written in previous
-  // `dai_wr` methods. Otherwise might trigger `write_blank_err`.
   virtual task write_sw_digests(bit [1:0] wr_digest = $urandom());
     bit [TL_DW*2-1:0] wdata;
     if (wr_digest[0]) begin
-      if (collect_used_addr && CreatorSwCfgDigestOffset inside {used_dai_addr_q}) begin
-        `uvm_info(`gfn, "Creator SW digest is already written!", UVM_HIGH)
-      end else begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-        dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
-      end
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+      dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
     if (wr_digest[1]) begin
-      if (collect_used_addr && OwnerSwCfgDigestOffset inside {used_dai_addr_q}) begin
-        `uvm_info(`gfn, "Owner SW digest is already written!", UVM_HIGH)
-      end else begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-        dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
-     end
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+      dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
   endtask
 
@@ -444,7 +444,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_lc_transition(bit check_intr = 0,
                                  bit blocking = default_req_blocking,
-                                 bit wr_blank_err = !collect_used_addr);
+                                 bit wr_blank_err = !write_unused_addr);
     if (cfg.m_lc_prog_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
@@ -460,7 +460,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_lc_transition_sub(bit check_intr = 0, bit wr_blank_err = !collect_used_addr);
+  virtual task req_lc_transition_sub(bit check_intr = 0, bit wr_blank_err = !write_unused_addr);
     lc_ctrl_state_pkg::lc_cnt_e       next_lc_cnt;
     lc_ctrl_state_pkg::dec_lc_state_e next_lc_state, lc_state_dec;
     bit [TL_DW-1:0]                   intr_val;

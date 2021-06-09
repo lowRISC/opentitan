@@ -18,11 +18,6 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
   // enable access_err for each cycle
   constraint no_access_err_c {access_locked_parts == 1;}
 
-  // access locked means no memory clear, constraint to ensure there are enough dai address
-  constraint num_iterations_up_to_num_valid_addr_c {
-    collect_used_addr -> num_trans * num_dai_op <= DAI_ADDR_SIZE;
-  }
-
   constraint num_trans_c {
     num_trans  inside {[1:10]};
     num_dai_op inside {[1:50]};
@@ -37,8 +32,8 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == Secret0Idx)      dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx)      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
-    if (part_idx == LifeCycleIdx && collect_used_addr) {
-      if (collect_used_addr) {
+    if (part_idx == LifeCycleIdx && write_unused_addr) {
+      if (write_unused_addr) {
         // Dai address input is only 11 bits wide.
         dai_addr inside {[PartInfo[LifeCycleIdx].offset : {11{1'b1}}]};
       } else {
