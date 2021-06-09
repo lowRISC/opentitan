@@ -360,12 +360,18 @@ module tb;
     void'($value$plusargs("stub_cpu=%0b", stub_cpu));
     if (stub_cpu) begin
       force `CPU_HIER.clk_i = 1'b0;
-      force `CPU_HIER.tl_d_o = cpu_d_tl_if.h2d;
+      // tl type is used to calculate ECC and we use DataType for cpu data interface
+      force cpu_d_tl_if.h2d.a_user.tl_type = tlul_pkg::DataType;
+      force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
+      force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
     end else begin
+      // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
+      // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+      // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
       force cpu_d_tl_if.h2d = `CPU_HIER.tl_d_o;
+      force cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
     end
   end
-  assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
   // otp test_access memory is only accessible after otp_init and lc_dft_en = 1.
   // TODO: remove them once the otp/pwr otp/lc connections are completed.
