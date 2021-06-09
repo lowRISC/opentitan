@@ -144,12 +144,13 @@ Signal                       | Direction        | Type                        | 
 -----------------------------|------------------|-----------------------------|---------------
 `otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST ctr_drbg internal state through registers.
 `lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will allow disabling of the AES encryption block, to be used for debug only.
-`entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the Entropy_src module.
-`entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the Entropy_src module. 
-`cs_aes_halt_i`              | `input`          | `cs_aes_halt_req_t`         | Request to CSRNG from Entropy_Src to halt requests to the AES block for power leveling purposes.
-`cs_aes_halt_o`              | `output`         | `cs_aes_halt_rsp_t`         | Response from CSRNG to Entropy_Src that all requests to AES block are halted.
+`entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
+`entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
+`cs_aes_halt_i`              | `input`          | `cs_aes_halt_req_t`         | Request to CSRNG from ENTROPY_SRC to halt requests to the AES block for power leveling purposes.
+`cs_aes_halt_o`              | `output`         | `cs_aes_halt_rsp_t`         | Response from CSRNG to ENTROPY_SRC that all requests to AES block are halted.
 `csrng_cmd_i`                | `input`          | `csrng_req_t`               | Application interface request to CSRNG from an EDN block.
 `csrng_cmd_o`                | `output`         | `csrng_rsp_t`               | Application interface response from CSRNG to an EDN block.
+
 
 ## Design Details
 
@@ -391,7 +392,7 @@ In addition to the command response signals there is all the bus for returning t
 This 129-bit bus consists of 128-bits, `genbits_bus`, for the random bit sequence itself, along with a single bit flag, `genbits_fips`, indicating whether the bits were considered fully in accordance with FIPS standards.
 
 There are two cases when the sequence will not be FIPS compliant:
-- Early in the boot sequence, the `entropy_src` generates a seed from the first 384 bits pulled from the noise source.
+- Early in the boot sequence, the `ENTROPY_SRC` generates a seed from the first 384 bits pulled from the noise source.
 This initial seed is tested to ensure some minimum quality for obfuscation use- cases, but this boot seed is not expected to be full-entropy nor do these health checks meet the 1024-bit requirement for start-up health checks required by NIST 800-90B.
 - If `flag0` is asserted during instantiation, the resulting DRBG instance will have a fully-deterministic seed, determined only by user input data.
 Such a seed will be created only using factory-entropy and will lack the physical-entropy required by NIST SP 800-90A, and thus this DRBG instance will not be FIPS compliant.
@@ -501,7 +502,7 @@ The `cs_cmd_req_done` interrupt will assert when a csrng command has been comple
 
 The `cs_entropy_req` interrupt will assert when csrng requests for entropy from ENTROPY_SRC.
 
-The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `entropy_src` IP.
+The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `ENTROPY_SRC` IP.
 
 The `cs_fifo_err` interrupt will assert when any of the csrng FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.

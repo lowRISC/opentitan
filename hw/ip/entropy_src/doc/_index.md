@@ -197,15 +197,15 @@ Signal                         | Direction        | Type                        
 -------------------------------|------------------|-----------------------------|---------------
 `otp_en_entropy_src_fw_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access final entropy through a register.
 `otp_en_entropy_src_fw_over_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access post-health check raw entropy through a register FIFO.
-`rng_fips_o`                   | `output`         | `logic `                    | Output that indicates to the RNG AST block that Entropy_src block is generating fips level entropy.
-`entropy_src_hw_if_i`          | `input`          | `entropy_src_hw_if_req_t`   | Seed request made to the Entropy_src module.
-`entropy_src_hw_if_o`          | `output`         | `entropy_src_hw_if_rsp_t`   | Seed response from the Entropy_src module. 
-`entropy_src_rng_i`            | `input`          | `entropy_src_hw_if_req_t`   | Request made from RNG AST to the Entropy_src module to provide raw noise bits.
-`entropy_src_rng_o`            | `output`         | `entropy_src_rng_rsp_t`     | Response to RNG AST from the Entropy_src module that raw noise bits were received.
-`cs_aes_halt_o`                | `output`         | `cs_aes_halt_req_t`         | Request from Entropy_Src tp CSRNG that all requests to AES block are halted.
-`cs_aes_halt_i`                | `input`          | `cs_aes_halt_rsp_t`         | Response from CSRNG from Entropy_Src that the AES block is halted for power leveling purposes.
-`entropy_src_xht_o`            | `output`         | `entropy_src_xht_req_t`     | Request from Entropy_Src to an external health test block, which is optional.
-`entropy_src_xht_i`            | `input`          | `entropy_src_xht_rsp_t`     | Response to Entropy_Src from an external health test block, which is optional.
+`rng_fips_o`                   | `output`         | `logic `                    | Output that indicates to the RNG AST block that ENTROPY_SRC module is generating fips level entropy.
+`entropy_src_hw_if_i`          | `input`          | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
+`entropy_src_hw_if_o`          | `output`         | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
+`entropy_src_rng_i`            | `input`          | `entropy_src_hw_if_req_t`   | Request made from RNG AST to the ENTROPY_SRC module to provide raw noise bits.
+`entropy_src_rng_o`            | `output`         | `entropy_src_rng_rsp_t`     | Response to RNG AST from the ENTROPY_SRC module that raw noise bits were received.
+`cs_aes_halt_o`                | `output`         | `cs_aes_halt_req_t`         | Request from ENTROPY_SRC tp CSRNG that all requests to AES block are halted.
+`cs_aes_halt_i`                | `input`          | `cs_aes_halt_rsp_t`         | Response from CSRNG from ENTROPY_SRC that the AES block is halted for power leveling purposes.
+`entropy_src_xht_o`            | `output`         | `entropy_src_xht_req_t`     | Request from ENTROPY_SRC to an external health test block, which is optional.
+`entropy_src_xht_i`            | `input`          | `entropy_src_xht_rsp_t`     | Response to ENTROPY_SRC from an external health test block, which is optional.
 
 
 ## Design Details
