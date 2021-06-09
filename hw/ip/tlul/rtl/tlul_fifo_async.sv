@@ -87,9 +87,4 @@ module tlul_fifo_async #(
     .rdepth_o      ()
   );
 
-  ////////////////
-  // Assertions //
-  ////////////////
-  `ASSERT_INIT(DepthGTE3_A, ReqDepth >= 3 && RspDepth >= 3)
-
 endmodule
