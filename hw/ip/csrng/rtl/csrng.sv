@@ -12,7 +12,9 @@ module csrng
 #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplCanright,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int NHwApps = 2
+  parameter int NHwApps = 2,
+  parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
+  parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
 ) (
   input logic         clk_i,
   input logic         rst_ni,
@@ -76,7 +78,9 @@ module csrng
 
   csrng_core #(
     .SBoxImpl(SBoxImpl),
-    .NHwApps(NHwApps)
+    .NHwApps(NHwApps),
+    .RndCnstCsKeymgrDivNonProduction(RndCnstCsKeymgrDivNonProduction),
+    .RndCnstCsKeymgrDivProduction(RndCnstCsKeymgrDivProduction)
   ) u_csrng_core (
     .clk_i,
     .rst_ni,

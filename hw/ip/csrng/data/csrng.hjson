@@ -7,6 +7,20 @@
     { protocol: "tlul", direction: "device" }
   ],
   param_list: [
+    // Random netlist constants
+    { name:      "RndCnstCsKeymgrDivNonProduction",
+      desc:      "Compile-time random bits for csrng state group diversification value",
+      type:      "csrng_pkg::cs_keymgr_div_t",
+      randcount: "384",
+      randtype:  "data",
+    }
+    { name:      "RndCnstCsKeymgrDivProduction",
+      desc:      "Compile-time random bits for csrng state group diversification value",
+      type:      "csrng_pkg::cs_keymgr_div_t",
+      randcount: "384",
+      randtype:  "data",
+    }
+    // Regular parameters
     { name: "SBoxImpl",
       type: "aes_pkg::sbox_impl_e",
       default: "aes_pkg::SBoxImplCanright",
