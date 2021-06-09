@@ -100,7 +100,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
             if (concurrent_deassert_resets) begin
               wait(one_reset_deasserted);
               disable fork;
-              foreach(cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[ral_name].drive_rst_pin(1);
+              foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
             end else begin
               wait fork;
             end

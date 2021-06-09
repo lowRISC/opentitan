@@ -44,7 +44,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Initializating aon timer, nothing to do at the moment", UVM_MEDIUM)
   endtask
 
-  virtual task apply_reset(string kind = "HARD");
+  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
     cfg.lc_escalate_en_vif.drive(initial_lc_escalate_en);
     cfg.sleep_vif.drive(initial_sleep_mode);
 
@@ -52,11 +52,11 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     // because the AON clock is much slower so will always come up second.
     if (kind == "HARD" && reset_aon_first) begin
       cfg.aon_clk_rst_vif.apply_reset();
-      super.apply_reset(kind);
+      super.apply_reset(kind, concurrent_deassert_resets);
     end else begin
       fork
         if (kind == "HARD") cfg.aon_clk_rst_vif.apply_reset();
-        super.apply_reset(kind);
+        super.apply_reset(kind, concurrent_deassert_resets);
       join
     end
   endtask // apply_reset
