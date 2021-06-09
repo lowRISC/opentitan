@@ -65,6 +65,8 @@ package otp_ctrl_env_pkg;
   parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
                                    Secret1Size + Secret2Size) / (TL_DW / 8);
 
+  parameter int OTP_ADDR_WIDTH = 11;
+
   // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
   // a granularity of 4. Subtract 8 for each digest.
   parameter uint DAI_ADDR_SIZE =

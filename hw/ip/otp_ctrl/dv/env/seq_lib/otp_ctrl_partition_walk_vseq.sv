@@ -10,7 +10,7 @@ class otp_ctrl_partition_walk_vseq extends otp_ctrl_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    collect_used_addr = 0;
+    write_unused_addr = 0;
   endtask
 
   virtual task body();

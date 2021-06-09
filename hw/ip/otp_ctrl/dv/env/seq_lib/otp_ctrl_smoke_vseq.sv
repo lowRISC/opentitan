@@ -40,7 +40,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   }
 
   constraint dai_wr_blank_addr_c {
-    dai_addr inside {used_dai_addr_q} == 0;
     dai_addr % 4 == 0;
     if (part_idx inside {[Secret0Idx:Secret2Idx]}) dai_addr % 8 == 0;
   }
