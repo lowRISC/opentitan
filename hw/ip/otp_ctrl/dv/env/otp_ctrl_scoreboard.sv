@@ -113,8 +113,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
             if (dai_digest_ip != LifeCycleIdx) begin
               bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
-              otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
-              otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
+              otp_a[otp_addr]   = cfg.backdoor_read32(otp_addr << 2);
+              otp_a[otp_addr+1] = cfg.backdoor_read32((otp_addr << 2) + 4);
               dai_digest_ip = LifeCycleIdx;
             end
             predict_digest_csrs();
@@ -222,7 +222,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       #1ps;
       if (cfg.otp_ctrl_vif.rst_ni == 0) begin
         for (int i = 0; i < LC_PROG_DATA_SIZE/32; i++) begin
-          otp_lc_data[i*32+:32] = cfg.mem_bkdr_util_h.read32(LifeCycleOffset+i*4);
+          otp_lc_data[i*32+:32] = cfg.backdoor_read32(LifeCycleOffset + i * 4);
         end
       end
     end
@@ -1167,4 +1167,5 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     exp_alert = alert_name == "fatal_check_error" ? OtpCheckAlert : OtpMacroAlert;
     super.set_exp_alert(alert_name, is_fatal, max_delay);
   endfunction
+
 endclass
