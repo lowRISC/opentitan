@@ -127,7 +127,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             super.apply_reset(kind);
           join_any
           disable fork;
-          cfg.clk_rst_vif.drive_rst_pin(1);
+          if (cfg.clk_rst_vifs.size > 0) begin
+            foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+          end else begin
+            cfg.clk_rst_vif.drive_rst_pin(1);
+          end
           cfg.edn_clk_rst_vif.drive_rst_pin(1);
         end join
       end
