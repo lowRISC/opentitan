@@ -135,7 +135,6 @@ module rom_ctrl
     .intg_error_o (rom_integrity_error),
     .rdata_i      (bus_rom_rdata[31:0]),
     .rvalid_i     (bus_rom_rvalid),
-    // TODO: Send an error on access when locked
     .rerror_i     (2'b00)
   );
 
