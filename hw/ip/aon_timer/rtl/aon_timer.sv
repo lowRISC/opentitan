@@ -33,10 +33,12 @@ module aon_timer (
   localparam int AON_WKUP = 0;
   localparam int AON_WDOG = 1;
 
+  // TLUL structs
+  tlul_pkg::tl_h2d_t         tl_aon_h2d;
+  tlul_pkg::tl_d2h_t         tl_aon_d2h;
   // Register structs
-  aon_timer_reg2hw_t         reg2hw;
-  aon_timer_hw2reg_t         hw2reg, aon_hw2reg, hw2reg_sync;
-  logic                      unused_intr_state_bits;
+  aon_timer_reg2hw_t         aon_reg2hw;
+  aon_timer_hw2reg_t         aon_hw2reg;
   // Register read signals
   logic                      wkup_enable;
   logic [11:0]               wkup_prescaler;
@@ -66,10 +68,10 @@ module aon_timer (
   lc_ctrl_pkg::lc_tx_t [2:0] lc_escalate_en;
   // Wakeup signals
   logic                      aon_wkup_req_d, aon_wkup_req_q;
-  logic                      wkup_ack, aon_wkup_ack;
+  logic                      aon_wkup_ack;
   // Interrupt signals
-  logic                      aon_wkup_intr_set, wkup_intr_set;
-  logic                      aon_wdog_intr_set, wdog_intr_set;
+  logic                      aon_wkup_intr_set;
+  logic                      aon_wdog_intr_set;
   logic [1:0]                intr_aon_test_q;
   logic                      intr_aon_test_qe;
   logic [1:0]                intr_aon_state_q;
@@ -94,161 +96,71 @@ module aon_timer (
   assign aon_hw2reg.wdog_bite_thold.d          = wdog_bite_thold;
   assign aon_hw2reg.wdog_count.d               = wdog_count;
   assign aon_hw2reg.wkup_cause.d               = aon_wkup_req_q;
-  assign aon_hw2reg.intr_state                 = '0; // Doesn't come from AON domain
-
-  // Register read values sampled into clk_i domain. These are sampled with a special slow to fast
-  // synchronizer which captures the value on the negative edge of the slow clock.
-  prim_sync_slow_fast #(.Width ($bits(aon_hw2reg))) wkup_ctrl_enable_rd_sync (
-    .clk_slow_i  (clk_aon_i),
-    .clk_fast_i  (clk_i),
-    .rst_fast_ni (rst_ni),
-    .wdata_i     (aon_hw2reg),
-    .rdata_o     (hw2reg_sync)
-  );
-
-  assign hw2reg.wkup_ctrl.enable.d         = hw2reg_sync.wkup_ctrl.enable.d;
-  assign hw2reg.wkup_ctrl.prescaler.d      = hw2reg_sync.wkup_ctrl.prescaler.d;
-  assign hw2reg.wkup_thold.d               = hw2reg_sync.wkup_thold.d;
-  assign hw2reg.wkup_count.d               = hw2reg_sync.wkup_count.d;
-  assign hw2reg.wdog_ctrl.enable.d         = hw2reg_sync.wdog_ctrl.enable.d;
-  assign hw2reg.wdog_ctrl.pause_in_sleep.d = hw2reg_sync.wdog_ctrl.pause_in_sleep.d;
-  assign hw2reg.wdog_bark_thold.d          = hw2reg_sync.wdog_bark_thold.d;
-  assign hw2reg.wdog_bite_thold.d          = hw2reg_sync.wdog_bite_thold.d;
-  assign hw2reg.wdog_count.d               = hw2reg_sync.wdog_count.d;
-  assign hw2reg.wkup_cause.d               = hw2reg_sync.wkup_cause.d;
-  assign unused_intr_state_bits            = &{1'b0, hw2reg_sync.intr_state.wkup_timer_expired.d,
-                                               hw2reg_sync.intr_state.wkup_timer_expired.de,
-                                               hw2reg_sync.intr_state.wdog_timer_expired.d,
-                                               hw2reg_sync.intr_state.wdog_timer_expired.de};
 
   //////////////////////////////
   // Register Write Interface //
   //////////////////////////////
 
-  // Register write data needs to be synchronized to make sure we capture sensible values.
-  // TODO This would probaby make more sense as a single fifo for all registers, but can't really
-  // achieve that at the moment with current register tooling.
-  // TODO An alternative improvement would be to fix the async fifo to allow depth < 4
-  // Note: these are fast clock to slow clock transfers
-
   // wkup_ctrl
-  prim_fifo_async #(.Width (13), .Depth (4)) wkup_ctrl_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wkup_ctrl.prescaler.qe | reg2hw.wkup_ctrl.enable.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   ({reg2hw.wkup_ctrl.prescaler.q, reg2hw.wkup_ctrl.enable.q}),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wkup_ctrl_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wkup_ctrl_wr_data),
-    .rdepth_o  ());
+  assign wkup_ctrl_reg_wr  = aon_reg2hw.wkup_ctrl.prescaler.qe | aon_reg2hw.wkup_ctrl.enable.qe;
+  assign wkup_ctrl_wr_data = {aon_reg2hw.wkup_ctrl.prescaler.q, aon_reg2hw.wkup_ctrl.enable.q};
 
   // wkup_thold
-  prim_fifo_async #(.Width (32), .Depth (4)) wkup_thold_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wkup_thold.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   (reg2hw.wkup_thold.q),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wkup_thold_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wkup_thold_wr_data),
-    .rdepth_o  ());
+  assign wkup_thold_reg_wr  = aon_reg2hw.wkup_thold.qe;
+  assign wkup_thold_wr_data = aon_reg2hw.wkup_thold.q;
 
   // wkup_count
-  prim_fifo_async #(.Width (32), .Depth (4)) wkup_count_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wkup_count.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   (reg2hw.wkup_count.q),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wkup_count_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wkup_count_wr_data),
-    .rdepth_o  ());
+  assign wkup_count_reg_wr  = aon_reg2hw.wkup_count.qe;
+  assign wkup_count_wr_data = aon_reg2hw.wkup_count.q;
 
   // wdog_ctrl
-  prim_fifo_async #(.Width (2), .Depth (4)) wdog_ctrl_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wdog_ctrl.pause_in_sleep.qe | reg2hw.wdog_ctrl.enable.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   ({reg2hw.wdog_ctrl.pause_in_sleep.q, reg2hw.wdog_ctrl.enable.q}),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wdog_ctrl_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wdog_ctrl_wr_data),
-    .rdepth_o  ());
+  assign wdog_ctrl_reg_wr  = aon_reg2hw.wdog_ctrl.pause_in_sleep.qe |
+                             aon_reg2hw.wdog_ctrl.enable.qe;
+  assign wdog_ctrl_wr_data = {aon_reg2hw.wdog_ctrl.pause_in_sleep.q, aon_reg2hw.wdog_ctrl.enable.q};
 
   // wdog_bark_thold
-  prim_fifo_async #(.Width (32), .Depth (4)) wdog_bark_thold_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wdog_bark_thold.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   (reg2hw.wdog_bark_thold.q),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wdog_bark_thold_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wdog_bark_thold_wr_data),
-    .rdepth_o  ());
+  assign wdog_bark_thold_reg_wr  = aon_reg2hw.wdog_bark_thold.qe;
+  assign wdog_bark_thold_wr_data = aon_reg2hw.wdog_bark_thold.q;
 
   // wdog_bite_thold
-  prim_fifo_async #(.Width (32), .Depth (4)) wdog_bite_thold_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wdog_bite_thold.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   (reg2hw.wdog_bite_thold.q),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wdog_bite_thold_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wdog_bite_thold_wr_data),
-    .rdepth_o  ());
+  assign wdog_bite_thold_reg_wr  = aon_reg2hw.wdog_bite_thold.qe;
+  assign wdog_bite_thold_wr_data = aon_reg2hw.wdog_bite_thold.q;
 
   // wdog_count
-  prim_fifo_async #(.Width (32), .Depth (4)) wdog_count_wr_data_sync (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wdog_count.qe),
-    .wready_o  (), // TODO no way of feeding this back to TLUL currently
-    .wdata_i   (reg2hw.wdog_count.q),
-    .wdepth_o  (),
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (wdog_count_reg_wr),
-    .rready_i  (1'b1),
-    .rdata_o   (wdog_count_wr_data),
-    .rdepth_o  ());
+  assign wdog_count_reg_wr  = aon_reg2hw.wdog_count.qe;
+  assign wdog_count_wr_data = aon_reg2hw.wdog_count.q;
 
   // registers instantiation
   aon_timer_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
+    .clk_i      (clk_aon_i),
+    .rst_ni     (rst_aon_ni),
 
-    .tl_i,
-    .tl_o,
+    .tl_i       (tl_aon_h2d),
+    .tl_o       (tl_aon_d2h),
 
-    .reg2hw,
-    .hw2reg,
+    .reg2hw     (aon_reg2hw),
+    .hw2reg     (aon_hw2reg),
 
     .intg_err_o (),
     .devmode_i  (1'b1)
+  );
+
+  ///////////////////////////////////////
+  // Sync TLUL signals into AON Domain //
+  ///////////////////////////////////////
+
+  tlul_fifo_async #(
+      .ReqDepth (1), // There will only ever be 1 req outstanding from the core
+      .RspDepth (1)
+  ) u_tlul_fifo (
+      .clk_h_i    (clk_i),
+      .rst_h_ni   (rst_aon_ni), // keep pointers consistent by using single reset
+      .clk_d_i    (clk_aon_i),
+      .rst_d_ni   (rst_aon_ni),
+      .tl_h_i     (tl_i),
+      .tl_h_o     (tl_o),
+      .tl_d_o     (tl_aon_h2d),
+      .tl_d_i     (tl_aon_d2h)
   );
 
   // Lifecycle sync
@@ -324,16 +236,7 @@ module aon_timer (
   end
 
   // Wakeup request is cleared by SW writing zero
-  assign wkup_ack = reg2hw.wkup_cause.qe & ~reg2hw.wkup_cause.q;
-
-  prim_pulse_sync wkup_ack_sync (
-    .clk_src_i   (clk_i),
-    .rst_src_ni  (rst_ni),
-    .src_pulse_i (wkup_ack),
-    .clk_dst_i   (clk_aon_i),
-    .rst_dst_ni  (rst_aon_ni),
-    .dst_pulse_o (aon_wkup_ack)
-  );
+  assign aon_wkup_ack = aon_reg2hw.wkup_cause.qe & ~aon_reg2hw.wkup_cause.q;
 
   assign aon_timer_wkup_req_o = aon_wkup_req_q;
 
@@ -341,45 +244,26 @@ module aon_timer (
   // Interrupt Handling //
   ////////////////////////
 
-  // Synchronize the interrupt pulses from the counters into the clk_i domain.
-  prim_pulse_sync wkup_intr_req_sync (
-    .clk_src_i   (clk_aon_i),
-    .rst_src_ni  (rst_aon_ni),
-    .src_pulse_i (aon_wkup_intr_set),
-    .clk_dst_i   (clk_i),
-    .rst_dst_ni  (rst_ni),
-    .dst_pulse_o (wkup_intr_set)
-  );
-
-  prim_pulse_sync wdog_intr_req_sync (
-    .clk_src_i   (clk_aon_i),
-    .rst_src_ni  (rst_aon_ni),
-    .src_pulse_i (aon_wdog_intr_set),
-    .clk_dst_i   (clk_i),
-    .rst_dst_ni  (rst_ni),
-    .dst_pulse_o (wdog_intr_set)
-  );
-
   // Registers to interrupt
-  assign intr_aon_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe |
-                                      reg2hw.intr_test.wdog_timer_expired.qe;
-  assign intr_aon_test_q [AON_WKUP] = reg2hw.intr_test.wkup_timer_expired.q;
-  assign intr_aon_state_q[AON_WKUP] = reg2hw.intr_state.wkup_timer_expired.q;
-  assign intr_aon_test_q [AON_WDOG] = reg2hw.intr_test.wdog_timer_expired.q;
-  assign intr_aon_state_q[AON_WDOG] = reg2hw.intr_state.wdog_timer_expired.q;
+  assign intr_aon_test_qe           = aon_reg2hw.intr_test.wkup_timer_expired.qe |
+                                      aon_reg2hw.intr_test.wdog_timer_expired.qe;
+  assign intr_aon_test_q [AON_WKUP] = aon_reg2hw.intr_test.wkup_timer_expired.q;
+  assign intr_aon_state_q[AON_WKUP] = aon_reg2hw.intr_state.wkup_timer_expired.q;
+  assign intr_aon_test_q [AON_WDOG] = aon_reg2hw.intr_test.wdog_timer_expired.q;
+  assign intr_aon_state_q[AON_WDOG] = aon_reg2hw.intr_state.wdog_timer_expired.q;
 
   // Interrupts to registers
-  assign hw2reg.intr_state.wkup_timer_expired.d  = intr_aon_state_d[AON_WKUP];
-  assign hw2reg.intr_state.wkup_timer_expired.de = intr_aon_state_de;
-  assign hw2reg.intr_state.wdog_timer_expired.d  = intr_aon_state_d[AON_WDOG];
-  assign hw2reg.intr_state.wdog_timer_expired.de = intr_aon_state_de;
+  assign aon_hw2reg.intr_state.wkup_timer_expired.d  = intr_aon_state_d[AON_WKUP];
+  assign aon_hw2reg.intr_state.wkup_timer_expired.de = intr_aon_state_de;
+  assign aon_hw2reg.intr_state.wdog_timer_expired.d  = intr_aon_state_d[AON_WDOG];
+  assign aon_hw2reg.intr_state.wdog_timer_expired.de = intr_aon_state_de;
 
   prim_intr_hw #(
     .Width (2)
   ) u_intr_hw (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           ({wdog_intr_set, wkup_intr_set}),
+    .clk_i                  (clk_aon_i),
+    .rst_ni                 (rst_aon_ni),
+    .event_intr_i           ({aon_wdog_intr_set, aon_wkup_intr_set}),
 
     .reg2hw_intr_enable_q_i (2'b11),
     .reg2hw_intr_test_q_i   (intr_aon_test_q),
@@ -391,8 +275,23 @@ module aon_timer (
     .intr_o                 (intr_out)
   );
 
-  assign intr_wkup_timer_expired_o = intr_out[AON_WKUP];
-  assign intr_wdog_timer_bark_o    = intr_out[AON_WDOG];
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_sync_wkup_intr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .d_i     (intr_out[AON_WKUP]),
+    .q_o     (intr_wkup_timer_expired_o)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_sync_wdog_intr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .d_i     (intr_out[AON_WDOG]),
+    .q_o     (intr_wdog_timer_bark_o)
+  );
 
   ///////////////////
   // Reset Request //

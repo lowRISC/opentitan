@@ -78,9 +78,9 @@ The always-on timer will run on a ~200KHz clock.
 The timers themselves are 32b wide, giving a maximum timeout window of roughly ~6 hours.
 For the wakeup timer, the pre-scaler extends the maximum timeout to ~1000 days.
 
-Since the timer core runs on a slow clock, register values are sampled into the main clock domain to ensure register read / writes do not incur large latencies.
-The synchronization between clocks means that there is a delay between a register write completing and the underlying hardware taking the new value.
-Software can read back register values to know if/when updates have taken effect.
+Register reads via the TLUL interface are synchronized to the slow clock via a single asynchronous fifo.
+This synchronization guarantees that updates have propagated into the underlying registers on completion of a write.
+Note that as a consequence of this, reads and writes to the AON Timer peripheral will cause the CPU to stall.
 
 # Programmers Guide
 
