@@ -58,7 +58,7 @@ module rom_ctrl
   logic [RomIndexWidth-1:0] bus_rom_index;
   logic                     bus_rom_req;
   logic                     bus_rom_gnt;
-  logic [39:0]              bus_rom_rdata;
+  logic [38:0]              bus_rom_rdata;
   logic                     bus_rom_rvalid;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
@@ -117,7 +117,7 @@ module rom_ctrl
     .ByteAccess(0),
     .ErrOnWrite(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1) // TODO: Needs to be updated for integrity passthrough
+    .EnableDataIntgPt(1)
   ) u_tl_adapter_rom (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
@@ -133,7 +133,7 @@ module rom_ctrl
     .wdata_o      (),
     .wmask_o      (),
     .intg_error_o (rom_integrity_error),
-    .rdata_i      (bus_rom_rdata[31:0]),
+    .rdata_i      (bus_rom_rdata),
     .rvalid_i     (bus_rom_rvalid),
     // TODO: Send an error on access when locked
     .rerror_i     (2'b00)
@@ -183,13 +183,6 @@ module rom_ctrl
     .clr_rdata_o (rom_clr_rdata),
     .cfg_i       (rom_cfg_i)
   );
-
-  // TODO: The ROM has been expanded to 40 bits wide to allow us to add 9 ECC check bits. At the
-  //       moment, however, we're actually generating the ECC data in u_tl_adapter_rom. That should
-  //       go away soonish but, until then, waive the fact that we're not looking at the top bits of
-  //       rom_rdata.
-  logic unused_bus_rom_rdata_top;
-  assign unused_bus_rom_rdata_top = &{1'b0, bus_rom_rdata[39:32]};
 
   // Zero expand checker rdata to pass to KMAC
   assign kmac_rom_data = {24'd0, checker_rom_rdata};

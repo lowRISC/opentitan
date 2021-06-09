@@ -19,7 +19,7 @@ module rom_ctrl_mux #(
   input logic [AW-1:0]  bus_addr_i,
   input logic           bus_req_i,
   output logic          bus_gnt_o,
-  output logic [39:0]   bus_rdata_o,
+  output logic [38:0]   bus_rdata_o,
   output logic          bus_rvalid_o,
 
   // Interface for ROM checker
@@ -54,7 +54,7 @@ module rom_ctrl_mux #(
 
   // The bus can have access every cycle, once the select signal is zero.
   assign bus_gnt_o    = ~sel_i;
-  assign bus_rdata_o  = rom_clr_rdata_i;
+  assign bus_rdata_o  = rom_clr_rdata_i[38:0];
   // A high rom_rvalid_i is a response to a bus request if sel_i was zero on the previous cycle.
   assign bus_rvalid_o = ~sel_q & rom_rvalid_i;
 
@@ -62,5 +62,12 @@ module rom_ctrl_mux #(
 
   assign rom_addr_o = sel_i ? chk_addr_i : bus_addr_i;
   assign rom_req_o  = sel_i ? chk_req_i  : bus_req_i;
+
+  // We use a Hsiao (39,32) ECC scheme for data integrity, but have expanded the ROM to 40 bits
+  // rather than 39 bits (it's no more expensive with many macro libraries, and it's slightly nicer
+  // for scrambling, because 40 is a whole number of 4-bit sboxes). Of course, this means that we
+  // never actually pass the top bit through to the bus. Waive that here.
+  logic unused_bus_rdata_top;
+  assign unused_bus_rdata_top = rom_clr_rdata_i[39];
 
 endmodule
