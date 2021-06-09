@@ -157,7 +157,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
     if (backdoor_wr) begin
-      cfg.mem_bkdr_util_h.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+      cfg.backdoor_write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
     end
   endtask : dai_rd
 
@@ -252,7 +252,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val;
     prim_secded_pkg::secded_22_16_t out;
     addr = {addr[TL_DW-1:2], 2'b00};
-    val = cfg.mem_bkdr_util_h.read32(addr);
+    val = {cfg.mem_bkdr_util_h.read16(addr+2), cfg.mem_bkdr_util_h.read16(addr)};
     if (ecc_err == OtpNoEccErr || addr >= (LifeCycleOffset + LifeCycleSize)) return val;
 
     // Backdoor read and write back with error bits
@@ -287,7 +287,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
 
     if (ecc_err != OtpNoEccErr) begin
-      cfg.mem_bkdr_util_h.write32(addr, backdoor_rd_val);
+      cfg.backdoor_write32(addr, backdoor_rd_val);
       cfg.ecc_chk_err = '{default: OtpNoEccErr};
     end
   endtask
