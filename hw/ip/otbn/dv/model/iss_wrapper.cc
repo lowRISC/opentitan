@@ -230,7 +230,8 @@ static std::string wlen_val_to_hex_str(uint32_t val[8]) {
   return oss.str();
 }
 
-ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()), err_bits_(0), stop_pc_(0) {
+ISSWrapper::ISSWrapper()
+    : tmpdir(new TmpDir()), insn_cnt_(0), err_bits_(0), stop_pc_(0) {
   std::string model_path(find_otbn_model());
 
   // We want two pipes: one for writing to the child process, and the other for
@@ -356,6 +357,10 @@ int ISSWrapper::step(bool gen_trace) {
   // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
   // if we see a write that sets the value to an even number.
   bool done = (read_ext_reg("STATUS", lines, 1) & 1) == 0;
+
+  // Always try to read INSN_CNT. On failure, don't update it (this
+  // happens on stall cycles)
+  insn_cnt_ = read_ext_reg("INSN_CNT", lines, insn_cnt_);
 
   // If we've just finished, try to read ERR_BITS and STOP_PC, storing
   // them into fields on this structure. The caller will retrieve them

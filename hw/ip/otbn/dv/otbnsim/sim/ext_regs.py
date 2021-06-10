@@ -18,12 +18,15 @@ class TraceExtRegChange(Trace):
         self.new_value = new_value
 
     def trace(self) -> str:
-        return ("otbn.{} {} {:#010x}{} (now {:#010x})"
+        suff = (''
+                if self.new_value == self.written
+                else ' (now {:#010x})'.format(self.new_value))
+        return ("otbn.{} {} {:#010x}{}{}"
                 .format(self.name,
                         self.op,
                         self.written,
-                        ' (from HW)' if self.from_hw else '',
-                        self.new_value))
+                        ' (from SW)' if not self.from_hw else '',
+                        suff))
 
     def rtl_trace(self) -> str:
         return '! otbn.{}: {:#010x}'.format(self.name, self.new_value)
@@ -214,6 +217,15 @@ class OTBNExtRegs:
         new_val = self._get_reg(reg_name).clear_bits(value)
         self.trace.append(TraceExtRegChange(reg_name, '&= ~',
                                             value, True, new_val))
+
+    def increment_insn_cnt(self) -> None:
+        '''Increment the INSN_CNT register'''
+        reg = self._get_reg('INSN_CNT')
+        assert len(reg.fields) == 1
+        fld = reg.fields[0]
+        new_val = reg.write(min(fld.value + 1, (1 << 32) - 1), True)
+        self.trace.append(TraceExtRegChange('INSN_CNT', '=',
+                                            new_val, True, new_val))
 
     def read(self, reg_name: str, from_hw: bool) -> int:
         reg = self.regs.get(reg_name)
