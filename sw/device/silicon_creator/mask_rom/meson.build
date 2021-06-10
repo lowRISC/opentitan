@@ -163,6 +163,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_lifecycle,
+      sw_silicon_creator_lib_driver_pinmux,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_manifest,
@@ -171,7 +172,6 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_mask_rom_sigverify,
       sw_silicon_creator_mask_rom_romextimage,
       sw_lib_crt,
-      sw_lib_pinmux,
       sw_lib_runtime_print,
     ],
     link_with: static_library(
