@@ -27,6 +27,10 @@ extern "C" {
  * integrity and authenticity of the next stage before handing over execution.
  *
  * Use of this struct for stages following BL0 is optional.
+ *
+ * Note: The definitions in
+ * sw/host/rom_ext_image_tools/signer/image/src/manifest.rs must be updated if
+ * this struct is modified. Please see the instructions in that file.
  */
 typedef struct manifest {
   /**

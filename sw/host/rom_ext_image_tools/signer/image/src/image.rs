@@ -6,72 +6,83 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
-use crate::manifest;
+use std::mem::size_of;
+use std::ops::Deref;
+use std::ops::DerefMut;
+
+use memoffset::offset_of;
 use thiserror::Error;
+use zerocopy::AsBytes;
+use zerocopy::LayoutVerified;
+
+use crate::manifest::Manifest;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ImageError {
-    #[error("Expected at most {len} bytes for offset {offset}, received {data_len}.")]
-    FieldData {
-        offset: usize,
-        len: usize,
-        data_len: usize,
-    },
+    #[error("Failed to parse image manifest.")]
+    Parse,
 }
 
-/// A thin wrapper around a Vec to help with setting ROM_EXT manifest fields.
+/// A thin wrapper around manifest and payload buffers to help with setting manifest fields and
+/// signing the image.
 #[derive(Debug)]
-pub struct Image {
-    data: Vec<u8>,
+pub struct Image<'a> {
+    pub manifest: LayoutVerified<&'a mut [u8], Manifest>,
+    pub payload: &'a [u8],
 }
 
-impl Image {
-    /// Sets the value of a ROM_EXT manifest field.
-    pub fn set_manifest_field<I>(
-        &mut self,
-        field: &manifest::ManifestField,
-        field_data: I,
-    ) -> Result<(), ImageError>
-    where
-        I: IntoIterator<Item = u8>,
-        I::IntoIter: ExactSizeIterator,
-    {
-        let field_data = field_data.into_iter();
-        if field_data.len() > field.size_bytes {
-            Err(ImageError::FieldData {
-                offset: field.offset,
-                len: field.size_bytes,
-                data_len: field_data.len(),
-            })
-        } else {
-            self.data.splice(
-                field.offset..(field.offset + field_data.len()),
-                field_data,
-            );
-            Ok(())
+impl<'a> Image<'a> {
+    pub fn new(
+        manifest_buffer: &'a mut ManifestBuffer,
+        payload: &'a [u8],
+    ) -> Result<Image<'a>, ImageError> {
+        let manifest = LayoutVerified::new(&mut **manifest_buffer)
+            .ok_or(ImageError::Parse)?;
+        Ok(Self { manifest, payload })
+    }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        [self.manifest.as_bytes(), self.payload].concat()
+    }
+
+    pub fn signed_bytes(&self) -> Vec<u8> {
+        self.bytes().split_off(offset_of!(Manifest, image_length))
+    }
+}
+
+/// A buffer with the same size and alignment as `Manifest`.
+pub struct ManifestBuffer {
+    buf: [u8; size_of::<Manifest>()],
+    // This forces this struct to have the same alignment as `Manifest`.
+    _align: [Manifest; 0],
+}
+
+impl ManifestBuffer {
+    pub fn new() -> Self {
+        Self {
+            buf: [0u8; size_of::<Manifest>()],
+            _align: [],
         }
     }
+}
 
-    /// Returns the signed bytes of the image.
-    pub fn signed_bytes(&self) -> &[u8] {
-        &self.data[manifest::ROM_EXT_SIGNED_AREA_START_OFFSET..]
-    }
-
-    /// Returns the size of the image in number of bytes.
-    pub fn len(&self) -> usize {
-        self.data.len()
+impl Default for ManifestBuffer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
-impl AsRef<[u8]> for Image {
-    fn as_ref(&self) -> &[u8] {
-        &self.data
+impl Deref for ManifestBuffer {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        &self.buf
     }
 }
 
-impl From<Vec<u8>> for Image {
-    fn from(data: Vec<u8>) -> Self {
-        Image { data }
+impl DerefMut for ManifestBuffer {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.buf
     }
 }
 
@@ -81,43 +92,29 @@ mod tests {
 
     #[test]
     fn test_set_manifest_field() -> Result<(), ImageError> {
-        let mut image = Image::from(vec![0; 1024]);
-        let field = manifest::ROM_EXT_IMAGE_LENGTH;
-        let val: [u8; 4] = [0xA5; 4];
-        image.set_manifest_field(&field, val.iter().cloned())?;
-        assert_eq!(
-            image.as_ref()[field.offset..field.offset + field.size_bytes],
-            val
-        );
+        let mut manifest_buffer = ManifestBuffer::new();
+        let payload = [0u8; 0];
+        let mut image = Image::new(&mut manifest_buffer, &payload)?;
+        let identifier: u32 = 0x01020304;
+        image.manifest.identifier = identifier;
+        for i in 0..4 {
+            assert_eq!(manifest_buffer[i], identifier.to_le_bytes()[i]);
+        }
         Ok(())
     }
 
     #[test]
-    fn test_set_manifest_field_error() {
-        let mut image = Image::from(vec![0; 1024]);
-        let field = manifest::ROM_EXT_IMAGE_LENGTH;
-        let val: [u8; 6] = [0xA5; 6];
-        assert_eq!(
-            image.set_manifest_field(&field, val.iter().cloned()),
-            Err(ImageError::FieldData {
-                offset: field.offset,
-                len: field.size_bytes,
-                data_len: 6
-            })
-        );
-    }
-
-    #[test]
-    fn test_signed_bytes() -> Result<(), ImageError> {
-        let mut image = Image::from(vec![0; 1024]);
-        let field = manifest::ROM_EXT_IMAGE_SIGNATURE;
-        let val: [u8; manifest::ROM_EXT_IMAGE_SIGNATURE.size_bytes] =
-            [0xA5; manifest::ROM_EXT_IMAGE_SIGNATURE.size_bytes];
-        image.set_manifest_field(&field, val.iter().cloned())?;
-        assert_eq!(
-            image.as_ref()[field.offset..field.offset + field.size_bytes],
-            val
-        );
+    fn test_bytes() -> Result<(), ImageError> {
+        let mut manifest_buffer = ManifestBuffer::new();
+        let payload = [5u8, 6u8, 7u8, 8u8];
+        let mut image = Image::new(&mut manifest_buffer, &payload)?;
+        let identifier: u32 = 0x01020304;
+        image.manifest.identifier = identifier;
+        let bytes = image.bytes();
+        for i in 0..4 {
+            assert_eq!(bytes[i], manifest_buffer[i]);
+            assert_eq!(bytes[size_of::<Manifest>() + i], payload[i]);
+        }
         Ok(())
     }
 }

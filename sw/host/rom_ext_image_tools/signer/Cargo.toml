@@ -24,8 +24,9 @@ opt-level = 2
 debug = true
 
 [dependencies]
-rom_ext_image = { path = "image" }
 anyhow = "1.0.40"
+rom_ext_image = { path = "image" }
+zerocopy = "0.5.0"
 
 [dependencies.mundane]
 version = "0.4.4"
