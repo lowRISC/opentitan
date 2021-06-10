@@ -15,10 +15,11 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |                  ROM_FAULT_RESPONSE                   |     0x308      |     4      |
 |         |                |            |      32bit       |                  ROM_ALERT_CLASS_EN                   |     0x30C      |     4      |
 |         |                |            |      32bit       |                 ROM_ALERT_ESCALATION                  |     0x310      |     4      |
-|         |                |            |      32bit       |               ROM_ALERT_CLASSIFICATION                |     0x314      |    192     |
-|         |                |            |      32bit       |                ROM_ALERT_ACCUM_THRESH                 |     0x3D4      |     16     |
-|         |                |            |      32bit       |               ROM_ALERT_TIMEOUT_CYCLES                |     0x3E4      |     16     |
-|         |                |            |      32bit       |                ROM_ALERT_PHASE_CYCLES                 |     0x3F4      |     64     |
+|         |                |            |      32bit       |               ROM_ALERT_CLASSIFICATION                |     0x314      |    320     |
+|         |                |            |      32bit       |            ROM_LOCAL_ALERT_CLASSIFICATION             |     0x454      |     64     |
+|         |                |            |      32bit       |                ROM_ALERT_ACCUM_THRESH                 |     0x494      |     16     |
+|         |                |            |      32bit       |               ROM_ALERT_TIMEOUT_CYCLES                |     0x4A4      |     16     |
+|         |                |            |      32bit       |                ROM_ALERT_PHASE_CYCLES                 |     0x4B4      |     64     |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
 |    2    |     HW_CFG     |    240     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
 |         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x620      |     1      |

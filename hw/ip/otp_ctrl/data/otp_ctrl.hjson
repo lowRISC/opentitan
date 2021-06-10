@@ -275,13 +275,25 @@
     { name: "RomAlertClassificationSize",
       desc: "Size of ROM_ALERT_CLASSIFICATION",
       type: "int",
-      default: "192",
+      default: "320",
+      local: "true"
+    },
+    { name: "RomLocalAlertClassificationOffset",
+      desc: "Offset of ROM_LOCAL_ALERT_CLASSIFICATION",
+      type: "int",
+      default: "1108",
+      local: "true"
+    },
+    { name: "RomLocalAlertClassificationSize",
+      desc: "Size of ROM_LOCAL_ALERT_CLASSIFICATION",
+      type: "int",
+      default: "64",
       local: "true"
     },
     { name: "RomAlertAccumThreshOffset",
       desc: "Offset of ROM_ALERT_ACCUM_THRESH",
       type: "int",
-      default: "980",
+      default: "1172",
       local: "true"
     },
     { name: "RomAlertAccumThreshSize",
@@ -293,7 +305,7 @@
     { name: "RomAlertTimeoutCyclesOffset",
       desc: "Offset of ROM_ALERT_TIMEOUT_CYCLES",
       type: "int",
-      default: "996",
+      default: "1188",
       local: "true"
     },
     { name: "RomAlertTimeoutCyclesSize",
@@ -305,7 +317,7 @@
     { name: "RomAlertPhaseCyclesOffset",
       desc: "Offset of ROM_ALERT_PHASE_CYCLES",
       type: "int",
-      default: "1012",
+      default: "1204",
       local: "true"
     },
     { name: "RomAlertPhaseCyclesSize",
