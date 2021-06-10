@@ -1652,48 +1652,32 @@
       name: chip_otbn_op
       desc: '''Verify an OTBN operation.
 
-            SW test directs the BIGNUM engine to perform an operation. The BIGNUM SW image is
-            backdoor loaded into OTBN IMEM. SW validates the reception of the otbn done interrupt.
-            SW also verifies the correctness of the OTBN operation using a reference model. Details
-            TBD.
+            - SW test directs the OTBN engine to perform an ECDSA operation.
+            - SW validates the reception of the otbn done interrupt once the operation is complete.
+            - SW verifies the correctness of the result with the expected value which is
+              pre-computed using a reference model.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_otbn_imem_uncorrectable_alert
-      desc: '''Verify the imem uncorrectable alert from OTBN.
+      name: chip_otbn_rnd_entropy
+      desc: '''Verify OTBN can fetch RND numbers from the entropy src.
 
-            Inject 2 bit errors within the IMEM SRAM inside OTBN via backdoor and ensure that this
-            alert propagates to an NMI.
+            - SW initializes the entropy subsystem to generate randomness.
+            - SW loads an OTBN app that executes instructions to read the RND bits.
+            - The OTBN app ensures that the values when read consequtively do not match, and its not
+              all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is returning
+              some data.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_otbn_dmem_uncorrectable_alert
-      desc: '''Verify the dmem uncorrectable alert from OTBN.
+      name: chip_otbn_urnd_entropy
+      desc: '''Verify OTBN can fetch URND numbers from the entropy src.
 
-            Inject 2 bit errors within the DMEM SRAM inside OTBN via backdoor and ensure that this
-            alert propagates to an NMI.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_otbn_reg_uncorrectable_alert
-      desc: '''Verify the reg uncorrectable alert from OTBN.
-
-            Details TBD. Ensure that this alert propagates to an NMI.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_otbn_mem_encr
-      desc: '''Verify the encryption of the mem within OTBN using the key provided by the OTP.
-
-            Details TBD.
+            - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
             '''
       milestone: V2
       tests: []
@@ -1704,12 +1688,43 @@
 
             - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk is ready to be gated.
               Verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is idle).
-            - Initiate an OTBN operation with a known key, plain text and digest.
+            - Start an OTBN operation.
               Verify that the OTBN clk hint status within clkmgr now reads 1 (OTBN is not idle),
-              before the OTBN operation is complete.
-            - After the OTBN operation is complete, verify the digest for correctness.
+              before the operation is complete.
+            - After the OTBN operation is complete, check the output for correctness.
               Verify that the OTBN clk hint status within clkmgr now reads 0 again (OTBN is idle),
-              after the OTBN operation is complete.
+              after the operation is complete.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_edn_reset
+      desc: '''Verify that the EDN clock / reset is connected to OTBN.
+
+            - Use connectivity assertion check to verify that the right clock and reset signals are
+              connected for receiving the entropy data from EDN.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_ast_ram_cfg
+      desc: '''Verify that the ram_cfg signal from AST is connected to OTBN.
+
+            - In open source, this is verified by a simple connectivity assertion check.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_mem_scramble
+      desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
+
+            - Have OTBN fetch a new key and nonce from the OTP_CTRL.
+            - Write and read-check OTBN and IMEM for consistency.
+            - Fetch a new key from the OTP_CTRL and ensure that previous contents in the IMEM and
+              DMEM cannot be read anymore.
             '''
       milestone: V2
       tests: []
@@ -1731,8 +1746,8 @@
       tests: []
     }
     {
-      name: chip_rom_ctrl_ast_cfg
-      desc: '''Verify the connectivity of AST cfg signals to the ROM ctrl.
+      name: chip_rom_ctrl_ast_rom_cfg
+      desc: '''Verify that the rom_cfg signal from AST is connected to ROM ctrl.
 
             - In open source, this is verified by a simple connectivity assertion check.
             '''
@@ -1777,6 +1792,8 @@
             - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
             - Drive the CPU to perform random accesses to both RAMs and verify these operations
               complete successfully by using the backdoor interface
+            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be read
+              anymore.
             '''
       milestone: V2
       tests: []
