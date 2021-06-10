@@ -98,8 +98,8 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
     string alert_name = "fatal_macro_error";
     int max_wait_cycles = (cfg.m_alert_agent_cfg[alert_name].ack_delay_max +
                            cfg.m_alert_agent_cfg[alert_name].ack_stable_max) *
-                          ($ceil(cfg.clk_rst_vif.clk_freq_mhz) /
-                           cfg.m_alert_agent_cfg[alert_name].vif.clk_rst_async_if.clk_freq_mhz);
+                          ($ceil(cfg.clk_rst_vif.clk_freq_mhz /
+                           cfg.m_alert_agent_cfg[alert_name].vif.clk_rst_async_if.clk_freq_mhz));
 
     `DV_SPINWAIT_EXIT(wait(cfg.m_alert_agent_cfg[alert_name].vif.alert_tx_final.alert_p);,
         cfg.clk_rst_vif.wait_clks(max_wait_cycles);,
