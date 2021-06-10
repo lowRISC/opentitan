@@ -68,27 +68,37 @@ The `pattgen_base_vseq` virtual sequence is extended from `cip_base_vseq` and se
 All test sequences are extended from `pattgen_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* **setup_pattgen_channel_0**: Program configuration registers for channel 0
+* **setup_pattgen_channel_1**: Program configuration registers for channel 1
+* **start_pattgen_channels**: Randomly start generating pattern on single or dual channels
+* **stop_pattgen_channels**: Stop generating pattern on operating channels
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* pattgen_op_cg: this covergroup checks following conditions:
+
+  - whether single or dual channel are enabled
+  - whether channel polarity bit is set/unset
+  - whether channel are run at high/low throughput
+* cg2 (TBD):
 
 ### Self-checking strategy
 #### Scoreboard
 The `pattgen_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
+IIt creates the following analysis FIFOs to retrieve the data monitored by corresponding interface agents:
+* tl_a_chan_fifo: tl address channel
+* tl_d_chan_fifo: tl data channel
+
+There is `item_fifo` is a uvm_tlm_analysis_fifo which receives the dut transactions 
+captured by `pwm_monitor` at the `pwm_if`. Meanwhile, `exp_item_q` queue hold the expected 
+transactions which are generated once the dut configuration registers are programmed.
+
+The `compare_trans` task will pop a transaction pair from `item_fifo` and `exp_item_q` for comparison.
 
 #### Assertions
 * TLUL assertions: The `tb/pattgen_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assertion 1
-* assertion 2
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
