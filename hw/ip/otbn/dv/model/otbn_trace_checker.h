@@ -60,6 +60,10 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // Prints an error message to stderr and returns false on mismatch.
   bool OnIssTrace(const std::vector<std::string> &lines);
 
+  // Flush any pending entries. We need to do this on reset, to handle
+  // the case where we reset the processor in the middle of a stall.
+  void Flush();
+
   // Call this when the ISS simulation completes an operation (on ECALL or
   // error).
   //

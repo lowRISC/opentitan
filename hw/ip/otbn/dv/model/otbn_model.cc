@@ -660,3 +660,14 @@ extern "C" unsigned otbn_model_step(
 
   return status;
 }
+
+// Flush any information in the model
+extern "C" void otbn_model_reset(OtbnModel *model) {
+  assert(model);
+
+  ISSWrapper *iss = model->get_wrapper(false);
+  if (iss) {
+    bool check_rtl = (model->design_scope_.size() > 0);
+    iss->reset(check_rtl);
+  }
+}
