@@ -106,21 +106,21 @@ module alert_handler
   ) u_ping_timer (
     .clk_i,
     .rst_ni,
-    .edn_req_o          ( edn_req                      ),
-    .edn_ack_i          ( edn_ack                      ),
-    .edn_data_i         ( edn_data                     ),
-    .en_i               ( reg2hw_wrap.ping_enable      ),
-    .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en    ),
-    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
-    // this determines the range of the randomly generated
-    // wait period between ping. maximum mask width is PING_CNT_DW.
-    .wait_cyc_mask_i    ( PING_CNT_DW'(16'hFFFFFF)     ),
-    .alert_ping_req_o   ( alert_ping_req               ),
-    .esc_ping_req_o     ( esc_ping_req                 ),
-    .alert_ping_ok_i    ( alert_ping_ok                ),
-    .esc_ping_ok_i      ( esc_ping_ok                  ),
-    .alert_ping_fail_o  ( loc_alert_trig[0]            ),
-    .esc_ping_fail_o    ( loc_alert_trig[1]            )
+    .edn_req_o          ( edn_req                        ),
+    .edn_ack_i          ( edn_ack                        ),
+    .edn_data_i         ( edn_data                       ),
+    .en_i               ( reg2hw_wrap.ping_enable        ),
+    .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en      ),
+    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc   ),
+    // set this to the maximum width in the design.
+    // can be overridden in DV and FPV to shorten the wait periods.
+    .wait_cyc_mask_i    ( {PING_CNT_DW{1'b1}}            ),
+    .alert_ping_req_o   ( alert_ping_req                 ),
+    .esc_ping_req_o     ( esc_ping_req                   ),
+    .alert_ping_ok_i    ( alert_ping_ok                  ),
+    .esc_ping_ok_i      ( esc_ping_ok                    ),
+    .alert_ping_fail_o  ( loc_alert_trig[0]              ),
+    .esc_ping_fail_o    ( loc_alert_trig[1]              )
   );
 
   /////////////////////
