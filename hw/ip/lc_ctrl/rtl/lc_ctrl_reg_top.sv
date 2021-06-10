@@ -228,7 +228,7 @@ module lc_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_bus_integ_error.qe),
-    .q      (reg2hw.alert_test.fatal_bus_integ_error.q ),
+    .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
     .qs     ()
   );
 
