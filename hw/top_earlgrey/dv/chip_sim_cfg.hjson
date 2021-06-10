@@ -66,6 +66,11 @@
       name: cover_reg_top_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
     }
+    // Used by the UNR flow.
+    {
+      name: vcs_unr_cfg_file
+      value: "{proj_root}/hw/top_earlgrey/dv/cov/unr.cfg"
+    }
 
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
     {
