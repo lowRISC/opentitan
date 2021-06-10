@@ -43,8 +43,6 @@ class chip_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    // Set default frequencies.
-    cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
     // Initialize flash seeds

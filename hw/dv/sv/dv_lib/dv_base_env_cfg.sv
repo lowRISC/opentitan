@@ -50,10 +50,10 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   rand clk_freq_mhz_e clk_freqs_mhz[string];
 
   `uvm_object_param_utils_begin(dv_base_env_cfg #(RAL_T))
-    `uvm_field_int   (is_active,                    UVM_DEFAULT)
-    `uvm_field_int   (en_scb,                       UVM_DEFAULT)
-    `uvm_field_int   (en_cov,                       UVM_DEFAULT)
-    `uvm_field_int   (zero_delays,                  UVM_DEFAULT)
+    `uvm_field_int   (is_active,   UVM_DEFAULT)
+    `uvm_field_int   (en_scb,      UVM_DEFAULT)
+    `uvm_field_int   (en_cov,      UVM_DEFAULT)
+    `uvm_field_int   (zero_delays, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

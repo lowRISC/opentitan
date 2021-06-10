@@ -18,7 +18,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   bit                 use_spi_load_bootstrap = 0;
 
   // chip top interfaces
-  virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;
   virtual pins_if#(2) tap_straps_vif;
   virtual pins_if#(2) dft_straps_vif;
