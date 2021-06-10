@@ -57,6 +57,12 @@ struct ISSWrapper {
   // it's the value of the ERR_BITS register.
   int step(bool gen_trace);
 
+  // Reset simulation
+  //
+  // This doesn't actually send anything to the ISS, but instead tells
+  // the OtbnTraceChecker to clear out any partial instructions
+  void reset(bool gen_trace);
+
   // Get the current value of otbn.INSN_CNT. This should be called just after
   // step (but doesn't necessarily need to wait until the run has finished).
   uint32_t get_insn_cnt() const { return insn_cnt_; }

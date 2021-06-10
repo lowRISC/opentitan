@@ -381,6 +381,11 @@ int ISSWrapper::step(bool gen_trace) {
   return mismatch ? -1 : (done ? 1 : 0);
 }
 
+void ISSWrapper::reset(bool gen_trace) {
+  if (gen_trace)
+    OtbnTraceChecker::get().Flush();
+}
+
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
                           std::array<u256_t, 32> *wdrs) {
   assert(gprs && wdrs);
