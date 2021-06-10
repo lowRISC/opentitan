@@ -141,7 +141,11 @@
                 }
                 {
                     name: "ROM_ALERT_CLASSIFICATION",
-                    size: "192"
+                    size: "320"
+                }
+                {
+                    name: "ROM_LOCAL_ALERT_CLASSIFICATION",
+                    size: "64"
                 }
                 {
                     name: "ROM_ALERT_ACCUM_THRESH",
