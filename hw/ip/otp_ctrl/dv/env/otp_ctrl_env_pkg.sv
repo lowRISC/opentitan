@@ -92,8 +92,9 @@ package otp_ctrl_env_pkg;
 
   parameter uint CHK_TIMEOUT_CYC = 40;
 
-  // When fatal alert triggered, all partitions go to error state and status will be 1.
-  parameter bit [8:0] FATAL_EXP_STATUS = 9'b1_1111_1111;
+  // When fatal alert triggered, all partitions go to error state and status will be
+  // set to 1, except LC partition index.
+  parameter bit [8:0] FATAL_EXP_STATUS = 9'b1_1011_1111;
 
   // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
