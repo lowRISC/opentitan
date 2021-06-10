@@ -202,9 +202,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
 
       // Update status bits.
-      for (int i = 0; i < OtpTimeoutErrIdx; i++) begin
-        predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
-                    .update_esc_err(1));
+      foreach (FATAL_EXP_STATUS[i]) begin
+        if (FATAL_EXP_STATUS[i]) begin
+          predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
+                      .update_esc_err(1));
+        end
       end
 
       // Update digest values and direct_access_regwen.
