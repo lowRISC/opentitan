@@ -16,48 +16,39 @@ package aon_timer_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } enable;
     struct packed {
       logic [11:0] q;
-      logic        qe;
     } prescaler;
   } aon_timer_reg2hw_wkup_ctrl_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } aon_timer_reg2hw_wkup_thold_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } aon_timer_reg2hw_wkup_count_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } enable;
     struct packed {
       logic        q;
-      logic        qe;
     } pause_in_sleep;
   } aon_timer_reg2hw_wdog_ctrl_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } aon_timer_reg2hw_wdog_bark_thold_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } aon_timer_reg2hw_wdog_bite_thold_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } aon_timer_reg2hw_wdog_count_reg_t;
 
   typedef struct packed {
@@ -82,45 +73,16 @@ package aon_timer_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        qe;
   } aon_timer_reg2hw_wkup_cause_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-    } enable;
-    struct packed {
-      logic [11:0] d;
-    } prescaler;
-  } aon_timer_hw2reg_wkup_ctrl_reg_t;
-
-  typedef struct packed {
     logic [31:0] d;
-  } aon_timer_hw2reg_wkup_thold_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
+    logic        de;
   } aon_timer_hw2reg_wkup_count_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-    } enable;
-    struct packed {
-      logic        d;
-    } pause_in_sleep;
-  } aon_timer_hw2reg_wdog_ctrl_reg_t;
-
-  typedef struct packed {
     logic [31:0] d;
-  } aon_timer_hw2reg_wdog_bark_thold_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-  } aon_timer_hw2reg_wdog_bite_thold_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
+    logic        de;
   } aon_timer_hw2reg_wdog_count_reg_t;
 
   typedef struct packed {
@@ -136,33 +98,29 @@ package aon_timer_reg_pkg;
 
   typedef struct packed {
     logic        d;
+    logic        de;
   } aon_timer_hw2reg_wkup_cause_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    aon_timer_reg2hw_wkup_ctrl_reg_t wkup_ctrl; // [191:177]
-    aon_timer_reg2hw_wkup_thold_reg_t wkup_thold; // [176:144]
-    aon_timer_reg2hw_wkup_count_reg_t wkup_count; // [143:111]
-    aon_timer_reg2hw_wdog_ctrl_reg_t wdog_ctrl; // [110:107]
-    aon_timer_reg2hw_wdog_bark_thold_reg_t wdog_bark_thold; // [106:74]
-    aon_timer_reg2hw_wdog_bite_thold_reg_t wdog_bite_thold; // [73:41]
-    aon_timer_reg2hw_wdog_count_reg_t wdog_count; // [40:8]
-    aon_timer_reg2hw_intr_state_reg_t intr_state; // [7:6]
-    aon_timer_reg2hw_intr_test_reg_t intr_test; // [5:2]
-    aon_timer_reg2hw_wkup_cause_reg_t wkup_cause; // [1:0]
+    aon_timer_reg2hw_wkup_ctrl_reg_t wkup_ctrl; // [181:169]
+    aon_timer_reg2hw_wkup_thold_reg_t wkup_thold; // [168:137]
+    aon_timer_reg2hw_wkup_count_reg_t wkup_count; // [136:105]
+    aon_timer_reg2hw_wdog_ctrl_reg_t wdog_ctrl; // [104:103]
+    aon_timer_reg2hw_wdog_bark_thold_reg_t wdog_bark_thold; // [102:71]
+    aon_timer_reg2hw_wdog_bite_thold_reg_t wdog_bite_thold; // [70:39]
+    aon_timer_reg2hw_wdog_count_reg_t wdog_count; // [38:7]
+    aon_timer_reg2hw_intr_state_reg_t intr_state; // [6:5]
+    aon_timer_reg2hw_intr_test_reg_t intr_test; // [4:1]
+    aon_timer_reg2hw_wkup_cause_reg_t wkup_cause; // [0:0]
   } aon_timer_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    aon_timer_hw2reg_wkup_ctrl_reg_t wkup_ctrl; // [179:167]
-    aon_timer_hw2reg_wkup_thold_reg_t wkup_thold; // [166:135]
-    aon_timer_hw2reg_wkup_count_reg_t wkup_count; // [134:103]
-    aon_timer_hw2reg_wdog_ctrl_reg_t wdog_ctrl; // [102:101]
-    aon_timer_hw2reg_wdog_bark_thold_reg_t wdog_bark_thold; // [100:69]
-    aon_timer_hw2reg_wdog_bite_thold_reg_t wdog_bite_thold; // [68:37]
-    aon_timer_hw2reg_wdog_count_reg_t wdog_count; // [36:5]
-    aon_timer_hw2reg_intr_state_reg_t intr_state; // [4:1]
-    aon_timer_hw2reg_wkup_cause_reg_t wkup_cause; // [0:0]
+    aon_timer_hw2reg_wkup_count_reg_t wkup_count; // [71:39]
+    aon_timer_hw2reg_wdog_count_reg_t wdog_count; // [38:6]
+    aon_timer_hw2reg_intr_state_reg_t intr_state; // [5:2]
+    aon_timer_hw2reg_wkup_cause_reg_t wkup_cause; // [1:0]
   } aon_timer_hw2reg_t;
 
   // Register offsets
@@ -179,15 +137,7 @@ package aon_timer_reg_pkg;
   parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CAUSE_OFFSET = 6'h 28;
 
   // Reset values for hwext registers and their fields
-  parameter logic [12:0] AON_TIMER_WKUP_CTRL_RESVAL = 13'h 0;
-  parameter logic [31:0] AON_TIMER_WKUP_THOLD_RESVAL = 32'h 0;
-  parameter logic [31:0] AON_TIMER_WKUP_COUNT_RESVAL = 32'h 0;
-  parameter logic [1:0] AON_TIMER_WDOG_CTRL_RESVAL = 2'h 0;
-  parameter logic [31:0] AON_TIMER_WDOG_BARK_THOLD_RESVAL = 32'h 0;
-  parameter logic [31:0] AON_TIMER_WDOG_BITE_THOLD_RESVAL = 32'h 0;
-  parameter logic [31:0] AON_TIMER_WDOG_COUNT_RESVAL = 32'h 0;
   parameter logic [1:0] AON_TIMER_INTR_TEST_RESVAL = 2'h 0;
-  parameter logic [0:0] AON_TIMER_WKUP_CAUSE_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {

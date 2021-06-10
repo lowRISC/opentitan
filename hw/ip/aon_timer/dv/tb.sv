@@ -59,8 +59,6 @@ module tb;
     .sleep_mode_i              (sleep)
   );
 
-  bind aon_timer_core aon_timer_core_if core_if (.*);
-
   initial begin
     // Configure interfaces
     fast_clk_rst_if.set_active();
@@ -79,8 +77,6 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", fast_intr_if);
     uvm_config_db#(virtual pins_if #(2))::set(null, "*.env", "aon_intr_vif", aon_intr_if);
     uvm_config_db#(virtual pins_if #(1))::set(null, "*.env", "sleep_vif", sleep_if);
-
-    uvm_config_db#(virtual aon_timer_core_if)::set(null, "*.env", "core_vif", dut.u_core.core_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

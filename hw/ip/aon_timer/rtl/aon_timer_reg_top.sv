@@ -107,42 +107,33 @@ module aon_timer_reg_top (
   logic wkup_ctrl_enable_qs;
   logic wkup_ctrl_enable_wd;
   logic wkup_ctrl_enable_we;
-  logic wkup_ctrl_enable_re;
   logic [11:0] wkup_ctrl_prescaler_qs;
   logic [11:0] wkup_ctrl_prescaler_wd;
   logic wkup_ctrl_prescaler_we;
-  logic wkup_ctrl_prescaler_re;
   logic [31:0] wkup_thold_qs;
   logic [31:0] wkup_thold_wd;
   logic wkup_thold_we;
-  logic wkup_thold_re;
   logic [31:0] wkup_count_qs;
   logic [31:0] wkup_count_wd;
   logic wkup_count_we;
-  logic wkup_count_re;
   logic wdog_regwen_qs;
   logic wdog_regwen_wd;
   logic wdog_regwen_we;
   logic wdog_ctrl_enable_qs;
   logic wdog_ctrl_enable_wd;
   logic wdog_ctrl_enable_we;
-  logic wdog_ctrl_enable_re;
   logic wdog_ctrl_pause_in_sleep_qs;
   logic wdog_ctrl_pause_in_sleep_wd;
   logic wdog_ctrl_pause_in_sleep_we;
-  logic wdog_ctrl_pause_in_sleep_re;
   logic [31:0] wdog_bark_thold_qs;
   logic [31:0] wdog_bark_thold_wd;
   logic wdog_bark_thold_we;
-  logic wdog_bark_thold_re;
   logic [31:0] wdog_bite_thold_qs;
   logic [31:0] wdog_bite_thold_wd;
   logic wdog_bite_thold_we;
-  logic wdog_bite_thold_re;
   logic [31:0] wdog_count_qs;
   logic [31:0] wdog_count_wd;
   logic wdog_count_we;
-  logic wdog_count_re;
   logic intr_state_wkup_timer_expired_qs;
   logic intr_state_wkup_timer_expired_wd;
   logic intr_state_wkup_timer_expired_we;
@@ -156,69 +147,112 @@ module aon_timer_reg_top (
   logic wkup_cause_qs;
   logic wkup_cause_wd;
   logic wkup_cause_we;
-  logic wkup_cause_re;
 
   // Register instances
-  // R[wkup_ctrl]: V(True)
+  // R[wkup_ctrl]: V(False)
 
   //   F[enable]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
   ) u_wkup_ctrl_enable (
-    .re     (wkup_ctrl_enable_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wkup_ctrl_enable_we),
     .wd     (wkup_ctrl_enable_wd),
-    .d      (hw2reg.wkup_ctrl.enable.d),
-    .qre    (),
-    .qe     (reg2hw.wkup_ctrl.enable.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wkup_ctrl.enable.q),
+
+    // to register interface (read)
     .qs     (wkup_ctrl_enable_qs)
   );
 
 
   //   F[prescaler]: 12:1
-  prim_subreg_ext #(
-    .DW    (12)
+  prim_subreg #(
+    .DW      (12),
+    .SWACCESS("RW"),
+    .RESVAL  (12'h0)
   ) u_wkup_ctrl_prescaler (
-    .re     (wkup_ctrl_prescaler_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wkup_ctrl_prescaler_we),
     .wd     (wkup_ctrl_prescaler_wd),
-    .d      (hw2reg.wkup_ctrl.prescaler.d),
-    .qre    (),
-    .qe     (reg2hw.wkup_ctrl.prescaler.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wkup_ctrl.prescaler.q),
+
+    // to register interface (read)
     .qs     (wkup_ctrl_prescaler_qs)
   );
 
 
-  // R[wkup_thold]: V(True)
+  // R[wkup_thold]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_wkup_thold (
-    .re     (wkup_thold_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wkup_thold_we),
     .wd     (wkup_thold_wd),
-    .d      (hw2reg.wkup_thold.d),
-    .qre    (),
-    .qe     (reg2hw.wkup_thold.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wkup_thold.q),
+
+    // to register interface (read)
     .qs     (wkup_thold_qs)
   );
 
 
-  // R[wkup_count]: V(True)
+  // R[wkup_count]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_wkup_count (
-    .re     (wkup_count_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wkup_count_we),
     .wd     (wkup_count_wd),
+
+    // from internal hardware
+    .de     (hw2reg.wkup_count.de),
     .d      (hw2reg.wkup_count.d),
-    .qre    (),
-    .qe     (reg2hw.wkup_count.qe),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wkup_count.q),
+
+    // to register interface (read)
     .qs     (wkup_count_qs)
   );
 
@@ -250,82 +284,137 @@ module aon_timer_reg_top (
   );
 
 
-  // R[wdog_ctrl]: V(True)
+  // R[wdog_ctrl]: V(False)
 
   //   F[enable]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
   ) u_wdog_ctrl_enable (
-    .re     (wdog_ctrl_enable_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wdog_ctrl_enable_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_enable_wd),
-    .d      (hw2reg.wdog_ctrl.enable.d),
-    .qre    (),
-    .qe     (reg2hw.wdog_ctrl.enable.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wdog_ctrl.enable.q),
+
+    // to register interface (read)
     .qs     (wdog_ctrl_enable_qs)
   );
 
 
   //   F[pause_in_sleep]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
   ) u_wdog_ctrl_pause_in_sleep (
-    .re     (wdog_ctrl_pause_in_sleep_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wdog_ctrl_pause_in_sleep_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_pause_in_sleep_wd),
-    .d      (hw2reg.wdog_ctrl.pause_in_sleep.d),
-    .qre    (),
-    .qe     (reg2hw.wdog_ctrl.pause_in_sleep.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wdog_ctrl.pause_in_sleep.q),
+
+    // to register interface (read)
     .qs     (wdog_ctrl_pause_in_sleep_qs)
   );
 
 
-  // R[wdog_bark_thold]: V(True)
+  // R[wdog_bark_thold]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_wdog_bark_thold (
-    .re     (wdog_bark_thold_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wdog_bark_thold_we & wdog_regwen_qs),
     .wd     (wdog_bark_thold_wd),
-    .d      (hw2reg.wdog_bark_thold.d),
-    .qre    (),
-    .qe     (reg2hw.wdog_bark_thold.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wdog_bark_thold.q),
+
+    // to register interface (read)
     .qs     (wdog_bark_thold_qs)
   );
 
 
-  // R[wdog_bite_thold]: V(True)
+  // R[wdog_bite_thold]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_wdog_bite_thold (
-    .re     (wdog_bite_thold_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wdog_bite_thold_we & wdog_regwen_qs),
     .wd     (wdog_bite_thold_wd),
-    .d      (hw2reg.wdog_bite_thold.d),
-    .qre    (),
-    .qe     (reg2hw.wdog_bite_thold.qe),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wdog_bite_thold.q),
+
+    // to register interface (read)
     .qs     (wdog_bite_thold_qs)
   );
 
 
-  // R[wdog_count]: V(True)
+  // R[wdog_count]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_wdog_count (
-    .re     (wdog_count_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wdog_count_we),
     .wd     (wdog_count_wd),
+
+    // from internal hardware
+    .de     (hw2reg.wdog_count.de),
     .d      (hw2reg.wdog_count.d),
-    .qre    (),
-    .qe     (reg2hw.wdog_count.qe),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wdog_count.q),
+
+    // to register interface (read)
     .qs     (wdog_count_qs)
   );
 
@@ -416,18 +505,29 @@ module aon_timer_reg_top (
   );
 
 
-  // R[wkup_cause]: V(True)
+  // R[wkup_cause]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h0)
   ) u_wkup_cause (
-    .re     (wkup_cause_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (wkup_cause_we),
     .wd     (wkup_cause_wd),
+
+    // from internal hardware
+    .de     (hw2reg.wkup_cause.de),
     .d      (hw2reg.wkup_cause.d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause.qe),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.wkup_cause.q),
+
+    // to register interface (read)
     .qs     (wkup_cause_qs)
   );
 
@@ -470,42 +570,33 @@ module aon_timer_reg_top (
 
   assign wkup_ctrl_enable_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_enable_wd = reg_wdata[0];
-  assign wkup_ctrl_enable_re = addr_hit[0] & reg_re & !reg_error;
 
   assign wkup_ctrl_prescaler_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_prescaler_wd = reg_wdata[12:1];
-  assign wkup_ctrl_prescaler_re = addr_hit[0] & reg_re & !reg_error;
 
   assign wkup_thold_we = addr_hit[1] & reg_we & !reg_error;
   assign wkup_thold_wd = reg_wdata[31:0];
-  assign wkup_thold_re = addr_hit[1] & reg_re & !reg_error;
 
   assign wkup_count_we = addr_hit[2] & reg_we & !reg_error;
   assign wkup_count_wd = reg_wdata[31:0];
-  assign wkup_count_re = addr_hit[2] & reg_re & !reg_error;
 
   assign wdog_regwen_we = addr_hit[3] & reg_we & !reg_error;
   assign wdog_regwen_wd = reg_wdata[0];
 
   assign wdog_ctrl_enable_we = addr_hit[4] & reg_we & !reg_error;
   assign wdog_ctrl_enable_wd = reg_wdata[0];
-  assign wdog_ctrl_enable_re = addr_hit[4] & reg_re & !reg_error;
 
   assign wdog_ctrl_pause_in_sleep_we = addr_hit[4] & reg_we & !reg_error;
   assign wdog_ctrl_pause_in_sleep_wd = reg_wdata[1];
-  assign wdog_ctrl_pause_in_sleep_re = addr_hit[4] & reg_re & !reg_error;
 
   assign wdog_bark_thold_we = addr_hit[5] & reg_we & !reg_error;
   assign wdog_bark_thold_wd = reg_wdata[31:0];
-  assign wdog_bark_thold_re = addr_hit[5] & reg_re & !reg_error;
 
   assign wdog_bite_thold_we = addr_hit[6] & reg_we & !reg_error;
   assign wdog_bite_thold_wd = reg_wdata[31:0];
-  assign wdog_bite_thold_re = addr_hit[6] & reg_re & !reg_error;
 
   assign wdog_count_we = addr_hit[7] & reg_we & !reg_error;
   assign wdog_count_wd = reg_wdata[31:0];
-  assign wdog_count_re = addr_hit[7] & reg_re & !reg_error;
 
   assign intr_state_wkup_timer_expired_we = addr_hit[8] & reg_we & !reg_error;
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
@@ -521,7 +612,6 @@ module aon_timer_reg_top (
 
   assign wkup_cause_we = addr_hit[10] & reg_we & !reg_error;
   assign wkup_cause_wd = reg_wdata[0];
-  assign wkup_cause_re = addr_hit[10] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
