@@ -319,7 +319,7 @@ Signal                       | Direction        | Type                        | 
 `pwr_otp_o`                  | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
 `lc_otp_program_i`           | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
 `lc_otp_program_o`           | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
-`lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
+`lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs (except for the LIFE_CYCLE partition FSM) within OTP into the error state.
 `lc_check_byp_en_i`          | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
 `lc_creator_seed_sw_rw_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
 `lc_seed_hw_rd_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Seed read enable coming from life cycle controller. This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
@@ -549,7 +549,7 @@ Write access through the DAI will be locked in case the digest is set to a non-z
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
 
-Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}) or ECC failures in the digest register will move the partition controller into a terminal error state.
+Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}), ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
@@ -573,6 +573,11 @@ Otherwise, if no digest is available, the controller will read out the whole par
 In case of a mismatch, the buffered values are gated to their default, and an alert is triggered through the error handling logic.
 
 Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
+
+External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well, except for the case where the controller FSM belongs to the LIFE_CYCLE partition.
+The reason for that is the separation of the "wipe secrets" escalation action (distributed via the `lc_escalate_en` signal) and the "life cycle state scrapping" escalation action, which is implemented inside the life cycle controller.
+This separation allows to schedule these actions at different times in the escalation protocol, and invalidating the life cycle state here via `lc_escalate_en` would interfere with that.
+See [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
 
 ### Direct Access Interface Control
 
