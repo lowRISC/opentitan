@@ -31,17 +31,14 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
       cfg.m_eflash_tl_agent_cfg.d_ready_delay_max = 0;
     end
 
-    // Retrieve the mem backdoor util instances when using open-source generic flash model.
-    // TODO: this perhaps works for the closed source model as well?
-    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
-      for (int i = 0, flash_dv_part_e part = part.first(); i < part.num();
-           i++, part = part.next()) begin
-        foreach (cfg.mem_bkdr_util_h[, bank]) begin
-          string name = $sformatf("mem_bkdr_util[%0s][%0d]", part.name(), bank);
-          if (!uvm_config_db#(mem_bkdr_util)::get(this, "", name,
-                                                  cfg.mem_bkdr_util_h[part][bank])) begin
-            `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", name))
-          end
+    // Retrieve the mem backdoor util instances.
+    for (int i = 0, flash_dv_part_e part = part.first(); i < part.num();
+         i++, part = part.next()) begin
+      foreach (cfg.mem_bkdr_util_h[, bank]) begin
+        string name = $sformatf("mem_bkdr_util[%0s][%0d]", part.name(), bank);
+        if (!uvm_config_db#(mem_bkdr_util)::get(this, "", name,
+                                                cfg.mem_bkdr_util_h[part][bank])) begin
+          `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", name))
         end
       end
     end

@@ -88,31 +88,37 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_write(flash_op_t flash_op,
                                              flash_mem_init_e scheme,
-                                             logic [TL_DW-1:0] data[$] = {});
+                                             logic [flash_ctrl_pkg::DataWidth-1:0] data[$] = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
-    logic [TL_DW-1:0] wr_data;
+    logic [flash_ctrl_pkg::DataWidth-1:0] wr_data;
+    int num_words;
     case (scheme)
       FlashMemInitCustom: begin
         flash_op.num_words = data.size();
       end
       FlashMemInitSet: begin
-        wr_data = {TL_DW{1'b1}};
+        wr_data = {flash_ctrl_pkg::DataWidth{1'b1}};
       end
       FlashMemInitClear: begin
-        wr_data = {TL_DW{1'b0}};
+        wr_data = {flash_ctrl_pkg::DataWidth{1'b0}};
       end
       FlashMemInitInvalidate: begin
-        wr_data = {TL_DW{1'bx}};
+        wr_data = {flash_ctrl_pkg::DataWidth{1'bx}};
       end
     endcase
-    for (int i = 0; i < flash_op.num_words; i++) begin
-      logic [TL_DW-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
+    // If start address is the 32 MSBs half word of some 64bits word and num_words is even, an
+    //  additional iteration is required to write all required words.
+    num_words = (addr_attrs.is_start_addr_msb && (flash_op.num_words % 2 == 0)) ?
+                    flash_op.num_words + 1 : flash_op.num_words;
+    for (int i = 0; i < num_words; i += 2) begin
+      logic [flash_ctrl_pkg::DataWidth-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
           (scheme == FlashMemInitRandomize) ? $urandom : wr_data;
 
-      mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write32(addr_attrs.bank_addr, loc_data);
+      mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write64(addr_attrs.full64_bank_addr,
+                                                                   loc_data);
       `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: {%s} = 0x%0h", addr_attrs.sprint(),
                                 loc_data), UVM_MEDIUM)
-      addr_attrs.incr(TL_DBW);
+      addr_attrs.incr(flash_ctrl_env_pkg::FlashBankBytesPerWord);
     end
   endfunction : flash_mem_bkdr_write
 
