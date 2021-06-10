@@ -56,12 +56,13 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
                 i, num_dai_op, dai_addr, part_idx), UVM_MEDIUM)
 
-      // OTP write via DAI
-      dai_wr(dai_addr, wdata0, wdata1);
-
-      if (i > num_to_lock_digests && part_idx inside {[HwCfgIdx: Secret2Idx]}) begin
+      if (i > num_to_lock_digests && part_idx inside {[HwCfgIdx: Secret2Idx]} &&
+          !used_dai_addrs.exists(dai_addr)) begin
         init_chk_err[part_idx] = 1;
       end
+
+      // OTP write via DAI
+      dai_wr(dai_addr, wdata0, wdata1);
 
       // OTP read via DAI, check data in scb
       dai_rd(dai_addr, 0, wdata0, wdata1);
