@@ -17,7 +17,8 @@ sw_lib_bitfield = declare_dependency(
 sw_lib_mem = declare_dependency(
   link_with: static_library(
     'mem_ot',
-    sources: ['memory.c'],
+    sources: ['memory.c',
+              'memory_hardened.c'],
     c_args: ['-fno-builtin'],
   )
 )

@@ -69,3 +69,30 @@ test('mock_csr_test', executable(
   native: true,
   cpp_args: ['-DMOCK_CSR'],
 ))
+
+sw_lib_base_testing_memory_hardened = declare_dependency(
+  link_with: static_library(
+    'memory_hardened',
+    sources: [
+      meson.source_root() / 'sw/device/lib/base/memory_hardened.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_bitfield,
+    ],
+    native: true,
+  )
+)
+
+# Example test using mock_csr.h, which also serves to
+# test that mock_csr.h works correctly.
+test('memory_hardened_test', executable(
+  'memory_hardened_test',
+  sources: ['memory_hardened_test.cc'],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_bitfield,
+    sw_lib_base_testing_memory_hardened
+  ],
+  native: true,
+))
