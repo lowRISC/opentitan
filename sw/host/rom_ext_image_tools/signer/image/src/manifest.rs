@@ -1,111 +1,94 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
-// ---------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ----------
-// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE
-// FOLLOWING COMMAND:
-// util/rom-ext-manifest-generator.py
-//     --input-dir=sw/device/silicon_creator/rom_exts
-//     --output-dir=<destination dir>
-//     --output-files=rust
 
-pub struct ManifestField {
-    pub offset: usize,
-    pub size_bytes: usize,
+//! Structs for reading and writing manifests of flash boot stage images.
+//!
+//! Note: The structs below must match the definitions in
+//! sw/device/silicon_creator/lib/manifest.h.
+
+#![deny(warnings)]
+#![deny(unused)]
+#![deny(unsafe_code)]
+
+use std::mem::size_of;
+
+use memoffset::offset_of;
+use zerocopy::AsBytes;
+use zerocopy::FromBytes;
+
+// Currently, these definitions must be updated manually but they can be
+// generated using the following commands (requires bindgen):
+//   cargo install bindgen
+//   cd "${REPO_TOP}"
+//   bindgen --allowlist-type manifest_t --allowlist-var "MANIFEST_.*" \
+//      --no-doc-comments --no-layout-tests \
+//      sw/device/silicon_creator/lib/manifest.h \
+//      -- -I./ -Isw/device/lib/base/freestanding
+
+pub const MANIFEST_SIZE: u32 = 880;
+
+/// Manifest for boot stage images stored in flash.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct Manifest {
+    pub identifier: u32,
+    pub reserved0: u32,
+    pub signature: SigverifyRsaBuffer,
+    pub image_length: u32,
+    pub image_version: u32,
+    pub image_timestamp: u64,
+    pub exponent: u32,
+    pub reserved1: u32,
+    pub usage_constraints: [u32; 8usize],
+    pub lockdown_info: [u32; 4usize],
+    pub modulus: SigverifyRsaBuffer,
+    pub extension0_offset: u32,
+    pub extension0_checksum: u32,
+    pub extension1_offset: u32,
+    pub extension1_checksum: u32,
+    pub extension2_offset: u32,
+    pub extension2_checksum: u32,
+    pub extension3_offset: u32,
+    pub extension3_checksum: u32,
 }
 
-pub const ROM_EXT_MANIFEST_IDENTIFIER: ManifestField = ManifestField {
-    offset: 0,
-    size_bytes: 4,
-};
+/// A type that holds 96 32-bit words for RSA-3072.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug)]
+pub struct SigverifyRsaBuffer {
+    pub data: [u32; 96usize],
+}
 
-pub const ROM_EXT_IMAGE_SIGNATURE: ManifestField = ManifestField {
-    offset: 8,
-    size_bytes: 384,
-};
+impl Default for SigverifyRsaBuffer {
+    fn default() -> Self {
+        Self { data: [0; 96usize] }
+    }
+}
 
-pub const ROM_EXT_IMAGE_LENGTH: ManifestField = ManifestField {
-    offset: 392,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_IMAGE_VERSION: ManifestField = ManifestField {
-    offset: 396,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_IMAGE_TIMESTAMP: ManifestField = ManifestField {
-    offset: 400,
-    size_bytes: 8,
-};
-
-pub const ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT: ManifestField =
-    ManifestField {
-        offset: 408,
-        size_bytes: 4,
-    };
-
-pub const ROM_EXT_USAGE_CONSTRAINTS: ManifestField = ManifestField {
-    offset: 416,
-    size_bytes: 32,
-};
-
-pub const ROM_EXT_PERIPHERAL_LOCKDOWN_INFO: ManifestField = ManifestField {
-    offset: 448,
-    size_bytes: 16,
-};
-
-pub const ROM_EXT_SIGNATURE_KEY_MODULUS: ManifestField = ManifestField {
-    offset: 464,
-    size_bytes: 384,
-};
-
-pub const ROM_EXT_EXTENSION0_OFFSET: ManifestField = ManifestField {
-    offset: 848,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION0_CHECKSUM: ManifestField = ManifestField {
-    offset: 852,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION1_OFFSET: ManifestField = ManifestField {
-    offset: 856,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION1_CHECKSUM: ManifestField = ManifestField {
-    offset: 860,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION2_OFFSET: ManifestField = ManifestField {
-    offset: 864,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION2_CHECKSUM: ManifestField = ManifestField {
-    offset: 868,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION3_OFFSET: ManifestField = ManifestField {
-    offset: 872,
-    size_bytes: 4,
-};
-
-pub const ROM_EXT_EXTENSION3_CHECKSUM: ManifestField = ManifestField {
-    offset: 876,
-    size_bytes: 4,
-};
-
-/// Manifest offset signed_area_start from the base.
-pub const ROM_EXT_SIGNED_AREA_START_OFFSET: usize = 392;
-
-/// Manifest offset interrupt_vector from the base.
-pub const ROM_EXT_INTERRUPT_VECTOR_OFFSET: usize = 1024;
-
-/// Manifest offset entry_point from the base.
-pub const ROM_EXT_ENTRY_POINT_OFFSET: usize = 1152;
+/// Checks the layout of the manifest struct.
+///
+/// Implemented as a function because using `offset_of!` at compile-time
+/// requires a nightly compiler.
+/// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
+pub fn check_manifest_layout() {
+    assert_eq!(offset_of!(Manifest, identifier), 0);
+    assert_eq!(offset_of!(Manifest, reserved0), 4);
+    assert_eq!(offset_of!(Manifest, signature), 8);
+    assert_eq!(offset_of!(Manifest, image_length), 392);
+    assert_eq!(offset_of!(Manifest, image_version), 396);
+    assert_eq!(offset_of!(Manifest, image_timestamp), 400);
+    assert_eq!(offset_of!(Manifest, exponent), 408);
+    assert_eq!(offset_of!(Manifest, reserved1), 412);
+    assert_eq!(offset_of!(Manifest, usage_constraints), 416);
+    assert_eq!(offset_of!(Manifest, lockdown_info), 448);
+    assert_eq!(offset_of!(Manifest, modulus), 464);
+    assert_eq!(offset_of!(Manifest, extension0_offset), 848);
+    assert_eq!(offset_of!(Manifest, extension0_checksum), 852);
+    assert_eq!(offset_of!(Manifest, extension1_offset), 856);
+    assert_eq!(offset_of!(Manifest, extension1_checksum), 860);
+    assert_eq!(offset_of!(Manifest, extension2_offset), 864);
+    assert_eq!(offset_of!(Manifest, extension2_checksum), 868);
+    assert_eq!(offset_of!(Manifest, extension3_offset), 872);
+    assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
+}
