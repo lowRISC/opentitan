@@ -20,11 +20,6 @@ class chip_env extends cip_base_env #(
     super.build_phase(phase);
     // configure the cpu d tl agent
     // get the vifs from config db
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "usb_clk_rst_vif",
-        cfg.usb_clk_rst_vif)) begin
-      `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
-    end
-
     if (!uvm_config_db#(gpio_vif)::get(this, "", "gpio_vif", cfg.gpio_vif)) begin
       `uvm_fatal(`gfn, "failed to get gpio_vif from uvm_config_db")
     end

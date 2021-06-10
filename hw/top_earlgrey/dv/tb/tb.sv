@@ -19,8 +19,6 @@ module tb;
   `include "chip_hier_macros.svh"
 
   wire clk, rst_n;
-  wire usb_clk, usb_rst_n;
-
   wire [NUM_GPIOS-1:0] gpio_pins;
 
   wire jtag_tck;
@@ -55,7 +53,6 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
-  clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
@@ -245,14 +242,9 @@ module tb;
   end : gen_connect_alerts_pins
 
   initial begin
-    // Set clk_rst_vifs
-    // drive rst_n from clk_if
-    // clk_rst_if references internal clock created by ast
+    // Set clk_rst_vifs.
     clk_rst_if.set_active();
-    usb_clk_rst_if.set_active(.drive_clk_val(1'b1), .drive_rst_n_val(1'b0));
-    // clk_rst_if will be gotten by env and env.scoreboard (for xbar)
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
 
     // IO Interfaces
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
