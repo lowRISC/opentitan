@@ -22,14 +22,12 @@ filesets:
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
       - lowrisc:prim:alert
+      - lowrisc:prim:esc
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
     files:
       - rtl/prim_clock_gating_sync.sv
-      - rtl/prim_esc_pkg.sv
-      - rtl/prim_esc_receiver.sv
-      - rtl/prim_esc_sender.sv
       - rtl/prim_sram_arbiter.sv
       - rtl/prim_slicer.sv
       - rtl/prim_sync_reqack.sv

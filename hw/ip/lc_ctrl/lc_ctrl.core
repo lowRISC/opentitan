@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:esc
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender

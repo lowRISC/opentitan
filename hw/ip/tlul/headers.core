@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:prim:secded
     files:
       - rtl/tlul_pkg.sv
     file_type: systemVerilogSource

@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:prim:all
+      - lowrisc:prim:esc
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul
       - lowrisc:tlul:adapter_host
