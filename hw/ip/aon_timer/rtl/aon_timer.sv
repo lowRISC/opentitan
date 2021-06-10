@@ -39,36 +39,13 @@ module aon_timer (
   // Register structs
   aon_timer_reg2hw_t         aon_reg2hw;
   aon_timer_hw2reg_t         aon_hw2reg;
-  // Register read signals
-  logic                      wkup_enable;
-  logic [11:0]               wkup_prescaler;
-  logic [31:0]               wkup_thold;
-  logic [31:0]               wkup_count;
-  logic                      wdog_enable;
-  logic                      wdog_pause;
-  logic [31:0]               wdog_bark_thold;
-  logic [31:0]               wdog_bite_thold;
-  logic [31:0]               wdog_count;
   // Register write signals
-  logic                      wkup_ctrl_reg_wr;
-  logic [12:0]               wkup_ctrl_wr_data;
-  logic                      wkup_thold_reg_wr;
-  logic [31:0]               wkup_thold_wr_data;
   logic                      wkup_count_reg_wr;
   logic [31:0]               wkup_count_wr_data;
-  logic                      wdog_ctrl_reg_wr;
-  logic [1:0]                wdog_ctrl_wr_data;
-  logic                      wdog_bark_thold_reg_wr;
-  logic [31:0]               wdog_bark_thold_wr_data;
-  logic                      wdog_bite_thold_reg_wr;
-  logic [31:0]               wdog_bite_thold_wr_data;
   logic                      wdog_count_reg_wr;
   logic [31:0]               wdog_count_wr_data;
   // Other sync signals
   lc_ctrl_pkg::lc_tx_t [2:0] lc_escalate_en;
-  // Wakeup signals
-  logic                      aon_wkup_req_d, aon_wkup_req_q;
-  logic                      aon_wkup_ack;
   // Interrupt signals
   logic                      aon_wkup_intr_set;
   logic                      aon_wdog_intr_set;
@@ -82,53 +59,14 @@ module aon_timer (
   logic                      aon_rst_req_set;
   logic                      aon_rst_req_d, aon_rst_req_q;
 
-  ////////////////////////////
-  // Register Read Sampling //
-  ////////////////////////////
-
-  assign aon_hw2reg.wkup_ctrl.enable.d         = wkup_enable;
-  assign aon_hw2reg.wkup_ctrl.prescaler.d      = wkup_prescaler;
-  assign aon_hw2reg.wkup_thold.d               = wkup_thold;
-  assign aon_hw2reg.wkup_count.d               = wkup_count;
-  assign aon_hw2reg.wdog_ctrl.enable.d         = wdog_enable;
-  assign aon_hw2reg.wdog_ctrl.pause_in_sleep.d = wdog_pause;
-  assign aon_hw2reg.wdog_bark_thold.d          = wdog_bark_thold;
-  assign aon_hw2reg.wdog_bite_thold.d          = wdog_bite_thold;
-  assign aon_hw2reg.wdog_count.d               = wdog_count;
-  assign aon_hw2reg.wkup_cause.d               = aon_wkup_req_q;
-
   //////////////////////////////
   // Register Write Interface //
   //////////////////////////////
 
-  // wkup_ctrl
-  assign wkup_ctrl_reg_wr  = aon_reg2hw.wkup_ctrl.prescaler.qe | aon_reg2hw.wkup_ctrl.enable.qe;
-  assign wkup_ctrl_wr_data = {aon_reg2hw.wkup_ctrl.prescaler.q, aon_reg2hw.wkup_ctrl.enable.q};
-
-  // wkup_thold
-  assign wkup_thold_reg_wr  = aon_reg2hw.wkup_thold.qe;
-  assign wkup_thold_wr_data = aon_reg2hw.wkup_thold.q;
-
-  // wkup_count
-  assign wkup_count_reg_wr  = aon_reg2hw.wkup_count.qe;
-  assign wkup_count_wr_data = aon_reg2hw.wkup_count.q;
-
-  // wdog_ctrl
-  assign wdog_ctrl_reg_wr  = aon_reg2hw.wdog_ctrl.pause_in_sleep.qe |
-                             aon_reg2hw.wdog_ctrl.enable.qe;
-  assign wdog_ctrl_wr_data = {aon_reg2hw.wdog_ctrl.pause_in_sleep.q, aon_reg2hw.wdog_ctrl.enable.q};
-
-  // wdog_bark_thold
-  assign wdog_bark_thold_reg_wr  = aon_reg2hw.wdog_bark_thold.qe;
-  assign wdog_bark_thold_wr_data = aon_reg2hw.wdog_bark_thold.q;
-
-  // wdog_bite_thold
-  assign wdog_bite_thold_reg_wr  = aon_reg2hw.wdog_bite_thold.qe;
-  assign wdog_bite_thold_wr_data = aon_reg2hw.wdog_bite_thold.q;
-
-  // wdog_count
-  assign wdog_count_reg_wr  = aon_reg2hw.wdog_count.qe;
-  assign wdog_count_wr_data = aon_reg2hw.wdog_count.q;
+  assign aon_hw2reg.wkup_count.de = wkup_count_reg_wr;
+  assign aon_hw2reg.wkup_count.d  = wkup_count_wr_data;
+  assign aon_hw2reg.wdog_count.de = wdog_count_reg_wr;
+  assign aon_hw2reg.wdog_count.d  = wdog_count_wr_data;
 
   // registers instantiation
   aon_timer_reg_top u_reg (
@@ -192,29 +130,11 @@ module aon_timer (
     .rst_aon_ni,
     .sleep_mode_i              (sleep_mode),
     .lc_escalate_en_i          (lc_escalate_en),
-    .wkup_enable_o             (wkup_enable),
-    .wkup_prescaler_o          (wkup_prescaler),
-    .wkup_thold_o              (wkup_thold),
-    .wkup_count_o              (wkup_count),
-    .wdog_enable_o             (wdog_enable),
-    .wdog_pause_o              (wdog_pause),
-    .wdog_bark_thold_o         (wdog_bark_thold),
-    .wdog_bite_thold_o         (wdog_bite_thold),
-    .wdog_count_o              (wdog_count),
-    .wkup_ctrl_reg_wr_i        (wkup_ctrl_reg_wr),
-    .wkup_ctrl_wr_data_i       (wkup_ctrl_wr_data),
-    .wkup_thold_reg_wr_i       (wkup_thold_reg_wr),
-    .wkup_thold_wr_data_i      (wkup_thold_wr_data),
-    .wkup_count_reg_wr_i       (wkup_count_reg_wr),
-    .wkup_count_wr_data_i      (wkup_count_wr_data),
-    .wdog_ctrl_reg_wr_i        (wdog_ctrl_reg_wr),
-    .wdog_ctrl_wr_data_i       (wdog_ctrl_wr_data),
-    .wdog_bark_thold_reg_wr_i  (wdog_bark_thold_reg_wr),
-    .wdog_bark_thold_wr_data_i (wdog_bark_thold_wr_data),
-    .wdog_bite_thold_reg_wr_i  (wdog_bite_thold_reg_wr),
-    .wdog_bite_thold_wr_data_i (wdog_bite_thold_wr_data),
-    .wdog_count_reg_wr_i       (wdog_count_reg_wr),
-    .wdog_count_wr_data_i      (wdog_count_wr_data),
+    .reg2hw_i                  (aon_reg2hw),
+    .wkup_count_reg_wr_o       (wkup_count_reg_wr),
+    .wkup_count_wr_data_o      (wkup_count_wr_data),
+    .wdog_count_reg_wr_o       (wdog_count_reg_wr),
+    .wdog_count_wr_data_o      (wdog_count_wr_data),
     .wkup_intr_o               (aon_wkup_intr_set),
     .wdog_intr_o               (aon_wdog_intr_set),
     .wdog_reset_req_o          (aon_rst_req_set)
@@ -224,21 +144,11 @@ module aon_timer (
   // Wakeup Signals //
   ////////////////////
 
-  // Wakeup signal remains high until acked by software
-  assign aon_wkup_req_d = aon_wkup_intr_set | aon_wdog_intr_set | (aon_wkup_req_q & ~aon_wkup_ack);
+  // Wakeup request is set by HW and cleared by SW
+  assign aon_hw2reg.wkup_cause.de = (aon_wkup_intr_set | aon_wdog_intr_set) & sleep_mode;
+  assign aon_hw2reg.wkup_cause.d  = 1'b1;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      aon_wkup_req_q <= 1'b0;
-    end else begin
-      aon_wkup_req_q <= aon_wkup_req_d;
-    end
-  end
-
-  // Wakeup request is cleared by SW writing zero
-  assign aon_wkup_ack = aon_reg2hw.wkup_cause.qe & ~aon_reg2hw.wkup_cause.q;
-
-  assign aon_timer_wkup_req_o = aon_wkup_req_q;
+  assign aon_timer_wkup_req_o = aon_reg2hw.wkup_cause.q;
 
   ////////////////////////
   // Interrupt Handling //
