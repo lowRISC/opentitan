@@ -57,6 +57,10 @@ struct ISSWrapper {
   // it's the value of the ERR_BITS register.
   int step(bool gen_trace);
 
+  // Get the current value of otbn.INSN_CNT. This should be called just after
+  // step (but doesn't necessarily need to wait until the run has finished).
+  uint32_t get_insn_cnt() const { return insn_cnt_; }
+
   // Get the err_bits from a run that's just finished. This should be
   // called just after step() returns 1.
   uint32_t get_err_bits() const { return err_bits_; }
@@ -92,6 +96,10 @@ struct ISSWrapper {
 
   // A temporary directory for communicating with the child process
   std::unique_ptr<TmpDir> tmpdir;
+
+  // INSN_CNT for the current run if there is one, or the previous run if
+  // there's no current one.
+  uint32_t insn_cnt_;
 
   // ERR_BITS and STOP_PC values from a run that's just finished.
   uint32_t err_bits_;

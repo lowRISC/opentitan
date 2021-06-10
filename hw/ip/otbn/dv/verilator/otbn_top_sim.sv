@@ -52,6 +52,9 @@ module otbn_top_sim (
   logic                     edn_rnd_data_valid;
   logic                     edn_urnd_data_valid;
 
+  // Instruction counter (feeds into otbn.INSN_CNT in full block)
+  logic [31:0]              insn_cnt;
+
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
@@ -90,7 +93,8 @@ module otbn_top_sim (
     .edn_urnd_req_o  ( edn_urnd_req     ),
     .edn_urnd_ack_i  ( edn_urnd_ack     ),
     .edn_urnd_data_i ( edn_urnd_data    ),
-    .insn_cnt_o      ()
+
+    .insn_cnt_o      ( insn_cnt )
   );
 
   // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
@@ -241,6 +245,7 @@ module otbn_top_sim (
 
   logic      otbn_model_done;
   err_bits_t otbn_model_err_bits;
+  bit [31:0] otbn_model_insn_cnt;
   bit        otbn_model_err;
 
   otbn_core_model #(
@@ -259,20 +264,23 @@ module otbn_top_sim (
 
     .err_bits_o            ( otbn_model_err_bits ),
 
-    .err_o                 ( otbn_model_err ),
-
     .edn_rnd_data_valid_i  ( edn_rnd_data_valid ),
     .edn_rnd_data_i        ( edn_rnd_data ),
-    .edn_urnd_data_valid_i ( edn_urnd_data_valid )
+    .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
+
+    .insn_cnt_o            ( otbn_model_insn_cnt ),
+
+    .err_o                 ( otbn_model_err )
   );
 
-  bit done_mismatch_latched, err_bits_mismatch_latched;
+  bit done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched;
   bit model_err_latched;
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
       done_mismatch_latched     <= 1'b0;
       err_bits_mismatch_latched <= 1'b0;
+      cnt_mismatch_latched      <= 1'b0;
       model_err_latched         <= 1'b0;
     end else begin
       if (otbn_done_q != otbn_model_done) begin
@@ -286,6 +294,13 @@ module otbn_top_sim (
                    $time, otbn_err_bits_q, otbn_model_err_bits);
           err_bits_mismatch_latched <= 1'b1;
         end
+      end
+      if (insn_cnt != otbn_model_insn_cnt) begin
+        if (!cnt_mismatch_latched) begin
+          $display("ERROR: At time %0t, insn_cnt != otbn_model_insn_cnt (%0x != %0x).",
+                   $time, insn_cnt, otbn_model_insn_cnt);
+        end
+        cnt_mismatch_latched <= 1'b1;
       end
       model_err_latched <= model_err_latched | otbn_model_err;
     end

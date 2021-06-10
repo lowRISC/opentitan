@@ -620,12 +620,14 @@ module otbn
     logic         done_model, done_rtl;
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
+    logic [31:0]  insn_cnt_model, insn_cnt_rtl;
     logic         edn_rnd_data_valid;
     logic         edn_urnd_data_valid;
     logic [255:0] edn_rnd_data_model;
 
     assign done = otbn_use_model ? done_model : done_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
+    assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
     assign start_model = start_q & otbn_use_model;
     assign start_rtl = start_q & ~otbn_use_model;
 
@@ -655,11 +657,13 @@ module otbn
 
       .start_addr_i (start_addr),
 
-      .err_o (),
-
       .edn_rnd_data_valid_i  ( edn_rnd_data_valid ),
       .edn_rnd_data_i        ( edn_rnd_data ),
-      .edn_urnd_data_valid_i ( edn_urnd_data_valid )
+      .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
+
+      .insn_cnt_o (insn_cnt_model),
+
+      .err_o ()
     );
 
     // RTL implementation
@@ -705,7 +709,7 @@ module otbn
       .edn_urnd_ack_i  (edn_urnd_ack),
       .edn_urnd_data_i (edn_urnd_data),
 
-      .insn_cnt_o      (insn_cnt)
+      .insn_cnt_o      (insn_cnt_rtl)
     );
   `else
     otbn_core #(

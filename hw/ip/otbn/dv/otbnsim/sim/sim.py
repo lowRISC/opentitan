@@ -106,12 +106,8 @@ class OTBNSim:
                 self.stats.record_insn(insn, self.state)
 
             if self.state.pending_halt:
-                # Roll back any pending state changes, ensuring that a faulting
-                # instruction doesn't actually do anything (this also aborts an
-                # ECALL instruction, but that doesn't really matter because it
-                # doesn't have any side-effects). Also generate a change that
-                # sets an appropriate error bits in the external ERR_CODE
-                # register and clears the busy flag.
+                # We've reached the end of the run (either because of an ECALL
+                # instruction or an error).
                 self.state.stop()
 
             changes = self.state.changes()

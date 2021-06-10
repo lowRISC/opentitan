@@ -182,10 +182,22 @@ class OTBNState:
         return self.ext_regs.read('START_ADDR', True)
 
     def stop(self) -> None:
-        '''Set flags to stop the processor and abort the instruction'''
+        '''Set flags to stop the processor and maybe abort the instruction.
 
-        # Abort all pending changes, including changes to external registers.
-        self._abort()
+        If the current instruction has caused an error (so self._err_bits is
+        nonzero), abort all its pending changes, including changes to external
+        registers.
+
+        If not, we've just executed an ECALL. The only pending change will be
+        the increment of INSN_CNT that we want to keep.
+
+        Either way, set the appropriate bits in the external ERR_CODE register,
+        clear the busy flag and write STOP_PC.
+
+        '''
+        if self._err_bits:
+            # Abort all pending changes, including changes to external registers.
+            self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
@@ -238,6 +250,7 @@ class OTBNState:
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
+        self.ext_regs.increment_insn_cnt()
         self.check_next_pc()
         self.loop_step()
         self.gprs.post_insn()

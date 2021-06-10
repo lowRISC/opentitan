@@ -39,11 +39,13 @@ module otbn_core_model
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
-  output bit err_o, // something went wrong
-
   input logic            edn_rnd_data_valid_i, // provide RND data from EDN
   input logic [WLEN-1:0] edn_rnd_data_i,
-  input logic            edn_urnd_data_valid_i // URND reseed from EDN is valid
+  input logic            edn_urnd_data_valid_i, // URND reseed from EDN is valid
+
+  output bit [31:0]      insn_cnt_o, // INSN_CNT register
+
+  output bit             err_o // something went wrong
 );
 
   import "DPI-C" context function chandle otbn_model_init(string mem_scope,
@@ -59,6 +61,7 @@ module otbn_core_model
                                  logic            edn_rnd_data_valid,
                                  logic [WLEN-1:0] edn_rnd_data,
                                  logic            edn_urnd_data_valid,
+                                 inout bit [31:0] insn_cnt,
                                  inout bit [31:0] err_bits,
                                  inout bit [31:0] stop_pc);
 
@@ -109,12 +112,15 @@ module otbn_core_model
   bit unused_raw_err_bits;
 
   bit [31:0] stop_pc_d, stop_pc_q;
+  bit [31:0] insn_cnt_d, insn_cnt_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       // Clear status (stop running, and forget any errors and final PC)
       status <= 0;
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;
+      insn_cnt_q <= 0;
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
@@ -122,10 +128,12 @@ module otbn_core_model
                                   status,
                                   edn_rnd_data_valid_i, edn_rnd_data_i,
                                   edn_urnd_data_valid_i,
+                                  insn_cnt_d,
                                   raw_err_bits_d,
                                   stop_pc_d);
         raw_err_bits_q <= raw_err_bits_d;
         stop_pc_q <= stop_pc_d;
+        insn_cnt_q <= insn_cnt_d;
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.
       end
@@ -134,6 +142,8 @@ module otbn_core_model
 
   assign err_bits_o = raw_err_bits_q[7:0];
   assign unused_raw_err_bits = ^raw_err_bits_q[31:8];
+
+  assign insn_cnt_o = insn_cnt_q;
 
   // Track negedges of running_q and expose that as a "done" output.
   bit running_r = 1'b0;
