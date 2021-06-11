@@ -132,3 +132,32 @@ L_copy_error:
 
   // Set function size to allow disassembly.
   .size crt_section_copy, .-crt_section_copy
+
+/**
+ * Set the global pointer register (`gp`) to the value of `__global_pointer$`.
+ *
+ * This function follows the standard ILP32 calling convention for arguments
+ * but does not require a valid stack pointer, thread pointer or global
+ * pointer.
+ *
+ * Clobbers gp.
+ *
+ * No parameters.
+ */
+crt_global_pointer_init:
+  .globl crt_global_pointer_init
+  .type crt_global_pointer_init, @function
+
+  // Disable linker relaxation so that `_global_pointer$` does not get
+  // 'optimized' into `gp`.
+  .option push
+  .option norelax
+
+  la gp, __global_pointer$
+  ret
+
+  // Re-enable linker relaxation.
+  .option pop
+
+  // Set size so this function can be disassembled.
+  .size crt_global_pointer_init, .-crt_global_pointer_init
