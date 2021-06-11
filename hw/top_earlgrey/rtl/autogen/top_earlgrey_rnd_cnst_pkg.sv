@@ -61,7 +61,7 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
-    128'h738F30D9006289A1D7D9D0CE1DD7D7C
+    128'h0738F30D9006289A1D7D9D0CE1DD7D7C
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
@@ -89,7 +89,7 @@ package top_earlgrey_rnd_cnst_pkg;
 
   // Compile-time random bits for initial LFSR seed
   parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'h96F534D
+    32'h096F534D
   };
 
   // Compile-time random permutation for LFSR output
@@ -183,7 +183,7 @@ package top_earlgrey_rnd_cnst_pkg;
 
   // Compile-time random bits for generation seed when hmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
-    256'hBC5F1A8862845852761603352213B7A034816103A781D0A4F5A0A911C1BCAFE
+    256'h0BC5F1A8862845852761603352213B7A034816103A781D0A4F5A0A911C1BCAFE
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
