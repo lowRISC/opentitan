@@ -382,9 +382,16 @@ class RegBlock:
                                  'rw1c',
                                  'hrw',
                                  False,
-                                 # intr_state csr is affected by writes to
-                                 # other csrs - skip write-check
-                                 ["excl:CsrNonInitTests:CsrExclWriteCheck"])
+                                 # Some POR routines have the potential to
+                                 # unpredictably set some `intr_state` fields
+                                 # for various IPs, so we exclude all
+                                 # `intr_state` accesses from CSR checks to
+                                 # prevent this from occurring.
+                                 #
+                                 # An example of an `intr_state` mismatch error
+                                 # occurring due to a POR routine can be seen in
+                                 # issue #6888.
+                                 ["excl:CsrAllTests:CsrExclAll"])
         self._add_intr_alert_reg(interrupts,
                                  'INTR_ENABLE',
                                  'Interrupt Enable Register',
