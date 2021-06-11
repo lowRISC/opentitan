@@ -256,6 +256,7 @@
     } // register : fatal_alert_cause
     { name: "INSN_CNT",
       desc: "Instruction Counter",
+      hwext: "true",
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [

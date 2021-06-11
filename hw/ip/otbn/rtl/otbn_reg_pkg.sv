@@ -114,7 +114,6 @@ package otbn_reg_pkg;
 
   typedef struct packed {
     logic [31:0] d;
-    logic        de;
   } otbn_hw2reg_insn_cnt_reg_t;
 
   // Register -> HW type
@@ -129,11 +128,11 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [59:58]
-    otbn_hw2reg_status_reg_t status; // [57:57]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [56:41]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [40:33]
-    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [32:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [58:57]
+    otbn_hw2reg_status_reg_t status; // [56:56]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [55:40]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [39:32]
+    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [31:0]
   } otbn_hw2reg_t;
 
   // Register offsets
@@ -156,6 +155,7 @@ package otbn_reg_pkg;
   parameter logic [0:0] OTBN_ALERT_TEST_RECOV_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_CMD_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_STATUS_RESVAL = 1'h 0;
+  parameter logic [31:0] OTBN_INSN_CNT_RESVAL = 32'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;

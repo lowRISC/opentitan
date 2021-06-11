@@ -188,6 +188,7 @@ module otbn_reg_top (
   logic fatal_alert_cause_dmem_error_qs;
   logic fatal_alert_cause_reg_error_qs;
   logic [31:0] insn_cnt_qs;
+  logic insn_cnt_re;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -667,29 +668,18 @@ module otbn_reg_top (
   );
 
 
-  // R[insn_cnt]: V(False)
+  // R[insn_cnt]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_insn_cnt (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (insn_cnt_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.insn_cnt.de),
     .d      (hw2reg.insn_cnt.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
     .q      (),
-
-    // to register interface (read)
     .qs     (insn_cnt_qs)
   );
 
@@ -750,6 +740,8 @@ module otbn_reg_top (
 
   assign start_addr_we = addr_hit[7] & reg_we & !reg_error;
   assign start_addr_wd = reg_wdata[31:0];
+
+  assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
