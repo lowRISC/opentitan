@@ -8,6 +8,6 @@
 /**
  * Manifest size for boot stages stored in flash (in bytes).
  */
-#define MANIFEST_SIZE 880
+#define MANIFEST_SIZE 832
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_SIZE_H_
