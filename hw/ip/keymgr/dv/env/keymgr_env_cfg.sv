@@ -16,6 +16,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = keymgr_env_pkg::LIST_OF_ALERTS;
+    tl_intg_alert_name = "fatal_fault_err";
     has_edn = 1;
     super.initialize(csr_base_addr);
 
