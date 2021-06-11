@@ -3,18 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [package]
-name = "opentitanlib"
+name = "opentitantool_derive"
 version = "0.1.0"
 authors = ["lowRISC contributors"]
 edition = "2018"
 
-[dependencies]
-anyhow = "1.0"
-lazy_static = "1.4.0"
-regex = "1"
-nix = "0.17.0"
-bitflags = "1.0"
-log = "0.4"
+[lib]
+proc-macro = true
 
-erased-serde = "0.3.12"
-opentitantool_derive = {path = "opentitantool_derive"}
+[dependencies]
+proc-macro2 = "1.0"
+proc-macro-error = "1.0"
+quote = "1.0"
+syn = "1.0"
