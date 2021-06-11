@@ -129,16 +129,25 @@ All four of these events should be crossed with the three states of the call sta
 The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
 Events concerning the start of loops are tracked at those instructions, but we can't track things like loop completion there.
 
+> Coverage for these points is tracked with cover properties in the `otbn_loop_if` interface.
+
 We expect to:
 - Complete a loop.
+  Tracked as `LoopEnd_C`.
 - Complete the last loop on the stack (emptying it) after the stack has been full.
+  Tracked as `FullToEmpty_C`.
 - Complete a loop with one instruction and an iteration count of one.
+  Tracked as `ShortestLoop_C`.
 - Complete a loop with the maximal number of iterations.
   Obviously, this isn't a reasonable thing to do for real in a test (there's a 32-bit iteration counter!).
   The testbench will have to force a signal to skip past some iterations.
+  Tracked as `MaxIterLoop_C`.
 - Run through a "badly nested" loop, where the body contains the final instruction from an outer loop (checking that we don't wrongly skip back).
+  Tracked as `BadNestingEnd_C` and `BadNestingMiddle_C`.
 - Jump into a loop body from outside.
+  Tracked as `JumpIntoLoop_C`.
 - Jump/branch to the final instruction of a loop
+  Tracked as `JumpToLoopEnd_C`.
 
 #### Flags
 
