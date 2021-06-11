@@ -523,7 +523,6 @@ module otbn
   // INSN_CNT register
   logic [31:0] insn_cnt;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign hw2reg.insn_cnt.de = 1'b1;
 
   // Alerts ====================================================================
 
