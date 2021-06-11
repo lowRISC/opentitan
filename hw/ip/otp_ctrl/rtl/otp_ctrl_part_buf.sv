@@ -205,11 +205,16 @@ module otp_ctrl_part_buf
     cnsty_chk_ack_o = 1'b0;
     integ_chk_ack_o = 1'b0;
 
+    // Response to init request.
+    // Will be set to 0 in the init states below.
+    init_done_o = 1'b1;
+
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
       // State right after reset. Wait here until we get a an
       // initialization request.
       ResetSt: begin
+        init_done_o = 1'b0;
         if (init_req_i) begin
           state_d = InitSt;
         end
@@ -220,6 +225,7 @@ module otp_ctrl_part_buf
       // And then wait until the OTP word comes back.
       InitSt: begin
         otp_req_o = 1'b1;
+        init_done_o = 1'b0;
         if (otp_gnt_i) begin
           state_d = InitWaitSt;
         end
@@ -230,6 +236,7 @@ module otp_ctrl_part_buf
       // OTP error code and jump to a
       // terminal error state.
       InitWaitSt: begin
+        init_done_o = 1'b0;
         if (otp_rvalid_i) begin
           buffer_reg_en = 1'b1;
           // The pnly error we tolerate is an ECC soft error. However,
@@ -264,6 +271,7 @@ module otp_ctrl_part_buf
       // exclusive access to the scrambling datapath until we release
       // the mutex by deasserting scrmbl_mtx_req_o.
       InitDescrSt: begin
+        init_done_o = 1'b0;
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Decrypt;
@@ -276,6 +284,7 @@ module otp_ctrl_part_buf
       // Wait for the descrambled data to return. Note that we release
       // the mutex lock upon leaving this state.
       InitDescrWaitSt: begin
+        init_done_o = 1'b0;
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_sel_o = Info.key_sel;
         data_sel = ScrmblData;
@@ -613,9 +622,6 @@ module otp_ctrl_part_buf
   assign data_o = (dout_gate_q == Unlocked) ? data : DataDefault;
   // The digest does not have to be gated.
   assign digest_o = data[$high(data_o) -: ScrmblBlockWidth];
-  // We have successfully initialized the partition once it has been unlocked.
-  assign init_done_o = (dout_gate_q == Unlocked);
-
 
   ////////////////////////
   // DAI Access Control //

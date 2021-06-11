@@ -1175,9 +1175,9 @@ module otp_ctrl
                                                          RmaTokenSize];
 
   // The device is personalized if the root key has been provisioned and locked
-  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ?
-                                        lc_ctrl_state_pkg::LcIdPersonalized :
-                                        lc_ctrl_state_pkg::LcIdBlank;
+  assign otp_lc_data_o.id_state = (part_digest[Secret2Idx] != '0) ?
+                                  lc_ctrl_state_pkg::LcIdPersonalized :
+                                  lc_ctrl_state_pkg::LcIdBlank;
 
   // Lifecycle state
   assign otp_lc_data_o.state = lc_ctrl_state_pkg::lc_state_e'(part_buf_data[LcStateOffset +:

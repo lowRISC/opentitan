@@ -133,8 +133,9 @@ module otp_ctrl_part_unbuf
     // Default assignments
     state_d = state_q;
 
-    // Response to init request
-    init_done_o = 1'b0;
+    // Response to init request.
+    // Will be set to 0 in the init states below.
+    init_done_o = 1'b1;
 
     // OTP signals
     otp_req_o   = 1'b0;
@@ -157,6 +158,7 @@ module otp_ctrl_part_unbuf
       // State right after reset. Wait here until we get a an
       // initialization request.
       ResetSt: begin
+        init_done_o = 1'b0;
         if (init_req_i) begin
           state_d = InitSt;
         end
@@ -167,6 +169,7 @@ module otp_ctrl_part_unbuf
       // And then wait until the OTP word comes back.
       InitSt: begin
         otp_req_o = 1'b1;
+        init_done_o = 1'b0;
         if (otp_gnt_i) begin
           state_d = InitWaitSt;
         end
@@ -176,6 +179,7 @@ module otp_ctrl_part_unbuf
       // case an OTP transaction fails, latch the  OTP error code and
       // jump to a terminal error state.
       InitWaitSt: begin
+        init_done_o = 1'b0;
         if (otp_rvalid_i) begin
           digest_reg_en = 1'b1;
           // The only error we tolerate is an ECC soft error. However,
@@ -196,7 +200,6 @@ module otp_ctrl_part_unbuf
       // Wait for TL-UL requests coming in.
       // Then latch address and go to readout state.
       IdleSt: begin
-        init_done_o = 1'b1;
         if (tlul_req_i) begin
           error_d = NoError; // clear recoverable soft errors.
           state_d = ReadSt;
@@ -209,7 +212,6 @@ module otp_ctrl_part_unbuf
       // not cause the partition to go into error state. Otherwise if
       // these checks pass, an OTP word is requested.
       ReadSt: begin
-        init_done_o = 1'b1;
         // Double check the address range.
         if ({tlul_addr_q, 2'b00} >= Info.offset &&
             {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
@@ -231,7 +233,6 @@ module otp_ctrl_part_unbuf
       // case an OTP transaction fails, latch the OTP error code,
       // signal a TL-Ul bus error and jump to a terminal error state.
       ReadWaitSt: begin
-        init_done_o = 1'b1;
         if (otp_rvalid_i) begin
           tlul_rvalid_o = 1'b1;
           // Check OTP return code.
@@ -341,26 +342,36 @@ module otp_ctrl_part_unbuf
   // Note that the locks are redundantly encoded values.
   if (Info.write_lock) begin : gen_digest_write_lock
     assign access.write_lock =
-        (~init_done_o || access_i.write_lock != Unlocked || digest_o != '0) ? Locked : Unlocked;
+        (~init_done_o ||
+         access_i.write_lock != Unlocked ||
+         digest_o != '0 ||
+         state_q == ErrorSt) ? Locked : Unlocked;
 
     `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access.write_lock == Locked)
 
   end else begin : gen_no_digest_write_lock
       assign access.write_lock =
-          (~init_done_o || access_i.write_lock != Unlocked) ? Locked : Unlocked;
+          (~init_done_o ||
+           access_i.write_lock != Unlocked ||
+           state_q == ErrorSt) ? Locked : Unlocked;
   end
 
   // Aggregate all possible DAI read locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded 16bit values.
   if (Info.read_lock) begin : gen_digest_read_lock
     assign access.read_lock =
-        (~init_done_o || access_i.read_lock != Unlocked || digest_o != '0) ? Locked : Unlocked;
+        (~init_done_o ||
+         access_i.read_lock != Unlocked ||
+         digest_o != '0 ||
+         state_q == ErrorSt) ? Locked : Unlocked;
 
     `ASSERT(DigestReadLocksPartition_A, digest_o |-> access.read_lock == Locked)
 
   end else begin : gen_no_digest_read_lock
       assign access.read_lock =
-          (~init_done_o || access_i.read_lock != Unlocked) ? Locked : Unlocked;
+          (~init_done_o ||
+           access_i.read_lock != Unlocked ||
+           state_q == ErrorSt) ? Locked : Unlocked;
   end
 
   // Make sure there is a hand-picked buffer on each bit to prevent
@@ -428,11 +439,13 @@ module otp_ctrl_part_unbuf
 
   // Uninitialized partitions should always be locked, no matter what.
   `ASSERT(InitWriteLocksPartition_A,
-      ~init_done_o
+      ~init_done_o ||
+      state_q == ErrorSt
       |->
       access_o.write_lock == Locked)
   `ASSERT(InitReadLocksPartition_A,
-      ~init_done_o
+      ~init_done_o ||
+      state_q == ErrorSt
       |->
       access_o.read_lock == Locked)
   // Incoming Lock propagation
