@@ -98,7 +98,7 @@ module rom_ctrl_scrambled_rom
   if (Width < 64) begin : gen_unread_keystream
     // Ignore top bits of keystream: we just use the bottom Width bits.
     logic unused_top_keystream;
-    assign unused_top_keystream = &{1'b0, keystream[63:Width]};
+    assign unused_top_keystream = ^keystream[63:Width];
   end
 
   // The physical ROM ==========================================================
