@@ -377,7 +377,7 @@ Code coverage requirements: line, toggle, fsm (state & transition), branch, asse
 
 ### SIM_FUNCTIONAL_COVERAGE_V2
 
-Functional coverage requirements: coverpoints: 100%, crosses: 75%
+Functional coverage requirements: 70%
 
 ### FPV_CODE_COVERAGE_V2
 
@@ -450,7 +450,7 @@ Code coverage requirements: line, toggle, fsm (state & transition), branch, asse
 
 ### SIM_FUNCTIONAL_COVERAGE_AT_100
 
-Functional coverage requirements: coverpoints: 100%, crosses: 100%
+Functional coverage requirements: 100%
 
 ### FPV_CODE_COVERAGE_AT_100
 
