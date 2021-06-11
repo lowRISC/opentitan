@@ -10,18 +10,30 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(clkmgr_base_vseq)
 
+  typedef enum {LcTxTSelOn, LcTxTSelOff, LcTxTSelOther} lc_tx_t_sel_e;
+
+  // This simplifies the constraint blocks.
+  function lc_tx_t get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_tx_t other);
+    case (sel)
+      LcTxTSelOn: return On;
+      LcTxTSelOff: return Off;
+      LcTxTSelOther: return other;
+    endcase
+  endfunction
+
   rand bit ip_clk_en;
   rand bit [NUM_TRANS-1:0] idle;
 
-  // This selects scanmode according to scanmode_sel, which is randomized with weights.
-  rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1:0] scanmode;
-  typedef enum {SC_ON, SC_OFF, SC_OTHER}     scanmode_sel_e;
-  rand scanmode_sel_e                        scanmode_sel;
-  constraint scanmode_values {
-    (scanmode_sel == SC_ON)    -> scanmode == lc_ctrl_pkg::On;
-    (scanmode_sel == SC_OFF)   -> scanmode == lc_ctrl_pkg::Off;
-    (scanmode_sel == SC_OTHER) -> !(scanmode inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off});
-    scanmode_sel dist {SC_ON := 4, SC_OFF := 2, SC_OTHER := 2};
+  // This selects scanmode according to sel_scanmode, which is randomized with weights.
+  rand lc_tx_t       scanmode;
+  rand lc_tx_t       scanmode_other;
+  rand lc_tx_t_sel_e sel_scanmode;
+  int                scanmode_on_weight = 8;
+
+  constraint scanmode_c {
+    sel_scanmode dist {LcTxTSelOn := scanmode_on_weight, LcTxTSelOff := 4, LcTxTSelOther := 4};
+    !(scanmode_other inside {On, Off});
+    scanmode == get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
   }
 
   // various knobs to enable certain routines
@@ -96,7 +108,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   function void update_csrs_with_reset_values();
     cfg.clkmgr_vif.update_clk_enables(ral.clk_enables.get_reset());
     cfg.clkmgr_vif.update_clk_hints(ral.clk_hints.get_reset());
-    cfg.clkmgr_vif.update_extclk_sel_regwen(ral.extclk_sel_regwen.get_reset());
     cfg.clkmgr_vif.update_extclk_sel(ral.extclk_sel.get_reset());
   endfunction
 

@@ -111,9 +111,33 @@
       tests: []
     }
   ]
-  // The covergroups are arrays, which are yet to be supported by the tools.
   covergroups: [
-    // peri_cg_wrap cover the dependencies of each peripheral clock.
-    // trans_cg_wrap  cover the dependencies of each transactional unit clock.
+    {
+      name: peri_cg
+      desc: '''
+            Collects coverage for each peripheral clock.
+
+            The peripheral clocks depend on a bit in the clk_enables CSR,
+            the ip_clk_en input from pwrmgr, and the scanmode input.
+            This collects the cross of them for each peripheral.
+
+            FIXME This is collected in an array, one instance for each clock,
+            but the dvsim coverage flow doesn't yet support arrays.
+            '''
+    }
+    {
+      name: trans_cg
+      desc: '''
+            Collects coverage for each transactional unit clock.
+
+            The transactional unit clocks depend on a bit in the clk_hints CSR,
+            the ip_clk_en input from pwrmgr, the respective idle input bit from
+            the unit, and the scanmode input.
+            This collects the cross of them for each transactional unit.
+
+            FIXME This is collected in an array, one instance for each clock,
+            but the dvsim coverage flow doesn't yet support arrays.
+            '''
+    }
   ]
 }

@@ -14,6 +14,10 @@ package clkmgr_env_pkg;
   import csr_utils_pkg::*;
   import clkmgr_ral_pkg::*;
 
+  import lc_ctrl_pkg::lc_tx_t;
+  import lc_ctrl_pkg::On;
+  import lc_ctrl_pkg::Off;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"

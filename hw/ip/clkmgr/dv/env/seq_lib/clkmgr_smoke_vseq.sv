@@ -10,7 +10,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint enable_ip_clk_en { ip_clk_en == 1'b1; }
   constraint all_busy { idle == '0; }
-  constraint scanmode_off { scanmode_sel == SC_OFF; }
+  constraint scanmode_off { sel_scanmode == LcTxTSelOff; }
 
   task body();
     update_csrs_with_reset_values();
@@ -63,7 +63,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
                    $sformatf("%s hint value cannot drop while busy", descriptor.unit.name()))
 
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
-      cfg.clkmgr_vif.wait_clks(1);
+      cfg.clk_rst_vif.wait_clks(1);
       idle[trans] = 1'b1;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.

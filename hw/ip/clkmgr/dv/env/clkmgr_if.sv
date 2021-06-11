@@ -52,31 +52,22 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   } clk_hints_t;
 
   // The CSR values from the testbench side.
-  clk_enables_t clk_enables;
-  clk_hints_t   clk_hints;
-  clk_hints_t   clk_hints_status;
-  logic         extclk_sel_regwen;
-  logic         extclk_sel;
-  logic         jitter_enable;
+  clk_enables_t        clk_enables;
+  clk_hints_t          clk_hints;
+  clk_hints_t          clk_hints_status;
+  lc_ctrl_pkg::lc_tx_t extclk_sel;
+  logic                jitter_enable;
 
-  task automatic wait_clks(int cycles);
-    repeat (cycles) @(posedge clk);
-  endtask
-
-  function automatic void update_extclk_sel_regwen(logic sel_regwen);
-    extclk_sel_regwen = sel_regwen;
+  function automatic void update_extclk_sel(lc_ctrl_pkg::lc_tx_t value);
+    extclk_sel = value;
   endfunction
 
-  function automatic void update_extclk_sel(logic sel);
-    extclk_sel = sel;
+  function automatic void update_clk_enables(clk_enables_t value);
+    clk_enables = value;
   endfunction
 
-  function automatic void update_clk_enables(clk_enables_t ens);
-    clk_enables = ens;
-  endfunction
-
-  function automatic void update_clk_hints(clk_hints_t hints);
-    clk_hints = hints;
+  function automatic void update_clk_hints(clk_hints_t value);
+    clk_hints = value;
   endfunction
 
   function automatic void update_idle(bit [NUM_TRANS-1:0] value);
@@ -87,8 +78,8 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     pwr_i.ip_clk_en = value;
   endfunction
 
-  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t scm);
-    scanmode_i = scm;
+  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t value);
+    scanmode_i = value;
   endfunction
 
   function automatic logic get_clk_status();
