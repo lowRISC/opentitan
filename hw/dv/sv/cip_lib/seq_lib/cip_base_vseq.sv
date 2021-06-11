@@ -448,10 +448,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   begin
                     // if previous alert_handler just finish, there is a max of two clock_cycle
                     // pause in between
-                    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                                      cfg.clk_rst_vif.wait_clks(1);,
-                                      cfg.clk_rst_vif.wait_clks(2);,
-                                      $sformatf("expect alert_%0d:%0s to fire", index, alert_name))
+                    wait_alert_trigger(alert_name, .max_wait_cycle(2));
 
                     // write alert_test during alert handshake will be ignored
                     if ($urandom_range(1, 10) == 10) begin
@@ -497,6 +494,17 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                        $sformatf("expect alert:%0s to stay low", cfg.list_of_alerts[i]))
         end
       end // end repeat
+    end
+  endtask
+
+  virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 2, bit wait_complete = 0);
+    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                      cfg.clk_rst_vif.wait_clks(1);,
+                      cfg.clk_rst_vif.wait_clks(max_wait_cycle);,
+                      $sformatf("expect alert:%0s to fire", alert_name))
+    if (wait_complete) begin
+      `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                   $sformatf("timeout wait for alert handshake:%0s", alert_name))
     end
   endtask
 

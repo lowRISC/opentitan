@@ -233,8 +233,13 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
 endtask : run_tl_errors_vseq_sub
 
 virtual task run_tl_intg_err_vseq(int num_times = 1);
+  // TODO(#6628) as above TODO
+  set_tl_assert_en(.enable(0));
+
   `loop_ral_models_to_create_threads(run_tl_intg_err_vseq_sub(num_times, ral_name);)
   csr_utils_pkg::wait_no_outstanding_access();
+
+  set_tl_assert_en(.enable(1));
 endtask
 
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
@@ -261,10 +266,22 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
         tl_access(.addr($urandom), .write($urandom_range(0, 1)), .data(data),
                   .tl_intg_err_type(tl_intg_err_type));
 
-        // TODO, check alert occurs and issue reset to recover
-        // design hasn't implmented the alert for intg error
+        `DV_CHECK_FATAL(cfg.tl_intg_alert_name inside {cfg.list_of_alerts}, $sformatf(
+            "tl intg alert (%s) is not inside %p", cfg.tl_intg_alert_name, cfg.list_of_alerts))
+
+        `uvm_info(`gfn, "expected fatal alert is triggered", UVM_LOW)
+
+        // This is a fatal alert and design keeps sending it until reset is issued.
+        // Check alerts are triggered for a few times
+        repeat ($urandom_range(5, 20)) begin
+          wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
+        end
       end
     join
+
+    // issue hard reset for fatal alert to recover
+    apply_reset("HARD");
+    #1ps; // avoid sending item while reset is deasserting
   end
 endtask
 `undef create_tl_access_error_case
