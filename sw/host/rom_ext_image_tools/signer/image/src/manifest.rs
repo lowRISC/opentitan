@@ -26,31 +26,22 @@ use zerocopy::FromBytes;
 //      sw/device/silicon_creator/lib/manifest.h \
 //      -- -I./ -Isw/device/lib/base/freestanding
 
-pub const MANIFEST_SIZE: u32 = 880;
+pub const MANIFEST_SIZE: u32 = 832;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct Manifest {
     pub identifier: u32,
-    pub reserved0: u32,
     pub signature: SigverifyRsaBuffer,
     pub image_length: u32,
-    pub image_version: u32,
+    pub image_major_version: u32,
+    pub image_minor_version: u32,
     pub image_timestamp: u64,
     pub exponent: u32,
-    pub reserved1: u32,
-    pub usage_constraints: [u32; 8usize],
-    pub lockdown_info: [u32; 4usize],
+    pub binding_value: [u32; 8usize],
+    pub max_key_version: u32,
     pub modulus: SigverifyRsaBuffer,
-    pub extension0_offset: u32,
-    pub extension0_checksum: u32,
-    pub extension1_offset: u32,
-    pub extension1_checksum: u32,
-    pub extension2_offset: u32,
-    pub extension2_checksum: u32,
-    pub extension3_offset: u32,
-    pub extension3_checksum: u32,
 }
 
 /// A type that holds 96 32-bit words for RSA-3072.
@@ -73,22 +64,14 @@ impl Default for SigverifyRsaBuffer {
 /// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
 pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, identifier), 0);
-    assert_eq!(offset_of!(Manifest, reserved0), 4);
-    assert_eq!(offset_of!(Manifest, signature), 8);
-    assert_eq!(offset_of!(Manifest, image_length), 392);
-    assert_eq!(offset_of!(Manifest, image_version), 396);
+    assert_eq!(offset_of!(Manifest, signature), 4);
+    assert_eq!(offset_of!(Manifest, image_length), 388);
+    assert_eq!(offset_of!(Manifest, image_major_version), 392);
+    assert_eq!(offset_of!(Manifest, image_minor_version), 396);
     assert_eq!(offset_of!(Manifest, image_timestamp), 400);
     assert_eq!(offset_of!(Manifest, exponent), 408);
-    assert_eq!(offset_of!(Manifest, reserved1), 412);
-    assert_eq!(offset_of!(Manifest, usage_constraints), 416);
-    assert_eq!(offset_of!(Manifest, lockdown_info), 448);
-    assert_eq!(offset_of!(Manifest, modulus), 464);
-    assert_eq!(offset_of!(Manifest, extension0_offset), 848);
-    assert_eq!(offset_of!(Manifest, extension0_checksum), 852);
-    assert_eq!(offset_of!(Manifest, extension1_offset), 856);
-    assert_eq!(offset_of!(Manifest, extension1_checksum), 860);
-    assert_eq!(offset_of!(Manifest, extension2_offset), 864);
-    assert_eq!(offset_of!(Manifest, extension2_checksum), 868);
-    assert_eq!(offset_of!(Manifest, extension3_offset), 872);
+    assert_eq!(offset_of!(Manifest, binding_value), 412);
+    assert_eq!(offset_of!(Manifest, max_key_version), 444);
+    assert_eq!(offset_of!(Manifest, modulus), 448);
     assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
 }

@@ -38,10 +38,6 @@ typedef struct manifest {
    */
   uint32_t identifier;
   /**
-   * FIXME: remove this field.
-   */
-  uint32_t reserved0;
-  /**
    * Image signature.
    *
    * The signed region of an image starts at `image_length` and ends at the
@@ -54,9 +50,13 @@ typedef struct manifest {
    */
   uint32_t image_length;
   /**
-   * FIXME: Replace with max_version, min_version.
+   * Image major version.
    */
-  uint32_t image_version;
+  uint32_t image_major_version;
+  /**
+   * Image minor version.
+   */
+  uint32_t image_minor_version;
   /**
    * Image timestamp.
    */
@@ -66,51 +66,33 @@ typedef struct manifest {
    */
   uint32_t exponent;
   /**
-   * FIXME: remove this field.
+   * Binding value used by key manager to derive secret values.
+   *
+   * A change in this value changes the secret value of key manager, and
+   * consequently, the versioned keys and identity seeds generated at subsequent
+   * boot stages.
    */
-  uint32_t reserved1;
+  uint32_t binding_value[8];
   /**
-   * FIXME: Replace these with binding_tag and max_key_version.
+   * Maximum allowed version for keys generated at the next boot stage.
    */
-  uint32_t usage_constraints[8];
-  uint32_t lockdown_info[4];
+  uint32_t max_key_version;
   /**
    * Modulus of the signer's RSA public key.
    */
   sigverify_rsa_buffer_t modulus;
-  /**
-   * Extension fields.
-   * FIXME: Remove these until we have a clear use-case.
-   */
-  uint32_t extension0_offset;
-  uint32_t extension0_checksum;
-  uint32_t extension1_offset;
-  uint32_t extension1_checksum;
-  uint32_t extension2_offset;
-  uint32_t extension2_checksum;
-  uint32_t extension3_offset;
-  uint32_t extension3_checksum;
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 0);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved0, 4);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 8);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_length, 392);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_version, 396);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 4);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, image_length, 388);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, image_major_version, 392);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, image_minor_version, 396);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, image_timestamp, 400);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 408);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved1, 412);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 416);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, lockdown_info, 448);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 464);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension0_offset, 848);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension0_checksum, 852);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension1_offset, 856);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension1_checksum, 860);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension2_offset, 864);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension2_checksum, 868);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension3_offset, 872);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extension3_checksum, 876);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 412);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 444);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 448);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
