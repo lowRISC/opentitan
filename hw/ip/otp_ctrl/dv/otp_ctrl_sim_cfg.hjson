@@ -69,6 +69,12 @@
     }
 
     {
+      name: otp_ctrl_low_freq_read
+      uvm_test_seq: otp_ctrl_low_freq_read_vseq
+      reseed: 1
+    }
+
+    {
       name: otp_ctrl_init_fail
       uvm_test_seq: otp_ctrl_init_fail_vseq
       reseed: 300
