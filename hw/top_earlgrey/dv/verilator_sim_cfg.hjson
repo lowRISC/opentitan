@@ -201,6 +201,10 @@
       name: sw_silicon_creator_lib_driver_uart_functest
       sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_uart_functest:1"]
     }
+    {
+      name: sw_silicon_creator_lib_driver_alert_functest
+      sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_alert_functest:1"]
+    }
   ]
 
   // List of regressions.
