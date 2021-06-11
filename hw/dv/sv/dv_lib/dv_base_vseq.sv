@@ -84,32 +84,51 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     #1ps;
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    bit one_reset_deasserted;
+  virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      if (cfg.clk_rst_vifs.size > 0) begin
+      if (cfg.clk_rst_vifs.size() > 0) begin
         fork
           begin : isolation_fork
             foreach (cfg.clk_rst_vifs[i]) begin
               automatic string ral_name = i;
               fork
                 cfg.clk_rst_vifs[ral_name].apply_reset();
-                one_reset_deasserted = 1;
               join_none
             end
-            if (concurrent_deassert_resets) begin
-              wait(one_reset_deasserted);
-              disable fork;
-              foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-            end else begin
-              wait fork;
-            end
+            wait fork;
           end : isolation_fork
         join
       end else begin // no ral model and only has default clk_rst_vif
         cfg.clk_rst_vif.apply_reset();
       end
     end // if (kind == "HARD")
+  endtask
+
+  // Assert resets concurrently to ensure all resets within DUT are issued.
+  // Deassert resets concurrently so stress_all_with_rand_reset sequence can kill its child
+  // sequence immediately when dut reset is deasserted.
+  virtual task apply_resets_concurrently();
+    bit one_reset_deasserted;
+    if (cfg.clk_rst_vifs.size() > 0) begin
+      fork
+        begin : isolation_fork
+          foreach (cfg.clk_rst_vifs[i]) begin
+            automatic string ral_name = i;
+            fork
+              begin
+                cfg.clk_rst_vifs[ral_name].apply_reset(.rst_n_scheme(0));
+                one_reset_deasserted = 1;
+              end
+            join_none
+          end
+          wait(one_reset_deasserted);
+          disable fork;
+          foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+        end : isolation_fork
+      join
+    end else begin // no ral model and only has default clk_rst_vif
+      cfg.clk_rst_vif.apply_reset(.rst_n_scheme(0));
+    end
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",

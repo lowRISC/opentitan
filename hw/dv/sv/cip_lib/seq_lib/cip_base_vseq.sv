@@ -110,36 +110,23 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
-  // The concurrent_deassert_resets knob is used for stress_all_with_rand_reset sequence, which
-  // will kill the child sequence immediately when dut reset is deasserted.
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      if (!concurrent_deassert_resets) begin
-        // If DUT is connected to `edn_rst_ni`, assert resets with random delays
-        fork
-          if (cfg.has_edn) apply_edn_reset(kind);
-          super.apply_reset(kind);
-        join
-      end else if (cfg.has_edn) begin
-        fork begin // isolation_fork
-          fork
-            apply_edn_reset(kind);
-            super.apply_reset(kind);
-          join_any
-          disable fork;
-          if (cfg.clk_rst_vifs.size > 0) begin
-            foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-          end else begin
-            cfg.clk_rst_vif.drive_rst_pin(1);
-          end
-          cfg.edn_clk_rst_vif.drive_rst_pin(1);
-        end join
-      end
+      fork
+        if (cfg.has_edn) apply_edn_reset(kind);
+        super.apply_reset(kind);
+      join
     end
   endtask
 
   virtual task apply_edn_reset(string kind = "HARD");
     if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
+  endtask
+
+  virtual task apply_resets_concurrently();
+    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
@@ -585,9 +572,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             begin : issue_rand_reset
               `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
+              #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
-              apply_reset("HARD", .concurrent_deassert_resets(1));
+              apply_resets_concurrently();
               ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
             end
