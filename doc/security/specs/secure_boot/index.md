@@ -18,18 +18,17 @@ firmware upgrade support.
 
 *   [Attestation][attestation]
 *   [Ownership Transfer][ownership-transfer]
-*   [OpenTitan Secure Boot HW Support][secure-boot-hw-support]
+*   [Memory Protection][mask-rom-epmp]
 *   [OpenTitan Flash][ot-flash]
 
 # Terminology
 
 ## RISC-V Concepts:
 
-*   **PMP:** Physical Memory Protection unit from the
-    [RISC-V ISA Volume II: Privileged Architecture][rv-isa-priv] specification.
-    Allows defining properties (RWX) for regions of physical memory. **Note
-    that the use of ePMP is currently being considered and that this
-    specification will change to accomodate it.**
+*   **ePMP:** Enhanced Physical Memory Protection unit:
+    [Ibex Physical Memory Protection][ibex-epmp].
+    Can be configured to allow or prevent read (R), write (W) and/or execute (X)
+    access to regions of memory.
 
 ## Boot stages:
 
@@ -43,17 +42,15 @@ firmware upgrade support.
 The boot process flows as follows:
 
 1.  Power on.
-    1.  Execution is restricted to the ROM region via
-        [OpenTitan Secure Boot HW Support][secure-boot-hw-support].
-    2.  The last PMP region (region #15) is configured by reset logic to cover
-        the entire flash region, with only the R and L bits set (that is, the
-        region is **R**ead-only and **L**ocked, meaning the region is respected
-        in Machine mode and cannot be unlocked unless by a system reset).
+    1.  Execution is restricted to the ROM region. Execution of other types of
+        memory is initially prevented by the reset logic.
 2.  Execution enters ROM stage.
-    1.  All SRAM except for retention SRAM is cleared.
-    2.  The active boot slot is loaded from the flash Boot Info. This value is
+    1.  The Enhanced Physical Memory Protection feature is enabled and configured
+        according to the schema laid out in [Memory Protection][mask-rom-epmp].
+    2.  All SRAM except for retention SRAM is cleared.
+    3.  The active boot slot is loaded from the flash Boot Info. This value is
         called the Active `ROM_EXT` Slot.
-    3.  Starting with the Active `ROM_EXT` Slot, the ROM code performs the
+    4.  Starting with the Active `ROM_EXT` Slot, the ROM code performs the
         following:
         1.  Determine if the slot is empty by testing for presence of the header
             magic value.
@@ -67,11 +64,11 @@ The boot process flows as follows:
             identity (see [Identities and Root Keys][identities-keys]), which
             will reside in the [key manager][key-manager], as an intermediate
             state.
-        4.  Write PMP region #0: Read, Execute, Locked, covering the entirety of
-            the `ROM_EXT` image from the active slot.
+        4.  Enable execution of the `ROM_EXT` by configuring the appropriate
+            PMP entry (see [Memory Protection][mask-rom-epmp] module).
         5.  Transfer execution to the entry point specified in the `ROM_EXT`
             manifest for the active slot.
-    4.  If the Active `ROM_EXT` Slot fails to boot, look up the boot failure
+    5.  If the Active `ROM_EXT` Slot fails to boot, look up the boot failure
         policy from the ownership blob and act upon it.
 3.  Execution enters `ROM_EXT` stage.
     1.  If the device reset cause is a boot services request then begin
@@ -93,9 +90,9 @@ The boot process flows as follows:
         1.  The boot information structure contains information about the boot
             process, such as which `ROM_EXT` and silicon owner boot slot was
             used.
-    7.  Load PMP region #1: Read, Execute, Locked, covering the executable
-        region of the Silicon Owner code as described in the Silicon Owner code
-        manifest.
+    7.  Configure a PMP entry with read and execute (RX) permissions covering
+        the executable region of the Silicon Owner code as described in the
+        Silicon Owner code manifest.
     8.  Transfer execution to the entry point of the Silicon Owner code.
 4.  Execution enters Silicon Owner code.
     1.  Silicon Owner code execution is beyond the scope of this document.
@@ -108,24 +105,6 @@ including storing boot attempts and successes for a given `ROM_EXT`, allowing
 the ROM code to decide when to mark a `ROM_EXT` good or bad. The boot policy
 also contains directions to `ROM_EXT` about which slot it loads silicon owner
 code from. TODO(gdk): Expand on policy.
-
-# Isolation {#isolation}
-
-The OpenTitan Secure Boot implementation uses two mechanisms to attempt to
-prevent glitching attacks from moving the program counter ahead into
-user-controllable code without validation: the first being
-[OpenTitan Secure Boot HW Support][secure-boot-hw-support]. This mechanism
-ensures that execution cannot leave the ROM stage without going through a
-hardened comparator path that ensures the active `ROM_EXT` has been verified.
-The second isolation mechanism is the PMP. By default, the PMP is configured
-with a single region that covers flash and only grants read access to the core.
-Each stage must explicitly add a new region that allows execution in the region
-that it has verified. The PMP configuration is documented here:
-[Secure Boot PMP][secure-boot-pmp].
-
-The first mechanism ensures that we can enter `ROM_EXT` with an extremely high
-level of confidence in the code there, and the second ensures that the barrier
-to execution for each successive stage remains high.
 
 # Memory Layout {#memory-layout}
 
@@ -194,11 +173,11 @@ manifest format is required to support:
 <!-- TODO: Update with published documents when available. -->
 [attestation]: {{< relref "/doc/security/specs/attestation" >}}
 [attestation-command]: {{< relref "/doc/security/specs/attestation" >}}#attestation-command
+[ibex-epmp]: (https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html)
 [identities-keys]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}
 [key-manager]: {{< relref "/hw/ip/keymgr/doc" >}}
+[mask-rom-epmp]: {{< relref "/sw/device/silicon_creator/mask_rom/docs/memory_protection" >}}
 [ot-flash]: #
 [ot-unlock-flow]: #
 [ownership-transfer]: {{< relref "/doc/security/specs/ownership_transfer" >}}
 [rv-isa-priv]: https://riscv.org/technical/specifications/
-[secure-boot-hw-support]: #
-[secure-boot-pmp]: #
