@@ -23,6 +23,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
       cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
+
       cfg.clk_rst_vif.wait_clks(10);
       `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", initial_hints), UVM_MEDIUM)
       csr_wr(.ptr(ral.clk_hints), .value(initial_hints));

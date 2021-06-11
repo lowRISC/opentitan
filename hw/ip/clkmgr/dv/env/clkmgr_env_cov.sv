@@ -45,7 +45,7 @@ class clkmgr_trans_cg_wrap;
     trans_cg = new(name);
   endfunction
 
-  function sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
+  function void sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
     trans_cg.sample(hint, ip_clk_en, scanmode, idle);
   endfunction
 endclass
