@@ -165,7 +165,7 @@ class cip_tl_seq_item extends tl_seq_item;
     is_a_chan_intg_ok = (act_a_user.cmd_intg == exp_a_user.cmd_intg);
 
     if (!is_a_chan_intg_ok) begin
-      string str = $sformatf("cmd_intg act (%p) != exp (%p)", act_a_user, exp_a_user);
+      string str = $sformatf("a_user act (%p) != exp (%p)", act_a_user, exp_a_user);
       if (throw_error) begin
         `uvm_error(`gfn, str)
       end else begin
@@ -173,5 +173,21 @@ class cip_tl_seq_item extends tl_seq_item;
       end
     end
   endfunction : is_a_chan_intg_ok
+
+  virtual function bit is_d_channel_intg_ok(bit throw_error = 1'b1);
+    tl_d_user_t exp_d_user = compute_d_user();
+    tl_d_user_t act_d_user = tl_d_user_t'(d_user);
+
+    is_d_channel_intg_ok = act_d_user == exp_d_user;
+
+    if (!is_d_channel_intg_ok) begin
+      string str = $sformatf("d_user act (%p) != exp (%p)", act_d_user, exp_d_user);
+      if (throw_error) begin
+        `uvm_error(`gfn, str)
+      end else begin
+        `uvm_info(`gfn, str, UVM_MEDIUM)
+      end
+    end
+  endfunction : is_d_channel_intg_ok
 
 endclass
