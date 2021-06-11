@@ -233,6 +233,46 @@ package otp_ctrl_env_pkg;
     end
   endfunction
 
+  function automatic bit [TL_DW-1:0] normalize_dai_addr(bit [TL_DW-1:0] dai_addr);
+    normalize_dai_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 3 :
+                                                                        dai_addr >> 2 << 2;
+  endfunction
+
+  // When secret data write into otp_array, it will be scrambled
+  function automatic bit [SCRAMBLE_DATA_SIZE-1:0] scramble_data(
+    bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
+    int part_idx
+  );
+
+    int secret_idx = part_idx - Secret0Idx;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
+                                                   RndCnstKey[secret_idx],
+                                                   SCRAMBLE_KEY_SIZE == 80,
+                                                   output_data);
+    scramble_data = output_data[NUM_ROUND-1];
+  endfunction
+
+  // When secret data read out of otp_array, it will be descrambled
+  function automatic bit [SCRAMBLE_DATA_SIZE-1:0] descramble_data(
+    bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
+    int part_idx
+  );
+
+    int secret_idx = part_idx - Secret0Idx;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] padded_input;
+
+    padded_input[NUM_ROUND-1] = input_data;
+    crypto_dpi_present_pkg::sv_dpi_present_decrypt(padded_input,
+                                                   RndCnstKey[secret_idx],
+                                                   SCRAMBLE_KEY_SIZE == 80,
+                                                   output_data);
+    descramble_data = output_data[NUM_ROUND-1];
+    if (input_data != 0) begin
+    end
+  endfunction
+
   // package sources
   `include "otp_ctrl_env_cfg.sv"
   `include "otp_ctrl_env_cov.sv"
