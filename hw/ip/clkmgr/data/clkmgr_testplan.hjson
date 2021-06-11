@@ -80,22 +80,22 @@
       desc: '''
             Tests the functionality of enabling external clocks.
 
-            - External clocks can be enabled writing `lc_ctrl_pkg::On` to CSR
-              `extclk_sel`.
-            - Writes to CSR `extclk_sel` are ignored unless the value of CSR
-              `extclk_sel_regwen` is 1.
-            - Regardless of the `extclk_sel` contents, external clocks won't
-              be enabled unless `lc_dtl_en_i == lc_ctrl_pkg::On`.
-            - External clocks can also be enabled if the input
-             `lc_clk_byp_req_i == lc_ctrl_pkg::On`.
+            - External clock is enabled if the `lc_clk_byp_req_i` input from
+              `lc_ctrl` is `lc_ctrl_pkg::On`.
+            - External clock is also be enabled when CSR `extclk_sel` is set to
+              `lc_ctrl_pkg::On` and the `lc_dtl_en_i` input from `lc_ctrl` is
+              `lc_ctrl_pkg::On`.
+            - Notice writes to the `extclk_sel` register are ignored unless the
+              CSR `extclk_sel_regwen` is 1.
             - A successful switch to external clocks will cause the clkmgr
-              to undo a divide by 2 for io_div4 and io_div2 clocks unless in
-              scan mode `(scanmode_i == lc_ctrl_pkg::On)`.
+              to undo a divide by 2 for io_div4 and io_div2 clocks except when
+              `(scanmode_i == lc_ctrl_pkg::On)`.
 
             **Stimulus**:
             - CSR writes to `extclk_sel` and `extclk_sel_regwen`.
             - Setting `lc_dft_en_i`, `lc_clk_byp_req_i`, and the handshake to
               ast via `ast_clk_byp_req_o` and `ast_clk_byp_ack_i`.
+            - Setting `scanmode_i`.
 
             **Checks**:
             - SVA assertions:
@@ -108,7 +108,7 @@
                 clocks to ramp up unless `scanmode_i == lc_ctrl_pkg::On`.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_extclk"]
     }
   ]
   covergroups: [

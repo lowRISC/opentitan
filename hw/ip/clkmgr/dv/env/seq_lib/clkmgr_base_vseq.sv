@@ -24,8 +24,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   rand bit ip_clk_en;
   rand bit [NUM_TRANS-1:0] idle;
 
-  // This selects scanmode according to sel_scanmode, which is randomized with weights.
-  rand lc_tx_t       scanmode;
+  // scanmode is set according to sel_scanmode, which is randomized with weights.
+  lc_tx_t            scanmode;
   rand lc_tx_t       scanmode_other;
   rand lc_tx_t_sel_e sel_scanmode;
   int                scanmode_on_weight = 8;
@@ -33,7 +33,16 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   constraint scanmode_c {
     sel_scanmode dist {LcTxTSelOn := scanmode_on_weight, LcTxTSelOff := 4, LcTxTSelOther := 4};
     !(scanmode_other inside {On, Off});
-    scanmode == get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
+  }
+
+  // extclk_sel is set according to sel_extclk_sel, which is randomized with weights.
+  lc_tx_t            extclk_sel;
+  rand lc_tx_t       extclk_sel_other;
+  rand lc_tx_t_sel_e sel_extclk_sel;
+
+  constraint extclk_sel_c {
+    sel_extclk_sel dist {LcTxTSelOn := 4, LcTxTSelOff := 2, LcTxTSelOther := 2};
+    !(extclk_sel_other inside {On, Off});
   }
 
   // various knobs to enable certain routines
@@ -41,11 +50,22 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  function void post_randomize();
+    super.post_randomize();
+    scanmode = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
+    extclk_sel = get_lc_tx_t_from_sel(sel_extclk_sel, extclk_sel_other);
+  endfunction  
+
+  virtual function void set_scanmode_on_low_weight();
+    scanmode_on_weight = 2;
+  endfunction
+
   task pre_start();
     // These are independent: do them in parallel since pre_start consumes time.
     fork
       begin
-        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
+        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode),
+                            .lc_dft_en(Off));
       end
       if (do_clkmgr_init) clkmgr_init();
       super.pre_start();

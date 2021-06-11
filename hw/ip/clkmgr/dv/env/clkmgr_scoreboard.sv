@@ -2,6 +2,82 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Auxiliary class to deal with divided clocks. It predicts the divided clocks depending
+// on whether the clock is divided as usual (step up), or if one division is undone (step
+// down).
+//
+// The internal div2 clock is always running, and step down means we select the base
+// clk_io instead of the internal clock.
+//
+// The div4 clock is handled differently: we internally maintain both a max and cnt. In
+// normal operation the max is 1, so the div4 clock flips every two cycles; when stepped down
+// the max is set to 0, so the clock flips every clk_io cycle.
+class clock_dividers;
+
+  // Step down means undo one clock divide: runs faster, as in "step down on the gas".
+  typedef enum {DivStepDown, DivStepUp} div_step_e;
+  typedef enum {Div2SelDiv2, Div2SelIo} div2_sel_e;
+
+  // The internal div2 clock, always running.
+  local bit        clk_io_div2 = 1'b0;
+  // This selects the io clock when stepped down.
+  local div2_sel_e div2_sel = Div2SelDiv2;
+  // The predicted div4 clock.
+  local bit        clk_io_div4 = 1'b0;
+  // The maximum value of cnt: becomes 0 when stepped down.
+  local bit        clk_io_div4_max = 1;
+  local bit        cnt = 0;
+
+  function new();
+    reset();
+  endfunction
+
+  function void reset();
+    clk_io_div2 = 1'b0;
+    div2_sel = Div2SelDiv2;
+    clk_io_div4 = 1'b0;
+    clk_io_div4_max = 1;
+    cnt = 0;
+  endfunction
+
+  function void increment_div2();
+    clk_io_div2 = ~clk_io_div2;
+  endfunction
+
+  function void increment_div4(bit in_scan_mode);
+    bit real_limit = in_scan_mode ? 1 : clk_io_div4_max;
+    if (cnt < real_limit) begin
+      cnt++;
+    end else begin
+      clk_io_div4 = ~clk_io_div4;
+      cnt = 0;
+    end
+  endfunction
+
+  function void step_div4(div_step_e step);
+    if (step == DivStepUp) clk_io_div4_max = 1;
+    else clk_io_div4_max = 0;
+  endfunction
+
+  function void step_div2(div_step_e step);
+    if (step == DivStepUp) div2_sel = Div2SelDiv2;
+    else div2_sel = Div2SelIo;
+  endfunction
+
+  function string show();
+    return $sformatf("clk_div2=%b div2_sel=%0s clk_div4=%b cnt=%b max=%b",
+                     clk_io_div2, div2_sel.name, clk_io_div4, cnt, clk_io_div4_max);
+  endfunction
+
+  function bit get_div2_clk(bit actual_clk_io);
+    return div2_sel == Div2SelIo ? actual_clk_io : clk_io_div2;
+  endfunction
+
+  function bit get_div4_clk();
+    return clk_io_div4;
+  endfunction
+endclass : clock_dividers
+
 class clkmgr_scoreboard extends cip_base_scoreboard #(
     .CFG_T(clkmgr_env_cfg),
     .RAL_T(clkmgr_reg_block),
@@ -28,9 +104,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      monitor_ip_clk_en();
       monitor_idle();
       monitor_ip_clk_en();
       monitor_scanmode();
+      monitor_ast_clk_byp();
       begin : post_reset
         fork
           monitor_div4_peri_clock();
@@ -44,6 +122,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
               monitor_trans_clock(trans_index);
             join_none
           end
+          monitor_clk_dividers();
         join_none
       end
     join_none
@@ -164,6 +243,96 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
                              cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
       end
+  endtask
+
+  task monitor_ast_clk_byp();
+    lc_tx_t prev_lc_clk_byp_req = Off;
+    forever @cfg.clkmgr_vif.extclk_cb begin
+      if (cfg.clkmgr_vif.lc_clk_byp_req != prev_lc_clk_byp_req) begin
+        `uvm_info(`gfn, $sformatf("Got lc_clk_byp_req %s",
+                                  cfg.clkmgr_vif.lc_clk_byp_req == On ? "On" : "Off"),
+                  UVM_MEDIUM)
+        prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
+      end
+      if (((cfg.clkmgr_vif.extclk_cb.extclk_sel == On) &&
+           (cfg.clkmgr_vif.extclk_cb.lc_dft_en_i == On)) ||
+          (cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req == On)) begin
+        `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On,
+                     "Expected ast_clk_byp_req to be On")
+      end
+    end
+  endtask
+
+  task monitor_clk_dividers();
+    clock_dividers dividers = new();
+    clock_dividers::div_step_e prev_div_step = clock_dividers::DivStepUp;
+
+    #1;
+    cfg.io_clk_rst_vif.wait_for_reset();
+    fork
+      forever @(posedge cfg.io_clk_rst_vif.rst_n) begin : handle_dividers_reset
+        dividers.reset();
+        `uvm_info(`gfn, $sformatf("Reset divided clocks: %0s", dividers.show()), UVM_MEDIUM)
+      end
+      forever @cfg.clkmgr_vif.step_down_cb begin : handle_divider_step_change
+        clock_dividers::div_step_e div_step;
+        bit step_down = cfg.clkmgr_vif.step_down_cb.step_down;
+        #0;
+
+        step_down &= (cfg.clkmgr_vif.scanmode_i != On);
+        div_step = step_down ? clock_dividers::DivStepDown : clock_dividers::DivStepUp;
+        if (div_step != prev_div_step) begin
+          `uvm_info(`gfn, $sformatf("Got a %0s request", div_step.name), UVM_LOW)
+          dividers.step_div4(div_step);
+          prev_div_step = div_step;
+          @(negedge cfg.clkmgr_vif.clocks_o.clk_io_powerup) begin
+            // Reconsider scanmode_i since it is asynchronous.
+            dividers.step_div2(step_down && (cfg.clkmgr_vif.scanmode_i != On) ?
+                               clock_dividers::DivStepDown : clock_dividers::DivStepUp);
+          end
+          `uvm_info(`gfn, $sformatf("Stepped divided clocks: %0s", dividers.show()), UVM_MEDIUM)
+        end
+      end
+      // Compare divided clocks, always based on values from clocking block (thus preponed).
+      forever @cfg.clkmgr_vif.div_clks_cb begin : check_clocks
+        `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4,
+                     cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
+                     $sformatf("Mismatch for clk_io_div4_powerup, expected %b, got %b",
+                               cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
+                               cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4))
+        `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2,
+                     cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
+                     $sformatf("Mismatch for clk_io_div2_powerup, expected %b, got %b",
+                               cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
+                               cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2))
+      end
+      forever @(posedge cfg.clkmgr_vif.clocks_o.clk_io_powerup) begin : increment_clocks
+        if (cfg.io_clk_rst_vif.rst_n) begin
+          bit in_scan_mode = cfg.clkmgr_vif.scanmode_i == On;
+          #0;
+          // Deal with div4 update, accounting for scanmode's asynchronicity.
+          // The incremented clock will be useful for the next comparison cycle.
+          dividers.increment_div4(in_scan_mode);
+          dividers.increment_div2();
+          `uvm_info(`gfn, $sformatf("Incremented divided clocks: %0s", dividers.show()), UVM_MEDIUM)
+          `uvm_info(`gfn,
+                    $sformatf(
+                        "Update for div clk cb: div2 exp=%b, actual=%b, div4 exp=%b, actual=%b",
+                        dividers.get_div2_clk(cfg.clkmgr_vif.clocks_o.clk_io_powerup),
+                        cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup,
+                        dividers.get_div4_clk(),
+                        cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup),
+                    UVM_LOW)
+          // This delay seems to help with xcelium: without it the actual divided clocks are stale.
+          #1;
+          cfg.clkmgr_vif.update_exp_clk_io_divs(
+              .exp_div2_value(dividers.get_div2_clk(cfg.clkmgr_vif.clocks_o.clk_io_powerup)),
+              .actual_div2_value(cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup),
+              .exp_div4_value(dividers.get_div4_clk()),
+              .actual_div4_value(cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup));
+        end
+      end
+    join
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
