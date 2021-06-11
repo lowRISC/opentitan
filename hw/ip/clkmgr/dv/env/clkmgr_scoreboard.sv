@@ -29,6 +29,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       monitor_idle();
+      monitor_ip_clk_en();
       monitor_scanmode();
       begin : post_reset
         fork
@@ -179,6 +180,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     string access_str = write ? "write" : "read";
     string channel_str = channel == AddrChannel ? "address" : "data";
 
+    logic  extclk_sel_regwen = ral.extclk_sel_regwen.get_reset();
+
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
@@ -211,10 +214,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "extclk_sel_regwen":
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_extclk_sel_regwen(item.a_data);
+          extclk_sel_regwen = item.a_data;
         end
       "extclk_sel":
-        if (addr_phase_write) begin
+        if (addr_phase_write && extclk_sel_regwen) begin
           cfg.clkmgr_vif.update_extclk_sel(item.a_data);
         end
       "jitter": begin
