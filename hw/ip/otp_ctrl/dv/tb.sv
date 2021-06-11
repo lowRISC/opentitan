@@ -153,8 +153,7 @@ module tb;
                           .path  (`DV_STRINGIFY(`OTP_CTRL_MEM_HIER)),
                           .depth ($size(`OTP_CTRL_MEM_HIER)),
                           .n_bits($bits(`OTP_CTRL_MEM_HIER)),
-                          .parity(1'b0),
-                          .ecc   (prim_secded_pkg::SecdedHamming_22_16));
+                          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
 
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
     // 2 values.
