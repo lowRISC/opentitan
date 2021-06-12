@@ -30,11 +30,17 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Initializating adc_ctrl, nothing to do at the moment", UVM_MEDIUM)
   endtask  // adc_ctrl_init
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
       cfg.clk_aon_rst_vif.apply_reset();
     end
-    super.apply_reset(kind, concurrent_deassert_resets);
+    super.apply_reset(kind);
   endtask  // apply_reset
+
+  virtual task apply_resets_concurrently();
+    cfg.clk_aon_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    cfg.clk_aon_rst_vif.drive_rst_pin(1);
+  endtask
 
 endclass : adc_ctrl_base_vseq

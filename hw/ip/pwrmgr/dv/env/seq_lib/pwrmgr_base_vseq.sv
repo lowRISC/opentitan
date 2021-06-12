@@ -157,15 +157,21 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0));
+  virtual task apply_reset(string kind = "HARD");
     fork
-      super.apply_reset(kind, concurrent_deassert_resets);
+      super.apply_reset(kind);
       if (kind == "HARD") begin
         // A short slow clock reset should suffice.
         cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
                                          .reset_width_clks(5));
       end
     join
+  endtask
+
+  virtual task apply_resets_concurrently();
+    cfg.slow_clk_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    cfg.slow_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // setup basic pwrmgr features

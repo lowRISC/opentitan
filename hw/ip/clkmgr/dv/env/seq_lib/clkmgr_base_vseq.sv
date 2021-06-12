@@ -56,9 +56,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     fork
-      super.apply_reset(kind, concurrent_deassert_resets);
+      super.apply_reset(kind);
       if (kind == "HARD") fork
         cfg.main_clk_rst_vif.apply_reset();
         cfg.io_clk_rst_vif.apply_reset();
@@ -68,6 +68,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
         start_aon_clk();
       join
     join
+  endtask
+
+  virtual task apply_resets_concurrently();
+    cfg.main_clk_rst_vif.drive_rst_pin(0);
+    cfg.io_clk_rst_vif.drive_rst_pin(0);
+    cfg.usb_clk_rst_vif.drive_rst_pin(0);
+
+    super.apply_resets_concurrently();
+
+    cfg.main_clk_rst_vif.drive_rst_pin(1);
+    cfg.io_clk_rst_vif.drive_rst_pin(1);
+    cfg.usb_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // setup basic clkmgr features

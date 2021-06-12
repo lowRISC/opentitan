@@ -81,8 +81,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    super.apply_reset(kind, concurrent_deassert_resets);
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     cfg.clk_rst_vif.wait_clks(1);
   endtask
 
