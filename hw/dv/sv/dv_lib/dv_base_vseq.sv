@@ -104,9 +104,16 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     end // if (kind == "HARD")
   endtask
 
-  // Assert resets concurrently to ensure all resets within DUT are issued.
-  // Deassert resets concurrently so stress_all_with_rand_reset sequence can kill its child
-  // sequence immediately when dut reset is deasserted.
+  // Apply all resets in the DUT concurrently to generate a random in-test reset scenario.
+  //
+  // - Assert resets concurrently to make sure all resets are issued.
+  // - Deassert resets concurrently is a specific requirement of the `stress_all_with_rand_reset`
+  // sequence, which will randomly issue resets and terminate the parallel sequence once all DUT
+  // resets are deasserted. If DUT resets are deasserted at different time, the parallel sequence
+  // might send a transaction request to driver between different resets are deasserting. Then when
+  // `stress_all_with_rand_reset` sequence tries to terminate the parallel sequence, an UVM_ERROR
+  // will be thrown by the sequencer saying `task responsible for requesting a wait_for_grant has
+  // been killed`.
   virtual task apply_resets_concurrently();
     bit one_reset_deasserted;
     if (cfg.clk_rst_vifs.size() > 0) begin

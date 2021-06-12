@@ -27,7 +27,7 @@ class chip_base_vseq extends cip_base_vseq #(
     super.post_start();
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
     // the reset line of those registers is X, the registers and hence the pad outputs
@@ -39,7 +39,7 @@ class chip_base_vseq extends cip_base_vseq #(
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
     cfg.m_jtag_agent_cfg.do_trst_n();
-    super.apply_reset(kind, concurrent_deassert_resets);
+    super.apply_reset(kind);
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");

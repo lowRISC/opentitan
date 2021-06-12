@@ -19,16 +19,22 @@ class usbdev_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   // Override apply_reset to cater to usb domain as well.
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     fork
       if (kind == "HARD" || kind == "BUS_IF") begin
-        super.apply_reset("HARD", concurrent_deassert_resets);
+        super.apply_reset("HARD");
       end
       if (kind == "HARD" || kind == "USB_IF") begin
         cfg.usb_clk_rst_vif.apply_reset();
       end
     join
     do_apply_post_reset_delays_for_sync();
+  endtask
+
+  virtual task apply_resets_concurrently();
+    cfg.usb_clk_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    cfg.usb_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // Apply additional delays at the dut_init stage when either apply_reset or

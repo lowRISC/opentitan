@@ -44,16 +44,22 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : body
 
   // override apply_reset to handle core_reset domain
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     fork
       if (kind == "HARD" || kind == "TL_IF") begin
-        super.apply_reset("HARD", concurrent_deassert_resets);
+        super.apply_reset("HARD");
       end
       if (kind == "HARD" || kind == "CORE_IF") begin
         cfg.clk_rst_core_vif.apply_reset();
       end
     join
   endtask : apply_reset
+
+  virtual task apply_resets_concurrently();
+    cfg.clk_rst_core_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    cfg.clk_rst_core_vif.drive_rst_pin(1);
+  endtask
 
   // phase alignment for resets signal of core and bus domain
   virtual task do_phase_align_reset(bit do_phase_align = 1'b0);

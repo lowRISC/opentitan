@@ -26,8 +26,8 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    super.apply_reset(kind, concurrent_deassert_resets);
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     // Initialize memory
     rom_ctrl_mem_init();
   endtask

@@ -21,13 +21,19 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
     if (do_sram_ctrl_init) sram_ctrl_init();
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    super.apply_reset(kind, concurrent_deassert_resets);
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     cfg.lc_vif.init();
     cfg.exec_vif.init();
     if (kind == "HARD") begin
       cfg.otp_clk_rst_vif.apply_reset();
     end
+  endtask
+
+  virtual task apply_resets_concurrently();
+    cfg.otp_clk_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently();
+    cfg.otp_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   virtual task dut_shutdown();

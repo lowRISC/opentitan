@@ -23,10 +23,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     uvm_reg_data_t data;
     bit init_busy;
-    super.apply_reset(kind, concurrent_deassert_resets);
+    super.apply_reset(kind);
     if (kind == "HARD") begin
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
