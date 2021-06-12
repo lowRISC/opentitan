@@ -226,6 +226,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (mode == Host) begin
       ral.ctrl.enablehost.set(1'b1);
       ral.ctrl.enabletarget.set(1'b0);
+      ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
       // diable override
       ral.ovrd.txovrden.set(1'b0);
@@ -233,6 +234,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     end else begin
       ral.ctrl.enablehost.set(1'b0);
       ral.ctrl.enabletarget.set(1'b1);
+      ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
       // TODO: more initialization for the host running Target mode
     end
