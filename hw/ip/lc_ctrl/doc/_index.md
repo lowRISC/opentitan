@@ -160,7 +160,7 @@ Signals marked with an asterisk (Y\*) are only asserted under certain conditions
 #### DFT_EN
 
 As its name implies, this signal enables DFT functions.
-This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash and OTP MAY have this feature).
+This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash and OTP).
 
 The isolation ensures three things:
 - The TAP controller is unable to issue instructions that would put the design into scan mode.
@@ -540,12 +540,10 @@ Upon each life cycle transition attempt, the life cycle controller **FIRST** inc
 
 A decoded version of this counter is exposed in the {{< regref "LC_TRANSITION_CNT" >}} register.
 
-### Strap Selection
+### TAP Isolation
 
-**TODO: update this section and add blockdiagram once TAP selection/isolation is implemented in the pinmux**
-
-Although technically a life cycle feature, the sampling of the strap pins and JTAG isolation is performed in the pinmux after the life cycle controller has initialized.
-See pinmux documentation (**TODO: add link**) and detailed selection listed in [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
+Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
+See [pinmux documentation]({{< relref "hw/ip/pinmux/doc/#strap-sampling-and-tap-isolation" >}}) and the detailed selection listed in [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
 
 ### Life Cycle State Controller
 
