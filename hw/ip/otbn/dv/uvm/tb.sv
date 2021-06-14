@@ -129,6 +129,8 @@ module tb;
   assign edn_rnd_data_valid = dut.edn_rnd_req & dut.edn_rnd_ack;
   assign edn_urnd_data_valid = dut.edn_urnd_req & dut.edn_urnd_ack;
 
+  bit [31:0] model_insn_cnt;
+
   otbn_core_model #(
     .DmemSizeByte (otbn_reg_pkg::OTBN_DMEM_SIZE),
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE),
@@ -141,15 +143,28 @@ module tb;
     .start_i      (model_if.start),
     .done_o       (model_if.done),
     .start_addr_i (model_if.start_addr),
-    .err_o        (model_if.err),
 
     .edn_rnd_data_valid_i  (edn_rnd_data_valid),
     .edn_rnd_data_i        (dut.edn_rnd_data),
-    .edn_urnd_data_valid_i (edn_urnd_data_valid)
+    .edn_urnd_data_valid_i (edn_urnd_data_valid),
+
+    .insn_cnt_o   (model_insn_cnt),
+    .err_o        (model_if.err)
   );
 
   // Pull the final PC out of the DUT
   assign model_if.stop_pc = u_model.stop_pc_q;
+
+  otbn_insn_cnt_if insn_cnt_if (
+   .clk_i            (clk),
+   .rst_ni           (rst_n),
+
+   .insn_cnt_i       (dut.insn_cnt),
+   .insn_executing_i (dut.u_otbn_core.u_otbn_controller.insn_executing),
+   .stall_i          (dut.u_otbn_core.u_otbn_controller.stall),
+
+   .model_insn_cnt_i (model_insn_cnt)
+  );
 
   initial begin
     // drive clk and rst_n from clk_if

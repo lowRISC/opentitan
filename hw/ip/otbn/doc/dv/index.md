@@ -159,6 +159,12 @@ Similarly, each flag in each flag group should be cleared to zero from one by so
 > The covergroup contains eight coverpoints (for each flag set and cleared).
 > These are then crossed with the flag group.
 
+#### Instruction counter
+
+See the instruction counter saturate.
+
+> This is tracked in the `insn_cnt_if` interface with the `InsnCntSaturated_C` cover property.
+
 ### Instruction-based coverage
 
 As a processor, much of OTBN's coverage points are described in terms of instructions being executed.
