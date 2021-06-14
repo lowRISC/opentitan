@@ -16,12 +16,10 @@
 
 namespace keymgr_unittest {
 namespace {
-using ::testing::ElementsAreArray;
-using ::testing::Test;
 
 struct SwBindingCfg {
   uint32_t max_key_ver;
-  uint32_t sw_binding_value[8];
+  keymgr_binding_value_t binding_value;
 };
 
 class KeymgrTest : public mask_rom_test::MaskRomTest {
@@ -39,7 +37,7 @@ class KeymgrTest : public mask_rom_test::MaskRomTest {
   uint32_t base_ = TOP_EARLGREY_KEYMGR_BASE_ADDR;
   SwBindingCfg cfg_ = {
       .max_key_ver = 0xA5A5A5A5,
-      .sw_binding_value = {0, 1, 2, 3, 4, 6, 7, 8},
+      .binding_value = {0, 1, 2, 3, 4, 6, 7, 8},
   };
   mask_rom_test::MockAbsMmio mmio_;
 };
@@ -77,21 +75,21 @@ TEST_F(KeymgrTest, StateAdvanceToCreator) {
                     /*err_code=*/0u);
 
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_0_REG_OFFSET,
-                     cfg_.sw_binding_value[0]);
+                     cfg_.binding_value.data[0]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_1_REG_OFFSET,
-                     cfg_.sw_binding_value[1]);
+                     cfg_.binding_value.data[1]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_2_REG_OFFSET,
-                     cfg_.sw_binding_value[2]);
+                     cfg_.binding_value.data[2]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_3_REG_OFFSET,
-                     cfg_.sw_binding_value[3]);
+                     cfg_.binding_value.data[3]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_4_REG_OFFSET,
-                     cfg_.sw_binding_value[4]);
+                     cfg_.binding_value.data[4]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_5_REG_OFFSET,
-                     cfg_.sw_binding_value[5]);
+                     cfg_.binding_value.data[5]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_6_REG_OFFSET,
-                     cfg_.sw_binding_value[6]);
+                     cfg_.binding_value.data[6]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_7_REG_OFFSET,
-                     cfg_.sw_binding_value[7]);
+                     cfg_.binding_value.data[7]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET,
@@ -109,7 +107,7 @@ TEST_F(KeymgrTest, StateAdvanceToCreator) {
       });
 
   EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
+      keymgr_state_advance_to_creator(&cfg_.binding_value, cfg_.max_key_ver),
       kErrorOk);
 }
 
@@ -119,7 +117,7 @@ TEST_F(KeymgrTest, StateAdvanceToCreatorInvalid) {
                     KEYMGR_WORKING_STATE_STATE_VALUE_RESET,
                     /*err_code=*/0u);
   EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
+      keymgr_state_advance_to_creator(&cfg_.binding_value, cfg_.max_key_ver),
       kErrorKeymgrInternal);
 
   // Any non-idle status is expected to fail.
@@ -127,7 +125,7 @@ TEST_F(KeymgrTest, StateAdvanceToCreatorInvalid) {
                     KEYMGR_WORKING_STATE_STATE_VALUE_INIT,
                     /*err_code=*/0u);
   EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
+      keymgr_state_advance_to_creator(&cfg_.binding_value, cfg_.max_key_ver),
       kErrorKeymgrInternal);
 }
 

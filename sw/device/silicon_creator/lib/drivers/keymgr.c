@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -74,8 +75,8 @@ rom_error_t keymgr_init(uint16_t entropy_reseed_interval) {
   return kErrorOk;
 }
 
-rom_error_t keymgr_state_advance_to_creator(const uint32_t binding_value[8],
-                                            uint32_t max_key_ver) {
+rom_error_t keymgr_state_advance_to_creator(
+    const keymgr_binding_value_t *binding_value, uint32_t max_key_ver) {
   RETURN_IF_ERROR(
       check_expected_state(KEYMGR_WORKING_STATE_STATE_VALUE_INIT,
                            KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS));
@@ -83,10 +84,10 @@ rom_error_t keymgr_state_advance_to_creator(const uint32_t binding_value[8],
   // Write and lock (rw0c) the software binding value. This register is unlocked
   // by hardware upon a successful state transition.
   // FIXME: Consider using sec_mmio module for the following register writes.
-  for (size_t i = 0; i < 8; ++i) {
+  for (size_t i = 0; i < ARRAYSIZE(binding_value->data); ++i) {
     abs_mmio_write32(
         kBase + KEYMGR_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
-        binding_value[i]);
+        binding_value->data[i]);
   }
   abs_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 

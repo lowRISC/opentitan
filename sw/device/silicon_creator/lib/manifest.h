@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
 // FIXME: Move sigverify to sw/device/silicon_creator/lib
 #include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
@@ -72,7 +73,7 @@ typedef struct manifest {
    * consequently, the versioned keys and identity seeds generated at subsequent
    * boot stages.
    */
-  uint32_t binding_value[8];
+  keymgr_binding_value_t binding_value;
   /**
    * Maximum allowed version for keys generated at the next boot stage.
    */
