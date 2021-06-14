@@ -72,8 +72,8 @@ static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
  * @param key An RSA public key.
  * @param[out] result Buffer to write the result to, little-endian.
  */
-void calc_r_square(const sigverify_rsa_key_t *key,
-                   sigverify_rsa_buffer_t *result) {
+static void calc_r_square(const sigverify_rsa_key_t *key,
+                          sigverify_rsa_buffer_t *result) {
   memset(result->data, 0, sizeof(result->data));
   // Since R/2 < n < R, this subtraction ensures that result = R mod n and
   // fits in `kSigVerifyRsaNumWords` going into the loop.
@@ -90,16 +90,26 @@ void calc_r_square(const sigverify_rsa_key_t *key,
   }
 }
 
-// FIXME: Merge this comment with the one in the header file.
-// This function implements Alg. 14.36 in Handbook of Applied Cryptography:
-// 1. result = 0
-// 2. For i from 0 to (n - 1):
-// 		2.1. u_i = (result_0 + x_i * y_0) * m' mod b
-// 		2.2. result = (result + x_i * y + u_i * m) / b
-// 3. If result >= m then result = result - m
-// 4. Return result
-void mont_mul(const sigverify_rsa_key_t *key, const sigverify_rsa_buffer_t *x,
-              const sigverify_rsa_buffer_t *y, sigverify_rsa_buffer_t *result) {
+/**
+ * Computes the Montgomery reduction of the product of two integers.
+ *
+ * Given an RSA public key, x, and y this function computes x*y*R^-1 mod n,
+ * where
+ * - x and y are integers with `kSigVerifyRsaNumWords` base 2^32 digits,
+ * - n is the modulus of the key, and
+ * - R is 2^`kSigVerifyRsaNumBits`, e.g. 2^3072 for RSA-3072.
+ *
+ * See Handbook of Applied Cryptography, Ch. 14, Alg. 14.36.
+ *
+ * @param key An RSA public key.
+ * @param x Buffer that holds `x`, little-endian.
+ * @param y Buffer that holds `y`, little-endian.
+ * @param[out] result Buffer to write the result to, little-endian.
+ */
+static void mont_mul(const sigverify_rsa_key_t *key,
+                     const sigverify_rsa_buffer_t *x,
+                     const sigverify_rsa_buffer_t *y,
+                     sigverify_rsa_buffer_t *result) {
   memset(result->data, 0, sizeof(result->data));
 
   for (size_t i = 0; i < ARRAYSIZE(x->data); ++i) {
