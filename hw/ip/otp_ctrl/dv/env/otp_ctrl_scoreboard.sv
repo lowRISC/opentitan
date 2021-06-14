@@ -450,7 +450,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit data_phase_write  = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       `downcast(dv_reg, csr)
@@ -1183,8 +1183,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     // If sw partition is read locked, then access policy changes from RO to no access
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
     if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr :
-                       cfg.mem_ranges[ral_name][0].start_addr + CreatorSwCfgSize - 1]}) begin
+      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
+          cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgSize - 1]}) begin
         predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
         `DV_CHECK_EQ(item.d_data, 0,
                      $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
@@ -1192,8 +1192,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
     end
     if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgOffset :
-          cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
+      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
+                        cfg.ral_models[ral_name].mem_ranges[0].start_addr +
+                            OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
         predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
         `DV_CHECK_EQ(item.d_data, 0,
                      $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))

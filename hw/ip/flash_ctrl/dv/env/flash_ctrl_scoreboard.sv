@@ -69,7 +69,7 @@ class flash_ctrl_scoreboard #(type CFG_T = flash_ctrl_env_cfg)
     bit data_phase_write  = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else if (is_mem_addr(item, ral_name)) begin
