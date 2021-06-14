@@ -32,6 +32,13 @@
       desc: "USB-C debug cable is attached or disconnected",
     }
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the ADC_CTRL unit.
+      '''
+    }
+  ],
   wakeup_list: [
     { name: "debug_cable_wakeup",
       desc: "USB-C debug cable wakeup request",

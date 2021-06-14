@@ -9,6 +9,7 @@ package adc_ctrl_reg_pkg;
   // Param list
   parameter int NumAdcFilter = 8;
   parameter int NumAdcChannel = 2;
+  parameter int NumAlerts = 1;
 
   // Address widths within the block
   parameter int BlockAw = 7;
@@ -29,6 +30,11 @@ package adc_ctrl_reg_pkg;
     logic        q;
     logic        qe;
   } adc_ctrl_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } adc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -255,9 +261,10 @@ package adc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [465:465]
-    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [464:464]
-    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [463:462]
+    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [467:467]
+    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [466:466]
+    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [465:464]
+    adc_ctrl_reg2hw_alert_test_reg_t alert_test; // [463:462]
     adc_ctrl_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [461:460]
     adc_ctrl_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [459:428]
     adc_ctrl_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [427:419]
@@ -281,43 +288,47 @@ package adc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] ADC_CTRL_INTR_STATE_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] ADC_CTRL_INTR_ENABLE_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] ADC_CTRL_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_EN_CTL_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_PD_CTL_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_LP_SAMPLE_CTL_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_SAMPLE_CTL_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_FSM_RST_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_0_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_1_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_2_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_3_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_4_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_5_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_6_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_7_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_0_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_1_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_2_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_3_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_4_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_5_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_6_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_7_OFFSET = 7'h 5c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN_VAL_0_OFFSET = 7'h 60;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN_VAL_1_OFFSET = 7'h 64;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_WAKEUP_CTL_OFFSET = 7'h 68;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_WAKEUP_STATUS_OFFSET = 7'h 6c;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_CTL_OFFSET = 7'h 70;
-  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_STATUS_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ALERT_TEST_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_EN_CTL_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_PD_CTL_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_LP_SAMPLE_CTL_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_SAMPLE_CTL_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_FSM_RST_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_0_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_1_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_2_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_3_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_4_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_5_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_6_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN0_FILTER_CTL_7_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_0_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_1_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_2_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_3_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_4_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_5_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_6_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN1_FILTER_CTL_7_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN_VAL_0_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_CHN_VAL_1_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_WAKEUP_CTL_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_WAKEUP_STATUS_OFFSET = 7'h 70;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_CTL_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_STATUS_OFFSET = 7'h 78;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] ADC_CTRL_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_INTR_TEST_DEBUG_CABLE_RESVAL = 1'h 0;
+  parameter logic [0:0] ADC_CTRL_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] ADC_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {
     ADC_CTRL_INTR_STATE,
     ADC_CTRL_INTR_ENABLE,
     ADC_CTRL_INTR_TEST,
+    ADC_CTRL_ALERT_TEST,
     ADC_CTRL_ADC_EN_CTL,
     ADC_CTRL_ADC_PD_CTL,
     ADC_CTRL_ADC_LP_SAMPLE_CTL,
@@ -348,37 +359,38 @@ package adc_ctrl_reg_pkg;
   } adc_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ADC_CTRL_PERMIT [30] = '{
+  parameter logic [3:0] ADC_CTRL_PERMIT [31] = '{
     4'b 0001, // index[ 0] ADC_CTRL_INTR_STATE
     4'b 0001, // index[ 1] ADC_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] ADC_CTRL_INTR_TEST
-    4'b 0001, // index[ 3] ADC_CTRL_ADC_EN_CTL
-    4'b 1111, // index[ 4] ADC_CTRL_ADC_PD_CTL
-    4'b 0001, // index[ 5] ADC_CTRL_ADC_LP_SAMPLE_CTL
-    4'b 0011, // index[ 6] ADC_CTRL_ADC_SAMPLE_CTL
-    4'b 0001, // index[ 7] ADC_CTRL_ADC_FSM_RST
-    4'b 1111, // index[ 8] ADC_CTRL_ADC_CHN0_FILTER_CTL_0
-    4'b 1111, // index[ 9] ADC_CTRL_ADC_CHN0_FILTER_CTL_1
-    4'b 1111, // index[10] ADC_CTRL_ADC_CHN0_FILTER_CTL_2
-    4'b 1111, // index[11] ADC_CTRL_ADC_CHN0_FILTER_CTL_3
-    4'b 1111, // index[12] ADC_CTRL_ADC_CHN0_FILTER_CTL_4
-    4'b 1111, // index[13] ADC_CTRL_ADC_CHN0_FILTER_CTL_5
-    4'b 1111, // index[14] ADC_CTRL_ADC_CHN0_FILTER_CTL_6
-    4'b 1111, // index[15] ADC_CTRL_ADC_CHN0_FILTER_CTL_7
-    4'b 1111, // index[16] ADC_CTRL_ADC_CHN1_FILTER_CTL_0
-    4'b 1111, // index[17] ADC_CTRL_ADC_CHN1_FILTER_CTL_1
-    4'b 1111, // index[18] ADC_CTRL_ADC_CHN1_FILTER_CTL_2
-    4'b 1111, // index[19] ADC_CTRL_ADC_CHN1_FILTER_CTL_3
-    4'b 1111, // index[20] ADC_CTRL_ADC_CHN1_FILTER_CTL_4
-    4'b 1111, // index[21] ADC_CTRL_ADC_CHN1_FILTER_CTL_5
-    4'b 1111, // index[22] ADC_CTRL_ADC_CHN1_FILTER_CTL_6
-    4'b 1111, // index[23] ADC_CTRL_ADC_CHN1_FILTER_CTL_7
-    4'b 1111, // index[24] ADC_CTRL_ADC_CHN_VAL_0
-    4'b 1111, // index[25] ADC_CTRL_ADC_CHN_VAL_1
-    4'b 0001, // index[26] ADC_CTRL_ADC_WAKEUP_CTL
-    4'b 0001, // index[27] ADC_CTRL_ADC_WAKEUP_STATUS
-    4'b 0011, // index[28] ADC_CTRL_ADC_INTR_CTL
-    4'b 0011  // index[29] ADC_CTRL_ADC_INTR_STATUS
+    4'b 0001, // index[ 3] ADC_CTRL_ALERT_TEST
+    4'b 0001, // index[ 4] ADC_CTRL_ADC_EN_CTL
+    4'b 1111, // index[ 5] ADC_CTRL_ADC_PD_CTL
+    4'b 0001, // index[ 6] ADC_CTRL_ADC_LP_SAMPLE_CTL
+    4'b 0011, // index[ 7] ADC_CTRL_ADC_SAMPLE_CTL
+    4'b 0001, // index[ 8] ADC_CTRL_ADC_FSM_RST
+    4'b 1111, // index[ 9] ADC_CTRL_ADC_CHN0_FILTER_CTL_0
+    4'b 1111, // index[10] ADC_CTRL_ADC_CHN0_FILTER_CTL_1
+    4'b 1111, // index[11] ADC_CTRL_ADC_CHN0_FILTER_CTL_2
+    4'b 1111, // index[12] ADC_CTRL_ADC_CHN0_FILTER_CTL_3
+    4'b 1111, // index[13] ADC_CTRL_ADC_CHN0_FILTER_CTL_4
+    4'b 1111, // index[14] ADC_CTRL_ADC_CHN0_FILTER_CTL_5
+    4'b 1111, // index[15] ADC_CTRL_ADC_CHN0_FILTER_CTL_6
+    4'b 1111, // index[16] ADC_CTRL_ADC_CHN0_FILTER_CTL_7
+    4'b 1111, // index[17] ADC_CTRL_ADC_CHN1_FILTER_CTL_0
+    4'b 1111, // index[18] ADC_CTRL_ADC_CHN1_FILTER_CTL_1
+    4'b 1111, // index[19] ADC_CTRL_ADC_CHN1_FILTER_CTL_2
+    4'b 1111, // index[20] ADC_CTRL_ADC_CHN1_FILTER_CTL_3
+    4'b 1111, // index[21] ADC_CTRL_ADC_CHN1_FILTER_CTL_4
+    4'b 1111, // index[22] ADC_CTRL_ADC_CHN1_FILTER_CTL_5
+    4'b 1111, // index[23] ADC_CTRL_ADC_CHN1_FILTER_CTL_6
+    4'b 1111, // index[24] ADC_CTRL_ADC_CHN1_FILTER_CTL_7
+    4'b 1111, // index[25] ADC_CTRL_ADC_CHN_VAL_0
+    4'b 1111, // index[26] ADC_CTRL_ADC_CHN_VAL_1
+    4'b 0001, // index[27] ADC_CTRL_ADC_WAKEUP_CTL
+    4'b 0001, // index[28] ADC_CTRL_ADC_WAKEUP_STATUS
+    4'b 0011, // index[29] ADC_CTRL_ADC_INTR_CTL
+    4'b 0011  // index[30] ADC_CTRL_ADC_INTR_STATUS
   };
 
 endpackage
