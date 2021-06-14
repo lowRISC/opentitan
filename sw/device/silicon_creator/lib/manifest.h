@@ -10,8 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
-// FIXME: Move sigverify to sw/device/silicon_creator/lib
-#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {

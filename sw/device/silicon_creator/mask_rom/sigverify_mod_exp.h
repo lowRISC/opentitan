@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {

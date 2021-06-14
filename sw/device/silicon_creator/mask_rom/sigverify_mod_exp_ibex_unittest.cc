@@ -6,6 +6,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 namespace sigverify_mod_exp_ibex_unittest {
@@ -14,7 +16,7 @@ namespace {
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
   for (auto const &key : kSigVerifyRsaKeys) {
-    ids.insert(sigverify_rsa_key_id_get(&key));
+    ids.insert(sigverify_rsa_key_id_get(&key.n));
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
@@ -107,7 +109,7 @@ class RsquareTest : public testing::TestWithParam<Rsquare> {};
 TEST(Rsquares, AllKeys) {
   std::unordered_set<uint32_t> ids;
   for (auto const &test_case : kRsquares) {
-    ids.insert(sigverify_rsa_key_id_get(test_case.key));
+    ids.insert(sigverify_rsa_key_id_get(&test_case.key->n));
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
@@ -307,7 +309,7 @@ constexpr SigTestCase kSigTestCases[2]{
 TEST(SigTestCases, AllKeys) {
   std::unordered_set<uint32_t> ids;
   for (auto const &test_case : kSigTestCases) {
-    ids.insert(sigverify_rsa_key_id_get(test_case.key));
+    ids.insert(sigverify_rsa_key_id_get(&test_case.key->n));
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);

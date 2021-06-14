@@ -4,6 +4,10 @@
 
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
+#include <stddef.h>
+
+#include "sw/device/silicon_creator/mask_rom/sigverify.h"
+
 /**
  * Public keys for signature verification.
  *
@@ -75,5 +79,14 @@ const sigverify_rsa_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
         },
 };
 
-// `extern` declarations for `inline` functions in the header.
-extern uint32_t sigverify_rsa_key_id_get(const sigverify_rsa_key_t *key);
+rom_error_t sigverify_rsa_key_get(uint32_t key_id,
+                                  const sigverify_rsa_key_t **key) {
+  for (size_t i = 0; i < kSigVerifyNumRsaKeys; ++i) {
+    const sigverify_rsa_key_t *cand_key = &kSigVerifyRsaKeys[i];
+    if (sigverify_rsa_key_id_get(&cand_key->n) == key_id) {
+      *key = cand_key;
+      return kErrorOk;
+    }
+  }
+  return kErrorSigverifyInvalidArgument;
+}
