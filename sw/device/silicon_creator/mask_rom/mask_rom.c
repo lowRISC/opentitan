@@ -131,12 +131,8 @@ void mask_rom_boot(void) {
     // CreatorRootKey (2.c.iv)
     // - This is only allowed to be done if we have verified the signature on
     //   the current ROM_EXT.
-    // TODO(#5955): Switch to manifest in C struct format update this code to
-    // use the sw binding and max key version fields from the manifest.
-    keymgr_binding_value_t binding_value = {0};
-    uint32_t max_key_version = 0x1;
-    if (keymgr_state_advance_to_creator(&binding_value, max_key_version) !=
-        kErrorOk) {
+    if (keymgr_state_advance_to_creator(
+            &manifest->binding_value, manifest->max_key_version) != kErrorOk) {
       break;
     }
 
