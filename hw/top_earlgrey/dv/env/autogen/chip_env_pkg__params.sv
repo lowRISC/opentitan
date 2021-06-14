@@ -22,6 +22,7 @@ parameter string LIST_OF_ALERTS[] = {
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
   "lc_ctrl_fatal_bus_integ_error",
+  "adc_ctrl_aon_fatal_fault",
   "pinmux_aon_fatal_fault",
   "sensor_ctrl_aon_recov_as",
   "sensor_ctrl_aon_recov_cg",
@@ -58,4 +59,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 51;
+parameter uint NUM_ALERTS = 52;
