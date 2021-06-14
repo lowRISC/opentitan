@@ -39,7 +39,7 @@ static rom_error_t sigverify_padding_and_digest_check(
 
   if (memcmp(enc_msg_ptr, act_digest->digest, sizeof(act_digest->digest)) !=
       0) {
-    return kErrorSigverifyInvalidArgument;
+    return kErrorSigverifyBadEncodedMessage;
   }
   enc_msg_ptr += ARRAYSIZE(act_digest->digest);
 
@@ -48,7 +48,7 @@ static rom_error_t sigverify_padding_and_digest_check(
       0x05000420, 0x03040201, 0x86480165, 0x0d060960, 0x00303130,
   };
   if (memcmp(enc_msg_ptr, kEncodedSha256, sizeof(kEncodedSha256)) != 0) {
-    return kErrorSigverifyInvalidArgument;
+    return kErrorSigverifyBadEncodedMessage;
   }
   enc_msg_ptr += ARRAYSIZE(kEncodedSha256);
 
@@ -63,7 +63,7 @@ static rom_error_t sigverify_padding_and_digest_check(
   uint32_t res = ~padding;
   res |= *enc_msg_ptr ^ 0x0001ffff;
   if (res != 0) {
-    return kErrorSigverifyInvalidArgument;
+    return kErrorSigverifyBadEncodedMessage;
   }
 
   return kErrorOk;
