@@ -51,6 +51,7 @@ enum module_ {
   X(kErrorUartBadBaudRate,            ERROR_(2, kModuleUart, kInvalidArgument)), \
   X(kErrorHmacInvalidArgument,        ERROR_(1, kModuleHmac, kInvalidArgument)), \
   X(kErrorSigverifyInvalidArgument,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadExponent,       ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   X(kErrorManifestInternal,           ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorRomextimageInvalidArgument, ERROR_(1, kModuleRomextimage, kInvalidArgument)), \

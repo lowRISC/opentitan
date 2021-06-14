@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
@@ -27,11 +28,9 @@ extern "C" {
  * @param result Buffer to write the result to, little-endian.
  * @return True if successful, false otherwise.
  */
-// FIXME: Error codes are still under discussion, update after we reach a
-// decision.
-bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
-                            const sigverify_rsa_buffer_t *sig,
-                            sigverify_rsa_buffer_t *result);
+rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+                                   const sigverify_rsa_buffer_t *sig,
+                                   sigverify_rsa_buffer_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -16,7 +16,7 @@ namespace internal {
  */
 class MockSigverifyModExp {
  public:
-  MOCK_METHOD(bool, ibex,
+  MOCK_METHOD(rom_error_t, ibex,
               (const sigverify_rsa_key_t *, const sigverify_rsa_buffer_t *,
                sigverify_rsa_buffer_t *));
   virtual ~MockSigverifyModExp() {}
@@ -29,9 +29,9 @@ using MockSigverifyModExp =
 
 extern "C" {
 
-bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
-                            const sigverify_rsa_buffer_t *sig,
-                            sigverify_rsa_buffer_t *result) {
+rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+                                   const sigverify_rsa_buffer_t *sig,
+                                   sigverify_rsa_buffer_t *result) {
   return MockSigverifyModExp::Instance().ibex(key, sig, result);
 }
 

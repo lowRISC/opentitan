@@ -122,7 +122,7 @@ TEST_F(SigVerifyTest, BadSignature) {
         .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
     EXPECT_CALL(sigverify_mod_exp_,
                 ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
-        .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(true)));
+        .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
     // FIXME: Parameterize with key ids.
     EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),

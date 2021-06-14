@@ -150,7 +150,7 @@ class ModExp : public testing::TestWithParam<SigTestCase> {};
 TEST_P(ModExp, EncMsg) {
   sigverify_rsa_buffer_t res;
   EXPECT_EQ(sigverify_mod_exp_ibex(GetParam().key, &GetParam().sig, &res),
-            true);
+            kErrorOk);
   EXPECT_THAT(res.data, ::testing::ElementsAreArray(GetParam().enc_msg->data));
 }
 
@@ -159,7 +159,8 @@ TEST(ModExp, BadExp) {
   constexpr sigverify_rsa_key_t bad_key{};
   sigverify_rsa_buffer_t empty;
 
-  EXPECT_EQ(sigverify_mod_exp_ibex(&bad_key, &empty, &empty), false);
+  EXPECT_EQ(sigverify_mod_exp_ibex(&bad_key, &empty, &empty),
+            kErrorSigverifyBadExponent);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, ModExp, testing::ValuesIn(kSigTestCases));
