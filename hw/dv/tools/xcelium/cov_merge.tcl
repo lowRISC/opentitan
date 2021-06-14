@@ -19,3 +19,8 @@ set cov_merge_db_dir [string trim $::env(cov_merge_db_dir) " \"'"]
 
 # Run the merge command.
 merge $cov_db_dirs -out $cov_merge_db_dir -overwrite
+
+# Create a file with the path to the cover dirs
+set filepointer [open "$cov_merge_db_dir/runs.txt" w]
+puts $filepointer "$cov_db_dirs"
+close $filepointer
