@@ -35,21 +35,21 @@ Code Quality  | [LINT_SETUP][]                 | Not started |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
+Documentation | [NEW_FEATURES][]        | N/A         | No new features since D1.
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | N/A         | No known missing functionality.
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Partial     | Remaining TODOs are related to FI hardening
+RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
+Code Quality  | [CDC_SETUP][]           | N/A         | rom_ctrl has only one clock
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | N/A         | rom_ctrl has only one clock
 Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
