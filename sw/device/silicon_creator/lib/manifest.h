@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
 // FIXME: Move sigverify to sw/device/silicon_creator/lib
-#include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #ifdef __cplusplus
 extern "C" {

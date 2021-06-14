@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/mask_rom/romextimage.h"
-#include "sw/device/silicon_creator/mask_rom/sig_verify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/mask_rom/sig_verify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/mask_rom/rsa_verify.h"
-#include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

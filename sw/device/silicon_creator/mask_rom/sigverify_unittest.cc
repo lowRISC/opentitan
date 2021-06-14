@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/mask_rom/sig_verify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify.h"
 
 #include <cstring>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sig_verify_keys.h"
+#include "sigverify_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
-#include "sw/device/silicon_creator/mask_rom/mock_rsa_verify.h"
+#include "sw/device/silicon_creator/mask_rom/mock_sigverify_mod_exp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-namespace sig_verify_unittest {
+namespace sigverify_unittest {
 namespace {
 using ::testing::DoAll;
 using ::testing::NotNull;
@@ -88,7 +88,7 @@ constexpr sigverify_rsa_buffer_t kSignature{};
 
 class SigVerifyTest : public mask_rom_test::MaskRomTest {
  protected:
-  mask_rom_test::MockRsaVerify sig_verify_mod_exp_;
+  mask_rom_test::MockSigverifyModExp sigverify_mod_exp_;
   mask_rom_test::MockHmac hmac_;
 };
 
@@ -101,8 +101,8 @@ TEST_F(SigVerifyTest, GoodSignature) {
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(hmac_, sha256_final(NotNull()))
       .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-  EXPECT_CALL(sig_verify_mod_exp_,
-              mod_exp_ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
+  EXPECT_CALL(sigverify_mod_exp_,
+              ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   EXPECT_EQ(
@@ -128,8 +128,8 @@ TEST_F(SigVerifyTest, BadSignature) {
         .WillOnce(Return(kErrorOk));
     EXPECT_CALL(hmac_, sha256_final(NotNull()))
         .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-    EXPECT_CALL(sig_verify_mod_exp_,
-                mod_exp_ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
+    EXPECT_CALL(sigverify_mod_exp_,
+                ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(true)));
 
     EXPECT_EQ(
@@ -140,4 +140,4 @@ TEST_F(SigVerifyTest, BadSignature) {
 }
 
 }  // namespace
-}  // namespace sig_verify_unittest
+}  // namespace sigverify_unittest

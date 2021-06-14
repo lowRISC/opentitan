@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_KEYS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_KEYS_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_KEYS_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_KEYS_H_
 
 #include <stdint.h>
 
@@ -80,4 +80,4 @@ inline uint32_t sigverify_rsa_key_id_get(const sigverify_rsa_key_t *key) {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_KEYS_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_KEYS_H_
