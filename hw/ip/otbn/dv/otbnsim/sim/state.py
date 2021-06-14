@@ -157,6 +157,7 @@ class OTBNState:
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag; perform state init'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
+        self.ext_regs.write('INSN_CNT', 0, True)
         self.running = True
         self._start_stall = True
         self._urnd_stall = True
