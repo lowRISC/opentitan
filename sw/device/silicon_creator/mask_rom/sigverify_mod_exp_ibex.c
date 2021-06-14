@@ -152,9 +152,9 @@ static void mont_mul(const sigverify_rsa_key_t *key,
   }
 }
 
-bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
-                            const sigverify_rsa_buffer_t *sig,
-                            sigverify_rsa_buffer_t *result) {
+rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+                                   const sigverify_rsa_buffer_t *sig,
+                                   sigverify_rsa_buffer_t *result) {
   sigverify_rsa_buffer_t buf;
 
   if (key->exponent == 3) {
@@ -176,7 +176,7 @@ bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
       mont_mul(key, result, result, &buf);
     }
   } else {
-    return false;
+    return kErrorSigverifyBadExponent;
   }
   // result = sig^e mod n
   mont_mul(key, &buf, sig, result);
@@ -188,5 +188,5 @@ bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
     subtract_modulus(key, result);
   }
 
-  return true;
+  return kErrorOk;
 }

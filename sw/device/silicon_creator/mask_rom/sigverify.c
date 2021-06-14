@@ -81,9 +81,7 @@ rom_error_t sigverify_rsa_verify(const void *signed_message,
   // FIXME: Choose between Ibex and OTBN using OTP.
   // FIXME: OTBN modular exponentiation.
   sigverify_rsa_buffer_t enc_msg;
-  if (!sigverify_mod_exp_ibex(key, signature, &enc_msg)) {
-    return kErrorSigverifyInvalidArgument;
-  }
+  RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
   RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, &act_digest));
 
   return kErrorOk;
