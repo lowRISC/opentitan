@@ -16,7 +16,7 @@ using ::testing::Return;
 class RomExtImage : public mask_rom_test::MaskRomTest {
  protected:
   mask_rom_test::MockRomextimagePtrs romextimage_ptrs_;
-  manifest_t manifest_;
+  manifest_t manifest_{};
 };
 
 TEST_F(RomExtImage, ManifestGet) {
