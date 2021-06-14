@@ -15,36 +15,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Calculates R^2 mod n, where R = 2^kSigVerifyRsaNumBits.
- *
- * @param key An RSA public key.
- * @param[out] result Buffer to write the result to, little-endian.
- */
-void calc_r_square(const sigverify_rsa_key_t *key,
-                   sigverify_rsa_buffer_t *result);
-
-// FIXME: Make static and move this comment to the source file. This is here
-// just to be able to add a simple test.
-/**
- * Computes the Montgomery reduction of the product of two integers.
- *
- * Given an RSA public key, x, and y this function computes x*y*R^-1 mod n,
- * where
- * - x and y are integers with `kSigVerifyRsaNumWords` base 2^32 digits,
- * - n is the modulus of the key, and
- * - R is 2^`kSigVerifyRsaNumBits`, e.g. 2^3072 for RSA-3072.
- *
- * See Handbook of Applied Cryptography, Ch. 14, Alg. 14.36.
- *
- * @param key An RSA public key.
- * @param x Buffer that holds `x`, little-endian.
- * @param y Buffer that holds `y`, little-endian.
- * @param[out] result Buffer to write the result to, little-endian.
- */
-void mont_mul(const sigverify_rsa_key_t *key, const sigverify_rsa_buffer_t *x,
-              const sigverify_rsa_buffer_t *y, sigverify_rsa_buffer_t *result);
-
-/**
  * Computes the modular exponentiation of an RSA signature.
  *
  * Given an RSA public key and sig, this function computes sig^e mod n using
