@@ -14,7 +14,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   uint   max_quit_count  = 1;
   uint64 test_timeout_ns = 200_000_000; // 200ms
   uint   drain_time_ns   = 2_000;  // 2us
-  bit    poll_for_stop   = 1'b1;
+  bit    poll_for_stop   = 1'b0;
   uint   poll_for_stop_interval_ns = 1000;
 
   `uvm_component_new
