@@ -71,7 +71,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
@@ -229,8 +229,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           if (host_init) begin
             if (rdata_cnt == 0) begin
               // for on-the-fly reset, immediately finish task to avoid blocking
-              wait(rd_pending_q.size() > 0 || cfg.under_reset);              
-              if (cfg.under_reset) return; 
+              wait(rd_pending_q.size() > 0 || cfg.under_reset);
+              if (cfg.under_reset) return;
               rd_pending_item = rd_pending_q.pop_front();
             end
             rd_pending_item.data_q.push_back(item.d_data);

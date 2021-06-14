@@ -352,7 +352,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     logic  extclk_sel_regwen = ral.extclk_sel_regwen.get_reset();
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end
