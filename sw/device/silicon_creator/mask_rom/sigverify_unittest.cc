@@ -127,7 +127,7 @@ TEST_F(SigVerifyTest, BadSignature) {
     // FIXME: Parameterize with key ids.
     EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
                                    &kSignature, &kSigVerifyRsaKeys[0]),
-              kErrorSigverifyInvalidArgument);
+              kErrorSigverifyBadEncodedMessage);
   }
 }
 
