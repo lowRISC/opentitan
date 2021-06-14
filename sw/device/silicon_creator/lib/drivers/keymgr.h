@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,9 +44,8 @@ rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
  * manifest.
  * @return The result of the operation.
  */
-// TODO: Switch binding_value to a wrapped struct parameter.
-rom_error_t keymgr_state_advance_to_creator(const uint32_t binding_value[8],
-                                            uint32_t max_key_version);
+rom_error_t keymgr_state_advance_to_creator(
+    const keymgr_binding_value_t *binding_value, uint32_t max_key_version);
 
 /**
  * Checks the state of the key manager.

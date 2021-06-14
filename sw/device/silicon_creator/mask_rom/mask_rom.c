@@ -133,9 +133,9 @@ void mask_rom_boot(void) {
     //   the current ROM_EXT.
     // TODO(#5955): Switch to manifest in C struct format update this code to
     // use the sw binding and max key version fields from the manifest.
-    uint32_t binding_value[8] = {0};
+    keymgr_binding_value_t binding_value = {0};
     uint32_t max_key_version = 0x1;
-    if (keymgr_state_advance_to_creator(binding_value, max_key_version) !=
+    if (keymgr_state_advance_to_creator(&binding_value, max_key_version) !=
         kErrorOk) {
       break;
     }

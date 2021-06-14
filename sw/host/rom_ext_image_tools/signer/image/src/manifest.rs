@@ -39,7 +39,7 @@ pub struct Manifest {
     pub image_minor_version: u32,
     pub image_timestamp: u64,
     pub exponent: u32,
-    pub binding_value: [u32; 8usize],
+    pub binding_value: KeymgrBindingValue,
     pub max_key_version: u32,
     pub modulus: SigverifyRsaBuffer,
 }
@@ -55,6 +55,12 @@ impl Default for SigverifyRsaBuffer {
     fn default() -> Self {
         Self { data: [0; 96usize] }
     }
+}
+
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct KeymgrBindingValue {
+        pub data: [u32; 8usize],
 }
 
 /// Checks the layout of the manifest struct.
