@@ -247,14 +247,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
                                                            otp_ecc_err_e   ecc_err);
     bit [TL_DW-1:0] val;
-    prim_secded_pkg::secded_22_16_t out;
     addr = {addr[TL_DW-1:2], 2'b00};
-    val = {cfg.mem_bkdr_util_h.read16(addr+2), cfg.mem_bkdr_util_h.read16(addr)};
+    val = cfg.backdoor_read32(addr);
     if (ecc_err == OtpNoEccErr || addr >= (LifeCycleOffset + LifeCycleSize)) return val;
 
     // Backdoor read and write back with error bits
-    // TODO: debug why write16 and write32 won't work.
-    cfg.mem_bkdr_util_h.write8(addr, val, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
+    cfg.mem_bkdr_util_h.inject_errors(addr, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
     `uvm_info(`gfn, $sformatf("original val %0h, addr %0h, err_type %0s",
                               val, addr, ecc_err.name), UVM_HIGH)
     return val;

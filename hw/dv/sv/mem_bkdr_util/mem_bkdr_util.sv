@@ -56,12 +56,6 @@ class mem_bkdr_util extends uvm_object;
   event readmemh_event;
   event writememh_event;
 
-  // A pair of integers.
-  typedef struct {
-    int x;
-    int y;
-  } int_pair_t;
-
   // Initialize the class instance.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme);
@@ -239,15 +233,12 @@ class mem_bkdr_util extends uvm_object;
   // Write a single byte at specified address.
   //
   // Does a read-modify-write on the whole word. It updates the byte at the given address and
-  // computes the parity and ECC bits as applicable. Before writing the word back, it injects
-  // 'inject_num_errors' errors if set to a positive value.
-  virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data,
-                               uint32_t inject_num_errors = 0);
+  // computes the parity and ECC bits as applicable.
+  virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data);
     uvm_hdl_data_t rw_data;
     uint32_t word_idx;
     uint32_t byte_idx;
 
-    `DV_CHECK_LE_FATAL(inject_num_errors, max_errors)
     if (!check_addr_valid(addr)) return;
 
     rw_data  = read(addr);
@@ -256,11 +247,7 @@ class mem_bkdr_util extends uvm_object;
 
     if (`HAS_PARITY) begin
       bit parity = (err_detection_scheme == ParityOdd) ? ~(^data) : (^data);
-      bit [8:0] lane = {parity, data};
-      if (inject_num_errors) begin
-        lane ^= (1 << $urandom_range(0, byte_width - 1));
-      end
-      rw_data[byte_idx * 9 +: 9] = lane;
+      rw_data[byte_idx * 9 +: 9] = {parity, data};
       write(addr, rw_data);
       return;
     end
@@ -290,52 +277,35 @@ class mem_bkdr_util extends uvm_object;
         `uvm_error(`gfn, $sformatf("ECC scheme %0s is unsupported.", err_detection_scheme))
       end
     endcase
-    if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
     write(addr, rw_data);
   endfunction
 
-  virtual function void write16(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [15:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
+  virtual function void write16(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [15:0] data);
     `_ADDR_DW_CHECKS(addr, 16)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write8(addr, data[7:0], inject_num_errors_split.x);
-    write8(addr + 1, data[15:8], inject_num_errors_split.y);
+    write8(addr, data[7:0]);
+    write8(addr + 1, data[15:8]);
   endfunction
 
-  virtual function void write32(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [31:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
+  virtual function void write32(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [31:0] data);
     `_ADDR_DW_CHECKS(addr, 32)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write16(addr, data[15:0], inject_num_errors_split.x);
-    write16(addr + 2, data[31:16], inject_num_errors_split.y);
+    write16(addr, data[15:0]);
+    write16(addr + 2, data[31:16]);
   endfunction
 
-  virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
+  virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);
     `_ADDR_DW_CHECKS(addr, 64)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write32(addr, data[31:0], inject_num_errors_split.x);
-    write32(addr + 4, data[63:32], inject_num_errors_split.y);
+    write32(addr, data[31:0]);
+    write32(addr + 4, data[63:32]);
   endfunction
 
-  virtual function void write128(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [127:0] data,
-                                 uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
+  virtual function void write128(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [127:0] data);
     `_ADDR_DW_CHECKS(addr, 128)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write64(addr, data[63:0], inject_num_errors_split.x);
-    write64(addr + 4, data[127:63], inject_num_errors_split.y);
+    write64(addr, data[63:0]);
+    write64(addr + 4, data[127:63]);
   endfunction
 
   `undef _ADDR_DW_CHECKS
@@ -856,18 +826,20 @@ class mem_bkdr_util extends uvm_object;
     end
   endfunction
 
-  // A helper function that splits a given number randomly into a pair.
-  virtual function int_pair_t rand_split(uint32_t num);
-    rand_split.x = $urandom_range(0, num);
-    rand_split.y = num - rand_split.x;
-  endfunction
-
-  virtual function uvm_hdl_data_t inject_errors(uvm_hdl_data_t data, uint32_t inject_num_errors);
-    uvm_hdl_data_t err_mask;
+  // Inject ECC or parity errors to the memory word at the given address.
+  virtual function void inject_errors(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                      uint32_t inject_num_errors);
+    uvm_hdl_data_t rw_data, err_mask;
+    if (!check_addr_valid(addr)) return;
+    `DV_CHECK_LE_FATAL(inject_num_errors, max_errors)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask,
                                        $countones(err_mask) == inject_num_errors;
                                        (err_mask >> width) == '0;)
-    return data ^ err_mask;
+    rw_data = read(addr);
+    write(addr, rw_data ^ err_mask);
+    `uvm_info(`gfn, $sformatf(
+              "Addr: %0h, original data: %0h, error_mask: %0h, backdoor inject data: %0h",
+              addr, rw_data, err_mask, rw_data ^ err_mask), UVM_HIGH)
   endfunction
 
   `undef HAS_ECC
