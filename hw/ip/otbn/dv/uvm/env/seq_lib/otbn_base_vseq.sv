@@ -100,6 +100,8 @@ class otbn_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Start OTBN and then wait until done
+  //
+  // If the block gets reset, this task will exit early.
   protected task run_otbn();
     int exp_end_addr;
     uvm_reg_data_t cmd_val;
@@ -117,12 +119,18 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
 
-    // If there was an expected end address, compare it with the model. This isn't really a test of
-    // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
-    // it expects.
-    exp_end_addr = OtbnMemUtilGetExpEndAddr(cfg.mem_util);
-    if (exp_end_addr >= 0) begin
-      `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
+    // Post-run checks
+    //
+    // The CSR operations above short-circuit and exit immediately if the reset line goes low. If
+    // that happens, we don't want to run the checks (since the run didn't finish properly).
+    if (!cfg.under_reset) begin
+      // If there was an expected end address, compare it with the model. This isn't really a test of
+      // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
+      // it expects.
+      exp_end_addr = OtbnMemUtilGetExpEndAddr(cfg.mem_util);
+      if (exp_end_addr >= 0) begin
+        `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
+      end
     end
    endtask
 
