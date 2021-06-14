@@ -41,3 +41,8 @@ and
 [non-XOF](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMACXOF_samples.pdf)
 variants.
 These vectors are found in `vectors/xof/kmac/`.
+
+### AES vectors
+Test vectors for AES can be found under hw/ip/aes/dv/test_vectors
+Test vectors for AES algorithm are taken from the
+[NIST website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/AES_ModesA_All.pdf)

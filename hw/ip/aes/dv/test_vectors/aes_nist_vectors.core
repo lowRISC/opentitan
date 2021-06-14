@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:aes_test_vectors"
+description: "parse test vectors files and output an array of structures with parsed info"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:aes
+    files:
+      - nist_vectors_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

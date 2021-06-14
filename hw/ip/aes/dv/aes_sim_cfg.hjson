@@ -75,6 +75,12 @@ run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
       reseed: 1
     }
     {
+      name: aes_nist_vectors
+      uvm_test: aes_wake_up_test
+      uvm_test_seq: aes_nist_vectors_vseq
+      reseed: 1
+    }
+    {
       name: aes_smoke
       uvm_test: aes_smoke_test
       uvm_test_seq: aes_stress_vseq

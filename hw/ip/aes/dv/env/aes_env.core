@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:csr_utils
       - lowrisc:dv:aes_model_dpi
       - lowrisc:dv:aes_cov
+      - lowrisc:dv:aes_test_vectors
     files:
       - aes_env_pkg.sv
       - aes_seq_item.sv: {is_include_file: true}
@@ -31,6 +32,7 @@ filesets:
       - seq_lib/aes_wake_up_vseq.sv: {is_include_file: true}
       - seq_lib/aes_stress_vseq.sv: {is_include_file: true}
       - seq_lib/aes_alert_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/aes_nist_vectors_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
