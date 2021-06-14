@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/mask_rom/rsa_verify.h"
-
 #include <stddef.h>
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 /**
  * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.

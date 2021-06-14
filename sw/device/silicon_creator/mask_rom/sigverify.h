@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,4 +33,4 @@ rom_error_t sigverify_rom_ext_signature_verify(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIG_VERIFY_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_SIGVERIFY_H_

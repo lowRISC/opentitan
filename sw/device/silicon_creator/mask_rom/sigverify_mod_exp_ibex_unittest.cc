@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/mask_rom/rsa_verify.h"
-
 #include <unordered_set>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
-namespace rsa_verify_unittest {
+namespace sigverify_mod_exp_ibex_unittest {
 namespace {
 
 TEST(Keys, UniqueIds) {
@@ -39,7 +38,7 @@ struct Rsquare {
 };
 
 /**
- * R^2 mod n for each key in `sig_verify_keys.c`.
+ * R^2 mod n for each key in `sigverify_keys.c`.
  */
 constexpr Rsquare kRsquares[kSigVerifyNumRsaKeys] = {
     {
@@ -368,4 +367,4 @@ TEST(ModExp, BadExp) {
 INSTANTIATE_TEST_SUITE_P(AllCases, ModExp, testing::ValuesIn(kSigTestCases));
 
 }  // namespace
-}  // namespace rsa_verify_unittest
+}  // namespace sigverify_mod_exp_ibex_unittest
