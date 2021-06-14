@@ -99,6 +99,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         end
         `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         cfg.backdoor_clear_mem = 0;
+        dai_wr_ip = 0;
+        dai_digest_ip = LifeCycleIdx;
       end
     end
   endtask
