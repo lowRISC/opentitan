@@ -94,7 +94,7 @@ class SigVerifyTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(SigVerifyTest, GoodSignature) {
   // FIXME: Parameterize with key ids.
-  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0]);
+  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0].n);
 
   EXPECT_CALL(hmac_, sha256_init());
   EXPECT_CALL(hmac_, sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
@@ -113,7 +113,7 @@ TEST_F(SigVerifyTest, GoodSignature) {
 
 TEST_F(SigVerifyTest, BadSignature) {
   // FIXME: Parameterize with key ids.
-  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0]);
+  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0].n);
 
   // Corrupt the words of the encoded message by flipping their bits and check
   // that signature verification fails.

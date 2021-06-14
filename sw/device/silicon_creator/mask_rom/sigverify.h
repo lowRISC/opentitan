@@ -9,13 +9,26 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
-// TODO(opentitan/#5955): Update parameters when the manifest struct is ready.
+/**
+ * Gets the ID of an RSA public key from its modulus.
+ *
+ * ID of a key is the least significant word of its modulus.
+ * Callers must make sure that `modulus` is valid before calling this function.
+ *
+ * @param key An RSA public key.
+ * @return ID of the key.
+ */
+inline uint32_t sigverify_rsa_key_id_get(
+    const sigverify_rsa_buffer_t *modulus) {
+  return modulus->data[0];
+}
+
 /**
  * Verifies the signature of a ROM_EXT manifest.
  *

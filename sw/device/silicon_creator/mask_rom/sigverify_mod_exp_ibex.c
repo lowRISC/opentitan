@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 /**

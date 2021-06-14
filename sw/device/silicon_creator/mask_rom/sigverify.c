@@ -13,25 +13,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
- * Returns the key with the given ID.
- *
- * @param key_id A key ID.
- * @param key Key with the given ID, valid only if it exists.
- * @return Result of the operation.
- */
-static rom_error_t sigverify_rsa_key_get(uint32_t key_id,
-                                         const sigverify_rsa_key_t **key) {
-  for (size_t i = 0; i < kSigVerifyNumRsaKeys; ++i) {
-    const sigverify_rsa_key_t *cand_key = &kSigVerifyRsaKeys[i];
-    if (sigverify_rsa_key_id_get(cand_key) == key_id) {
-      *key = cand_key;
-      return kErrorOk;
-    }
-  }
-  return kErrorSigverifyInvalidArgument;
-}
-
-/**
  * Checks the padding and the digest of an EMSA-PKCS1-v1_5 encoded message.
  *
  * EMSA-PKCS1-v1_5 is described in Section 9.2 of PKCS #1: RSA Cryptography
@@ -111,3 +92,6 @@ rom_error_t sigverify_rom_ext_signature_verify(
 
   return kErrorOk;
 }
+
+// `extern` declarations for `inline` functions in the header.
+extern uint32_t sigverify_rsa_key_id_get(const sigverify_rsa_buffer_t *modulus);
