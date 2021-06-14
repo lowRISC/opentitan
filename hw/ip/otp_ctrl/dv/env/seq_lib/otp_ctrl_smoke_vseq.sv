@@ -76,13 +76,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     check_lc_err();
   endtask
 
-  // Used for stress_all sequence to clear OTP internal memory before going to next test.
-  // This can avoid unexpected ECC injection errors or write_blank errors.
-  virtual task post_start();
-    super.post_start();
-    clear_otp_memory();
-  endtask
-
   virtual task check_lc_err();
     fork
       forever begin

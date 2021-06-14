@@ -12,6 +12,8 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
   bit[31:0] exp_status;
   `uvm_object_new
 
+  // Only run one transition to avoid dut_init in the sequence. Because write-blank-error can cause
+  // otp_init failure.
   constraint num_trans_c {
     num_trans  == 1;
     num_dai_op inside {[100:500]};
@@ -36,6 +38,9 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
 
   task body();
     do_apply_reset = 0;
+    if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
+      req_lc_transition(do_lc_trans, lc_prog_blocking);
+    end
     super.body();
   endtask
 

@@ -80,12 +80,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
-  // 1). Some registers won't set to default value until otp_init is done
-  // 2). Clear memory for next sequence to run. This can avoid ECC injection error and
-  //     write_blank error
+  // because some registers won't set to default value until otp_init is done.
   virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-    clear_otp_memory();
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
