@@ -112,7 +112,7 @@ CDC run set up. No must fix errors, waiver file created.
 
 ### FPGA_TIMING
 
-FPGA synthesis timing meet (Fmax-10%) target or better
+Block is synthesized as part of continuous integration checks and meets timing there.
 
 ### CDC_SYNCMACRO
 
