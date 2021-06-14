@@ -189,7 +189,7 @@ package dv_utils_pkg;
 
   // Periodically check for the existence of a magic file (dv.stop). Exit if it exists. This
   // provides a mechanism to gracefully kill a simulation without direct access to the process.
-  task automatic poll_for_stop(uint interval_ns = 1000, string filename = "dv.stop");
+  task automatic poll_for_stop(uint interval_ns = 10_000, string filename = "dv.stop");
     fork
       while (1) begin
         #(interval_ns * 1ns);
