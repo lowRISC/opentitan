@@ -268,7 +268,7 @@ void handler_irq_external(void) {
 
   // Complete the IRQ at PLIC.
   CHECK(dif_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
-                              &plic_irq_id) == kDifPlicOk,
+                              plic_irq_id) == kDifPlicOk,
         "dif_plic_irq_complete failed");
 }
 
