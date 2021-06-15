@@ -42,6 +42,7 @@ sw_silicon_creator_lib_manifest = declare_dependency(
 # Defined separately for sigverify_keys unit tests.
 sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests = files([
   'sigverify_mod_exp_ibex.c',
+  'sigverify.c',
 ])
 
 # Signature verification.
@@ -50,6 +51,7 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
     'sw_silicon_creator_lib_sigverify',
     sources: [
       'sigverify_mod_exp_ibex.c',
+      'sigverify.c',
     ],
     dependencies: [
       sw_silicon_creator_lib_driver_hmac,
@@ -88,6 +90,20 @@ test('sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest', executable(
     sources: [
       'sigverify_mod_exp_ibex.c',
       'sigverify_mod_exp_ibex_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'mask_rom',
+)
+
+test('sw_silicon_creator_lib_sigverify_unittest', executable(
+    'sw_silicon_creator_lib_sigverify_unittest',
+    sources: [
+      'sigverify_unittest.cc',
+      'sigverify.c',
     ],
     dependencies: [
       sw_vendor_gtest,

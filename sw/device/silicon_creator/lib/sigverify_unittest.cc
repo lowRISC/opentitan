@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/mask_rom/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify.h"
 
 #include <cstring>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sigverify_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp.h"
 
@@ -88,6 +87,8 @@ class SigVerifyTest : public mask_rom_test::MaskRomTest {
  protected:
   mask_rom_test::MockSigverifyModExp sigverify_mod_exp_;
   mask_rom_test::MockHmac hmac_;
+  // The content of this key is not significant since we use mocks.
+  sigverify_rsa_key_t key_{};
 };
 
 TEST_F(SigVerifyTest, GoodSignature) {
@@ -96,20 +97,17 @@ TEST_F(SigVerifyTest, GoodSignature) {
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(hmac_, sha256_final(NotNull()))
       .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-  EXPECT_CALL(sigverify_mod_exp_,
-              ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
+  EXPECT_CALL(sigverify_mod_exp_, ibex(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  // FIXME: Parameterize with key ids.
   EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &kSigVerifyRsaKeys[0]),
+                                 &kSignature, &key_),
             kErrorOk);
 }
 
 TEST_F(SigVerifyTest, BadSignature) {
   // Corrupt the words of the encoded message by flipping their bits and check
   // that signature verification fails.
-  // FIXME: Make this a parameterized test.
   for (size_t i = 0; i < kSigVerifyRsaNumWords; ++i) {
     auto bad_enc_msg = kEncMsg;
     bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
@@ -120,13 +118,11 @@ TEST_F(SigVerifyTest, BadSignature) {
         .WillOnce(Return(kErrorOk));
     EXPECT_CALL(hmac_, sha256_final(NotNull()))
         .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-    EXPECT_CALL(sigverify_mod_exp_,
-                ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
+    EXPECT_CALL(sigverify_mod_exp_, ibex(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
-    // FIXME: Parameterize with key ids.
     EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                   &kSignature, &kSigVerifyRsaKeys[0]),
+                                   &kSignature, &key_),
               kErrorSigverifyBadEncodedMessage);
   }
 }

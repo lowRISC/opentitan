@@ -19,7 +19,6 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
     'sw_silicon_creator_mask_rom_sigverify',
     sources: [
       'sigverify_keys.c',
-      'sigverify.c',
     ],
     dependencies: [
       sw_silicon_creator_lib_sigverify,
@@ -136,21 +135,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
-test('sw_silicon_creator_mask_rom_sigverify_unittest', executable(
-    'sw_silicon_creator_mask_rom_sigverify_unittest',
-    sources: [
-      'sigverify_unittest.cc',
-      'sigverify.c',
-      'sigverify_keys.c',
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-    ],
-    native: true,
-  ),
-  suite: 'mask_rom',
-)
-
 test('sw_silicon_creator_mask_rom_romextimage_unittest', executable(
     'sw_silicon_creator_mask_rom_romextimage_unittest',
     sources: [
@@ -172,7 +156,6 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
     sources: [
       'sigverify_keys.c',
       'sigverify_keys_unittest.cc',
-      'sigverify.c',
     ] + sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests,
     dependencies: [
       sw_vendor_gtest,

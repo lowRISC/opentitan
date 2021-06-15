@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "sw/device/silicon_creator/mask_rom/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify.h"
 
 /**
  * Public keys for signature verification.
