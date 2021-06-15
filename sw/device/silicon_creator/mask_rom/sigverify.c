@@ -7,7 +7,6 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -72,18 +71,14 @@ static rom_error_t sigverify_padding_and_digest_check(
 
 rom_error_t sigverify_rom_ext_signature_verify(
     const void *signed_region, size_t signed_region_len,
-    const sigverify_rsa_buffer_t *signature, uint32_t key_id) {
+    const sigverify_rsa_buffer_t *signature, const sigverify_rsa_key_t *key) {
   hmac_digest_t act_digest;
   hmac_sha256_init();
   RETURN_IF_ERROR(hmac_sha256_update(signed_region, signed_region_len));
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
-  // TODO(#21): Key validity check using OTP.
-  const sigverify_rsa_key_t *key;
-  RETURN_IF_ERROR(sigverify_rsa_key_get(key_id, &key));
-
-  // TODO(#21): Choose between Ibex and OTBN using OTP.
-  // TODO(#18): OTBN modular exponentiation.
+  // FIXME: Choose between Ibex and OTBN using OTP.
+  // FIXME: OTBN modular exponentiation.
   sigverify_rsa_buffer_t enc_msg;
   if (!sigverify_mod_exp_ibex(key, signature, &enc_msg)) {
     return kErrorSigverifyInvalidArgument;

@@ -81,8 +81,6 @@ constexpr sigverify_rsa_buffer_t kEncMsg{
 // The contents of `kSignedRegion` and `kSignature` are not significant since we
 // use mocks. `kSignedRegion` is initialized this way only for consistency with
 // `kTestDigest`.
-// TODO(opentitan/#5955): Remove when the manifest struct is ready and
-// `sigverify_rom_ext_signature_check` is updated.
 constexpr std::array<uint8_t, 4> kSignedRegion{'t', 'e', 's', 't'};
 constexpr sigverify_rsa_buffer_t kSignature{};
 
@@ -93,9 +91,6 @@ class SigVerifyTest : public mask_rom_test::MaskRomTest {
 };
 
 TEST_F(SigVerifyTest, GoodSignature) {
-  // FIXME: Parameterize with key ids.
-  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0].n);
-
   EXPECT_CALL(hmac_, sha256_init());
   EXPECT_CALL(hmac_, sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
       .WillOnce(Return(kErrorOk));
@@ -105,16 +100,14 @@ TEST_F(SigVerifyTest, GoodSignature) {
               ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(
-      sigverify_rom_ext_signature_verify(
-          kSignedRegion.data(), sizeof(kSignedRegion), &kSignature, key_id),
-      kErrorOk);
+  // FIXME: Parameterize with key ids.
+  EXPECT_EQ(sigverify_rom_ext_signature_verify(
+                kSignedRegion.data(), sizeof(kSignedRegion), &kSignature,
+                &kSigVerifyRsaKeys[0]),
+            kErrorOk);
 }
 
 TEST_F(SigVerifyTest, BadSignature) {
-  // FIXME: Parameterize with key ids.
-  const auto key_id = sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[0].n);
-
   // Corrupt the words of the encoded message by flipping their bits and check
   // that signature verification fails.
   // FIXME: Make this a parameterized test.
@@ -132,10 +125,11 @@ TEST_F(SigVerifyTest, BadSignature) {
                 ibex(&kSigVerifyRsaKeys[0], &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(true)));
 
-    EXPECT_EQ(
-        sigverify_rom_ext_signature_verify(
-            kSignedRegion.data(), sizeof(kSignedRegion), &kSignature, key_id),
-        kErrorSigverifyInvalidArgument);
+    // FIXME: Parameterize with key ids.
+    EXPECT_EQ(sigverify_rom_ext_signature_verify(
+                  kSignedRegion.data(), sizeof(kSignedRegion), &kSignature,
+                  &kSigVerifyRsaKeys[0]),
+              kErrorSigverifyInvalidArgument);
   }
 }
 
