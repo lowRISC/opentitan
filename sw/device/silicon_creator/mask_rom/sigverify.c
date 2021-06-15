@@ -69,12 +69,13 @@ static rom_error_t sigverify_padding_and_digest_check(
   return kErrorOk;
 }
 
-rom_error_t sigverify_rom_ext_signature_verify(
-    const void *signed_region, size_t signed_region_len,
-    const sigverify_rsa_buffer_t *signature, const sigverify_rsa_key_t *key) {
+rom_error_t sigverify_rsa_verify(const void *signed_message,
+                                 size_t signed_message_len,
+                                 const sigverify_rsa_buffer_t *signature,
+                                 const sigverify_rsa_key_t *key) {
   hmac_digest_t act_digest;
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(signed_region, signed_region_len));
+  RETURN_IF_ERROR(hmac_sha256_update(signed_message, signed_message_len));
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
   // FIXME: Choose between Ibex and OTBN using OTP.

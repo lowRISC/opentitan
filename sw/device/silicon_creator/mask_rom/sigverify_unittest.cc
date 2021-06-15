@@ -101,9 +101,8 @@ TEST_F(SigVerifyTest, GoodSignature) {
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   // FIXME: Parameterize with key ids.
-  EXPECT_EQ(sigverify_rom_ext_signature_verify(
-                kSignedRegion.data(), sizeof(kSignedRegion), &kSignature,
-                &kSigVerifyRsaKeys[0]),
+  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                 &kSignature, &kSigVerifyRsaKeys[0]),
             kErrorOk);
 }
 
@@ -126,9 +125,8 @@ TEST_F(SigVerifyTest, BadSignature) {
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(true)));
 
     // FIXME: Parameterize with key ids.
-    EXPECT_EQ(sigverify_rom_ext_signature_verify(
-                  kSignedRegion.data(), sizeof(kSignedRegion), &kSignature,
-                  &kSigVerifyRsaKeys[0]),
+    EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                   &kSignature, &kSigVerifyRsaKeys[0]),
               kErrorSigverifyInvalidArgument);
   }
 }

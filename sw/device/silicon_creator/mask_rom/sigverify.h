@@ -30,17 +30,18 @@ inline uint32_t sigverify_rsa_key_id_get(
 }
 
 /**
- * Verifies the signature of a ROM_EXT manifest.
+ * Verifies an RSASSA-PKCS1-v1_5 signature.
  *
- * @param signed_region Pointer to the start of the signed region.
- * @param signed_region_len Length of the signed region in bytes.
- * @param signature An RSA signature.
- * @param key RSA public key to use for verifying the signature.
+ * @param signed_message Message whose signature is to be verified.
+ * @param signed_message_len Length of the signed message in bytes.
+ * @param signature Signature to be verified.
+ * @param key Signer's RSA public key.
  * @return Result of the operation.
  */
-rom_error_t sigverify_rom_ext_signature_verify(
-    const void *signed_region, size_t signed_region_len,
-    const sigverify_rsa_buffer_t *signature, const sigverify_rsa_key_t *key);
+rom_error_t sigverify_rsa_verify(const void *signed_message,
+                                 size_t signed_message_len,
+                                 const sigverify_rsa_buffer_t *signature,
+                                 const sigverify_rsa_key_t *key);
 
 #ifdef __cplusplus
 }  // extern "C"
