@@ -5,6 +5,12 @@
 #include "sw/device/lib/runtime/otbn.h"
 
 #include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/runtime/log.h"
+
+/**
+ * Data width of big number subset, in bytes.
+ */
+const int kOtbnWlenBytes = 256 / 8;
 
 otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *imem_addr_otbn) {
@@ -173,4 +179,26 @@ otbn_result_t otbn_zero_data_memory(otbn_t *ctx) {
     }
   }
   return retval;
+}
+
+otbn_result_t otbn_dump_dmem(const otbn_t *ctx, uint32_t max_addr) {
+  if (ctx == NULL || max_addr % kOtbnWlenBytes != 0 ||
+      max_addr > dif_otbn_get_dmem_size_bytes(&ctx->dif)) {
+    return kOtbnBadArg;
+  }
+
+  if (max_addr == 0) {
+    max_addr = dif_otbn_get_dmem_size_bytes(&ctx->dif);
+  }
+
+  for (int i = 0; i < max_addr; i += kOtbnWlenBytes) {
+    uint32_t data[kOtbnWlenBytes / sizeof(uint32_t)];
+    dif_otbn_dmem_read(&ctx->dif, i, data, kOtbnWlenBytes);
+
+    LOG_INFO("DMEM @%04d: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
+             i / kOtbnWlenBytes, data[7], data[6], data[5], data[4], data[3],
+             data[2], data[1], data[0]);
+  }
+
+  return kOtbnOk;
 }

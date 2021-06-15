@@ -259,4 +259,14 @@ otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
 otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *dmem_addr_otbn);
 
+/**
+ * Writes a LOG_INFO message with the contents of each 256b DMEM word.
+ *
+ * @param ctx The context object.
+ * @param max_addr The highest address to dump. Set to 0 to output the whole
+ *                 DMEM. Must be a multiple of WLEN.
+ * @return The result of the operation.
+ */
+otbn_result_t otbn_dump_dmem(const otbn_t *ctx, uint32_t max_addr);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
