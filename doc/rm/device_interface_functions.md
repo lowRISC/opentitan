@@ -10,7 +10,7 @@ DIFs can be seen as a living best-practices document for interacting with a give
 
 ## Objectives
 
-DIFs provide extensively reviewed APIs for actuating hardware for three separate use cases: design verification, FPGA + post-silicon validation, and reference firmware including end-consumer applications.
+DIFs provide extensively reviewed APIs for actuating hardware for three separate use cases: design verification, FPGA + post-silicon validation, and providing example code to aid the implementation of reference firmware including end-consumer applications.
 
 ## Requirements
 
