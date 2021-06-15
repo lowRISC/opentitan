@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_MOD_EXP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_MOD_EXP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_SIGVERIFY_MOD_EXP_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_SIGVERIFY_MOD_EXP_H_
 
 #include "sw/device/lib/testing/mask_rom_test.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
 namespace mask_rom_test {
 namespace internal {
@@ -38,4 +38,4 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
 }  // extern "C"
 }  // namespace mask_rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_MOD_EXP_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_SIGVERIFY_MOD_EXP_H_
