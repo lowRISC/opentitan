@@ -234,4 +234,29 @@ otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
  */
 otbn_result_t otbn_zero_data_memory(otbn_t *ctx);
 
+/**
+ * Gets the address in OTBN instruction memory referenced by `ptr`.
+ *
+ * @param ctx The context object.
+ * @param ptr The pointer to convert.
+ * @param[out] imem_addr_otbn The address of the function in OTBN's instruction
+ *                            memory.
+ * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the
+ *         instruction memory space of the currently loaded application.
+ */
+otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                         uint32_t *imem_addr_otbn);
+
+/**
+ * Gets the address in OTBN data memory referenced by `ptr`.
+ *
+ * @param ctx The context object.
+ * @param ptr The pointer to convert.
+ * @param[out] dmem_addr_otbn The address of the data in OTBN's data memory.
+ * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
+ *         memory space of the currently loaded application.
+ */
+otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                         uint32_t *dmem_addr_otbn);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_

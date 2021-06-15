@@ -6,19 +6,8 @@
 
 #include "sw/device/lib/dif/dif_otbn.h"
 
-/**
- * Gets the address in OTBN instruction memory referenced by `ptr`.
- *
- * @param ctx The context object.
- * @param ptr The pointer to convert.
- * @param[out] imem_addr_otbn The address of the function in OTBN's instruction
- *                            memory.
- * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the
- *         instruction memory space of the currently loaded application.
- */
-static otbn_result_t func_ptr_to_otbn_imem_addr(const otbn_t *ctx,
-                                                otbn_ptr_t ptr,
-                                                uint32_t *imem_addr_otbn) {
+otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                         uint32_t *imem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
   uintptr_t app_imem_start_addr = (uintptr_t)ctx->app.imem_start;
   uintptr_t app_imem_end_addr = (uintptr_t)ctx->app.imem_end;
@@ -31,18 +20,8 @@ static otbn_result_t func_ptr_to_otbn_imem_addr(const otbn_t *ctx,
   return kOtbnOk;
 }
 
-/**
- * Gets the address in OTBN data memory referenced by `ptr`.
- *
- * @param ctx The context object.
- * @param ptr The pointer to convert.
- * @param[out] dmem_addr_otbn The address of the data in OTBN's data memory.
- * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
- *         memory space of the currently loaded application.
- */
-static otbn_result_t data_ptr_to_otbn_dmem_addr(const otbn_t *ctx,
-                                                otbn_ptr_t ptr,
-                                                uint32_t *dmem_addr_otbn) {
+otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                         uint32_t *dmem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
   uintptr_t app_dmem_start_addr = (uintptr_t)ctx->app.dmem_start;
   uintptr_t app_dmem_end_addr = (uintptr_t)ctx->app.dmem_end;
@@ -125,7 +104,7 @@ otbn_result_t otbn_call_function(otbn_t *ctx, otbn_ptr_t func) {
   }
 
   uint32_t func_imem_addr;
-  otbn_result_t result = func_ptr_to_otbn_imem_addr(ctx, func, &func_imem_addr);
+  otbn_result_t result = otbn_func_ptr_to_imem_addr(ctx, func, &func_imem_addr);
   if (result != kOtbnOk) {
     return result;
   }
@@ -144,7 +123,7 @@ otbn_result_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len_bytes,
   }
 
   uint32_t dest_dmem_addr;
-  otbn_result_t result = data_ptr_to_otbn_dmem_addr(ctx, dest, &dest_dmem_addr);
+  otbn_result_t result = otbn_data_ptr_to_dmem_addr(ctx, dest, &dest_dmem_addr);
   if (result != kOtbnOk) {
     return result;
   }
@@ -163,7 +142,7 @@ otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
   }
 
   uint32_t src_dmem_addr;
-  otbn_result_t result = data_ptr_to_otbn_dmem_addr(ctx, src, &src_dmem_addr);
+  otbn_result_t result = otbn_data_ptr_to_dmem_addr(ctx, src, &src_dmem_addr);
   if (result != kOtbnOk) {
     return result;
   }
