@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 #include "sigverify_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
-#include "sw/device/silicon_creator/mask_rom/mock_sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

@@ -18,12 +18,11 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_mask_rom_sigverify',
     sources: [
-      'sigverify_mod_exp_ibex.c',
       'sigverify_keys.c',
       'sigverify.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_driver_hmac,
+      sw_silicon_creator_lib_sigverify,
     ],
   ),
 )
@@ -137,21 +136,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
-test('sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest', executable(
-    'sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest',
-    sources: [
-      'sigverify_mod_exp_ibex.c',
-      'sigverify_keys.c',
-      'sigverify_mod_exp_ibex_unittest.cc',
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-    ],
-    native: true,
-  ),
-  suite: 'mask_rom',
-)
-
 test('sw_silicon_creator_mask_rom_sigverify_unittest', executable(
     'sw_silicon_creator_mask_rom_sigverify_unittest',
     sources: [
@@ -189,8 +173,7 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
       'sigverify_keys.c',
       'sigverify_keys_unittest.cc',
       'sigverify.c',
-      'sigverify_mod_exp_ibex.c',
-    ],
+    ] + sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests,
     dependencies: [
       sw_vendor_gtest,
     ],

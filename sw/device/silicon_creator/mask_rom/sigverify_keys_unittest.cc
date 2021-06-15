@@ -9,8 +9,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
+#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
 
 namespace sigverify_keys_unittest {
 namespace {

@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
 /**
  * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.
