@@ -760,12 +760,6 @@ module otbn
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
 
-  // LFSR ======================================================================
-
-  // TODO: Potentially insert local LFSR, or use output from RNG distribution
-  // network directly, depending on availability. Revisit once CSRNG interface
-  // is known (#2638).
-
 
   // Asserts ===================================================================
 
