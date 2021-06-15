@@ -35,12 +35,12 @@ inline uint32_t sigverify_rsa_key_id_get(
  * @param signed_region Pointer to the start of the signed region.
  * @param signed_region_len Length of the signed region in bytes.
  * @param signature An RSA signature.
- * @param key_id ID of the key to use for verifying the signature.
+ * @param key RSA public key to use for verifying the signature.
  * @return Result of the operation.
  */
 rom_error_t sigverify_rom_ext_signature_verify(
     const void *signed_region, size_t signed_region_len,
-    const sigverify_rsa_buffer_t *signature, uint32_t key_id);
+    const sigverify_rsa_buffer_t *signature, const sigverify_rsa_key_t *key);
 
 #ifdef __cplusplus
 }  // extern "C"

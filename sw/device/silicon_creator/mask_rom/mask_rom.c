@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/mask_rom/romextimage.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -91,15 +92,20 @@ void mask_rom_boot(void) {
 
     const manifest_t *manifest;
     manifest_signed_region_t signed_region;
+    const sigverify_rsa_key_t *key;
     if (romextimage_manifest_get(kFlashSlotA, &manifest) != kErrorOk) {
       break;
     }
     if (manifest_signed_region_get(manifest, &signed_region) != kErrorOk) {
       break;
     }
+    if (sigverify_rsa_key_get(sigverify_rsa_key_id_get(&manifest->modulus),
+                              &key) != kErrorOk) {
+      break;
+    }
     if (sigverify_rom_ext_signature_verify(
             signed_region.start, signed_region.length, &manifest->signature,
-            manifest->modulus.data[0]) != kErrorOk) {
+            key) != kErrorOk) {
       break;
     }
 
