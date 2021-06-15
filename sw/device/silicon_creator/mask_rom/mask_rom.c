@@ -103,9 +103,8 @@ void mask_rom_boot(void) {
                               &key) != kErrorOk) {
       break;
     }
-    if (sigverify_rom_ext_signature_verify(
-            signed_region.start, signed_region.length, &manifest->signature,
-            key) != kErrorOk) {
+    if (sigverify_rsa_verify(signed_region.start, signed_region.length,
+                             &manifest->signature, key) != kErrorOk) {
       break;
     }
 
