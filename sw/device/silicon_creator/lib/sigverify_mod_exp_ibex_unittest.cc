@@ -6,8 +6,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
-#include "sw/device/silicon_creator/mask_rom/sigverify.h"
 
 namespace sigverify_mod_exp_ibex_unittest {
 namespace {
