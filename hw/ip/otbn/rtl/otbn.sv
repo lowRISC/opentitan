@@ -766,8 +766,10 @@ module otbn
   // All outputs should be known value after reset
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(IdleOKnown_A, idle_o)
   `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(IdleOKnown_A, idle_o)
+  `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o)
+  `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o)
 
 endmodule
