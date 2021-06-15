@@ -56,7 +56,8 @@ always_ff @( init_start, posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
   end
 end
 
-always_ff @( init_start, posedge main_pd_h_ni, negedge main_pd_h_ni ) begin
+always_ff @( init_start, vcc_pok_h_i,
+             posedge main_pd_h_ni, negedge main_pd_h_ni ) begin
   if ( init_start ) begin
     mr_pd_dly <= 1'b1;
   end else if ( !init_start && main_pd_h_ni && vcc_pok_h_i ) begin
@@ -68,9 +69,13 @@ end
 
 assign main_pwr_dly_o = mr_vcc_dly && mr_pd_dly;
 
+logic vcaon_pok_h;
+
 vcaon_pok u_vcaon_pok (
-  .vcaon_pok_o ( vcaon_pok_h_o )
+  .vcaon_pok_o ( vcaon_pok_h )
 );
+
+assign vcaon_pok_h_o = vcaon_pok_h && vcc_pok_h_i;
 
 `else  // of SYNTHESIS
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
@@ -98,14 +103,14 @@ end
 ///////////////////////////////////////
 // Flash
 ///////////////////////////////////////
-assign flash_power_down_h_o  = ~(main_pd_h_ni && vcmain_pok_o_h_i);
+assign flash_power_down_h_o  = ~(main_pd_h_ni && vcmain_pok_o_h_i);  // TODO Scan mode
 assign flash_power_ready_h_o = vcc_pok_h_i;
 
 
 ///////////////////////////////////////
 // OTP
 ///////////////////////////////////////
-assign otp_power_seq_h_o[0] = !flash_power_down_h_o && otp_power_seq_h_i[0];
-assign otp_power_seq_h_o[1] =  flash_power_down_h_o || otp_power_seq_h_i[1];
+assign otp_power_seq_h_o[0] = !flash_power_down_h_o && otp_power_seq_h_i[0];  // TODO Scan mode
+assign otp_power_seq_h_o[1] =  flash_power_down_h_o || otp_power_seq_h_i[1];  // TODO Scan mode
 
 endmodule : rglts_pdm_3p3v

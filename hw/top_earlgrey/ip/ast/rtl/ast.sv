@@ -103,8 +103,10 @@ module ast #(
   output edn_pkg::edn_req_t entropy_req_o,    // Entropy Request
 
   // alerts
-  input ast_pkg::ast_dif_t fla_alert_in_i,     // Flash Alert Input
-  input ast_pkg::ast_dif_t otp_alert_in_i,     // OTP Alert Input
+  input ast_pkg::ast_dif_t fla_alert_in_i,    // Flash Alert Input
+  input ast_pkg::ast_dif_t otp_alert_in_i,    // OTP Alert Input
+  // input ast_pkg::ast_dif_t fla_alert_src_i,    // Flash Alert Input
+  // input ast_pkg::ast_dif_t otp_alert_src_i,    // OTP Alert Input
   input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
   output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
 
@@ -143,6 +145,12 @@ import ast_pkg::* ;
 import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
 
+// Temp fix!!!
+ast_pkg::ast_dif_t fla_alert_src_i;
+ast_pkg::ast_dif_t otp_alert_src_i;
+assign fla_alert_src_i = fla_alert_in_i;
+assign otp_alert_src_i = otp_alert_in_i;
+
 logic vcaon_pok, vcaon_pok_h, scan_mode, scan_reset_n;
 logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
 
@@ -168,7 +176,6 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 ///////////////////////////////////////
 // VCAON POK (Always ON)
 ///////////////////////////////////////
-
 logic vcaon_pok_h_int;
 
 assign vcaon_pok_h = vcaon_pok_h_int && vcaon_supp_i;
@@ -178,7 +185,8 @@ assign vcaon_pok = vcaon_pok_h;  // Level Shifter
 logic por_n, por_rst_n, por_synco_n, por_sync_n;
 
 assign por_n = scan_mode ? scan_reset_n : por_ni;
-assign por_rst_n = por_n && vcc_pok && vcaon_pok;
+assign por_rst_n = por_n && vcc_pok && vcaon_pok;  //TODO  STR
+
 // Reset De-Assert Sync
 prim_flop_2sync #(
   .Width ( 1 ),
@@ -189,9 +197,10 @@ prim_flop_2sync #(
   .d_i ( 1'b1 ),
   .q_o ( por_synco_n )
 );
+
 assign por_sync_n = scan_mode ? scan_reset_n : por_synco_n;
 
-assign vcaon_pok_por = por_sync_n && vcc_pok && vcaon_pok;
+assign vcaon_pok_por = por_sync_n && vcc_pok && vcaon_pok;  //TODO  STR
 assign vcaon_pok_o   = vcaon_pok_por;
 
 
@@ -269,12 +278,14 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 ///////////////////////////////////////
 // System Clock (Always ON)
 ///////////////////////////////////////
-logic rst_sys_clk_n;
+logic rst_sys_clk_n, clk_sys_pd_n;
 assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
+
+assign clk_sys_pd_n = vcmain_pok;
 
 sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
-  .clk_sys_pd_ni ( vcmain_pok ),
+  .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
@@ -293,12 +304,14 @@ sys_clk u_sys_clk (
 ///////////////////////////////////////
 // USB Clock (Always ON)
 ///////////////////////////////////////
-logic rst_usb_clk_n;
+logic rst_usb_clk_n, clk_usb_pd_n;
 assign rst_usb_clk_n = vcmain_pok_por;  // Scan reset included
+
+assign clk_usb_pd_n = vcmain_pok;
 
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
-  .clk_usb_pd_ni ( vcmain_pok ),
+  .clk_usb_pd_ni ( clk_usb_pd_n ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
   .clk_src_usb_en_i ( clk_src_usb_en_i ),
   .usb_ref_val_i ( usb_ref_val_i ),
@@ -329,9 +342,9 @@ aon_clk  u_aon_clk (
 
 assign clk_aon = clk_src_aon_o;
 
-// Reset De-Assert Sync
 logic rst_aon_syn_n;
 
+// Reset De-Assert Sync
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
@@ -349,12 +362,14 @@ assign rst_aon_n = scan_mode ? scan_reset_n : rst_aon_syn_n;
 ///////////////////////////////////////
 // IO Clock (Always ON)
 ///////////////////////////////////////
-logic rst_io_clk_n;
+logic rst_io_clk_n, clk_io_pd_n;
 assign rst_io_clk_n = vcmain_pok_por;  // scan reset included
+
+assign clk_io_pd_n = vcmain_pok;
 
 io_clk u_io_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
-  .clk_io_pd_ni ( vcmain_pok ),
+  .clk_io_pd_ni ( clk_io_pd_n ),
   .rst_io_clk_ni ( rst_io_clk_n ),
   .clk_src_io_en_i ( clk_src_io_en_i ),
   .scan_mode_i ( scan_mode ),
@@ -388,6 +403,20 @@ adc #(
 ///////////////////////////////////////
 localparam int EntropyRateWidth = 4;
 logic [EntropyRateWidth-1:0] entropy_rate_o;
+logic vcmain_pok_por_sys, rst_src_sys_n;
+
+// Reset De-Assert Sync
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_sys_dasrt (
+  .clk_i ( clk_src_sys_o ),
+  .rst_ni ( vcmain_pok_por ),
+  .d_i ( 1'b1 ),
+  .q_o ( vcmain_pok_por_sys )
+);
+
+assign rst_src_sys_n = scan_mode ? scan_reset_n : vcmain_pok_por_sys;
 
 assign entropy_rate_o = 4'd5;
 
@@ -401,8 +430,8 @@ ast_entropy #(
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
-  .scan_mode_i ( scan_mode ),
-  .scan_reset_ni ( scan_reset_n ),
+  .clk_src_sys_i ( clk_src_sys_o ),
+  .rst_src_sys_ni ( rst_src_sys_n ),
   .entropy_req_o ( entropy_req_o )
 );  // of u_entropy
 
@@ -410,6 +439,7 @@ ast_entropy #(
 ///////////////////////////////////////
 // RNG (Always ON)
 ///////////////////////////////////////
+ast_pkg::ast_dif_t ot1_alert_src;
 
 rng #(
   .EntropyStreams ( EntropyStreams )
@@ -429,16 +459,35 @@ rng #(
 ///////////////////////////////////////
 // Alerts (Always ON)
 ///////////////////////////////////////
+ast_pkg::ast_dif_t as_alert_src;
+ast_pkg::ast_dif_t cg_alert_src;
+ast_pkg::ast_dif_t gd_alert_src;
+ast_pkg::ast_dif_t ts_alert_hi_src;
+ast_pkg::ast_dif_t ts_alert_lo_src;
+ast_pkg::ast_dif_t ot0_alert_src;
+ast_pkg::ast_dif_t ot2_alert_src;
+ast_pkg::ast_dif_t ot3_alert_src;
+ast_pkg::ast_dif_t ot4_alert_src;
+ast_pkg::ast_dif_t ot5_alert_src;
+
+assign as_alert_src    = '{p: 1'b0, n: 1'b1};
+assign cg_alert_src    = '{p: 1'b0, n: 1'b1};
+assign gd_alert_src    = '{p: 1'b0, n: 1'b1};
+assign ts_alert_hi_src = '{p: 1'b0, n: 1'b1};
+assign ts_alert_lo_src = '{p: 1'b0, n: 1'b1};
+assign ot0_alert_src   = '{p: 1'b0, n: 1'b1};
+assign ot1_alert_src   = '{p: 1'b0, n: 1'b1};
+assign ot2_alert_src   = '{p: 1'b0, n: 1'b1};
+assign ot3_alert_src   = '{p: 1'b0, n: 1'b1};
+assign ot4_alert_src   = '{p: 1'b0, n: 1'b1};
+assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
 
 // Active Shield (AS)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t as_alert_in;
-assign as_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( as_alert_in ),
+  .alert_src_i ( as_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[AsSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[AsSel] ),
   .alert_req_o ( alert_req_o.alerts[AsSel] )
@@ -446,13 +495,10 @@ ast_alert u_alert_as (
 
 // Clock Glitch (CG)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t cg_alert_in;
-assign cg_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( cg_alert_in ),
+  .alert_src_i ( cg_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[CgSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[CgSel] ),
   .alert_req_o ( alert_req_o.alerts[CgSel] )
@@ -460,27 +506,22 @@ ast_alert u_alert_cg (
 
 // Glitch Detector (GD)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t gd_alert_in;
-assign gd_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( gd_alert_in ),
+  .alert_src_i ( gd_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[GdSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[GdSel] ),
   .alert_req_o ( alert_req_o.alerts[GdSel] )
 );  // of u_alert_gd
 
+
 // Temprature Sensor High (TS Hi)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ts_alert_hi_in;
-assign ts_alert_hi_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ts_alert_hi_in ),
+  .alert_src_i ( ts_alert_hi_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[TsHiSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[TsHiSel] ),
   .alert_req_o ( alert_req_o.alerts[TsHiSel] )
@@ -488,13 +529,10 @@ ast_alert u_alert_ts_hi (
 
 // Temprature Sensor Low (TS Lo)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ts_alert_lo_in;
-assign ts_alert_lo_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ts_alert_lo_in ),
+  .alert_src_i ( ts_alert_lo_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[TsLoSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[TsLoSel] ),
   .alert_req_o ( alert_req_o.alerts[TsLoSel] )
@@ -505,7 +543,7 @@ ast_alert u_alert_ts_lo (
 ast_alert u_alert_fla (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( fla_alert_in_i ),
+  .alert_src_i ( fla_alert_src_i ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[FlaSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[FlaSel] ),
   .alert_req_o ( alert_req_o.alerts[FlaSel] )
@@ -516,7 +554,7 @@ ast_alert u_alert_fla (
 ast_alert u_alert_otp (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( otp_alert_in_i ),
+  .alert_src_i ( otp_alert_src_i ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[OtpSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[OtpSel] ),
   .alert_req_o ( alert_req_o.alerts[OtpSel] )
@@ -524,13 +562,10 @@ ast_alert u_alert_otp (
 
 // Other-0 Alert (OT0)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ot0_alert_in;
-assign ot0_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ot0_alert_in ),
+  .alert_src_i ( ot0_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot0Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot0Sel] ),
   .alert_req_o ( alert_req_o.alerts[Ot0Sel] )
@@ -538,13 +573,10 @@ ast_alert u_alert_ot0 (
 
 // Other-1 Alert (OT1)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ot1_alert_in;
-assign ot1_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ot1 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ot1_alert_in ),
+  .alert_src_i ( ot1_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot1Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot1Sel] ),
   .alert_req_o ( alert_req_o.alerts[Ot1Sel] )
@@ -552,13 +584,10 @@ ast_alert u_alert_ot1 (
 
 // Other-2 Alert (OT2)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ot2_alert_in;
-assign ot2_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ot2 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ot2_alert_in ),
+  .alert_src_i ( ot2_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot2Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot2Sel] ),
   .alert_req_o ( alert_req_o.alerts[Ot2Sel] )
@@ -566,17 +595,36 @@ ast_alert u_alert_ot2 (
 
 // Other-3 Alert (OT3)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ot3_alert_in;
-assign ot3_alert_in = '{p: 1'b0, n: 1'b1};
-
 ast_alert u_alert_ot3 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ot3_alert_in ),
+  .alert_src_i ( ot3_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot3Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot3Sel] ),
   .alert_req_o ( alert_req_o.alerts[Ot3Sel] )
-); // of u_alert_ot2
+); // of u_alert_ot3
+
+// Other-4 Alert (OT3)
+///////////////////////////////////////
+ast_alert u_alert_ot4 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( ot4_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot4Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot4Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot4Sel] )
+); // of u_alert_ot4
+
+// Other-5 Alert (OT5)
+///////////////////////////////////////
+ast_alert u_alert_ot5 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( ot5_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot5Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot5Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot5Sel] )
+); // of u_alert_ot5
 
 
 ///////////////////////////////////////
@@ -614,8 +662,8 @@ assign usb_io_pu_cal_o  = {UsbCalibWidth{1'b0}};
 assign ast2padmux_o   = {Ast2PadOutWidth{1'b0}};
 //
 `ifdef ANALOGSIM
-assign ast2pad_t0_ao  = '0;
-assign ast2pad_t1_ao  = '0;
+assign ast2pad_t0_ao  = 0.0;
+assign ast2pad_t1_ao  = 0.1;
 `else
 assign ast2pad_t0_ao  = 1'bz;
 assign ast2pad_t1_ao  = 1'bz;

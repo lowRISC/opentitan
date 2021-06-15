@@ -19,14 +19,13 @@ module sys_osc (
 );
 
 `ifndef SYNTHESIS
+// Behavioral Model
+////////////////////////////////////////
 timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-// Behavioral Model
-////////////////////////////////////////
 localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
-
-logic clk, en_dly, en_osc, en_osc_re, en_osc_fe;
+logic clk, clk_n, en_dly, en_osc, en_osc_re, en_osc_fe;
 shortreal jitter;
 
 initial begin
@@ -40,9 +39,10 @@ end
 logic sys_en_dly;
 assign #(SYS_EN_RDLY) sys_en_dly = sys_en_i;
 assign en_osc_re = vcore_pok_h_i && sys_en_i && (sys_en_dly && en_dly);
+assign clk_n = !clk;
 
 // Syncronize en_osc to clk FE for glitch free disable
-always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -57,20 +57,18 @@ always begin
   jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
   #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
 end
-
-assign sys_clk_o = clk;
 `else  // of SYNTHESIS
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-logic clk, en_osc, en_osc_re, en_osc_fe;
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+logic clk, clk_n, en_osc, en_osc_re, en_osc_fe;
 // TODO: add sys_jen_i
 
 assign en_osc_re = vcore_pok_h_i && sys_en_i;
+assign clk_n = !clk;
 
 // Syncronize en_osc to clk FE for glitch free disable
-always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -87,14 +85,11 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
 end
-
-prim_buf u_buf (
-  .in_i(clk),
-  .out_o(sys_clk_o)
-);
-
 `endif
 
-
+prim_clock_buf u_buf (
+  .clk_i ( clk ),
+  .clk_o ( sys_clk_o )
+);
 
 endmodule : sys_osc

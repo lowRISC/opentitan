@@ -9,59 +9,65 @@
 module ast_alert (
   input clk_i,
   input rst_ni,
-  input ast_pkg::ast_dif_t alert_in_i,
-  input ast_pkg::ast_dif_t alert_trig_i,
+  input ast_pkg::ast_dif_t alert_src_i,
   input ast_pkg::ast_dif_t alert_ack_i,
+  input ast_pkg::ast_dif_t alert_trig_i,
   output ast_pkg::ast_dif_t alert_req_o
 );
 
 // Unpack inputs
-logic alert_in_p, alert_in_n, alert_trig_p, alert_trig_n, alert_ack_p, alert_ack_n;
+logic p_alert_src, n_alert_src;
+assign p_alert_src = alert_src_i.p;
+assign n_alert_src = alert_src_i.n;
 
-assign alert_in_p   = alert_in_i.p;
-assign alert_in_n   = alert_in_i.n;
-assign alert_trig_p = alert_trig_i.p;
-assign alert_trig_n = alert_trig_i.n;
-assign alert_ack_p  = alert_ack_i.p;
-assign alert_ack_n  = alert_ack_i.n;
+logic p_alert_ack, n_alert_ack;
+assign p_alert_ack = alert_ack_i.p;
+assign n_alert_ack = alert_ack_i.n;
+
+logic p_alert_trig, n_alert_trig;
+assign p_alert_trig = alert_trig_i.p;
+assign n_alert_trig = alert_trig_i.n;
 
 // Pack outputs
-logic alert_req_p, alert_req_n;
+logic p_alert_req, n_alert_req;
 
-assign alert_req_o.p = alert_req_p;
-assign alert_req_o.n = alert_req_n;
+assign alert_req_o.p = p_alert_req;
+assign alert_req_o.n = n_alert_req;
 
-logic alert_p, set_alert_p, clr_alert_p;
+// P Alert
+logic p_alert, set_p_alert, clr_p_alert;
 
-assign set_alert_p = alert_in_p || alert_trig_p;
-assign clr_alert_p = !set_alert_p && alert_ack_p;
-
-always_ff @( posedge clk_i, negedge rst_ni ) begin
-  if ( !rst_ni ) begin
-    alert_p <= 1'b0;
-  end else if ( set_alert_p ) begin
-    alert_p <= 1'b1;
-  end else if ( clr_alert_p ) begin
-    alert_p <= 1'b0;
-  end
-end
-
-assign alert_req_p = alert_p;
-
-logic alert_n, set_alert_n, clr_alert_n;
-assign set_alert_n = !(alert_in_n && alert_trig_n);
-assign clr_alert_n = !(set_alert_n || alert_ack_n);
+assign set_p_alert =  p_alert_src || p_alert_trig;
+assign clr_p_alert = !set_p_alert && p_alert_ack;
 
 always_ff @( posedge clk_i, negedge rst_ni ) begin
   if ( !rst_ni ) begin
-    alert_n <= 1'b1;
-  end else if ( set_alert_n ) begin
-    alert_n <= 1'b0;
-  end else if ( clr_alert_n ) begin
-    alert_n <= 1'b1;
+    p_alert <= 1'b0;
+  end else if ( set_p_alert ) begin
+    p_alert <= 1'b1;
+  end else if ( clr_p_alert ) begin
+    p_alert <= 1'b0;
   end
 end
 
-assign alert_req_n = alert_n;
+assign p_alert_req = p_alert;
+
+// N Alert
+logic n_alert, set_n_alert, clr_n_alert;
+
+assign set_n_alert = !n_alert_src || n_alert_trig;
+assign clr_n_alert = !set_n_alert && n_alert_ack;
+
+always_ff @( posedge clk_i, negedge rst_ni ) begin
+  if ( !rst_ni ) begin
+    n_alert <= 1'b1;
+  end else if ( set_n_alert ) begin
+    n_alert <= 1'b0;
+  end else if ( clr_n_alert ) begin
+    n_alert <= 1'b1;
+  end
+end
+
+assign n_alert_req = n_alert;
 
 endmodule : ast_alert
