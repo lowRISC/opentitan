@@ -15,6 +15,9 @@ class otbn_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(otbn_base_vseq)
   `uvm_object_new
 
+  // "Running" flag to detect concurrent executions of run_otbn()
+  protected bit running_ = 1'b0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions.
   protected task load_elf(string path, bit backdoor);
@@ -104,6 +107,13 @@ class otbn_base_vseq extends cip_base_vseq #(
     int exp_end_addr;
     uvm_reg_data_t cmd_val;
 
+    // Check that we haven't been called re-entrantly. This could happen if there's a bug in the
+    // reset sequence, which relies on run_otbn() to exit properly when it sees a device reset.
+    // Explode here if that happens, which should be easier to debug than two concurrent run_otbn()
+    // processes fighting over the interface.
+    `DV_CHECK_FATAL(!running_)
+    running_ = 1'b1;
+
     // Set the "start" bit in cmd_val and write it to the "cmd" register to start OTBN.
     `DV_CHECK_FATAL(ral.cmd.start.get_n_bits == 1);
     cmd_val = 1 << ral.cmd.start.get_lsb_pos();
@@ -124,6 +134,8 @@ class otbn_base_vseq extends cip_base_vseq #(
     if (exp_end_addr >= 0) begin
       `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
     end
+
+    running_ = 1'b0;
    endtask
 
   virtual protected function string pick_elf_path();
