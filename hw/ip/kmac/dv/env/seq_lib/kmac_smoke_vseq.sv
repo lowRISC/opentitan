@@ -15,10 +15,13 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
   rand kmac_app_e app_mode;
 
-  // TODO: 200 is chosen as upper bound due to large configuration space for KMAC.
-  //       If this large range causes noticeable simulation slowdown, reduce it.
   constraint num_trans_c {
     num_trans inside {[1:200]};
+    if (cfg.smoke_test) {
+      num_trans == 10;
+    } else {
+      num_trans inside {[1:200]};
+    }
   }
 
   // If in KMAC mode, the function name has to be "KMAC" string
