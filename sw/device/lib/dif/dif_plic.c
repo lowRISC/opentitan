@@ -311,11 +311,10 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
   return kDifPlicOk;
 }
 
-dif_plic_result_t dif_plic_irq_complete(
-    const dif_plic_t *plic, dif_plic_target_t target,
-    const dif_plic_irq_id_t *complete_data) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
-      complete_data == NULL) {
+dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
+                                        dif_plic_target_t target,
+                                        dif_plic_irq_id_t complete_data) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
     return kDifPlicBadArg;
   }
 
@@ -323,7 +322,7 @@ dif_plic_result_t dif_plic_irq_complete(
   // to notify the PLIC of the IRQ completion.
   ptrdiff_t claim_complete_reg = plic_claim_complete_base_for_target(target);
   mmio_region_write32(plic->params.base_addr, claim_complete_reg,
-                      *complete_data);
+                      complete_data);
 
   return kDifPlicOk;
 }

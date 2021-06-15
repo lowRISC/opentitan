@@ -287,14 +287,14 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
  *
  * @param plic A PLIC handle.
  * @param target Target that claimed the IRQ.
- * @param[out] complete_data Previously claimed IRQ data that is used to signal
- * PLIC of the IRQ servicing completion.
+ * @param complete_data Previously claimed IRQ data that is used to signal
+ *        PLIC of the IRQ servicing completion.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
                                         dif_plic_target_t target,
-                                        const dif_plic_irq_id_t *complete_data);
+                                        dif_plic_irq_id_t complete_data);
 
 /**
  * Forces the software interrupt for a particular target.
