@@ -182,3 +182,19 @@ test('sw_silicon_creator_mask_rom_romextimage_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
+    'sw_silicon_creator_mask_rom_sigverify_keys_unittest',
+    sources: [
+      'sigverify_keys.c',
+      'sigverify_keys_unittest.cc',
+      'sigverify.c',
+      'sigverify_mod_exp_ibex.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'mask_rom',
+)
