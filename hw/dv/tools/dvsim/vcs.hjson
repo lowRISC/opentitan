@@ -49,6 +49,8 @@
                //  - Write (deposit) capability on registers and variables
                //  - Force capability on registers, variables, and nets
                "-debug_access+f",
+               // This option is needed for uvm_hdl_*, when it accesses the array under `celldefine
+               "-debug_region=cell+lib",
                // Use this to conditionally compile for VCS (example: LRM interpretations differ
                // across tools).
                "+define+VCS",
