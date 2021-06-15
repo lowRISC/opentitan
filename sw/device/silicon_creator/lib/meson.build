@@ -112,3 +112,20 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+sw_silicon_creator_lib_sigverify_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_sigverify_functest',
+    sources: [
+      'sigverify_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_sigverify,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_sigverify_functest': {
+    'library': sw_silicon_creator_lib_sigverify_functest,
+  }
+}
