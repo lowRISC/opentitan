@@ -18,7 +18,11 @@ module otbn
 
   // Default seed and permutation for URND LFSR
   parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
-  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault
+  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault,
+
+  // Default seed and nonce for scrambling
+  parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
+  parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -46,7 +50,13 @@ module otbn
   input  edn_pkg::edn_rsp_t                          edn_rnd_i,
 
   output edn_pkg::edn_req_t                          edn_urnd_o,
-  input  edn_pkg::edn_rsp_t                          edn_urnd_i
+  input  edn_pkg::edn_rsp_t                          edn_urnd_i,
+
+  // Key request to OTP (running on clk_fixed)
+  input                                              clk_otp_i,
+  input                                              rst_otp_ni,
+  output otp_ctrl_pkg::otbn_otp_key_req_t            otbn_otp_key_o,
+  input  otp_ctrl_pkg::otbn_otp_key_rsp_t            otbn_otp_key_i
 );
 
   import prim_util_pkg::vbits;
@@ -159,22 +169,78 @@ module otbn
   logic [1:0] unused_imem_addr_core_wordbits;
   assign unused_imem_addr_core_wordbits = imem_addr_core[1:0];
 
-  prim_ram_1p_adv #(
+  otp_ctrl_pkg::otbn_key_t   otbn_imem_scramble_key;
+  otp_ctrl_pkg::otbn_nonce_t otbn_imem_scramble_nonce;
+  logic                      otbn_imem_scramble_valid;
+  logic                      otbn_imem_scramble_key_seed_valid;
+
+  otp_ctrl_pkg::otbn_key_t   otbn_dmem_scramble_key;
+  otp_ctrl_pkg::otbn_nonce_t otbn_dmem_scramble_nonce;
+  logic                      otbn_dmem_scramble_valid;
+  logic                      otbn_dmem_scramble_key_seed_valid;
+
+  otbn_scramble_ctrl #(
+    .RndCnstOtbnKey   (RndCnstOtbnKey),
+    .RndCnstOtbnNonce (RndCnstOtbnNonce)
+  ) u_otbn_scramble_ctrl (
+    .clk_i,
+    .rst_ni,
+
+    .clk_otp_i,
+    .rst_otp_ni,
+
+    .otbn_otp_key_o,
+    .otbn_otp_key_i,
+
+    .otbn_dmem_scramble_key_o            (otbn_dmem_scramble_key           ),
+    .otbn_dmem_scramble_nonce_o          (otbn_dmem_scramble_nonce         ),
+    .otbn_dmem_scramble_valid_o          (otbn_dmem_scramble_valid         ),
+    .otbn_dmem_scramble_key_seed_valid_o (otbn_dmem_scramble_key_seed_valid),
+
+    .otbn_imem_scramble_key_o            (otbn_imem_scramble_key           ),
+    .otbn_imem_scramble_nonce_o          (otbn_imem_scramble_nonce         ),
+    .otbn_imem_scramble_valid_o          (otbn_imem_scramble_valid         ),
+    .otbn_imem_scramble_key_seed_valid_o (otbn_imem_scramble_key_seed_valid),
+
+    .otbn_dmem_scramble_new_req_i (1'b0),
+    .otbn_imem_scramble_new_req_i (1'b0)
+  );
+
+  prim_ram_1p_scr #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (39)
+    .DataBitsPerMask (39),
+    .EnableParity    (0),
+    .DiffWidth       (39)
   ) u_imem (
     .clk_i,
-    .rst_ni   (rst_n),
-    .req_i    (imem_req),
-    .write_i  (imem_write),
-    .addr_i   (imem_index),
-    .wdata_i  (imem_wdata),
-    .wmask_i  (imem_wmask),
-    .rdata_o  (imem_rdata),
-    .rvalid_o (imem_rvalid),
-    .rerror_o (),
-    .cfg_i    (ram_cfg_i)
+    .rst_ni      (rst_n),
+
+    .key_valid_i (otbn_imem_scramble_valid),
+    .key_i       (otbn_imem_scramble_key),
+    .nonce_i     (otbn_imem_scramble_nonce),
+
+    .init_seed_i ('0),
+    .init_req_i  (1'b0),
+    .init_ack_o  (),
+
+    .req_i       (imem_req),
+    // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
+    // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
+    // the behaviour we want, read error instead?
+    .gnt_o       (),
+    .write_i     (imem_write),
+    .addr_i      (imem_index),
+    .wdata_i     (imem_wdata),
+    .wmask_i     (imem_wmask),
+    .intg_error_i(1'b0),
+
+    .rdata_o     (imem_rdata),
+    .rvalid_o    (imem_rvalid),
+    .raddr_o     (),
+    .rerror_o    (),
+    .intg_error_o(),
+    .cfg_i       (ram_cfg_i)
   );
 
   // Separate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't
@@ -308,22 +374,41 @@ module otbn
   logic unused_dmem_addr_core_wordbits;
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width           (ExtWLEN),
     .Depth           (DmemSizeWords),
-    .DataBitsPerMask (39)
+    .DataBitsPerMask (39),
+    .EnableParity    (0),
+    .DiffWidth       (39)
   ) u_dmem (
     .clk_i,
-    .rst_ni   (rst_n),
-    .req_i    (dmem_req),
-    .write_i  (dmem_write),
-    .addr_i   (dmem_index),
-    .wdata_i  (dmem_wdata),
-    .wmask_i  (dmem_wmask),
-    .rdata_o  (dmem_rdata),
-    .rvalid_o (dmem_rvalid),
-    .rerror_o (),
-    .cfg_i    (ram_cfg_i)
+    .rst_ni      (rst_n),
+
+    .key_valid_i (otbn_dmem_scramble_valid),
+    .key_i       (otbn_dmem_scramble_key),
+    .nonce_i     (otbn_dmem_scramble_nonce),
+
+    .init_seed_i ('0),
+    .init_req_i  (1'b0),
+    .init_ack_o  (),
+
+    .req_i       (dmem_req),
+    // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
+    // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
+    // the behaviour we want, read error instead?
+    .gnt_o       (),
+    .write_i     (dmem_write),
+    .addr_i      (dmem_index),
+    .wdata_i     (dmem_wdata),
+    .wmask_i     (dmem_wmask),
+    .intg_error_i(1'b0),
+
+    .rdata_o     (dmem_rdata),
+    .rvalid_o    (dmem_rvalid),
+    .raddr_o     (),
+    .intg_error_o(),
+    .rerror_o    (),
+    .cfg_i       (ram_cfg_i)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

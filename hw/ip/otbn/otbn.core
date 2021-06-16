@@ -41,14 +41,16 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:assert
       - lowrisc:prim:util
-      - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
       - lowrisc:ip:otbn_pkg
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:dv:otbn_model
     files:
       - rtl/otbn_reg_pkg.sv
       - rtl/otbn_reg_top.sv
+      - rtl/otbn_scramble_ctrl.sv
       - rtl/otbn.sv
     file_type: systemVerilogSource
 

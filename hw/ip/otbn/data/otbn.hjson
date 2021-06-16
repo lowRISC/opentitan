@@ -4,12 +4,14 @@
 { name: "otbn"
   clock_primary: "clk_i"
   other_clock_list: [
-    "clk_edn_i"
+    "clk_edn_i",
+    "clk_otp_i"
   ],
   reset_primary: "rst_ni",
   other_reset_list: [
-    "rst_edn_ni"
-  ]
+    "rst_edn_ni",
+    "rst_otp_ni"
+  ],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -44,6 +46,22 @@
       randcount: "64",
       randtype:  "perm"
     },
+    { name: "RndCnstOtbnKey",
+      type: "otp_ctrl_pkg::otbn_key_t",
+      desc: '''
+        Compile-time random reset value for IMem/DMem scrambling key.
+      '''
+      randcount: "128",
+      randtype: "data"
+    },
+    { name: "RndCnstOtbnNonce",
+      type: "otp_ctrl_pkg::otbn_nonce_t",
+      desc: '''
+        Compile-time random reset value for IMem/DMem scrambling nonce.
+      '''
+      randcount: "256",
+      randtype: "data"
+    },
   ]
   interrupt_list: [
     { name: "done"
@@ -60,6 +78,14 @@
   ]
 
   inter_signal_list: [
+    // Key request to OTP
+    { struct:  "otbn_otp_key"
+      type:    "req_rsp"
+      name:    "otbn_otp_key"
+      act:     "req"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    },
     // EDN interface for RND
     { struct:  "edn"
       type:    "req_rsp"

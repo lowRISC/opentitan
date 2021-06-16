@@ -389,4 +389,8 @@ package otbn_pkg;
     256'h86c701ecc39d9d483bdcacb5a15340b0988e2336e955ddd0dc01ab17e173726e
   };
 
+  parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnKeyDefault =
+    128'h14e8cecae3040d5e12286bb3cc113298;
+  parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonceDefault =
+    256'hf79780bc735f38434f47570613cabf6490f795a48be7a10d930e0fdd326df627;
 endpackage
