@@ -6,6 +6,7 @@
 '''Script for scrambling a ROM image'''
 
 import argparse
+import sys
 from typing import Dict, List
 
 import hjson  # type: ignore
@@ -466,7 +467,7 @@ class Scrambler:
             scr_chunk.words[phy_addr] = digest_word
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('hjson')
     parser.add_argument('infile', type=argparse.FileType('rb'))
@@ -496,8 +497,27 @@ def main() -> None:
     # Insert the expected hash here to the top 8 words
     scrambler.add_hash(scr_mem)
 
+    # Check for collisions
+    collisions = scr_mem.collisions()
+    if collisions:
+        print('ERROR: This combination of ROM contents and scrambling\n'
+              '       key results in one or more collisions where\n'
+              '       different addresses have the same data.\n'
+              '\n'
+              '       Looks like we\'ve been (very) unlucky with the\n'
+              '       birthday problem. As a work-around, try again after\n'
+              '       generating some different RndCnst* parameters.\n',
+              file=sys.stderr)
+        print('{} colliding addresses:'.format(len(collisions)),
+              file=sys.stderr)
+        for addr0, addr1 in collisions:
+            print('  {:#010x}, {:#010x}'.format(addr0, addr1),
+                  file=sys.stderr)
+        return 1
+
     scr_mem.write_vmem(args.outfile)
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
