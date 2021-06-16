@@ -11,13 +11,28 @@
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the pwrmgr.
+            Smoke test exercising the pwrmgr state transitions.
+
+            - Brings pwrmgr out of POR.
+            - Enables wakeup.
+            - Triggers SW initiated low power transition.
+            - Triggers wakeup.
+            - Enables reset.
+            - Triggers a reset.
+            - Waits for pwrmgr to be out of reset.
 
             **Stimulus**:
-            - TBD
+            - CSR writes to `wakeup_en`, `reset_en`, and `low_power_hint`.
+            - Needs many input pins to line up correctly in order to prevent the
+              pwrmgr from waiting forever.
 
             **Checks**:
-            - TBD
+            - Checks that fast fsm is active checking the CSR `ctrl_cfg_regwen`
+              is set.
+            - Checks that the wakeup and reset causes are as expected reading
+              CSRs `wake_status` and `reset_status`.
+            - Checks the output `pwr_rst_req.reset_cause` matches a low power or
+              reset cause.
             '''
       milestone: V1
       tests: ["pwrmgr_smoke"]
