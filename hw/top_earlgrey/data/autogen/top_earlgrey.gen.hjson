@@ -106,6 +106,7 @@
           clk_main_hmac: main
           clk_main_kmac: main
           clk_main_otbn: main
+          clk_io_div4_otbn: io_div4
         }
       }
       {
@@ -1484,6 +1485,8 @@
           width: 1
           default: "'0"
           inst_name: otp_ctrl
+          end_idx: -1
+          top_signame: otp_ctrl_otbn_otp_key
           index: -1
         }
         {
@@ -2641,12 +2644,12 @@
           struct: logic
           type: uni
           act: rcv
-          width: 4
+          width: 5
           inst_name: clkmgr_aon
           default: ""
           package: ""
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 4
+          top_type: partial-one-to-N
           top_signame: clkmgr_aon_idle
           index: -1
         }
@@ -5087,17 +5090,20 @@
       {
         clk_i: main
         clk_edn_i: main
+        clk_otp_i: io_div4
       }
       clock_group: trans
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+        rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_otbn
         clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
       }
       domain: "0"
       param_list:
@@ -5138,9 +5144,41 @@
           default: 0xc12f0e2b9ea5a371fd0f691ca53bf257b7531e119cef75b206a2ca62f4d02ee4a4029144fe8521d5f36637ee6805c7a
           randwidth: 384
         }
+        {
+          name: RndCnstOtbnKey
+          desc: Compile-time random reset value for IMem/DMem scrambling key.
+          type: otp_ctrl_pkg::otbn_key_t
+          randcount: 128
+          randtype: data
+          name_top: RndCnstOtbnOtbnKey
+          default: 0x2fb69c3aab936b415a0d6e7185eaa2e0
+          randwidth: 128
+        }
+        {
+          name: RndCnstOtbnNonce
+          desc: Compile-time random reset value for IMem/DMem scrambling nonce.
+          type: otp_ctrl_pkg::otbn_nonce_t
+          randcount: 256
+          randtype: data
+          name_top: RndCnstOtbnOtbnNonce
+          default: 0xe58a331208f189de6265edc8fde06db0ce44cbff5e09e6dd3ae54e9e45da6e66
+          randwidth: 256
+        }
       ]
       inter_signal_list:
       [
+        {
+          name: otbn_otp_key
+          struct: otbn_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otbn
+          top_signame: otp_ctrl_otbn_otp_key
+          index: -1
+        }
         {
           name: edn_rnd
           struct: edn
@@ -5247,7 +5285,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrlScrNonce
-          default: 0x5a0d6e7185eaa2e0
+          default: 0xf678e7d227881bcf
           randwidth: 64
         }
         {
@@ -5257,7 +5295,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrlScrKey
-          default: 0x3ae54e9e45da6e662fb69c3aab936b41
+          default: 0xd38bd8674f4b542dfcc581b66ae11d33
           randwidth: 128
         }
       ]
@@ -5961,6 +5999,10 @@
       edn1.edn:
       [
         otbn.edn_rnd
+      ]
+      otp_ctrl.otbn_otp_key:
+      [
+        otbn.otbn_otp_key
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -12599,6 +12641,8 @@
         width: 1
         default: "'0"
         inst_name: otp_ctrl
+        end_idx: -1
+        top_signame: otp_ctrl_otbn_otp_key
         index: -1
       }
       {
@@ -13536,12 +13580,12 @@
         struct: logic
         type: uni
         act: rcv
-        width: 4
+        width: 5
         inst_name: clkmgr_aon
         default: ""
         package: ""
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 4
+        top_type: partial-one-to-N
         top_signame: clkmgr_aon_idle
         index: -1
       }
@@ -14960,6 +15004,18 @@
         default: ""
         end_idx: -1
         top_signame: sram_ctrl_main_tl
+        index: -1
+      }
+      {
+        name: otbn_otp_key
+        struct: otbn_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otbn
+        top_signame: otp_ctrl_otbn_otp_key
         index: -1
       }
       {
@@ -17245,6 +17301,28 @@
       }
       {
         package: otp_ctrl_pkg
+        struct: otbn_otp_key_req
+        signame: otp_ctrl_otbn_otp_key_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otbn_otp_key_rsp
+        signame: otp_ctrl_otbn_otp_key_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
         struct: otp_keymgr_key
         signame: otp_ctrl_otp_keymgr_key
         width: 1
@@ -17291,9 +17369,9 @@
         package: ""
         struct: logic
         signame: clkmgr_aon_idle
-        width: 4
+        width: 5
         type: uni
-        end_idx: -1
+        end_idx: 4
         act: rcv
         suffix: ""
         default: "'0"

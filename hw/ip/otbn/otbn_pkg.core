@@ -9,6 +9,7 @@ filesets:
   files_pkg:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:ip:otp_ctrl_pkg
     files:
       - rtl/otbn_pkg.sv
     file_type: systemVerilogSource

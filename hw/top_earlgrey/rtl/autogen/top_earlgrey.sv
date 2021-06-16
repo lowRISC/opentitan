@@ -509,11 +509,13 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t [6:0] edn0_edn_rsp;
   edn_pkg::edn_req_t [6:0] edn1_edn_req;
   edn_pkg::edn_rsp_t [6:0] edn1_edn_rsp;
+  otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
+  otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
-  logic [3:0] clkmgr_aon_idle;
+  logic [4:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;
@@ -1614,8 +1616,8 @@ module top_earlgrey #(
       .flash_otp_key_o(flash_ctrl_otp_rsp),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
-      .otbn_otp_key_i('0),
-      .otbn_otp_key_o(),
+      .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
+      .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
       .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
@@ -2415,7 +2417,9 @@ module top_earlgrey #(
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndLfsrSeed(RndCnstOtbnUrndLfsrSeed),
-    .RndCnstUrndChunkLfsrPerm(RndCnstOtbnUrndChunkLfsrPerm)
+    .RndCnstUrndChunkLfsrPerm(RndCnstOtbnUrndChunkLfsrPerm),
+    .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
+    .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (
 
       // Interrupt
@@ -2426,6 +2430,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[53:52] ),
 
       // Inter-module signals
+      .otbn_otp_key_o(otp_ctrl_otbn_otp_key_req),
+      .otbn_otp_key_i(otp_ctrl_otbn_otp_key_rsp),
       .edn_rnd_o(edn1_edn_req[0]),
       .edn_rnd_i(edn1_edn_rsp[0]),
       .edn_urnd_o(edn0_edn_req[6]),
@@ -2438,8 +2444,10 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_otbn),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_otbn),
+      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_otbn),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   rom_ctrl #(
