@@ -282,8 +282,7 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     join
 
     // issue hard reset for fatal alert to recover
-    apply_reset("HARD");
-    #1ps; // avoid sending item while reset is deasserting
+    dut_init("HARD");
   end
 endtask
 `undef create_tl_access_error_case
