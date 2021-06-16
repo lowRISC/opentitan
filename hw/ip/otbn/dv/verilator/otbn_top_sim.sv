@@ -18,6 +18,11 @@ module otbn_top_sim (
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
+  // Fixed key and nonce for scrambling in verilator environment
+  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  // 320-bit nonce has 0s in top bits as nonce from OTP is only 256-bit for now
+  localparam logic [319:0] TestScrambleNonce = 320'h19286173144131c12c2607f5e72aca1fb72adea0a4ff82b9f88c2578fa4cd123;
+
   logic      otbn_done_d, otbn_done_q;
   err_bits_t otbn_err_bits_d, otbn_err_bits_q;
   logic      otbn_start;
@@ -31,7 +36,6 @@ module otbn_top_sim (
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [38:0]              imem_rdata;
   logic                     imem_rvalid;
-  logic [1:0]               imem_rerror_vec;
   logic                     imem_rerror;
 
   // Data memory (DMEM) signals
@@ -42,7 +46,6 @@ module otbn_top_sim (
   logic [ExtWLEN-1:0]       dmem_wmask;
   logic [ExtWLEN-1:0]       dmem_rdata;
   logic                     dmem_rvalid;
-  logic [1:0]               dmem_rerror_vec;
   logic                     dmem_rerror;
 
   // Entropy Distribution Network (EDN)
@@ -165,26 +168,41 @@ module otbn_top_sim (
   assign dmem_index = dmem_addr[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
   assign unused_dmem_addr = dmem_addr[DmemAddrWidth-DmemIndexWidth-1:0];
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width           ( ExtWLEN       ),
     .Depth           ( DmemSizeWords ),
-    .DataBitsPerMask ( 39            )
+    .DataBitsPerMask ( 39            ),
+    .EnableParity    ( 0             )
   ) u_dmem (
-    .clk_i    ( IO_CLK          ),
-    .rst_ni   ( IO_RST_N        ),
-    .req_i    ( dmem_req        ),
-    .write_i  ( dmem_write      ),
-    .addr_i   ( dmem_index      ),
-    .wdata_i  ( dmem_wdata      ),
-    .wmask_i  ( dmem_wmask      ),
-    .rdata_o  ( dmem_rdata      ),
-    .rvalid_o ( dmem_rvalid     ),
-    .rerror_o ( dmem_rerror_vec ),
-    .cfg_i    ( '0              )
+    .clk_i        ( IO_CLK            ),
+    .rst_ni       ( IO_RST_N          ),
+
+    .key_valid_i  ( 1'b1              ),
+    .key_i        ( TestScrambleKey   ),
+    .nonce_i      ( TestScrambleNonce ),
+
+    .init_seed_i  ( '0                ),
+    .init_req_i   ( 1'b0              ),
+    .init_ack_o   (                   ),
+
+    .req_i        ( dmem_req          ),
+    .gnt_o        (                   ),
+    .write_i      ( dmem_write        ),
+    .addr_i       ( dmem_index        ),
+    .wdata_i      ( dmem_wdata        ),
+    .wmask_i      ( dmem_wmask        ),
+    .intg_error_i ( 1'b0              ),
+
+    .rdata_o      ( dmem_rdata        ),
+    .rvalid_o     ( dmem_rvalid       ),
+    .raddr_o      (                   ),
+    .intg_error_o (                   ),
+    .rerror_o     (                   ),
+    .cfg_i        ( '0                )
   );
 
-  // Combine uncorrectable / correctable errors. See identical code in otbn.sv for details.
-  assign dmem_rerror = |dmem_rerror_vec;
+  // No integrity errors in Verilator testbench
+  assign dmem_rerror = 1'b0;
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int ImemIndexWidth = prim_util_pkg::vbits(ImemSizeWords);
@@ -195,26 +213,41 @@ module otbn_top_sim (
   assign imem_index = imem_addr[ImemAddrWidth-1:2];
   assign unused_imem_addr = imem_addr[1:0];
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width           ( 39            ),
     .Depth           ( ImemSizeWords ),
-    .DataBitsPerMask ( 39            )
+    .DataBitsPerMask ( 39            ),
+    .EnableParity    ( 0             )
   ) u_imem (
-    .clk_i    ( IO_CLK          ),
-    .rst_ni   ( IO_RST_N        ),
-    .req_i    ( imem_req        ),
-    .write_i  ( 1'b0            ),
-    .addr_i   ( imem_index      ),
-    .wdata_i  ( '0              ),
-    .wmask_i  ( '0              ),
-    .rdata_o  ( imem_rdata      ),
-    .rvalid_o ( imem_rvalid     ),
-    .rerror_o ( imem_rerror_vec ),
-    .cfg_i    ( '0              )
+    .clk_i        ( IO_CLK                  ),
+    .rst_ni       ( IO_RST_N                ),
+
+    .key_valid_i  ( 1'b1                    ),
+    .key_i        ( TestScrambleKey         ),
+    .nonce_i      ( TestScrambleNonce[63:0] ),
+
+    .init_seed_i  ( '0                      ),
+    .init_req_i   ( 1'b0                    ),
+    .init_ack_o   (                         ),
+
+    .req_i        ( imem_req                ),
+    .gnt_o        (                         ),
+    .write_i      ( 1'b0                    ),
+    .addr_i       ( imem_index              ),
+    .wdata_i      ( '0                      ),
+    .wmask_i      ( '0                      ),
+    .intg_error_i ( 1'b0                    ),
+
+    .rdata_o      ( imem_rdata              ),
+    .rvalid_o     ( imem_rvalid             ),
+    .raddr_o      (                         ),
+    .rerror_o     (                         ),
+    .intg_error_o (                         ),
+    .cfg_i        ( '0                      )
   );
 
-  // Combine uncorrectable / correctable errors. See identical code in otbn.sv for details.
-  assign imem_rerror = |imem_rerror_vec;
+  // No integrity errors in Verilator testbench
+  assign imem_rerror = 1'b0;
 
   // When OTBN is done let a few more cycles run then finish simulation
   logic [1:0] finish_counter;
