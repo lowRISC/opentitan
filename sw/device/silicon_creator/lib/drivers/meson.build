@@ -246,3 +246,18 @@ mask_rom_tests += {
     'library': sw_silicon_creator_lib_driver_alert_functest,
   }
 }
+
+# Mask ROM lifecycle driver
+sw_silicon_creator_lib_driver_lifecycle = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_lifecycle',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      'lifecycle.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_bitfield,
+    ],
+  ),
+)
