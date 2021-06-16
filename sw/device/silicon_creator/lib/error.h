@@ -33,6 +33,7 @@ enum module_ {
   kModuleRomextimage = 0x4552,   // ASCII "RE".
   kModuleInterrupt = 0x5249,     // ASCII "IR".
   kModuleEpmp = 0x5045,          // ASCII "EP",
+  kModuleOtp = 0x504f,           // ASCII "OP".
 };
 
 /**
@@ -79,6 +80,7 @@ enum module_ {
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
+  X(kErrorOtpBadAlignment,            ERROR_(1, kModuleOtp, kInvalidArgument)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

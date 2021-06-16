@@ -6,28 +6,40 @@
 
 #include <stddef.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"  // Generated.
 
-uint32_t otp_read32(const otp_t *otp, uint32_t address) {
-  return mmio_region_read32(otp->base_addr,
-                            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address);
+enum { kBase = TOP_EARLGREY_OTP_CTRL_BASE_ADDR };
+
+uint32_t otp_read32(uint32_t address) {
+  return sec_mmio_read32(kBase + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address);
 }
 
-uint64_t otp_read64(const otp_t *otp, uint32_t address) {
-  ptrdiff_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
-  uint64_t value =
-      mmio_region_read32(otp->base_addr, reg_offset + sizeof(uint32_t));
+uint64_t otp_read64(uint32_t address) {
+  uint32_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
+  uint64_t value = sec_mmio_read32(kBase + reg_offset + sizeof(uint32_t));
   value <<= 32;
-  value |= mmio_region_read32(otp->base_addr, reg_offset);
+  value |= sec_mmio_read32(kBase + reg_offset);
 
   return value;
 }
 
-void otp_read(const otp_t *otp, uint32_t address, void *data, size_t len) {
-  ptrdiff_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
-  mmio_region_memcpy_from_mmio32(otp->base_addr, reg_offset, data, len);
+rom_error_t otp_read(uint32_t address, void *data, size_t len) {
+  // TODO Update to use alignment utility functions.
+  // https://github.com/lowRISC/opentitan/issues/6112
+  if (address % alignof(uint32_t) != 0 || len % sizeof(uint32_t) != 0) {
+    return kErrorOtpBadAlignment;
+  }
+
+  uint32_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
+  for (size_t i = 0; i < len; i += sizeof(uint32_t)) {
+    uint32_t word = sec_mmio_read32(kBase + reg_offset + i);
+    memcpy(data + i, &word, sizeof(uint32_t));
+  }
+
+  return kErrorOk;
 }

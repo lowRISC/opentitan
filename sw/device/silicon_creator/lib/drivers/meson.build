@@ -173,7 +173,7 @@ sw_silicon_creator_lib_driver_otp = declare_dependency(
       'otp.c',
     ],
     dependencies: [
-      sw_lib_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
     ],
   ),
 )
@@ -187,12 +187,10 @@ test('sw_silicon_creator_lib_driver_otp_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
     ],
     native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-    ),
+  ),
   suite: 'mask_rom',
 )
 
