@@ -24,13 +24,14 @@ class Ecc32MemArea : public MemArea {
 
   void LoadVmem(const std::string &path) const override;
 
- private:
+ protected:
   void WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
-                   const std::vector<uint8_t> &data,
-                   size_t start_idx) const override;
+                   const std::vector<uint8_t> &data, size_t start_idx,
+                   uint32_t dst_word) const override;
 
   void ReadBuffer(std::vector<uint8_t> &data,
-                  const uint8_t buf[SV_MEM_WIDTH_BYTES]) const override;
+                  const uint8_t buf[SV_MEM_WIDTH_BYTES],
+                  uint32_t src_word) const override;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_ECC32_MEM_AREA_H_

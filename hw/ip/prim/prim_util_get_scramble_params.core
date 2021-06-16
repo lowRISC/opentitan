@@ -1,0 +1,17 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:util_get_scramble_params"
+description: "DPI functions to snoop scramble key and nonce for simulation"
+filesets:
+  files_rtl:
+    files:
+      - rtl/prim_util_get_scramble_params.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
