@@ -11702,6 +11702,20 @@
       module_name: sensor_ctrl_aon
     }
     {
+      name: sensor_ctrl_aon_recov_ot4
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot5
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
       name: sram_ctrl_ret_aon_fatal_intg_error
       width: 1
       type: alert

@@ -7,7 +7,7 @@
 package sensor_ctrl_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 11;
+  parameter int NumAlerts = 13;
   parameter int NumIoRails = 2;
 
   // Address widths within the block
@@ -62,6 +62,14 @@ package sensor_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } recov_ot3;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot4;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot5;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -95,15 +103,15 @@ package sensor_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [76:55]
-    sensor_ctrl_reg2hw_ack_mode_mreg_t [10:0] ack_mode; // [54:33]
-    sensor_ctrl_reg2hw_alert_trig_mreg_t [10:0] alert_trig; // [32:22]
-    sensor_ctrl_reg2hw_alert_state_mreg_t [10:0] alert_state; // [21:0]
+    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [90:65]
+    sensor_ctrl_reg2hw_ack_mode_mreg_t [12:0] ack_mode; // [64:39]
+    sensor_ctrl_reg2hw_alert_trig_mreg_t [12:0] alert_trig; // [38:26]
+    sensor_ctrl_reg2hw_alert_state_mreg_t [12:0] alert_state; // [25:0]
   } sensor_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    sensor_ctrl_hw2reg_alert_state_mreg_t [10:0] alert_state; // [26:5]
+    sensor_ctrl_hw2reg_alert_state_mreg_t [12:0] alert_state; // [30:5]
     sensor_ctrl_hw2reg_status_reg_t status; // [4:0]
   } sensor_ctrl_hw2reg_t;
 
@@ -116,7 +124,7 @@ package sensor_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields
-  parameter logic [10:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 11'h 0;
+  parameter logic [12:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 13'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_AS_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_CG_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_GD_RESVAL = 1'h 0;
@@ -128,6 +136,8 @@ package sensor_ctrl_reg_pkg;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT1_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT2_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT3_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT4_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT5_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {
@@ -143,7 +153,7 @@ package sensor_ctrl_reg_pkg;
   parameter logic [3:0] SENSOR_CTRL_PERMIT [6] = '{
     4'b 0011, // index[0] SENSOR_CTRL_ALERT_TEST
     4'b 0001, // index[1] SENSOR_CTRL_CFG_REGWEN
-    4'b 0111, // index[2] SENSOR_CTRL_ACK_MODE
+    4'b 1111, // index[2] SENSOR_CTRL_ACK_MODE
     4'b 0011, // index[3] SENSOR_CTRL_ALERT_TRIG
     4'b 0011, // index[4] SENSOR_CTRL_ALERT_STATE
     4'b 0001  // index[5] SENSOR_CTRL_STATUS
