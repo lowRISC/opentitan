@@ -52,7 +52,7 @@ module prim_fifo_async #(
   assign fifo_incr_wptr = wvalid_i & wready_o;
 
   // decimal version
-  assign fifo_wptr_d = fifo_wptr_q + PTR_WIDTH'(1);
+  assign fifo_wptr_d = fifo_wptr_q + PTR_WIDTH'(1'b1);
 
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni) begin
     if (!rst_wr_ni) begin
@@ -85,7 +85,7 @@ module prim_fifo_async #(
   assign fifo_incr_rptr = rvalid_o & rready_i;
 
   // decimal version
-  assign fifo_rptr_d = fifo_rptr_q + PTR_WIDTH'(1);
+  assign fifo_rptr_d = fifo_rptr_q + PTR_WIDTH'(1'b1);
 
   always_ff @(posedge clk_rd_i or negedge rst_rd_ni) begin
     if (!rst_rd_ni) begin
@@ -124,8 +124,10 @@ module prim_fifo_async #(
   // Empty / Full //
   //////////////////
 
-  assign full_wclk  = (fifo_wptr_q == (fifo_rptr_sync_q ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
-  assign full_rclk  = (fifo_wptr_sync_combi == (fifo_rptr_q ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
+  logic [PTR_WIDTH-1:0] xor_mask;
+  assign xor_mask   =  PTR_WIDTH'(1'b1) << (PTR_WIDTH-1);
+  assign full_wclk  = (fifo_wptr_q == (fifo_rptr_sync_q ^ xor_mask));
+  assign full_rclk  = (fifo_wptr_sync_combi == (fifo_rptr_q ^ xor_mask));
   assign empty_rclk = (fifo_wptr_sync_combi ==  fifo_rptr_q);
 
   if (Depth > 1) begin : g_depth_calc
@@ -210,32 +212,42 @@ module prim_fifo_async #(
 
     function automatic [PTR_WIDTH-1:0] dec2gray(input logic [PTR_WIDTH-1:0] decval);
       logic [PTR_WIDTH-1:0] decval_sub;
-      logic [PTR_WIDTH-2:0] decval_in;
+      logic [PTR_WIDTH-1:0] decval_in;
       logic                 unused_decval_msb;
 
       decval_sub = (PTR_WIDTH)'(Depth) - {1'b0, decval[PTR_WIDTH-2:0]} - 1'b1;
 
-      {unused_decval_msb, decval_in} = decval[PTR_WIDTH-1] ? decval_sub : decval;
-      // Was done in two assigns for low bits and top bit
-      // but that generates a (bogus) verilator warning, so do in one assign
-      dec2gray = {decval[PTR_WIDTH-1],
-                  {1'b0,decval_in[PTR_WIDTH-2:1]} ^ decval_in[PTR_WIDTH-2:0]};
+      decval_in = decval[PTR_WIDTH-1] ? decval_sub : decval;
+
+      // We do not care about the MSB, hence we mask it out
+      unused_decval_msb = decval_in[PTR_WIDTH-1];
+      decval_in[PTR_WIDTH-1] = 1'b0;
+
+      // Perform the XOR conversion
+      dec2gray = decval_in;
+      dec2gray ^= (decval_in >> 1);
+
+      // Override the MSB
+      dec2gray[PTR_WIDTH-1] = decval[PTR_WIDTH-1];
     endfunction
 
     // Algorithm walks up from 0..N-1 then flips the upper bit and walks down from N-1 to 0.
     function automatic [PTR_WIDTH-1:0] gray2dec(input logic [PTR_WIDTH-1:0] grayval);
-      logic [PTR_WIDTH-2:0] dec_tmp, dec_tmp_sub;
+      logic [PTR_WIDTH-1:0] dec_tmp, dec_tmp_sub;
       logic                 unused_decsub_msb;
 
-      dec_tmp[PTR_WIDTH-2] = grayval[PTR_WIDTH-2];
-      for (int i = PTR_WIDTH-3; i >= 0; i--) begin
+      dec_tmp = '0;
+      for (int i = PTR_WIDTH-2; i >= 0; i--) begin
         dec_tmp[i] = dec_tmp[i+1] ^ grayval[i];
       end
-      {unused_decsub_msb, dec_tmp_sub} = (PTR_WIDTH-1)'(Depth) - {1'b0, dec_tmp} - 1'b1;
+      dec_tmp_sub = (PTR_WIDTH-1)'(Depth) - dec_tmp - 1'b1;
       if (grayval[PTR_WIDTH-1]) begin
-        gray2dec = {1'b1, dec_tmp_sub};
+        gray2dec = dec_tmp_sub;
+        // Override MSB
+        gray2dec[PTR_WIDTH-1] = 1'b1;
+        unused_decsub_msb = dec_tmp_sub[PTR_WIDTH-1];
       end else begin
-        gray2dec = {1'b0, dec_tmp};
+        gray2dec = dec_tmp;
       end
     endfunction
 
