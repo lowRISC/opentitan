@@ -14,8 +14,8 @@ module usbdev_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [1],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [1],
+  output tlul_pkg::tl_h2d_t tl_win_o,
+  input  tlul_pkg::tl_d2h_t tl_win_i,
 
   // To HW
   output usbdev_reg_pkg::usbdev_reg2hw_t reg2hw, // Write
@@ -89,8 +89,8 @@ module usbdev_reg_top (
   assign tl_reg_h2d = tl_socket_h2d[1];
   assign tl_socket_d2h[1] = tl_reg_d2h;
 
-  assign tl_win_o[0] = tl_socket_h2d[0];
-  assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i;
 
   // Create Socket_1n
   tlul_socket_1n #(

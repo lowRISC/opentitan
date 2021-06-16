@@ -87,8 +87,8 @@ module rom_ctrl
 
   // TL interface ==============================================================
 
-  tlul_pkg::tl_h2d_t tl_rom_h2d [1];
-  tlul_pkg::tl_d2h_t tl_rom_d2h [1];
+  tlul_pkg::tl_h2d_t tl_rom_h2d;
+  tlul_pkg::tl_d2h_t tl_rom_d2h;
 
   logic  rom_reg_integrity_error;
 
@@ -121,8 +121,8 @@ module rom_ctrl
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
 
-    .tl_i         (tl_rom_h2d[0]),
-    .tl_o         (tl_rom_d2h[0]),
+    .tl_i         (tl_rom_h2d),
+    .tl_o         (tl_rom_d2h),
     .en_ifetch_i  (tlul_pkg::InstrEn),
     .req_o        (bus_rom_req),
     .req_type_o   (),

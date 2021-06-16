@@ -66,8 +66,8 @@ module spi_device
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t tl_sram_h2d [1];
-  tlul_pkg::tl_d2h_t tl_sram_d2h [1];
+  tlul_pkg::tl_h2d_t tl_sram_h2d;
+  tlul_pkg::tl_d2h_t tl_sram_d2h;
 
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
   logic              sram_clk;
@@ -899,8 +899,8 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .tl_i        (tl_sram_h2d [0]),
-    .tl_o        (tl_sram_d2h [0]),
+    .tl_i        (tl_sram_h2d),
+    .tl_o        (tl_sram_d2h),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (mem_a_req),
     .req_type_o  (),

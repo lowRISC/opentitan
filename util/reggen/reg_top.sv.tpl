@@ -26,6 +26,8 @@
   reg2hw_t = gen_rtl.get_iface_tx_type(block, if_name, False)
   hw2reg_t = gen_rtl.get_iface_tx_type(block, if_name, True)
 
+  win_array_decl = f'  [{num_wins}]' if num_wins > 1 else ''
+
   # Calculate whether we're going to need an AW parameter. We use it if there
   # are any registers (obviously). We also use it if there are any windows that
   # don't start at zero and end at 1 << addr_width (see the "addr_checks"
@@ -52,8 +54,8 @@ module ${mod_name} (
 % if num_wins != 0:
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [${num_wins}],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [${num_wins}],
+  output tlul_pkg::tl_h2d_t tl_win_o${win_array_decl},
+  input  tlul_pkg::tl_d2h_t tl_win_i${win_array_decl},
 
 % endif
   // To HW
@@ -134,8 +136,8 @@ module ${mod_name} (
   assign tl_reg_h2d = tl_i;
   assign tl_o_pre   = tl_reg_d2h;
   % else:
-  assign tl_win_o[0] = tl_i;
-  assign tl_o_pre    = tl_win_i[0];
+  assign tl_win_o = tl_i;
+  assign tl_o_pre = tl_win_i;
   % endif
 % else:
   tlul_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
@@ -150,7 +152,10 @@ module ${mod_name} (
 
   % endif
   % for i,t in enumerate(rb.windows):
-  assign tl_win_o[${i}] = tl_socket_h2d[${i}];
+<%
+      win_suff = f'[{i}]' if num_wins > 1 else ''
+%>\
+  assign tl_win_o${win_suff} = tl_socket_h2d[${i}];
     % if common_data_intg_gen == 0 and rb.windows[i].data_intg_passthru == False:
     ## If there are multiple windows, and not every window has data integrity
     ## passthrough, we must generate data integrity for it here.
@@ -158,11 +163,11 @@ module ${mod_name} (
     .EnableRspIntgGen(0),
     .EnableDataIntgGen(1)
   ) u_win${i}_data_intg_gen (
-    .tl_i(tl_win_i[${i}]),
+    .tl_i(tl_win_i${win_suff}),
     .tl_o(tl_socket_d2h[${i}])
   );
     % else:
-  assign tl_socket_d2h[${i}] = tl_win_i[${i}];
+  assign tl_socket_d2h[${i}] = tl_win_i${win_suff};
     % endif
   % endfor
 
