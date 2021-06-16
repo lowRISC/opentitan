@@ -4,6 +4,7 @@
 {
   name: "spi_host"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      // TODO: comment out for V2
                      //"hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
