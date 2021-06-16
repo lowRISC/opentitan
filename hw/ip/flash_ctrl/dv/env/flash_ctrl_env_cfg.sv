@@ -84,14 +84,23 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   endfunction : flash_mem_bkdr_read
 
   // Writes the flash mem contents via backdoor.
-  // The addr arg need not be word aligned- its the same addr programmed into the `control` CSR.
+  //
+  // The addr need not be bus word aligned, Its the same addr programmed into the `control` CSR.
+  // The data queue is sized for the bus word.
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_write(flash_op_t flash_op,
                                              flash_mem_init_e scheme,
-                                             logic [flash_ctrl_pkg::DataWidth-1:0] data[$] = {});
+                                             logic [TL_DW-1:0] data[$] = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
-    logic [flash_ctrl_pkg::DataWidth-1:0] wr_data;
-    int num_words;
+    logic [TL_DW-1:0] wr_data;
+
+    // Randomize the lower half-word (if Xs) if the first half-word written in the below loop is
+    // corresponding upper half-word.
+    if (addr_attrs.bank_addr[flash_ctrl_pkg::DataByteWidth-1]) begin
+      _randomize_uninitialized_half_word(.partition(flash_op.partition), .bank(addr_attrs.bank),
+                                         .addr(addr_attrs.word_addr));
+    end
+
     case (scheme)
       FlashMemInitCustom: begin
         flash_op.num_words = data.size();
@@ -106,24 +115,45 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
         wr_data = {flash_ctrl_pkg::DataWidth{1'bx}};
       end
     endcase
-    // If start address is the 32 MSBs half word of some 64bits word and num_words is even, an
-    //  additional iteration is required to write all required words.
-    num_words = (addr_attrs.is_start_addr_msb && (flash_op.num_words % 2 == 0)) ?
-                    flash_op.num_words + 1 : flash_op.num_words;
-    for (int i = 0; i < num_words; i += 2) begin
-      logic [flash_ctrl_pkg::DataWidth-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
-          (scheme == FlashMemInitRandomize) ? $urandom : wr_data;
 
-      mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write64(addr_attrs.full64_bank_addr,
-                                                                   loc_data);
+    for (int i = 0; i < flash_op.num_words; i++) begin
+      logic [TL_DW-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
+          (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
+
+      mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write32(addr_attrs.bank_addr, loc_data);
       `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: {%s} = 0x%0h", addr_attrs.sprint(),
                                 loc_data), UVM_MEDIUM)
-      addr_attrs.incr(flash_ctrl_env_pkg::FlashBankBytesPerWord);
+      addr_attrs.incr(TL_DBW);
+    end
+
+    // Randomize the upper half-word (if Xs) if the last word written in the above loop is
+    // corresponding lower half-word.
+    if (addr_attrs.bank_addr[flash_ctrl_pkg::DataByteWidth-1]) begin
+      _randomize_uninitialized_half_word(.partition(flash_op.partition), .bank(addr_attrs.bank),
+                                         .addr(addr_attrs.bank_addr));
     end
   endfunction : flash_mem_bkdr_write
 
+  // Helper function that randomizes the half-word at the given address if unknown.
+  //
+  // When the 'other' flash half-word is being written by the flash_mem_bkdr_write() method, the
+  // half-word at the given address needs to also be updated, of the data at that address is
+  // unknown. This is needed because the flash_ctrl RTL internally fetches full words. This method
+  // randomizes the data at the given address via backdoor.
+  function void _randomize_uninitialized_half_word(flash_dv_part_e partition, uint bank,
+                                                   bit [TL_AW-1:0] addr);
+    logic [TL_DW-1:0] data = mem_bkdr_util_h[partition][bank].read32(addr);
+    if ($isunknown(data)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+      `uvm_info(`gfn, $sformatf("Data at 0x%0h is Xs, writing random 0x%0h", addr, data), UVM_HIGH)
+      mem_bkdr_util_h[partition][bank].write32(addr, data);
+    end
+  endfunction
+
   // Checks flash mem contents via backdoor.
-  // The addr arg need not be word aligned- its the same addr programmed into the `control` CSR.
+  //
+  // The addr need not be bus word aligned. Its the same addr programmed into the `control` CSR.
+  // The exp data queue is sized for the bus word.
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
                                                   const ref bit [TL_DW-1:0] exp_data[$]);
@@ -134,7 +164,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     end
   endfunction : flash_mem_bkdr_read_check
 
-  // Ensure that the flash page / bank has indeed been erased.
+  // Verifies that the flash page / bank has indeed been erased.
   virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op);
     flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
     bit [TL_AW-1:0]         erase_check_addr;
