@@ -34,6 +34,8 @@
               - If the hint disables it but the unit is busy, the clock remains
                 active.
               - If the hint disables it and the unit is idle, the clock stops.
+            - For transactional units the CSR `clk_hints_status` is checked
+              to correspond to `clk_hints` once the units are idle.
             '''
       milestone: V1
       tests: ["clkmgr_smoke"]
@@ -61,12 +63,19 @@
       name: trans_enables
       desc: '''
             Transactional unit clocks are disabled if they are not busy and
-            their `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
+            their CSR `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
             and `scanmode_i` is not `lc_ctrl_pkg::On`.
-            This test randomize `ip_clk_en`, the initial setting of `idle_i`
-            and `clk_hints`, and flips any bit in `clk_hints`. If the
-            corresponding unit is not idle it waits some cycles and clears its
-            `idle_i` bit.
+            This test randomizes `ip_clk_en`, the initial setting of `idle_i`
+            and the desired value of `clk_hints`. Each round performs this
+            sequence:
+            - Writes the desired value to CSR `clk_hints` and checks that the
+              CSR `clk_hints_status` reflects CSR `clk_hints` except for the
+              units not-idle.
+            - Marks all units as idle, and checks that `csr_hints_status`
+              matches `clk_hints`.
+            - Writes `clk_hints` to all ones and checks that `csr_hints_status`
+              is all ones.
+            - Writes `clk_hints` with its reset value.
 
             **Checks**:
             - SVA assertions for transactional unit clocks described in
@@ -98,14 +107,48 @@
             - Setting `scanmode_i`.
 
             **Checks**:
-            - SVA assertions:
-              - `lc_clk_byp_req_i == lc_ctrl_pkg::On` causes
-                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
-              - `extclk_sel == lc_ctrl_pkg::On` and
-                `lc_dft_en_i == lc_ctrl_pkg::On` causes
-                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
-              - `ast_clk_byp_ack_i == lc_ctrl_pkg::On` causes the divided
-                clocks to ramp up unless `scanmode_i == lc_ctrl_pkg::On`.
+            Clock divider checks: since `scanmode_i` is asynchronous the checks
+            are performed in behavioral code in the scoreboard; SVA assertions
+            will be added, conditioned on scanmode being off.
+            - When the external clock is selected (and not defeated by
+              `scanmode_i` for scoreboard checks):
+              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
+                 output.
+              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
+                 output at half its frequency.
+            - When the external clock is not selected or division is defeated:
+              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
+                output at half its frequency.
+              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
+                 output at a quarter of its frequency.
+            LC / AST handshake:
+            - When the external clock functionality is triggered the
+              `ast_clk_byp_req_o` output pin is set to `lc_ctrl_pkg::On`.
+            - When `ast_clk_byp_ack_i` is set to `lc_ctrl_pkg::On` in response
+              to a corresponding request:
+              - The clock dividers are stepped down, unless defeated by
+                 `scanmode_i` being `lc_ctrl_pkg::On`.
+             - If the initial request was due to the assertion of the
+               `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
+               `lc_ctrl_pkg::On`.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: jitter
+      desc: '''
+            This tests the jitter functionality.
+
+            The jitter functionality is implemented by the AST block,
+            but controlled by the `jitter` CSR in this block. This CSR
+            directly drives the `jitter_en_o` output pin.
+
+            **Stimulus**:
+            - CSR write to `jitter`.
+
+            **Check**:
+            - The `jitter_en_o` output pin reflects the `jitter` CSR.
             '''
       milestone: V2
       tests: ["clkmgr_extclk"]
@@ -137,6 +180,22 @@
 
             FIXME This is collected in an array, one instance for each clock,
             but the dvsim coverage flow doesn't yet support arrays.
+            '''
+    }
+    {
+      name: extclk_cg
+      desc: '''
+            Collects coverage for the external clock selection.
+
+            The external clock selection depends on the `extclk_sel` CSR,
+            and the `lc_dft_en_i`, `lc_clk_byp_req_i`, and `scanmode_i`
+            input pins. This covergroup collects their cross.
+            '''
+    }
+    {
+      name: jitter_cg
+      desc: '''
+            Collects coverage of the `jitter` CSR.
             '''
     }
   ]
