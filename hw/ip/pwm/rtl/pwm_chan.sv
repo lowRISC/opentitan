@@ -40,10 +40,14 @@ module pwm_chan (
                        ? 16'h0 : (cycle_end_i) ? blink_ctr_q + 16'h1 : blink_ctr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni || clr_blink_cntr_i) begin
+    if (!rst_ni) begin
       blink_ctr_q <= 16'h0;
     end else begin
-      blink_ctr_q <= (blink_en_i && !htbt_en_i) ? blink_ctr_d : blink_ctr_q;
+      if (clr_blink_cntr_i) begin
+        blink_ctr_q <= 16'h0;
+      end else begin
+        blink_ctr_q <= (blink_en_i && !htbt_en_i) ? blink_ctr_d : blink_ctr_q;
+      end
     end
   end
 
@@ -63,10 +67,14 @@ module pwm_chan (
                       (cycle_end_i) ? htbt_ctr_q + 16'h1 : htbt_ctr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni || clr_blink_cntr_i) begin
+    if (!rst_ni) begin
       htbt_ctr_q <= 16'h0;
     end else begin
-      htbt_ctr_q <= (blink_en_i && htbt_en_i) ? htbt_ctr_d : htbt_ctr_q;
+      if (clr_blink_cntr_i) begin
+        htbt_ctr_q <= 16'h0;
+      end else begin
+        htbt_ctr_q <= (blink_en_i && htbt_en_i) ? htbt_ctr_d : htbt_ctr_q;
+      end
     end
   end
   assign dc_htbt_end = cycle_end_i & (htbt_ctr_q == blink_param_x_i);
