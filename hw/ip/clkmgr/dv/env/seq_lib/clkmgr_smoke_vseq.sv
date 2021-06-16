@@ -20,7 +20,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   endtask : body
 
   // Flips all clk_enables bits from the reset value with all enabled. All is
-  // checked via assertions in clkmgr_if.sv.
+  // checked via assertions in clkmgr_if.sv and behavioral code in the scoreboard.
   task test_peri_clocks();
     // Flip all bits of clk_enables.
     logic [NUM_PERI-1:0] value = ral.clk_enables.get();
@@ -53,7 +53,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     cfg.clkmgr_vif.update_idle(idle);
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
-    `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", value), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Starting hints at 0x%0x, idle at 0x%x", value, idle), UVM_MEDIUM)
     do begin
       trans_descriptor_t descriptor = trans_descriptors[int'(trans)];
       `uvm_info(`gfn, $sformatf("Clearing %s hint bit", descriptor.unit.name), UVM_MEDIUM)

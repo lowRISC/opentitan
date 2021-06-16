@@ -39,7 +39,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       `DV_CHECK_EQ(value, initial_hints, "All idle: units status matches hints")
 
-      // Now enable them all, and the status should also be all ones.
+      // Now set all hints, and the status should also be all ones.
       csr_wr(.ptr(ral.clk_hints), .value('1));
       cfg.clk_rst_vif.wait_clks(2);
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
