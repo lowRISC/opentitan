@@ -31,7 +31,7 @@ void Ecc32MemArea::LoadVmem(const std::string &path) const {
 
 void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                                const std::vector<uint8_t> &data,
-                               size_t start_idx) const {
+                               size_t start_idx, uint32_t dst_word) const {
   int log_width_32 = width_byte_ / 4;
   int phy_width_bits = 39 * log_width_32;
   int phy_width_bytes = (phy_width_bits + 7) / 8;
@@ -116,7 +116,8 @@ void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
 }
 
 void Ecc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
-                              const uint8_t buf[SV_MEM_WIDTH_BYTES]) const {
+                              const uint8_t buf[SV_MEM_WIDTH_BYTES],
+                              uint32_t src_word) const {
   for (int i = 0; i < width_byte_; ++i) {
     int in_word = i / 4;
 

@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:lfsr
       - lowrisc:prim:all
+      - lowrisc:prim:util_get_scramble_params
     files:
       - rtl/prim_ram_1p_scr.sv
     file_type: systemVerilogSource
