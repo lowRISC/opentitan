@@ -5,9 +5,10 @@
 #define OPENTITAN_HW_IP_OTBN_DV_MEMUTIL_OTBN_MEMUTIL_H_
 
 #include <svdpi.h>
+#include <vector>
 
 #include "dpi_memutil.h"
-#include "ecc32_mem_area.h"
+#include "scrambled_ecc32_mem_area.h"
 
 class OtbnMemUtil : public DpiMemUtil {
  public:
@@ -35,7 +36,7 @@ class OtbnMemUtil : public DpiMemUtil {
  private:
   void OnElfLoaded(Elf *elf_file) override;
 
-  Ecc32MemArea imem_, dmem_;
+  ScrambledEcc32MemArea imem_, dmem_;
   int expected_end_addr_;
 };
 

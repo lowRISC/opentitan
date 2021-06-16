@@ -12,6 +12,7 @@ module tb;
   // dep packages (rtl)
   import otbn_reg_pkg::*;
   import edn_pkg::*;
+  import otp_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -37,8 +38,8 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
-  // Mock up EDN that just instantly returns fixed data when requested
-  // TODO: Provide a proper EDN agent
+  // Mock up EDN & OTP that just instantly return fixed data when requested
+  // TODO: Provide proper EDN and OTP agents
   edn_req_t edn_rnd_req;
   edn_rsp_t edn_rnd_rsp;
 
@@ -53,8 +54,34 @@ module tb;
   assign edn_urnd_rsp.edn_fips = 1'b0;
   assign edn_urnd_rsp.edn_bus  = 32'h99999999;
 
+  otbn_otp_key_req_t otp_key_req;
+  otbn_otp_key_rsp_t otp_key_rsp;
+
+  logic otp_key_ack_q;
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      otp_key_ack_q <= 1'b0;
+    end else begin
+      otp_key_ack_q <= otp_key_req.req;
+    end
+  end
+
+  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  // Full nonce is 320 bits but OTP only provides 256-bits for now
+  localparam logic [255:0] TestScrambleNonce =
+    256'h19286173144131c12c2607f5e72aca1fb72adea0a4ff82b9f88c2578fa4cd123;
+
+  assign otp_key_rsp.ack = otp_key_ack_q;
+  assign otp_key_rsp.key = TestScrambleKey;
+  assign otp_key_rsp.nonce = TestScrambleNonce;
+  assign otp_key_rsp.seed_valid = 1'b0;
+
   // dut
-  otbn dut (
+  otbn # (
+    .RndCnstOtbnKey(TestScrambleKey),
+    .RndCnstOtbnNonce(TestScrambleNonce)
+  ) dut (
     .clk_i       (clk),
     .rst_ni      (rst_n),
 
@@ -74,7 +101,12 @@ module tb;
     .edn_rnd_i ( edn_rnd_rsp ),
 
     .edn_urnd_o ( edn_urnd_req ),
-    .edn_urnd_i ( edn_urnd_rsp )
+    .edn_urnd_i ( edn_urnd_rsp ),
+
+    .clk_otp_i (clk),
+    .rst_otp_ni (rst_n),
+    .otbn_otp_key_o (otp_key_req),
+    .otbn_otp_key_i (otp_key_rsp)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
