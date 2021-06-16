@@ -150,6 +150,8 @@ module  i2c_core (
   logic [7:0]  unused_rx_fifo_rdata_q;
   logic [7:0]  unused_acq_fifo_adata_q;
   logic [1:0]  unused_acq_fifo_signal_q;
+  logic        unused_alert_test_qe;
+  logic        unused_alert_test_q;
 
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
@@ -295,6 +297,8 @@ module  i2c_core (
   assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;
   assign unused_acq_fifo_adata_q = reg2hw.acqdata.abyte.q;
   assign unused_acq_fifo_signal_q = reg2hw.acqdata.signal.q;
+  assign unused_alert_test_qe = reg2hw.alert_test.qe;
+  assign unused_alert_test_q = reg2hw.alert_test.q;
 
   prim_fifo_sync #(
     .Width   (13),
