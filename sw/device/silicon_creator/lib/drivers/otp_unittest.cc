@@ -6,19 +6,21 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 namespace otp_unittest {
 namespace {
-using ::mock_mmio::MmioTest;
-using ::testing::Test;
+using ::testing::ElementsAreArray;
 
-class OtpTest : public Test, public MmioTest {
+class OtpTest : public mask_rom_test::MaskRomTest {
  protected:
-  otp_t otp_ = {.base_addr = dev().region()};
+  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_BASE_ADDR;
+  mask_rom_test::MockSecMmio mmio_;
 };
 
 class OtpReadTest : public OtpTest {
@@ -27,46 +29,54 @@ class OtpReadTest : public OtpTest {
 };
 
 TEST_F(OtpReadTest, Read32) {
-  EXPECT_READ32(offset_, 0x00010203);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x00010203);
 
-  EXPECT_EQ(otp_read32(&otp_, 0), 0x00010203);
+  EXPECT_EQ(otp_read32(0), 0x00010203);
 }
 
 TEST_F(OtpReadTest, Read64) {
-  EXPECT_READ32(offset_ + 8, 0x04050607);
-  EXPECT_READ32(offset_ + 4, 0x08090A0B);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 8, 0x04050607);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 4, 0x08090A0B);
 
-  EXPECT_EQ(otp_read64(&otp_, 4), 0x0405060708090A0B);
+  EXPECT_EQ(otp_read64(4), 0x0405060708090A0B);
 }
 
 TEST_F(OtpReadTest, ReadLen32) {
-  EXPECT_READ32(offset_, 0x08090A0B);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x08090A0B);
 
   uint32_t value = 0;
-  otp_read(&otp_, 0, &value, sizeof(value));
+  EXPECT_EQ(otp_read(0, &value, sizeof(value)), kErrorOk);
   EXPECT_EQ(value, 0x08090A0B);
 }
 
 TEST_F(OtpReadTest, ReadLen64) {
-  EXPECT_READ32(offset_, 0x0C0D0E0F);
-  EXPECT_READ32(offset_ + 4, 0x08090A0B);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x0C0D0E0F);
+  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 4, 0x08090A0B);
 
   uint64_t value = 0;
-  otp_read(&otp_, 0, &value, sizeof(value));
+  EXPECT_EQ(otp_read(0, &value, sizeof(value)), kErrorOk);
   EXPECT_EQ(value, 0x08090A0B0C0D0E0F);
 }
 
 TEST_F(OtpReadTest, ReadLenN) {
   for (int val = 0; val < 16; ++val) {
-    EXPECT_READ32(offset_ + val * sizeof(uint32_t), val);
+    EXPECT_SEC_READ32(mmio_, base_ + offset_ + val * sizeof(uint32_t), val);
   }
 
   std::vector<uint32_t> arr(16);
-  otp_read(&otp_, 0, &arr[0], arr.size() * sizeof(uint32_t));
+  EXPECT_EQ(otp_read(0, &arr[0], arr.size() * sizeof(uint32_t)), kErrorOk);
 
-  for (int i = 0; i < arr.size(); ++i) {
-    EXPECT_EQ(arr[i], i);
-  }
+  std::vector<uint32_t> expected(arr.size());
+  std::iota(expected.begin(), expected.end(), 0);
+  EXPECT_THAT(arr, ElementsAreArray(expected));
+}
+
+TEST_F(OtpReadTest, ReadLenNMisaligned) {
+  std::vector<uint32_t> arr(16);
+  EXPECT_EQ(otp_read(1, &arr[0], arr.size() * sizeof(uint32_t)),
+            kErrorOtpBadAlignment);
+  EXPECT_EQ(otp_read(0, &arr[0], arr.size() * sizeof(uint32_t) - 1),
+            kErrorOtpBadAlignment);
 }
 
 }  // namespace

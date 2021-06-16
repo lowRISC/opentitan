@@ -8,50 +8,47 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct otp {
-  /**
-   * The base address for the OTP hardware registers.
-   */
-  mmio_region_t base_addr;
-} otp_t;
+#define OTP_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
 /**
  * Perform a blocking 32-bit read from the memory mapped software config
  * partitions.
  *
- * @param otp The handle to the otp_ctrl device.
  * @param address The address to read from offset from the start of OTP memory.
  * @return The 32-bit value from OTP.
  */
-uint32_t otp_read32(const otp_t *otp, uint32_t address);
+OTP_WARN_UNUSED_RESULT
+uint32_t otp_read32(uint32_t address);
 
 /**
  * Perform a blocking 64-bit read from the memory mapped software config
  * partitions.
  *
- * @param otp The handle to the otp_ctrl device.
  * @param address The address to read from offset from the start of OTP memory.
  * @return The 64-bit value from OTP.
  */
-uint64_t otp_read64(const otp_t *otp, uint32_t address);
+OTP_WARN_UNUSED_RESULT
+uint64_t otp_read64(uint32_t address);
 
 /**
  * Perform a blocking read of `len` bytes from the memory mapped software config
- * partitions.
+ * partitions. It is required that both `address` and `address` + `len` be
+ * word-aligned.
  *
- * @param otp The handle to the otp_ctrl device.
  * @param address The address to read from offset from the start of OTP memory.
  * @param data The output buffer of at least length `len`.
  * @param len The number of bytes to read from OTP.
+ * @return `kErrorOtpBadAlignment` if `address` or `address` + `len` are
+ * misaligned, `kErrorOk` otherwise.
  */
-void otp_read(const otp_t *otp, uint32_t address, void *data, size_t len);
+OTP_WARN_UNUSED_RESULT
+rom_error_t otp_read(uint32_t address, void *data, size_t len);
 
 #ifdef __cplusplus
 }

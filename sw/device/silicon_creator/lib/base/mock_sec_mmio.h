@@ -65,7 +65,7 @@ void sec_mmio_init(sec_mmio_shutdown_handler callee) {
 }
 
 uint32_t sec_mmio_read32(uint32_t addr) {
-  MockSecMmio::Instance().Read32(addr);
+  return MockSecMmio::Instance().Read32(addr);
 }
 
 void sec_mmio_write32(uint32_t addr, uint32_t value) {
