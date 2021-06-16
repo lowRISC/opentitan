@@ -124,6 +124,10 @@ def gen_cdefine_register(outstr: TextIO,
     genout(
         outstr,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
+    genout(
+        outstr,
+        gen_define(defname + '_REG_RESVAL', [],
+                   hex(reg.resval), existing_defines))
 
     for field in reg.fields:
         dname = defname + '_' + as_define(field.name)
