@@ -1,0 +1,15 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:crypto_prince_ref:0.1"
+description: "PRINCE block cipher reference C implementation from Sebastien Riou"
+filesets:
+  files_dv:
+    files:
+      - prince_ref.h: {file_type: cSource, is_include_file: true}
+
+targets:
+  default:
+    filesets:
+      - files_dv
