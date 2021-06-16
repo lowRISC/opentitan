@@ -35,8 +35,8 @@ module hmac
   hmac_reg2hw_t reg2hw;
   hmac_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t  tl_win_h2d[1];
-  tlul_pkg::tl_d2h_t  tl_win_d2h[1];
+  tlul_pkg::tl_h2d_t  tl_win_h2d;
+  tlul_pkg::tl_d2h_t  tl_win_d2h;
 
   logic [255:0] secret_key;
 
@@ -298,8 +298,8 @@ module hmac
   ) u_tlul_adapter (
     .clk_i,
     .rst_ni,
-    .tl_i        (tl_win_h2d[0]),
-    .tl_o        (tl_win_d2h[0]),
+    .tl_i        (tl_win_h2d),
+    .tl_o        (tl_win_d2h),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (msg_fifo_req   ),
     .req_type_o  (               ),
