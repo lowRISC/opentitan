@@ -20,11 +20,6 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
   constraint wakeups_c { wakeups != 0; }
   constraint resets_c { resets != 0; }
 
-  task wait_for_reset_cause(pwrmgr_pkg::reset_cause_e cause);
-    wait (cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause);
-    `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
-  endtask
-
   task body();
     logic [TL_DW-1:0] value;
     bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;

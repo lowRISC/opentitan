@@ -134,6 +134,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "pwrmgr fast fsm active", UVM_MEDIUM)
   endtask
 
+  task wait_for_reset_cause(pwrmgr_pkg::reset_cause_e cause);
+    wait (cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause);
+    `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
+  endtask
+
   task wait_for_csr_to_propagate_to_slow_domain();
     csr_wr(.ptr(ral.cfg_cdc_sync), .value(1'b1));
     csr_spinwait(.ptr(ral.cfg_cdc_sync), .exp_data(1'b0),
