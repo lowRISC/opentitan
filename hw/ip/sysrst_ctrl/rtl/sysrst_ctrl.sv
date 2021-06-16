@@ -6,7 +6,11 @@
 
 `include "prim_assert.sv"
 
-module sysrst_ctrl (
+module sysrst_ctrl
+  import sysrst_ctrl_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input clk_i,//Always-on 24MHz clock(config)
   input clk_aon_i,//Always-on 200KHz clock(logic)
   input rst_ni,//power-on reset for the 24MHz clock(config)
@@ -18,6 +22,10 @@ module sysrst_ctrl (
   //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   //DIO
   input  cio_ac_present_i,//AC power is present
@@ -49,7 +57,6 @@ module sysrst_ctrl (
   logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw, bat_disable_hw;
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int;
   logic sysrst_ctrl_combo_intr, sysrst_ctrl_key_intr;
-  logic unused_intg_err_o;//FIXME
 
   //Always-on pins
   assign cio_ec_rst_out_l_en_o = 1'b1;
@@ -59,6 +66,29 @@ module sysrst_ctrl (
   assign cio_key2_out_en_o = 1'b1;
   assign cio_bat_disable_en_o = 1'b1;
 
+  // Alerts
+  logic [NumAlerts-1:0] alert_test, alerts;
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
+
   // Register module
   sysrst_ctrl_reg_top u_reg (
     .clk_i(clk_i),
@@ -67,7 +97,7 @@ module sysrst_ctrl (
     .tl_o(tl_o),
     .reg2hw(reg2hw),
     .hw2reg(hw2reg),
-    .intg_err_o(unused_intg_err_o),
+    .intg_err_o(alerts[0]),
     .devmode_i  (1'b1)
   );
 

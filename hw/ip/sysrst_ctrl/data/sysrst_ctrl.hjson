@@ -18,6 +18,13 @@
       desc: "common interrupt triggered by combo or keyboard actions",
     }
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the SYSRST_CTRL unit.
+      '''
+    }
+  ],
   wakeup_list: [
     { name: "gsc_wk",
       desc: "user directed wakeup",
