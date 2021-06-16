@@ -321,6 +321,26 @@ TEST_F(GetErrBitsTest, Success) {
   EXPECT_EQ(err_bits, kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsFatalReg);
 }
 
+class GetInsnCntTest : public OtbnTest {};
+
+TEST_F(GetInsnCntTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_get_insn_cnt(nullptr, nullptr), kDifOtbnBadArg);
+
+  EXPECT_EQ(dif_otbn_get_insn_cnt(&dif_otbn_, nullptr), kDifOtbnBadArg);
+
+  uint32_t insn_cnt = 55;
+  EXPECT_EQ(dif_otbn_get_insn_cnt(nullptr, &insn_cnt), kDifOtbnBadArg);
+  EXPECT_EQ(insn_cnt, 55);
+}
+
+TEST_F(GetInsnCntTest, Success) {
+  EXPECT_READ32(OTBN_INSN_CNT_REG_OFFSET, 55);
+
+  uint32_t insn_cnt;
+  EXPECT_EQ(dif_otbn_get_insn_cnt(&dif_otbn_, &insn_cnt), kDifOtbnOk);
+  EXPECT_EQ(insn_cnt, 55);
+}
+
 class ImemWriteTest : public OtbnTest {};
 
 TEST_F(ImemWriteTest, NullArgs) {
