@@ -24,6 +24,7 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = sram_ctrl_env_pkg::LIST_OF_ALERTS;
+    tl_intg_alert_name = "fatal_intg_error";
     super.initialize(csr_base_addr);
 
     ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtl");

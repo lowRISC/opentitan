@@ -23,6 +23,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
+    tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
 
     m_otp_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
