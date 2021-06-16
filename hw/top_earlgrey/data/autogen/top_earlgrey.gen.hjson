@@ -11556,6 +11556,7 @@
     pattgen
     otp_ctrl
     lc_ctrl
+    sysrst_ctrl_aon
     adc_ctrl_aon
     pinmux_aon
     sensor_ctrl_aon
@@ -11693,6 +11694,13 @@
       type: alert
       async: "0"
       module_name: lc_ctrl
+    }
+    {
+      name: sysrst_ctrl_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sysrst_ctrl_aon
     }
     {
       name: adc_ctrl_aon_fatal_fault
