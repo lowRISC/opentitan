@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/runtime/epmp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
@@ -165,25 +166,58 @@ inline rom_error_t manifest_signed_region_get(
   return kErrorOk;
 }
 
-// FIXME: Remove this after adding the entry_point field.
-static_assert(sizeof(manifest_t) > 768 && sizeof(manifest_t) <= 1024,
-              "kEntryPointOffset must be updated");
+/**
+ * Gets the executable region of the image.
+ *
+ * This function also checks that the executable region is non-empty, inside
+ * the image, located after the manifest, and word aligned.
+ *
+ * @param manifest A manifest.
+ * @param[out] code_region Executable region of the image.
+ * @return The result of the operation.
+ */
+inline rom_error_t manifest_code_region_get(const manifest_t *manifest,
+                                            epmp_region_t *code_region) {
+  if (manifest->code_start >= manifest->code_end ||
+      manifest->code_start < sizeof(manifest_t) ||
+      manifest->code_end > manifest->image_length ||
+      // FIXME: Replace this when we have a function/macro for alignment checks.
+      (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
+    return kErrorManifestBadCodeRegion;
+  }
+  *code_region = (epmp_region_t){
+      .start = (uintptr_t)manifest + manifest->code_start,
+      .end = (uintptr_t)manifest + manifest->code_end,
+  };
+  return kErrorOk;
+}
 
 /**
  * Gets the entry point of an image.
  *
- * Entry point is the address that a boot stage jumps to handle execution to the
- * next stage in the boot chain. This function returns a `uintptr_t` instead of
- * a function pointer to accommodate for entry points with different parameters
- * and return types.
+ * Entry point is the address that a boot stage jumps to transfer execution to
+ * the next stage in the boot chain. This function returns a `uintptr_t` instead
+ * of a function pointer to accommodate for entry points with different
+ * parameters and return types.
+ *
+ * This function also checks that the entry point is inside both the image and
+ * the executable region of the image and word aligned.
  *
  * @param manfiest A manifest.
- * @return The entry point.
+ * @param[out] entry_point Entry point address.
+ * @return The result of the operation.
  */
-inline uintptr_t manifest_entry_point_address_get(const manifest_t *manifest) {
-  // FIXME: Remove this after adding the entry_point field.
-  enum { kEntryPointOffset = 1152 };
-  return (uintptr_t)manifest + kEntryPointOffset;
+inline rom_error_t manifest_entry_point_get(const manifest_t *manifest,
+                                            uintptr_t *entry_point) {
+  if (manifest->entry_point < manifest->code_start ||
+      manifest->entry_point >= manifest->code_end ||
+      manifest->entry_point >= manifest->image_length ||
+      // FIXME: Replace this when we have a function/macro for alignment checks.
+      (manifest->entry_point & 0x3) != 0) {
+    return kErrorManifestBadEntryPoint;
+  }
+  *entry_point = (uintptr_t)manifest + manifest->entry_point;
+  return kErrorOk;
 }
 
 // TODO: Move this definition to a more suitable place. Defined here for now

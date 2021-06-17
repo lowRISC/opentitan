@@ -54,6 +54,8 @@ enum module_ {
   X(kErrorSigverifyBadExponent,       ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   X(kErrorManifestInternal,           ERROR_(1, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadEntryPoint,      ERROR_(2, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadCodeRegion,      ERROR_(3, kModuleManifest, kInternal)), \
   X(kErrorRomextimageInvalidArgument, ERROR_(1, kModuleRomextimage, kInvalidArgument)), \
   X(kErrorRomextimageInternal,        ERROR_(2, kModuleRomextimage, kInternal)), \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
