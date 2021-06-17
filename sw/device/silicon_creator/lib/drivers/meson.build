@@ -253,6 +253,7 @@ sw_silicon_creator_lib_driver_watchdog = declare_dependency(
     'sw_silicon_creator_lib_driver_watchdog',
     sources: [
       hw_ip_aon_timer_reg_h,
+      hw_ip_pwrmgr_reg_h,
       'watchdog.c',
     ],
     dependencies: [
