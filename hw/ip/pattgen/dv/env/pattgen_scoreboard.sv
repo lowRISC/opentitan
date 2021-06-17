@@ -133,7 +133,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
-        "intr_enable": begin
+        "intr_enable", "alert_test": begin
           // no special handle is needed
         end
         "intr_state": begin
@@ -177,7 +177,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
         end
         "ctrl", "size", "intr_test", "intr_enable",
         "prediv_ch0", "data_ch0_0", "data_ch0_1",
-        "prediv_ch1", "data_ch1_0", "data_ch1_1": begin
+        "prediv_ch1", "data_ch1_0", "data_ch1_1", "alert_test": begin
           // no special handle is needed
         end
         default: begin
