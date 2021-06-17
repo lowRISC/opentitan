@@ -308,7 +308,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
       bins err_none = {kmac_pkg::ErrNone};
       bins err_key_not_valid = {kmac_pkg::ErrKeyNotValid};
       bins err_sw_pushed_msg_fifo = {kmac_pkg::ErrSwPushedMsgFifo};
-      bins err_sw_pushed_wrong_cmd = {kmac_pkg::ErrSwPushedWrongCmd};
+      bins err_sw_issued_cmd_in_app_active = {kmac_pkg::ErrSwIssuedCmdInAppActive};
       bins err_wait_timer_expired = {kmac_pkg::ErrWaitTimerExpired};
       bins err_incorrect_entropy_mode = {kmac_pkg::ErrIncorrectEntropyMode};
 
