@@ -204,7 +204,7 @@
           desc: '''
             The low power hint to power manager.
             The hint is an indication for how the manager should treat the next WFI.
-            Once the power manager begins a low power transition, or if a valid reset request is registerd,
+            Once the power manager begins a low power transition, or if a valid reset request is registered,
             this bit is automatically cleared by HW.
             '''
           resval: "0"
@@ -315,14 +315,12 @@
               name: "Power down",
               desc: '''
                 Main power domain is powered down during low power state.
-                Note this signal is active low.
                 '''
             },
             { value: "1",
               name: "Power up",
               desc: '''
                 Main power domain is kept powered during low power state
-                Note this signal is active low.
                 '''
             },
           ]
@@ -352,7 +350,7 @@
             the sync completes, this bit then self clears.
 
             Software should write this bit to 1, wait for it to clear, before assuming the slow clock
-            domain has assumed the programmaed values.
+            domain has assumed the programmed values.
           ''',
           resval: "0",
         },
@@ -363,7 +361,7 @@
     },
 
     { name: "WAKEUP_EN_REGWEN",
-      desc: "Configuration enable for wakeup register",
+      desc: "Configuration enable for wakeup_en register",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -371,8 +369,8 @@
           resval: "1"
           name: "EN",
           desc: '''
-            When 1, WAKEUP register can be configured.
-            When 0, WAKEUP register cannot be configured.
+            When 1, WAKEUP_EN register can be configured.
+            When 0, WAKEUP_EN register cannot be configured.
           ''',
         },
       ]
@@ -421,7 +419,7 @@
     },
 
     { name: "RESET_EN_REGWEN",
-      desc: "Configuration enable for reset register",
+      desc: "Configuration enable for reset_en register",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -429,8 +427,8 @@
           resval: "1"
           name: "EN",
           desc: '''
-            When 1, RESET register can be configured.
-            When 0, RESET register cannot be configured.
+            When 1, RESET_EN register can be configured.
+            When 0, RESET_EN register cannot be configured.
           ''',
         },
       ]

@@ -19,60 +19,74 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  clk_rst_if slow_clk_rst_if(.clk(clk_slow), .rst_n(rst_slow_n));
+  clk_rst_if clk_rst_if(
+    .clk(clk),
+    .rst_n(rst_n)
+  );
+  clk_rst_if slow_clk_rst_if(
+    .clk(clk_slow),
+    .rst_n(rst_slow_n)
+  );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  tl_if tl_if(
+    .clk(clk),
+    .rst_n(rst_n)
+  );
 
-  pwrmgr_if pwrmgr_if(clk, rst_n, clk_slow, rst_slow_n);
+  pwrmgr_if pwrmgr_if (
+    .clk,
+    .rst_n,
+    .clk_slow,
+    .rst_slow_n
+  );
 
- `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT
 
   // dut
   pwrmgr dut (
-    .clk_i                (clk       ),
-    .rst_ni               (rst_n     ),
-    .clk_slow_i           (clk_slow  ),
-    .rst_slow_ni          (rst_slow_n),
+    .clk_i      (clk),
+    .rst_ni     (rst_n),
+    .clk_slow_i (clk_slow),
+    .rst_slow_ni(rst_slow_n),
 
-    .tl_i                 (tl_if.h2d),
-    .tl_o                 (tl_if.d2h),
+    .tl_i(tl_if.h2d),
+    .tl_o(tl_if.d2h),
 
-    .alert_rx_i           (alert_rx),
-    .alert_tx_o           (alert_tx),
+    .alert_rx_i(alert_rx),
+    .alert_tx_o(alert_tx),
 
-    .pwr_ast_i            (pwrmgr_if.pwr_ast_rsp),
-    .pwr_ast_o            (pwrmgr_if.pwr_ast_req),
+    .pwr_ast_i(pwrmgr_if.pwr_ast_rsp),
+    .pwr_ast_o(pwrmgr_if.pwr_ast_req),
 
-    .pwr_rst_i            (pwrmgr_if.pwr_rst_rsp),
-    .pwr_rst_o            (pwrmgr_if.pwr_rst_req),
+    .pwr_rst_i(pwrmgr_if.pwr_rst_rsp),
+    .pwr_rst_o(pwrmgr_if.pwr_rst_req),
 
-    .pwr_clk_i            (pwrmgr_if.pwr_clk_rsp),
-    .pwr_clk_o            (pwrmgr_if.pwr_clk_req),
+    .pwr_clk_i(pwrmgr_if.pwr_clk_rsp),
+    .pwr_clk_o(pwrmgr_if.pwr_clk_req),
 
-    .pwr_otp_i            (pwrmgr_if.pwr_otp_rsp),
-    .pwr_otp_o            (pwrmgr_if.pwr_otp_req),
+    .pwr_otp_i(pwrmgr_if.pwr_otp_rsp),
+    .pwr_otp_o(pwrmgr_if.pwr_otp_req),
 
-    .pwr_lc_i             (pwrmgr_if.pwr_lc_rsp ),
-    .pwr_lc_o             (pwrmgr_if.pwr_lc_req ),
+    .pwr_lc_i(pwrmgr_if.pwr_lc_rsp ),
+    .pwr_lc_o(pwrmgr_if.pwr_lc_req ),
 
-    .pwr_flash_i          (pwrmgr_if.pwr_flash  ),
-    .pwr_cpu_i            (pwrmgr_if.pwr_cpu    ),
+    .pwr_flash_i(pwrmgr_if.pwr_flash),
+    .pwr_cpu_i  (pwrmgr_if.pwr_cpu),
 
-    .fetch_en_o           (pwrmgr_if.fetch_en   ),
-    .wakeups_i            (pwrmgr_if.wakeups_i  ),
-    .rstreqs_i            (pwrmgr_if.rstreqs_i  ),
+    .fetch_en_o(pwrmgr_if.fetch_en),
+    .wakeups_i (pwrmgr_if.wakeups_i),
+    .rstreqs_i (pwrmgr_if.rstreqs_i),
 
-    .strap_o              (pwrmgr_if.strap      ),
-    .low_power_o          (pwrmgr_if.low_power  ),
+    .strap_o    (pwrmgr_if.strap),
+    .low_power_o(pwrmgr_if.low_power),
 
-    .rom_ctrl_i           (pwrmgr_if.rom_ctrl   ),
+    .rom_ctrl_i(pwrmgr_if.rom_ctrl),
 
-    .esc_rst_tx_i         (pwrmgr_if.esc_rst_tx ),
-    .esc_rst_rx_o         (pwrmgr_if.esc_rst_rx ),
+    .esc_rst_tx_i(pwrmgr_if.esc_rst_tx),
+    .esc_rst_rx_o(pwrmgr_if.esc_rst_rx),
 
-    .intr_wakeup_o        (pwrmgr_if.intr_wakeup)
+    .intr_wakeup_o(pwrmgr_if.intr_wakeup)
   );
 
   initial begin

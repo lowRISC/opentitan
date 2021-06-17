@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwrmgr_base_vseq extends cip_base_vseq #(
-    .RAL_T               (pwrmgr_reg_block),
-    .CFG_T               (pwrmgr_env_cfg),
-    .COV_T               (pwrmgr_env_cov),
-    .VIRTUAL_SEQUENCER_T (pwrmgr_virtual_sequencer)
-  );
+  .RAL_T              (pwrmgr_reg_block),
+  .CFG_T              (pwrmgr_env_cfg),
+  .COV_T              (pwrmgr_env_cov),
+  .VIRTUAL_SEQUENCER_T(pwrmgr_virtual_sequencer)
+);
   `uvm_object_utils(pwrmgr_base_vseq)
 
   localparam int ActiveTimeoutInNanoSeconds = 4_000;
@@ -27,19 +27,19 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int cycles_before_usb_clk_en;
   rand int cycles_before_main_pd_n;
 
-  constraint cycles_before_pwrok_c { cycles_before_pwrok inside {[3:10]}; }
-  constraint cycles_before_clks_ok_c { cycles_before_clks_ok inside {[3:10]}; }
-  constraint cycles_between_clks_ok_c { cycles_between_clks_ok inside {[3:10]}; }
-  constraint cycles_before_clk_status_on_c { cycles_before_clk_status_on inside {[0:4]}; }
-  constraint cycles_before_clk_status_off_c { cycles_before_clk_status_off inside {[0:4]}; }
-  constraint cycles_before_rst_lc_src_base_c { cycles_before_rst_lc_src inside {[0:4]}; }
-  constraint cycles_before_otp_done_base_c { cycles_before_otp_done inside {[0:4]}; }
-  constraint cycles_before_lc_done_base_c { cycles_before_lc_done inside {[0:4]}; }
-  constraint cycles_before_wakeup_c { cycles_before_wakeup inside {[2:6]}; }
-  constraint cycles_before_core_clk_en_c { cycles_before_core_clk_en inside {[2:6]}; }
-  constraint cycles_before_io_clk_en_c { cycles_before_io_clk_en inside {[2:6]}; }
-  constraint cycles_before_usb_clk_en_c { cycles_before_usb_clk_en inside {[2:6]}; }
-  constraint cycles_before_main_pd_n_c { cycles_before_main_pd_n inside {[2:6]}; }
+  constraint cycles_before_pwrok_c {cycles_before_pwrok inside {[3 : 10]};}
+  constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
+  constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
+  constraint cycles_before_clk_status_on_c {cycles_before_clk_status_on inside {[0 : 4]};}
+  constraint cycles_before_clk_status_off_c {cycles_before_clk_status_off inside {[0 : 4]};}
+  constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
+  constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
+  constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
+  constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
+  constraint cycles_before_core_clk_en_c {cycles_before_core_clk_en inside {[2 : 6]};}
+  constraint cycles_before_io_clk_en_c {cycles_before_io_clk_en inside {[2 : 6]};}
+  constraint cycles_before_usb_clk_en_c {cycles_before_usb_clk_en inside {[2 : 6]};}
+  constraint cycles_before_main_pd_n_c {cycles_before_main_pd_n inside {[2 : 6]};}
 
   // This rstmgr response enables the fast fsm to proceed from a reset.
   task assert_rstmgr_resets();
@@ -90,7 +90,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   // This sends the fast fsm to low power after the transition is enabled by software
   // and cpu WFI.
-  // FIXME Allow some units not being idle to defeat or postpone transition to low power.
+  // TODO Allow some units not being idle to defeat or postpone transition to low power.
   virtual task fast_to_low_power();
     cfg.pwrmgr_vif.update_otp_idle(1'b1);
     cfg.pwrmgr_vif.update_lc_idle(1'b1);
@@ -103,22 +103,22 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task turn_clocks_off_for_slow_to_low_power();
     fork
       if (!ral.control.core_clk_en.get_mirrored_value()) begin
-        wait (!cfg.pwrmgr_vif.pwr_ast_req.core_clk_en);
+        wait(!cfg.pwrmgr_vif.pwr_ast_req.core_clk_en);
         cfg.clk_rst_vif.wait_clks(cycles_before_core_clk_en);
         cfg.pwrmgr_vif.update_ast_core_clk_val(1'b0);
       end
       if (!ral.control.io_clk_en.get_mirrored_value()) begin
-        wait (!cfg.pwrmgr_vif.pwr_ast_req.io_clk_en);
+        wait(!cfg.pwrmgr_vif.pwr_ast_req.io_clk_en);
         cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_en);
         cfg.pwrmgr_vif.update_ast_io_clk_val(1'b0);
       end
       if (!ral.control.usb_clk_en_lp.get_mirrored_value()) begin
-        wait (!cfg.pwrmgr_vif.pwr_ast_req.usb_clk_en);
+        wait(!cfg.pwrmgr_vif.pwr_ast_req.usb_clk_en);
         cfg.clk_rst_vif.wait_clks(cycles_before_usb_clk_en);
         cfg.pwrmgr_vif.update_ast_usb_clk_val(1'b0);
       end
       if (!ral.control.main_pd_n.get_mirrored_value()) begin
-        wait (!cfg.pwrmgr_vif.pwr_ast_req.main_pd_n);
+        wait(!cfg.pwrmgr_vif.pwr_ast_req.main_pd_n);
         cfg.slow_clk_rst_vif.wait_clks(cycles_before_main_pd_n);
         cfg.pwrmgr_vif.update_ast_main_pok(1'b0);
       end
@@ -135,7 +135,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task wait_for_reset_cause(pwrmgr_pkg::reset_cause_e cause);
-    wait (cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause);
+    wait(cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause);
     `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
   endtask
 
@@ -167,8 +167,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       super.apply_reset(kind);
       if (kind == "HARD") begin
         // A short slow clock reset should suffice.
-        cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                         .reset_width_clks(5));
+        cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(5));
       end
     join
   endtask

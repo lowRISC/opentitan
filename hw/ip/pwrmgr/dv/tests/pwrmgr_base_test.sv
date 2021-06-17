@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwrmgr_base_test extends cip_base_test #(
-    .CFG_T(pwrmgr_env_cfg),
-    .ENV_T(pwrmgr_env)
-  );
+  .CFG_T(pwrmgr_env_cfg),
+  .ENV_T(pwrmgr_env)
+);
 
   `uvm_component_utils(pwrmgr_base_test)
   `uvm_component_new
