@@ -87,13 +87,10 @@ class SWAccess:
                              .format(self.key, where)) from None
 
     def dv_rights(self) -> str:
-        if self.key in ['none', 'ro', 'rc']:
-            return "RO"
-        elif self.key in ['rw', 'r0w1c', 'rw1s', 'rw1c', 'rw0c']:
-            return "RW"
-        else:
-            assert self.key == 'wo'
-            return "WO"
+        '''Return a UVM access string as used by uvm_field::set_access().'''
+        if self.key == 'r0w1c':
+            return 'W1C'
+        return self.value[1].name
 
     def swrd(self) -> SwRdAccess:
         return self.value[3]
