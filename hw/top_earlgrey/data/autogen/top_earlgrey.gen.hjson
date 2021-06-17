@@ -1588,7 +1588,7 @@
           index: -1
         }
         {
-          name: esc_wipe_secrets_tx
+          name: esc_scrap_state0_tx
           struct: esc_tx
           package: prim_esc_pkg
           type: uni
@@ -1600,7 +1600,7 @@
           index: 1
         }
         {
-          name: esc_wipe_secrets_rx
+          name: esc_scrap_state0_rx
           struct: esc_rx
           package: prim_esc_pkg
           type: uni
@@ -1612,7 +1612,7 @@
           index: 1
         }
         {
-          name: esc_scrap_state_tx
+          name: esc_scrap_state1_tx
           struct: esc_tx
           package: prim_esc_pkg
           type: uni
@@ -1624,7 +1624,7 @@
           index: 2
         }
         {
-          name: esc_scrap_state_rx
+          name: esc_scrap_state1_rx
           struct: esc_rx
           package: prim_esc_pkg
           type: uni
@@ -5852,15 +5852,15 @@
       alert_handler.esc_rx:
       [
         rv_core_ibex.esc_nmi_rx
-        lc_ctrl.esc_wipe_secrets_rx
-        lc_ctrl.esc_scrap_state_rx
+        lc_ctrl.esc_scrap_state0_rx
+        lc_ctrl.esc_scrap_state1_rx
         pwrmgr_aon.esc_rst_rx
       ]
       alert_handler.esc_tx:
       [
         rv_core_ibex.esc_nmi_tx
-        lc_ctrl.esc_wipe_secrets_tx
-        lc_ctrl.esc_scrap_state_tx
+        lc_ctrl.esc_scrap_state0_tx
+        lc_ctrl.esc_scrap_state1_tx
         pwrmgr_aon.esc_rst_tx
       ]
       csrng.csrng_cmd:
@@ -12712,7 +12712,7 @@
         index: -1
       }
       {
-        name: esc_wipe_secrets_tx
+        name: esc_scrap_state0_tx
         struct: esc_tx
         package: prim_esc_pkg
         type: uni
@@ -12724,7 +12724,7 @@
         index: 1
       }
       {
-        name: esc_wipe_secrets_rx
+        name: esc_scrap_state0_rx
         struct: esc_rx
         package: prim_esc_pkg
         type: uni
@@ -12736,7 +12736,7 @@
         index: 1
       }
       {
-        name: esc_scrap_state_tx
+        name: esc_scrap_state1_tx
         struct: esc_tx
         package: prim_esc_pkg
         type: uni
@@ -12748,7 +12748,7 @@
         index: 2
       }
       {
-        name: esc_scrap_state_rx
+        name: esc_scrap_state1_rx
         struct: esc_rx
         package: prim_esc_pkg
         type: uni

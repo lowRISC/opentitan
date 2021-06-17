@@ -112,25 +112,25 @@
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc_wipe_secrets_tx"
+      name:    "esc_scrap_state0_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc_wipe_secrets_rx"
+      name:    "esc_scrap_state0_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc_scrap_state_tx"
+      name:    "esc_scrap_state1_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc_scrap_state_rx"
+      name:    "esc_scrap_state1_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
