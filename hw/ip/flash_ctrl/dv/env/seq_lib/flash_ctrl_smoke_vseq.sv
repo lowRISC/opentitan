@@ -11,10 +11,10 @@ class flash_ctrl_smoke_vseq extends flash_ctrl_rand_ops_base_vseq;
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
     // Do fewer reruns for the smoke test.
-    cfg.seq_cfg.max_num_trans = 5;
+    cfg.seq_cfg.max_num_trans = 2;
 
     // Do fewer flash ops in each rerun for the smoke test.
-    cfg.seq_cfg.max_flash_ops_per_cfg = 15;
+    cfg.seq_cfg.max_flash_ops_per_cfg = 4;
 
     // Do no more than 128 words per op.
     cfg.seq_cfg.op_max_words = 128;
