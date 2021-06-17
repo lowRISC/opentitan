@@ -195,7 +195,7 @@ TEST_P(ModExp, EncMsg) {
 TEST(ModExp, BadExp) {
   // Exponent = 0
   constexpr sigverify_rsa_key_t bad_key{};
-  sigverify_rsa_buffer_t empty;
+  sigverify_rsa_buffer_t empty{};
 
   EXPECT_EQ(sigverify_mod_exp_ibex(&bad_key, &empty, &empty),
             kErrorSigverifyBadExponent);
