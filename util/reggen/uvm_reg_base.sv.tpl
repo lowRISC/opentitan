@@ -301,10 +301,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 <%def name="_create_reg_field(dv_base_prefix, reg_width, reg_block_path, shadowed, hwext, reg_field_name, field)">\
 <%
   field_size = field.bits.width()
-  if field.swaccess.key == "r0w1c":
-    field_access = "W1C"
-  else:
-    field_access = field.swaccess.value[1].name
+  field_access = field.swaccess.dv_rights()
 
   if not field.hwaccess.allows_write():
     field_volatile = 0

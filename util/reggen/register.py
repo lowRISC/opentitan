@@ -82,8 +82,6 @@ class Register(RegBase):
                  offset: int,
                  name: str,
                  desc: str,
-                 swaccess: SWAccess,
-                 hwaccess: HWAccess,
                  hwext: bool,
                  hwqe: bool,
                  hwre: bool,
@@ -97,24 +95,8 @@ class Register(RegBase):
         super().__init__(offset)
         self.name = name
         self.desc = desc
-
-        self.swaccess = swaccess
-        self.hwaccess = hwaccess
-
         self.hwext = hwext
-        if self.hwext and self.hwaccess.key == 'hro' and self.sw_readable():
-            raise ValueError('hwext flag for {} register is set, but '
-                             'hwaccess is hro and the register value '
-                             'is readable by software mode ({}).'
-                             .format(self.name, self.swaccess.key))
-
         self.hwqe = hwqe
-        if self.hwext and not self.hwqe and self.sw_writable():
-            raise ValueError('The {} register has hwext set and is writable '
-                             'by software (mode {}), so must also have hwqe '
-                             'enabled.'
-                             .format(self.name, self.swaccess.key))
-
         self.hwre = hwre
         if self.hwre and not self.hwext:
             raise ValueError('The {} register specifies hwre but not hwext.'
@@ -147,6 +129,25 @@ class Register(RegBase):
                 raise ValueError('Register {} has duplicate fields called {}.'
                                  .format(self.name, field.name))
             self.name_to_field[field.name] = field
+
+        # Check that fields have compatible access types if we are hwext
+        if self.hwext:
+            for field in self.fields:
+                if field.hwaccess.key == 'hro' and field.sw_readable():
+                    raise ValueError('The {} register has hwext set, but '
+                                     'field {} has hro hwaccess and the '
+                                     'field value is readable by software '
+                                     'mode ({}).'
+                                     .format(self.name,
+                                             field.name,
+                                             field.swaccess.key))
+                if not self.hwqe and field.sw_writable():
+                    raise ValueError('The {} register has hwext set and field '
+                                     '{} is writable by software (mode {}), '
+                                     'so the register must also enable hwqe.'
+                                     .format(self.name,
+                                             field.name,
+                                             field.swaccess.key))
 
         # Check that field bits are disjoint
         bits_used = 0
@@ -259,22 +260,13 @@ class Register(RegBase):
                                            'storage_err_alert for {} register'
                                            .format(name))
 
-        return Register(offset, name, desc, swaccess, hwaccess,
+        return Register(offset, name, desc,
                         hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + addrsep
-
-    def sw_readable(self) -> bool:
-        return self.swaccess.key not in ['wo', 'r0w1c']
-
-    def sw_writable(self) -> bool:
-        return self.swaccess.key != 'ro'
-
-    def dv_rights(self) -> str:
-        return self.swaccess.dv_rights()
 
     def get_n_bits(self, bittype: List[str]) -> int:
         return sum(field.get_n_bits(self.hwext, self.hwqe, self.hwre, bittype)
@@ -285,6 +277,13 @@ class Register(RegBase):
 
     def is_homogeneous(self) -> bool:
         return len(self.fields) == 1
+
+    def is_hw_writable(self) -> bool:
+        '''Returns true if any field in this register can be modified by HW'''
+        for fld in self.fields:
+            if fld.hwaccess.allows_write():
+                return True
+        return False
 
     def get_width(self) -> int:
         '''Get the width of the fields in the register in bits
@@ -348,18 +347,61 @@ class Register(RegBase):
         new_resval = None
 
         return Register(offset, new_name, self.desc,
-                        self.swaccess, self.hwaccess,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
                         self.update_err_alert, self.storage_err_alert)
+
+    def check_valid_regwen(self) -> None:
+        '''Check that this register is valid for use as a REGWEN'''
+        # A REGWEN register should have a single field that's just bit zero.
+        if len(self.fields) != 1:
+            raise ValueError('One or more registers use {} as a '
+                             'write-enable so it should have exactly one '
+                             'field. It actually has {}.'
+                             .format(self.name, len(self.fields)))
+
+        wen_fld = self.fields[0]
+        if wen_fld.bits.width() != 1:
+            raise ValueError('One or more registers use {} as a '
+                             'write-enable so its field should be 1 bit wide, '
+                             'not {}.'
+                             .format(self.name, wen_fld.bits.width()))
+        if wen_fld.bits.lsb != 0:
+            raise ValueError('One or more registers use {} as a '
+                             'write-enable so its field should have LSB 0, '
+                             'not {}.'
+                             .format(self.name, wen_fld.bits.lsb))
+
+        # If the REGWEN bit is SW controlled, check that the register
+        # defaults to enabled. If this bit is read-only by SW and hence
+        # hardware controlled, we do not enforce this requirement.
+        if wen_fld.swaccess.key != "ro" and not self.resval:
+            raise ValueError('One or more registers use {} as a '
+                             'write-enable. Since it is SW-controlled '
+                             'it should have a nonzero reset value.'
+                             .format(self.name))
+
+        if wen_fld.swaccess.key == "rw0c":
+            # The register is software managed: all good!
+            return
+
+        if wen_fld.swaccess.key == "ro" and wen_fld.hwaccess.key == "hwo":
+            # The register is hardware managed: that's fine too.
+            return
+
+        raise ValueError('One or more registers use {} as a write-enable. '
+                         'However, its field has invalid access permissions '
+                         '({} / {}). It should either have swaccess=RW0C '
+                         'or have swaccess=RO and hwaccess=HWO.'
+                         .format(self.name,
+                                 wen_fld.swaccess.key,
+                                 wen_fld.hwaccess.key))
 
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'name': self.name,
             'desc': self.desc,
             'fields': self.fields,
-            'swaccess': self.swaccess.key,
-            'hwaccess': self.hwaccess.key,
             'hwext': str(self.hwext),
             'hwqe': str(self.hwqe),
             'hwre': str(self.hwre),
