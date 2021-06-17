@@ -26,12 +26,14 @@ module flash_ctrl_wrapper (
   // OTP interface
   input        otp_ctrl_pkg::flash_otp_key_req_t otp_i,
   output       otp_ctrl_pkg::flash_otp_key_rsp_t otp_o,
+
   input        lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+
   output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
   input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
@@ -43,6 +45,7 @@ module flash_ctrl_wrapper (
   output logic intr_rd_full_o,    // Read fifo is full
   output logic intr_rd_lvl_o,     // Read fifo is full
   output logic intr_op_done_o,    // Requested flash operation (wr/erase) done
+  output logic intr_err_o,        // ERR_CODE is non-zero
 
   input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
@@ -70,6 +73,7 @@ module flash_ctrl_wrapper (
     .intr_rd_full_o   (intr_rd_full_o),
     .intr_rd_lvl_o    (intr_rd_lvl_o),
     .intr_op_done_o   (intr_op_done_o),
+    .intr_err_o       (intr_err_o),
 
     // Alerts
     .alert_rx_i,

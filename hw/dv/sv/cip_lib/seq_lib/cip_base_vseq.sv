@@ -357,57 +357,50 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
-    dv_base_reg all_intr_csrs[$];
+    dv_base_reg intr_csrs[$];
 
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
       if (!uvm_re_match("intr_test*", csr_name) ||
           !uvm_re_match("intr_enable*", csr_name) ||
           !uvm_re_match("intr_state*", csr_name)) begin
-        all_intr_csrs.push_back(get_interrupt_csr(csr_name));
+        intr_csrs.push_back(get_interrupt_csr(csr_name));
       end
     end
 
-    num_times = num_times * all_intr_csrs.size;
+    num_times = num_times * intr_csrs.size();
     for (int trans = 1; trans <= num_times; trans++) begin
       bit [BUS_DW-1:0] num_used_bits;
       bit [BUS_DW-1:0] intr_enable_val[$];
       `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
 
       // Random Write to all intr related registers
-      all_intr_csrs.shuffle();
-      foreach (all_intr_csrs[i]) begin
-        uvm_reg_data_t data = $urandom;
-        `uvm_info(`gfn, $sformatf("Write intr CSR %s: 0x%0h", all_intr_csrs[i].get_name(), data),
-                  UVM_MEDIUM)
-        csr_wr(.ptr(all_intr_csrs[i]), .value(data));
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t data = $urandom();
+        `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
+        csr_wr(.ptr(intr_csrs[i]), .value(data));
       end
 
       // Read all intr related csr and check interrupt pins
-      all_intr_csrs.shuffle();
-      foreach (all_intr_csrs[i]) begin
-        dv_base_reg csr = all_intr_csrs[i];
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t exp_val = `gmv(intr_csrs[i]);
         uvm_reg_data_t act_val;
-        string csr_name = csr.get_name();
 
-        csr_rd(.ptr(csr), .value(act_val));
-        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", csr.get_full_name(), act_val),
-            UVM_MEDIUM)
-
+        csr_rd(.ptr(intr_csrs[i]), .value(act_val));
         if (cfg.under_reset) continue;
-
-        `DV_CHECK_EQ(act_val, `gmv(csr))
+        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].`gfn, act_val), UVM_MEDIUM)
+        `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR", intr_csrs[i].`gfn})
 
         // if it's intr_state, also check the interrupt pin value
-        if (!uvm_re_match("intr_state*", csr_name)) begin
-          uvm_reg_data_t exp_intr_pin = csr.get_intr_pins_exp_value();
-
-          for (int j = 0; j < csr.get_n_used_bits(); j++) begin
-            bit act_intr_pin_val = cfg.intr_vif.sample_pin(j);
-            `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j])
-          end // for
+        if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+          dv_utils_pkg::interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
+          dv_utils_pkg::interrupt_t act_intr_pin = cfg.intr_vif.sample();
+          act_intr_pin &= dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1);
+          `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
         end // if (!uvm_re_match
-      end // foreach (all_intr_csrs[i])
+      end // foreach (intr_csrs[i])
     end // for (int trans = 1; ...
   endtask
 
