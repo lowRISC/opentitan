@@ -123,9 +123,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
   endtask
 
-  virtual task apply_resets_concurrently();
-    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently();
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    if (cfg.has_edn) begin
+      cfg.edn_clk_rst_vif.drive_rst_pin(0);
+      reset_duration_ps = max2(reset_duration_ps, cfg.edn_clk_rst_vif.clk_period_ps);
+    end
+    super.apply_resets_concurrently(reset_duration_ps);
     if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
   endtask
 

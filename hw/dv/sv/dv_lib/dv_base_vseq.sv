@@ -114,27 +114,26 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // `stress_all_with_rand_reset` sequence tries to terminate the parallel sequence, an UVM_ERROR
   // will be thrown by the sequencer saying `task responsible for requesting a wait_for_grant has
   // been killed`.
-  virtual task apply_resets_concurrently();
-    bit one_reset_deasserted;
+  // In order to ensure all resets at least being asserted for one clock cycle, this task takes an
+  // optional input `reset_duration_ps` if the DUT has additional resets. The task uses this input
+  // to compute the minimal time required to keep all resets asserted.
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+
+    // Has one or more RAL models in DUT.
     if (cfg.clk_rst_vifs.size() > 0) begin
-      fork
-        begin : isolation_fork
-          foreach (cfg.clk_rst_vifs[i]) begin
-            automatic string ral_name = i;
-            fork
-              begin
-                cfg.clk_rst_vifs[ral_name].apply_reset(.rst_n_scheme(0));
-                one_reset_deasserted = 1;
-              end
-            join_none
-          end
-          wait(one_reset_deasserted);
-          disable fork;
-          foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-        end : isolation_fork
-      join
-    end else begin // no ral model and only has default clk_rst_vif
-      cfg.clk_rst_vif.apply_reset(.rst_n_scheme(0));
+      foreach (cfg.clk_rst_vifs[i]) begin
+        cfg.clk_rst_vifs[i].drive_rst_pin(0);
+        reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vifs[i].clk_period_ps);
+      end
+      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+      foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+
+    // No RAL model and only has default clk_rst_vif.
+    end else begin
+      cfg.clk_rst_vif.drive_rst_pin(0);
+      reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vif.clk_period_ps);
+      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+      cfg.clk_rst_vif.drive_rst_pin(1);
     end
   endtask
 
