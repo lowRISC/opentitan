@@ -8,7 +8,11 @@
  * Tile-Link UL command integrity generator
  */
 
-module tlul_cmd_intg_gen import tlul_pkg::*; (
+module tlul_cmd_intg_gen import tlul_pkg::*; #(
+  // TODO: default generation of data integrity is on until host native
+  // generation is ready
+  parameter bit EnableDataIntgGen = 1'b1
+) (
   // TL-UL interface
   input  tl_h2d_t tl_i,
   output tl_h2d_t tl_o
@@ -24,10 +28,31 @@ module tlul_cmd_intg_gen import tlul_pkg::*; (
     .data_o({cmd_intg, unused_cmd_payload})
   );
 
+  logic [top_pkg::TL_DW-1:0] data_final;
+  logic [DataIntgWidth-1:0] data_intg;
+
+  if (EnableDataIntgGen) begin : gen_data_intg
+    for (genvar i = 0; i < top_pkg::TL_DBW; i++) begin : gen_data_fill
+      assign data_final[i*8 +: 8] = tl_i.a_mask[i] ? tl_i.a_data[i*8 +: 8] : '0;
+    end
+
+    logic [DataMaxWidth-1:0] unused_data;
+    prim_secded_64_57_enc u_data_gen (
+      .data_i(DataMaxWidth'(data_final)),
+      .data_o({data_intg, unused_data})
+    );
+  end else begin : gen_passthrough_data_intg
+    assign data_final = tl_i.a_data;
+    assign data_intg = tl_i.a_user.data_intg;
+  end
+
   always_comb begin
     tl_o = tl_i;
+    tl_o.a_data = data_final;
     tl_o.a_user.cmd_intg = cmd_intg;
+    tl_o.a_user.data_intg = data_intg;
   end
+
 
   logic unused_tl;
   assign unused_tl = ^tl_i;
