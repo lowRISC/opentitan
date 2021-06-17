@@ -21,10 +21,9 @@ __DYNAMIC = 0;
 _dv_log_offset = 0x10000;
 
 /**
- * Marking the entrypoint correctly for the ELF file. In reality, we will end up
- * using a hard-coded offset from the slot start, as we don't have the ELF info
- * around once we have the image, and the entry offset is static in the image
- * format.
+ * Marking the entry point correctly for the ELF file. The signer tool will
+ * transfer this value to the `entry_point` field of the manifest, which will
+ * then be used by `mask_rom_boot` to handover execution to ROM_EXT.
  */
 ENTRY(_rom_ext_start_boot)
 
