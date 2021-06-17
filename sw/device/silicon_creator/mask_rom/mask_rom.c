@@ -162,11 +162,13 @@ void mask_rom_boot(void) {
     // if (!final_jump_to_rom_ext(current_rom_ext_manifest)) { // Hardened Jump
     // Module
     if (true) {
+      uintptr_t entry_point;
+      if (manifest_entry_point_get(manifest, &entry_point) != kErrorOk) {
+        break;
+      }
       // Jump to ROM_EXT entry point.
-      romextimage_entry_point *entry_point =
-          (romextimage_entry_point *)manifest_entry_point_address_get(manifest);
       base_printf("rom_ext_entry: %p\r\n", entry_point);
-      entry_point();
+      ((romextimage_entry_point *)entry_point)();
       // NOTE: never expecting a return, but if something were to go wrong
       // in the real `jump` implementation, we need to enter a failure case.
 
