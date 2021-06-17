@@ -77,7 +77,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       ${r.offset}: hro_idx <= ${idx};
 % endfor
       // If the register is not a HRO register, the write data will all update to this default idx.
-      default: hro_idx <= ${num_hro_regs + 1};
+      default: hro_idx <= ${num_hro_regs};
     endcase
   end
 
