@@ -35,7 +35,7 @@
   overrides: [
     {
       name: design_level
-              value: "top"
+      value: "top"
     }
   ]
 
@@ -54,6 +54,11 @@
     {
       name: flash_ctrl_smoke
       uvm_test_seq: flash_ctrl_smoke_vseq
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_rand_ops
+      uvm_test_seq: flash_ctrl_rand_ops_vseq
     }
   ]
 

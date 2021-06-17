@@ -6,8 +6,8 @@
 // operations. It is encouraged to extend this vseq to a custom vseq that constrains the
 // randomization by overriding the `configure_vseq()` function. See `flash_ctrl_smoke_vseq` for
 // example.
-class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
-  `uvm_object_utils(flash_ctrl_rand_ops_vseq)
+class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
+  `uvm_object_utils(flash_ctrl_rand_ops_base_vseq)
 
   // Number of times we run a random flash operation with a fully configured flash ctrl.
   rand uint num_flash_ops_per_cfg;
@@ -306,4 +306,4 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     endcase
   endfunction
 
-endclass : flash_ctrl_rand_ops_vseq
+endclass : flash_ctrl_rand_ops_base_vseq
