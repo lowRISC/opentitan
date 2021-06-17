@@ -246,3 +246,32 @@ mask_rom_tests += {
     'library': sw_silicon_creator_lib_driver_alert_functest,
   }
 }
+
+# Mask ROM watchdog driver
+sw_silicon_creator_lib_driver_watchdog = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_watchdog',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      'watchdog.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  ),
+)
+
+sw_silicon_creator_lib_driver_watchdog_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_watchdog_functest',
+    sources: ['watchdog_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_watchdog,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_watchdog_functest': {
+    'library': sw_silicon_creator_lib_driver_watchdog_functest,
+  }
+}
