@@ -563,7 +563,7 @@ dif_pwrmgr_result_t dif_pwrmgr_irq_disable_all(
  */
 DIF_WARN_UNUSED_RESULT
 dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
-    const dif_pwrmgr_t *pwrmgr, const dif_pwrmgr_irq_snapshot_t *snapshot);
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_snapshot_t snapshot);
 
 #ifdef __cplusplus
 }  // extern "C"

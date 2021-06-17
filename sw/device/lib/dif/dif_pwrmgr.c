@@ -585,12 +585,12 @@ dif_pwrmgr_result_t dif_pwrmgr_irq_disable_all(
 }
 
 dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
-    const dif_pwrmgr_t *pwrmgr, const dif_pwrmgr_irq_snapshot_t *snapshot) {
-  if (pwrmgr == NULL || snapshot == NULL) {
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_snapshot_t snapshot) {
+  if (pwrmgr == NULL) {
     return kDifPwrmgrBadArg;
   }
 
   mmio_region_write32(pwrmgr->params.base_addr, PWRMGR_INTR_ENABLE_REG_OFFSET,
-                      *snapshot);
+                      snapshot);
   return kDifPwrmgrOk;
 }
