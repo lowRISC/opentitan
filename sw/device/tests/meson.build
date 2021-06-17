@@ -281,6 +281,7 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
           rom_ext_signer_export.full_path(),
           '@INPUT@',
           key_info['path'],
+          sw_test_elf.full_path(),
           '@OUTPUT@',
         ],
         depends: rom_ext_signer_export,
