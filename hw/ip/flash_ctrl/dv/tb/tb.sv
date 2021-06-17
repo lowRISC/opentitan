@@ -23,6 +23,7 @@ module tb;
   wire intr_rd_full;
   wire intr_rd_lvl;
   wire intr_op_done;
+  wire intr_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -70,6 +71,7 @@ module tb;
     .intr_rd_full_o     (intr_rd_full   ),
     .intr_rd_lvl_o      (intr_rd_lvl    ),
     .intr_op_done_o     (intr_op_done   ),
+    .intr_err_o         (intr_err       ),
     .alert_rx_i         (alert_rx       ),
     .alert_tx_o         (alert_tx       )
   );
@@ -169,6 +171,7 @@ module tb;
   assign interrupts[FlashCtrlIntrRdFull]    = intr_rd_full;
   assign interrupts[FlashCtrlIntrRdLvl]     = intr_rd_lvl;
   assign interrupts[FlashCtrlIntrOpDone]    = intr_op_done;
+  assign interrupts[FlashCtrlIntrErr]       = intr_err;
 
   initial begin
     // drive clk and rst_n from clk_if

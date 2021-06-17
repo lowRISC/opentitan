@@ -14,8 +14,11 @@ package dv_utils_pkg;
 `endif
 
   // common parameters used across all benches
-  parameter int NUM_MAX_INTERRUPTS  = 32;
-  parameter int NUM_MAX_ALERTS      = 32;
+  parameter int NUM_MAX_INTERRUPTS = 32;
+  typedef logic [NUM_MAX_INTERRUPTS-1:0] interrupt_t;
+
+  parameter int NUM_MAX_ALERTS = 32;
+  typedef logic [NUM_MAX_ALERTS-1:0] alert_t;
 
   // types & variables
   typedef bit [31:0] uint;

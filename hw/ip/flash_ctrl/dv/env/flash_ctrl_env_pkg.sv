@@ -24,6 +24,7 @@ package flash_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {
     "recov_err", "recov_mp_err", "recov_ecc_err", "fatal_intg_err"
   };
+
   parameter uint NUM_ALERTS = 4;
   parameter uint FlashNumPages            = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
   parameter uint FlashSizeBytes           = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
@@ -56,7 +57,8 @@ package flash_ctrl_env_pkg;
     FlashCtrlIntrRdFull     = 2,
     FlashCtrlIntrRdLvl      = 3,
     FlashCtrlIntrOpDone     = 4,
-    NumFlashCtrlIntr        = 5
+    FlashCtrlIntrErr        = 5,
+    NumFlashCtrlIntr        = 6
   } flash_ctrl_intr_e;
 
   typedef enum {
