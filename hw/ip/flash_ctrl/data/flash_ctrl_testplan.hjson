@@ -39,7 +39,7 @@
             multiple info partitions may be added - those will be covered as well.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_rand_ops"]
     }
     {
       name: host_read_check
@@ -200,7 +200,7 @@
             design.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_stress_all"]
     }
     {
       name: flash_init
