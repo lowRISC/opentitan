@@ -157,144 +157,115 @@ module otp_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_otp_operation_done_qs;
   logic intr_state_otp_operation_done_wd;
-  logic intr_state_otp_operation_done_we;
   logic intr_state_otp_error_qs;
   logic intr_state_otp_error_wd;
-  logic intr_state_otp_error_we;
+  logic intr_enable_we;
   logic intr_enable_otp_operation_done_qs;
   logic intr_enable_otp_operation_done_wd;
-  logic intr_enable_otp_operation_done_we;
   logic intr_enable_otp_error_qs;
   logic intr_enable_otp_error_wd;
-  logic intr_enable_otp_error_we;
+  logic intr_test_we;
   logic intr_test_otp_operation_done_wd;
-  logic intr_test_otp_operation_done_we;
   logic intr_test_otp_error_wd;
-  logic intr_test_otp_error_we;
+  logic alert_test_we;
   logic alert_test_fatal_macro_error_wd;
-  logic alert_test_fatal_macro_error_we;
   logic alert_test_fatal_check_error_wd;
-  logic alert_test_fatal_check_error_we;
+  logic status_re;
   logic status_creator_sw_cfg_error_qs;
-  logic status_creator_sw_cfg_error_re;
   logic status_owner_sw_cfg_error_qs;
-  logic status_owner_sw_cfg_error_re;
   logic status_hw_cfg_error_qs;
-  logic status_hw_cfg_error_re;
   logic status_secret0_error_qs;
-  logic status_secret0_error_re;
   logic status_secret1_error_qs;
-  logic status_secret1_error_re;
   logic status_secret2_error_qs;
-  logic status_secret2_error_re;
   logic status_life_cycle_error_qs;
-  logic status_life_cycle_error_re;
   logic status_dai_error_qs;
-  logic status_dai_error_re;
   logic status_lci_error_qs;
-  logic status_lci_error_re;
   logic status_timeout_error_qs;
-  logic status_timeout_error_re;
   logic status_lfsr_fsm_error_qs;
-  logic status_lfsr_fsm_error_re;
   logic status_scrambling_fsm_error_qs;
-  logic status_scrambling_fsm_error_re;
   logic status_key_deriv_fsm_error_qs;
-  logic status_key_deriv_fsm_error_re;
   logic status_dai_idle_qs;
-  logic status_dai_idle_re;
   logic status_check_pending_qs;
-  logic status_check_pending_re;
+  logic err_code_re;
   logic [2:0] err_code_err_code_0_qs;
-  logic err_code_err_code_0_re;
   logic [2:0] err_code_err_code_1_qs;
-  logic err_code_err_code_1_re;
   logic [2:0] err_code_err_code_2_qs;
-  logic err_code_err_code_2_re;
   logic [2:0] err_code_err_code_3_qs;
-  logic err_code_err_code_3_re;
   logic [2:0] err_code_err_code_4_qs;
-  logic err_code_err_code_4_re;
   logic [2:0] err_code_err_code_5_qs;
-  logic err_code_err_code_5_re;
   logic [2:0] err_code_err_code_6_qs;
-  logic err_code_err_code_6_re;
   logic [2:0] err_code_err_code_7_qs;
-  logic err_code_err_code_7_re;
   logic [2:0] err_code_err_code_8_qs;
-  logic err_code_err_code_8_re;
-  logic direct_access_regwen_qs;
   logic direct_access_regwen_re;
+  logic direct_access_regwen_qs;
+  logic direct_access_cmd_we;
   logic direct_access_cmd_rd_wd;
-  logic direct_access_cmd_rd_we;
   logic direct_access_cmd_wr_wd;
-  logic direct_access_cmd_wr_we;
   logic direct_access_cmd_digest_wd;
-  logic direct_access_cmd_digest_we;
+  logic direct_access_address_we;
   logic [10:0] direct_access_address_qs;
   logic [10:0] direct_access_address_wd;
-  logic direct_access_address_we;
+  logic direct_access_wdata_0_we;
   logic [31:0] direct_access_wdata_0_qs;
   logic [31:0] direct_access_wdata_0_wd;
-  logic direct_access_wdata_0_we;
+  logic direct_access_wdata_1_we;
   logic [31:0] direct_access_wdata_1_qs;
   logic [31:0] direct_access_wdata_1_wd;
-  logic direct_access_wdata_1_we;
-  logic [31:0] direct_access_rdata_0_qs;
   logic direct_access_rdata_0_re;
-  logic [31:0] direct_access_rdata_1_qs;
+  logic [31:0] direct_access_rdata_0_qs;
   logic direct_access_rdata_1_re;
+  logic [31:0] direct_access_rdata_1_qs;
+  logic check_trigger_regwen_we;
   logic check_trigger_regwen_qs;
   logic check_trigger_regwen_wd;
-  logic check_trigger_regwen_we;
+  logic check_trigger_we;
   logic check_trigger_integrity_wd;
-  logic check_trigger_integrity_we;
   logic check_trigger_consistency_wd;
-  logic check_trigger_consistency_we;
+  logic check_regwen_we;
   logic check_regwen_qs;
   logic check_regwen_wd;
-  logic check_regwen_we;
+  logic check_timeout_we;
   logic [31:0] check_timeout_qs;
   logic [31:0] check_timeout_wd;
-  logic check_timeout_we;
+  logic integrity_check_period_we;
   logic [31:0] integrity_check_period_qs;
   logic [31:0] integrity_check_period_wd;
-  logic integrity_check_period_we;
+  logic consistency_check_period_we;
   logic [31:0] consistency_check_period_qs;
   logic [31:0] consistency_check_period_wd;
-  logic consistency_check_period_we;
+  logic creator_sw_cfg_read_lock_we;
   logic creator_sw_cfg_read_lock_qs;
   logic creator_sw_cfg_read_lock_wd;
-  logic creator_sw_cfg_read_lock_we;
+  logic owner_sw_cfg_read_lock_we;
   logic owner_sw_cfg_read_lock_qs;
   logic owner_sw_cfg_read_lock_wd;
-  logic owner_sw_cfg_read_lock_we;
-  logic [31:0] creator_sw_cfg_digest_0_qs;
   logic creator_sw_cfg_digest_0_re;
-  logic [31:0] creator_sw_cfg_digest_1_qs;
+  logic [31:0] creator_sw_cfg_digest_0_qs;
   logic creator_sw_cfg_digest_1_re;
-  logic [31:0] owner_sw_cfg_digest_0_qs;
+  logic [31:0] creator_sw_cfg_digest_1_qs;
   logic owner_sw_cfg_digest_0_re;
-  logic [31:0] owner_sw_cfg_digest_1_qs;
+  logic [31:0] owner_sw_cfg_digest_0_qs;
   logic owner_sw_cfg_digest_1_re;
-  logic [31:0] hw_cfg_digest_0_qs;
+  logic [31:0] owner_sw_cfg_digest_1_qs;
   logic hw_cfg_digest_0_re;
-  logic [31:0] hw_cfg_digest_1_qs;
+  logic [31:0] hw_cfg_digest_0_qs;
   logic hw_cfg_digest_1_re;
-  logic [31:0] secret0_digest_0_qs;
+  logic [31:0] hw_cfg_digest_1_qs;
   logic secret0_digest_0_re;
-  logic [31:0] secret0_digest_1_qs;
+  logic [31:0] secret0_digest_0_qs;
   logic secret0_digest_1_re;
-  logic [31:0] secret1_digest_0_qs;
+  logic [31:0] secret0_digest_1_qs;
   logic secret1_digest_0_re;
-  logic [31:0] secret1_digest_1_qs;
+  logic [31:0] secret1_digest_0_qs;
   logic secret1_digest_1_re;
-  logic [31:0] secret2_digest_0_qs;
+  logic [31:0] secret1_digest_1_qs;
   logic secret2_digest_0_re;
-  logic [31:0] secret2_digest_1_qs;
+  logic [31:0] secret2_digest_0_qs;
   logic secret2_digest_1_re;
+  logic [31:0] secret2_digest_1_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -309,7 +280,7 @@ module otp_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_otp_operation_done_we),
+    .we     (intr_state_we),
     .wd     (intr_state_otp_operation_done_wd),
 
     // from internal hardware
@@ -335,7 +306,7 @@ module otp_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_otp_error_we),
+    .we     (intr_state_we),
     .wd     (intr_state_otp_error_wd),
 
     // from internal hardware
@@ -363,7 +334,7 @@ module otp_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_otp_operation_done_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_otp_operation_done_wd),
 
     // from internal hardware
@@ -389,7 +360,7 @@ module otp_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_otp_error_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_otp_error_wd),
 
     // from internal hardware
@@ -412,7 +383,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_intr_test_otp_operation_done (
     .re     (1'b0),
-    .we     (intr_test_otp_operation_done_we),
+    .we     (intr_test_we),
     .wd     (intr_test_otp_operation_done_wd),
     .d      ('0),
     .qre    (),
@@ -427,7 +398,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_intr_test_otp_error (
     .re     (1'b0),
-    .we     (intr_test_otp_error_we),
+    .we     (intr_test_we),
     .wd     (intr_test_otp_error_wd),
     .d      ('0),
     .qre    (),
@@ -444,7 +415,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_macro_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_macro_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_macro_error_wd),
     .d      ('0),
     .qre    (),
@@ -459,7 +430,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_check_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_check_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_check_error_wd),
     .d      ('0),
     .qre    (),
@@ -475,7 +446,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_creator_sw_cfg_error (
-    .re     (status_creator_sw_cfg_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.creator_sw_cfg_error.d),
@@ -490,7 +461,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_owner_sw_cfg_error (
-    .re     (status_owner_sw_cfg_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.owner_sw_cfg_error.d),
@@ -505,7 +476,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_hw_cfg_error (
-    .re     (status_hw_cfg_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.hw_cfg_error.d),
@@ -520,7 +491,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_secret0_error (
-    .re     (status_secret0_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.secret0_error.d),
@@ -535,7 +506,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_secret1_error (
-    .re     (status_secret1_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.secret1_error.d),
@@ -550,7 +521,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_secret2_error (
-    .re     (status_secret2_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.secret2_error.d),
@@ -565,7 +536,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_life_cycle_error (
-    .re     (status_life_cycle_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.life_cycle_error.d),
@@ -580,7 +551,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_dai_error (
-    .re     (status_dai_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.dai_error.d),
@@ -595,7 +566,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_lci_error (
-    .re     (status_lci_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.lci_error.d),
@@ -610,7 +581,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_timeout_error (
-    .re     (status_timeout_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.timeout_error.d),
@@ -625,7 +596,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_lfsr_fsm_error (
-    .re     (status_lfsr_fsm_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.lfsr_fsm_error.d),
@@ -640,7 +611,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_scrambling_fsm_error (
-    .re     (status_scrambling_fsm_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.scrambling_fsm_error.d),
@@ -655,7 +626,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_key_deriv_fsm_error (
-    .re     (status_key_deriv_fsm_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.key_deriv_fsm_error.d),
@@ -670,7 +641,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_dai_idle (
-    .re     (status_dai_idle_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.dai_idle.d),
@@ -685,7 +656,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_check_pending (
-    .re     (status_check_pending_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.check_pending.d),
@@ -704,7 +675,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_0 (
-    .re     (err_code_err_code_0_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[0].d),
@@ -719,7 +690,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_1 (
-    .re     (err_code_err_code_1_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[1].d),
@@ -734,7 +705,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_2 (
-    .re     (err_code_err_code_2_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[2].d),
@@ -749,7 +720,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_3 (
-    .re     (err_code_err_code_3_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[3].d),
@@ -764,7 +735,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_4 (
-    .re     (err_code_err_code_4_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[4].d),
@@ -779,7 +750,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_5 (
-    .re     (err_code_err_code_5_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[5].d),
@@ -794,7 +765,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_6 (
-    .re     (err_code_err_code_6_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[6].d),
@@ -809,7 +780,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_7 (
-    .re     (err_code_err_code_7_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[7].d),
@@ -824,7 +795,7 @@ module otp_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_8 (
-    .re     (err_code_err_code_8_re),
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.err_code[8].d),
@@ -859,7 +830,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_rd (
     .re     (1'b0),
-    .we     (direct_access_cmd_rd_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_rd_wd),
     .d      ('0),
     .qre    (),
@@ -874,7 +845,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_wr (
     .re     (1'b0),
-    .we     (direct_access_cmd_wr_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_wr_wd),
     .d      ('0),
     .qre    (),
@@ -889,7 +860,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_digest (
     .re     (1'b0),
-    .we     (direct_access_cmd_digest_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_digest_wd),
     .d      ('0),
     .qre    (),
@@ -1050,7 +1021,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_check_trigger_integrity (
     .re     (1'b0),
-    .we     (check_trigger_integrity_we & check_trigger_regwen_qs),
+    .we     (check_trigger_we & check_trigger_regwen_qs),
     .wd     (check_trigger_integrity_wd),
     .d      ('0),
     .qre    (),
@@ -1065,7 +1036,7 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_check_trigger_consistency (
     .re     (1'b0),
-    .we     (check_trigger_consistency_we & check_trigger_regwen_qs),
+    .we     (check_trigger_we & check_trigger_regwen_qs),
     .wd     (check_trigger_consistency_wd),
     .d      ('0),
     .qre    (),
@@ -1520,152 +1491,84 @@ module otp_ctrl_reg_top (
                (addr_hit[31] & (|(OTP_CTRL_PERMIT[31] & ~reg_be))) |
                (addr_hit[32] & (|(OTP_CTRL_PERMIT[32] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_otp_operation_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_state_otp_error_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_otp_error_wd = reg_wdata[1];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_otp_operation_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_enable_otp_error_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_otp_error_wd = reg_wdata[1];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_otp_operation_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_test_otp_error_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_otp_error_wd = reg_wdata[1];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_fatal_macro_error_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_macro_error_wd = reg_wdata[0];
 
-  assign alert_test_fatal_check_error_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_check_error_wd = reg_wdata[1];
-
-  assign status_creator_sw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_owner_sw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_hw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_secret0_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_secret1_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_secret2_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_life_cycle_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_dai_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_lci_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_timeout_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_lfsr_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_scrambling_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_key_deriv_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_dai_idle_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign status_check_pending_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign err_code_err_code_0_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_1_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_2_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_3_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_4_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_5_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_6_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_7_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign err_code_err_code_8_re = addr_hit[5] & reg_re & !reg_error;
-
+  assign status_re = addr_hit[4] & reg_re & !reg_error;
+  assign err_code_re = addr_hit[5] & reg_re & !reg_error;
   assign direct_access_regwen_re = addr_hit[6] & reg_re & !reg_error;
+  assign direct_access_cmd_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign direct_access_cmd_rd_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_rd_wd = reg_wdata[0];
 
-  assign direct_access_cmd_wr_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_wr_wd = reg_wdata[1];
 
-  assign direct_access_cmd_digest_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_digest_wd = reg_wdata[2];
-
   assign direct_access_address_we = addr_hit[8] & reg_we & !reg_error;
+
   assign direct_access_address_wd = reg_wdata[10:0];
-
   assign direct_access_wdata_0_we = addr_hit[9] & reg_we & !reg_error;
+
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
-
   assign direct_access_wdata_1_we = addr_hit[10] & reg_we & !reg_error;
+
   assign direct_access_wdata_1_wd = reg_wdata[31:0];
-
   assign direct_access_rdata_0_re = addr_hit[11] & reg_re & !reg_error;
-
   assign direct_access_rdata_1_re = addr_hit[12] & reg_re & !reg_error;
-
   assign check_trigger_regwen_we = addr_hit[13] & reg_we & !reg_error;
-  assign check_trigger_regwen_wd = reg_wdata[0];
 
-  assign check_trigger_integrity_we = addr_hit[14] & reg_we & !reg_error;
+  assign check_trigger_regwen_wd = reg_wdata[0];
+  assign check_trigger_we = addr_hit[14] & reg_we & !reg_error;
+
   assign check_trigger_integrity_wd = reg_wdata[0];
 
-  assign check_trigger_consistency_we = addr_hit[14] & reg_we & !reg_error;
   assign check_trigger_consistency_wd = reg_wdata[1];
-
   assign check_regwen_we = addr_hit[15] & reg_we & !reg_error;
+
   assign check_regwen_wd = reg_wdata[0];
-
   assign check_timeout_we = addr_hit[16] & reg_we & !reg_error;
+
   assign check_timeout_wd = reg_wdata[31:0];
-
   assign integrity_check_period_we = addr_hit[17] & reg_we & !reg_error;
+
   assign integrity_check_period_wd = reg_wdata[31:0];
-
   assign consistency_check_period_we = addr_hit[18] & reg_we & !reg_error;
+
   assign consistency_check_period_wd = reg_wdata[31:0];
-
   assign creator_sw_cfg_read_lock_we = addr_hit[19] & reg_we & !reg_error;
+
   assign creator_sw_cfg_read_lock_wd = reg_wdata[0];
-
   assign owner_sw_cfg_read_lock_we = addr_hit[20] & reg_we & !reg_error;
+
   assign owner_sw_cfg_read_lock_wd = reg_wdata[0];
-
   assign creator_sw_cfg_digest_0_re = addr_hit[21] & reg_re & !reg_error;
-
   assign creator_sw_cfg_digest_1_re = addr_hit[22] & reg_re & !reg_error;
-
   assign owner_sw_cfg_digest_0_re = addr_hit[23] & reg_re & !reg_error;
-
   assign owner_sw_cfg_digest_1_re = addr_hit[24] & reg_re & !reg_error;
-
   assign hw_cfg_digest_0_re = addr_hit[25] & reg_re & !reg_error;
-
   assign hw_cfg_digest_1_re = addr_hit[26] & reg_re & !reg_error;
-
   assign secret0_digest_0_re = addr_hit[27] & reg_re & !reg_error;
-
   assign secret0_digest_1_re = addr_hit[28] & reg_re & !reg_error;
-
   assign secret1_digest_0_re = addr_hit[29] & reg_re & !reg_error;
-
   assign secret1_digest_1_re = addr_hit[30] & reg_re & !reg_error;
-
   assign secret2_digest_0_re = addr_hit[31] & reg_re & !reg_error;
-
   assign secret2_digest_1_re = addr_hit[32] & reg_re & !reg_error;
 
   // Read data return

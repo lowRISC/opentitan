@@ -157,189 +157,168 @@ module kmac_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_kmac_done_qs;
   logic intr_state_kmac_done_wd;
-  logic intr_state_kmac_done_we;
   logic intr_state_fifo_empty_qs;
   logic intr_state_fifo_empty_wd;
-  logic intr_state_fifo_empty_we;
   logic intr_state_kmac_err_qs;
   logic intr_state_kmac_err_wd;
-  logic intr_state_kmac_err_we;
+  logic intr_enable_we;
   logic intr_enable_kmac_done_qs;
   logic intr_enable_kmac_done_wd;
-  logic intr_enable_kmac_done_we;
   logic intr_enable_fifo_empty_qs;
   logic intr_enable_fifo_empty_wd;
-  logic intr_enable_fifo_empty_we;
   logic intr_enable_kmac_err_qs;
   logic intr_enable_kmac_err_wd;
-  logic intr_enable_kmac_err_we;
+  logic intr_test_we;
   logic intr_test_kmac_done_wd;
-  logic intr_test_kmac_done_we;
   logic intr_test_fifo_empty_wd;
-  logic intr_test_fifo_empty_we;
   logic intr_test_kmac_err_wd;
-  logic intr_test_kmac_err_we;
-  logic alert_test_wd;
   logic alert_test_we;
-  logic cfg_regwen_qs;
+  logic alert_test_wd;
   logic cfg_regwen_re;
+  logic cfg_regwen_qs;
+  logic cfg_we;
   logic cfg_kmac_en_qs;
   logic cfg_kmac_en_wd;
-  logic cfg_kmac_en_we;
   logic [2:0] cfg_kstrength_qs;
   logic [2:0] cfg_kstrength_wd;
-  logic cfg_kstrength_we;
   logic [1:0] cfg_mode_qs;
   logic [1:0] cfg_mode_wd;
-  logic cfg_mode_we;
   logic cfg_msg_endianness_qs;
   logic cfg_msg_endianness_wd;
-  logic cfg_msg_endianness_we;
   logic cfg_state_endianness_qs;
   logic cfg_state_endianness_wd;
-  logic cfg_state_endianness_we;
   logic cfg_sideload_qs;
   logic cfg_sideload_wd;
-  logic cfg_sideload_we;
   logic [1:0] cfg_entropy_mode_qs;
   logic [1:0] cfg_entropy_mode_wd;
-  logic cfg_entropy_mode_we;
   logic cfg_entropy_fast_process_qs;
   logic cfg_entropy_fast_process_wd;
-  logic cfg_entropy_fast_process_we;
   logic cfg_entropy_ready_qs;
   logic cfg_entropy_ready_wd;
-  logic cfg_entropy_ready_we;
   logic cfg_err_processed_qs;
   logic cfg_err_processed_wd;
-  logic cfg_err_processed_we;
-  logic [3:0] cmd_wd;
   logic cmd_we;
+  logic [3:0] cmd_wd;
+  logic status_re;
   logic status_sha3_idle_qs;
-  logic status_sha3_idle_re;
   logic status_sha3_absorb_qs;
-  logic status_sha3_absorb_re;
   logic status_sha3_squeeze_qs;
-  logic status_sha3_squeeze_re;
   logic [4:0] status_fifo_depth_qs;
-  logic status_fifo_depth_re;
   logic status_fifo_empty_qs;
-  logic status_fifo_empty_re;
   logic status_fifo_full_qs;
-  logic status_fifo_full_re;
+  logic entropy_period_we;
   logic [15:0] entropy_period_entropy_timer_qs;
   logic [15:0] entropy_period_entropy_timer_wd;
-  logic entropy_period_entropy_timer_we;
   logic [15:0] entropy_period_wait_timer_qs;
   logic [15:0] entropy_period_wait_timer_wd;
-  logic entropy_period_wait_timer_we;
+  logic entropy_seed_lower_we;
   logic [31:0] entropy_seed_lower_qs;
   logic [31:0] entropy_seed_lower_wd;
-  logic entropy_seed_lower_we;
+  logic entropy_seed_upper_we;
   logic [31:0] entropy_seed_upper_qs;
   logic [31:0] entropy_seed_upper_wd;
-  logic entropy_seed_upper_we;
-  logic [31:0] key_share0_0_wd;
   logic key_share0_0_we;
-  logic [31:0] key_share0_1_wd;
+  logic [31:0] key_share0_0_wd;
   logic key_share0_1_we;
-  logic [31:0] key_share0_2_wd;
+  logic [31:0] key_share0_1_wd;
   logic key_share0_2_we;
-  logic [31:0] key_share0_3_wd;
+  logic [31:0] key_share0_2_wd;
   logic key_share0_3_we;
-  logic [31:0] key_share0_4_wd;
+  logic [31:0] key_share0_3_wd;
   logic key_share0_4_we;
-  logic [31:0] key_share0_5_wd;
+  logic [31:0] key_share0_4_wd;
   logic key_share0_5_we;
-  logic [31:0] key_share0_6_wd;
+  logic [31:0] key_share0_5_wd;
   logic key_share0_6_we;
-  logic [31:0] key_share0_7_wd;
+  logic [31:0] key_share0_6_wd;
   logic key_share0_7_we;
-  logic [31:0] key_share0_8_wd;
+  logic [31:0] key_share0_7_wd;
   logic key_share0_8_we;
-  logic [31:0] key_share0_9_wd;
+  logic [31:0] key_share0_8_wd;
   logic key_share0_9_we;
-  logic [31:0] key_share0_10_wd;
+  logic [31:0] key_share0_9_wd;
   logic key_share0_10_we;
-  logic [31:0] key_share0_11_wd;
+  logic [31:0] key_share0_10_wd;
   logic key_share0_11_we;
-  logic [31:0] key_share0_12_wd;
+  logic [31:0] key_share0_11_wd;
   logic key_share0_12_we;
-  logic [31:0] key_share0_13_wd;
+  logic [31:0] key_share0_12_wd;
   logic key_share0_13_we;
-  logic [31:0] key_share0_14_wd;
+  logic [31:0] key_share0_13_wd;
   logic key_share0_14_we;
-  logic [31:0] key_share0_15_wd;
+  logic [31:0] key_share0_14_wd;
   logic key_share0_15_we;
-  logic [31:0] key_share1_0_wd;
+  logic [31:0] key_share0_15_wd;
   logic key_share1_0_we;
-  logic [31:0] key_share1_1_wd;
+  logic [31:0] key_share1_0_wd;
   logic key_share1_1_we;
-  logic [31:0] key_share1_2_wd;
+  logic [31:0] key_share1_1_wd;
   logic key_share1_2_we;
-  logic [31:0] key_share1_3_wd;
+  logic [31:0] key_share1_2_wd;
   logic key_share1_3_we;
-  logic [31:0] key_share1_4_wd;
+  logic [31:0] key_share1_3_wd;
   logic key_share1_4_we;
-  logic [31:0] key_share1_5_wd;
+  logic [31:0] key_share1_4_wd;
   logic key_share1_5_we;
-  logic [31:0] key_share1_6_wd;
+  logic [31:0] key_share1_5_wd;
   logic key_share1_6_we;
-  logic [31:0] key_share1_7_wd;
+  logic [31:0] key_share1_6_wd;
   logic key_share1_7_we;
-  logic [31:0] key_share1_8_wd;
+  logic [31:0] key_share1_7_wd;
   logic key_share1_8_we;
-  logic [31:0] key_share1_9_wd;
+  logic [31:0] key_share1_8_wd;
   logic key_share1_9_we;
-  logic [31:0] key_share1_10_wd;
+  logic [31:0] key_share1_9_wd;
   logic key_share1_10_we;
-  logic [31:0] key_share1_11_wd;
+  logic [31:0] key_share1_10_wd;
   logic key_share1_11_we;
-  logic [31:0] key_share1_12_wd;
+  logic [31:0] key_share1_11_wd;
   logic key_share1_12_we;
-  logic [31:0] key_share1_13_wd;
+  logic [31:0] key_share1_12_wd;
   logic key_share1_13_we;
-  logic [31:0] key_share1_14_wd;
+  logic [31:0] key_share1_13_wd;
   logic key_share1_14_we;
-  logic [31:0] key_share1_15_wd;
+  logic [31:0] key_share1_14_wd;
   logic key_share1_15_we;
-  logic [2:0] key_len_wd;
+  logic [31:0] key_share1_15_wd;
   logic key_len_we;
+  logic [2:0] key_len_wd;
+  logic prefix_0_we;
   logic [31:0] prefix_0_qs;
   logic [31:0] prefix_0_wd;
-  logic prefix_0_we;
+  logic prefix_1_we;
   logic [31:0] prefix_1_qs;
   logic [31:0] prefix_1_wd;
-  logic prefix_1_we;
+  logic prefix_2_we;
   logic [31:0] prefix_2_qs;
   logic [31:0] prefix_2_wd;
-  logic prefix_2_we;
+  logic prefix_3_we;
   logic [31:0] prefix_3_qs;
   logic [31:0] prefix_3_wd;
-  logic prefix_3_we;
+  logic prefix_4_we;
   logic [31:0] prefix_4_qs;
   logic [31:0] prefix_4_wd;
-  logic prefix_4_we;
+  logic prefix_5_we;
   logic [31:0] prefix_5_qs;
   logic [31:0] prefix_5_wd;
-  logic prefix_5_we;
+  logic prefix_6_we;
   logic [31:0] prefix_6_qs;
   logic [31:0] prefix_6_wd;
-  logic prefix_6_we;
+  logic prefix_7_we;
   logic [31:0] prefix_7_qs;
   logic [31:0] prefix_7_wd;
-  logic prefix_7_we;
+  logic prefix_8_we;
   logic [31:0] prefix_8_qs;
   logic [31:0] prefix_8_wd;
-  logic prefix_8_we;
+  logic prefix_9_we;
   logic [31:0] prefix_9_qs;
   logic [31:0] prefix_9_wd;
-  logic prefix_9_we;
+  logic prefix_10_we;
   logic [31:0] prefix_10_qs;
   logic [31:0] prefix_10_wd;
-  logic prefix_10_we;
   logic [31:0] err_code_qs;
 
   // Register instances
@@ -355,7 +334,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_kmac_done_we),
+    .we     (intr_state_we),
     .wd     (intr_state_kmac_done_wd),
 
     // from internal hardware
@@ -381,7 +360,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_fifo_empty_we),
+    .we     (intr_state_we),
     .wd     (intr_state_fifo_empty_wd),
 
     // from internal hardware
@@ -407,7 +386,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_kmac_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_kmac_err_wd),
 
     // from internal hardware
@@ -435,7 +414,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_kmac_done_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_kmac_done_wd),
 
     // from internal hardware
@@ -461,7 +440,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_fifo_empty_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_fifo_empty_wd),
 
     // from internal hardware
@@ -487,7 +466,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_kmac_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_kmac_err_wd),
 
     // from internal hardware
@@ -510,7 +489,7 @@ module kmac_reg_top (
     .DW    (1)
   ) u_intr_test_kmac_done (
     .re     (1'b0),
-    .we     (intr_test_kmac_done_we),
+    .we     (intr_test_we),
     .wd     (intr_test_kmac_done_wd),
     .d      ('0),
     .qre    (),
@@ -525,7 +504,7 @@ module kmac_reg_top (
     .DW    (1)
   ) u_intr_test_fifo_empty (
     .re     (1'b0),
-    .we     (intr_test_fifo_empty_we),
+    .we     (intr_test_we),
     .wd     (intr_test_fifo_empty_wd),
     .d      ('0),
     .qre    (),
@@ -540,7 +519,7 @@ module kmac_reg_top (
     .DW    (1)
   ) u_intr_test_kmac_err (
     .re     (1'b0),
-    .we     (intr_test_kmac_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_kmac_err_wd),
     .d      ('0),
     .qre    (),
@@ -594,7 +573,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_kmac_en_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_kmac_en_wd),
 
     // from internal hardware
@@ -620,7 +599,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_kstrength_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_kstrength_wd),
 
     // from internal hardware
@@ -646,7 +625,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_mode_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_mode_wd),
 
     // from internal hardware
@@ -672,7 +651,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_msg_endianness_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_msg_endianness_wd),
 
     // from internal hardware
@@ -698,7 +677,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_state_endianness_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_state_endianness_wd),
 
     // from internal hardware
@@ -724,7 +703,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_sideload_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_sideload_wd),
 
     // from internal hardware
@@ -750,7 +729,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_entropy_mode_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_entropy_mode_wd),
 
     // from internal hardware
@@ -776,7 +755,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_entropy_fast_process_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_entropy_fast_process_wd),
 
     // from internal hardware
@@ -802,7 +781,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_entropy_ready_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_entropy_ready_wd),
 
     // from internal hardware
@@ -828,7 +807,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_err_processed_we & cfg_regwen_qs),
+    .we     (cfg_we & cfg_regwen_qs),
     .wd     (cfg_err_processed_wd),
 
     // from internal hardware
@@ -866,7 +845,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_sha3_idle (
-    .re     (status_sha3_idle_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.sha3_idle.d),
@@ -881,7 +860,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_sha3_absorb (
-    .re     (status_sha3_absorb_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.sha3_absorb.d),
@@ -896,7 +875,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_sha3_squeeze (
-    .re     (status_sha3_squeeze_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.sha3_squeeze.d),
@@ -911,7 +890,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (5)
   ) u_status_fifo_depth (
-    .re     (status_fifo_depth_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.fifo_depth.d),
@@ -926,7 +905,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_fifo_empty (
-    .re     (status_fifo_empty_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.fifo_empty.d),
@@ -941,7 +920,7 @@ module kmac_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_fifo_full (
-    .re     (status_fifo_full_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.fifo_full.d),
@@ -964,7 +943,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_period_entropy_timer_we & cfg_regwen_qs),
+    .we     (entropy_period_we & cfg_regwen_qs),
     .wd     (entropy_period_entropy_timer_wd),
 
     // from internal hardware
@@ -990,7 +969,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_period_wait_timer_we & cfg_regwen_qs),
+    .we     (entropy_period_we & cfg_regwen_qs),
     .wd     (entropy_period_wait_timer_wd),
 
     // from internal hardware
@@ -2054,226 +2033,198 @@ module kmac_reg_top (
                (addr_hit[54] & (|(KMAC_PERMIT[54] & ~reg_be))) |
                (addr_hit[55] & (|(KMAC_PERMIT[55] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_kmac_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_kmac_done_wd = reg_wdata[0];
 
-  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_state_kmac_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_kmac_err_wd = reg_wdata[2];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_kmac_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_kmac_done_wd = reg_wdata[0];
 
-  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_enable_kmac_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_kmac_err_wd = reg_wdata[2];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_kmac_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_kmac_done_wd = reg_wdata[0];
 
-  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_test_kmac_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_kmac_err_wd = reg_wdata[2];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_wd = reg_wdata[0];
-
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign cfg_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign cfg_kmac_en_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_kmac_en_wd = reg_wdata[0];
 
-  assign cfg_kstrength_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_kstrength_wd = reg_wdata[3:1];
 
-  assign cfg_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_mode_wd = reg_wdata[5:4];
 
-  assign cfg_msg_endianness_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_msg_endianness_wd = reg_wdata[8];
 
-  assign cfg_state_endianness_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_state_endianness_wd = reg_wdata[9];
 
-  assign cfg_sideload_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_sideload_wd = reg_wdata[12];
 
-  assign cfg_entropy_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_mode_wd = reg_wdata[17:16];
 
-  assign cfg_entropy_fast_process_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_fast_process_wd = reg_wdata[19];
 
-  assign cfg_entropy_ready_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_entropy_ready_wd = reg_wdata[24];
 
-  assign cfg_err_processed_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_err_processed_wd = reg_wdata[25];
-
   assign cmd_we = addr_hit[6] & reg_we & !reg_error;
+
   assign cmd_wd = reg_wdata[3:0];
+  assign status_re = addr_hit[7] & reg_re & !reg_error;
+  assign entropy_period_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign status_sha3_idle_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_sha3_absorb_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_sha3_squeeze_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_fifo_depth_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_fifo_empty_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_fifo_full_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign entropy_period_entropy_timer_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_period_entropy_timer_wd = reg_wdata[15:0];
 
-  assign entropy_period_wait_timer_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_period_wait_timer_wd = reg_wdata[31:16];
-
   assign entropy_seed_lower_we = addr_hit[9] & reg_we & !reg_error;
+
   assign entropy_seed_lower_wd = reg_wdata[31:0];
-
   assign entropy_seed_upper_we = addr_hit[10] & reg_we & !reg_error;
+
   assign entropy_seed_upper_wd = reg_wdata[31:0];
-
   assign key_share0_0_we = addr_hit[11] & reg_we & !reg_error;
+
   assign key_share0_0_wd = reg_wdata[31:0];
-
   assign key_share0_1_we = addr_hit[12] & reg_we & !reg_error;
+
   assign key_share0_1_wd = reg_wdata[31:0];
-
   assign key_share0_2_we = addr_hit[13] & reg_we & !reg_error;
+
   assign key_share0_2_wd = reg_wdata[31:0];
-
   assign key_share0_3_we = addr_hit[14] & reg_we & !reg_error;
+
   assign key_share0_3_wd = reg_wdata[31:0];
-
   assign key_share0_4_we = addr_hit[15] & reg_we & !reg_error;
+
   assign key_share0_4_wd = reg_wdata[31:0];
-
   assign key_share0_5_we = addr_hit[16] & reg_we & !reg_error;
+
   assign key_share0_5_wd = reg_wdata[31:0];
-
   assign key_share0_6_we = addr_hit[17] & reg_we & !reg_error;
+
   assign key_share0_6_wd = reg_wdata[31:0];
-
   assign key_share0_7_we = addr_hit[18] & reg_we & !reg_error;
+
   assign key_share0_7_wd = reg_wdata[31:0];
-
   assign key_share0_8_we = addr_hit[19] & reg_we & !reg_error;
+
   assign key_share0_8_wd = reg_wdata[31:0];
-
   assign key_share0_9_we = addr_hit[20] & reg_we & !reg_error;
+
   assign key_share0_9_wd = reg_wdata[31:0];
-
   assign key_share0_10_we = addr_hit[21] & reg_we & !reg_error;
+
   assign key_share0_10_wd = reg_wdata[31:0];
-
   assign key_share0_11_we = addr_hit[22] & reg_we & !reg_error;
+
   assign key_share0_11_wd = reg_wdata[31:0];
-
   assign key_share0_12_we = addr_hit[23] & reg_we & !reg_error;
+
   assign key_share0_12_wd = reg_wdata[31:0];
-
   assign key_share0_13_we = addr_hit[24] & reg_we & !reg_error;
+
   assign key_share0_13_wd = reg_wdata[31:0];
-
   assign key_share0_14_we = addr_hit[25] & reg_we & !reg_error;
+
   assign key_share0_14_wd = reg_wdata[31:0];
-
   assign key_share0_15_we = addr_hit[26] & reg_we & !reg_error;
+
   assign key_share0_15_wd = reg_wdata[31:0];
-
   assign key_share1_0_we = addr_hit[27] & reg_we & !reg_error;
+
   assign key_share1_0_wd = reg_wdata[31:0];
-
   assign key_share1_1_we = addr_hit[28] & reg_we & !reg_error;
+
   assign key_share1_1_wd = reg_wdata[31:0];
-
   assign key_share1_2_we = addr_hit[29] & reg_we & !reg_error;
+
   assign key_share1_2_wd = reg_wdata[31:0];
-
   assign key_share1_3_we = addr_hit[30] & reg_we & !reg_error;
+
   assign key_share1_3_wd = reg_wdata[31:0];
-
   assign key_share1_4_we = addr_hit[31] & reg_we & !reg_error;
+
   assign key_share1_4_wd = reg_wdata[31:0];
-
   assign key_share1_5_we = addr_hit[32] & reg_we & !reg_error;
+
   assign key_share1_5_wd = reg_wdata[31:0];
-
   assign key_share1_6_we = addr_hit[33] & reg_we & !reg_error;
+
   assign key_share1_6_wd = reg_wdata[31:0];
-
   assign key_share1_7_we = addr_hit[34] & reg_we & !reg_error;
+
   assign key_share1_7_wd = reg_wdata[31:0];
-
   assign key_share1_8_we = addr_hit[35] & reg_we & !reg_error;
+
   assign key_share1_8_wd = reg_wdata[31:0];
-
   assign key_share1_9_we = addr_hit[36] & reg_we & !reg_error;
+
   assign key_share1_9_wd = reg_wdata[31:0];
-
   assign key_share1_10_we = addr_hit[37] & reg_we & !reg_error;
+
   assign key_share1_10_wd = reg_wdata[31:0];
-
   assign key_share1_11_we = addr_hit[38] & reg_we & !reg_error;
+
   assign key_share1_11_wd = reg_wdata[31:0];
-
   assign key_share1_12_we = addr_hit[39] & reg_we & !reg_error;
+
   assign key_share1_12_wd = reg_wdata[31:0];
-
   assign key_share1_13_we = addr_hit[40] & reg_we & !reg_error;
+
   assign key_share1_13_wd = reg_wdata[31:0];
-
   assign key_share1_14_we = addr_hit[41] & reg_we & !reg_error;
+
   assign key_share1_14_wd = reg_wdata[31:0];
-
   assign key_share1_15_we = addr_hit[42] & reg_we & !reg_error;
+
   assign key_share1_15_wd = reg_wdata[31:0];
-
   assign key_len_we = addr_hit[43] & reg_we & !reg_error;
+
   assign key_len_wd = reg_wdata[2:0];
-
   assign prefix_0_we = addr_hit[44] & reg_we & !reg_error;
+
   assign prefix_0_wd = reg_wdata[31:0];
-
   assign prefix_1_we = addr_hit[45] & reg_we & !reg_error;
+
   assign prefix_1_wd = reg_wdata[31:0];
-
   assign prefix_2_we = addr_hit[46] & reg_we & !reg_error;
+
   assign prefix_2_wd = reg_wdata[31:0];
-
   assign prefix_3_we = addr_hit[47] & reg_we & !reg_error;
+
   assign prefix_3_wd = reg_wdata[31:0];
-
   assign prefix_4_we = addr_hit[48] & reg_we & !reg_error;
+
   assign prefix_4_wd = reg_wdata[31:0];
-
   assign prefix_5_we = addr_hit[49] & reg_we & !reg_error;
+
   assign prefix_5_wd = reg_wdata[31:0];
-
   assign prefix_6_we = addr_hit[50] & reg_we & !reg_error;
+
   assign prefix_6_wd = reg_wdata[31:0];
-
   assign prefix_7_we = addr_hit[51] & reg_we & !reg_error;
+
   assign prefix_7_wd = reg_wdata[31:0];
-
   assign prefix_8_we = addr_hit[52] & reg_we & !reg_error;
+
   assign prefix_8_wd = reg_wdata[31:0];
-
   assign prefix_9_we = addr_hit[53] & reg_we & !reg_error;
-  assign prefix_9_wd = reg_wdata[31:0];
 
+  assign prefix_9_wd = reg_wdata[31:0];
   assign prefix_10_we = addr_hit[54] & reg_we & !reg_error;
+
   assign prefix_10_wd = reg_wdata[31:0];
 
   // Read data return

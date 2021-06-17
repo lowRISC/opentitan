@@ -104,160 +104,124 @@ module sysrst_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_qs;
   logic intr_state_wd;
-  logic intr_state_we;
+  logic intr_enable_we;
   logic intr_enable_qs;
   logic intr_enable_wd;
-  logic intr_enable_we;
-  logic intr_test_wd;
   logic intr_test_we;
-  logic alert_test_wd;
+  logic intr_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
+  logic regwen_we;
   logic regwen_qs;
   logic regwen_wd;
-  logic regwen_we;
+  logic ec_rst_ctl_we;
   logic [15:0] ec_rst_ctl_qs;
   logic [15:0] ec_rst_ctl_wd;
-  logic ec_rst_ctl_we;
+  logic ulp_ac_debounce_ctl_we;
   logic [15:0] ulp_ac_debounce_ctl_qs;
   logic [15:0] ulp_ac_debounce_ctl_wd;
-  logic ulp_ac_debounce_ctl_we;
+  logic ulp_lid_debounce_ctl_we;
   logic [15:0] ulp_lid_debounce_ctl_qs;
   logic [15:0] ulp_lid_debounce_ctl_wd;
-  logic ulp_lid_debounce_ctl_we;
+  logic ulp_pwrb_debounce_ctl_we;
   logic [15:0] ulp_pwrb_debounce_ctl_qs;
   logic [15:0] ulp_pwrb_debounce_ctl_wd;
-  logic ulp_pwrb_debounce_ctl_we;
+  logic ulp_ctl_we;
   logic ulp_ctl_qs;
   logic ulp_ctl_wd;
-  logic ulp_ctl_we;
+  logic ulp_status_we;
   logic ulp_status_qs;
   logic ulp_status_wd;
-  logic ulp_status_we;
+  logic wk_status_we;
   logic wk_status_qs;
   logic wk_status_wd;
-  logic wk_status_we;
+  logic key_invert_ctl_we;
   logic key_invert_ctl_key0_in_qs;
   logic key_invert_ctl_key0_in_wd;
-  logic key_invert_ctl_key0_in_we;
   logic key_invert_ctl_key0_out_qs;
   logic key_invert_ctl_key0_out_wd;
-  logic key_invert_ctl_key0_out_we;
   logic key_invert_ctl_key1_in_qs;
   logic key_invert_ctl_key1_in_wd;
-  logic key_invert_ctl_key1_in_we;
   logic key_invert_ctl_key1_out_qs;
   logic key_invert_ctl_key1_out_wd;
-  logic key_invert_ctl_key1_out_we;
   logic key_invert_ctl_key2_in_qs;
   logic key_invert_ctl_key2_in_wd;
-  logic key_invert_ctl_key2_in_we;
   logic key_invert_ctl_key2_out_qs;
   logic key_invert_ctl_key2_out_wd;
-  logic key_invert_ctl_key2_out_we;
   logic key_invert_ctl_pwrb_in_qs;
   logic key_invert_ctl_pwrb_in_wd;
-  logic key_invert_ctl_pwrb_in_we;
   logic key_invert_ctl_pwrb_out_qs;
   logic key_invert_ctl_pwrb_out_wd;
-  logic key_invert_ctl_pwrb_out_we;
   logic key_invert_ctl_ac_present_qs;
   logic key_invert_ctl_ac_present_wd;
-  logic key_invert_ctl_ac_present_we;
   logic key_invert_ctl_bat_disable_qs;
   logic key_invert_ctl_bat_disable_wd;
-  logic key_invert_ctl_bat_disable_we;
   logic key_invert_ctl_lid_open_qs;
   logic key_invert_ctl_lid_open_wd;
-  logic key_invert_ctl_lid_open_we;
   logic key_invert_ctl_z3_wakeup_qs;
   logic key_invert_ctl_z3_wakeup_wd;
-  logic key_invert_ctl_z3_wakeup_we;
+  logic pin_allowed_ctl_we;
   logic pin_allowed_ctl_bat_disable_0_qs;
   logic pin_allowed_ctl_bat_disable_0_wd;
-  logic pin_allowed_ctl_bat_disable_0_we;
   logic pin_allowed_ctl_ec_rst_l_0_qs;
   logic pin_allowed_ctl_ec_rst_l_0_wd;
-  logic pin_allowed_ctl_ec_rst_l_0_we;
   logic pin_allowed_ctl_pwrb_out_0_qs;
   logic pin_allowed_ctl_pwrb_out_0_wd;
-  logic pin_allowed_ctl_pwrb_out_0_we;
   logic pin_allowed_ctl_key0_out_0_qs;
   logic pin_allowed_ctl_key0_out_0_wd;
-  logic pin_allowed_ctl_key0_out_0_we;
   logic pin_allowed_ctl_key1_out_0_qs;
   logic pin_allowed_ctl_key1_out_0_wd;
-  logic pin_allowed_ctl_key1_out_0_we;
   logic pin_allowed_ctl_key2_out_0_qs;
   logic pin_allowed_ctl_key2_out_0_wd;
-  logic pin_allowed_ctl_key2_out_0_we;
   logic pin_allowed_ctl_z3_wakeup_0_qs;
   logic pin_allowed_ctl_z3_wakeup_0_wd;
-  logic pin_allowed_ctl_z3_wakeup_0_we;
   logic pin_allowed_ctl_bat_disable_1_qs;
   logic pin_allowed_ctl_bat_disable_1_wd;
-  logic pin_allowed_ctl_bat_disable_1_we;
   logic pin_allowed_ctl_ec_rst_l_1_qs;
   logic pin_allowed_ctl_ec_rst_l_1_wd;
-  logic pin_allowed_ctl_ec_rst_l_1_we;
   logic pin_allowed_ctl_pwrb_out_1_qs;
   logic pin_allowed_ctl_pwrb_out_1_wd;
-  logic pin_allowed_ctl_pwrb_out_1_we;
   logic pin_allowed_ctl_key0_out_1_qs;
   logic pin_allowed_ctl_key0_out_1_wd;
-  logic pin_allowed_ctl_key0_out_1_we;
   logic pin_allowed_ctl_key1_out_1_qs;
   logic pin_allowed_ctl_key1_out_1_wd;
-  logic pin_allowed_ctl_key1_out_1_we;
   logic pin_allowed_ctl_key2_out_1_qs;
   logic pin_allowed_ctl_key2_out_1_wd;
-  logic pin_allowed_ctl_key2_out_1_we;
   logic pin_allowed_ctl_z3_wakeup_1_qs;
   logic pin_allowed_ctl_z3_wakeup_1_wd;
-  logic pin_allowed_ctl_z3_wakeup_1_we;
+  logic pin_out_ctl_we;
   logic pin_out_ctl_bat_disable_qs;
   logic pin_out_ctl_bat_disable_wd;
-  logic pin_out_ctl_bat_disable_we;
   logic pin_out_ctl_ec_rst_l_qs;
   logic pin_out_ctl_ec_rst_l_wd;
-  logic pin_out_ctl_ec_rst_l_we;
   logic pin_out_ctl_pwrb_out_qs;
   logic pin_out_ctl_pwrb_out_wd;
-  logic pin_out_ctl_pwrb_out_we;
   logic pin_out_ctl_key0_out_qs;
   logic pin_out_ctl_key0_out_wd;
-  logic pin_out_ctl_key0_out_we;
   logic pin_out_ctl_key1_out_qs;
   logic pin_out_ctl_key1_out_wd;
-  logic pin_out_ctl_key1_out_we;
   logic pin_out_ctl_key2_out_qs;
   logic pin_out_ctl_key2_out_wd;
-  logic pin_out_ctl_key2_out_we;
   logic pin_out_ctl_z3_wakeup_qs;
   logic pin_out_ctl_z3_wakeup_wd;
-  logic pin_out_ctl_z3_wakeup_we;
+  logic pin_out_value_we;
   logic pin_out_value_bat_disable_qs;
   logic pin_out_value_bat_disable_wd;
-  logic pin_out_value_bat_disable_we;
   logic pin_out_value_ec_rst_l_qs;
   logic pin_out_value_ec_rst_l_wd;
-  logic pin_out_value_ec_rst_l_we;
   logic pin_out_value_pwrb_out_qs;
   logic pin_out_value_pwrb_out_wd;
-  logic pin_out_value_pwrb_out_we;
   logic pin_out_value_key0_out_qs;
   logic pin_out_value_key0_out_wd;
-  logic pin_out_value_key0_out_we;
   logic pin_out_value_key1_out_qs;
   logic pin_out_value_key1_out_wd;
-  logic pin_out_value_key1_out_we;
   logic pin_out_value_key2_out_qs;
   logic pin_out_value_key2_out_wd;
-  logic pin_out_value_key2_out_we;
   logic pin_out_value_z3_wakeup_qs;
   logic pin_out_value_z3_wakeup_wd;
-  logic pin_out_value_z3_wakeup_we;
   logic pin_in_value_ac_present_qs;
   logic pin_in_value_ec_rst_l_qs;
   logic pin_in_value_pwrb_in_qs;
@@ -265,237 +229,178 @@ module sysrst_ctrl_reg_top (
   logic pin_in_value_key1_in_qs;
   logic pin_in_value_key2_in_qs;
   logic pin_in_value_lid_open_qs;
+  logic key_intr_ctl_we;
   logic key_intr_ctl_pwrb_in_h2l_qs;
   logic key_intr_ctl_pwrb_in_h2l_wd;
-  logic key_intr_ctl_pwrb_in_h2l_we;
   logic key_intr_ctl_key0_in_h2l_qs;
   logic key_intr_ctl_key0_in_h2l_wd;
-  logic key_intr_ctl_key0_in_h2l_we;
   logic key_intr_ctl_key1_in_h2l_qs;
   logic key_intr_ctl_key1_in_h2l_wd;
-  logic key_intr_ctl_key1_in_h2l_we;
   logic key_intr_ctl_key2_in_h2l_qs;
   logic key_intr_ctl_key2_in_h2l_wd;
-  logic key_intr_ctl_key2_in_h2l_we;
   logic key_intr_ctl_ac_present_h2l_qs;
   logic key_intr_ctl_ac_present_h2l_wd;
-  logic key_intr_ctl_ac_present_h2l_we;
   logic key_intr_ctl_ec_rst_l_h2l_qs;
   logic key_intr_ctl_ec_rst_l_h2l_wd;
-  logic key_intr_ctl_ec_rst_l_h2l_we;
   logic key_intr_ctl_pwrb_in_l2h_qs;
   logic key_intr_ctl_pwrb_in_l2h_wd;
-  logic key_intr_ctl_pwrb_in_l2h_we;
   logic key_intr_ctl_key0_in_l2h_qs;
   logic key_intr_ctl_key0_in_l2h_wd;
-  logic key_intr_ctl_key0_in_l2h_we;
   logic key_intr_ctl_key1_in_l2h_qs;
   logic key_intr_ctl_key1_in_l2h_wd;
-  logic key_intr_ctl_key1_in_l2h_we;
   logic key_intr_ctl_key2_in_l2h_qs;
   logic key_intr_ctl_key2_in_l2h_wd;
-  logic key_intr_ctl_key2_in_l2h_we;
   logic key_intr_ctl_ac_present_l2h_qs;
   logic key_intr_ctl_ac_present_l2h_wd;
-  logic key_intr_ctl_ac_present_l2h_we;
   logic key_intr_ctl_ec_rst_l_l2h_qs;
   logic key_intr_ctl_ec_rst_l_l2h_wd;
-  logic key_intr_ctl_ec_rst_l_l2h_we;
+  logic key_intr_debounce_ctl_we;
   logic [15:0] key_intr_debounce_ctl_qs;
   logic [15:0] key_intr_debounce_ctl_wd;
-  logic key_intr_debounce_ctl_we;
+  logic auto_block_debounce_ctl_we;
   logic [15:0] auto_block_debounce_ctl_debounce_timer_qs;
   logic [15:0] auto_block_debounce_ctl_debounce_timer_wd;
-  logic auto_block_debounce_ctl_debounce_timer_we;
   logic auto_block_debounce_ctl_auto_block_enable_qs;
   logic auto_block_debounce_ctl_auto_block_enable_wd;
-  logic auto_block_debounce_ctl_auto_block_enable_we;
+  logic auto_block_out_ctl_we;
   logic auto_block_out_ctl_key0_out_sel_qs;
   logic auto_block_out_ctl_key0_out_sel_wd;
-  logic auto_block_out_ctl_key0_out_sel_we;
   logic auto_block_out_ctl_key1_out_sel_qs;
   logic auto_block_out_ctl_key1_out_sel_wd;
-  logic auto_block_out_ctl_key1_out_sel_we;
   logic auto_block_out_ctl_key2_out_sel_qs;
   logic auto_block_out_ctl_key2_out_sel_wd;
-  logic auto_block_out_ctl_key2_out_sel_we;
   logic auto_block_out_ctl_key0_out_value_qs;
   logic auto_block_out_ctl_key0_out_value_wd;
-  logic auto_block_out_ctl_key0_out_value_we;
   logic auto_block_out_ctl_key1_out_value_qs;
   logic auto_block_out_ctl_key1_out_value_wd;
-  logic auto_block_out_ctl_key1_out_value_we;
   logic auto_block_out_ctl_key2_out_value_qs;
   logic auto_block_out_ctl_key2_out_value_wd;
-  logic auto_block_out_ctl_key2_out_value_we;
+  logic com_sel_ctl_0_we;
   logic com_sel_ctl_0_key0_in_sel_0_qs;
   logic com_sel_ctl_0_key0_in_sel_0_wd;
-  logic com_sel_ctl_0_key0_in_sel_0_we;
   logic com_sel_ctl_0_key1_in_sel_0_qs;
   logic com_sel_ctl_0_key1_in_sel_0_wd;
-  logic com_sel_ctl_0_key1_in_sel_0_we;
   logic com_sel_ctl_0_key2_in_sel_0_qs;
   logic com_sel_ctl_0_key2_in_sel_0_wd;
-  logic com_sel_ctl_0_key2_in_sel_0_we;
   logic com_sel_ctl_0_pwrb_in_sel_0_qs;
   logic com_sel_ctl_0_pwrb_in_sel_0_wd;
-  logic com_sel_ctl_0_pwrb_in_sel_0_we;
   logic com_sel_ctl_0_ac_present_sel_0_qs;
   logic com_sel_ctl_0_ac_present_sel_0_wd;
-  logic com_sel_ctl_0_ac_present_sel_0_we;
+  logic com_sel_ctl_1_we;
   logic com_sel_ctl_1_key0_in_sel_1_qs;
   logic com_sel_ctl_1_key0_in_sel_1_wd;
-  logic com_sel_ctl_1_key0_in_sel_1_we;
   logic com_sel_ctl_1_key1_in_sel_1_qs;
   logic com_sel_ctl_1_key1_in_sel_1_wd;
-  logic com_sel_ctl_1_key1_in_sel_1_we;
   logic com_sel_ctl_1_key2_in_sel_1_qs;
   logic com_sel_ctl_1_key2_in_sel_1_wd;
-  logic com_sel_ctl_1_key2_in_sel_1_we;
   logic com_sel_ctl_1_pwrb_in_sel_1_qs;
   logic com_sel_ctl_1_pwrb_in_sel_1_wd;
-  logic com_sel_ctl_1_pwrb_in_sel_1_we;
   logic com_sel_ctl_1_ac_present_sel_1_qs;
   logic com_sel_ctl_1_ac_present_sel_1_wd;
-  logic com_sel_ctl_1_ac_present_sel_1_we;
+  logic com_sel_ctl_2_we;
   logic com_sel_ctl_2_key0_in_sel_2_qs;
   logic com_sel_ctl_2_key0_in_sel_2_wd;
-  logic com_sel_ctl_2_key0_in_sel_2_we;
   logic com_sel_ctl_2_key1_in_sel_2_qs;
   logic com_sel_ctl_2_key1_in_sel_2_wd;
-  logic com_sel_ctl_2_key1_in_sel_2_we;
   logic com_sel_ctl_2_key2_in_sel_2_qs;
   logic com_sel_ctl_2_key2_in_sel_2_wd;
-  logic com_sel_ctl_2_key2_in_sel_2_we;
   logic com_sel_ctl_2_pwrb_in_sel_2_qs;
   logic com_sel_ctl_2_pwrb_in_sel_2_wd;
-  logic com_sel_ctl_2_pwrb_in_sel_2_we;
   logic com_sel_ctl_2_ac_present_sel_2_qs;
   logic com_sel_ctl_2_ac_present_sel_2_wd;
-  logic com_sel_ctl_2_ac_present_sel_2_we;
+  logic com_sel_ctl_3_we;
   logic com_sel_ctl_3_key0_in_sel_3_qs;
   logic com_sel_ctl_3_key0_in_sel_3_wd;
-  logic com_sel_ctl_3_key0_in_sel_3_we;
   logic com_sel_ctl_3_key1_in_sel_3_qs;
   logic com_sel_ctl_3_key1_in_sel_3_wd;
-  logic com_sel_ctl_3_key1_in_sel_3_we;
   logic com_sel_ctl_3_key2_in_sel_3_qs;
   logic com_sel_ctl_3_key2_in_sel_3_wd;
-  logic com_sel_ctl_3_key2_in_sel_3_we;
   logic com_sel_ctl_3_pwrb_in_sel_3_qs;
   logic com_sel_ctl_3_pwrb_in_sel_3_wd;
-  logic com_sel_ctl_3_pwrb_in_sel_3_we;
   logic com_sel_ctl_3_ac_present_sel_3_qs;
   logic com_sel_ctl_3_ac_present_sel_3_wd;
-  logic com_sel_ctl_3_ac_present_sel_3_we;
+  logic com_det_ctl_0_we;
   logic [31:0] com_det_ctl_0_qs;
   logic [31:0] com_det_ctl_0_wd;
-  logic com_det_ctl_0_we;
+  logic com_det_ctl_1_we;
   logic [31:0] com_det_ctl_1_qs;
   logic [31:0] com_det_ctl_1_wd;
-  logic com_det_ctl_1_we;
+  logic com_det_ctl_2_we;
   logic [31:0] com_det_ctl_2_qs;
   logic [31:0] com_det_ctl_2_wd;
-  logic com_det_ctl_2_we;
+  logic com_det_ctl_3_we;
   logic [31:0] com_det_ctl_3_qs;
   logic [31:0] com_det_ctl_3_wd;
-  logic com_det_ctl_3_we;
+  logic com_out_ctl_0_we;
   logic com_out_ctl_0_bat_disable_0_qs;
   logic com_out_ctl_0_bat_disable_0_wd;
-  logic com_out_ctl_0_bat_disable_0_we;
   logic com_out_ctl_0_interrupt_0_qs;
   logic com_out_ctl_0_interrupt_0_wd;
-  logic com_out_ctl_0_interrupt_0_we;
   logic com_out_ctl_0_ec_rst_0_qs;
   logic com_out_ctl_0_ec_rst_0_wd;
-  logic com_out_ctl_0_ec_rst_0_we;
   logic com_out_ctl_0_gsc_rst_0_qs;
   logic com_out_ctl_0_gsc_rst_0_wd;
-  logic com_out_ctl_0_gsc_rst_0_we;
+  logic com_out_ctl_1_we;
   logic com_out_ctl_1_bat_disable_1_qs;
   logic com_out_ctl_1_bat_disable_1_wd;
-  logic com_out_ctl_1_bat_disable_1_we;
   logic com_out_ctl_1_interrupt_1_qs;
   logic com_out_ctl_1_interrupt_1_wd;
-  logic com_out_ctl_1_interrupt_1_we;
   logic com_out_ctl_1_ec_rst_1_qs;
   logic com_out_ctl_1_ec_rst_1_wd;
-  logic com_out_ctl_1_ec_rst_1_we;
   logic com_out_ctl_1_gsc_rst_1_qs;
   logic com_out_ctl_1_gsc_rst_1_wd;
-  logic com_out_ctl_1_gsc_rst_1_we;
+  logic com_out_ctl_2_we;
   logic com_out_ctl_2_bat_disable_2_qs;
   logic com_out_ctl_2_bat_disable_2_wd;
-  logic com_out_ctl_2_bat_disable_2_we;
   logic com_out_ctl_2_interrupt_2_qs;
   logic com_out_ctl_2_interrupt_2_wd;
-  logic com_out_ctl_2_interrupt_2_we;
   logic com_out_ctl_2_ec_rst_2_qs;
   logic com_out_ctl_2_ec_rst_2_wd;
-  logic com_out_ctl_2_ec_rst_2_we;
   logic com_out_ctl_2_gsc_rst_2_qs;
   logic com_out_ctl_2_gsc_rst_2_wd;
-  logic com_out_ctl_2_gsc_rst_2_we;
+  logic com_out_ctl_3_we;
   logic com_out_ctl_3_bat_disable_3_qs;
   logic com_out_ctl_3_bat_disable_3_wd;
-  logic com_out_ctl_3_bat_disable_3_we;
   logic com_out_ctl_3_interrupt_3_qs;
   logic com_out_ctl_3_interrupt_3_wd;
-  logic com_out_ctl_3_interrupt_3_we;
   logic com_out_ctl_3_ec_rst_3_qs;
   logic com_out_ctl_3_ec_rst_3_wd;
-  logic com_out_ctl_3_ec_rst_3_we;
   logic com_out_ctl_3_gsc_rst_3_qs;
   logic com_out_ctl_3_gsc_rst_3_wd;
-  logic com_out_ctl_3_gsc_rst_3_we;
+  logic combo_intr_status_we;
   logic combo_intr_status_combo0_h2l_qs;
   logic combo_intr_status_combo0_h2l_wd;
-  logic combo_intr_status_combo0_h2l_we;
   logic combo_intr_status_combo1_h2l_qs;
   logic combo_intr_status_combo1_h2l_wd;
-  logic combo_intr_status_combo1_h2l_we;
   logic combo_intr_status_combo2_h2l_qs;
   logic combo_intr_status_combo2_h2l_wd;
-  logic combo_intr_status_combo2_h2l_we;
   logic combo_intr_status_combo3_h2l_qs;
   logic combo_intr_status_combo3_h2l_wd;
-  logic combo_intr_status_combo3_h2l_we;
+  logic key_intr_status_we;
   logic key_intr_status_pwrb_h2l_qs;
   logic key_intr_status_pwrb_h2l_wd;
-  logic key_intr_status_pwrb_h2l_we;
   logic key_intr_status_key0_in_h2l_qs;
   logic key_intr_status_key0_in_h2l_wd;
-  logic key_intr_status_key0_in_h2l_we;
   logic key_intr_status_key1_in_h2l_qs;
   logic key_intr_status_key1_in_h2l_wd;
-  logic key_intr_status_key1_in_h2l_we;
   logic key_intr_status_key2_in_h2l_qs;
   logic key_intr_status_key2_in_h2l_wd;
-  logic key_intr_status_key2_in_h2l_we;
   logic key_intr_status_ac_present_h2l_qs;
   logic key_intr_status_ac_present_h2l_wd;
-  logic key_intr_status_ac_present_h2l_we;
   logic key_intr_status_ec_rst_l_h2l_qs;
   logic key_intr_status_ec_rst_l_h2l_wd;
-  logic key_intr_status_ec_rst_l_h2l_we;
   logic key_intr_status_pwrb_l2h_qs;
   logic key_intr_status_pwrb_l2h_wd;
-  logic key_intr_status_pwrb_l2h_we;
   logic key_intr_status_key0_in_l2h_qs;
   logic key_intr_status_key0_in_l2h_wd;
-  logic key_intr_status_key0_in_l2h_we;
   logic key_intr_status_key1_in_l2h_qs;
   logic key_intr_status_key1_in_l2h_wd;
-  logic key_intr_status_key1_in_l2h_we;
   logic key_intr_status_key2_in_l2h_qs;
   logic key_intr_status_key2_in_l2h_wd;
-  logic key_intr_status_key2_in_l2h_we;
   logic key_intr_status_ac_present_l2h_qs;
   logic key_intr_status_ac_present_l2h_wd;
-  logic key_intr_status_ac_present_l2h_we;
   logic key_intr_status_ec_rst_l_l2h_qs;
   logic key_intr_status_ec_rst_l_l2h_wd;
-  logic key_intr_status_ec_rst_l_l2h_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -812,7 +717,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key0_in_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key0_in_wd),
 
     // from internal hardware
@@ -838,7 +743,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key0_out_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key0_out_wd),
 
     // from internal hardware
@@ -864,7 +769,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key1_in_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key1_in_wd),
 
     // from internal hardware
@@ -890,7 +795,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key1_out_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key1_out_wd),
 
     // from internal hardware
@@ -916,7 +821,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key2_in_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key2_in_wd),
 
     // from internal hardware
@@ -942,7 +847,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_key2_out_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_key2_out_wd),
 
     // from internal hardware
@@ -968,7 +873,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_pwrb_in_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_pwrb_in_wd),
 
     // from internal hardware
@@ -994,7 +899,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_pwrb_out_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_pwrb_out_wd),
 
     // from internal hardware
@@ -1020,7 +925,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_ac_present_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_ac_present_wd),
 
     // from internal hardware
@@ -1046,7 +951,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_bat_disable_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_bat_disable_wd),
 
     // from internal hardware
@@ -1072,7 +977,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_lid_open_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_lid_open_wd),
 
     // from internal hardware
@@ -1098,7 +1003,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_invert_ctl_z3_wakeup_we & regwen_qs),
+    .we     (key_invert_ctl_we & regwen_qs),
     .wd     (key_invert_ctl_z3_wakeup_wd),
 
     // from internal hardware
@@ -1126,7 +1031,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_bat_disable_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_bat_disable_0_wd),
 
     // from internal hardware
@@ -1152,7 +1057,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_ec_rst_l_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_ec_rst_l_0_wd),
 
     // from internal hardware
@@ -1178,7 +1083,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_pwrb_out_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_pwrb_out_0_wd),
 
     // from internal hardware
@@ -1204,7 +1109,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key0_out_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key0_out_0_wd),
 
     // from internal hardware
@@ -1230,7 +1135,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key1_out_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key1_out_0_wd),
 
     // from internal hardware
@@ -1256,7 +1161,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key2_out_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key2_out_0_wd),
 
     // from internal hardware
@@ -1282,7 +1187,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_z3_wakeup_0_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_z3_wakeup_0_wd),
 
     // from internal hardware
@@ -1308,7 +1213,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_bat_disable_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_bat_disable_1_wd),
 
     // from internal hardware
@@ -1334,7 +1239,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_ec_rst_l_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_ec_rst_l_1_wd),
 
     // from internal hardware
@@ -1360,7 +1265,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_pwrb_out_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_pwrb_out_1_wd),
 
     // from internal hardware
@@ -1386,7 +1291,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key0_out_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key0_out_1_wd),
 
     // from internal hardware
@@ -1412,7 +1317,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key1_out_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key1_out_1_wd),
 
     // from internal hardware
@@ -1438,7 +1343,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_key2_out_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_key2_out_1_wd),
 
     // from internal hardware
@@ -1464,7 +1369,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_allowed_ctl_z3_wakeup_1_we & regwen_qs),
+    .we     (pin_allowed_ctl_we & regwen_qs),
     .wd     (pin_allowed_ctl_z3_wakeup_1_wd),
 
     // from internal hardware
@@ -1492,7 +1397,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_bat_disable_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_bat_disable_wd),
 
     // from internal hardware
@@ -1518,7 +1423,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_ec_rst_l_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_ec_rst_l_wd),
 
     // from internal hardware
@@ -1544,7 +1449,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_pwrb_out_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_pwrb_out_wd),
 
     // from internal hardware
@@ -1570,7 +1475,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_key0_out_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_key0_out_wd),
 
     // from internal hardware
@@ -1596,7 +1501,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_key1_out_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_key1_out_wd),
 
     // from internal hardware
@@ -1622,7 +1527,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_key2_out_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_key2_out_wd),
 
     // from internal hardware
@@ -1648,7 +1553,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_ctl_z3_wakeup_we),
+    .we     (pin_out_ctl_we),
     .wd     (pin_out_ctl_z3_wakeup_wd),
 
     // from internal hardware
@@ -1676,7 +1581,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_bat_disable_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_bat_disable_wd),
 
     // from internal hardware
@@ -1702,7 +1607,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_ec_rst_l_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_ec_rst_l_wd),
 
     // from internal hardware
@@ -1728,7 +1633,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_pwrb_out_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_pwrb_out_wd),
 
     // from internal hardware
@@ -1754,7 +1659,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_key0_out_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_key0_out_wd),
 
     // from internal hardware
@@ -1780,7 +1685,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_key1_out_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_key1_out_wd),
 
     // from internal hardware
@@ -1806,7 +1711,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_key2_out_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_key2_out_wd),
 
     // from internal hardware
@@ -1832,7 +1737,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pin_out_value_z3_wakeup_we),
+    .we     (pin_out_value_we),
     .wd     (pin_out_value_z3_wakeup_wd),
 
     // from internal hardware
@@ -2044,7 +1949,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_pwrb_in_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_pwrb_in_h2l_wd),
 
     // from internal hardware
@@ -2070,7 +1975,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key0_in_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key0_in_h2l_wd),
 
     // from internal hardware
@@ -2096,7 +2001,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key1_in_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key1_in_h2l_wd),
 
     // from internal hardware
@@ -2122,7 +2027,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key2_in_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key2_in_h2l_wd),
 
     // from internal hardware
@@ -2148,7 +2053,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_ac_present_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_ac_present_h2l_wd),
 
     // from internal hardware
@@ -2174,7 +2079,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_ec_rst_l_h2l_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_ec_rst_l_h2l_wd),
 
     // from internal hardware
@@ -2200,7 +2105,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_pwrb_in_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_pwrb_in_l2h_wd),
 
     // from internal hardware
@@ -2226,7 +2131,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key0_in_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key0_in_l2h_wd),
 
     // from internal hardware
@@ -2252,7 +2157,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key1_in_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key1_in_l2h_wd),
 
     // from internal hardware
@@ -2278,7 +2183,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_key2_in_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_key2_in_l2h_wd),
 
     // from internal hardware
@@ -2304,7 +2209,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_ac_present_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_ac_present_l2h_wd),
 
     // from internal hardware
@@ -2330,7 +2235,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_ctl_ec_rst_l_l2h_we & regwen_qs),
+    .we     (key_intr_ctl_we & regwen_qs),
     .wd     (key_intr_ctl_ec_rst_l_l2h_wd),
 
     // from internal hardware
@@ -2385,7 +2290,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_debounce_ctl_debounce_timer_we & regwen_qs),
+    .we     (auto_block_debounce_ctl_we & regwen_qs),
     .wd     (auto_block_debounce_ctl_debounce_timer_wd),
 
     // from internal hardware
@@ -2411,7 +2316,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_debounce_ctl_auto_block_enable_we & regwen_qs),
+    .we     (auto_block_debounce_ctl_we & regwen_qs),
     .wd     (auto_block_debounce_ctl_auto_block_enable_wd),
 
     // from internal hardware
@@ -2439,7 +2344,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key0_out_sel_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key0_out_sel_wd),
 
     // from internal hardware
@@ -2465,7 +2370,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key1_out_sel_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key1_out_sel_wd),
 
     // from internal hardware
@@ -2491,7 +2396,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key2_out_sel_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key2_out_sel_wd),
 
     // from internal hardware
@@ -2517,7 +2422,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key0_out_value_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key0_out_value_wd),
 
     // from internal hardware
@@ -2543,7 +2448,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key1_out_value_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key1_out_value_wd),
 
     // from internal hardware
@@ -2569,7 +2474,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (auto_block_out_ctl_key2_out_value_we & regwen_qs),
+    .we     (auto_block_out_ctl_we & regwen_qs),
     .wd     (auto_block_out_ctl_key2_out_value_wd),
 
     // from internal hardware
@@ -2599,7 +2504,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_0_key0_in_sel_0_we & regwen_qs),
+    .we     (com_sel_ctl_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key0_in_sel_0_wd),
 
     // from internal hardware
@@ -2625,7 +2530,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_0_key1_in_sel_0_we & regwen_qs),
+    .we     (com_sel_ctl_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key1_in_sel_0_wd),
 
     // from internal hardware
@@ -2651,7 +2556,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_0_key2_in_sel_0_we & regwen_qs),
+    .we     (com_sel_ctl_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key2_in_sel_0_wd),
 
     // from internal hardware
@@ -2677,7 +2582,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_0_pwrb_in_sel_0_we & regwen_qs),
+    .we     (com_sel_ctl_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_pwrb_in_sel_0_wd),
 
     // from internal hardware
@@ -2703,7 +2608,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_0_ac_present_sel_0_we & regwen_qs),
+    .we     (com_sel_ctl_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_ac_present_sel_0_wd),
 
     // from internal hardware
@@ -2732,7 +2637,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_1_key0_in_sel_1_we & regwen_qs),
+    .we     (com_sel_ctl_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key0_in_sel_1_wd),
 
     // from internal hardware
@@ -2758,7 +2663,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_1_key1_in_sel_1_we & regwen_qs),
+    .we     (com_sel_ctl_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key1_in_sel_1_wd),
 
     // from internal hardware
@@ -2784,7 +2689,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_1_key2_in_sel_1_we & regwen_qs),
+    .we     (com_sel_ctl_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key2_in_sel_1_wd),
 
     // from internal hardware
@@ -2810,7 +2715,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_1_pwrb_in_sel_1_we & regwen_qs),
+    .we     (com_sel_ctl_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_pwrb_in_sel_1_wd),
 
     // from internal hardware
@@ -2836,7 +2741,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_1_ac_present_sel_1_we & regwen_qs),
+    .we     (com_sel_ctl_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_ac_present_sel_1_wd),
 
     // from internal hardware
@@ -2865,7 +2770,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_2_key0_in_sel_2_we & regwen_qs),
+    .we     (com_sel_ctl_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key0_in_sel_2_wd),
 
     // from internal hardware
@@ -2891,7 +2796,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_2_key1_in_sel_2_we & regwen_qs),
+    .we     (com_sel_ctl_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key1_in_sel_2_wd),
 
     // from internal hardware
@@ -2917,7 +2822,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_2_key2_in_sel_2_we & regwen_qs),
+    .we     (com_sel_ctl_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key2_in_sel_2_wd),
 
     // from internal hardware
@@ -2943,7 +2848,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_2_pwrb_in_sel_2_we & regwen_qs),
+    .we     (com_sel_ctl_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_pwrb_in_sel_2_wd),
 
     // from internal hardware
@@ -2969,7 +2874,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_2_ac_present_sel_2_we & regwen_qs),
+    .we     (com_sel_ctl_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_ac_present_sel_2_wd),
 
     // from internal hardware
@@ -2998,7 +2903,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_3_key0_in_sel_3_we & regwen_qs),
+    .we     (com_sel_ctl_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key0_in_sel_3_wd),
 
     // from internal hardware
@@ -3024,7 +2929,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_3_key1_in_sel_3_we & regwen_qs),
+    .we     (com_sel_ctl_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key1_in_sel_3_wd),
 
     // from internal hardware
@@ -3050,7 +2955,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_3_key2_in_sel_3_we & regwen_qs),
+    .we     (com_sel_ctl_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key2_in_sel_3_wd),
 
     // from internal hardware
@@ -3076,7 +2981,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_3_pwrb_in_sel_3_we & regwen_qs),
+    .we     (com_sel_ctl_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_pwrb_in_sel_3_wd),
 
     // from internal hardware
@@ -3102,7 +3007,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_sel_ctl_3_ac_present_sel_3_we & regwen_qs),
+    .we     (com_sel_ctl_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_ac_present_sel_3_wd),
 
     // from internal hardware
@@ -3243,7 +3148,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_0_bat_disable_0_we & regwen_qs),
+    .we     (com_out_ctl_0_we & regwen_qs),
     .wd     (com_out_ctl_0_bat_disable_0_wd),
 
     // from internal hardware
@@ -3269,7 +3174,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_0_interrupt_0_we & regwen_qs),
+    .we     (com_out_ctl_0_we & regwen_qs),
     .wd     (com_out_ctl_0_interrupt_0_wd),
 
     // from internal hardware
@@ -3295,7 +3200,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_0_ec_rst_0_we & regwen_qs),
+    .we     (com_out_ctl_0_we & regwen_qs),
     .wd     (com_out_ctl_0_ec_rst_0_wd),
 
     // from internal hardware
@@ -3321,7 +3226,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_0_gsc_rst_0_we & regwen_qs),
+    .we     (com_out_ctl_0_we & regwen_qs),
     .wd     (com_out_ctl_0_gsc_rst_0_wd),
 
     // from internal hardware
@@ -3350,7 +3255,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_1_bat_disable_1_we & regwen_qs),
+    .we     (com_out_ctl_1_we & regwen_qs),
     .wd     (com_out_ctl_1_bat_disable_1_wd),
 
     // from internal hardware
@@ -3376,7 +3281,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_1_interrupt_1_we & regwen_qs),
+    .we     (com_out_ctl_1_we & regwen_qs),
     .wd     (com_out_ctl_1_interrupt_1_wd),
 
     // from internal hardware
@@ -3402,7 +3307,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_1_ec_rst_1_we & regwen_qs),
+    .we     (com_out_ctl_1_we & regwen_qs),
     .wd     (com_out_ctl_1_ec_rst_1_wd),
 
     // from internal hardware
@@ -3428,7 +3333,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_1_gsc_rst_1_we & regwen_qs),
+    .we     (com_out_ctl_1_we & regwen_qs),
     .wd     (com_out_ctl_1_gsc_rst_1_wd),
 
     // from internal hardware
@@ -3457,7 +3362,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_2_bat_disable_2_we & regwen_qs),
+    .we     (com_out_ctl_2_we & regwen_qs),
     .wd     (com_out_ctl_2_bat_disable_2_wd),
 
     // from internal hardware
@@ -3483,7 +3388,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_2_interrupt_2_we & regwen_qs),
+    .we     (com_out_ctl_2_we & regwen_qs),
     .wd     (com_out_ctl_2_interrupt_2_wd),
 
     // from internal hardware
@@ -3509,7 +3414,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_2_ec_rst_2_we & regwen_qs),
+    .we     (com_out_ctl_2_we & regwen_qs),
     .wd     (com_out_ctl_2_ec_rst_2_wd),
 
     // from internal hardware
@@ -3535,7 +3440,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_2_gsc_rst_2_we & regwen_qs),
+    .we     (com_out_ctl_2_we & regwen_qs),
     .wd     (com_out_ctl_2_gsc_rst_2_wd),
 
     // from internal hardware
@@ -3564,7 +3469,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_3_bat_disable_3_we & regwen_qs),
+    .we     (com_out_ctl_3_we & regwen_qs),
     .wd     (com_out_ctl_3_bat_disable_3_wd),
 
     // from internal hardware
@@ -3590,7 +3495,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_3_interrupt_3_we & regwen_qs),
+    .we     (com_out_ctl_3_we & regwen_qs),
     .wd     (com_out_ctl_3_interrupt_3_wd),
 
     // from internal hardware
@@ -3616,7 +3521,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_3_ec_rst_3_we & regwen_qs),
+    .we     (com_out_ctl_3_we & regwen_qs),
     .wd     (com_out_ctl_3_ec_rst_3_wd),
 
     // from internal hardware
@@ -3642,7 +3547,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (com_out_ctl_3_gsc_rst_3_we & regwen_qs),
+    .we     (com_out_ctl_3_we & regwen_qs),
     .wd     (com_out_ctl_3_gsc_rst_3_wd),
 
     // from internal hardware
@@ -3671,7 +3576,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (combo_intr_status_combo0_h2l_we),
+    .we     (combo_intr_status_we),
     .wd     (combo_intr_status_combo0_h2l_wd),
 
     // from internal hardware
@@ -3697,7 +3602,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (combo_intr_status_combo1_h2l_we),
+    .we     (combo_intr_status_we),
     .wd     (combo_intr_status_combo1_h2l_wd),
 
     // from internal hardware
@@ -3723,7 +3628,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (combo_intr_status_combo2_h2l_we),
+    .we     (combo_intr_status_we),
     .wd     (combo_intr_status_combo2_h2l_wd),
 
     // from internal hardware
@@ -3749,7 +3654,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (combo_intr_status_combo3_h2l_we),
+    .we     (combo_intr_status_we),
     .wd     (combo_intr_status_combo3_h2l_wd),
 
     // from internal hardware
@@ -3777,7 +3682,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_pwrb_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_pwrb_h2l_wd),
 
     // from internal hardware
@@ -3803,7 +3708,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key0_in_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key0_in_h2l_wd),
 
     // from internal hardware
@@ -3829,7 +3734,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key1_in_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key1_in_h2l_wd),
 
     // from internal hardware
@@ -3855,7 +3760,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key2_in_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key2_in_h2l_wd),
 
     // from internal hardware
@@ -3881,7 +3786,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_ac_present_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_ac_present_h2l_wd),
 
     // from internal hardware
@@ -3907,7 +3812,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_ec_rst_l_h2l_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_ec_rst_l_h2l_wd),
 
     // from internal hardware
@@ -3933,7 +3838,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_pwrb_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_pwrb_l2h_wd),
 
     // from internal hardware
@@ -3959,7 +3864,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key0_in_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key0_in_l2h_wd),
 
     // from internal hardware
@@ -3985,7 +3890,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key1_in_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key1_in_l2h_wd),
 
     // from internal hardware
@@ -4011,7 +3916,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_key2_in_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_key2_in_l2h_wd),
 
     // from internal hardware
@@ -4037,7 +3942,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_ac_present_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_ac_present_l2h_wd),
 
     // from internal hardware
@@ -4063,7 +3968,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_intr_status_ec_rst_l_l2h_we),
+    .we     (key_intr_status_we),
     .wd     (key_intr_status_ec_rst_l_l2h_wd),
 
     // from internal hardware
@@ -4162,392 +4067,297 @@ module sysrst_ctrl_reg_top (
                (addr_hit[33] & (|(SYSRST_CTRL_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(SYSRST_CTRL_PERMIT[34] & ~reg_be)))));
   end
-
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+
   assign intr_state_wd = reg_wdata[0];
-
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+
   assign intr_enable_wd = reg_wdata[0];
-
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+
   assign intr_test_wd = reg_wdata[0];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_wd = reg_wdata[0];
-
   assign regwen_we = addr_hit[4] & reg_we & !reg_error;
+
   assign regwen_wd = reg_wdata[0];
-
   assign ec_rst_ctl_we = addr_hit[5] & reg_we & !reg_error;
+
   assign ec_rst_ctl_wd = reg_wdata[15:0];
-
   assign ulp_ac_debounce_ctl_we = addr_hit[6] & reg_we & !reg_error;
+
   assign ulp_ac_debounce_ctl_wd = reg_wdata[15:0];
-
   assign ulp_lid_debounce_ctl_we = addr_hit[7] & reg_we & !reg_error;
+
   assign ulp_lid_debounce_ctl_wd = reg_wdata[15:0];
-
   assign ulp_pwrb_debounce_ctl_we = addr_hit[8] & reg_we & !reg_error;
+
   assign ulp_pwrb_debounce_ctl_wd = reg_wdata[15:0];
-
   assign ulp_ctl_we = addr_hit[9] & reg_we & !reg_error;
+
   assign ulp_ctl_wd = reg_wdata[0];
-
   assign ulp_status_we = addr_hit[10] & reg_we & !reg_error;
+
   assign ulp_status_wd = reg_wdata[0];
-
   assign wk_status_we = addr_hit[11] & reg_we & !reg_error;
-  assign wk_status_wd = reg_wdata[0];
 
-  assign key_invert_ctl_key0_in_we = addr_hit[12] & reg_we & !reg_error;
+  assign wk_status_wd = reg_wdata[0];
+  assign key_invert_ctl_we = addr_hit[12] & reg_we & !reg_error;
+
   assign key_invert_ctl_key0_in_wd = reg_wdata[0];
 
-  assign key_invert_ctl_key0_out_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_key0_out_wd = reg_wdata[1];
 
-  assign key_invert_ctl_key1_in_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_key1_in_wd = reg_wdata[2];
 
-  assign key_invert_ctl_key1_out_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_key1_out_wd = reg_wdata[3];
 
-  assign key_invert_ctl_key2_in_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_key2_in_wd = reg_wdata[4];
 
-  assign key_invert_ctl_key2_out_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_key2_out_wd = reg_wdata[5];
 
-  assign key_invert_ctl_pwrb_in_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_pwrb_in_wd = reg_wdata[6];
 
-  assign key_invert_ctl_pwrb_out_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_pwrb_out_wd = reg_wdata[7];
 
-  assign key_invert_ctl_ac_present_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_ac_present_wd = reg_wdata[8];
 
-  assign key_invert_ctl_bat_disable_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_bat_disable_wd = reg_wdata[9];
 
-  assign key_invert_ctl_lid_open_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_lid_open_wd = reg_wdata[10];
 
-  assign key_invert_ctl_z3_wakeup_we = addr_hit[12] & reg_we & !reg_error;
   assign key_invert_ctl_z3_wakeup_wd = reg_wdata[11];
+  assign pin_allowed_ctl_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign pin_allowed_ctl_bat_disable_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_bat_disable_0_wd = reg_wdata[0];
 
-  assign pin_allowed_ctl_ec_rst_l_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_ec_rst_l_0_wd = reg_wdata[1];
 
-  assign pin_allowed_ctl_pwrb_out_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_pwrb_out_0_wd = reg_wdata[2];
 
-  assign pin_allowed_ctl_key0_out_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key0_out_0_wd = reg_wdata[3];
 
-  assign pin_allowed_ctl_key1_out_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key1_out_0_wd = reg_wdata[4];
 
-  assign pin_allowed_ctl_key2_out_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key2_out_0_wd = reg_wdata[5];
 
-  assign pin_allowed_ctl_z3_wakeup_0_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_z3_wakeup_0_wd = reg_wdata[6];
 
-  assign pin_allowed_ctl_bat_disable_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_bat_disable_1_wd = reg_wdata[7];
 
-  assign pin_allowed_ctl_ec_rst_l_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_ec_rst_l_1_wd = reg_wdata[8];
 
-  assign pin_allowed_ctl_pwrb_out_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_pwrb_out_1_wd = reg_wdata[9];
 
-  assign pin_allowed_ctl_key0_out_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key0_out_1_wd = reg_wdata[10];
 
-  assign pin_allowed_ctl_key1_out_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key1_out_1_wd = reg_wdata[11];
 
-  assign pin_allowed_ctl_key2_out_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_key2_out_1_wd = reg_wdata[12];
 
-  assign pin_allowed_ctl_z3_wakeup_1_we = addr_hit[13] & reg_we & !reg_error;
   assign pin_allowed_ctl_z3_wakeup_1_wd = reg_wdata[13];
+  assign pin_out_ctl_we = addr_hit[14] & reg_we & !reg_error;
 
-  assign pin_out_ctl_bat_disable_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_bat_disable_wd = reg_wdata[0];
 
-  assign pin_out_ctl_ec_rst_l_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_ec_rst_l_wd = reg_wdata[1];
 
-  assign pin_out_ctl_pwrb_out_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_pwrb_out_wd = reg_wdata[2];
 
-  assign pin_out_ctl_key0_out_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_key0_out_wd = reg_wdata[3];
 
-  assign pin_out_ctl_key1_out_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_key1_out_wd = reg_wdata[4];
 
-  assign pin_out_ctl_key2_out_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_key2_out_wd = reg_wdata[5];
 
-  assign pin_out_ctl_z3_wakeup_we = addr_hit[14] & reg_we & !reg_error;
   assign pin_out_ctl_z3_wakeup_wd = reg_wdata[6];
+  assign pin_out_value_we = addr_hit[15] & reg_we & !reg_error;
 
-  assign pin_out_value_bat_disable_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_bat_disable_wd = reg_wdata[0];
 
-  assign pin_out_value_ec_rst_l_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_ec_rst_l_wd = reg_wdata[1];
 
-  assign pin_out_value_pwrb_out_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_pwrb_out_wd = reg_wdata[2];
 
-  assign pin_out_value_key0_out_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_key0_out_wd = reg_wdata[3];
 
-  assign pin_out_value_key1_out_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_key1_out_wd = reg_wdata[4];
 
-  assign pin_out_value_key2_out_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_key2_out_wd = reg_wdata[5];
 
-  assign pin_out_value_z3_wakeup_we = addr_hit[15] & reg_we & !reg_error;
   assign pin_out_value_z3_wakeup_wd = reg_wdata[6];
+  assign key_intr_ctl_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign key_intr_ctl_pwrb_in_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_pwrb_in_h2l_wd = reg_wdata[0];
 
-  assign key_intr_ctl_key0_in_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key0_in_h2l_wd = reg_wdata[1];
 
-  assign key_intr_ctl_key1_in_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key1_in_h2l_wd = reg_wdata[2];
 
-  assign key_intr_ctl_key2_in_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key2_in_h2l_wd = reg_wdata[3];
 
-  assign key_intr_ctl_ac_present_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_ac_present_h2l_wd = reg_wdata[4];
 
-  assign key_intr_ctl_ec_rst_l_h2l_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_ec_rst_l_h2l_wd = reg_wdata[5];
 
-  assign key_intr_ctl_pwrb_in_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_pwrb_in_l2h_wd = reg_wdata[8];
 
-  assign key_intr_ctl_key0_in_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key0_in_l2h_wd = reg_wdata[9];
 
-  assign key_intr_ctl_key1_in_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key1_in_l2h_wd = reg_wdata[10];
 
-  assign key_intr_ctl_key2_in_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_key2_in_l2h_wd = reg_wdata[11];
 
-  assign key_intr_ctl_ac_present_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_ac_present_l2h_wd = reg_wdata[12];
 
-  assign key_intr_ctl_ec_rst_l_l2h_we = addr_hit[17] & reg_we & !reg_error;
   assign key_intr_ctl_ec_rst_l_l2h_wd = reg_wdata[13];
-
   assign key_intr_debounce_ctl_we = addr_hit[18] & reg_we & !reg_error;
-  assign key_intr_debounce_ctl_wd = reg_wdata[15:0];
 
-  assign auto_block_debounce_ctl_debounce_timer_we = addr_hit[19] & reg_we & !reg_error;
+  assign key_intr_debounce_ctl_wd = reg_wdata[15:0];
+  assign auto_block_debounce_ctl_we = addr_hit[19] & reg_we & !reg_error;
+
   assign auto_block_debounce_ctl_debounce_timer_wd = reg_wdata[15:0];
 
-  assign auto_block_debounce_ctl_auto_block_enable_we = addr_hit[19] & reg_we & !reg_error;
   assign auto_block_debounce_ctl_auto_block_enable_wd = reg_wdata[16];
+  assign auto_block_out_ctl_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign auto_block_out_ctl_key0_out_sel_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key0_out_sel_wd = reg_wdata[0];
 
-  assign auto_block_out_ctl_key1_out_sel_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key1_out_sel_wd = reg_wdata[1];
 
-  assign auto_block_out_ctl_key2_out_sel_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key2_out_sel_wd = reg_wdata[2];
 
-  assign auto_block_out_ctl_key0_out_value_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key0_out_value_wd = reg_wdata[4];
 
-  assign auto_block_out_ctl_key1_out_value_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key1_out_value_wd = reg_wdata[5];
 
-  assign auto_block_out_ctl_key2_out_value_we = addr_hit[20] & reg_we & !reg_error;
   assign auto_block_out_ctl_key2_out_value_wd = reg_wdata[6];
+  assign com_sel_ctl_0_we = addr_hit[21] & reg_we & !reg_error;
 
-  assign com_sel_ctl_0_key0_in_sel_0_we = addr_hit[21] & reg_we & !reg_error;
   assign com_sel_ctl_0_key0_in_sel_0_wd = reg_wdata[0];
 
-  assign com_sel_ctl_0_key1_in_sel_0_we = addr_hit[21] & reg_we & !reg_error;
   assign com_sel_ctl_0_key1_in_sel_0_wd = reg_wdata[1];
 
-  assign com_sel_ctl_0_key2_in_sel_0_we = addr_hit[21] & reg_we & !reg_error;
   assign com_sel_ctl_0_key2_in_sel_0_wd = reg_wdata[2];
 
-  assign com_sel_ctl_0_pwrb_in_sel_0_we = addr_hit[21] & reg_we & !reg_error;
   assign com_sel_ctl_0_pwrb_in_sel_0_wd = reg_wdata[3];
 
-  assign com_sel_ctl_0_ac_present_sel_0_we = addr_hit[21] & reg_we & !reg_error;
   assign com_sel_ctl_0_ac_present_sel_0_wd = reg_wdata[4];
+  assign com_sel_ctl_1_we = addr_hit[22] & reg_we & !reg_error;
 
-  assign com_sel_ctl_1_key0_in_sel_1_we = addr_hit[22] & reg_we & !reg_error;
   assign com_sel_ctl_1_key0_in_sel_1_wd = reg_wdata[0];
 
-  assign com_sel_ctl_1_key1_in_sel_1_we = addr_hit[22] & reg_we & !reg_error;
   assign com_sel_ctl_1_key1_in_sel_1_wd = reg_wdata[1];
 
-  assign com_sel_ctl_1_key2_in_sel_1_we = addr_hit[22] & reg_we & !reg_error;
   assign com_sel_ctl_1_key2_in_sel_1_wd = reg_wdata[2];
 
-  assign com_sel_ctl_1_pwrb_in_sel_1_we = addr_hit[22] & reg_we & !reg_error;
   assign com_sel_ctl_1_pwrb_in_sel_1_wd = reg_wdata[3];
 
-  assign com_sel_ctl_1_ac_present_sel_1_we = addr_hit[22] & reg_we & !reg_error;
   assign com_sel_ctl_1_ac_present_sel_1_wd = reg_wdata[4];
+  assign com_sel_ctl_2_we = addr_hit[23] & reg_we & !reg_error;
 
-  assign com_sel_ctl_2_key0_in_sel_2_we = addr_hit[23] & reg_we & !reg_error;
   assign com_sel_ctl_2_key0_in_sel_2_wd = reg_wdata[0];
 
-  assign com_sel_ctl_2_key1_in_sel_2_we = addr_hit[23] & reg_we & !reg_error;
   assign com_sel_ctl_2_key1_in_sel_2_wd = reg_wdata[1];
 
-  assign com_sel_ctl_2_key2_in_sel_2_we = addr_hit[23] & reg_we & !reg_error;
   assign com_sel_ctl_2_key2_in_sel_2_wd = reg_wdata[2];
 
-  assign com_sel_ctl_2_pwrb_in_sel_2_we = addr_hit[23] & reg_we & !reg_error;
   assign com_sel_ctl_2_pwrb_in_sel_2_wd = reg_wdata[3];
 
-  assign com_sel_ctl_2_ac_present_sel_2_we = addr_hit[23] & reg_we & !reg_error;
   assign com_sel_ctl_2_ac_present_sel_2_wd = reg_wdata[4];
+  assign com_sel_ctl_3_we = addr_hit[24] & reg_we & !reg_error;
 
-  assign com_sel_ctl_3_key0_in_sel_3_we = addr_hit[24] & reg_we & !reg_error;
   assign com_sel_ctl_3_key0_in_sel_3_wd = reg_wdata[0];
 
-  assign com_sel_ctl_3_key1_in_sel_3_we = addr_hit[24] & reg_we & !reg_error;
   assign com_sel_ctl_3_key1_in_sel_3_wd = reg_wdata[1];
 
-  assign com_sel_ctl_3_key2_in_sel_3_we = addr_hit[24] & reg_we & !reg_error;
   assign com_sel_ctl_3_key2_in_sel_3_wd = reg_wdata[2];
 
-  assign com_sel_ctl_3_pwrb_in_sel_3_we = addr_hit[24] & reg_we & !reg_error;
   assign com_sel_ctl_3_pwrb_in_sel_3_wd = reg_wdata[3];
 
-  assign com_sel_ctl_3_ac_present_sel_3_we = addr_hit[24] & reg_we & !reg_error;
   assign com_sel_ctl_3_ac_present_sel_3_wd = reg_wdata[4];
-
   assign com_det_ctl_0_we = addr_hit[25] & reg_we & !reg_error;
+
   assign com_det_ctl_0_wd = reg_wdata[31:0];
-
   assign com_det_ctl_1_we = addr_hit[26] & reg_we & !reg_error;
+
   assign com_det_ctl_1_wd = reg_wdata[31:0];
-
   assign com_det_ctl_2_we = addr_hit[27] & reg_we & !reg_error;
+
   assign com_det_ctl_2_wd = reg_wdata[31:0];
-
   assign com_det_ctl_3_we = addr_hit[28] & reg_we & !reg_error;
-  assign com_det_ctl_3_wd = reg_wdata[31:0];
 
-  assign com_out_ctl_0_bat_disable_0_we = addr_hit[29] & reg_we & !reg_error;
+  assign com_det_ctl_3_wd = reg_wdata[31:0];
+  assign com_out_ctl_0_we = addr_hit[29] & reg_we & !reg_error;
+
   assign com_out_ctl_0_bat_disable_0_wd = reg_wdata[0];
 
-  assign com_out_ctl_0_interrupt_0_we = addr_hit[29] & reg_we & !reg_error;
   assign com_out_ctl_0_interrupt_0_wd = reg_wdata[1];
 
-  assign com_out_ctl_0_ec_rst_0_we = addr_hit[29] & reg_we & !reg_error;
   assign com_out_ctl_0_ec_rst_0_wd = reg_wdata[2];
 
-  assign com_out_ctl_0_gsc_rst_0_we = addr_hit[29] & reg_we & !reg_error;
   assign com_out_ctl_0_gsc_rst_0_wd = reg_wdata[3];
+  assign com_out_ctl_1_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign com_out_ctl_1_bat_disable_1_we = addr_hit[30] & reg_we & !reg_error;
   assign com_out_ctl_1_bat_disable_1_wd = reg_wdata[0];
 
-  assign com_out_ctl_1_interrupt_1_we = addr_hit[30] & reg_we & !reg_error;
   assign com_out_ctl_1_interrupt_1_wd = reg_wdata[1];
 
-  assign com_out_ctl_1_ec_rst_1_we = addr_hit[30] & reg_we & !reg_error;
   assign com_out_ctl_1_ec_rst_1_wd = reg_wdata[2];
 
-  assign com_out_ctl_1_gsc_rst_1_we = addr_hit[30] & reg_we & !reg_error;
   assign com_out_ctl_1_gsc_rst_1_wd = reg_wdata[3];
+  assign com_out_ctl_2_we = addr_hit[31] & reg_we & !reg_error;
 
-  assign com_out_ctl_2_bat_disable_2_we = addr_hit[31] & reg_we & !reg_error;
   assign com_out_ctl_2_bat_disable_2_wd = reg_wdata[0];
 
-  assign com_out_ctl_2_interrupt_2_we = addr_hit[31] & reg_we & !reg_error;
   assign com_out_ctl_2_interrupt_2_wd = reg_wdata[1];
 
-  assign com_out_ctl_2_ec_rst_2_we = addr_hit[31] & reg_we & !reg_error;
   assign com_out_ctl_2_ec_rst_2_wd = reg_wdata[2];
 
-  assign com_out_ctl_2_gsc_rst_2_we = addr_hit[31] & reg_we & !reg_error;
   assign com_out_ctl_2_gsc_rst_2_wd = reg_wdata[3];
+  assign com_out_ctl_3_we = addr_hit[32] & reg_we & !reg_error;
 
-  assign com_out_ctl_3_bat_disable_3_we = addr_hit[32] & reg_we & !reg_error;
   assign com_out_ctl_3_bat_disable_3_wd = reg_wdata[0];
 
-  assign com_out_ctl_3_interrupt_3_we = addr_hit[32] & reg_we & !reg_error;
   assign com_out_ctl_3_interrupt_3_wd = reg_wdata[1];
 
-  assign com_out_ctl_3_ec_rst_3_we = addr_hit[32] & reg_we & !reg_error;
   assign com_out_ctl_3_ec_rst_3_wd = reg_wdata[2];
 
-  assign com_out_ctl_3_gsc_rst_3_we = addr_hit[32] & reg_we & !reg_error;
   assign com_out_ctl_3_gsc_rst_3_wd = reg_wdata[3];
+  assign combo_intr_status_we = addr_hit[33] & reg_we & !reg_error;
 
-  assign combo_intr_status_combo0_h2l_we = addr_hit[33] & reg_we & !reg_error;
   assign combo_intr_status_combo0_h2l_wd = reg_wdata[0];
 
-  assign combo_intr_status_combo1_h2l_we = addr_hit[33] & reg_we & !reg_error;
   assign combo_intr_status_combo1_h2l_wd = reg_wdata[1];
 
-  assign combo_intr_status_combo2_h2l_we = addr_hit[33] & reg_we & !reg_error;
   assign combo_intr_status_combo2_h2l_wd = reg_wdata[2];
 
-  assign combo_intr_status_combo3_h2l_we = addr_hit[33] & reg_we & !reg_error;
   assign combo_intr_status_combo3_h2l_wd = reg_wdata[3];
+  assign key_intr_status_we = addr_hit[34] & reg_we & !reg_error;
 
-  assign key_intr_status_pwrb_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_pwrb_h2l_wd = reg_wdata[0];
 
-  assign key_intr_status_key0_in_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key0_in_h2l_wd = reg_wdata[1];
 
-  assign key_intr_status_key1_in_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key1_in_h2l_wd = reg_wdata[2];
 
-  assign key_intr_status_key2_in_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key2_in_h2l_wd = reg_wdata[3];
 
-  assign key_intr_status_ac_present_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_ac_present_h2l_wd = reg_wdata[4];
 
-  assign key_intr_status_ec_rst_l_h2l_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_ec_rst_l_h2l_wd = reg_wdata[5];
 
-  assign key_intr_status_pwrb_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_pwrb_l2h_wd = reg_wdata[6];
 
-  assign key_intr_status_key0_in_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key0_in_l2h_wd = reg_wdata[7];
 
-  assign key_intr_status_key1_in_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key1_in_l2h_wd = reg_wdata[8];
 
-  assign key_intr_status_key2_in_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_key2_in_l2h_wd = reg_wdata[9];
 
-  assign key_intr_status_ac_present_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_ac_present_l2h_wd = reg_wdata[10];
 
-  assign key_intr_status_ec_rst_l_l2h_we = addr_hit[34] & reg_we & !reg_error;
   assign key_intr_status_ec_rst_l_l2h_wd = reg_wdata[11];
 
   // Read data return

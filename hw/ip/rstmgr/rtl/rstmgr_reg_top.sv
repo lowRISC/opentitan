@@ -104,42 +104,35 @@ module rstmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic reset_info_we;
   logic reset_info_por_qs;
   logic reset_info_por_wd;
-  logic reset_info_por_we;
   logic reset_info_low_power_exit_qs;
   logic reset_info_low_power_exit_wd;
-  logic reset_info_low_power_exit_we;
   logic reset_info_ndm_reset_qs;
   logic reset_info_ndm_reset_wd;
-  logic reset_info_ndm_reset_we;
   logic reset_info_hw_req_qs;
   logic reset_info_hw_req_wd;
-  logic reset_info_hw_req_we;
+  logic alert_info_ctrl_we;
   logic alert_info_ctrl_en_qs;
   logic alert_info_ctrl_en_wd;
-  logic alert_info_ctrl_en_we;
   logic [3:0] alert_info_ctrl_index_qs;
   logic [3:0] alert_info_ctrl_index_wd;
-  logic alert_info_ctrl_index_we;
-  logic [3:0] alert_info_attr_qs;
   logic alert_info_attr_re;
-  logic [31:0] alert_info_qs;
+  logic [3:0] alert_info_attr_qs;
   logic alert_info_re;
+  logic [31:0] alert_info_qs;
+  logic sw_rst_regen_we;
   logic sw_rst_regen_en_0_qs;
   logic sw_rst_regen_en_0_wd;
-  logic sw_rst_regen_en_0_we;
   logic sw_rst_regen_en_1_qs;
   logic sw_rst_regen_en_1_wd;
-  logic sw_rst_regen_en_1_we;
+  logic sw_rst_ctrl_n_re;
+  logic sw_rst_ctrl_n_we;
   logic sw_rst_ctrl_n_val_0_qs;
   logic sw_rst_ctrl_n_val_0_wd;
-  logic sw_rst_ctrl_n_val_0_we;
-  logic sw_rst_ctrl_n_val_0_re;
   logic sw_rst_ctrl_n_val_1_qs;
   logic sw_rst_ctrl_n_val_1_wd;
-  logic sw_rst_ctrl_n_val_1_we;
-  logic sw_rst_ctrl_n_val_1_re;
 
   // Register instances
   // R[reset_info]: V(False)
@@ -154,7 +147,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_por_we),
+    .we     (reset_info_we),
     .wd     (reset_info_por_wd),
 
     // from internal hardware
@@ -180,7 +173,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_low_power_exit_we),
+    .we     (reset_info_we),
     .wd     (reset_info_low_power_exit_wd),
 
     // from internal hardware
@@ -206,7 +199,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_ndm_reset_we),
+    .we     (reset_info_we),
     .wd     (reset_info_ndm_reset_wd),
 
     // from internal hardware
@@ -232,7 +225,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_hw_req_we),
+    .we     (reset_info_we),
     .wd     (reset_info_hw_req_wd),
 
     // from internal hardware
@@ -260,7 +253,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_info_ctrl_en_we),
+    .we     (alert_info_ctrl_we),
     .wd     (alert_info_ctrl_en_wd),
 
     // from internal hardware
@@ -286,7 +279,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_info_ctrl_index_we),
+    .we     (alert_info_ctrl_we),
     .wd     (alert_info_ctrl_index_wd),
 
     // from internal hardware
@@ -348,7 +341,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_0_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_0_wd),
 
     // from internal hardware
@@ -374,7 +367,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_1_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_1_wd),
 
     // from internal hardware
@@ -399,8 +392,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_0 (
-    .re     (sw_rst_ctrl_n_val_0_re),
-    .we     (sw_rst_ctrl_n_val_0_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_0_wd),
     .d      (hw2reg.sw_rst_ctrl_n[0].d),
     .qre    (),
@@ -414,8 +407,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_1 (
-    .re     (sw_rst_ctrl_n_val_1_re),
-    .we     (sw_rst_ctrl_n_val_1_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_1_wd),
     .d      (hw2reg.sw_rst_ctrl_n[1].d),
     .qre    (),
@@ -451,42 +444,33 @@ module rstmgr_reg_top (
                (addr_hit[4] & (|(RSTMGR_PERMIT[4] & ~reg_be))) |
                (addr_hit[5] & (|(RSTMGR_PERMIT[5] & ~reg_be)))));
   end
+  assign reset_info_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign reset_info_por_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_por_wd = reg_wdata[0];
 
-  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_low_power_exit_wd = reg_wdata[1];
 
-  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_hw_req_wd = reg_wdata[3];
+  assign alert_info_ctrl_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign alert_info_ctrl_en_we = addr_hit[1] & reg_we & !reg_error;
   assign alert_info_ctrl_en_wd = reg_wdata[0];
 
-  assign alert_info_ctrl_index_we = addr_hit[1] & reg_we & !reg_error;
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
-
   assign alert_info_attr_re = addr_hit[2] & reg_re & !reg_error;
-
   assign alert_info_re = addr_hit[3] & reg_re & !reg_error;
+  assign sw_rst_regen_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign sw_rst_regen_en_0_we = addr_hit[4] & reg_we & !reg_error;
   assign sw_rst_regen_en_0_wd = reg_wdata[0];
 
-  assign sw_rst_regen_en_1_we = addr_hit[4] & reg_we & !reg_error;
   assign sw_rst_regen_en_1_wd = reg_wdata[1];
+  assign sw_rst_ctrl_n_re = addr_hit[5] & reg_re & !reg_error;
+  assign sw_rst_ctrl_n_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign sw_rst_ctrl_n_val_0_we = addr_hit[5] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_val_0_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_1_we = addr_hit[5] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_1_wd = reg_wdata[1];
-  assign sw_rst_ctrl_n_val_1_re = addr_hit[5] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

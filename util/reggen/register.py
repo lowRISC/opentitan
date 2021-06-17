@@ -296,6 +296,40 @@ class Register(RegBase):
         # the register by taking the MSB of the last field.
         return 1 + self.fields[-1].bits.msb
 
+    def needs_we(self) -> bool:
+        '''Return true if at least one field needs a write-enable'''
+        for fld in self.fields:
+            if fld.swaccess.needs_we():
+                return True
+        return False
+
+    def needs_re(self) -> bool:
+        '''Return true if at least one field needs a read-enable
+
+        This is true if any of the following are true:
+
+          - The register is shadowed (because shadow registers need to know
+            about reads)
+
+          - There's an RC field (where we'll attach the read-enable signal to
+            the subreg's we port)
+
+          - The register is hwext and allows reads (in which case the hardware
+            side might need the re signal)
+
+        '''
+        if self.shadowed:
+            return True
+
+        for fld in self.fields:
+            if fld.swaccess.key == 'rc':
+                return True
+
+            if self.hwext and fld.swaccess.allows_read():
+                return True
+
+        return False
+
     def make_multi(self,
                    reg_width: int,
                    offset: int,

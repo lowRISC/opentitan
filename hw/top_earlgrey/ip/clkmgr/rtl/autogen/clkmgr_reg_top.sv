@@ -104,39 +104,33 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic extclk_sel_regwen_we;
   logic extclk_sel_regwen_qs;
   logic extclk_sel_regwen_wd;
-  logic extclk_sel_regwen_we;
+  logic extclk_sel_we;
   logic [3:0] extclk_sel_qs;
   logic [3:0] extclk_sel_wd;
-  logic extclk_sel_we;
+  logic jitter_enable_we;
   logic jitter_enable_qs;
   logic jitter_enable_wd;
-  logic jitter_enable_we;
+  logic clk_enables_we;
   logic clk_enables_clk_io_div4_peri_en_qs;
   logic clk_enables_clk_io_div4_peri_en_wd;
-  logic clk_enables_clk_io_div4_peri_en_we;
   logic clk_enables_clk_io_div2_peri_en_qs;
   logic clk_enables_clk_io_div2_peri_en_wd;
-  logic clk_enables_clk_io_div2_peri_en_we;
   logic clk_enables_clk_io_peri_en_qs;
   logic clk_enables_clk_io_peri_en_wd;
-  logic clk_enables_clk_io_peri_en_we;
   logic clk_enables_clk_usb_peri_en_qs;
   logic clk_enables_clk_usb_peri_en_wd;
-  logic clk_enables_clk_usb_peri_en_we;
+  logic clk_hints_we;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
-  logic clk_hints_clk_main_aes_hint_we;
   logic clk_hints_clk_main_hmac_hint_qs;
   logic clk_hints_clk_main_hmac_hint_wd;
-  logic clk_hints_clk_main_hmac_hint_we;
   logic clk_hints_clk_main_kmac_hint_qs;
   logic clk_hints_clk_main_kmac_hint_wd;
-  logic clk_hints_clk_main_kmac_hint_we;
   logic clk_hints_clk_main_otbn_hint_qs;
   logic clk_hints_clk_main_otbn_hint_wd;
-  logic clk_hints_clk_main_otbn_hint_we;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
   logic clk_hints_status_clk_main_kmac_val_qs;
@@ -236,7 +230,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_io_div4_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_io_div4_peri_en_wd),
 
     // from internal hardware
@@ -262,7 +256,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_io_div2_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_io_div2_peri_en_wd),
 
     // from internal hardware
@@ -288,7 +282,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_io_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_io_peri_en_wd),
 
     // from internal hardware
@@ -314,7 +308,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_usb_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_usb_peri_en_wd),
 
     // from internal hardware
@@ -342,7 +336,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_aes_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_aes_hint_wd),
 
     // from internal hardware
@@ -368,7 +362,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_hmac_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_hmac_hint_wd),
 
     // from internal hardware
@@ -394,7 +388,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_kmac_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_kmac_hint_wd),
 
     // from internal hardware
@@ -420,7 +414,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_otbn_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_otbn_hint_wd),
 
     // from internal hardware
@@ -567,38 +561,32 @@ module clkmgr_reg_top (
                (addr_hit[4] & (|(CLKMGR_PERMIT[4] & ~reg_be))) |
                (addr_hit[5] & (|(CLKMGR_PERMIT[5] & ~reg_be)))));
   end
-
   assign extclk_sel_regwen_we = addr_hit[0] & reg_we & !reg_error;
+
   assign extclk_sel_regwen_wd = reg_wdata[0];
-
   assign extclk_sel_we = addr_hit[1] & reg_we & !reg_error;
+
   assign extclk_sel_wd = reg_wdata[3:0];
-
   assign jitter_enable_we = addr_hit[2] & reg_we & !reg_error;
-  assign jitter_enable_wd = reg_wdata[0];
 
-  assign clk_enables_clk_io_div4_peri_en_we = addr_hit[3] & reg_we & !reg_error;
+  assign jitter_enable_wd = reg_wdata[0];
+  assign clk_enables_we = addr_hit[3] & reg_we & !reg_error;
+
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
 
-  assign clk_enables_clk_io_div2_peri_en_we = addr_hit[3] & reg_we & !reg_error;
   assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[1];
 
-  assign clk_enables_clk_io_peri_en_we = addr_hit[3] & reg_we & !reg_error;
   assign clk_enables_clk_io_peri_en_wd = reg_wdata[2];
 
-  assign clk_enables_clk_usb_peri_en_we = addr_hit[3] & reg_we & !reg_error;
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
+  assign clk_hints_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign clk_hints_clk_main_aes_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
-  assign clk_hints_clk_main_hmac_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
 
-  assign clk_hints_clk_main_kmac_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
-  assign clk_hints_clk_main_otbn_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
 
   // Read data return

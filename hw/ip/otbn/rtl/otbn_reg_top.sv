@@ -157,22 +157,21 @@ module otbn_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_qs;
   logic intr_state_wd;
-  logic intr_state_we;
+  logic intr_enable_we;
   logic intr_enable_qs;
   logic intr_enable_wd;
-  logic intr_enable_we;
-  logic intr_test_wd;
   logic intr_test_we;
+  logic intr_test_wd;
+  logic alert_test_we;
   logic alert_test_fatal_wd;
-  logic alert_test_fatal_we;
   logic alert_test_recov_wd;
-  logic alert_test_recov_we;
-  logic cmd_wd;
   logic cmd_we;
-  logic status_qs;
+  logic cmd_wd;
   logic status_re;
+  logic status_qs;
   logic err_bits_bad_data_addr_qs;
   logic err_bits_bad_insn_addr_qs;
   logic err_bits_call_stack_qs;
@@ -181,14 +180,14 @@ module otbn_reg_top (
   logic err_bits_fatal_imem_qs;
   logic err_bits_fatal_dmem_qs;
   logic err_bits_fatal_reg_qs;
-  logic [31:0] start_addr_wd;
   logic start_addr_we;
+  logic [31:0] start_addr_wd;
   logic fatal_alert_cause_bus_integrity_error_qs;
   logic fatal_alert_cause_imem_error_qs;
   logic fatal_alert_cause_dmem_error_qs;
   logic fatal_alert_cause_reg_error_qs;
-  logic [31:0] insn_cnt_qs;
   logic insn_cnt_re;
+  logic [31:0] insn_cnt_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -268,7 +267,7 @@ module otbn_reg_top (
     .DW    (1)
   ) u_alert_test_fatal (
     .re     (1'b0),
-    .we     (alert_test_fatal_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_wd),
     .d      ('0),
     .qre    (),
@@ -283,7 +282,7 @@ module otbn_reg_top (
     .DW    (1)
   ) u_alert_test_recov (
     .re     (1'b0),
-    .we     (alert_test_recov_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_wd),
     .d      ('0),
     .qre    (),
@@ -717,30 +716,27 @@ module otbn_reg_top (
                (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be))) |
                (addr_hit[9] & (|(OTBN_PERMIT[9] & ~reg_be)))));
   end
-
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+
   assign intr_state_wd = reg_wdata[0];
-
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+
   assign intr_enable_wd = reg_wdata[0];
-
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
-  assign intr_test_wd = reg_wdata[0];
 
-  assign alert_test_fatal_we = addr_hit[3] & reg_we & !reg_error;
+  assign intr_test_wd = reg_wdata[0];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_fatal_wd = reg_wdata[0];
 
-  assign alert_test_recov_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_wd = reg_wdata[1];
-
   assign cmd_we = addr_hit[4] & reg_we & !reg_error;
+
   assign cmd_wd = reg_wdata[0];
-
   assign status_re = addr_hit[5] & reg_re & !reg_error;
-
   assign start_addr_we = addr_hit[7] & reg_we & !reg_error;
-  assign start_addr_wd = reg_wdata[31:0];
 
+  assign start_addr_wd = reg_wdata[31:0];
   assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return

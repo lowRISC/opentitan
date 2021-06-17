@@ -136,304 +136,242 @@ module rv_plic_reg_top (
   logic ip_p_29_qs;
   logic ip_p_30_qs;
   logic ip_p_31_qs;
+  logic le_we;
   logic le_le_0_qs;
   logic le_le_0_wd;
-  logic le_le_0_we;
   logic le_le_1_qs;
   logic le_le_1_wd;
-  logic le_le_1_we;
   logic le_le_2_qs;
   logic le_le_2_wd;
-  logic le_le_2_we;
   logic le_le_3_qs;
   logic le_le_3_wd;
-  logic le_le_3_we;
   logic le_le_4_qs;
   logic le_le_4_wd;
-  logic le_le_4_we;
   logic le_le_5_qs;
   logic le_le_5_wd;
-  logic le_le_5_we;
   logic le_le_6_qs;
   logic le_le_6_wd;
-  logic le_le_6_we;
   logic le_le_7_qs;
   logic le_le_7_wd;
-  logic le_le_7_we;
   logic le_le_8_qs;
   logic le_le_8_wd;
-  logic le_le_8_we;
   logic le_le_9_qs;
   logic le_le_9_wd;
-  logic le_le_9_we;
   logic le_le_10_qs;
   logic le_le_10_wd;
-  logic le_le_10_we;
   logic le_le_11_qs;
   logic le_le_11_wd;
-  logic le_le_11_we;
   logic le_le_12_qs;
   logic le_le_12_wd;
-  logic le_le_12_we;
   logic le_le_13_qs;
   logic le_le_13_wd;
-  logic le_le_13_we;
   logic le_le_14_qs;
   logic le_le_14_wd;
-  logic le_le_14_we;
   logic le_le_15_qs;
   logic le_le_15_wd;
-  logic le_le_15_we;
   logic le_le_16_qs;
   logic le_le_16_wd;
-  logic le_le_16_we;
   logic le_le_17_qs;
   logic le_le_17_wd;
-  logic le_le_17_we;
   logic le_le_18_qs;
   logic le_le_18_wd;
-  logic le_le_18_we;
   logic le_le_19_qs;
   logic le_le_19_wd;
-  logic le_le_19_we;
   logic le_le_20_qs;
   logic le_le_20_wd;
-  logic le_le_20_we;
   logic le_le_21_qs;
   logic le_le_21_wd;
-  logic le_le_21_we;
   logic le_le_22_qs;
   logic le_le_22_wd;
-  logic le_le_22_we;
   logic le_le_23_qs;
   logic le_le_23_wd;
-  logic le_le_23_we;
   logic le_le_24_qs;
   logic le_le_24_wd;
-  logic le_le_24_we;
   logic le_le_25_qs;
   logic le_le_25_wd;
-  logic le_le_25_we;
   logic le_le_26_qs;
   logic le_le_26_wd;
-  logic le_le_26_we;
   logic le_le_27_qs;
   logic le_le_27_wd;
-  logic le_le_27_we;
   logic le_le_28_qs;
   logic le_le_28_wd;
-  logic le_le_28_we;
   logic le_le_29_qs;
   logic le_le_29_wd;
-  logic le_le_29_we;
   logic le_le_30_qs;
   logic le_le_30_wd;
-  logic le_le_30_we;
   logic le_le_31_qs;
   logic le_le_31_wd;
-  logic le_le_31_we;
+  logic prio0_we;
   logic [2:0] prio0_qs;
   logic [2:0] prio0_wd;
-  logic prio0_we;
+  logic prio1_we;
   logic [2:0] prio1_qs;
   logic [2:0] prio1_wd;
-  logic prio1_we;
+  logic prio2_we;
   logic [2:0] prio2_qs;
   logic [2:0] prio2_wd;
-  logic prio2_we;
+  logic prio3_we;
   logic [2:0] prio3_qs;
   logic [2:0] prio3_wd;
-  logic prio3_we;
+  logic prio4_we;
   logic [2:0] prio4_qs;
   logic [2:0] prio4_wd;
-  logic prio4_we;
+  logic prio5_we;
   logic [2:0] prio5_qs;
   logic [2:0] prio5_wd;
-  logic prio5_we;
+  logic prio6_we;
   logic [2:0] prio6_qs;
   logic [2:0] prio6_wd;
-  logic prio6_we;
+  logic prio7_we;
   logic [2:0] prio7_qs;
   logic [2:0] prio7_wd;
-  logic prio7_we;
+  logic prio8_we;
   logic [2:0] prio8_qs;
   logic [2:0] prio8_wd;
-  logic prio8_we;
+  logic prio9_we;
   logic [2:0] prio9_qs;
   logic [2:0] prio9_wd;
-  logic prio9_we;
+  logic prio10_we;
   logic [2:0] prio10_qs;
   logic [2:0] prio10_wd;
-  logic prio10_we;
+  logic prio11_we;
   logic [2:0] prio11_qs;
   logic [2:0] prio11_wd;
-  logic prio11_we;
+  logic prio12_we;
   logic [2:0] prio12_qs;
   logic [2:0] prio12_wd;
-  logic prio12_we;
+  logic prio13_we;
   logic [2:0] prio13_qs;
   logic [2:0] prio13_wd;
-  logic prio13_we;
+  logic prio14_we;
   logic [2:0] prio14_qs;
   logic [2:0] prio14_wd;
-  logic prio14_we;
+  logic prio15_we;
   logic [2:0] prio15_qs;
   logic [2:0] prio15_wd;
-  logic prio15_we;
+  logic prio16_we;
   logic [2:0] prio16_qs;
   logic [2:0] prio16_wd;
-  logic prio16_we;
+  logic prio17_we;
   logic [2:0] prio17_qs;
   logic [2:0] prio17_wd;
-  logic prio17_we;
+  logic prio18_we;
   logic [2:0] prio18_qs;
   logic [2:0] prio18_wd;
-  logic prio18_we;
+  logic prio19_we;
   logic [2:0] prio19_qs;
   logic [2:0] prio19_wd;
-  logic prio19_we;
+  logic prio20_we;
   logic [2:0] prio20_qs;
   logic [2:0] prio20_wd;
-  logic prio20_we;
+  logic prio21_we;
   logic [2:0] prio21_qs;
   logic [2:0] prio21_wd;
-  logic prio21_we;
+  logic prio22_we;
   logic [2:0] prio22_qs;
   logic [2:0] prio22_wd;
-  logic prio22_we;
+  logic prio23_we;
   logic [2:0] prio23_qs;
   logic [2:0] prio23_wd;
-  logic prio23_we;
+  logic prio24_we;
   logic [2:0] prio24_qs;
   logic [2:0] prio24_wd;
-  logic prio24_we;
+  logic prio25_we;
   logic [2:0] prio25_qs;
   logic [2:0] prio25_wd;
-  logic prio25_we;
+  logic prio26_we;
   logic [2:0] prio26_qs;
   logic [2:0] prio26_wd;
-  logic prio26_we;
+  logic prio27_we;
   logic [2:0] prio27_qs;
   logic [2:0] prio27_wd;
-  logic prio27_we;
+  logic prio28_we;
   logic [2:0] prio28_qs;
   logic [2:0] prio28_wd;
-  logic prio28_we;
+  logic prio29_we;
   logic [2:0] prio29_qs;
   logic [2:0] prio29_wd;
-  logic prio29_we;
+  logic prio30_we;
   logic [2:0] prio30_qs;
   logic [2:0] prio30_wd;
-  logic prio30_we;
+  logic prio31_we;
   logic [2:0] prio31_qs;
   logic [2:0] prio31_wd;
-  logic prio31_we;
+  logic ie0_we;
   logic ie0_e_0_qs;
   logic ie0_e_0_wd;
-  logic ie0_e_0_we;
   logic ie0_e_1_qs;
   logic ie0_e_1_wd;
-  logic ie0_e_1_we;
   logic ie0_e_2_qs;
   logic ie0_e_2_wd;
-  logic ie0_e_2_we;
   logic ie0_e_3_qs;
   logic ie0_e_3_wd;
-  logic ie0_e_3_we;
   logic ie0_e_4_qs;
   logic ie0_e_4_wd;
-  logic ie0_e_4_we;
   logic ie0_e_5_qs;
   logic ie0_e_5_wd;
-  logic ie0_e_5_we;
   logic ie0_e_6_qs;
   logic ie0_e_6_wd;
-  logic ie0_e_6_we;
   logic ie0_e_7_qs;
   logic ie0_e_7_wd;
-  logic ie0_e_7_we;
   logic ie0_e_8_qs;
   logic ie0_e_8_wd;
-  logic ie0_e_8_we;
   logic ie0_e_9_qs;
   logic ie0_e_9_wd;
-  logic ie0_e_9_we;
   logic ie0_e_10_qs;
   logic ie0_e_10_wd;
-  logic ie0_e_10_we;
   logic ie0_e_11_qs;
   logic ie0_e_11_wd;
-  logic ie0_e_11_we;
   logic ie0_e_12_qs;
   logic ie0_e_12_wd;
-  logic ie0_e_12_we;
   logic ie0_e_13_qs;
   logic ie0_e_13_wd;
-  logic ie0_e_13_we;
   logic ie0_e_14_qs;
   logic ie0_e_14_wd;
-  logic ie0_e_14_we;
   logic ie0_e_15_qs;
   logic ie0_e_15_wd;
-  logic ie0_e_15_we;
   logic ie0_e_16_qs;
   logic ie0_e_16_wd;
-  logic ie0_e_16_we;
   logic ie0_e_17_qs;
   logic ie0_e_17_wd;
-  logic ie0_e_17_we;
   logic ie0_e_18_qs;
   logic ie0_e_18_wd;
-  logic ie0_e_18_we;
   logic ie0_e_19_qs;
   logic ie0_e_19_wd;
-  logic ie0_e_19_we;
   logic ie0_e_20_qs;
   logic ie0_e_20_wd;
-  logic ie0_e_20_we;
   logic ie0_e_21_qs;
   logic ie0_e_21_wd;
-  logic ie0_e_21_we;
   logic ie0_e_22_qs;
   logic ie0_e_22_wd;
-  logic ie0_e_22_we;
   logic ie0_e_23_qs;
   logic ie0_e_23_wd;
-  logic ie0_e_23_we;
   logic ie0_e_24_qs;
   logic ie0_e_24_wd;
-  logic ie0_e_24_we;
   logic ie0_e_25_qs;
   logic ie0_e_25_wd;
-  logic ie0_e_25_we;
   logic ie0_e_26_qs;
   logic ie0_e_26_wd;
-  logic ie0_e_26_we;
   logic ie0_e_27_qs;
   logic ie0_e_27_wd;
-  logic ie0_e_27_we;
   logic ie0_e_28_qs;
   logic ie0_e_28_wd;
-  logic ie0_e_28_we;
   logic ie0_e_29_qs;
   logic ie0_e_29_wd;
-  logic ie0_e_29_we;
   logic ie0_e_30_qs;
   logic ie0_e_30_wd;
-  logic ie0_e_30_we;
   logic ie0_e_31_qs;
   logic ie0_e_31_wd;
-  logic ie0_e_31_we;
+  logic threshold0_we;
   logic [2:0] threshold0_qs;
   logic [2:0] threshold0_wd;
-  logic threshold0_we;
+  logic cc0_re;
+  logic cc0_we;
   logic [5:0] cc0_qs;
   logic [5:0] cc0_wd;
-  logic cc0_we;
-  logic cc0_re;
+  logic msip0_we;
   logic msip0_qs;
   logic msip0_wd;
-  logic msip0_we;
 
   // Register instances
 
@@ -1287,7 +1225,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_0_we),
+    .we     (le_we),
     .wd     (le_le_0_wd),
 
     // from internal hardware
@@ -1313,7 +1251,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_1_we),
+    .we     (le_we),
     .wd     (le_le_1_wd),
 
     // from internal hardware
@@ -1339,7 +1277,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_2_we),
+    .we     (le_we),
     .wd     (le_le_2_wd),
 
     // from internal hardware
@@ -1365,7 +1303,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_3_we),
+    .we     (le_we),
     .wd     (le_le_3_wd),
 
     // from internal hardware
@@ -1391,7 +1329,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_4_we),
+    .we     (le_we),
     .wd     (le_le_4_wd),
 
     // from internal hardware
@@ -1417,7 +1355,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_5_we),
+    .we     (le_we),
     .wd     (le_le_5_wd),
 
     // from internal hardware
@@ -1443,7 +1381,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_6_we),
+    .we     (le_we),
     .wd     (le_le_6_wd),
 
     // from internal hardware
@@ -1469,7 +1407,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_7_we),
+    .we     (le_we),
     .wd     (le_le_7_wd),
 
     // from internal hardware
@@ -1495,7 +1433,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_8_we),
+    .we     (le_we),
     .wd     (le_le_8_wd),
 
     // from internal hardware
@@ -1521,7 +1459,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_9_we),
+    .we     (le_we),
     .wd     (le_le_9_wd),
 
     // from internal hardware
@@ -1547,7 +1485,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_10_we),
+    .we     (le_we),
     .wd     (le_le_10_wd),
 
     // from internal hardware
@@ -1573,7 +1511,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_11_we),
+    .we     (le_we),
     .wd     (le_le_11_wd),
 
     // from internal hardware
@@ -1599,7 +1537,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_12_we),
+    .we     (le_we),
     .wd     (le_le_12_wd),
 
     // from internal hardware
@@ -1625,7 +1563,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_13_we),
+    .we     (le_we),
     .wd     (le_le_13_wd),
 
     // from internal hardware
@@ -1651,7 +1589,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_14_we),
+    .we     (le_we),
     .wd     (le_le_14_wd),
 
     // from internal hardware
@@ -1677,7 +1615,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_15_we),
+    .we     (le_we),
     .wd     (le_le_15_wd),
 
     // from internal hardware
@@ -1703,7 +1641,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_16_we),
+    .we     (le_we),
     .wd     (le_le_16_wd),
 
     // from internal hardware
@@ -1729,7 +1667,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_17_we),
+    .we     (le_we),
     .wd     (le_le_17_wd),
 
     // from internal hardware
@@ -1755,7 +1693,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_18_we),
+    .we     (le_we),
     .wd     (le_le_18_wd),
 
     // from internal hardware
@@ -1781,7 +1719,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_19_we),
+    .we     (le_we),
     .wd     (le_le_19_wd),
 
     // from internal hardware
@@ -1807,7 +1745,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_20_we),
+    .we     (le_we),
     .wd     (le_le_20_wd),
 
     // from internal hardware
@@ -1833,7 +1771,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_21_we),
+    .we     (le_we),
     .wd     (le_le_21_wd),
 
     // from internal hardware
@@ -1859,7 +1797,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_22_we),
+    .we     (le_we),
     .wd     (le_le_22_wd),
 
     // from internal hardware
@@ -1885,7 +1823,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_23_we),
+    .we     (le_we),
     .wd     (le_le_23_wd),
 
     // from internal hardware
@@ -1911,7 +1849,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_24_we),
+    .we     (le_we),
     .wd     (le_le_24_wd),
 
     // from internal hardware
@@ -1937,7 +1875,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_25_we),
+    .we     (le_we),
     .wd     (le_le_25_wd),
 
     // from internal hardware
@@ -1963,7 +1901,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_26_we),
+    .we     (le_we),
     .wd     (le_le_26_wd),
 
     // from internal hardware
@@ -1989,7 +1927,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_27_we),
+    .we     (le_we),
     .wd     (le_le_27_wd),
 
     // from internal hardware
@@ -2015,7 +1953,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_28_we),
+    .we     (le_we),
     .wd     (le_le_28_wd),
 
     // from internal hardware
@@ -2041,7 +1979,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_29_we),
+    .we     (le_we),
     .wd     (le_le_29_wd),
 
     // from internal hardware
@@ -2067,7 +2005,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_30_we),
+    .we     (le_we),
     .wd     (le_le_30_wd),
 
     // from internal hardware
@@ -2093,7 +2031,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (le_le_31_we),
+    .we     (le_we),
     .wd     (le_le_31_wd),
 
     // from internal hardware
@@ -2988,7 +2926,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_0_we),
+    .we     (ie0_we),
     .wd     (ie0_e_0_wd),
 
     // from internal hardware
@@ -3014,7 +2952,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_1_we),
+    .we     (ie0_we),
     .wd     (ie0_e_1_wd),
 
     // from internal hardware
@@ -3040,7 +2978,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_2_we),
+    .we     (ie0_we),
     .wd     (ie0_e_2_wd),
 
     // from internal hardware
@@ -3066,7 +3004,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_3_we),
+    .we     (ie0_we),
     .wd     (ie0_e_3_wd),
 
     // from internal hardware
@@ -3092,7 +3030,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_4_we),
+    .we     (ie0_we),
     .wd     (ie0_e_4_wd),
 
     // from internal hardware
@@ -3118,7 +3056,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_5_we),
+    .we     (ie0_we),
     .wd     (ie0_e_5_wd),
 
     // from internal hardware
@@ -3144,7 +3082,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_6_we),
+    .we     (ie0_we),
     .wd     (ie0_e_6_wd),
 
     // from internal hardware
@@ -3170,7 +3108,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_7_we),
+    .we     (ie0_we),
     .wd     (ie0_e_7_wd),
 
     // from internal hardware
@@ -3196,7 +3134,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_8_we),
+    .we     (ie0_we),
     .wd     (ie0_e_8_wd),
 
     // from internal hardware
@@ -3222,7 +3160,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_9_we),
+    .we     (ie0_we),
     .wd     (ie0_e_9_wd),
 
     // from internal hardware
@@ -3248,7 +3186,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_10_we),
+    .we     (ie0_we),
     .wd     (ie0_e_10_wd),
 
     // from internal hardware
@@ -3274,7 +3212,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_11_we),
+    .we     (ie0_we),
     .wd     (ie0_e_11_wd),
 
     // from internal hardware
@@ -3300,7 +3238,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_12_we),
+    .we     (ie0_we),
     .wd     (ie0_e_12_wd),
 
     // from internal hardware
@@ -3326,7 +3264,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_13_we),
+    .we     (ie0_we),
     .wd     (ie0_e_13_wd),
 
     // from internal hardware
@@ -3352,7 +3290,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_14_we),
+    .we     (ie0_we),
     .wd     (ie0_e_14_wd),
 
     // from internal hardware
@@ -3378,7 +3316,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_15_we),
+    .we     (ie0_we),
     .wd     (ie0_e_15_wd),
 
     // from internal hardware
@@ -3404,7 +3342,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_16_we),
+    .we     (ie0_we),
     .wd     (ie0_e_16_wd),
 
     // from internal hardware
@@ -3430,7 +3368,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_17_we),
+    .we     (ie0_we),
     .wd     (ie0_e_17_wd),
 
     // from internal hardware
@@ -3456,7 +3394,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_18_we),
+    .we     (ie0_we),
     .wd     (ie0_e_18_wd),
 
     // from internal hardware
@@ -3482,7 +3420,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_19_we),
+    .we     (ie0_we),
     .wd     (ie0_e_19_wd),
 
     // from internal hardware
@@ -3508,7 +3446,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_20_we),
+    .we     (ie0_we),
     .wd     (ie0_e_20_wd),
 
     // from internal hardware
@@ -3534,7 +3472,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_21_we),
+    .we     (ie0_we),
     .wd     (ie0_e_21_wd),
 
     // from internal hardware
@@ -3560,7 +3498,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_22_we),
+    .we     (ie0_we),
     .wd     (ie0_e_22_wd),
 
     // from internal hardware
@@ -3586,7 +3524,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_23_we),
+    .we     (ie0_we),
     .wd     (ie0_e_23_wd),
 
     // from internal hardware
@@ -3612,7 +3550,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_24_we),
+    .we     (ie0_we),
     .wd     (ie0_e_24_wd),
 
     // from internal hardware
@@ -3638,7 +3576,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_25_we),
+    .we     (ie0_we),
     .wd     (ie0_e_25_wd),
 
     // from internal hardware
@@ -3664,7 +3602,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_26_we),
+    .we     (ie0_we),
     .wd     (ie0_e_26_wd),
 
     // from internal hardware
@@ -3690,7 +3628,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_27_we),
+    .we     (ie0_we),
     .wd     (ie0_e_27_wd),
 
     // from internal hardware
@@ -3716,7 +3654,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_28_we),
+    .we     (ie0_we),
     .wd     (ie0_e_28_wd),
 
     // from internal hardware
@@ -3742,7 +3680,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_29_we),
+    .we     (ie0_we),
     .wd     (ie0_e_29_wd),
 
     // from internal hardware
@@ -3768,7 +3706,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_30_we),
+    .we     (ie0_we),
     .wd     (ie0_e_30_wd),
 
     // from internal hardware
@@ -3794,7 +3732,7 @@ module rv_plic_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ie0_e_31_we),
+    .we     (ie0_we),
     .wd     (ie0_e_31_wd),
 
     // from internal hardware
@@ -3970,303 +3908,241 @@ module rv_plic_reg_top (
                (addr_hit[36] & (|(RV_PLIC_PERMIT[36] & ~reg_be))) |
                (addr_hit[37] & (|(RV_PLIC_PERMIT[37] & ~reg_be)))));
   end
+  assign le_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign le_le_0_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_0_wd = reg_wdata[0];
 
-  assign le_le_1_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_1_wd = reg_wdata[1];
 
-  assign le_le_2_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_2_wd = reg_wdata[2];
 
-  assign le_le_3_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_3_wd = reg_wdata[3];
 
-  assign le_le_4_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_4_wd = reg_wdata[4];
 
-  assign le_le_5_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_5_wd = reg_wdata[5];
 
-  assign le_le_6_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_6_wd = reg_wdata[6];
 
-  assign le_le_7_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_7_wd = reg_wdata[7];
 
-  assign le_le_8_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_8_wd = reg_wdata[8];
 
-  assign le_le_9_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_9_wd = reg_wdata[9];
 
-  assign le_le_10_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_10_wd = reg_wdata[10];
 
-  assign le_le_11_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_11_wd = reg_wdata[11];
 
-  assign le_le_12_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_12_wd = reg_wdata[12];
 
-  assign le_le_13_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_13_wd = reg_wdata[13];
 
-  assign le_le_14_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_14_wd = reg_wdata[14];
 
-  assign le_le_15_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_15_wd = reg_wdata[15];
 
-  assign le_le_16_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_16_wd = reg_wdata[16];
 
-  assign le_le_17_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_17_wd = reg_wdata[17];
 
-  assign le_le_18_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_18_wd = reg_wdata[18];
 
-  assign le_le_19_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_19_wd = reg_wdata[19];
 
-  assign le_le_20_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_20_wd = reg_wdata[20];
 
-  assign le_le_21_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_21_wd = reg_wdata[21];
 
-  assign le_le_22_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_22_wd = reg_wdata[22];
 
-  assign le_le_23_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_23_wd = reg_wdata[23];
 
-  assign le_le_24_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_24_wd = reg_wdata[24];
 
-  assign le_le_25_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_25_wd = reg_wdata[25];
 
-  assign le_le_26_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_26_wd = reg_wdata[26];
 
-  assign le_le_27_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_27_wd = reg_wdata[27];
 
-  assign le_le_28_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_28_wd = reg_wdata[28];
 
-  assign le_le_29_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_29_wd = reg_wdata[29];
 
-  assign le_le_30_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_30_wd = reg_wdata[30];
 
-  assign le_le_31_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_31_wd = reg_wdata[31];
-
   assign prio0_we = addr_hit[2] & reg_we & !reg_error;
+
   assign prio0_wd = reg_wdata[2:0];
-
   assign prio1_we = addr_hit[3] & reg_we & !reg_error;
+
   assign prio1_wd = reg_wdata[2:0];
-
   assign prio2_we = addr_hit[4] & reg_we & !reg_error;
+
   assign prio2_wd = reg_wdata[2:0];
-
   assign prio3_we = addr_hit[5] & reg_we & !reg_error;
+
   assign prio3_wd = reg_wdata[2:0];
-
   assign prio4_we = addr_hit[6] & reg_we & !reg_error;
+
   assign prio4_wd = reg_wdata[2:0];
-
   assign prio5_we = addr_hit[7] & reg_we & !reg_error;
+
   assign prio5_wd = reg_wdata[2:0];
-
   assign prio6_we = addr_hit[8] & reg_we & !reg_error;
+
   assign prio6_wd = reg_wdata[2:0];
-
   assign prio7_we = addr_hit[9] & reg_we & !reg_error;
+
   assign prio7_wd = reg_wdata[2:0];
-
   assign prio8_we = addr_hit[10] & reg_we & !reg_error;
+
   assign prio8_wd = reg_wdata[2:0];
-
   assign prio9_we = addr_hit[11] & reg_we & !reg_error;
+
   assign prio9_wd = reg_wdata[2:0];
-
   assign prio10_we = addr_hit[12] & reg_we & !reg_error;
+
   assign prio10_wd = reg_wdata[2:0];
-
   assign prio11_we = addr_hit[13] & reg_we & !reg_error;
+
   assign prio11_wd = reg_wdata[2:0];
-
   assign prio12_we = addr_hit[14] & reg_we & !reg_error;
+
   assign prio12_wd = reg_wdata[2:0];
-
   assign prio13_we = addr_hit[15] & reg_we & !reg_error;
+
   assign prio13_wd = reg_wdata[2:0];
-
   assign prio14_we = addr_hit[16] & reg_we & !reg_error;
+
   assign prio14_wd = reg_wdata[2:0];
-
   assign prio15_we = addr_hit[17] & reg_we & !reg_error;
+
   assign prio15_wd = reg_wdata[2:0];
-
   assign prio16_we = addr_hit[18] & reg_we & !reg_error;
+
   assign prio16_wd = reg_wdata[2:0];
-
   assign prio17_we = addr_hit[19] & reg_we & !reg_error;
+
   assign prio17_wd = reg_wdata[2:0];
-
   assign prio18_we = addr_hit[20] & reg_we & !reg_error;
+
   assign prio18_wd = reg_wdata[2:0];
-
   assign prio19_we = addr_hit[21] & reg_we & !reg_error;
+
   assign prio19_wd = reg_wdata[2:0];
-
   assign prio20_we = addr_hit[22] & reg_we & !reg_error;
+
   assign prio20_wd = reg_wdata[2:0];
-
   assign prio21_we = addr_hit[23] & reg_we & !reg_error;
+
   assign prio21_wd = reg_wdata[2:0];
-
   assign prio22_we = addr_hit[24] & reg_we & !reg_error;
+
   assign prio22_wd = reg_wdata[2:0];
-
   assign prio23_we = addr_hit[25] & reg_we & !reg_error;
+
   assign prio23_wd = reg_wdata[2:0];
-
   assign prio24_we = addr_hit[26] & reg_we & !reg_error;
+
   assign prio24_wd = reg_wdata[2:0];
-
   assign prio25_we = addr_hit[27] & reg_we & !reg_error;
+
   assign prio25_wd = reg_wdata[2:0];
-
   assign prio26_we = addr_hit[28] & reg_we & !reg_error;
+
   assign prio26_wd = reg_wdata[2:0];
-
   assign prio27_we = addr_hit[29] & reg_we & !reg_error;
+
   assign prio27_wd = reg_wdata[2:0];
-
   assign prio28_we = addr_hit[30] & reg_we & !reg_error;
+
   assign prio28_wd = reg_wdata[2:0];
-
   assign prio29_we = addr_hit[31] & reg_we & !reg_error;
+
   assign prio29_wd = reg_wdata[2:0];
-
   assign prio30_we = addr_hit[32] & reg_we & !reg_error;
+
   assign prio30_wd = reg_wdata[2:0];
-
   assign prio31_we = addr_hit[33] & reg_we & !reg_error;
-  assign prio31_wd = reg_wdata[2:0];
 
-  assign ie0_e_0_we = addr_hit[34] & reg_we & !reg_error;
+  assign prio31_wd = reg_wdata[2:0];
+  assign ie0_we = addr_hit[34] & reg_we & !reg_error;
+
   assign ie0_e_0_wd = reg_wdata[0];
 
-  assign ie0_e_1_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_1_wd = reg_wdata[1];
 
-  assign ie0_e_2_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_2_wd = reg_wdata[2];
 
-  assign ie0_e_3_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_3_wd = reg_wdata[3];
 
-  assign ie0_e_4_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_4_wd = reg_wdata[4];
 
-  assign ie0_e_5_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_5_wd = reg_wdata[5];
 
-  assign ie0_e_6_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_6_wd = reg_wdata[6];
 
-  assign ie0_e_7_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_7_wd = reg_wdata[7];
 
-  assign ie0_e_8_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_8_wd = reg_wdata[8];
 
-  assign ie0_e_9_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_9_wd = reg_wdata[9];
 
-  assign ie0_e_10_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_10_wd = reg_wdata[10];
 
-  assign ie0_e_11_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_11_wd = reg_wdata[11];
 
-  assign ie0_e_12_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_12_wd = reg_wdata[12];
 
-  assign ie0_e_13_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_13_wd = reg_wdata[13];
 
-  assign ie0_e_14_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_14_wd = reg_wdata[14];
 
-  assign ie0_e_15_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_15_wd = reg_wdata[15];
 
-  assign ie0_e_16_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_16_wd = reg_wdata[16];
 
-  assign ie0_e_17_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_17_wd = reg_wdata[17];
 
-  assign ie0_e_18_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_18_wd = reg_wdata[18];
 
-  assign ie0_e_19_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_19_wd = reg_wdata[19];
 
-  assign ie0_e_20_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_20_wd = reg_wdata[20];
 
-  assign ie0_e_21_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_21_wd = reg_wdata[21];
 
-  assign ie0_e_22_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_22_wd = reg_wdata[22];
 
-  assign ie0_e_23_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_23_wd = reg_wdata[23];
 
-  assign ie0_e_24_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_24_wd = reg_wdata[24];
 
-  assign ie0_e_25_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_25_wd = reg_wdata[25];
 
-  assign ie0_e_26_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_26_wd = reg_wdata[26];
 
-  assign ie0_e_27_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_27_wd = reg_wdata[27];
 
-  assign ie0_e_28_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_28_wd = reg_wdata[28];
 
-  assign ie0_e_29_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_29_wd = reg_wdata[29];
 
-  assign ie0_e_30_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_30_wd = reg_wdata[30];
 
-  assign ie0_e_31_we = addr_hit[34] & reg_we & !reg_error;
   assign ie0_e_31_wd = reg_wdata[31];
-
   assign threshold0_we = addr_hit[35] & reg_we & !reg_error;
+
   assign threshold0_wd = reg_wdata[2:0];
-
-  assign cc0_we = addr_hit[36] & reg_we & !reg_error;
-  assign cc0_wd = reg_wdata[5:0];
   assign cc0_re = addr_hit[36] & reg_re & !reg_error;
+  assign cc0_we = addr_hit[36] & reg_we & !reg_error;
 
+  assign cc0_wd = reg_wdata[5:0];
   assign msip0_we = addr_hit[37] & reg_we & !reg_error;
+
   assign msip0_wd = reg_wdata[0];
 
   // Read data return

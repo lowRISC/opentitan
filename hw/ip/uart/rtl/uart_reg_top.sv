@@ -104,143 +104,103 @@ module uart_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_tx_watermark_qs;
   logic intr_state_tx_watermark_wd;
-  logic intr_state_tx_watermark_we;
   logic intr_state_rx_watermark_qs;
   logic intr_state_rx_watermark_wd;
-  logic intr_state_rx_watermark_we;
   logic intr_state_tx_empty_qs;
   logic intr_state_tx_empty_wd;
-  logic intr_state_tx_empty_we;
   logic intr_state_rx_overflow_qs;
   logic intr_state_rx_overflow_wd;
-  logic intr_state_rx_overflow_we;
   logic intr_state_rx_frame_err_qs;
   logic intr_state_rx_frame_err_wd;
-  logic intr_state_rx_frame_err_we;
   logic intr_state_rx_break_err_qs;
   logic intr_state_rx_break_err_wd;
-  logic intr_state_rx_break_err_we;
   logic intr_state_rx_timeout_qs;
   logic intr_state_rx_timeout_wd;
-  logic intr_state_rx_timeout_we;
   logic intr_state_rx_parity_err_qs;
   logic intr_state_rx_parity_err_wd;
-  logic intr_state_rx_parity_err_we;
+  logic intr_enable_we;
   logic intr_enable_tx_watermark_qs;
   logic intr_enable_tx_watermark_wd;
-  logic intr_enable_tx_watermark_we;
   logic intr_enable_rx_watermark_qs;
   logic intr_enable_rx_watermark_wd;
-  logic intr_enable_rx_watermark_we;
   logic intr_enable_tx_empty_qs;
   logic intr_enable_tx_empty_wd;
-  logic intr_enable_tx_empty_we;
   logic intr_enable_rx_overflow_qs;
   logic intr_enable_rx_overflow_wd;
-  logic intr_enable_rx_overflow_we;
   logic intr_enable_rx_frame_err_qs;
   logic intr_enable_rx_frame_err_wd;
-  logic intr_enable_rx_frame_err_we;
   logic intr_enable_rx_break_err_qs;
   logic intr_enable_rx_break_err_wd;
-  logic intr_enable_rx_break_err_we;
   logic intr_enable_rx_timeout_qs;
   logic intr_enable_rx_timeout_wd;
-  logic intr_enable_rx_timeout_we;
   logic intr_enable_rx_parity_err_qs;
   logic intr_enable_rx_parity_err_wd;
-  logic intr_enable_rx_parity_err_we;
+  logic intr_test_we;
   logic intr_test_tx_watermark_wd;
-  logic intr_test_tx_watermark_we;
   logic intr_test_rx_watermark_wd;
-  logic intr_test_rx_watermark_we;
   logic intr_test_tx_empty_wd;
-  logic intr_test_tx_empty_we;
   logic intr_test_rx_overflow_wd;
-  logic intr_test_rx_overflow_we;
   logic intr_test_rx_frame_err_wd;
-  logic intr_test_rx_frame_err_we;
   logic intr_test_rx_break_err_wd;
-  logic intr_test_rx_break_err_we;
   logic intr_test_rx_timeout_wd;
-  logic intr_test_rx_timeout_we;
   logic intr_test_rx_parity_err_wd;
-  logic intr_test_rx_parity_err_we;
-  logic alert_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
+  logic ctrl_we;
   logic ctrl_tx_qs;
   logic ctrl_tx_wd;
-  logic ctrl_tx_we;
   logic ctrl_rx_qs;
   logic ctrl_rx_wd;
-  logic ctrl_rx_we;
   logic ctrl_nf_qs;
   logic ctrl_nf_wd;
-  logic ctrl_nf_we;
   logic ctrl_slpbk_qs;
   logic ctrl_slpbk_wd;
-  logic ctrl_slpbk_we;
   logic ctrl_llpbk_qs;
   logic ctrl_llpbk_wd;
-  logic ctrl_llpbk_we;
   logic ctrl_parity_en_qs;
   logic ctrl_parity_en_wd;
-  logic ctrl_parity_en_we;
   logic ctrl_parity_odd_qs;
   logic ctrl_parity_odd_wd;
-  logic ctrl_parity_odd_we;
   logic [1:0] ctrl_rxblvl_qs;
   logic [1:0] ctrl_rxblvl_wd;
-  logic ctrl_rxblvl_we;
   logic [15:0] ctrl_nco_qs;
   logic [15:0] ctrl_nco_wd;
-  logic ctrl_nco_we;
+  logic status_re;
   logic status_txfull_qs;
-  logic status_txfull_re;
   logic status_rxfull_qs;
-  logic status_rxfull_re;
   logic status_txempty_qs;
-  logic status_txempty_re;
   logic status_txidle_qs;
-  logic status_txidle_re;
   logic status_rxidle_qs;
-  logic status_rxidle_re;
   logic status_rxempty_qs;
-  logic status_rxempty_re;
-  logic [7:0] rdata_qs;
   logic rdata_re;
-  logic [7:0] wdata_wd;
+  logic [7:0] rdata_qs;
   logic wdata_we;
+  logic [7:0] wdata_wd;
+  logic fifo_ctrl_we;
   logic fifo_ctrl_rxrst_wd;
-  logic fifo_ctrl_rxrst_we;
   logic fifo_ctrl_txrst_wd;
-  logic fifo_ctrl_txrst_we;
   logic [2:0] fifo_ctrl_rxilvl_qs;
   logic [2:0] fifo_ctrl_rxilvl_wd;
-  logic fifo_ctrl_rxilvl_we;
   logic [1:0] fifo_ctrl_txilvl_qs;
   logic [1:0] fifo_ctrl_txilvl_wd;
-  logic fifo_ctrl_txilvl_we;
+  logic fifo_status_re;
   logic [5:0] fifo_status_txlvl_qs;
-  logic fifo_status_txlvl_re;
   logic [5:0] fifo_status_rxlvl_qs;
-  logic fifo_status_rxlvl_re;
+  logic ovrd_we;
   logic ovrd_txen_qs;
   logic ovrd_txen_wd;
-  logic ovrd_txen_we;
   logic ovrd_txval_qs;
   logic ovrd_txval_wd;
-  logic ovrd_txval_we;
-  logic [15:0] val_qs;
   logic val_re;
+  logic [15:0] val_qs;
+  logic timeout_ctrl_we;
   logic [23:0] timeout_ctrl_val_qs;
   logic [23:0] timeout_ctrl_val_wd;
-  logic timeout_ctrl_val_we;
   logic timeout_ctrl_en_qs;
   logic timeout_ctrl_en_wd;
-  logic timeout_ctrl_en_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -255,7 +215,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_tx_watermark_we),
+    .we     (intr_state_we),
     .wd     (intr_state_tx_watermark_wd),
 
     // from internal hardware
@@ -281,7 +241,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_watermark_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_watermark_wd),
 
     // from internal hardware
@@ -307,7 +267,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_tx_empty_we),
+    .we     (intr_state_we),
     .wd     (intr_state_tx_empty_wd),
 
     // from internal hardware
@@ -333,7 +293,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_overflow_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_overflow_wd),
 
     // from internal hardware
@@ -359,7 +319,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_frame_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_frame_err_wd),
 
     // from internal hardware
@@ -385,7 +345,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_break_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_break_err_wd),
 
     // from internal hardware
@@ -411,7 +371,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_timeout_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_timeout_wd),
 
     // from internal hardware
@@ -437,7 +397,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_parity_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_parity_err_wd),
 
     // from internal hardware
@@ -465,7 +425,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_tx_watermark_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_tx_watermark_wd),
 
     // from internal hardware
@@ -491,7 +451,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_watermark_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_watermark_wd),
 
     // from internal hardware
@@ -517,7 +477,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_tx_empty_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_tx_empty_wd),
 
     // from internal hardware
@@ -543,7 +503,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_overflow_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_overflow_wd),
 
     // from internal hardware
@@ -569,7 +529,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_frame_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_frame_err_wd),
 
     // from internal hardware
@@ -595,7 +555,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_break_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_break_err_wd),
 
     // from internal hardware
@@ -621,7 +581,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_timeout_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_timeout_wd),
 
     // from internal hardware
@@ -647,7 +607,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_parity_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_parity_err_wd),
 
     // from internal hardware
@@ -670,7 +630,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_tx_watermark (
     .re     (1'b0),
-    .we     (intr_test_tx_watermark_we),
+    .we     (intr_test_we),
     .wd     (intr_test_tx_watermark_wd),
     .d      ('0),
     .qre    (),
@@ -685,7 +645,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_watermark (
     .re     (1'b0),
-    .we     (intr_test_rx_watermark_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_watermark_wd),
     .d      ('0),
     .qre    (),
@@ -700,7 +660,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_tx_empty (
     .re     (1'b0),
-    .we     (intr_test_tx_empty_we),
+    .we     (intr_test_we),
     .wd     (intr_test_tx_empty_wd),
     .d      ('0),
     .qre    (),
@@ -715,7 +675,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_overflow (
     .re     (1'b0),
-    .we     (intr_test_rx_overflow_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_overflow_wd),
     .d      ('0),
     .qre    (),
@@ -730,7 +690,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_frame_err (
     .re     (1'b0),
-    .we     (intr_test_rx_frame_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_frame_err_wd),
     .d      ('0),
     .qre    (),
@@ -745,7 +705,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_break_err (
     .re     (1'b0),
-    .we     (intr_test_rx_break_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_break_err_wd),
     .d      ('0),
     .qre    (),
@@ -760,7 +720,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_timeout (
     .re     (1'b0),
-    .we     (intr_test_rx_timeout_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_timeout_wd),
     .d      ('0),
     .qre    (),
@@ -775,7 +735,7 @@ module uart_reg_top (
     .DW    (1)
   ) u_intr_test_rx_parity_err (
     .re     (1'b0),
-    .we     (intr_test_rx_parity_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_parity_err_wd),
     .d      ('0),
     .qre    (),
@@ -813,7 +773,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_tx_we),
+    .we     (ctrl_we),
     .wd     (ctrl_tx_wd),
 
     // from internal hardware
@@ -839,7 +799,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_rx_we),
+    .we     (ctrl_we),
     .wd     (ctrl_rx_wd),
 
     // from internal hardware
@@ -865,7 +825,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_nf_we),
+    .we     (ctrl_we),
     .wd     (ctrl_nf_wd),
 
     // from internal hardware
@@ -891,7 +851,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_slpbk_we),
+    .we     (ctrl_we),
     .wd     (ctrl_slpbk_wd),
 
     // from internal hardware
@@ -917,7 +877,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_llpbk_we),
+    .we     (ctrl_we),
     .wd     (ctrl_llpbk_wd),
 
     // from internal hardware
@@ -943,7 +903,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_parity_en_we),
+    .we     (ctrl_we),
     .wd     (ctrl_parity_en_wd),
 
     // from internal hardware
@@ -969,7 +929,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_parity_odd_we),
+    .we     (ctrl_we),
     .wd     (ctrl_parity_odd_wd),
 
     // from internal hardware
@@ -995,7 +955,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_rxblvl_we),
+    .we     (ctrl_we),
     .wd     (ctrl_rxblvl_wd),
 
     // from internal hardware
@@ -1021,7 +981,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_nco_we),
+    .we     (ctrl_we),
     .wd     (ctrl_nco_wd),
 
     // from internal hardware
@@ -1043,7 +1003,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_txfull (
-    .re     (status_txfull_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.txfull.d),
@@ -1058,7 +1018,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_rxfull (
-    .re     (status_rxfull_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.rxfull.d),
@@ -1073,7 +1033,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_txempty (
-    .re     (status_txempty_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.txempty.d),
@@ -1088,7 +1048,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_txidle (
-    .re     (status_txidle_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.txidle.d),
@@ -1103,7 +1063,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_rxidle (
-    .re     (status_rxidle_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.rxidle.d),
@@ -1118,7 +1078,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_rxempty (
-    .re     (status_rxempty_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.rxempty.d),
@@ -1184,7 +1144,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_ctrl_rxrst_we),
+    .we     (fifo_ctrl_we),
     .wd     (fifo_ctrl_rxrst_wd),
 
     // from internal hardware
@@ -1210,7 +1170,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_ctrl_txrst_we),
+    .we     (fifo_ctrl_we),
     .wd     (fifo_ctrl_txrst_wd),
 
     // from internal hardware
@@ -1236,7 +1196,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_ctrl_rxilvl_we),
+    .we     (fifo_ctrl_we),
     .wd     (fifo_ctrl_rxilvl_wd),
 
     // from internal hardware
@@ -1262,7 +1222,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_ctrl_txilvl_we),
+    .we     (fifo_ctrl_we),
     .wd     (fifo_ctrl_txilvl_wd),
 
     // from internal hardware
@@ -1284,7 +1244,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (6)
   ) u_fifo_status_txlvl (
-    .re     (fifo_status_txlvl_re),
+    .re     (fifo_status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.fifo_status.txlvl.d),
@@ -1299,7 +1259,7 @@ module uart_reg_top (
   prim_subreg_ext #(
     .DW    (6)
   ) u_fifo_status_rxlvl (
-    .re     (fifo_status_rxlvl_re),
+    .re     (fifo_status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.fifo_status.rxlvl.d),
@@ -1322,7 +1282,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ovrd_txen_we),
+    .we     (ovrd_we),
     .wd     (ovrd_txen_wd),
 
     // from internal hardware
@@ -1348,7 +1308,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ovrd_txval_we),
+    .we     (ovrd_we),
     .wd     (ovrd_txval_wd),
 
     // from internal hardware
@@ -1392,7 +1352,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (timeout_ctrl_val_we),
+    .we     (timeout_ctrl_we),
     .wd     (timeout_ctrl_val_wd),
 
     // from internal hardware
@@ -1418,7 +1378,7 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (timeout_ctrl_en_we),
+    .we     (timeout_ctrl_we),
     .wd     (timeout_ctrl_en_wd),
 
     // from internal hardware
@@ -1473,154 +1433,104 @@ module uart_reg_top (
                (addr_hit[11] & (|(UART_PERMIT[11] & ~reg_be))) |
                (addr_hit[12] & (|(UART_PERMIT[12] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_tx_watermark_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_state_tx_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_tx_empty_wd = reg_wdata[2];
 
-  assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_state_rx_frame_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_state_rx_break_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_state_rx_timeout_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_state_rx_parity_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_parity_err_wd = reg_wdata[7];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_tx_watermark_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_enable_tx_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_tx_empty_wd = reg_wdata[2];
 
-  assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_enable_rx_frame_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_enable_rx_break_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_enable_rx_timeout_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_enable_rx_parity_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_parity_err_wd = reg_wdata[7];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_tx_watermark_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_test_tx_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_tx_empty_wd = reg_wdata[2];
 
-  assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_test_rx_frame_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_test_rx_break_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_test_rx_timeout_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_test_rx_parity_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_parity_err_wd = reg_wdata[7];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
-  assign alert_test_wd = reg_wdata[0];
 
-  assign ctrl_tx_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+  assign ctrl_we = addr_hit[4] & reg_we & !reg_error;
+
   assign ctrl_tx_wd = reg_wdata[0];
 
-  assign ctrl_rx_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_rx_wd = reg_wdata[1];
 
-  assign ctrl_nf_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_nf_wd = reg_wdata[2];
 
-  assign ctrl_slpbk_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_slpbk_wd = reg_wdata[4];
 
-  assign ctrl_llpbk_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_llpbk_wd = reg_wdata[5];
 
-  assign ctrl_parity_en_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_parity_en_wd = reg_wdata[6];
 
-  assign ctrl_parity_odd_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_parity_odd_wd = reg_wdata[7];
 
-  assign ctrl_rxblvl_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
-  assign ctrl_nco_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_nco_wd = reg_wdata[31:16];
-
-  assign status_txfull_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign status_rxfull_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign status_txempty_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign status_txidle_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign status_rxidle_re = addr_hit[5] & reg_re & !reg_error;
-
-  assign status_rxempty_re = addr_hit[5] & reg_re & !reg_error;
-
+  assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign rdata_re = addr_hit[6] & reg_re & !reg_error;
-
   assign wdata_we = addr_hit[7] & reg_we & !reg_error;
-  assign wdata_wd = reg_wdata[7:0];
 
-  assign fifo_ctrl_rxrst_we = addr_hit[8] & reg_we & !reg_error;
+  assign wdata_wd = reg_wdata[7:0];
+  assign fifo_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
-  assign fifo_ctrl_txrst_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_txrst_wd = reg_wdata[1];
 
-  assign fifo_ctrl_rxilvl_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
-  assign fifo_ctrl_txilvl_we = addr_hit[8] & reg_we & !reg_error;
   assign fifo_ctrl_txilvl_wd = reg_wdata[6:5];
+  assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
+  assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign fifo_status_txlvl_re = addr_hit[9] & reg_re & !reg_error;
-
-  assign fifo_status_rxlvl_re = addr_hit[9] & reg_re & !reg_error;
-
-  assign ovrd_txen_we = addr_hit[10] & reg_we & !reg_error;
   assign ovrd_txen_wd = reg_wdata[0];
 
-  assign ovrd_txval_we = addr_hit[10] & reg_we & !reg_error;
   assign ovrd_txval_wd = reg_wdata[1];
-
   assign val_re = addr_hit[11] & reg_re & !reg_error;
+  assign timeout_ctrl_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign timeout_ctrl_val_we = addr_hit[12] & reg_we & !reg_error;
   assign timeout_ctrl_val_wd = reg_wdata[23:0];
 
-  assign timeout_ctrl_en_we = addr_hit[12] & reg_we & !reg_error;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
   // Read data return

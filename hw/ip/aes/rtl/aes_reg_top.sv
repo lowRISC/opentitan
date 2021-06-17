@@ -104,94 +104,82 @@ module aes_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
   logic alert_test_recov_ctrl_update_err_wd;
-  logic alert_test_recov_ctrl_update_err_we;
   logic alert_test_fatal_fault_wd;
-  logic alert_test_fatal_fault_we;
-  logic [31:0] key_share0_0_wd;
   logic key_share0_0_we;
-  logic [31:0] key_share0_1_wd;
+  logic [31:0] key_share0_0_wd;
   logic key_share0_1_we;
-  logic [31:0] key_share0_2_wd;
+  logic [31:0] key_share0_1_wd;
   logic key_share0_2_we;
-  logic [31:0] key_share0_3_wd;
+  logic [31:0] key_share0_2_wd;
   logic key_share0_3_we;
-  logic [31:0] key_share0_4_wd;
+  logic [31:0] key_share0_3_wd;
   logic key_share0_4_we;
-  logic [31:0] key_share0_5_wd;
+  logic [31:0] key_share0_4_wd;
   logic key_share0_5_we;
-  logic [31:0] key_share0_6_wd;
+  logic [31:0] key_share0_5_wd;
   logic key_share0_6_we;
-  logic [31:0] key_share0_7_wd;
+  logic [31:0] key_share0_6_wd;
   logic key_share0_7_we;
-  logic [31:0] key_share1_0_wd;
+  logic [31:0] key_share0_7_wd;
   logic key_share1_0_we;
-  logic [31:0] key_share1_1_wd;
+  logic [31:0] key_share1_0_wd;
   logic key_share1_1_we;
-  logic [31:0] key_share1_2_wd;
+  logic [31:0] key_share1_1_wd;
   logic key_share1_2_we;
-  logic [31:0] key_share1_3_wd;
+  logic [31:0] key_share1_2_wd;
   logic key_share1_3_we;
-  logic [31:0] key_share1_4_wd;
+  logic [31:0] key_share1_3_wd;
   logic key_share1_4_we;
-  logic [31:0] key_share1_5_wd;
+  logic [31:0] key_share1_4_wd;
   logic key_share1_5_we;
-  logic [31:0] key_share1_6_wd;
+  logic [31:0] key_share1_5_wd;
   logic key_share1_6_we;
-  logic [31:0] key_share1_7_wd;
+  logic [31:0] key_share1_6_wd;
   logic key_share1_7_we;
-  logic [31:0] iv_0_wd;
+  logic [31:0] key_share1_7_wd;
   logic iv_0_we;
-  logic [31:0] iv_1_wd;
+  logic [31:0] iv_0_wd;
   logic iv_1_we;
-  logic [31:0] iv_2_wd;
+  logic [31:0] iv_1_wd;
   logic iv_2_we;
-  logic [31:0] iv_3_wd;
+  logic [31:0] iv_2_wd;
   logic iv_3_we;
-  logic [31:0] data_in_0_wd;
+  logic [31:0] iv_3_wd;
   logic data_in_0_we;
-  logic [31:0] data_in_1_wd;
+  logic [31:0] data_in_0_wd;
   logic data_in_1_we;
-  logic [31:0] data_in_2_wd;
+  logic [31:0] data_in_1_wd;
   logic data_in_2_we;
-  logic [31:0] data_in_3_wd;
+  logic [31:0] data_in_2_wd;
   logic data_in_3_we;
-  logic [31:0] data_out_0_qs;
+  logic [31:0] data_in_3_wd;
   logic data_out_0_re;
-  logic [31:0] data_out_1_qs;
+  logic [31:0] data_out_0_qs;
   logic data_out_1_re;
-  logic [31:0] data_out_2_qs;
+  logic [31:0] data_out_1_qs;
   logic data_out_2_re;
-  logic [31:0] data_out_3_qs;
+  logic [31:0] data_out_2_qs;
   logic data_out_3_re;
+  logic [31:0] data_out_3_qs;
+  logic ctrl_shadowed_re;
+  logic ctrl_shadowed_we;
   logic ctrl_shadowed_operation_qs;
   logic ctrl_shadowed_operation_wd;
-  logic ctrl_shadowed_operation_we;
-  logic ctrl_shadowed_operation_re;
   logic [5:0] ctrl_shadowed_mode_qs;
   logic [5:0] ctrl_shadowed_mode_wd;
-  logic ctrl_shadowed_mode_we;
-  logic ctrl_shadowed_mode_re;
   logic [2:0] ctrl_shadowed_key_len_qs;
   logic [2:0] ctrl_shadowed_key_len_wd;
-  logic ctrl_shadowed_key_len_we;
-  logic ctrl_shadowed_key_len_re;
   logic ctrl_shadowed_manual_operation_qs;
   logic ctrl_shadowed_manual_operation_wd;
-  logic ctrl_shadowed_manual_operation_we;
-  logic ctrl_shadowed_manual_operation_re;
   logic ctrl_shadowed_force_zero_masks_qs;
   logic ctrl_shadowed_force_zero_masks_wd;
-  logic ctrl_shadowed_force_zero_masks_we;
-  logic ctrl_shadowed_force_zero_masks_re;
+  logic trigger_we;
   logic trigger_start_wd;
-  logic trigger_start_we;
   logic trigger_key_iv_data_in_clear_wd;
-  logic trigger_key_iv_data_in_clear_we;
   logic trigger_data_out_clear_wd;
-  logic trigger_data_out_clear_we;
   logic trigger_prng_reseed_wd;
-  logic trigger_prng_reseed_we;
   logic status_idle_qs;
   logic status_stall_qs;
   logic status_output_lost_qs;
@@ -208,7 +196,7 @@ module aes_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ctrl_update_err (
     .re     (1'b0),
-    .we     (alert_test_recov_ctrl_update_err_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ctrl_update_err_wd),
     .d      ('0),
     .qre    (),
@@ -223,7 +211,7 @@ module aes_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_fault (
     .re     (1'b0),
-    .we     (alert_test_fatal_fault_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_fault_wd),
     .d      ('0),
     .qre    (),
@@ -741,8 +729,8 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_operation (
-    .re     (ctrl_shadowed_operation_re),
-    .we     (ctrl_shadowed_operation_we),
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
     .wd     (ctrl_shadowed_operation_wd),
     .d      (hw2reg.ctrl_shadowed.operation.d),
     .qre    (reg2hw.ctrl_shadowed.operation.re),
@@ -756,8 +744,8 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (6)
   ) u_ctrl_shadowed_mode (
-    .re     (ctrl_shadowed_mode_re),
-    .we     (ctrl_shadowed_mode_we),
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
     .wd     (ctrl_shadowed_mode_wd),
     .d      (hw2reg.ctrl_shadowed.mode.d),
     .qre    (reg2hw.ctrl_shadowed.mode.re),
@@ -771,8 +759,8 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_key_len (
-    .re     (ctrl_shadowed_key_len_re),
-    .we     (ctrl_shadowed_key_len_we),
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
     .wd     (ctrl_shadowed_key_len_wd),
     .d      (hw2reg.ctrl_shadowed.key_len.d),
     .qre    (reg2hw.ctrl_shadowed.key_len.re),
@@ -786,8 +774,8 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
-    .re     (ctrl_shadowed_manual_operation_re),
-    .we     (ctrl_shadowed_manual_operation_we),
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
     .wd     (ctrl_shadowed_manual_operation_wd),
     .d      (hw2reg.ctrl_shadowed.manual_operation.d),
     .qre    (reg2hw.ctrl_shadowed.manual_operation.re),
@@ -801,8 +789,8 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_force_zero_masks (
-    .re     (ctrl_shadowed_force_zero_masks_re),
-    .we     (ctrl_shadowed_force_zero_masks_we),
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
     .wd     (ctrl_shadowed_force_zero_masks_wd),
     .d      (hw2reg.ctrl_shadowed.force_zero_masks.d),
     .qre    (reg2hw.ctrl_shadowed.force_zero_masks.re),
@@ -824,7 +812,7 @@ module aes_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (trigger_start_we),
+    .we     (trigger_we),
     .wd     (trigger_start_wd),
 
     // from internal hardware
@@ -850,7 +838,7 @@ module aes_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (trigger_key_iv_data_in_clear_we),
+    .we     (trigger_we),
     .wd     (trigger_key_iv_data_in_clear_wd),
 
     // from internal hardware
@@ -876,7 +864,7 @@ module aes_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (trigger_data_out_clear_we),
+    .we     (trigger_we),
     .wd     (trigger_data_out_clear_wd),
 
     // from internal hardware
@@ -902,7 +890,7 @@ module aes_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (trigger_prng_reseed_we),
+    .we     (trigger_we),
     .wd     (trigger_prng_reseed_wd),
 
     // from internal hardware
@@ -1179,123 +1167,107 @@ module aes_reg_top (
                (addr_hit[30] & (|(AES_PERMIT[30] & ~reg_be))) |
                (addr_hit[31] & (|(AES_PERMIT[31] & ~reg_be)))));
   end
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign alert_test_recov_ctrl_update_err_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ctrl_update_err_wd = reg_wdata[0];
 
-  assign alert_test_fatal_fault_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_fault_wd = reg_wdata[1];
-
   assign key_share0_0_we = addr_hit[1] & reg_we & !reg_error;
+
   assign key_share0_0_wd = reg_wdata[31:0];
-
   assign key_share0_1_we = addr_hit[2] & reg_we & !reg_error;
+
   assign key_share0_1_wd = reg_wdata[31:0];
-
   assign key_share0_2_we = addr_hit[3] & reg_we & !reg_error;
+
   assign key_share0_2_wd = reg_wdata[31:0];
-
   assign key_share0_3_we = addr_hit[4] & reg_we & !reg_error;
+
   assign key_share0_3_wd = reg_wdata[31:0];
-
   assign key_share0_4_we = addr_hit[5] & reg_we & !reg_error;
+
   assign key_share0_4_wd = reg_wdata[31:0];
-
   assign key_share0_5_we = addr_hit[6] & reg_we & !reg_error;
+
   assign key_share0_5_wd = reg_wdata[31:0];
-
   assign key_share0_6_we = addr_hit[7] & reg_we & !reg_error;
+
   assign key_share0_6_wd = reg_wdata[31:0];
-
   assign key_share0_7_we = addr_hit[8] & reg_we & !reg_error;
+
   assign key_share0_7_wd = reg_wdata[31:0];
-
   assign key_share1_0_we = addr_hit[9] & reg_we & !reg_error;
+
   assign key_share1_0_wd = reg_wdata[31:0];
-
   assign key_share1_1_we = addr_hit[10] & reg_we & !reg_error;
+
   assign key_share1_1_wd = reg_wdata[31:0];
-
   assign key_share1_2_we = addr_hit[11] & reg_we & !reg_error;
+
   assign key_share1_2_wd = reg_wdata[31:0];
-
   assign key_share1_3_we = addr_hit[12] & reg_we & !reg_error;
+
   assign key_share1_3_wd = reg_wdata[31:0];
-
   assign key_share1_4_we = addr_hit[13] & reg_we & !reg_error;
+
   assign key_share1_4_wd = reg_wdata[31:0];
-
   assign key_share1_5_we = addr_hit[14] & reg_we & !reg_error;
+
   assign key_share1_5_wd = reg_wdata[31:0];
-
   assign key_share1_6_we = addr_hit[15] & reg_we & !reg_error;
+
   assign key_share1_6_wd = reg_wdata[31:0];
-
   assign key_share1_7_we = addr_hit[16] & reg_we & !reg_error;
+
   assign key_share1_7_wd = reg_wdata[31:0];
-
   assign iv_0_we = addr_hit[17] & reg_we & !reg_error;
+
   assign iv_0_wd = reg_wdata[31:0];
-
   assign iv_1_we = addr_hit[18] & reg_we & !reg_error;
+
   assign iv_1_wd = reg_wdata[31:0];
-
   assign iv_2_we = addr_hit[19] & reg_we & !reg_error;
+
   assign iv_2_wd = reg_wdata[31:0];
-
   assign iv_3_we = addr_hit[20] & reg_we & !reg_error;
+
   assign iv_3_wd = reg_wdata[31:0];
-
   assign data_in_0_we = addr_hit[21] & reg_we & !reg_error;
+
   assign data_in_0_wd = reg_wdata[31:0];
-
   assign data_in_1_we = addr_hit[22] & reg_we & !reg_error;
+
   assign data_in_1_wd = reg_wdata[31:0];
-
   assign data_in_2_we = addr_hit[23] & reg_we & !reg_error;
+
   assign data_in_2_wd = reg_wdata[31:0];
-
   assign data_in_3_we = addr_hit[24] & reg_we & !reg_error;
+
   assign data_in_3_wd = reg_wdata[31:0];
-
   assign data_out_0_re = addr_hit[25] & reg_re & !reg_error;
-
   assign data_out_1_re = addr_hit[26] & reg_re & !reg_error;
-
   assign data_out_2_re = addr_hit[27] & reg_re & !reg_error;
-
   assign data_out_3_re = addr_hit[28] & reg_re & !reg_error;
+  assign ctrl_shadowed_re = addr_hit[29] & reg_re & !reg_error;
+  assign ctrl_shadowed_we = addr_hit[29] & reg_we & !reg_error;
 
-  assign ctrl_shadowed_operation_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_operation_wd = reg_wdata[0];
-  assign ctrl_shadowed_operation_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_mode_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_mode_wd = reg_wdata[6:1];
-  assign ctrl_shadowed_mode_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_key_len_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
-  assign ctrl_shadowed_key_len_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_manual_operation_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
-  assign ctrl_shadowed_manual_operation_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_force_zero_masks_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[11];
-  assign ctrl_shadowed_force_zero_masks_re = addr_hit[29] & reg_re & !reg_error;
+  assign trigger_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign trigger_start_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_start_wd = reg_wdata[0];
 
-  assign trigger_key_iv_data_in_clear_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_key_iv_data_in_clear_wd = reg_wdata[1];
 
-  assign trigger_data_out_clear_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_data_out_clear_wd = reg_wdata[2];
 
-  assign trigger_prng_reseed_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_prng_reseed_wd = reg_wdata[3];
 
   // Read data return
