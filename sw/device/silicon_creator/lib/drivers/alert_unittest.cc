@@ -13,9 +13,6 @@
 
 namespace alert_unittest {
 namespace {
-using testing::Each;
-using testing::Eq;
-using testing::Test;
 
 class AlertTest : public mask_rom_test::MaskRomTest {
  protected:

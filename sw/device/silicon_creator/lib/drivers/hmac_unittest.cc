@@ -18,7 +18,6 @@
 namespace hmac_unittest {
 namespace {
 using ::testing::ElementsAreArray;
-using ::testing::Test;
 
 class HmacTest : public mask_rom_test::MaskRomTest {
  protected:
