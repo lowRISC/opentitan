@@ -135,6 +135,11 @@ class Register(RegBase):
                              "the shadowed flag is not set."
                              .format(self.name))
 
+        # Shadowed registers must be hwext
+        if self.shadowed and not self.hwext:
+            raise ValueError('Register {} is shadowed but not hwext.'
+                             .format(self.name))
+
         # Take a copy of fields and then sort by bit index
         assert fields
         self.fields = fields.copy()

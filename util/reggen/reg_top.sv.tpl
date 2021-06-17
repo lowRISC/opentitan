@@ -502,22 +502,20 @@ ${bits.msb}\
   );
   % else:
 <%
-      # This isn't a field in a hwext register. Instantiate prim_subreg,
-      # prim_subreg_shadow or constant assign.
+      # This isn't a field in a hwext register. Instantiate prim_subreg or
+      # constant assign.
 
       resval_expr = f"{field.bits.width()}'h{field.resval or 0:x}"
       is_const_reg = not (field.hwaccess.allows_read() or
                           field.hwaccess.allows_write() or
                           field.swaccess.allows_write() or
                           field.swaccess.swrd() != SwRdAccess.RD)
-
-      subreg_block = 'prim_subreg' + ('_shadowed' if shadowed else '')
 %>\
     % if is_const_reg:
   // constant-only read
   assign ${finst_name}_qs = ${resval_expr};
     % else:
-  ${subreg_block} #(
+  prim_subreg #(
     .DW      (${field.bits.width()}),
     .SWACCESS("${field.swaccess.value[1].name.upper()}"),
     .RESVAL  (${resval_expr})
@@ -526,9 +524,6 @@ ${bits.msb}\
     .rst_ni  (rst_ni),
 
     // from register interface
-      % if shadowed:
-    .re     (${re_expr}),
-      % endif
     .we     (${we_expr}),
     .wd     (${wd_expr}),
 
@@ -541,15 +536,7 @@ ${bits.msb}\
     .q      (${q_expr}),
 
     // to register interface (read)
-      % if not shadowed:
     .qs     (${qs_expr})
-      % else:
-    .qs     (${qs_expr}),
-
-    // Shadow register error conditions
-    .err_update  (reg2hw.${fsig_name}.err_update),
-    .err_storage (reg2hw.${fsig_name}.err_storage)
-      % endif
   );
     % endif  ## end non-constant prim_subreg
   % endif
