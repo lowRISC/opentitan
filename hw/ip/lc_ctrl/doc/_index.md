@@ -124,12 +124,11 @@ This general policy places a time-bound on how quickly life cycle states can cha
 
 The life cycle controller contains two escalation paths that are connected to [escalation severities 1 and 2 of the alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md#escalation-signaling" >}}).
 
-The first escalation path is used to trigger escalation mechanisms such as secret wiping devices in OpenTitan.
-Upon assertion, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action.
-
-The second escalation path is used to **TEMPORARILY** alter the life cycle state.
+The two escalation paths are redundant, and both trigger the same mechanism.
+Upon assertion of any of the two escalation actions, the life cycle state is **TEMPORARILY** altered.
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
-This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle, with the exception of the ESCALATE_EN signal which will also be asserted in this case.
+This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle.
+In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the [alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md" >}}) for more details.
 
@@ -370,10 +369,10 @@ Signal                       | Direction        | Type                          
 -----------------------------|------------------|--------------------------------------|---------------
 `jtag_i`                     | `input`          | `jtag_pkg::jtag_req_t`               | JTAG input signals for life cycle TAP.
 `jtag_o`                     | `output`         | `jtag_pkg::jtag_rsp_t`               | JTAG output signals for life cycle TAP.
-`esc_wipe_secrets_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Triggers assertion of the `lc_escalate_en_o` signal.
-`esc_wipe_secrets_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
-`esc_scrap_state_tx_i`       | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
-`esc_scrap_state_rx_o`       | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
+`esc_scrap_state0_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state0_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
+`esc_scrap_state1_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state1_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
 `pwr_lc_i`                   | `input`          | `pwrmgr::pwr_lc_req_t`               | Initialization request coming from power manager.
 `pwr_lc_o`                   | `output`         | `pwrmgr::pwr_lc_rsp_t`               | Initialization response and programming idle state going to power manager.
 `lc_otp_program_o`           | `output`         | `otp_ctrl_pkg::lc_otp_program_req_t` | Life cycle state transition request.

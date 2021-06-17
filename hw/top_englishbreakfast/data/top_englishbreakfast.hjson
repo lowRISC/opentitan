@@ -647,12 +647,12 @@
     'connect': {
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
-                                   'lc_ctrl.esc_wipe_secrets_rx',
-                                   'lc_ctrl.esc_scrap_state_rx'
+                                   'lc_ctrl.esc_scrap_state0_rx',
+                                   'lc_ctrl.esc_scrap_state1_rx'
                                    'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
-                                   'lc_ctrl.esc_wipe_secrets_tx',
-                                   'lc_ctrl.esc_scrap_state_tx',
+                                   'lc_ctrl.esc_scrap_state0_tx',
+                                   'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],

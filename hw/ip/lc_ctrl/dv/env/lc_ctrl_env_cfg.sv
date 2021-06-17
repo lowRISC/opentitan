@@ -8,8 +8,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
   push_pull_agent_cfg#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                        .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) m_otp_prog_pull_agent_cfg;
   push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_otp_token_pull_agent_cfg;
-  alert_esc_agent_cfg  m_esc_wipe_secrets_agent_cfg;
-  alert_esc_agent_cfg  m_esc_scrap_state_agent_cfg;
+  alert_esc_agent_cfg  m_esc_scrap_state1_agent_cfg;
+  alert_esc_agent_cfg  m_esc_scrap_state0_agent_cfg;
   jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
 
   // ext interfaces
@@ -42,15 +42,15 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
     m_otp_token_pull_agent_cfg.in_bidirectional_mode      = 1;
     m_otp_token_pull_agent_cfg.hold_d_data_until_next_req = 1;
 
-    m_esc_wipe_secrets_agent_cfg = alert_esc_agent_cfg::type_id::create(
-        "m_esc_wipe_secrets_agent_cfg");
-    `DV_CHECK_RANDOMIZE_FATAL(m_esc_wipe_secrets_agent_cfg)
-    m_esc_wipe_secrets_agent_cfg.is_alert = 0;
+    m_esc_scrap_state1_agent_cfg = alert_esc_agent_cfg::type_id::create(
+        "m_esc_scrap_state1_agent_cfg");
+    `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state1_agent_cfg)
+    m_esc_scrap_state1_agent_cfg.is_alert = 0;
 
-    m_esc_scrap_state_agent_cfg = alert_esc_agent_cfg::type_id::create(
-        "m_esc_scrap_state_agent_cfg");
-    `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state_agent_cfg)
-    m_esc_scrap_state_agent_cfg.is_alert = 0;
+    m_esc_scrap_state0_agent_cfg = alert_esc_agent_cfg::type_id::create(
+        "m_esc_scrap_state0_agent_cfg");
+    `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state0_agent_cfg)
+    m_esc_scrap_state0_agent_cfg.is_alert = 0;
 
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)

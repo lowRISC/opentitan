@@ -42,10 +42,10 @@ module lc_ctrl
   // Escalation inputs (severity 1 and 2).
   // These need not be synchronized since the alert handler is
   // in the same clock domain as the LC controller.
-  input  prim_esc_pkg::esc_rx_t                      esc_wipe_secrets_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_wipe_secrets_rx_o,
-  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_scrap_state_rx_o,
+  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state0_tx_i,
+  output prim_esc_pkg::esc_tx_t                      esc_scrap_state0_rx_o,
+  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state1_tx_i,
+  output prim_esc_pkg::esc_tx_t                      esc_scrap_state1_rx_o,
   // Power manager interface (inputs are synced to lifecycle clock domain).
   input  pwrmgr_pkg::pwr_lc_req_t                    pwr_lc_i,
   output pwrmgr_pkg::pwr_lc_rsp_t                    pwr_lc_o,
@@ -465,18 +465,27 @@ module lc_ctrl
   // Escalation Receivers //
   //////////////////////////
 
-  // This escalation action triggers the
-  // lc_escalate_en life cycle control signal.
-  logic esc_wipe_secrets;
+  // We still have two escalation receivers here for historical reasons.
+  // The two actions "wipe secrets" and "scrap lifecycle state" have been
+  // combined in order to simplify both DV and the design, as otherwise
+  // this separation of very intertwined actions would have caused too many
+  // unnecessary corner cases. The escalation receivers are now redundant and
+  // trigger both actions at once.
+
+  // This escalation action moves the life cycle
+  // state into a temporary "SCRAP" state named "ESCALATE",
+  // and asserts the lc_escalate_en life cycle control signal.
+  logic esc_scrap_state0;
+  logic esc_scrap_state1;
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
-  ) u_prim_esc_receiver1 (
+  ) u_prim_esc_receiver0 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_wipe_secrets),
-    .esc_rx_o (esc_wipe_secrets_rx_o),
-    .esc_tx_i (esc_wipe_secrets_tx_i)
+    .esc_en_o (esc_scrap_state0),
+    .esc_rx_o (esc_scrap_state0_rx_o),
+    .esc_tx_i (esc_scrap_state0_tx_i)
   );
 
   // This escalation action moves the life cycle
@@ -485,12 +494,12 @@ module lc_ctrl
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
-  ) u_prim_esc_receiver2 (
+  ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_scrap_state),
-    .esc_rx_o (esc_scrap_state_rx_o),
-    .esc_tx_i (esc_scrap_state_tx_i)
+    .esc_en_o (esc_scrap_state1),
+    .esc_rx_o (esc_scrap_state1_rx_o),
+    .esc_tx_i (esc_scrap_state1_tx_i)
   );
 
   ////////////////////////////
@@ -558,8 +567,8 @@ module lc_ctrl
     .init_req_i             ( lc_init                         ),
     .init_done_o            ( lc_done_d                       ),
     .idle_o                 ( lc_idle_d                       ),
-    .esc_scrap_state_i      ( esc_scrap_state                 ),
-    .esc_wipe_secrets_i     ( esc_wipe_secrets                ),
+    .esc_scrap_state0_i     ( esc_scrap_state0                ),
+    .esc_scrap_state1_i     ( esc_scrap_state1                ),
     .lc_state_valid_i       ( otp_lc_data_i.valid             ),
     .lc_state_i             ( otp_lc_data_i.state             ),
     .lc_id_state_i          ( otp_lc_data_i.id_state          ),

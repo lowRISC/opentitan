@@ -21,8 +21,8 @@ module lc_ctrl_fsm
   output logic                  init_done_o,
   output logic                  idle_o,
   // Escalatio input
-  input                         esc_scrap_state_i,
-  input                         esc_wipe_secrets_i,
+  input                         esc_scrap_state0_i,
+  input                         esc_scrap_state1_i,
   // Life cycle state vector from OTP.
   input                         lc_state_valid_i,
   input  lc_state_e             lc_state_i,
@@ -386,7 +386,7 @@ module lc_ctrl_fsm
     // we jump into the terminal error state right away.
     if (state_invalid_error_o) begin
       fsm_state_d = InvalidSt;
-    end else if (esc_scrap_state_i) begin
+    end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
       fsm_state_d = EscalateSt;
     end
   end
@@ -520,7 +520,6 @@ module lc_ctrl_fsm
     .lc_state_i         ( lc_state_q       ),
     .lc_id_state_i      ( lc_id_state_q    ),
     .fsm_state_i        ( fsm_state_q      ),
-    .esc_wipe_secrets_i,
     .lc_test_or_rma_o,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
