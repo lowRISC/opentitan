@@ -103,6 +103,10 @@ module sensor_ctrl
                                         reg2hw.alert_test.recov_ot2.q;
   assign alert_test[ast_pkg::Ot3Sel]  = reg2hw.alert_test.recov_ot3.qe   &
                                         reg2hw.alert_test.recov_ot3.q;
+  assign alert_test[ast_pkg::Ot4Sel]  = reg2hw.alert_test.recov_ot4.qe   &
+                                        reg2hw.alert_test.recov_ot4.q;
+  assign alert_test[ast_pkg::Ot5Sel]  = reg2hw.alert_test.recov_ot5.qe   &
+                                        reg2hw.alert_test.recov_ot5.q;
 
 
   // fire an alert whenever indicated

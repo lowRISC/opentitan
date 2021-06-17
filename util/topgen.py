@@ -150,7 +150,8 @@ def generate_alert_handler(top, out_path):
         for alert in top['alert']:
             for k in range(alert['width']):
                 async_on = str(alert['async']) + async_on
-        async_on = ("%d'b" % n_alerts) + async_on
+        # convert to hexstring to shorten line length
+        async_on = ("%d'h" % n_alerts) + hex(int(async_on,2))[2:]
 
     log.info("alert handler parameterization:")
     log.info("NAlerts   = %d" % n_alerts)

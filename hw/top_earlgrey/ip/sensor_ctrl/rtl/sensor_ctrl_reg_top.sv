@@ -126,6 +126,10 @@ module sensor_ctrl_reg_top (
   logic alert_test_recov_ot2_we;
   logic alert_test_recov_ot3_wd;
   logic alert_test_recov_ot3_we;
+  logic alert_test_recov_ot4_wd;
+  logic alert_test_recov_ot4_we;
+  logic alert_test_recov_ot5_wd;
+  logic alert_test_recov_ot5_we;
   logic cfg_regwen_qs;
   logic cfg_regwen_wd;
   logic cfg_regwen_we;
@@ -162,6 +166,12 @@ module sensor_ctrl_reg_top (
   logic [1:0] ack_mode_val_10_qs;
   logic [1:0] ack_mode_val_10_wd;
   logic ack_mode_val_10_we;
+  logic [1:0] ack_mode_val_11_qs;
+  logic [1:0] ack_mode_val_11_wd;
+  logic ack_mode_val_11_we;
+  logic [1:0] ack_mode_val_12_qs;
+  logic [1:0] ack_mode_val_12_wd;
+  logic ack_mode_val_12_we;
   logic alert_trig_val_0_qs;
   logic alert_trig_val_0_wd;
   logic alert_trig_val_0_we;
@@ -195,6 +205,12 @@ module sensor_ctrl_reg_top (
   logic alert_trig_val_10_qs;
   logic alert_trig_val_10_wd;
   logic alert_trig_val_10_we;
+  logic alert_trig_val_11_qs;
+  logic alert_trig_val_11_wd;
+  logic alert_trig_val_11_we;
+  logic alert_trig_val_12_qs;
+  logic alert_trig_val_12_wd;
+  logic alert_trig_val_12_we;
   logic alert_state_val_0_qs;
   logic alert_state_val_0_wd;
   logic alert_state_val_0_we;
@@ -228,6 +244,12 @@ module sensor_ctrl_reg_top (
   logic alert_state_val_10_qs;
   logic alert_state_val_10_wd;
   logic alert_state_val_10_we;
+  logic alert_state_val_11_qs;
+  logic alert_state_val_11_wd;
+  logic alert_state_val_11_we;
+  logic alert_state_val_12_qs;
+  logic alert_state_val_12_wd;
+  logic alert_state_val_12_we;
   logic status_ast_init_done_qs;
   logic [1:0] status_io_pok_qs;
 
@@ -395,6 +417,36 @@ module sensor_ctrl_reg_top (
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ot3.qe),
     .q      (reg2hw.alert_test.recov_ot3.q),
+    .qs     ()
+  );
+
+
+  //   F[recov_ot4]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_ot4 (
+    .re     (1'b0),
+    .we     (alert_test_recov_ot4_we),
+    .wd     (alert_test_recov_ot4_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.recov_ot4.qe),
+    .q      (reg2hw.alert_test.recov_ot4.q),
+    .qs     ()
+  );
+
+
+  //   F[recov_ot5]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_ot5 (
+    .re     (1'b0),
+    .we     (alert_test_recov_ot5_we),
+    .wd     (alert_test_recov_ot5_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.recov_ot5.qe),
+    .q      (reg2hw.alert_test.recov_ot5.q),
     .qs     ()
   );
 
@@ -716,6 +768,58 @@ module sensor_ctrl_reg_top (
   );
 
 
+  // F[val_11]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_ack_mode_val_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ack_mode_val_11_we & cfg_regwen_qs),
+    .wd     (ack_mode_val_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ack_mode[11].q),
+
+    // to register interface (read)
+    .qs     (ack_mode_val_11_qs)
+  );
+
+
+  // F[val_12]: 25:24
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_ack_mode_val_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ack_mode_val_12_we & cfg_regwen_qs),
+    .wd     (ack_mode_val_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ack_mode[12].q),
+
+    // to register interface (read)
+    .qs     (ack_mode_val_12_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg alert_trig
@@ -1004,6 +1108,58 @@ module sensor_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (alert_trig_val_10_qs)
+  );
+
+
+  // F[val_11]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_trig_val_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_trig_val_11_we),
+    .wd     (alert_trig_val_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_trig[11].q),
+
+    // to register interface (read)
+    .qs     (alert_trig_val_11_qs)
+  );
+
+
+  // F[val_12]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_trig_val_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_trig_val_12_we),
+    .wd     (alert_trig_val_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_trig[12].q),
+
+    // to register interface (read)
+    .qs     (alert_trig_val_12_qs)
   );
 
 
@@ -1298,6 +1454,58 @@ module sensor_ctrl_reg_top (
   );
 
 
+  // F[val_11]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_state_val_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_state_val_11_we),
+    .wd     (alert_state_val_11_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_state[11].de),
+    .d      (hw2reg.alert_state[11].d),
+
+    // to internal hardware
+    .qe     (reg2hw.alert_state[11].qe),
+    .q      (reg2hw.alert_state[11].q),
+
+    // to register interface (read)
+    .qs     (alert_state_val_11_qs)
+  );
+
+
+  // F[val_12]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_state_val_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_state_val_12_we),
+    .wd     (alert_state_val_12_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_state[12].de),
+    .d      (hw2reg.alert_state[12].d),
+
+    // to internal hardware
+    .qe     (reg2hw.alert_state[12].qe),
+    .q      (reg2hw.alert_state[12].q),
+
+    // to register interface (read)
+    .qs     (alert_state_val_12_qs)
+  );
+
+
 
   // R[status]: V(False)
 
@@ -1412,6 +1620,12 @@ module sensor_ctrl_reg_top (
   assign alert_test_recov_ot3_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot3_wd = reg_wdata[10];
 
+  assign alert_test_recov_ot4_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_recov_ot4_wd = reg_wdata[11];
+
+  assign alert_test_recov_ot5_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_recov_ot5_wd = reg_wdata[12];
+
   assign cfg_regwen_we = addr_hit[1] & reg_we & !reg_error;
   assign cfg_regwen_wd = reg_wdata[0];
 
@@ -1448,6 +1662,12 @@ module sensor_ctrl_reg_top (
   assign ack_mode_val_10_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_10_wd = reg_wdata[21:20];
 
+  assign ack_mode_val_11_we = addr_hit[2] & reg_we & !reg_error;
+  assign ack_mode_val_11_wd = reg_wdata[23:22];
+
+  assign ack_mode_val_12_we = addr_hit[2] & reg_we & !reg_error;
+  assign ack_mode_val_12_wd = reg_wdata[25:24];
+
   assign alert_trig_val_0_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_0_wd = reg_wdata[0];
 
@@ -1480,6 +1700,12 @@ module sensor_ctrl_reg_top (
 
   assign alert_trig_val_10_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_10_wd = reg_wdata[10];
+
+  assign alert_trig_val_11_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_trig_val_11_wd = reg_wdata[11];
+
+  assign alert_trig_val_12_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_trig_val_12_wd = reg_wdata[12];
 
   assign alert_state_val_0_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_0_wd = reg_wdata[0];
@@ -1514,6 +1740,12 @@ module sensor_ctrl_reg_top (
   assign alert_state_val_10_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_10_wd = reg_wdata[10];
 
+  assign alert_state_val_11_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_state_val_11_wd = reg_wdata[11];
+
+  assign alert_state_val_12_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_state_val_12_wd = reg_wdata[12];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1530,6 +1762,8 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
         reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[12] = '0;
       end
 
       addr_hit[1]: begin
@@ -1548,6 +1782,8 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[17:16] = ack_mode_val_8_qs;
         reg_rdata_next[19:18] = ack_mode_val_9_qs;
         reg_rdata_next[21:20] = ack_mode_val_10_qs;
+        reg_rdata_next[23:22] = ack_mode_val_11_qs;
+        reg_rdata_next[25:24] = ack_mode_val_12_qs;
       end
 
       addr_hit[3]: begin
@@ -1562,6 +1798,8 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = alert_trig_val_8_qs;
         reg_rdata_next[9] = alert_trig_val_9_qs;
         reg_rdata_next[10] = alert_trig_val_10_qs;
+        reg_rdata_next[11] = alert_trig_val_11_qs;
+        reg_rdata_next[12] = alert_trig_val_12_qs;
       end
 
       addr_hit[4]: begin
@@ -1576,6 +1814,8 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = alert_state_val_8_qs;
         reg_rdata_next[9] = alert_state_val_9_qs;
         reg_rdata_next[10] = alert_state_val_10_qs;
+        reg_rdata_next[11] = alert_state_val_11_qs;
+        reg_rdata_next[12] = alert_state_val_12_qs;
       end
 
       addr_hit[5]: begin
