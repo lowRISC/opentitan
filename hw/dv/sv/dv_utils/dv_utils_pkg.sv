@@ -97,6 +97,12 @@ package dv_utils_pkg;
     return (a > b) ? a : b;
   endfunction
 
+  // return the biggest value within the given queue of integers.
+  function automatic int max(const ref int int_q[$]);
+    foreach (int_q[i]) max = max2(max, int_q[i]);
+    return max;
+  endfunction
+
   // get absolute value of the input. Usage: absolute(val) or absolute(a - b)
   function automatic uint absolute(int val);
     return val >= 0 ? val : -val;

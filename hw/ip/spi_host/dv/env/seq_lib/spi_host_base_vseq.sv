@@ -70,7 +70,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
         spi_host_regs.tx_watermark, spi_host_regs.rx_watermark), UVM_LOW)
     cfg.clk_rst_core_vif.wait_clks(100);
   endtask : body
-  
+
   virtual task pre_start();
     // sync monitor and scoreboard setting
     cfg.m_spi_agent_cfg.en_monitor_checks = cfg.en_scb;
@@ -176,7 +176,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   virtual task get_transactions(uint num_rd_words);
     bit [TL_DW-1:0] rxdata;
-    
+
     while (!num_rd_words) begin
       csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
       csr_rd(.ptr(ral.rxdata), .value(rxdata));
@@ -197,7 +197,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
                                        foreach (intr_clear[i]) {
                                            intr_state[i] -> intr_clear[i] == 1;
                                        })
-    
+
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
     cfg.clk_rst_vif.wait_clks(clear_intr_dly);
     csr_wr(.ptr(ral.intr_state), .value(intr_clear));
@@ -215,9 +215,9 @@ class spi_host_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual task apply_resets_concurrently();
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.clk_rst_core_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently();
+    super.apply_resets_concurrently(cfg.clk_rst_core_vif.clk_period_ps);
     cfg.clk_rst_core_vif.drive_rst_pin(1);
   endtask
 

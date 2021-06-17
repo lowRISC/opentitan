@@ -102,12 +102,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual task apply_resets_concurrently();
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    int clk_periods_q[$] = {reset_duration_ps,
+                            cfg.main_clk_rst_vif.clk_period_ps,
+                            cfg.io_clk_rst_vif.clk_period_ps,
+                            cfg.usb_clk_rst_vif.clk_period_ps};
+    reset_duration_ps = max(clk_periods_q);
+
     cfg.main_clk_rst_vif.drive_rst_pin(0);
     cfg.io_clk_rst_vif.drive_rst_pin(0);
     cfg.usb_clk_rst_vif.drive_rst_pin(0);
 
-    super.apply_resets_concurrently();
+    super.apply_resets_concurrently(reset_duration_ps);
 
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);

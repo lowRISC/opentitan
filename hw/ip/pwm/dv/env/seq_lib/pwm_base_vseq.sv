@@ -55,9 +55,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     join
   endtask : apply_reset
 
-  virtual task apply_resets_concurrently();
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.clk_rst_core_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently();
+    super.apply_resets_concurrently(cfg.clk_rst_core_vif.clk_period_ps);
     cfg.clk_rst_core_vif.drive_rst_pin(1);
   endtask
 

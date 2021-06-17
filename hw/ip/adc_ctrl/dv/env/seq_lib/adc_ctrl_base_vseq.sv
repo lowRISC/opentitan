@@ -37,9 +37,9 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     super.apply_reset(kind);
   endtask  // apply_reset
 
-  virtual task apply_resets_concurrently();
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.clk_aon_rst_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently();
+    super.apply_resets_concurrently(cfg.clk_aon_rst_vif.clk_period_ps);
     cfg.clk_aon_rst_vif.drive_rst_pin(1);
   endtask
 
