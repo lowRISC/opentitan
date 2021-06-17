@@ -39,10 +39,49 @@ static rom_error_t retention_sram_clear_test(void) {
   return kErrorOk;
 }
 
+rom_error_t retention_sram_scramble_test(void) {
+  // Clear the retention SRAM (set every bit to zero).
+  retention_sram_clear();
+
+  // Scramble the retention SRAM.
+  LOG_INFO("Scrambling retention SRAM.");
+  if (retention_sram_scramble() != kErrorOk) {
+    LOG_ERROR("Scrambling failed.");
+    return kErrorUnknown;
+  }
+
+  // Copy the contents of the retention SRAM into an array of 64-bit integers.
+  // We use 64-bit integers rather than 32-bit integers to reduce the
+  // probability of an individual value staying the same after scrambling.
+  // Retention SRAM accesses will stall until scrambling is complete.
+  LOG_INFO(
+      "Checking retention SRAM is scrambled (will stall for a short time).");
+  uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];
+  retention_sram_t ret = *retention_sram_get();
+  memcpy(raw, &ret, sizeof(retention_sram_t));
+
+  // Check that every entry in the retention SRAM has changed.
+  uint32_t matches = 0;
+  for (size_t i = 0; i < ARRAYSIZE(raw); ++i) {
+    if (raw[i] == 0) {
+      LOG_ERROR("Retention SRAM unchanged at offset %u.", i);
+      matches += 1;
+    }
+  }
+
+  // It is possible, albeit extremely unlikely, that scrambling executed
+  // correctly but one or more double words are still zero. If this occurs
+  // in practice it may be necessary to increase the number of matches that
+  // are tolerated.
+  LOG_INFO("Finishing retention SRAM scrambling test (matches=%u).", matches);
+  return matches != 0 ? kErrorUnknown : kErrorOk;
+}
+
 const test_config_t kTestConfig;
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;
   EXECUTE_TEST(result, retention_sram_clear_test);
+  EXECUTE_TEST(result, retention_sram_scramble_test);
   return result == kErrorOk;
 }

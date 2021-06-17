@@ -39,6 +39,7 @@ enum module_ {
   kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
   kModuleSecMmio =      MODULE_CODE('I', 'O'),
   kModuleBootPolicy =   MODULE_CODE('B', 'P'),
+  kModuleRetSram =      MODULE_CODE('R', 'S'),
   // clang-format on
 };
 
@@ -102,6 +103,7 @@ enum module_ {
   X(kErrorSecMmioCheckCountFault,     ERROR_(6, kModuleSecMmio, kInternal)), \
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(2, kModuleBootPolicy, kInternal)), \
+  X(kErrorRetSramLocked,              ERROR_(1, kModuleRetSram, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
