@@ -26,7 +26,7 @@ use zerocopy::FromBytes;
 //      sw/device/silicon_creator/lib/manifest.h \
 //      -- -I./ -Isw/device/lib/base/freestanding
 
-pub const MANIFEST_SIZE: u32 = 832;
+pub const MANIFEST_SIZE: u32 = 848;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
@@ -42,6 +42,10 @@ pub struct Manifest {
     pub binding_value: KeymgrBindingValue,
     pub max_key_version: u32,
     pub modulus: SigverifyRsaBuffer,
+    pub code_start: u32,
+    pub code_end: u32,
+    pub entry_point: u32,
+    pub padding: u32,
 }
 
 /// A type that holds 96 32-bit words for RSA-3072.
@@ -60,7 +64,7 @@ impl Default for SigverifyRsaBuffer {
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct KeymgrBindingValue {
-        pub data: [u32; 8usize],
+    pub data: [u32; 8usize],
 }
 
 /// Checks the layout of the manifest struct.
@@ -79,5 +83,9 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, binding_value), 412);
     assert_eq!(offset_of!(Manifest, max_key_version), 444);
     assert_eq!(offset_of!(Manifest, modulus), 448);
+    assert_eq!(offset_of!(Manifest, code_start), 832);
+    assert_eq!(offset_of!(Manifest, code_end), 836);
+    assert_eq!(offset_of!(Manifest, entry_point), 840);
+    assert_eq!(offset_of!(Manifest, padding), 844);
     assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
 }
