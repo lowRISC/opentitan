@@ -22,9 +22,10 @@ extern "C" {
  *
  * OpenTitan secure boot, at a minimum, consists of four boot stages: ROM,
  * ROM_EXT, BL0, and Kernel. ROM is stored in the read-only Mask ROM while
- * remaning stages are stored in flash. This structure must be placed at the
- * beginning of ROM_EXT and BL0 images so that ROM and ROM_EXT can verify
- * integrity and authenticity of the next stage before handing over execution.
+ * remaining stages are stored in flash. This structure must be placed at the
+ * start of ROM_EXT and BL0 images so that ROM and ROM_EXT can verify the
+ * integrity and authenticity of the next stage and configure peripherals as
+ * needed before handing over execution.
  *
  * Use of this struct for stages following BL0 is optional.
  *
@@ -81,6 +82,25 @@ typedef struct manifest {
    * Modulus of the signer's RSA public key.
    */
   sigverify_rsa_buffer_t modulus;
+  /**
+   * Offset of the start of the executable region of the image from the start
+   * of the manifest in bytes.
+   */
+  uint32_t code_start;
+  /**
+   * Offset of the end of the executable region (exclusive) of the image from
+   * the start of the manifest in bytes.
+   */
+  uint32_t code_end;
+  /**
+   * Offset of the first instruction to execute in the image from the start of
+   * the manifest in bytes.
+   */
+  uint32_t entry_point;
+  /**
+   * Trailing padding (due to image_timestamp and the size of the struct).
+   */
+  uint32_t padding;
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 0);
@@ -93,6 +113,10 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 408);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 412);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 444);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 448);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, padding, 844);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
