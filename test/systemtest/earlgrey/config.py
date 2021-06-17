@@ -134,6 +134,10 @@ TEST_APPS_SELFCHECKING = [
         "test_dir": "sw/device/silicon_creator/testing",
     },
     {
+        "name": "sw_silicon_creator_lib_driver_retention_sram_functest",
+        "test_dir": "sw/device/silicon_creator/testing",
+    },
+    {
         "name": "sw_silicon_creator_lib_driver_alert_functest",
         "test_dir": "sw/device/silicon_creator/testing",
         # TODO(lowRISC/opentitan#6965) This test resets the chip and appears to

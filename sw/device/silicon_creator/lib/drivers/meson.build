@@ -318,6 +318,35 @@ test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
   suite: 'mask_rom',
 )
 
+# Mask ROM retention SRAM driver
+sw_silicon_creator_lib_driver_retention_sram = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_retention_sram',
+    sources: [
+      hw_ip_sram_ctrl_reg_h,
+      'retention_sram.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+sw_silicon_creator_lib_driver_retention_sram_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_retention_sram_functest',
+    sources: ['retention_sram_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_retention_sram,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_retention_sram_functest': {
+    'library': sw_silicon_creator_lib_driver_retention_sram_functest,
+  }
+}
+
 # Mask ROM watchdog driver
 sw_silicon_creator_lib_driver_watchdog = declare_dependency(
   link_with: static_library(
@@ -393,6 +422,7 @@ sw_silicon_creator_lib_driver_watchdog_functest = declare_dependency(
       'watchdog_functest.c'
     ],
     dependencies: [
+      sw_silicon_creator_lib_driver_retention_sram,
       sw_silicon_creator_lib_driver_rstmgr,
       sw_silicon_creator_lib_driver_watchdog,
     ],

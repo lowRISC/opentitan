@@ -13,6 +13,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -20,9 +21,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"
-
-void *const kRetentionRamBase = (void *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-const size_t kRetentionRamSize = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES;
 
 // Tests that we can pet the watchdog and avoid a reset.
 rom_error_t watchdog_pet_test(void) {
@@ -68,10 +66,13 @@ bool test_main(void) {
   // This test assumes the reset reason is unique.
   CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
 
-  volatile test_phase_t *phase = (volatile test_phase_t *)kRetentionRamBase;
+  // Use the part of the retention SRAM reserved for the silicon owner to
+  // store the test phase.
+  volatile uint32_t *phase = &retention_sram_get()->reserved_owner[0];
+
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
     // Power-on: zero out the retention RAM.
-    memset(kRetentionRamBase, 0, kRetentionRamSize);
+    retention_sram_clear();
 
     *phase = kTestPhasePet;
     EXECUTE_TEST(result, watchdog_pet_test);
