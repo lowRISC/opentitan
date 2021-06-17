@@ -667,13 +667,19 @@ module rstmgr import rstmgr_pkg::*; (
   logic rst_ndm;
   logic rst_cpu_nq;
   logic first_reset;
+  logic pwrmgr_rst_req;
+
+  // there is a valid reset request from pwrmgr
+  assign pwrmgr_rst_req = |pwr_i.rst_lc_req | |pwr_i.rst_sys_req;
 
   // The qualification of first reset below could technically be POR as well.
   // However, that would enforce software to clear POR upon cold power up.  While that is
   // the most likely outcome anyways, hardware should not require that.
-  assign rst_hw_req    = ~first_reset & pwr_i.reset_cause == pwrmgr_pkg::HwReq;
+  assign rst_hw_req    = ~first_reset & pwrmgr_rst_req &
+                         (pwr_i.reset_cause == pwrmgr_pkg::HwReq);
   assign rst_ndm       = ~first_reset & ndm_req_valid;
-  assign rst_low_power = ~first_reset & pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry;
+  assign rst_low_power = ~first_reset & pwrmgr_rst_req &
+                         (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
   prim_flop_2sync #(
     .Width(1),
