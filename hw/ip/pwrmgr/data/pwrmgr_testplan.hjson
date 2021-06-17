@@ -15,7 +15,8 @@
 
             - Brings pwrmgr out of POR.
             - Enables wakeup.
-            - Triggers SW initiated low power transition.
+            - Triggers SW initiated low power transition with reset settings
+              in `control` CSR.
             - Triggers wakeup.
             - Enables reset.
             - Triggers a reset.
@@ -33,15 +34,224 @@
               CSRs `wake_status` and `reset_status`.
             - Checks the output `pwr_rst_req.reset_cause` matches a low power or
               reset cause.
+            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
+              resets.
             '''
       milestone: V1
       tests: ["pwrmgr_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
+      name: wakeup
+      desc: '''
+            Test random wakeup, wakeup_en, wake_info_capture_dis, and
+            interrupt.
+
+            The different wakeup inputs can be disabled via bits in the
+            `wakeup_en` CSR. Update of `wakeup_info` can be disabled
+            via the `wake_info_capture_dis` CSR. Any wakeup causes an
+            interrupt unless interrupts are disabled.
+
+            **Stimulus**:
+            - Sets `wakeup_en` randomly but don't set it to zero, or the
+              test will timeout.
+            - Bring pwrmgr to low power.
+            - Set `wakeups_i` inputs randomly.
+            - Set `intr_enable` randomly.
+
+            **Checks**:
+            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
+              until it becomes 1.
+            - Depending on `wakeups_i`:
+              - If all wakeups are disabled, wait some time checking the
+                state remains inactive.
+              - Set `wakeups_i` so at least one is enabled.
+            - Checks `ip_clk_en` output has a low transition.
+            - Checks the `wakeup_info` and `wakeup_status` CSRs.
+            - Checks the output `pwr_rst_req.reset_cause` matches a low power
+              cause.
+            - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
+            '''
+      milestone: V2
       tests: []
+    }
+    {
+      name: control_clks
+      desc: '''
+            Test CSR control of peripheral clocks during low power.
+
+            The peripheral clocks can be configured to remain on or be turned
+            off during low power with bits in the `control` CSR register. The
+            usb clock can also be configured off in active mode.
+
+            **Stimulus**:
+            - Sets these control bits at random.
+            - Cause a low power transition and wakeup.
+
+            **Checks**:
+            - The clock enable outputs to the AST clocks during a low
+              power transition match the control bits.
+            - The usb clock enable is also checked during active mode against
+              the control register.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: aborted_lowpower
+      desc: '''
+            Test aborted low power transitions.
+
+            Low power transitions can be aborted in two cases:
+            - The processor gets an interrupt soon after a low power entry is
+              triggered.
+            - OTP, LC, or FLASH are not idle.
+            This test aborts low power transitions, and disables any wakeups,
+            so the test would timeout if low power was entered.
+
+            **Stimulus**:
+            - Bring pwrmgr to low power.
+            - Either disable `pwr_cpu.core_sleeping` or keep some of `lc_idle`,
+              `otp_idle`, or `flash_idle` inputs off.
+            - Disable all wakeup enables.
+            - Randomly set `wakeup_info_capture_dis` CSR.
+
+            **Checks**:
+            - The `ctrl_cfg_regwen` CSR reads as 1 on the first attempt.
+            - Checks the output `pwr_rst_req.reset_cause` doesn't change for
+              a bounded amount of time.
+            - Check that the `wakeup_info` CSR flags either `fall_through` or
+              `abort` events when capture is enabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: reset
+      desc: '''
+            Test random reset and reset_en.
+
+            The different reset inputs can be disabled via bits in the
+            `reset_en` CSR. Resets can be triggered either in active or
+            low power state.
+
+            **Stimulus**:
+            - Sets `reset_en` randomly.
+            - Randomly choose whether to put the unit in low power mode.
+            - Set `rstreqs_i` inputs randomly, both in value and in time.
+
+            **Checks**:
+            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
+              until it becomes 1.
+            - Checks the `reset_status` CSRs.
+            - Checks `ip_clk_en` output has a low transition.
+            - Checks the output `pwr_rst_req.reset_cause` matches a reset
+              cause.
+            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
+              resets.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: escalation_reset
+      desc: '''
+            Test escalation reset.
+
+            An escalation reset cannot be disabled.
+
+            **Stimulus**:
+            - Set `esc_rst_tx_i` inputs randomly.
+
+            **Checks**:
+            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
+              until it becomes 1.
+            - Checks the `reset_status` CSRs.
+            - Checks the output `pwr_rst_req.reset_cause` matches a reset
+              cause.
+            - Checks the output `pwr_rst_req.rstreqs` is not set.
+            - Check the output `esc_rst_rx_o` indicates an alert escalation.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: reset_wakeup_race
+      desc: '''
+            Test low power entry and reset request almost coinciding.
+
+            If a low power entry and a reset occur at nearly the same time
+            the system handles them one at a time.
+
+            **Stimulus**:
+            - Trigger reset and low power entry as described for other
+              testpoints.
+            - Make sure to test them coinciding also.
+
+            **Check**:
+            - Similar tests as for the wakeup and reset testpoints, except
+              making sure they happen per the triggering order.
+              '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lowpower_wakeup_race
+      desc: '''
+            Test wakeups coming close to lowpower entry.
+
+            If low power entry and a wakeup are closely aligned the hardware
+            could get confused.
+
+            **Stimulus**:
+            - Trigger low power entry as described for other testpoints.
+            - Have all wakeups enabled.
+            - Assert wakeups_i in the temporal neighborhood of low power
+              entry.
+
+            **Check**:
+            - No timeout occurs.
+            - Either pwrmgr remains active or a full low power cycle occurs.
+            '''
+      milestone: V2
+      tests: []
+    }
+  ]
+  covergroups: [
+    {
+      name: wakeup_cg
+      desc: '''
+            Collects coverage related to wakeup functionality.
+
+            Covergroup contains coverpoints for the `wakeups_i` input,
+            `wakeup_en`, `wakeup_info`, and `wakeup_info_capture_dis`, 
+            and suitable crosses.
+            '''
+    }
+    {
+      name: lowpower_clock_enables_cg
+      desc: '''
+            Collects coverage on clock enables from `control` CSR during a
+            lowpower transition.
+            '''
+    }
+    {
+      name: reset_cg
+      desc: '''
+            Collects coverage related to reset reporting.
+
+            Covergroup contains coverpoints for the `rstreqs_i` and alert
+            escalation inputs, `reset_en`, `reset_status`,
+            `escalate_reset_status` and whether reset or escalation is asserted
+            during low power state, and suitable crosses.
+            '''
+    }
+    {
+      name: reset_lowpower_distance_cg
+      desc: '''
+            This is a temporal cover statement that records the temporal
+            distance between when lowpower entry and reset trigger, in order
+            to measure coverage of the reset_wakeup_race sequence.
+            '''
     }
   ]
 }

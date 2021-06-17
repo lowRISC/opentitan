@@ -100,6 +100,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otp_ctrl/dv/lint/{tool}"
              },
+             {    name: pattgen
+                  fusesoc_core: lowrisc:,dv:pattgen_sim,
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
+             },
              {    name: prim_lfsr
                   fusesoc_core: lowrisc:dv:prim_lfsr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -115,10 +120,10 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/prim/dv/prim_prince/lint/{tool}"
              },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:,dv:pattgen_sim,
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
+             {    name: pwrmgr
+                  fusesoc_core: lowrisc:dv:pwrmgr_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/pwrmgr/dv/lint/{tool}"
              },
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:dv:rom_ctrl_sim
