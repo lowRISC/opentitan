@@ -236,6 +236,7 @@ sw_silicon_creator_lib_irq_asm_functest = declare_dependency(
     ],
     dependencies: [
       sw_silicon_creator_lib_irq_asm,
+      sw_silicon_creator_lib_driver_retention_sram,
       sw_silicon_creator_lib_driver_rstmgr,
       sw_silicon_creator_lib_driver_watchdog,
     ],
