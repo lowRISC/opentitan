@@ -316,6 +316,41 @@ test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
   suite: 'mask_rom',
 )
 
+# Mask ROM watchdog driver
+sw_silicon_creator_lib_driver_watchdog = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_watchdog',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      hw_ip_pwrmgr_reg_h,
+      'watchdog.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_watchdog_unittest', executable(
+    'sw_silicon_creator_lib_driver_watchdog_unittest',
+    sources: [
+      'watchdog_unittest.cc',
+      hw_ip_aon_timer_reg_h,
+      hw_ip_pwrmgr_reg_h,
+      'watchdog.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
+
 # Mask ROM otbn driver
 sw_silicon_creator_lib_driver_otbn = declare_dependency(
   link_with: static_library(
@@ -347,3 +382,22 @@ test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+sw_silicon_creator_lib_driver_watchdog_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_watchdog_functest',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'watchdog_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_rstmgr,
+      sw_silicon_creator_lib_driver_watchdog,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_watchdog_functest': {
+    'library': sw_silicon_creator_lib_driver_watchdog_functest,
+  }
+}
