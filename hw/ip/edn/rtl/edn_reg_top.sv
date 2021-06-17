@@ -104,53 +104,47 @@ module edn_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_edn_cmd_req_done_qs;
   logic intr_state_edn_cmd_req_done_wd;
-  logic intr_state_edn_cmd_req_done_we;
   logic intr_state_edn_fatal_err_qs;
   logic intr_state_edn_fatal_err_wd;
-  logic intr_state_edn_fatal_err_we;
+  logic intr_enable_we;
   logic intr_enable_edn_cmd_req_done_qs;
   logic intr_enable_edn_cmd_req_done_wd;
-  logic intr_enable_edn_cmd_req_done_we;
   logic intr_enable_edn_fatal_err_qs;
   logic intr_enable_edn_fatal_err_wd;
-  logic intr_enable_edn_fatal_err_we;
+  logic intr_test_we;
   logic intr_test_edn_cmd_req_done_wd;
-  logic intr_test_edn_cmd_req_done_we;
   logic intr_test_edn_fatal_err_wd;
-  logic intr_test_edn_fatal_err_we;
-  logic alert_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
+  logic regwen_we;
   logic regwen_qs;
   logic regwen_wd;
-  logic regwen_we;
+  logic ctrl_we;
   logic ctrl_edn_enable_qs;
   logic ctrl_edn_enable_wd;
-  logic ctrl_edn_enable_we;
   logic ctrl_cmd_fifo_rst_qs;
   logic ctrl_cmd_fifo_rst_wd;
-  logic ctrl_cmd_fifo_rst_we;
   logic [1:0] ctrl_hw_req_mode_qs;
   logic [1:0] ctrl_hw_req_mode_wd;
-  logic ctrl_hw_req_mode_we;
+  logic sum_sts_we;
   logic sum_sts_req_mode_sm_sts_qs;
   logic sum_sts_req_mode_sm_sts_wd;
-  logic sum_sts_req_mode_sm_sts_we;
   logic sum_sts_boot_inst_ack_qs;
   logic sum_sts_boot_inst_ack_wd;
-  logic sum_sts_boot_inst_ack_we;
-  logic [31:0] sw_cmd_req_wd;
   logic sw_cmd_req_we;
+  logic [31:0] sw_cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
   logic sw_cmd_sts_cmd_sts_qs;
-  logic [31:0] reseed_cmd_wd;
   logic reseed_cmd_we;
-  logic [31:0] generate_cmd_wd;
+  logic [31:0] reseed_cmd_wd;
   logic generate_cmd_we;
+  logic [31:0] generate_cmd_wd;
+  logic max_num_reqs_between_reseeds_we;
   logic [31:0] max_num_reqs_between_reseeds_qs;
   logic [31:0] max_num_reqs_between_reseeds_wd;
-  logic max_num_reqs_between_reseeds_we;
   logic err_code_sfifo_rescmd_err_qs;
   logic err_code_sfifo_gencmd_err_qs;
   logic err_code_edn_ack_sm_err_qs;
@@ -158,9 +152,9 @@ module edn_reg_top (
   logic err_code_fifo_write_err_qs;
   logic err_code_fifo_read_err_qs;
   logic err_code_fifo_state_err_qs;
+  logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
-  logic err_code_test_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -175,7 +169,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_edn_cmd_req_done_we),
+    .we     (intr_state_we),
     .wd     (intr_state_edn_cmd_req_done_wd),
 
     // from internal hardware
@@ -201,7 +195,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_edn_fatal_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_edn_fatal_err_wd),
 
     // from internal hardware
@@ -229,7 +223,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_edn_cmd_req_done_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_edn_cmd_req_done_wd),
 
     // from internal hardware
@@ -255,7 +249,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_edn_fatal_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_edn_fatal_err_wd),
 
     // from internal hardware
@@ -278,7 +272,7 @@ module edn_reg_top (
     .DW    (1)
   ) u_intr_test_edn_cmd_req_done (
     .re     (1'b0),
-    .we     (intr_test_edn_cmd_req_done_we),
+    .we     (intr_test_we),
     .wd     (intr_test_edn_cmd_req_done_wd),
     .d      ('0),
     .qre    (),
@@ -293,7 +287,7 @@ module edn_reg_top (
     .DW    (1)
   ) u_intr_test_edn_fatal_err (
     .re     (1'b0),
-    .we     (intr_test_edn_fatal_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_edn_fatal_err_wd),
     .d      ('0),
     .qre    (),
@@ -358,7 +352,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_edn_enable_we),
+    .we     (ctrl_we),
     .wd     (ctrl_edn_enable_wd),
 
     // from internal hardware
@@ -384,7 +378,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_cmd_fifo_rst_we),
+    .we     (ctrl_we),
     .wd     (ctrl_cmd_fifo_rst_wd),
 
     // from internal hardware
@@ -410,7 +404,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_hw_req_mode_we),
+    .we     (ctrl_we),
     .wd     (ctrl_hw_req_mode_wd),
 
     // from internal hardware
@@ -438,7 +432,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sum_sts_req_mode_sm_sts_we),
+    .we     (sum_sts_we),
     .wd     (sum_sts_req_mode_sm_sts_wd),
 
     // from internal hardware
@@ -464,7 +458,7 @@ module edn_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sum_sts_boot_inst_ack_we),
+    .we     (sum_sts_we),
     .wd     (sum_sts_boot_inst_ack_wd),
 
     // from internal hardware
@@ -861,59 +855,53 @@ module edn_reg_top (
                (addr_hit[12] & (|(EDN_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(EDN_PERMIT[13] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_edn_cmd_req_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_state_edn_fatal_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_edn_fatal_err_wd = reg_wdata[1];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_edn_cmd_req_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_enable_edn_fatal_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_edn_fatal_err_wd = reg_wdata[1];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_edn_cmd_req_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_test_edn_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_edn_fatal_err_wd = reg_wdata[1];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_wd = reg_wdata[0];
-
   assign regwen_we = addr_hit[4] & reg_we & !reg_error;
-  assign regwen_wd = reg_wdata[0];
 
-  assign ctrl_edn_enable_we = addr_hit[5] & reg_we & !reg_error;
+  assign regwen_wd = reg_wdata[0];
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
+
   assign ctrl_edn_enable_wd = reg_wdata[0];
 
-  assign ctrl_cmd_fifo_rst_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[1];
 
-  assign ctrl_hw_req_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_hw_req_mode_wd = reg_wdata[3:2];
+  assign sum_sts_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign sum_sts_req_mode_sm_sts_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_req_mode_sm_sts_wd = reg_wdata[0];
 
-  assign sum_sts_boot_inst_ack_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_boot_inst_ack_wd = reg_wdata[1];
-
   assign sw_cmd_req_we = addr_hit[7] & reg_we & !reg_error;
+
   assign sw_cmd_req_wd = reg_wdata[31:0];
-
   assign reseed_cmd_we = addr_hit[9] & reg_we & !reg_error;
+
   assign reseed_cmd_wd = reg_wdata[31:0];
-
   assign generate_cmd_we = addr_hit[10] & reg_we & !reg_error;
+
   assign generate_cmd_wd = reg_wdata[31:0];
-
   assign max_num_reqs_between_reseeds_we = addr_hit[11] & reg_we & !reg_error;
-  assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
 
+  assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
   assign err_code_test_we = addr_hit[13] & reg_we & !reg_error;
+
   assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return

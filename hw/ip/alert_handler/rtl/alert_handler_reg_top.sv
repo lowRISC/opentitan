@@ -104,403 +104,358 @@ module alert_handler_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_classa_qs;
   logic intr_state_classa_wd;
-  logic intr_state_classa_we;
   logic intr_state_classb_qs;
   logic intr_state_classb_wd;
-  logic intr_state_classb_we;
   logic intr_state_classc_qs;
   logic intr_state_classc_wd;
-  logic intr_state_classc_we;
   logic intr_state_classd_qs;
   logic intr_state_classd_wd;
-  logic intr_state_classd_we;
+  logic intr_enable_we;
   logic intr_enable_classa_qs;
   logic intr_enable_classa_wd;
-  logic intr_enable_classa_we;
   logic intr_enable_classb_qs;
   logic intr_enable_classb_wd;
-  logic intr_enable_classb_we;
   logic intr_enable_classc_qs;
   logic intr_enable_classc_wd;
-  logic intr_enable_classc_we;
   logic intr_enable_classd_qs;
   logic intr_enable_classd_wd;
-  logic intr_enable_classd_we;
+  logic intr_test_we;
   logic intr_test_classa_wd;
-  logic intr_test_classa_we;
   logic intr_test_classb_wd;
-  logic intr_test_classb_we;
   logic intr_test_classc_wd;
-  logic intr_test_classc_we;
   logic intr_test_classd_wd;
-  logic intr_test_classd_we;
+  logic ping_timer_regwen_we;
   logic ping_timer_regwen_qs;
   logic ping_timer_regwen_wd;
-  logic ping_timer_regwen_we;
+  logic ping_timeout_cyc_we;
   logic [15:0] ping_timeout_cyc_qs;
   logic [15:0] ping_timeout_cyc_wd;
-  logic ping_timeout_cyc_we;
+  logic ping_timer_en_we;
   logic ping_timer_en_qs;
   logic ping_timer_en_wd;
-  logic ping_timer_en_we;
+  logic alert_regwen_0_we;
   logic alert_regwen_0_qs;
   logic alert_regwen_0_wd;
-  logic alert_regwen_0_we;
+  logic alert_regwen_1_we;
   logic alert_regwen_1_qs;
   logic alert_regwen_1_wd;
-  logic alert_regwen_1_we;
+  logic alert_regwen_2_we;
   logic alert_regwen_2_qs;
   logic alert_regwen_2_wd;
-  logic alert_regwen_2_we;
+  logic alert_regwen_3_we;
   logic alert_regwen_3_qs;
   logic alert_regwen_3_wd;
-  logic alert_regwen_3_we;
+  logic alert_en_0_we;
   logic alert_en_0_qs;
   logic alert_en_0_wd;
-  logic alert_en_0_we;
+  logic alert_en_1_we;
   logic alert_en_1_qs;
   logic alert_en_1_wd;
-  logic alert_en_1_we;
+  logic alert_en_2_we;
   logic alert_en_2_qs;
   logic alert_en_2_wd;
-  logic alert_en_2_we;
+  logic alert_en_3_we;
   logic alert_en_3_qs;
   logic alert_en_3_wd;
-  logic alert_en_3_we;
+  logic alert_class_0_we;
   logic [1:0] alert_class_0_qs;
   logic [1:0] alert_class_0_wd;
-  logic alert_class_0_we;
+  logic alert_class_1_we;
   logic [1:0] alert_class_1_qs;
   logic [1:0] alert_class_1_wd;
-  logic alert_class_1_we;
+  logic alert_class_2_we;
   logic [1:0] alert_class_2_qs;
   logic [1:0] alert_class_2_wd;
-  logic alert_class_2_we;
+  logic alert_class_3_we;
   logic [1:0] alert_class_3_qs;
   logic [1:0] alert_class_3_wd;
-  logic alert_class_3_we;
+  logic alert_cause_0_we;
   logic alert_cause_0_qs;
   logic alert_cause_0_wd;
-  logic alert_cause_0_we;
+  logic alert_cause_1_we;
   logic alert_cause_1_qs;
   logic alert_cause_1_wd;
-  logic alert_cause_1_we;
+  logic alert_cause_2_we;
   logic alert_cause_2_qs;
   logic alert_cause_2_wd;
-  logic alert_cause_2_we;
+  logic alert_cause_3_we;
   logic alert_cause_3_qs;
   logic alert_cause_3_wd;
-  logic alert_cause_3_we;
+  logic loc_alert_regwen_0_we;
   logic loc_alert_regwen_0_qs;
   logic loc_alert_regwen_0_wd;
-  logic loc_alert_regwen_0_we;
+  logic loc_alert_regwen_1_we;
   logic loc_alert_regwen_1_qs;
   logic loc_alert_regwen_1_wd;
-  logic loc_alert_regwen_1_we;
+  logic loc_alert_regwen_2_we;
   logic loc_alert_regwen_2_qs;
   logic loc_alert_regwen_2_wd;
-  logic loc_alert_regwen_2_we;
+  logic loc_alert_regwen_3_we;
   logic loc_alert_regwen_3_qs;
   logic loc_alert_regwen_3_wd;
-  logic loc_alert_regwen_3_we;
+  logic loc_alert_regwen_4_we;
   logic loc_alert_regwen_4_qs;
   logic loc_alert_regwen_4_wd;
-  logic loc_alert_regwen_4_we;
+  logic loc_alert_en_0_we;
   logic loc_alert_en_0_qs;
   logic loc_alert_en_0_wd;
-  logic loc_alert_en_0_we;
+  logic loc_alert_en_1_we;
   logic loc_alert_en_1_qs;
   logic loc_alert_en_1_wd;
-  logic loc_alert_en_1_we;
+  logic loc_alert_en_2_we;
   logic loc_alert_en_2_qs;
   logic loc_alert_en_2_wd;
-  logic loc_alert_en_2_we;
+  logic loc_alert_en_3_we;
   logic loc_alert_en_3_qs;
   logic loc_alert_en_3_wd;
-  logic loc_alert_en_3_we;
+  logic loc_alert_en_4_we;
   logic loc_alert_en_4_qs;
   logic loc_alert_en_4_wd;
-  logic loc_alert_en_4_we;
+  logic loc_alert_class_0_we;
   logic [1:0] loc_alert_class_0_qs;
   logic [1:0] loc_alert_class_0_wd;
-  logic loc_alert_class_0_we;
+  logic loc_alert_class_1_we;
   logic [1:0] loc_alert_class_1_qs;
   logic [1:0] loc_alert_class_1_wd;
-  logic loc_alert_class_1_we;
+  logic loc_alert_class_2_we;
   logic [1:0] loc_alert_class_2_qs;
   logic [1:0] loc_alert_class_2_wd;
-  logic loc_alert_class_2_we;
+  logic loc_alert_class_3_we;
   logic [1:0] loc_alert_class_3_qs;
   logic [1:0] loc_alert_class_3_wd;
-  logic loc_alert_class_3_we;
+  logic loc_alert_class_4_we;
   logic [1:0] loc_alert_class_4_qs;
   logic [1:0] loc_alert_class_4_wd;
-  logic loc_alert_class_4_we;
+  logic loc_alert_cause_0_we;
   logic loc_alert_cause_0_qs;
   logic loc_alert_cause_0_wd;
-  logic loc_alert_cause_0_we;
+  logic loc_alert_cause_1_we;
   logic loc_alert_cause_1_qs;
   logic loc_alert_cause_1_wd;
-  logic loc_alert_cause_1_we;
+  logic loc_alert_cause_2_we;
   logic loc_alert_cause_2_qs;
   logic loc_alert_cause_2_wd;
-  logic loc_alert_cause_2_we;
+  logic loc_alert_cause_3_we;
   logic loc_alert_cause_3_qs;
   logic loc_alert_cause_3_wd;
-  logic loc_alert_cause_3_we;
+  logic loc_alert_cause_4_we;
   logic loc_alert_cause_4_qs;
   logic loc_alert_cause_4_wd;
-  logic loc_alert_cause_4_we;
+  logic classa_regwen_we;
   logic classa_regwen_qs;
   logic classa_regwen_wd;
-  logic classa_regwen_we;
+  logic classa_ctrl_we;
   logic classa_ctrl_en_qs;
   logic classa_ctrl_en_wd;
-  logic classa_ctrl_en_we;
   logic classa_ctrl_lock_qs;
   logic classa_ctrl_lock_wd;
-  logic classa_ctrl_lock_we;
   logic classa_ctrl_en_e0_qs;
   logic classa_ctrl_en_e0_wd;
-  logic classa_ctrl_en_e0_we;
   logic classa_ctrl_en_e1_qs;
   logic classa_ctrl_en_e1_wd;
-  logic classa_ctrl_en_e1_we;
   logic classa_ctrl_en_e2_qs;
   logic classa_ctrl_en_e2_wd;
-  logic classa_ctrl_en_e2_we;
   logic classa_ctrl_en_e3_qs;
   logic classa_ctrl_en_e3_wd;
-  logic classa_ctrl_en_e3_we;
   logic [1:0] classa_ctrl_map_e0_qs;
   logic [1:0] classa_ctrl_map_e0_wd;
-  logic classa_ctrl_map_e0_we;
   logic [1:0] classa_ctrl_map_e1_qs;
   logic [1:0] classa_ctrl_map_e1_wd;
-  logic classa_ctrl_map_e1_we;
   logic [1:0] classa_ctrl_map_e2_qs;
   logic [1:0] classa_ctrl_map_e2_wd;
-  logic classa_ctrl_map_e2_we;
   logic [1:0] classa_ctrl_map_e3_qs;
   logic [1:0] classa_ctrl_map_e3_wd;
-  logic classa_ctrl_map_e3_we;
+  logic classa_clr_regwen_we;
   logic classa_clr_regwen_qs;
   logic classa_clr_regwen_wd;
-  logic classa_clr_regwen_we;
-  logic classa_clr_wd;
   logic classa_clr_we;
-  logic [15:0] classa_accum_cnt_qs;
+  logic classa_clr_wd;
   logic classa_accum_cnt_re;
+  logic [15:0] classa_accum_cnt_qs;
+  logic classa_accum_thresh_we;
   logic [15:0] classa_accum_thresh_qs;
   logic [15:0] classa_accum_thresh_wd;
-  logic classa_accum_thresh_we;
+  logic classa_timeout_cyc_we;
   logic [31:0] classa_timeout_cyc_qs;
   logic [31:0] classa_timeout_cyc_wd;
-  logic classa_timeout_cyc_we;
+  logic classa_phase0_cyc_we;
   logic [31:0] classa_phase0_cyc_qs;
   logic [31:0] classa_phase0_cyc_wd;
-  logic classa_phase0_cyc_we;
+  logic classa_phase1_cyc_we;
   logic [31:0] classa_phase1_cyc_qs;
   logic [31:0] classa_phase1_cyc_wd;
-  logic classa_phase1_cyc_we;
+  logic classa_phase2_cyc_we;
   logic [31:0] classa_phase2_cyc_qs;
   logic [31:0] classa_phase2_cyc_wd;
-  logic classa_phase2_cyc_we;
+  logic classa_phase3_cyc_we;
   logic [31:0] classa_phase3_cyc_qs;
   logic [31:0] classa_phase3_cyc_wd;
-  logic classa_phase3_cyc_we;
-  logic [31:0] classa_esc_cnt_qs;
   logic classa_esc_cnt_re;
-  logic [2:0] classa_state_qs;
+  logic [31:0] classa_esc_cnt_qs;
   logic classa_state_re;
+  logic [2:0] classa_state_qs;
+  logic classb_regwen_we;
   logic classb_regwen_qs;
   logic classb_regwen_wd;
-  logic classb_regwen_we;
+  logic classb_ctrl_we;
   logic classb_ctrl_en_qs;
   logic classb_ctrl_en_wd;
-  logic classb_ctrl_en_we;
   logic classb_ctrl_lock_qs;
   logic classb_ctrl_lock_wd;
-  logic classb_ctrl_lock_we;
   logic classb_ctrl_en_e0_qs;
   logic classb_ctrl_en_e0_wd;
-  logic classb_ctrl_en_e0_we;
   logic classb_ctrl_en_e1_qs;
   logic classb_ctrl_en_e1_wd;
-  logic classb_ctrl_en_e1_we;
   logic classb_ctrl_en_e2_qs;
   logic classb_ctrl_en_e2_wd;
-  logic classb_ctrl_en_e2_we;
   logic classb_ctrl_en_e3_qs;
   logic classb_ctrl_en_e3_wd;
-  logic classb_ctrl_en_e3_we;
   logic [1:0] classb_ctrl_map_e0_qs;
   logic [1:0] classb_ctrl_map_e0_wd;
-  logic classb_ctrl_map_e0_we;
   logic [1:0] classb_ctrl_map_e1_qs;
   logic [1:0] classb_ctrl_map_e1_wd;
-  logic classb_ctrl_map_e1_we;
   logic [1:0] classb_ctrl_map_e2_qs;
   logic [1:0] classb_ctrl_map_e2_wd;
-  logic classb_ctrl_map_e2_we;
   logic [1:0] classb_ctrl_map_e3_qs;
   logic [1:0] classb_ctrl_map_e3_wd;
-  logic classb_ctrl_map_e3_we;
+  logic classb_clr_regwen_we;
   logic classb_clr_regwen_qs;
   logic classb_clr_regwen_wd;
-  logic classb_clr_regwen_we;
-  logic classb_clr_wd;
   logic classb_clr_we;
-  logic [15:0] classb_accum_cnt_qs;
+  logic classb_clr_wd;
   logic classb_accum_cnt_re;
+  logic [15:0] classb_accum_cnt_qs;
+  logic classb_accum_thresh_we;
   logic [15:0] classb_accum_thresh_qs;
   logic [15:0] classb_accum_thresh_wd;
-  logic classb_accum_thresh_we;
+  logic classb_timeout_cyc_we;
   logic [31:0] classb_timeout_cyc_qs;
   logic [31:0] classb_timeout_cyc_wd;
-  logic classb_timeout_cyc_we;
+  logic classb_phase0_cyc_we;
   logic [31:0] classb_phase0_cyc_qs;
   logic [31:0] classb_phase0_cyc_wd;
-  logic classb_phase0_cyc_we;
+  logic classb_phase1_cyc_we;
   logic [31:0] classb_phase1_cyc_qs;
   logic [31:0] classb_phase1_cyc_wd;
-  logic classb_phase1_cyc_we;
+  logic classb_phase2_cyc_we;
   logic [31:0] classb_phase2_cyc_qs;
   logic [31:0] classb_phase2_cyc_wd;
-  logic classb_phase2_cyc_we;
+  logic classb_phase3_cyc_we;
   logic [31:0] classb_phase3_cyc_qs;
   logic [31:0] classb_phase3_cyc_wd;
-  logic classb_phase3_cyc_we;
-  logic [31:0] classb_esc_cnt_qs;
   logic classb_esc_cnt_re;
-  logic [2:0] classb_state_qs;
+  logic [31:0] classb_esc_cnt_qs;
   logic classb_state_re;
+  logic [2:0] classb_state_qs;
+  logic classc_regwen_we;
   logic classc_regwen_qs;
   logic classc_regwen_wd;
-  logic classc_regwen_we;
+  logic classc_ctrl_we;
   logic classc_ctrl_en_qs;
   logic classc_ctrl_en_wd;
-  logic classc_ctrl_en_we;
   logic classc_ctrl_lock_qs;
   logic classc_ctrl_lock_wd;
-  logic classc_ctrl_lock_we;
   logic classc_ctrl_en_e0_qs;
   logic classc_ctrl_en_e0_wd;
-  logic classc_ctrl_en_e0_we;
   logic classc_ctrl_en_e1_qs;
   logic classc_ctrl_en_e1_wd;
-  logic classc_ctrl_en_e1_we;
   logic classc_ctrl_en_e2_qs;
   logic classc_ctrl_en_e2_wd;
-  logic classc_ctrl_en_e2_we;
   logic classc_ctrl_en_e3_qs;
   logic classc_ctrl_en_e3_wd;
-  logic classc_ctrl_en_e3_we;
   logic [1:0] classc_ctrl_map_e0_qs;
   logic [1:0] classc_ctrl_map_e0_wd;
-  logic classc_ctrl_map_e0_we;
   logic [1:0] classc_ctrl_map_e1_qs;
   logic [1:0] classc_ctrl_map_e1_wd;
-  logic classc_ctrl_map_e1_we;
   logic [1:0] classc_ctrl_map_e2_qs;
   logic [1:0] classc_ctrl_map_e2_wd;
-  logic classc_ctrl_map_e2_we;
   logic [1:0] classc_ctrl_map_e3_qs;
   logic [1:0] classc_ctrl_map_e3_wd;
-  logic classc_ctrl_map_e3_we;
+  logic classc_clr_regwen_we;
   logic classc_clr_regwen_qs;
   logic classc_clr_regwen_wd;
-  logic classc_clr_regwen_we;
-  logic classc_clr_wd;
   logic classc_clr_we;
-  logic [15:0] classc_accum_cnt_qs;
+  logic classc_clr_wd;
   logic classc_accum_cnt_re;
+  logic [15:0] classc_accum_cnt_qs;
+  logic classc_accum_thresh_we;
   logic [15:0] classc_accum_thresh_qs;
   logic [15:0] classc_accum_thresh_wd;
-  logic classc_accum_thresh_we;
+  logic classc_timeout_cyc_we;
   logic [31:0] classc_timeout_cyc_qs;
   logic [31:0] classc_timeout_cyc_wd;
-  logic classc_timeout_cyc_we;
+  logic classc_phase0_cyc_we;
   logic [31:0] classc_phase0_cyc_qs;
   logic [31:0] classc_phase0_cyc_wd;
-  logic classc_phase0_cyc_we;
+  logic classc_phase1_cyc_we;
   logic [31:0] classc_phase1_cyc_qs;
   logic [31:0] classc_phase1_cyc_wd;
-  logic classc_phase1_cyc_we;
+  logic classc_phase2_cyc_we;
   logic [31:0] classc_phase2_cyc_qs;
   logic [31:0] classc_phase2_cyc_wd;
-  logic classc_phase2_cyc_we;
+  logic classc_phase3_cyc_we;
   logic [31:0] classc_phase3_cyc_qs;
   logic [31:0] classc_phase3_cyc_wd;
-  logic classc_phase3_cyc_we;
-  logic [31:0] classc_esc_cnt_qs;
   logic classc_esc_cnt_re;
-  logic [2:0] classc_state_qs;
+  logic [31:0] classc_esc_cnt_qs;
   logic classc_state_re;
+  logic [2:0] classc_state_qs;
+  logic classd_regwen_we;
   logic classd_regwen_qs;
   logic classd_regwen_wd;
-  logic classd_regwen_we;
+  logic classd_ctrl_we;
   logic classd_ctrl_en_qs;
   logic classd_ctrl_en_wd;
-  logic classd_ctrl_en_we;
   logic classd_ctrl_lock_qs;
   logic classd_ctrl_lock_wd;
-  logic classd_ctrl_lock_we;
   logic classd_ctrl_en_e0_qs;
   logic classd_ctrl_en_e0_wd;
-  logic classd_ctrl_en_e0_we;
   logic classd_ctrl_en_e1_qs;
   logic classd_ctrl_en_e1_wd;
-  logic classd_ctrl_en_e1_we;
   logic classd_ctrl_en_e2_qs;
   logic classd_ctrl_en_e2_wd;
-  logic classd_ctrl_en_e2_we;
   logic classd_ctrl_en_e3_qs;
   logic classd_ctrl_en_e3_wd;
-  logic classd_ctrl_en_e3_we;
   logic [1:0] classd_ctrl_map_e0_qs;
   logic [1:0] classd_ctrl_map_e0_wd;
-  logic classd_ctrl_map_e0_we;
   logic [1:0] classd_ctrl_map_e1_qs;
   logic [1:0] classd_ctrl_map_e1_wd;
-  logic classd_ctrl_map_e1_we;
   logic [1:0] classd_ctrl_map_e2_qs;
   logic [1:0] classd_ctrl_map_e2_wd;
-  logic classd_ctrl_map_e2_we;
   logic [1:0] classd_ctrl_map_e3_qs;
   logic [1:0] classd_ctrl_map_e3_wd;
-  logic classd_ctrl_map_e3_we;
+  logic classd_clr_regwen_we;
   logic classd_clr_regwen_qs;
   logic classd_clr_regwen_wd;
-  logic classd_clr_regwen_we;
-  logic classd_clr_wd;
   logic classd_clr_we;
-  logic [15:0] classd_accum_cnt_qs;
+  logic classd_clr_wd;
   logic classd_accum_cnt_re;
+  logic [15:0] classd_accum_cnt_qs;
+  logic classd_accum_thresh_we;
   logic [15:0] classd_accum_thresh_qs;
   logic [15:0] classd_accum_thresh_wd;
-  logic classd_accum_thresh_we;
+  logic classd_timeout_cyc_we;
   logic [31:0] classd_timeout_cyc_qs;
   logic [31:0] classd_timeout_cyc_wd;
-  logic classd_timeout_cyc_we;
+  logic classd_phase0_cyc_we;
   logic [31:0] classd_phase0_cyc_qs;
   logic [31:0] classd_phase0_cyc_wd;
-  logic classd_phase0_cyc_we;
+  logic classd_phase1_cyc_we;
   logic [31:0] classd_phase1_cyc_qs;
   logic [31:0] classd_phase1_cyc_wd;
-  logic classd_phase1_cyc_we;
+  logic classd_phase2_cyc_we;
   logic [31:0] classd_phase2_cyc_qs;
   logic [31:0] classd_phase2_cyc_wd;
-  logic classd_phase2_cyc_we;
+  logic classd_phase3_cyc_we;
   logic [31:0] classd_phase3_cyc_qs;
   logic [31:0] classd_phase3_cyc_wd;
-  logic classd_phase3_cyc_we;
-  logic [31:0] classd_esc_cnt_qs;
   logic classd_esc_cnt_re;
-  logic [2:0] classd_state_qs;
+  logic [31:0] classd_esc_cnt_qs;
   logic classd_state_re;
+  logic [2:0] classd_state_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -515,7 +470,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_classa_we),
+    .we     (intr_state_we),
     .wd     (intr_state_classa_wd),
 
     // from internal hardware
@@ -541,7 +496,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_classb_we),
+    .we     (intr_state_we),
     .wd     (intr_state_classb_wd),
 
     // from internal hardware
@@ -567,7 +522,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_classc_we),
+    .we     (intr_state_we),
     .wd     (intr_state_classc_wd),
 
     // from internal hardware
@@ -593,7 +548,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_classd_we),
+    .we     (intr_state_we),
     .wd     (intr_state_classd_wd),
 
     // from internal hardware
@@ -621,7 +576,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_classa_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_classa_wd),
 
     // from internal hardware
@@ -647,7 +602,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_classb_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_classb_wd),
 
     // from internal hardware
@@ -673,7 +628,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_classc_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_classc_wd),
 
     // from internal hardware
@@ -699,7 +654,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_classd_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_classd_wd),
 
     // from internal hardware
@@ -722,7 +677,7 @@ module alert_handler_reg_top (
     .DW    (1)
   ) u_intr_test_classa (
     .re     (1'b0),
-    .we     (intr_test_classa_we),
+    .we     (intr_test_we),
     .wd     (intr_test_classa_wd),
     .d      ('0),
     .qre    (),
@@ -737,7 +692,7 @@ module alert_handler_reg_top (
     .DW    (1)
   ) u_intr_test_classb (
     .re     (1'b0),
-    .we     (intr_test_classb_we),
+    .we     (intr_test_we),
     .wd     (intr_test_classb_wd),
     .d      ('0),
     .qre    (),
@@ -752,7 +707,7 @@ module alert_handler_reg_top (
     .DW    (1)
   ) u_intr_test_classc (
     .re     (1'b0),
-    .we     (intr_test_classc_we),
+    .we     (intr_test_we),
     .wd     (intr_test_classc_wd),
     .d      ('0),
     .qre    (),
@@ -767,7 +722,7 @@ module alert_handler_reg_top (
     .DW    (1)
   ) u_intr_test_classd (
     .re     (1'b0),
-    .we     (intr_test_classd_we),
+    .we     (intr_test_we),
     .wd     (intr_test_classd_wd),
     .d      ('0),
     .qre    (),
@@ -1885,7 +1840,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_en_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_wd),
 
     // from internal hardware
@@ -1911,7 +1866,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_lock_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_lock_wd),
 
     // from internal hardware
@@ -1937,7 +1892,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_en_e0_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -1963,7 +1918,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_en_e1_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -1989,7 +1944,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_en_e2_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -2015,7 +1970,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_en_e3_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -2041,7 +1996,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_map_e0_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -2067,7 +2022,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_map_e1_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -2093,7 +2048,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_map_e2_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -2119,7 +2074,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classa_ctrl_map_e3_we & classa_regwen_qs),
+    .we     (classa_ctrl_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -2438,7 +2393,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_en_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_wd),
 
     // from internal hardware
@@ -2464,7 +2419,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_lock_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_lock_wd),
 
     // from internal hardware
@@ -2490,7 +2445,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_en_e0_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -2516,7 +2471,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_en_e1_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -2542,7 +2497,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_en_e2_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -2568,7 +2523,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_en_e3_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -2594,7 +2549,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_map_e0_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -2620,7 +2575,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_map_e1_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -2646,7 +2601,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_map_e2_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -2672,7 +2627,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classb_ctrl_map_e3_we & classb_regwen_qs),
+    .we     (classb_ctrl_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -2991,7 +2946,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_en_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_wd),
 
     // from internal hardware
@@ -3017,7 +2972,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_lock_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_lock_wd),
 
     // from internal hardware
@@ -3043,7 +2998,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_en_e0_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -3069,7 +3024,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_en_e1_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -3095,7 +3050,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_en_e2_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -3121,7 +3076,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_en_e3_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -3147,7 +3102,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_map_e0_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -3173,7 +3128,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_map_e1_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -3199,7 +3154,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_map_e2_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -3225,7 +3180,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classc_ctrl_map_e3_we & classc_regwen_qs),
+    .we     (classc_ctrl_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -3544,7 +3499,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_en_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_wd),
 
     // from internal hardware
@@ -3570,7 +3525,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_lock_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_lock_wd),
 
     // from internal hardware
@@ -3596,7 +3551,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_en_e0_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -3622,7 +3577,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_en_e1_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -3648,7 +3603,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_en_e2_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -3674,7 +3629,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_en_e3_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -3700,7 +3655,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_map_e0_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -3726,7 +3681,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_map_e1_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -3752,7 +3707,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_map_e2_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -3778,7 +3733,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (classd_ctrl_map_e3_we & classd_regwen_qs),
+    .we     (classd_ctrl_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -4259,410 +4214,353 @@ module alert_handler_reg_top (
                (addr_hit[92] & (|(ALERT_HANDLER_PERMIT[92] & ~reg_be))) |
                (addr_hit[93] & (|(ALERT_HANDLER_PERMIT[93] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_classa_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classa_wd = reg_wdata[0];
 
-  assign intr_state_classb_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classb_wd = reg_wdata[1];
 
-  assign intr_state_classc_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classc_wd = reg_wdata[2];
 
-  assign intr_state_classd_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classd_wd = reg_wdata[3];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_classa_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classa_wd = reg_wdata[0];
 
-  assign intr_enable_classb_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classb_wd = reg_wdata[1];
 
-  assign intr_enable_classc_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classc_wd = reg_wdata[2];
 
-  assign intr_enable_classd_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classd_wd = reg_wdata[3];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_classa_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classa_wd = reg_wdata[0];
 
-  assign intr_test_classb_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classb_wd = reg_wdata[1];
 
-  assign intr_test_classc_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classc_wd = reg_wdata[2];
 
-  assign intr_test_classd_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classd_wd = reg_wdata[3];
-
   assign ping_timer_regwen_we = addr_hit[3] & reg_we & !reg_error;
+
   assign ping_timer_regwen_wd = reg_wdata[0];
-
   assign ping_timeout_cyc_we = addr_hit[4] & reg_we & !reg_error;
+
   assign ping_timeout_cyc_wd = reg_wdata[15:0];
-
   assign ping_timer_en_we = addr_hit[5] & reg_we & !reg_error;
+
   assign ping_timer_en_wd = reg_wdata[0];
-
   assign alert_regwen_0_we = addr_hit[6] & reg_we & !reg_error;
+
   assign alert_regwen_0_wd = reg_wdata[0];
-
   assign alert_regwen_1_we = addr_hit[7] & reg_we & !reg_error;
+
   assign alert_regwen_1_wd = reg_wdata[0];
-
   assign alert_regwen_2_we = addr_hit[8] & reg_we & !reg_error;
+
   assign alert_regwen_2_wd = reg_wdata[0];
-
   assign alert_regwen_3_we = addr_hit[9] & reg_we & !reg_error;
+
   assign alert_regwen_3_wd = reg_wdata[0];
-
   assign alert_en_0_we = addr_hit[10] & reg_we & !reg_error;
+
   assign alert_en_0_wd = reg_wdata[0];
-
   assign alert_en_1_we = addr_hit[11] & reg_we & !reg_error;
+
   assign alert_en_1_wd = reg_wdata[0];
-
   assign alert_en_2_we = addr_hit[12] & reg_we & !reg_error;
+
   assign alert_en_2_wd = reg_wdata[0];
-
   assign alert_en_3_we = addr_hit[13] & reg_we & !reg_error;
+
   assign alert_en_3_wd = reg_wdata[0];
-
   assign alert_class_0_we = addr_hit[14] & reg_we & !reg_error;
+
   assign alert_class_0_wd = reg_wdata[1:0];
-
   assign alert_class_1_we = addr_hit[15] & reg_we & !reg_error;
+
   assign alert_class_1_wd = reg_wdata[1:0];
-
   assign alert_class_2_we = addr_hit[16] & reg_we & !reg_error;
+
   assign alert_class_2_wd = reg_wdata[1:0];
-
   assign alert_class_3_we = addr_hit[17] & reg_we & !reg_error;
+
   assign alert_class_3_wd = reg_wdata[1:0];
-
   assign alert_cause_0_we = addr_hit[18] & reg_we & !reg_error;
+
   assign alert_cause_0_wd = reg_wdata[0];
-
   assign alert_cause_1_we = addr_hit[19] & reg_we & !reg_error;
+
   assign alert_cause_1_wd = reg_wdata[0];
-
   assign alert_cause_2_we = addr_hit[20] & reg_we & !reg_error;
+
   assign alert_cause_2_wd = reg_wdata[0];
-
   assign alert_cause_3_we = addr_hit[21] & reg_we & !reg_error;
+
   assign alert_cause_3_wd = reg_wdata[0];
-
   assign loc_alert_regwen_0_we = addr_hit[22] & reg_we & !reg_error;
+
   assign loc_alert_regwen_0_wd = reg_wdata[0];
-
   assign loc_alert_regwen_1_we = addr_hit[23] & reg_we & !reg_error;
+
   assign loc_alert_regwen_1_wd = reg_wdata[0];
-
   assign loc_alert_regwen_2_we = addr_hit[24] & reg_we & !reg_error;
+
   assign loc_alert_regwen_2_wd = reg_wdata[0];
-
   assign loc_alert_regwen_3_we = addr_hit[25] & reg_we & !reg_error;
+
   assign loc_alert_regwen_3_wd = reg_wdata[0];
-
   assign loc_alert_regwen_4_we = addr_hit[26] & reg_we & !reg_error;
+
   assign loc_alert_regwen_4_wd = reg_wdata[0];
-
   assign loc_alert_en_0_we = addr_hit[27] & reg_we & !reg_error;
+
   assign loc_alert_en_0_wd = reg_wdata[0];
-
   assign loc_alert_en_1_we = addr_hit[28] & reg_we & !reg_error;
+
   assign loc_alert_en_1_wd = reg_wdata[0];
-
   assign loc_alert_en_2_we = addr_hit[29] & reg_we & !reg_error;
+
   assign loc_alert_en_2_wd = reg_wdata[0];
-
   assign loc_alert_en_3_we = addr_hit[30] & reg_we & !reg_error;
+
   assign loc_alert_en_3_wd = reg_wdata[0];
-
   assign loc_alert_en_4_we = addr_hit[31] & reg_we & !reg_error;
+
   assign loc_alert_en_4_wd = reg_wdata[0];
-
   assign loc_alert_class_0_we = addr_hit[32] & reg_we & !reg_error;
+
   assign loc_alert_class_0_wd = reg_wdata[1:0];
-
   assign loc_alert_class_1_we = addr_hit[33] & reg_we & !reg_error;
+
   assign loc_alert_class_1_wd = reg_wdata[1:0];
-
   assign loc_alert_class_2_we = addr_hit[34] & reg_we & !reg_error;
+
   assign loc_alert_class_2_wd = reg_wdata[1:0];
-
   assign loc_alert_class_3_we = addr_hit[35] & reg_we & !reg_error;
+
   assign loc_alert_class_3_wd = reg_wdata[1:0];
-
   assign loc_alert_class_4_we = addr_hit[36] & reg_we & !reg_error;
+
   assign loc_alert_class_4_wd = reg_wdata[1:0];
-
   assign loc_alert_cause_0_we = addr_hit[37] & reg_we & !reg_error;
+
   assign loc_alert_cause_0_wd = reg_wdata[0];
-
   assign loc_alert_cause_1_we = addr_hit[38] & reg_we & !reg_error;
+
   assign loc_alert_cause_1_wd = reg_wdata[0];
-
   assign loc_alert_cause_2_we = addr_hit[39] & reg_we & !reg_error;
+
   assign loc_alert_cause_2_wd = reg_wdata[0];
-
   assign loc_alert_cause_3_we = addr_hit[40] & reg_we & !reg_error;
+
   assign loc_alert_cause_3_wd = reg_wdata[0];
-
   assign loc_alert_cause_4_we = addr_hit[41] & reg_we & !reg_error;
+
   assign loc_alert_cause_4_wd = reg_wdata[0];
-
   assign classa_regwen_we = addr_hit[42] & reg_we & !reg_error;
-  assign classa_regwen_wd = reg_wdata[0];
 
-  assign classa_ctrl_en_we = addr_hit[43] & reg_we & !reg_error;
+  assign classa_regwen_wd = reg_wdata[0];
+  assign classa_ctrl_we = addr_hit[43] & reg_we & !reg_error;
+
   assign classa_ctrl_en_wd = reg_wdata[0];
 
-  assign classa_ctrl_lock_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_lock_wd = reg_wdata[1];
 
-  assign classa_ctrl_en_e0_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classa_ctrl_en_e1_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classa_ctrl_en_e2_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classa_ctrl_en_e3_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classa_ctrl_map_e0_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classa_ctrl_map_e1_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classa_ctrl_map_e2_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classa_ctrl_map_e3_we = addr_hit[43] & reg_we & !reg_error;
   assign classa_ctrl_map_e3_wd = reg_wdata[13:12];
-
   assign classa_clr_regwen_we = addr_hit[44] & reg_we & !reg_error;
+
   assign classa_clr_regwen_wd = reg_wdata[0];
-
   assign classa_clr_we = addr_hit[45] & reg_we & !reg_error;
+
   assign classa_clr_wd = reg_wdata[0];
-
   assign classa_accum_cnt_re = addr_hit[46] & reg_re & !reg_error;
-
   assign classa_accum_thresh_we = addr_hit[47] & reg_we & !reg_error;
+
   assign classa_accum_thresh_wd = reg_wdata[15:0];
-
   assign classa_timeout_cyc_we = addr_hit[48] & reg_we & !reg_error;
+
   assign classa_timeout_cyc_wd = reg_wdata[31:0];
-
   assign classa_phase0_cyc_we = addr_hit[49] & reg_we & !reg_error;
+
   assign classa_phase0_cyc_wd = reg_wdata[31:0];
-
   assign classa_phase1_cyc_we = addr_hit[50] & reg_we & !reg_error;
+
   assign classa_phase1_cyc_wd = reg_wdata[31:0];
-
   assign classa_phase2_cyc_we = addr_hit[51] & reg_we & !reg_error;
+
   assign classa_phase2_cyc_wd = reg_wdata[31:0];
-
   assign classa_phase3_cyc_we = addr_hit[52] & reg_we & !reg_error;
+
   assign classa_phase3_cyc_wd = reg_wdata[31:0];
-
   assign classa_esc_cnt_re = addr_hit[53] & reg_re & !reg_error;
-
   assign classa_state_re = addr_hit[54] & reg_re & !reg_error;
-
   assign classb_regwen_we = addr_hit[55] & reg_we & !reg_error;
-  assign classb_regwen_wd = reg_wdata[0];
 
-  assign classb_ctrl_en_we = addr_hit[56] & reg_we & !reg_error;
+  assign classb_regwen_wd = reg_wdata[0];
+  assign classb_ctrl_we = addr_hit[56] & reg_we & !reg_error;
+
   assign classb_ctrl_en_wd = reg_wdata[0];
 
-  assign classb_ctrl_lock_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_lock_wd = reg_wdata[1];
 
-  assign classb_ctrl_en_e0_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classb_ctrl_en_e1_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classb_ctrl_en_e2_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classb_ctrl_en_e3_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classb_ctrl_map_e0_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classb_ctrl_map_e1_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classb_ctrl_map_e2_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classb_ctrl_map_e3_we = addr_hit[56] & reg_we & !reg_error;
   assign classb_ctrl_map_e3_wd = reg_wdata[13:12];
-
   assign classb_clr_regwen_we = addr_hit[57] & reg_we & !reg_error;
+
   assign classb_clr_regwen_wd = reg_wdata[0];
-
   assign classb_clr_we = addr_hit[58] & reg_we & !reg_error;
+
   assign classb_clr_wd = reg_wdata[0];
-
   assign classb_accum_cnt_re = addr_hit[59] & reg_re & !reg_error;
-
   assign classb_accum_thresh_we = addr_hit[60] & reg_we & !reg_error;
+
   assign classb_accum_thresh_wd = reg_wdata[15:0];
-
   assign classb_timeout_cyc_we = addr_hit[61] & reg_we & !reg_error;
+
   assign classb_timeout_cyc_wd = reg_wdata[31:0];
-
   assign classb_phase0_cyc_we = addr_hit[62] & reg_we & !reg_error;
+
   assign classb_phase0_cyc_wd = reg_wdata[31:0];
-
   assign classb_phase1_cyc_we = addr_hit[63] & reg_we & !reg_error;
+
   assign classb_phase1_cyc_wd = reg_wdata[31:0];
-
   assign classb_phase2_cyc_we = addr_hit[64] & reg_we & !reg_error;
+
   assign classb_phase2_cyc_wd = reg_wdata[31:0];
-
   assign classb_phase3_cyc_we = addr_hit[65] & reg_we & !reg_error;
+
   assign classb_phase3_cyc_wd = reg_wdata[31:0];
-
   assign classb_esc_cnt_re = addr_hit[66] & reg_re & !reg_error;
-
   assign classb_state_re = addr_hit[67] & reg_re & !reg_error;
-
   assign classc_regwen_we = addr_hit[68] & reg_we & !reg_error;
-  assign classc_regwen_wd = reg_wdata[0];
 
-  assign classc_ctrl_en_we = addr_hit[69] & reg_we & !reg_error;
+  assign classc_regwen_wd = reg_wdata[0];
+  assign classc_ctrl_we = addr_hit[69] & reg_we & !reg_error;
+
   assign classc_ctrl_en_wd = reg_wdata[0];
 
-  assign classc_ctrl_lock_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_lock_wd = reg_wdata[1];
 
-  assign classc_ctrl_en_e0_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classc_ctrl_en_e1_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classc_ctrl_en_e2_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classc_ctrl_en_e3_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classc_ctrl_map_e0_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classc_ctrl_map_e1_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classc_ctrl_map_e2_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classc_ctrl_map_e3_we = addr_hit[69] & reg_we & !reg_error;
   assign classc_ctrl_map_e3_wd = reg_wdata[13:12];
-
   assign classc_clr_regwen_we = addr_hit[70] & reg_we & !reg_error;
+
   assign classc_clr_regwen_wd = reg_wdata[0];
-
   assign classc_clr_we = addr_hit[71] & reg_we & !reg_error;
+
   assign classc_clr_wd = reg_wdata[0];
-
   assign classc_accum_cnt_re = addr_hit[72] & reg_re & !reg_error;
-
   assign classc_accum_thresh_we = addr_hit[73] & reg_we & !reg_error;
+
   assign classc_accum_thresh_wd = reg_wdata[15:0];
-
   assign classc_timeout_cyc_we = addr_hit[74] & reg_we & !reg_error;
+
   assign classc_timeout_cyc_wd = reg_wdata[31:0];
-
   assign classc_phase0_cyc_we = addr_hit[75] & reg_we & !reg_error;
+
   assign classc_phase0_cyc_wd = reg_wdata[31:0];
-
   assign classc_phase1_cyc_we = addr_hit[76] & reg_we & !reg_error;
+
   assign classc_phase1_cyc_wd = reg_wdata[31:0];
-
   assign classc_phase2_cyc_we = addr_hit[77] & reg_we & !reg_error;
+
   assign classc_phase2_cyc_wd = reg_wdata[31:0];
-
   assign classc_phase3_cyc_we = addr_hit[78] & reg_we & !reg_error;
+
   assign classc_phase3_cyc_wd = reg_wdata[31:0];
-
   assign classc_esc_cnt_re = addr_hit[79] & reg_re & !reg_error;
-
   assign classc_state_re = addr_hit[80] & reg_re & !reg_error;
-
   assign classd_regwen_we = addr_hit[81] & reg_we & !reg_error;
-  assign classd_regwen_wd = reg_wdata[0];
 
-  assign classd_ctrl_en_we = addr_hit[82] & reg_we & !reg_error;
+  assign classd_regwen_wd = reg_wdata[0];
+  assign classd_ctrl_we = addr_hit[82] & reg_we & !reg_error;
+
   assign classd_ctrl_en_wd = reg_wdata[0];
 
-  assign classd_ctrl_lock_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_lock_wd = reg_wdata[1];
 
-  assign classd_ctrl_en_e0_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classd_ctrl_en_e1_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classd_ctrl_en_e2_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classd_ctrl_en_e3_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classd_ctrl_map_e0_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classd_ctrl_map_e1_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classd_ctrl_map_e2_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classd_ctrl_map_e3_we = addr_hit[82] & reg_we & !reg_error;
   assign classd_ctrl_map_e3_wd = reg_wdata[13:12];
-
   assign classd_clr_regwen_we = addr_hit[83] & reg_we & !reg_error;
+
   assign classd_clr_regwen_wd = reg_wdata[0];
-
   assign classd_clr_we = addr_hit[84] & reg_we & !reg_error;
+
   assign classd_clr_wd = reg_wdata[0];
-
   assign classd_accum_cnt_re = addr_hit[85] & reg_re & !reg_error;
-
   assign classd_accum_thresh_we = addr_hit[86] & reg_we & !reg_error;
+
   assign classd_accum_thresh_wd = reg_wdata[15:0];
-
   assign classd_timeout_cyc_we = addr_hit[87] & reg_we & !reg_error;
+
   assign classd_timeout_cyc_wd = reg_wdata[31:0];
-
   assign classd_phase0_cyc_we = addr_hit[88] & reg_we & !reg_error;
+
   assign classd_phase0_cyc_wd = reg_wdata[31:0];
-
   assign classd_phase1_cyc_we = addr_hit[89] & reg_we & !reg_error;
+
   assign classd_phase1_cyc_wd = reg_wdata[31:0];
-
   assign classd_phase2_cyc_we = addr_hit[90] & reg_we & !reg_error;
+
   assign classd_phase2_cyc_wd = reg_wdata[31:0];
-
   assign classd_phase3_cyc_we = addr_hit[91] & reg_we & !reg_error;
+
   assign classd_phase3_cyc_wd = reg_wdata[31:0];
-
   assign classd_esc_cnt_re = addr_hit[92] & reg_re & !reg_error;
-
   assign classd_state_re = addr_hit[93] & reg_re & !reg_error;
 
   // Read data return

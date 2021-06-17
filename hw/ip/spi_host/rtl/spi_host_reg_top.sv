@@ -152,39 +152,32 @@ module spi_host_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_error_qs;
   logic intr_state_error_wd;
-  logic intr_state_error_we;
   logic intr_state_spi_event_qs;
   logic intr_state_spi_event_wd;
-  logic intr_state_spi_event_we;
+  logic intr_enable_we;
   logic intr_enable_error_qs;
   logic intr_enable_error_wd;
-  logic intr_enable_error_we;
   logic intr_enable_spi_event_qs;
   logic intr_enable_spi_event_wd;
-  logic intr_enable_spi_event_we;
+  logic intr_test_we;
   logic intr_test_error_wd;
-  logic intr_test_error_we;
   logic intr_test_spi_event_wd;
-  logic intr_test_spi_event_we;
-  logic alert_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
+  logic control_we;
   logic [7:0] control_rx_watermark_qs;
   logic [7:0] control_rx_watermark_wd;
-  logic control_rx_watermark_we;
   logic [7:0] control_tx_watermark_qs;
   logic [7:0] control_tx_watermark_wd;
-  logic control_tx_watermark_we;
   logic control_passthru_qs;
   logic control_passthru_wd;
-  logic control_passthru_we;
   logic control_sw_rst_qs;
   logic control_sw_rst_wd;
-  logic control_sw_rst_we;
   logic control_spien_qs;
   logic control_spien_wd;
-  logic control_spien_we;
   logic [7:0] status_txqd_qs;
   logic [7:0] status_rxqd_qs;
   logic status_rxwm_qs;
@@ -198,90 +191,68 @@ module spi_host_reg_top (
   logic status_txfull_qs;
   logic status_active_qs;
   logic status_ready_qs;
+  logic configopts_we;
   logic [15:0] configopts_clkdiv_0_qs;
   logic [15:0] configopts_clkdiv_0_wd;
-  logic configopts_clkdiv_0_we;
   logic [3:0] configopts_csnidle_0_qs;
   logic [3:0] configopts_csnidle_0_wd;
-  logic configopts_csnidle_0_we;
   logic [3:0] configopts_csntrail_0_qs;
   logic [3:0] configopts_csntrail_0_wd;
-  logic configopts_csntrail_0_we;
   logic [3:0] configopts_csnlead_0_qs;
   logic [3:0] configopts_csnlead_0_wd;
-  logic configopts_csnlead_0_we;
   logic configopts_fullcyc_0_qs;
   logic configopts_fullcyc_0_wd;
-  logic configopts_fullcyc_0_we;
   logic configopts_cpha_0_qs;
   logic configopts_cpha_0_wd;
-  logic configopts_cpha_0_we;
   logic configopts_cpol_0_qs;
   logic configopts_cpol_0_wd;
-  logic configopts_cpol_0_we;
+  logic csid_we;
   logic [31:0] csid_qs;
   logic [31:0] csid_wd;
-  logic csid_we;
+  logic command_we;
   logic [8:0] command_len_qs;
   logic [8:0] command_len_wd;
-  logic command_len_we;
   logic command_csaat_qs;
   logic command_csaat_wd;
-  logic command_csaat_we;
   logic [1:0] command_speed_qs;
   logic [1:0] command_speed_wd;
-  logic command_speed_we;
   logic [1:0] command_direction_qs;
   logic [1:0] command_direction_wd;
-  logic command_direction_we;
+  logic error_enable_we;
   logic error_enable_cmdbusy_qs;
   logic error_enable_cmdbusy_wd;
-  logic error_enable_cmdbusy_we;
   logic error_enable_overflow_qs;
   logic error_enable_overflow_wd;
-  logic error_enable_overflow_we;
   logic error_enable_underflow_qs;
   logic error_enable_underflow_wd;
-  logic error_enable_underflow_we;
   logic error_enable_cmdinval_qs;
   logic error_enable_cmdinval_wd;
-  logic error_enable_cmdinval_we;
   logic error_enable_csidinval_qs;
   logic error_enable_csidinval_wd;
-  logic error_enable_csidinval_we;
+  logic error_status_we;
   logic error_status_cmdbusy_qs;
   logic error_status_cmdbusy_wd;
-  logic error_status_cmdbusy_we;
   logic error_status_overflow_qs;
   logic error_status_overflow_wd;
-  logic error_status_overflow_we;
   logic error_status_underflow_qs;
   logic error_status_underflow_wd;
-  logic error_status_underflow_we;
   logic error_status_cmdinval_qs;
   logic error_status_cmdinval_wd;
-  logic error_status_cmdinval_we;
   logic error_status_csidinval_qs;
   logic error_status_csidinval_wd;
-  logic error_status_csidinval_we;
+  logic event_enable_we;
   logic event_enable_rxfull_qs;
   logic event_enable_rxfull_wd;
-  logic event_enable_rxfull_we;
   logic event_enable_txempty_qs;
   logic event_enable_txempty_wd;
-  logic event_enable_txempty_we;
   logic event_enable_rxwm_qs;
   logic event_enable_rxwm_wd;
-  logic event_enable_rxwm_we;
   logic event_enable_txwm_qs;
   logic event_enable_txwm_wd;
-  logic event_enable_txwm_we;
   logic event_enable_ready_qs;
   logic event_enable_ready_wd;
-  logic event_enable_ready_we;
   logic event_enable_idle_qs;
   logic event_enable_idle_wd;
-  logic event_enable_idle_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -296,7 +267,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_error_we),
+    .we     (intr_state_we),
     .wd     (intr_state_error_wd),
 
     // from internal hardware
@@ -322,7 +293,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_spi_event_we),
+    .we     (intr_state_we),
     .wd     (intr_state_spi_event_wd),
 
     // from internal hardware
@@ -350,7 +321,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_error_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_error_wd),
 
     // from internal hardware
@@ -376,7 +347,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_spi_event_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_spi_event_wd),
 
     // from internal hardware
@@ -399,7 +370,7 @@ module spi_host_reg_top (
     .DW    (1)
   ) u_intr_test_error (
     .re     (1'b0),
-    .we     (intr_test_error_we),
+    .we     (intr_test_we),
     .wd     (intr_test_error_wd),
     .d      ('0),
     .qre    (),
@@ -414,7 +385,7 @@ module spi_host_reg_top (
     .DW    (1)
   ) u_intr_test_spi_event (
     .re     (1'b0),
-    .we     (intr_test_spi_event_we),
+    .we     (intr_test_we),
     .wd     (intr_test_spi_event_wd),
     .d      ('0),
     .qre    (),
@@ -452,7 +423,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_rx_watermark_we),
+    .we     (control_we),
     .wd     (control_rx_watermark_wd),
 
     // from internal hardware
@@ -478,7 +449,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_tx_watermark_we),
+    .we     (control_we),
     .wd     (control_tx_watermark_wd),
 
     // from internal hardware
@@ -504,7 +475,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_passthru_we),
+    .we     (control_we),
     .wd     (control_passthru_wd),
 
     // from internal hardware
@@ -530,7 +501,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_sw_rst_we),
+    .we     (control_we),
     .wd     (control_sw_rst_wd),
 
     // from internal hardware
@@ -556,7 +527,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_spien_we),
+    .we     (control_we),
     .wd     (control_spien_wd),
 
     // from internal hardware
@@ -926,7 +897,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_clkdiv_0_we),
+    .we     (configopts_we),
     .wd     (configopts_clkdiv_0_wd),
 
     // from internal hardware
@@ -952,7 +923,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_csnidle_0_we),
+    .we     (configopts_we),
     .wd     (configopts_csnidle_0_wd),
 
     // from internal hardware
@@ -978,7 +949,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_csntrail_0_we),
+    .we     (configopts_we),
     .wd     (configopts_csntrail_0_wd),
 
     // from internal hardware
@@ -1004,7 +975,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_csnlead_0_we),
+    .we     (configopts_we),
     .wd     (configopts_csnlead_0_wd),
 
     // from internal hardware
@@ -1030,7 +1001,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_fullcyc_0_we),
+    .we     (configopts_we),
     .wd     (configopts_fullcyc_0_wd),
 
     // from internal hardware
@@ -1056,7 +1027,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_cpha_0_we),
+    .we     (configopts_we),
     .wd     (configopts_cpha_0_wd),
 
     // from internal hardware
@@ -1082,7 +1053,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configopts_cpol_0_we),
+    .we     (configopts_we),
     .wd     (configopts_cpol_0_wd),
 
     // from internal hardware
@@ -1138,7 +1109,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (command_len_we),
+    .we     (command_we),
     .wd     (command_len_wd),
 
     // from internal hardware
@@ -1164,7 +1135,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (command_csaat_we),
+    .we     (command_we),
     .wd     (command_csaat_wd),
 
     // from internal hardware
@@ -1190,7 +1161,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (command_speed_we),
+    .we     (command_we),
     .wd     (command_speed_wd),
 
     // from internal hardware
@@ -1216,7 +1187,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (command_direction_we),
+    .we     (command_we),
     .wd     (command_direction_wd),
 
     // from internal hardware
@@ -1244,7 +1215,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_enable_cmdbusy_we),
+    .we     (error_enable_we),
     .wd     (error_enable_cmdbusy_wd),
 
     // from internal hardware
@@ -1270,7 +1241,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_enable_overflow_we),
+    .we     (error_enable_we),
     .wd     (error_enable_overflow_wd),
 
     // from internal hardware
@@ -1296,7 +1267,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_enable_underflow_we),
+    .we     (error_enable_we),
     .wd     (error_enable_underflow_wd),
 
     // from internal hardware
@@ -1322,7 +1293,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_enable_cmdinval_we),
+    .we     (error_enable_we),
     .wd     (error_enable_cmdinval_wd),
 
     // from internal hardware
@@ -1348,7 +1319,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_enable_csidinval_we),
+    .we     (error_enable_we),
     .wd     (error_enable_csidinval_wd),
 
     // from internal hardware
@@ -1376,7 +1347,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_status_cmdbusy_we),
+    .we     (error_status_we),
     .wd     (error_status_cmdbusy_wd),
 
     // from internal hardware
@@ -1402,7 +1373,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_status_overflow_we),
+    .we     (error_status_we),
     .wd     (error_status_overflow_wd),
 
     // from internal hardware
@@ -1428,7 +1399,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_status_underflow_we),
+    .we     (error_status_we),
     .wd     (error_status_underflow_wd),
 
     // from internal hardware
@@ -1454,7 +1425,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_status_cmdinval_we),
+    .we     (error_status_we),
     .wd     (error_status_cmdinval_wd),
 
     // from internal hardware
@@ -1480,7 +1451,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (error_status_csidinval_we),
+    .we     (error_status_we),
     .wd     (error_status_csidinval_wd),
 
     // from internal hardware
@@ -1508,7 +1479,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_rxfull_we),
+    .we     (event_enable_we),
     .wd     (event_enable_rxfull_wd),
 
     // from internal hardware
@@ -1534,7 +1505,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_txempty_we),
+    .we     (event_enable_we),
     .wd     (event_enable_txempty_wd),
 
     // from internal hardware
@@ -1560,7 +1531,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_rxwm_we),
+    .we     (event_enable_we),
     .wd     (event_enable_rxwm_wd),
 
     // from internal hardware
@@ -1586,7 +1557,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_txwm_we),
+    .we     (event_enable_we),
     .wd     (event_enable_txwm_wd),
 
     // from internal hardware
@@ -1612,7 +1583,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_ready_we),
+    .we     (event_enable_we),
     .wd     (event_enable_ready_wd),
 
     // from internal hardware
@@ -1638,7 +1609,7 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (event_enable_idle_we),
+    .we     (event_enable_we),
     .wd     (event_enable_idle_wd),
 
     // from internal hardware
@@ -1691,125 +1662,96 @@ module spi_host_reg_top (
                (addr_hit[10] & (|(SPI_HOST_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(SPI_HOST_PERMIT[11] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_error_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_error_wd = reg_wdata[0];
 
-  assign intr_state_spi_event_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_spi_event_wd = reg_wdata[1];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_error_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_error_wd = reg_wdata[0];
 
-  assign intr_enable_spi_event_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_spi_event_wd = reg_wdata[1];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_error_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_error_wd = reg_wdata[0];
 
-  assign intr_test_spi_event_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_spi_event_wd = reg_wdata[1];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
-  assign alert_test_wd = reg_wdata[0];
 
-  assign control_rx_watermark_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+  assign control_we = addr_hit[4] & reg_we & !reg_error;
+
   assign control_rx_watermark_wd = reg_wdata[7:0];
 
-  assign control_tx_watermark_we = addr_hit[4] & reg_we & !reg_error;
   assign control_tx_watermark_wd = reg_wdata[15:8];
 
-  assign control_passthru_we = addr_hit[4] & reg_we & !reg_error;
   assign control_passthru_wd = reg_wdata[29];
 
-  assign control_sw_rst_we = addr_hit[4] & reg_we & !reg_error;
   assign control_sw_rst_wd = reg_wdata[30];
 
-  assign control_spien_we = addr_hit[4] & reg_we & !reg_error;
   assign control_spien_wd = reg_wdata[31];
+  assign configopts_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign configopts_clkdiv_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_clkdiv_0_wd = reg_wdata[15:0];
 
-  assign configopts_csnidle_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csnidle_0_wd = reg_wdata[19:16];
 
-  assign configopts_csntrail_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csntrail_0_wd = reg_wdata[23:20];
 
-  assign configopts_csnlead_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_csnlead_0_wd = reg_wdata[27:24];
 
-  assign configopts_fullcyc_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_fullcyc_0_wd = reg_wdata[29];
 
-  assign configopts_cpha_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_cpha_0_wd = reg_wdata[30];
 
-  assign configopts_cpol_0_we = addr_hit[6] & reg_we & !reg_error;
   assign configopts_cpol_0_wd = reg_wdata[31];
-
   assign csid_we = addr_hit[7] & reg_we & !reg_error;
-  assign csid_wd = reg_wdata[31:0];
 
-  assign command_len_we = addr_hit[8] & reg_we & !reg_error;
+  assign csid_wd = reg_wdata[31:0];
+  assign command_we = addr_hit[8] & reg_we & !reg_error;
+
   assign command_len_wd = reg_wdata[8:0];
 
-  assign command_csaat_we = addr_hit[8] & reg_we & !reg_error;
   assign command_csaat_wd = reg_wdata[9];
 
-  assign command_speed_we = addr_hit[8] & reg_we & !reg_error;
   assign command_speed_wd = reg_wdata[11:10];
 
-  assign command_direction_we = addr_hit[8] & reg_we & !reg_error;
   assign command_direction_wd = reg_wdata[13:12];
+  assign error_enable_we = addr_hit[9] & reg_we & !reg_error;
 
-  assign error_enable_cmdbusy_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_cmdbusy_wd = reg_wdata[0];
 
-  assign error_enable_overflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_overflow_wd = reg_wdata[1];
 
-  assign error_enable_underflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_underflow_wd = reg_wdata[2];
 
-  assign error_enable_cmdinval_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_cmdinval_wd = reg_wdata[3];
 
-  assign error_enable_csidinval_we = addr_hit[9] & reg_we & !reg_error;
   assign error_enable_csidinval_wd = reg_wdata[4];
+  assign error_status_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign error_status_cmdbusy_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_cmdbusy_wd = reg_wdata[0];
 
-  assign error_status_overflow_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_overflow_wd = reg_wdata[1];
 
-  assign error_status_underflow_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_underflow_wd = reg_wdata[2];
 
-  assign error_status_cmdinval_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_cmdinval_wd = reg_wdata[3];
 
-  assign error_status_csidinval_we = addr_hit[10] & reg_we & !reg_error;
   assign error_status_csidinval_wd = reg_wdata[4];
+  assign event_enable_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign event_enable_rxfull_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_rxfull_wd = reg_wdata[0];
 
-  assign event_enable_txempty_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_txempty_wd = reg_wdata[1];
 
-  assign event_enable_rxwm_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_rxwm_wd = reg_wdata[2];
 
-  assign event_enable_txwm_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_txwm_wd = reg_wdata[3];
 
-  assign event_enable_ready_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_ready_wd = reg_wdata[4];
 
-  assign event_enable_idle_we = addr_hit[11] & reg_we & !reg_error;
   assign event_enable_idle_wd = reg_wdata[5];
 
   // Read data return

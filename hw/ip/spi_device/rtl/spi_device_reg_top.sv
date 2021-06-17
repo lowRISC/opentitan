@@ -152,1289 +152,896 @@ module spi_device_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_rxf_qs;
   logic intr_state_rxf_wd;
-  logic intr_state_rxf_we;
   logic intr_state_rxlvl_qs;
   logic intr_state_rxlvl_wd;
-  logic intr_state_rxlvl_we;
   logic intr_state_txlvl_qs;
   logic intr_state_txlvl_wd;
-  logic intr_state_txlvl_we;
   logic intr_state_rxerr_qs;
   logic intr_state_rxerr_wd;
-  logic intr_state_rxerr_we;
   logic intr_state_rxoverflow_qs;
   logic intr_state_rxoverflow_wd;
-  logic intr_state_rxoverflow_we;
   logic intr_state_txunderflow_qs;
   logic intr_state_txunderflow_wd;
-  logic intr_state_txunderflow_we;
+  logic intr_enable_we;
   logic intr_enable_rxf_qs;
   logic intr_enable_rxf_wd;
-  logic intr_enable_rxf_we;
   logic intr_enable_rxlvl_qs;
   logic intr_enable_rxlvl_wd;
-  logic intr_enable_rxlvl_we;
   logic intr_enable_txlvl_qs;
   logic intr_enable_txlvl_wd;
-  logic intr_enable_txlvl_we;
   logic intr_enable_rxerr_qs;
   logic intr_enable_rxerr_wd;
-  logic intr_enable_rxerr_we;
   logic intr_enable_rxoverflow_qs;
   logic intr_enable_rxoverflow_wd;
-  logic intr_enable_rxoverflow_we;
   logic intr_enable_txunderflow_qs;
   logic intr_enable_txunderflow_wd;
-  logic intr_enable_txunderflow_we;
+  logic intr_test_we;
   logic intr_test_rxf_wd;
-  logic intr_test_rxf_we;
   logic intr_test_rxlvl_wd;
-  logic intr_test_rxlvl_we;
   logic intr_test_txlvl_wd;
-  logic intr_test_txlvl_we;
   logic intr_test_rxerr_wd;
-  logic intr_test_rxerr_we;
   logic intr_test_rxoverflow_wd;
-  logic intr_test_rxoverflow_we;
   logic intr_test_txunderflow_wd;
-  logic intr_test_txunderflow_we;
-  logic alert_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
+  logic control_we;
   logic control_abort_qs;
   logic control_abort_wd;
-  logic control_abort_we;
   logic [1:0] control_mode_qs;
   logic [1:0] control_mode_wd;
-  logic control_mode_we;
   logic control_rst_txfifo_qs;
   logic control_rst_txfifo_wd;
-  logic control_rst_txfifo_we;
   logic control_rst_rxfifo_qs;
   logic control_rst_rxfifo_wd;
-  logic control_rst_rxfifo_we;
   logic control_sram_clk_en_qs;
   logic control_sram_clk_en_wd;
-  logic control_sram_clk_en_we;
+  logic cfg_we;
   logic cfg_cpol_qs;
   logic cfg_cpol_wd;
-  logic cfg_cpol_we;
   logic cfg_cpha_qs;
   logic cfg_cpha_wd;
-  logic cfg_cpha_we;
   logic cfg_tx_order_qs;
   logic cfg_tx_order_wd;
-  logic cfg_tx_order_we;
   logic cfg_rx_order_qs;
   logic cfg_rx_order_wd;
-  logic cfg_rx_order_we;
   logic [7:0] cfg_timer_v_qs;
   logic [7:0] cfg_timer_v_wd;
-  logic cfg_timer_v_we;
   logic cfg_addr_4b_en_qs;
   logic cfg_addr_4b_en_wd;
-  logic cfg_addr_4b_en_we;
+  logic fifo_level_we;
   logic [15:0] fifo_level_rxlvl_qs;
   logic [15:0] fifo_level_rxlvl_wd;
-  logic fifo_level_rxlvl_we;
   logic [15:0] fifo_level_txlvl_qs;
   logic [15:0] fifo_level_txlvl_wd;
-  logic fifo_level_txlvl_we;
+  logic async_fifo_level_re;
   logic [7:0] async_fifo_level_rxlvl_qs;
-  logic async_fifo_level_rxlvl_re;
   logic [7:0] async_fifo_level_txlvl_qs;
-  logic async_fifo_level_txlvl_re;
+  logic status_re;
   logic status_rxf_full_qs;
-  logic status_rxf_full_re;
   logic status_rxf_empty_qs;
-  logic status_rxf_empty_re;
   logic status_txf_full_qs;
-  logic status_txf_full_re;
   logic status_txf_empty_qs;
-  logic status_txf_empty_re;
   logic status_abort_done_qs;
-  logic status_abort_done_re;
   logic status_csb_qs;
-  logic status_csb_re;
+  logic rxf_ptr_we;
   logic [15:0] rxf_ptr_rptr_qs;
   logic [15:0] rxf_ptr_rptr_wd;
-  logic rxf_ptr_rptr_we;
   logic [15:0] rxf_ptr_wptr_qs;
+  logic txf_ptr_we;
   logic [15:0] txf_ptr_rptr_qs;
   logic [15:0] txf_ptr_wptr_qs;
   logic [15:0] txf_ptr_wptr_wd;
-  logic txf_ptr_wptr_we;
+  logic rxf_addr_we;
   logic [15:0] rxf_addr_base_qs;
   logic [15:0] rxf_addr_base_wd;
-  logic rxf_addr_base_we;
   logic [15:0] rxf_addr_limit_qs;
   logic [15:0] rxf_addr_limit_wd;
-  logic rxf_addr_limit_we;
+  logic txf_addr_we;
   logic [15:0] txf_addr_base_qs;
   logic [15:0] txf_addr_base_wd;
-  logic txf_addr_base_we;
   logic [15:0] txf_addr_limit_qs;
   logic [15:0] txf_addr_limit_wd;
-  logic txf_addr_limit_we;
+  logic cmd_filter_0_we;
   logic cmd_filter_0_filter_0_qs;
   logic cmd_filter_0_filter_0_wd;
-  logic cmd_filter_0_filter_0_we;
   logic cmd_filter_0_filter_1_qs;
   logic cmd_filter_0_filter_1_wd;
-  logic cmd_filter_0_filter_1_we;
   logic cmd_filter_0_filter_2_qs;
   logic cmd_filter_0_filter_2_wd;
-  logic cmd_filter_0_filter_2_we;
   logic cmd_filter_0_filter_3_qs;
   logic cmd_filter_0_filter_3_wd;
-  logic cmd_filter_0_filter_3_we;
   logic cmd_filter_0_filter_4_qs;
   logic cmd_filter_0_filter_4_wd;
-  logic cmd_filter_0_filter_4_we;
   logic cmd_filter_0_filter_5_qs;
   logic cmd_filter_0_filter_5_wd;
-  logic cmd_filter_0_filter_5_we;
   logic cmd_filter_0_filter_6_qs;
   logic cmd_filter_0_filter_6_wd;
-  logic cmd_filter_0_filter_6_we;
   logic cmd_filter_0_filter_7_qs;
   logic cmd_filter_0_filter_7_wd;
-  logic cmd_filter_0_filter_7_we;
   logic cmd_filter_0_filter_8_qs;
   logic cmd_filter_0_filter_8_wd;
-  logic cmd_filter_0_filter_8_we;
   logic cmd_filter_0_filter_9_qs;
   logic cmd_filter_0_filter_9_wd;
-  logic cmd_filter_0_filter_9_we;
   logic cmd_filter_0_filter_10_qs;
   logic cmd_filter_0_filter_10_wd;
-  logic cmd_filter_0_filter_10_we;
   logic cmd_filter_0_filter_11_qs;
   logic cmd_filter_0_filter_11_wd;
-  logic cmd_filter_0_filter_11_we;
   logic cmd_filter_0_filter_12_qs;
   logic cmd_filter_0_filter_12_wd;
-  logic cmd_filter_0_filter_12_we;
   logic cmd_filter_0_filter_13_qs;
   logic cmd_filter_0_filter_13_wd;
-  logic cmd_filter_0_filter_13_we;
   logic cmd_filter_0_filter_14_qs;
   logic cmd_filter_0_filter_14_wd;
-  logic cmd_filter_0_filter_14_we;
   logic cmd_filter_0_filter_15_qs;
   logic cmd_filter_0_filter_15_wd;
-  logic cmd_filter_0_filter_15_we;
   logic cmd_filter_0_filter_16_qs;
   logic cmd_filter_0_filter_16_wd;
-  logic cmd_filter_0_filter_16_we;
   logic cmd_filter_0_filter_17_qs;
   logic cmd_filter_0_filter_17_wd;
-  logic cmd_filter_0_filter_17_we;
   logic cmd_filter_0_filter_18_qs;
   logic cmd_filter_0_filter_18_wd;
-  logic cmd_filter_0_filter_18_we;
   logic cmd_filter_0_filter_19_qs;
   logic cmd_filter_0_filter_19_wd;
-  logic cmd_filter_0_filter_19_we;
   logic cmd_filter_0_filter_20_qs;
   logic cmd_filter_0_filter_20_wd;
-  logic cmd_filter_0_filter_20_we;
   logic cmd_filter_0_filter_21_qs;
   logic cmd_filter_0_filter_21_wd;
-  logic cmd_filter_0_filter_21_we;
   logic cmd_filter_0_filter_22_qs;
   logic cmd_filter_0_filter_22_wd;
-  logic cmd_filter_0_filter_22_we;
   logic cmd_filter_0_filter_23_qs;
   logic cmd_filter_0_filter_23_wd;
-  logic cmd_filter_0_filter_23_we;
   logic cmd_filter_0_filter_24_qs;
   logic cmd_filter_0_filter_24_wd;
-  logic cmd_filter_0_filter_24_we;
   logic cmd_filter_0_filter_25_qs;
   logic cmd_filter_0_filter_25_wd;
-  logic cmd_filter_0_filter_25_we;
   logic cmd_filter_0_filter_26_qs;
   logic cmd_filter_0_filter_26_wd;
-  logic cmd_filter_0_filter_26_we;
   logic cmd_filter_0_filter_27_qs;
   logic cmd_filter_0_filter_27_wd;
-  logic cmd_filter_0_filter_27_we;
   logic cmd_filter_0_filter_28_qs;
   logic cmd_filter_0_filter_28_wd;
-  logic cmd_filter_0_filter_28_we;
   logic cmd_filter_0_filter_29_qs;
   logic cmd_filter_0_filter_29_wd;
-  logic cmd_filter_0_filter_29_we;
   logic cmd_filter_0_filter_30_qs;
   logic cmd_filter_0_filter_30_wd;
-  logic cmd_filter_0_filter_30_we;
   logic cmd_filter_0_filter_31_qs;
   logic cmd_filter_0_filter_31_wd;
-  logic cmd_filter_0_filter_31_we;
+  logic cmd_filter_1_we;
   logic cmd_filter_1_filter_32_qs;
   logic cmd_filter_1_filter_32_wd;
-  logic cmd_filter_1_filter_32_we;
   logic cmd_filter_1_filter_33_qs;
   logic cmd_filter_1_filter_33_wd;
-  logic cmd_filter_1_filter_33_we;
   logic cmd_filter_1_filter_34_qs;
   logic cmd_filter_1_filter_34_wd;
-  logic cmd_filter_1_filter_34_we;
   logic cmd_filter_1_filter_35_qs;
   logic cmd_filter_1_filter_35_wd;
-  logic cmd_filter_1_filter_35_we;
   logic cmd_filter_1_filter_36_qs;
   logic cmd_filter_1_filter_36_wd;
-  logic cmd_filter_1_filter_36_we;
   logic cmd_filter_1_filter_37_qs;
   logic cmd_filter_1_filter_37_wd;
-  logic cmd_filter_1_filter_37_we;
   logic cmd_filter_1_filter_38_qs;
   logic cmd_filter_1_filter_38_wd;
-  logic cmd_filter_1_filter_38_we;
   logic cmd_filter_1_filter_39_qs;
   logic cmd_filter_1_filter_39_wd;
-  logic cmd_filter_1_filter_39_we;
   logic cmd_filter_1_filter_40_qs;
   logic cmd_filter_1_filter_40_wd;
-  logic cmd_filter_1_filter_40_we;
   logic cmd_filter_1_filter_41_qs;
   logic cmd_filter_1_filter_41_wd;
-  logic cmd_filter_1_filter_41_we;
   logic cmd_filter_1_filter_42_qs;
   logic cmd_filter_1_filter_42_wd;
-  logic cmd_filter_1_filter_42_we;
   logic cmd_filter_1_filter_43_qs;
   logic cmd_filter_1_filter_43_wd;
-  logic cmd_filter_1_filter_43_we;
   logic cmd_filter_1_filter_44_qs;
   logic cmd_filter_1_filter_44_wd;
-  logic cmd_filter_1_filter_44_we;
   logic cmd_filter_1_filter_45_qs;
   logic cmd_filter_1_filter_45_wd;
-  logic cmd_filter_1_filter_45_we;
   logic cmd_filter_1_filter_46_qs;
   logic cmd_filter_1_filter_46_wd;
-  logic cmd_filter_1_filter_46_we;
   logic cmd_filter_1_filter_47_qs;
   logic cmd_filter_1_filter_47_wd;
-  logic cmd_filter_1_filter_47_we;
   logic cmd_filter_1_filter_48_qs;
   logic cmd_filter_1_filter_48_wd;
-  logic cmd_filter_1_filter_48_we;
   logic cmd_filter_1_filter_49_qs;
   logic cmd_filter_1_filter_49_wd;
-  logic cmd_filter_1_filter_49_we;
   logic cmd_filter_1_filter_50_qs;
   logic cmd_filter_1_filter_50_wd;
-  logic cmd_filter_1_filter_50_we;
   logic cmd_filter_1_filter_51_qs;
   logic cmd_filter_1_filter_51_wd;
-  logic cmd_filter_1_filter_51_we;
   logic cmd_filter_1_filter_52_qs;
   logic cmd_filter_1_filter_52_wd;
-  logic cmd_filter_1_filter_52_we;
   logic cmd_filter_1_filter_53_qs;
   logic cmd_filter_1_filter_53_wd;
-  logic cmd_filter_1_filter_53_we;
   logic cmd_filter_1_filter_54_qs;
   logic cmd_filter_1_filter_54_wd;
-  logic cmd_filter_1_filter_54_we;
   logic cmd_filter_1_filter_55_qs;
   logic cmd_filter_1_filter_55_wd;
-  logic cmd_filter_1_filter_55_we;
   logic cmd_filter_1_filter_56_qs;
   logic cmd_filter_1_filter_56_wd;
-  logic cmd_filter_1_filter_56_we;
   logic cmd_filter_1_filter_57_qs;
   logic cmd_filter_1_filter_57_wd;
-  logic cmd_filter_1_filter_57_we;
   logic cmd_filter_1_filter_58_qs;
   logic cmd_filter_1_filter_58_wd;
-  logic cmd_filter_1_filter_58_we;
   logic cmd_filter_1_filter_59_qs;
   logic cmd_filter_1_filter_59_wd;
-  logic cmd_filter_1_filter_59_we;
   logic cmd_filter_1_filter_60_qs;
   logic cmd_filter_1_filter_60_wd;
-  logic cmd_filter_1_filter_60_we;
   logic cmd_filter_1_filter_61_qs;
   logic cmd_filter_1_filter_61_wd;
-  logic cmd_filter_1_filter_61_we;
   logic cmd_filter_1_filter_62_qs;
   logic cmd_filter_1_filter_62_wd;
-  logic cmd_filter_1_filter_62_we;
   logic cmd_filter_1_filter_63_qs;
   logic cmd_filter_1_filter_63_wd;
-  logic cmd_filter_1_filter_63_we;
+  logic cmd_filter_2_we;
   logic cmd_filter_2_filter_64_qs;
   logic cmd_filter_2_filter_64_wd;
-  logic cmd_filter_2_filter_64_we;
   logic cmd_filter_2_filter_65_qs;
   logic cmd_filter_2_filter_65_wd;
-  logic cmd_filter_2_filter_65_we;
   logic cmd_filter_2_filter_66_qs;
   logic cmd_filter_2_filter_66_wd;
-  logic cmd_filter_2_filter_66_we;
   logic cmd_filter_2_filter_67_qs;
   logic cmd_filter_2_filter_67_wd;
-  logic cmd_filter_2_filter_67_we;
   logic cmd_filter_2_filter_68_qs;
   logic cmd_filter_2_filter_68_wd;
-  logic cmd_filter_2_filter_68_we;
   logic cmd_filter_2_filter_69_qs;
   logic cmd_filter_2_filter_69_wd;
-  logic cmd_filter_2_filter_69_we;
   logic cmd_filter_2_filter_70_qs;
   logic cmd_filter_2_filter_70_wd;
-  logic cmd_filter_2_filter_70_we;
   logic cmd_filter_2_filter_71_qs;
   logic cmd_filter_2_filter_71_wd;
-  logic cmd_filter_2_filter_71_we;
   logic cmd_filter_2_filter_72_qs;
   logic cmd_filter_2_filter_72_wd;
-  logic cmd_filter_2_filter_72_we;
   logic cmd_filter_2_filter_73_qs;
   logic cmd_filter_2_filter_73_wd;
-  logic cmd_filter_2_filter_73_we;
   logic cmd_filter_2_filter_74_qs;
   logic cmd_filter_2_filter_74_wd;
-  logic cmd_filter_2_filter_74_we;
   logic cmd_filter_2_filter_75_qs;
   logic cmd_filter_2_filter_75_wd;
-  logic cmd_filter_2_filter_75_we;
   logic cmd_filter_2_filter_76_qs;
   logic cmd_filter_2_filter_76_wd;
-  logic cmd_filter_2_filter_76_we;
   logic cmd_filter_2_filter_77_qs;
   logic cmd_filter_2_filter_77_wd;
-  logic cmd_filter_2_filter_77_we;
   logic cmd_filter_2_filter_78_qs;
   logic cmd_filter_2_filter_78_wd;
-  logic cmd_filter_2_filter_78_we;
   logic cmd_filter_2_filter_79_qs;
   logic cmd_filter_2_filter_79_wd;
-  logic cmd_filter_2_filter_79_we;
   logic cmd_filter_2_filter_80_qs;
   logic cmd_filter_2_filter_80_wd;
-  logic cmd_filter_2_filter_80_we;
   logic cmd_filter_2_filter_81_qs;
   logic cmd_filter_2_filter_81_wd;
-  logic cmd_filter_2_filter_81_we;
   logic cmd_filter_2_filter_82_qs;
   logic cmd_filter_2_filter_82_wd;
-  logic cmd_filter_2_filter_82_we;
   logic cmd_filter_2_filter_83_qs;
   logic cmd_filter_2_filter_83_wd;
-  logic cmd_filter_2_filter_83_we;
   logic cmd_filter_2_filter_84_qs;
   logic cmd_filter_2_filter_84_wd;
-  logic cmd_filter_2_filter_84_we;
   logic cmd_filter_2_filter_85_qs;
   logic cmd_filter_2_filter_85_wd;
-  logic cmd_filter_2_filter_85_we;
   logic cmd_filter_2_filter_86_qs;
   logic cmd_filter_2_filter_86_wd;
-  logic cmd_filter_2_filter_86_we;
   logic cmd_filter_2_filter_87_qs;
   logic cmd_filter_2_filter_87_wd;
-  logic cmd_filter_2_filter_87_we;
   logic cmd_filter_2_filter_88_qs;
   logic cmd_filter_2_filter_88_wd;
-  logic cmd_filter_2_filter_88_we;
   logic cmd_filter_2_filter_89_qs;
   logic cmd_filter_2_filter_89_wd;
-  logic cmd_filter_2_filter_89_we;
   logic cmd_filter_2_filter_90_qs;
   logic cmd_filter_2_filter_90_wd;
-  logic cmd_filter_2_filter_90_we;
   logic cmd_filter_2_filter_91_qs;
   logic cmd_filter_2_filter_91_wd;
-  logic cmd_filter_2_filter_91_we;
   logic cmd_filter_2_filter_92_qs;
   logic cmd_filter_2_filter_92_wd;
-  logic cmd_filter_2_filter_92_we;
   logic cmd_filter_2_filter_93_qs;
   logic cmd_filter_2_filter_93_wd;
-  logic cmd_filter_2_filter_93_we;
   logic cmd_filter_2_filter_94_qs;
   logic cmd_filter_2_filter_94_wd;
-  logic cmd_filter_2_filter_94_we;
   logic cmd_filter_2_filter_95_qs;
   logic cmd_filter_2_filter_95_wd;
-  logic cmd_filter_2_filter_95_we;
+  logic cmd_filter_3_we;
   logic cmd_filter_3_filter_96_qs;
   logic cmd_filter_3_filter_96_wd;
-  logic cmd_filter_3_filter_96_we;
   logic cmd_filter_3_filter_97_qs;
   logic cmd_filter_3_filter_97_wd;
-  logic cmd_filter_3_filter_97_we;
   logic cmd_filter_3_filter_98_qs;
   logic cmd_filter_3_filter_98_wd;
-  logic cmd_filter_3_filter_98_we;
   logic cmd_filter_3_filter_99_qs;
   logic cmd_filter_3_filter_99_wd;
-  logic cmd_filter_3_filter_99_we;
   logic cmd_filter_3_filter_100_qs;
   logic cmd_filter_3_filter_100_wd;
-  logic cmd_filter_3_filter_100_we;
   logic cmd_filter_3_filter_101_qs;
   logic cmd_filter_3_filter_101_wd;
-  logic cmd_filter_3_filter_101_we;
   logic cmd_filter_3_filter_102_qs;
   logic cmd_filter_3_filter_102_wd;
-  logic cmd_filter_3_filter_102_we;
   logic cmd_filter_3_filter_103_qs;
   logic cmd_filter_3_filter_103_wd;
-  logic cmd_filter_3_filter_103_we;
   logic cmd_filter_3_filter_104_qs;
   logic cmd_filter_3_filter_104_wd;
-  logic cmd_filter_3_filter_104_we;
   logic cmd_filter_3_filter_105_qs;
   logic cmd_filter_3_filter_105_wd;
-  logic cmd_filter_3_filter_105_we;
   logic cmd_filter_3_filter_106_qs;
   logic cmd_filter_3_filter_106_wd;
-  logic cmd_filter_3_filter_106_we;
   logic cmd_filter_3_filter_107_qs;
   logic cmd_filter_3_filter_107_wd;
-  logic cmd_filter_3_filter_107_we;
   logic cmd_filter_3_filter_108_qs;
   logic cmd_filter_3_filter_108_wd;
-  logic cmd_filter_3_filter_108_we;
   logic cmd_filter_3_filter_109_qs;
   logic cmd_filter_3_filter_109_wd;
-  logic cmd_filter_3_filter_109_we;
   logic cmd_filter_3_filter_110_qs;
   logic cmd_filter_3_filter_110_wd;
-  logic cmd_filter_3_filter_110_we;
   logic cmd_filter_3_filter_111_qs;
   logic cmd_filter_3_filter_111_wd;
-  logic cmd_filter_3_filter_111_we;
   logic cmd_filter_3_filter_112_qs;
   logic cmd_filter_3_filter_112_wd;
-  logic cmd_filter_3_filter_112_we;
   logic cmd_filter_3_filter_113_qs;
   logic cmd_filter_3_filter_113_wd;
-  logic cmd_filter_3_filter_113_we;
   logic cmd_filter_3_filter_114_qs;
   logic cmd_filter_3_filter_114_wd;
-  logic cmd_filter_3_filter_114_we;
   logic cmd_filter_3_filter_115_qs;
   logic cmd_filter_3_filter_115_wd;
-  logic cmd_filter_3_filter_115_we;
   logic cmd_filter_3_filter_116_qs;
   logic cmd_filter_3_filter_116_wd;
-  logic cmd_filter_3_filter_116_we;
   logic cmd_filter_3_filter_117_qs;
   logic cmd_filter_3_filter_117_wd;
-  logic cmd_filter_3_filter_117_we;
   logic cmd_filter_3_filter_118_qs;
   logic cmd_filter_3_filter_118_wd;
-  logic cmd_filter_3_filter_118_we;
   logic cmd_filter_3_filter_119_qs;
   logic cmd_filter_3_filter_119_wd;
-  logic cmd_filter_3_filter_119_we;
   logic cmd_filter_3_filter_120_qs;
   logic cmd_filter_3_filter_120_wd;
-  logic cmd_filter_3_filter_120_we;
   logic cmd_filter_3_filter_121_qs;
   logic cmd_filter_3_filter_121_wd;
-  logic cmd_filter_3_filter_121_we;
   logic cmd_filter_3_filter_122_qs;
   logic cmd_filter_3_filter_122_wd;
-  logic cmd_filter_3_filter_122_we;
   logic cmd_filter_3_filter_123_qs;
   logic cmd_filter_3_filter_123_wd;
-  logic cmd_filter_3_filter_123_we;
   logic cmd_filter_3_filter_124_qs;
   logic cmd_filter_3_filter_124_wd;
-  logic cmd_filter_3_filter_124_we;
   logic cmd_filter_3_filter_125_qs;
   logic cmd_filter_3_filter_125_wd;
-  logic cmd_filter_3_filter_125_we;
   logic cmd_filter_3_filter_126_qs;
   logic cmd_filter_3_filter_126_wd;
-  logic cmd_filter_3_filter_126_we;
   logic cmd_filter_3_filter_127_qs;
   logic cmd_filter_3_filter_127_wd;
-  logic cmd_filter_3_filter_127_we;
+  logic cmd_filter_4_we;
   logic cmd_filter_4_filter_128_qs;
   logic cmd_filter_4_filter_128_wd;
-  logic cmd_filter_4_filter_128_we;
   logic cmd_filter_4_filter_129_qs;
   logic cmd_filter_4_filter_129_wd;
-  logic cmd_filter_4_filter_129_we;
   logic cmd_filter_4_filter_130_qs;
   logic cmd_filter_4_filter_130_wd;
-  logic cmd_filter_4_filter_130_we;
   logic cmd_filter_4_filter_131_qs;
   logic cmd_filter_4_filter_131_wd;
-  logic cmd_filter_4_filter_131_we;
   logic cmd_filter_4_filter_132_qs;
   logic cmd_filter_4_filter_132_wd;
-  logic cmd_filter_4_filter_132_we;
   logic cmd_filter_4_filter_133_qs;
   logic cmd_filter_4_filter_133_wd;
-  logic cmd_filter_4_filter_133_we;
   logic cmd_filter_4_filter_134_qs;
   logic cmd_filter_4_filter_134_wd;
-  logic cmd_filter_4_filter_134_we;
   logic cmd_filter_4_filter_135_qs;
   logic cmd_filter_4_filter_135_wd;
-  logic cmd_filter_4_filter_135_we;
   logic cmd_filter_4_filter_136_qs;
   logic cmd_filter_4_filter_136_wd;
-  logic cmd_filter_4_filter_136_we;
   logic cmd_filter_4_filter_137_qs;
   logic cmd_filter_4_filter_137_wd;
-  logic cmd_filter_4_filter_137_we;
   logic cmd_filter_4_filter_138_qs;
   logic cmd_filter_4_filter_138_wd;
-  logic cmd_filter_4_filter_138_we;
   logic cmd_filter_4_filter_139_qs;
   logic cmd_filter_4_filter_139_wd;
-  logic cmd_filter_4_filter_139_we;
   logic cmd_filter_4_filter_140_qs;
   logic cmd_filter_4_filter_140_wd;
-  logic cmd_filter_4_filter_140_we;
   logic cmd_filter_4_filter_141_qs;
   logic cmd_filter_4_filter_141_wd;
-  logic cmd_filter_4_filter_141_we;
   logic cmd_filter_4_filter_142_qs;
   logic cmd_filter_4_filter_142_wd;
-  logic cmd_filter_4_filter_142_we;
   logic cmd_filter_4_filter_143_qs;
   logic cmd_filter_4_filter_143_wd;
-  logic cmd_filter_4_filter_143_we;
   logic cmd_filter_4_filter_144_qs;
   logic cmd_filter_4_filter_144_wd;
-  logic cmd_filter_4_filter_144_we;
   logic cmd_filter_4_filter_145_qs;
   logic cmd_filter_4_filter_145_wd;
-  logic cmd_filter_4_filter_145_we;
   logic cmd_filter_4_filter_146_qs;
   logic cmd_filter_4_filter_146_wd;
-  logic cmd_filter_4_filter_146_we;
   logic cmd_filter_4_filter_147_qs;
   logic cmd_filter_4_filter_147_wd;
-  logic cmd_filter_4_filter_147_we;
   logic cmd_filter_4_filter_148_qs;
   logic cmd_filter_4_filter_148_wd;
-  logic cmd_filter_4_filter_148_we;
   logic cmd_filter_4_filter_149_qs;
   logic cmd_filter_4_filter_149_wd;
-  logic cmd_filter_4_filter_149_we;
   logic cmd_filter_4_filter_150_qs;
   logic cmd_filter_4_filter_150_wd;
-  logic cmd_filter_4_filter_150_we;
   logic cmd_filter_4_filter_151_qs;
   logic cmd_filter_4_filter_151_wd;
-  logic cmd_filter_4_filter_151_we;
   logic cmd_filter_4_filter_152_qs;
   logic cmd_filter_4_filter_152_wd;
-  logic cmd_filter_4_filter_152_we;
   logic cmd_filter_4_filter_153_qs;
   logic cmd_filter_4_filter_153_wd;
-  logic cmd_filter_4_filter_153_we;
   logic cmd_filter_4_filter_154_qs;
   logic cmd_filter_4_filter_154_wd;
-  logic cmd_filter_4_filter_154_we;
   logic cmd_filter_4_filter_155_qs;
   logic cmd_filter_4_filter_155_wd;
-  logic cmd_filter_4_filter_155_we;
   logic cmd_filter_4_filter_156_qs;
   logic cmd_filter_4_filter_156_wd;
-  logic cmd_filter_4_filter_156_we;
   logic cmd_filter_4_filter_157_qs;
   logic cmd_filter_4_filter_157_wd;
-  logic cmd_filter_4_filter_157_we;
   logic cmd_filter_4_filter_158_qs;
   logic cmd_filter_4_filter_158_wd;
-  logic cmd_filter_4_filter_158_we;
   logic cmd_filter_4_filter_159_qs;
   logic cmd_filter_4_filter_159_wd;
-  logic cmd_filter_4_filter_159_we;
+  logic cmd_filter_5_we;
   logic cmd_filter_5_filter_160_qs;
   logic cmd_filter_5_filter_160_wd;
-  logic cmd_filter_5_filter_160_we;
   logic cmd_filter_5_filter_161_qs;
   logic cmd_filter_5_filter_161_wd;
-  logic cmd_filter_5_filter_161_we;
   logic cmd_filter_5_filter_162_qs;
   logic cmd_filter_5_filter_162_wd;
-  logic cmd_filter_5_filter_162_we;
   logic cmd_filter_5_filter_163_qs;
   logic cmd_filter_5_filter_163_wd;
-  logic cmd_filter_5_filter_163_we;
   logic cmd_filter_5_filter_164_qs;
   logic cmd_filter_5_filter_164_wd;
-  logic cmd_filter_5_filter_164_we;
   logic cmd_filter_5_filter_165_qs;
   logic cmd_filter_5_filter_165_wd;
-  logic cmd_filter_5_filter_165_we;
   logic cmd_filter_5_filter_166_qs;
   logic cmd_filter_5_filter_166_wd;
-  logic cmd_filter_5_filter_166_we;
   logic cmd_filter_5_filter_167_qs;
   logic cmd_filter_5_filter_167_wd;
-  logic cmd_filter_5_filter_167_we;
   logic cmd_filter_5_filter_168_qs;
   logic cmd_filter_5_filter_168_wd;
-  logic cmd_filter_5_filter_168_we;
   logic cmd_filter_5_filter_169_qs;
   logic cmd_filter_5_filter_169_wd;
-  logic cmd_filter_5_filter_169_we;
   logic cmd_filter_5_filter_170_qs;
   logic cmd_filter_5_filter_170_wd;
-  logic cmd_filter_5_filter_170_we;
   logic cmd_filter_5_filter_171_qs;
   logic cmd_filter_5_filter_171_wd;
-  logic cmd_filter_5_filter_171_we;
   logic cmd_filter_5_filter_172_qs;
   logic cmd_filter_5_filter_172_wd;
-  logic cmd_filter_5_filter_172_we;
   logic cmd_filter_5_filter_173_qs;
   logic cmd_filter_5_filter_173_wd;
-  logic cmd_filter_5_filter_173_we;
   logic cmd_filter_5_filter_174_qs;
   logic cmd_filter_5_filter_174_wd;
-  logic cmd_filter_5_filter_174_we;
   logic cmd_filter_5_filter_175_qs;
   logic cmd_filter_5_filter_175_wd;
-  logic cmd_filter_5_filter_175_we;
   logic cmd_filter_5_filter_176_qs;
   logic cmd_filter_5_filter_176_wd;
-  logic cmd_filter_5_filter_176_we;
   logic cmd_filter_5_filter_177_qs;
   logic cmd_filter_5_filter_177_wd;
-  logic cmd_filter_5_filter_177_we;
   logic cmd_filter_5_filter_178_qs;
   logic cmd_filter_5_filter_178_wd;
-  logic cmd_filter_5_filter_178_we;
   logic cmd_filter_5_filter_179_qs;
   logic cmd_filter_5_filter_179_wd;
-  logic cmd_filter_5_filter_179_we;
   logic cmd_filter_5_filter_180_qs;
   logic cmd_filter_5_filter_180_wd;
-  logic cmd_filter_5_filter_180_we;
   logic cmd_filter_5_filter_181_qs;
   logic cmd_filter_5_filter_181_wd;
-  logic cmd_filter_5_filter_181_we;
   logic cmd_filter_5_filter_182_qs;
   logic cmd_filter_5_filter_182_wd;
-  logic cmd_filter_5_filter_182_we;
   logic cmd_filter_5_filter_183_qs;
   logic cmd_filter_5_filter_183_wd;
-  logic cmd_filter_5_filter_183_we;
   logic cmd_filter_5_filter_184_qs;
   logic cmd_filter_5_filter_184_wd;
-  logic cmd_filter_5_filter_184_we;
   logic cmd_filter_5_filter_185_qs;
   logic cmd_filter_5_filter_185_wd;
-  logic cmd_filter_5_filter_185_we;
   logic cmd_filter_5_filter_186_qs;
   logic cmd_filter_5_filter_186_wd;
-  logic cmd_filter_5_filter_186_we;
   logic cmd_filter_5_filter_187_qs;
   logic cmd_filter_5_filter_187_wd;
-  logic cmd_filter_5_filter_187_we;
   logic cmd_filter_5_filter_188_qs;
   logic cmd_filter_5_filter_188_wd;
-  logic cmd_filter_5_filter_188_we;
   logic cmd_filter_5_filter_189_qs;
   logic cmd_filter_5_filter_189_wd;
-  logic cmd_filter_5_filter_189_we;
   logic cmd_filter_5_filter_190_qs;
   logic cmd_filter_5_filter_190_wd;
-  logic cmd_filter_5_filter_190_we;
   logic cmd_filter_5_filter_191_qs;
   logic cmd_filter_5_filter_191_wd;
-  logic cmd_filter_5_filter_191_we;
+  logic cmd_filter_6_we;
   logic cmd_filter_6_filter_192_qs;
   logic cmd_filter_6_filter_192_wd;
-  logic cmd_filter_6_filter_192_we;
   logic cmd_filter_6_filter_193_qs;
   logic cmd_filter_6_filter_193_wd;
-  logic cmd_filter_6_filter_193_we;
   logic cmd_filter_6_filter_194_qs;
   logic cmd_filter_6_filter_194_wd;
-  logic cmd_filter_6_filter_194_we;
   logic cmd_filter_6_filter_195_qs;
   logic cmd_filter_6_filter_195_wd;
-  logic cmd_filter_6_filter_195_we;
   logic cmd_filter_6_filter_196_qs;
   logic cmd_filter_6_filter_196_wd;
-  logic cmd_filter_6_filter_196_we;
   logic cmd_filter_6_filter_197_qs;
   logic cmd_filter_6_filter_197_wd;
-  logic cmd_filter_6_filter_197_we;
   logic cmd_filter_6_filter_198_qs;
   logic cmd_filter_6_filter_198_wd;
-  logic cmd_filter_6_filter_198_we;
   logic cmd_filter_6_filter_199_qs;
   logic cmd_filter_6_filter_199_wd;
-  logic cmd_filter_6_filter_199_we;
   logic cmd_filter_6_filter_200_qs;
   logic cmd_filter_6_filter_200_wd;
-  logic cmd_filter_6_filter_200_we;
   logic cmd_filter_6_filter_201_qs;
   logic cmd_filter_6_filter_201_wd;
-  logic cmd_filter_6_filter_201_we;
   logic cmd_filter_6_filter_202_qs;
   logic cmd_filter_6_filter_202_wd;
-  logic cmd_filter_6_filter_202_we;
   logic cmd_filter_6_filter_203_qs;
   logic cmd_filter_6_filter_203_wd;
-  logic cmd_filter_6_filter_203_we;
   logic cmd_filter_6_filter_204_qs;
   logic cmd_filter_6_filter_204_wd;
-  logic cmd_filter_6_filter_204_we;
   logic cmd_filter_6_filter_205_qs;
   logic cmd_filter_6_filter_205_wd;
-  logic cmd_filter_6_filter_205_we;
   logic cmd_filter_6_filter_206_qs;
   logic cmd_filter_6_filter_206_wd;
-  logic cmd_filter_6_filter_206_we;
   logic cmd_filter_6_filter_207_qs;
   logic cmd_filter_6_filter_207_wd;
-  logic cmd_filter_6_filter_207_we;
   logic cmd_filter_6_filter_208_qs;
   logic cmd_filter_6_filter_208_wd;
-  logic cmd_filter_6_filter_208_we;
   logic cmd_filter_6_filter_209_qs;
   logic cmd_filter_6_filter_209_wd;
-  logic cmd_filter_6_filter_209_we;
   logic cmd_filter_6_filter_210_qs;
   logic cmd_filter_6_filter_210_wd;
-  logic cmd_filter_6_filter_210_we;
   logic cmd_filter_6_filter_211_qs;
   logic cmd_filter_6_filter_211_wd;
-  logic cmd_filter_6_filter_211_we;
   logic cmd_filter_6_filter_212_qs;
   logic cmd_filter_6_filter_212_wd;
-  logic cmd_filter_6_filter_212_we;
   logic cmd_filter_6_filter_213_qs;
   logic cmd_filter_6_filter_213_wd;
-  logic cmd_filter_6_filter_213_we;
   logic cmd_filter_6_filter_214_qs;
   logic cmd_filter_6_filter_214_wd;
-  logic cmd_filter_6_filter_214_we;
   logic cmd_filter_6_filter_215_qs;
   logic cmd_filter_6_filter_215_wd;
-  logic cmd_filter_6_filter_215_we;
   logic cmd_filter_6_filter_216_qs;
   logic cmd_filter_6_filter_216_wd;
-  logic cmd_filter_6_filter_216_we;
   logic cmd_filter_6_filter_217_qs;
   logic cmd_filter_6_filter_217_wd;
-  logic cmd_filter_6_filter_217_we;
   logic cmd_filter_6_filter_218_qs;
   logic cmd_filter_6_filter_218_wd;
-  logic cmd_filter_6_filter_218_we;
   logic cmd_filter_6_filter_219_qs;
   logic cmd_filter_6_filter_219_wd;
-  logic cmd_filter_6_filter_219_we;
   logic cmd_filter_6_filter_220_qs;
   logic cmd_filter_6_filter_220_wd;
-  logic cmd_filter_6_filter_220_we;
   logic cmd_filter_6_filter_221_qs;
   logic cmd_filter_6_filter_221_wd;
-  logic cmd_filter_6_filter_221_we;
   logic cmd_filter_6_filter_222_qs;
   logic cmd_filter_6_filter_222_wd;
-  logic cmd_filter_6_filter_222_we;
   logic cmd_filter_6_filter_223_qs;
   logic cmd_filter_6_filter_223_wd;
-  logic cmd_filter_6_filter_223_we;
+  logic cmd_filter_7_we;
   logic cmd_filter_7_filter_224_qs;
   logic cmd_filter_7_filter_224_wd;
-  logic cmd_filter_7_filter_224_we;
   logic cmd_filter_7_filter_225_qs;
   logic cmd_filter_7_filter_225_wd;
-  logic cmd_filter_7_filter_225_we;
   logic cmd_filter_7_filter_226_qs;
   logic cmd_filter_7_filter_226_wd;
-  logic cmd_filter_7_filter_226_we;
   logic cmd_filter_7_filter_227_qs;
   logic cmd_filter_7_filter_227_wd;
-  logic cmd_filter_7_filter_227_we;
   logic cmd_filter_7_filter_228_qs;
   logic cmd_filter_7_filter_228_wd;
-  logic cmd_filter_7_filter_228_we;
   logic cmd_filter_7_filter_229_qs;
   logic cmd_filter_7_filter_229_wd;
-  logic cmd_filter_7_filter_229_we;
   logic cmd_filter_7_filter_230_qs;
   logic cmd_filter_7_filter_230_wd;
-  logic cmd_filter_7_filter_230_we;
   logic cmd_filter_7_filter_231_qs;
   logic cmd_filter_7_filter_231_wd;
-  logic cmd_filter_7_filter_231_we;
   logic cmd_filter_7_filter_232_qs;
   logic cmd_filter_7_filter_232_wd;
-  logic cmd_filter_7_filter_232_we;
   logic cmd_filter_7_filter_233_qs;
   logic cmd_filter_7_filter_233_wd;
-  logic cmd_filter_7_filter_233_we;
   logic cmd_filter_7_filter_234_qs;
   logic cmd_filter_7_filter_234_wd;
-  logic cmd_filter_7_filter_234_we;
   logic cmd_filter_7_filter_235_qs;
   logic cmd_filter_7_filter_235_wd;
-  logic cmd_filter_7_filter_235_we;
   logic cmd_filter_7_filter_236_qs;
   logic cmd_filter_7_filter_236_wd;
-  logic cmd_filter_7_filter_236_we;
   logic cmd_filter_7_filter_237_qs;
   logic cmd_filter_7_filter_237_wd;
-  logic cmd_filter_7_filter_237_we;
   logic cmd_filter_7_filter_238_qs;
   logic cmd_filter_7_filter_238_wd;
-  logic cmd_filter_7_filter_238_we;
   logic cmd_filter_7_filter_239_qs;
   logic cmd_filter_7_filter_239_wd;
-  logic cmd_filter_7_filter_239_we;
   logic cmd_filter_7_filter_240_qs;
   logic cmd_filter_7_filter_240_wd;
-  logic cmd_filter_7_filter_240_we;
   logic cmd_filter_7_filter_241_qs;
   logic cmd_filter_7_filter_241_wd;
-  logic cmd_filter_7_filter_241_we;
   logic cmd_filter_7_filter_242_qs;
   logic cmd_filter_7_filter_242_wd;
-  logic cmd_filter_7_filter_242_we;
   logic cmd_filter_7_filter_243_qs;
   logic cmd_filter_7_filter_243_wd;
-  logic cmd_filter_7_filter_243_we;
   logic cmd_filter_7_filter_244_qs;
   logic cmd_filter_7_filter_244_wd;
-  logic cmd_filter_7_filter_244_we;
   logic cmd_filter_7_filter_245_qs;
   logic cmd_filter_7_filter_245_wd;
-  logic cmd_filter_7_filter_245_we;
   logic cmd_filter_7_filter_246_qs;
   logic cmd_filter_7_filter_246_wd;
-  logic cmd_filter_7_filter_246_we;
   logic cmd_filter_7_filter_247_qs;
   logic cmd_filter_7_filter_247_wd;
-  logic cmd_filter_7_filter_247_we;
   logic cmd_filter_7_filter_248_qs;
   logic cmd_filter_7_filter_248_wd;
-  logic cmd_filter_7_filter_248_we;
   logic cmd_filter_7_filter_249_qs;
   logic cmd_filter_7_filter_249_wd;
-  logic cmd_filter_7_filter_249_we;
   logic cmd_filter_7_filter_250_qs;
   logic cmd_filter_7_filter_250_wd;
-  logic cmd_filter_7_filter_250_we;
   logic cmd_filter_7_filter_251_qs;
   logic cmd_filter_7_filter_251_wd;
-  logic cmd_filter_7_filter_251_we;
   logic cmd_filter_7_filter_252_qs;
   logic cmd_filter_7_filter_252_wd;
-  logic cmd_filter_7_filter_252_we;
   logic cmd_filter_7_filter_253_qs;
   logic cmd_filter_7_filter_253_wd;
-  logic cmd_filter_7_filter_253_we;
   logic cmd_filter_7_filter_254_qs;
   logic cmd_filter_7_filter_254_wd;
-  logic cmd_filter_7_filter_254_we;
   logic cmd_filter_7_filter_255_qs;
   logic cmd_filter_7_filter_255_wd;
-  logic cmd_filter_7_filter_255_we;
+  logic addr_swap_mask_we;
   logic [31:0] addr_swap_mask_qs;
   logic [31:0] addr_swap_mask_wd;
-  logic addr_swap_mask_we;
+  logic addr_swap_data_we;
   logic [31:0] addr_swap_data_qs;
   logic [31:0] addr_swap_data_wd;
-  logic addr_swap_data_we;
+  logic cmd_info_0_we;
   logic [7:0] cmd_info_0_opcode_0_qs;
   logic [7:0] cmd_info_0_opcode_0_wd;
-  logic cmd_info_0_opcode_0_we;
   logic cmd_info_0_addr_en_0_qs;
   logic cmd_info_0_addr_en_0_wd;
-  logic cmd_info_0_addr_en_0_we;
   logic cmd_info_0_addr_swap_en_0_qs;
   logic cmd_info_0_addr_swap_en_0_wd;
-  logic cmd_info_0_addr_swap_en_0_we;
   logic cmd_info_0_addr_4b_affected_0_qs;
   logic cmd_info_0_addr_4b_affected_0_wd;
-  logic cmd_info_0_addr_4b_affected_0_we;
   logic [2:0] cmd_info_0_dummy_size_0_qs;
   logic [2:0] cmd_info_0_dummy_size_0_wd;
-  logic cmd_info_0_dummy_size_0_we;
   logic cmd_info_0_dummy_en_0_qs;
   logic cmd_info_0_dummy_en_0_wd;
-  logic cmd_info_0_dummy_en_0_we;
   logic [3:0] cmd_info_0_payload_en_0_qs;
   logic [3:0] cmd_info_0_payload_en_0_wd;
-  logic cmd_info_0_payload_en_0_we;
   logic cmd_info_0_payload_dir_0_qs;
   logic cmd_info_0_payload_dir_0_wd;
-  logic cmd_info_0_payload_dir_0_we;
+  logic cmd_info_1_we;
   logic [7:0] cmd_info_1_opcode_1_qs;
   logic [7:0] cmd_info_1_opcode_1_wd;
-  logic cmd_info_1_opcode_1_we;
   logic cmd_info_1_addr_en_1_qs;
   logic cmd_info_1_addr_en_1_wd;
-  logic cmd_info_1_addr_en_1_we;
   logic cmd_info_1_addr_swap_en_1_qs;
   logic cmd_info_1_addr_swap_en_1_wd;
-  logic cmd_info_1_addr_swap_en_1_we;
   logic cmd_info_1_addr_4b_affected_1_qs;
   logic cmd_info_1_addr_4b_affected_1_wd;
-  logic cmd_info_1_addr_4b_affected_1_we;
   logic [2:0] cmd_info_1_dummy_size_1_qs;
   logic [2:0] cmd_info_1_dummy_size_1_wd;
-  logic cmd_info_1_dummy_size_1_we;
   logic cmd_info_1_dummy_en_1_qs;
   logic cmd_info_1_dummy_en_1_wd;
-  logic cmd_info_1_dummy_en_1_we;
   logic [3:0] cmd_info_1_payload_en_1_qs;
   logic [3:0] cmd_info_1_payload_en_1_wd;
-  logic cmd_info_1_payload_en_1_we;
   logic cmd_info_1_payload_dir_1_qs;
   logic cmd_info_1_payload_dir_1_wd;
-  logic cmd_info_1_payload_dir_1_we;
+  logic cmd_info_2_we;
   logic [7:0] cmd_info_2_opcode_2_qs;
   logic [7:0] cmd_info_2_opcode_2_wd;
-  logic cmd_info_2_opcode_2_we;
   logic cmd_info_2_addr_en_2_qs;
   logic cmd_info_2_addr_en_2_wd;
-  logic cmd_info_2_addr_en_2_we;
   logic cmd_info_2_addr_swap_en_2_qs;
   logic cmd_info_2_addr_swap_en_2_wd;
-  logic cmd_info_2_addr_swap_en_2_we;
   logic cmd_info_2_addr_4b_affected_2_qs;
   logic cmd_info_2_addr_4b_affected_2_wd;
-  logic cmd_info_2_addr_4b_affected_2_we;
   logic [2:0] cmd_info_2_dummy_size_2_qs;
   logic [2:0] cmd_info_2_dummy_size_2_wd;
-  logic cmd_info_2_dummy_size_2_we;
   logic cmd_info_2_dummy_en_2_qs;
   logic cmd_info_2_dummy_en_2_wd;
-  logic cmd_info_2_dummy_en_2_we;
   logic [3:0] cmd_info_2_payload_en_2_qs;
   logic [3:0] cmd_info_2_payload_en_2_wd;
-  logic cmd_info_2_payload_en_2_we;
   logic cmd_info_2_payload_dir_2_qs;
   logic cmd_info_2_payload_dir_2_wd;
-  logic cmd_info_2_payload_dir_2_we;
+  logic cmd_info_3_we;
   logic [7:0] cmd_info_3_opcode_3_qs;
   logic [7:0] cmd_info_3_opcode_3_wd;
-  logic cmd_info_3_opcode_3_we;
   logic cmd_info_3_addr_en_3_qs;
   logic cmd_info_3_addr_en_3_wd;
-  logic cmd_info_3_addr_en_3_we;
   logic cmd_info_3_addr_swap_en_3_qs;
   logic cmd_info_3_addr_swap_en_3_wd;
-  logic cmd_info_3_addr_swap_en_3_we;
   logic cmd_info_3_addr_4b_affected_3_qs;
   logic cmd_info_3_addr_4b_affected_3_wd;
-  logic cmd_info_3_addr_4b_affected_3_we;
   logic [2:0] cmd_info_3_dummy_size_3_qs;
   logic [2:0] cmd_info_3_dummy_size_3_wd;
-  logic cmd_info_3_dummy_size_3_we;
   logic cmd_info_3_dummy_en_3_qs;
   logic cmd_info_3_dummy_en_3_wd;
-  logic cmd_info_3_dummy_en_3_we;
   logic [3:0] cmd_info_3_payload_en_3_qs;
   logic [3:0] cmd_info_3_payload_en_3_wd;
-  logic cmd_info_3_payload_en_3_we;
   logic cmd_info_3_payload_dir_3_qs;
   logic cmd_info_3_payload_dir_3_wd;
-  logic cmd_info_3_payload_dir_3_we;
+  logic cmd_info_4_we;
   logic [7:0] cmd_info_4_opcode_4_qs;
   logic [7:0] cmd_info_4_opcode_4_wd;
-  logic cmd_info_4_opcode_4_we;
   logic cmd_info_4_addr_en_4_qs;
   logic cmd_info_4_addr_en_4_wd;
-  logic cmd_info_4_addr_en_4_we;
   logic cmd_info_4_addr_swap_en_4_qs;
   logic cmd_info_4_addr_swap_en_4_wd;
-  logic cmd_info_4_addr_swap_en_4_we;
   logic cmd_info_4_addr_4b_affected_4_qs;
   logic cmd_info_4_addr_4b_affected_4_wd;
-  logic cmd_info_4_addr_4b_affected_4_we;
   logic [2:0] cmd_info_4_dummy_size_4_qs;
   logic [2:0] cmd_info_4_dummy_size_4_wd;
-  logic cmd_info_4_dummy_size_4_we;
   logic cmd_info_4_dummy_en_4_qs;
   logic cmd_info_4_dummy_en_4_wd;
-  logic cmd_info_4_dummy_en_4_we;
   logic [3:0] cmd_info_4_payload_en_4_qs;
   logic [3:0] cmd_info_4_payload_en_4_wd;
-  logic cmd_info_4_payload_en_4_we;
   logic cmd_info_4_payload_dir_4_qs;
   logic cmd_info_4_payload_dir_4_wd;
-  logic cmd_info_4_payload_dir_4_we;
+  logic cmd_info_5_we;
   logic [7:0] cmd_info_5_opcode_5_qs;
   logic [7:0] cmd_info_5_opcode_5_wd;
-  logic cmd_info_5_opcode_5_we;
   logic cmd_info_5_addr_en_5_qs;
   logic cmd_info_5_addr_en_5_wd;
-  logic cmd_info_5_addr_en_5_we;
   logic cmd_info_5_addr_swap_en_5_qs;
   logic cmd_info_5_addr_swap_en_5_wd;
-  logic cmd_info_5_addr_swap_en_5_we;
   logic cmd_info_5_addr_4b_affected_5_qs;
   logic cmd_info_5_addr_4b_affected_5_wd;
-  logic cmd_info_5_addr_4b_affected_5_we;
   logic [2:0] cmd_info_5_dummy_size_5_qs;
   logic [2:0] cmd_info_5_dummy_size_5_wd;
-  logic cmd_info_5_dummy_size_5_we;
   logic cmd_info_5_dummy_en_5_qs;
   logic cmd_info_5_dummy_en_5_wd;
-  logic cmd_info_5_dummy_en_5_we;
   logic [3:0] cmd_info_5_payload_en_5_qs;
   logic [3:0] cmd_info_5_payload_en_5_wd;
-  logic cmd_info_5_payload_en_5_we;
   logic cmd_info_5_payload_dir_5_qs;
   logic cmd_info_5_payload_dir_5_wd;
-  logic cmd_info_5_payload_dir_5_we;
+  logic cmd_info_6_we;
   logic [7:0] cmd_info_6_opcode_6_qs;
   logic [7:0] cmd_info_6_opcode_6_wd;
-  logic cmd_info_6_opcode_6_we;
   logic cmd_info_6_addr_en_6_qs;
   logic cmd_info_6_addr_en_6_wd;
-  logic cmd_info_6_addr_en_6_we;
   logic cmd_info_6_addr_swap_en_6_qs;
   logic cmd_info_6_addr_swap_en_6_wd;
-  logic cmd_info_6_addr_swap_en_6_we;
   logic cmd_info_6_addr_4b_affected_6_qs;
   logic cmd_info_6_addr_4b_affected_6_wd;
-  logic cmd_info_6_addr_4b_affected_6_we;
   logic [2:0] cmd_info_6_dummy_size_6_qs;
   logic [2:0] cmd_info_6_dummy_size_6_wd;
-  logic cmd_info_6_dummy_size_6_we;
   logic cmd_info_6_dummy_en_6_qs;
   logic cmd_info_6_dummy_en_6_wd;
-  logic cmd_info_6_dummy_en_6_we;
   logic [3:0] cmd_info_6_payload_en_6_qs;
   logic [3:0] cmd_info_6_payload_en_6_wd;
-  logic cmd_info_6_payload_en_6_we;
   logic cmd_info_6_payload_dir_6_qs;
   logic cmd_info_6_payload_dir_6_wd;
-  logic cmd_info_6_payload_dir_6_we;
+  logic cmd_info_7_we;
   logic [7:0] cmd_info_7_opcode_7_qs;
   logic [7:0] cmd_info_7_opcode_7_wd;
-  logic cmd_info_7_opcode_7_we;
   logic cmd_info_7_addr_en_7_qs;
   logic cmd_info_7_addr_en_7_wd;
-  logic cmd_info_7_addr_en_7_we;
   logic cmd_info_7_addr_swap_en_7_qs;
   logic cmd_info_7_addr_swap_en_7_wd;
-  logic cmd_info_7_addr_swap_en_7_we;
   logic cmd_info_7_addr_4b_affected_7_qs;
   logic cmd_info_7_addr_4b_affected_7_wd;
-  logic cmd_info_7_addr_4b_affected_7_we;
   logic [2:0] cmd_info_7_dummy_size_7_qs;
   logic [2:0] cmd_info_7_dummy_size_7_wd;
-  logic cmd_info_7_dummy_size_7_we;
   logic cmd_info_7_dummy_en_7_qs;
   logic cmd_info_7_dummy_en_7_wd;
-  logic cmd_info_7_dummy_en_7_we;
   logic [3:0] cmd_info_7_payload_en_7_qs;
   logic [3:0] cmd_info_7_payload_en_7_wd;
-  logic cmd_info_7_payload_en_7_we;
   logic cmd_info_7_payload_dir_7_qs;
   logic cmd_info_7_payload_dir_7_wd;
-  logic cmd_info_7_payload_dir_7_we;
+  logic cmd_info_8_we;
   logic [7:0] cmd_info_8_opcode_8_qs;
   logic [7:0] cmd_info_8_opcode_8_wd;
-  logic cmd_info_8_opcode_8_we;
   logic cmd_info_8_addr_en_8_qs;
   logic cmd_info_8_addr_en_8_wd;
-  logic cmd_info_8_addr_en_8_we;
   logic cmd_info_8_addr_swap_en_8_qs;
   logic cmd_info_8_addr_swap_en_8_wd;
-  logic cmd_info_8_addr_swap_en_8_we;
   logic cmd_info_8_addr_4b_affected_8_qs;
   logic cmd_info_8_addr_4b_affected_8_wd;
-  logic cmd_info_8_addr_4b_affected_8_we;
   logic [2:0] cmd_info_8_dummy_size_8_qs;
   logic [2:0] cmd_info_8_dummy_size_8_wd;
-  logic cmd_info_8_dummy_size_8_we;
   logic cmd_info_8_dummy_en_8_qs;
   logic cmd_info_8_dummy_en_8_wd;
-  logic cmd_info_8_dummy_en_8_we;
   logic [3:0] cmd_info_8_payload_en_8_qs;
   logic [3:0] cmd_info_8_payload_en_8_wd;
-  logic cmd_info_8_payload_en_8_we;
   logic cmd_info_8_payload_dir_8_qs;
   logic cmd_info_8_payload_dir_8_wd;
-  logic cmd_info_8_payload_dir_8_we;
+  logic cmd_info_9_we;
   logic [7:0] cmd_info_9_opcode_9_qs;
   logic [7:0] cmd_info_9_opcode_9_wd;
-  logic cmd_info_9_opcode_9_we;
   logic cmd_info_9_addr_en_9_qs;
   logic cmd_info_9_addr_en_9_wd;
-  logic cmd_info_9_addr_en_9_we;
   logic cmd_info_9_addr_swap_en_9_qs;
   logic cmd_info_9_addr_swap_en_9_wd;
-  logic cmd_info_9_addr_swap_en_9_we;
   logic cmd_info_9_addr_4b_affected_9_qs;
   logic cmd_info_9_addr_4b_affected_9_wd;
-  logic cmd_info_9_addr_4b_affected_9_we;
   logic [2:0] cmd_info_9_dummy_size_9_qs;
   logic [2:0] cmd_info_9_dummy_size_9_wd;
-  logic cmd_info_9_dummy_size_9_we;
   logic cmd_info_9_dummy_en_9_qs;
   logic cmd_info_9_dummy_en_9_wd;
-  logic cmd_info_9_dummy_en_9_we;
   logic [3:0] cmd_info_9_payload_en_9_qs;
   logic [3:0] cmd_info_9_payload_en_9_wd;
-  logic cmd_info_9_payload_en_9_we;
   logic cmd_info_9_payload_dir_9_qs;
   logic cmd_info_9_payload_dir_9_wd;
-  logic cmd_info_9_payload_dir_9_we;
+  logic cmd_info_10_we;
   logic [7:0] cmd_info_10_opcode_10_qs;
   logic [7:0] cmd_info_10_opcode_10_wd;
-  logic cmd_info_10_opcode_10_we;
   logic cmd_info_10_addr_en_10_qs;
   logic cmd_info_10_addr_en_10_wd;
-  logic cmd_info_10_addr_en_10_we;
   logic cmd_info_10_addr_swap_en_10_qs;
   logic cmd_info_10_addr_swap_en_10_wd;
-  logic cmd_info_10_addr_swap_en_10_we;
   logic cmd_info_10_addr_4b_affected_10_qs;
   logic cmd_info_10_addr_4b_affected_10_wd;
-  logic cmd_info_10_addr_4b_affected_10_we;
   logic [2:0] cmd_info_10_dummy_size_10_qs;
   logic [2:0] cmd_info_10_dummy_size_10_wd;
-  logic cmd_info_10_dummy_size_10_we;
   logic cmd_info_10_dummy_en_10_qs;
   logic cmd_info_10_dummy_en_10_wd;
-  logic cmd_info_10_dummy_en_10_we;
   logic [3:0] cmd_info_10_payload_en_10_qs;
   logic [3:0] cmd_info_10_payload_en_10_wd;
-  logic cmd_info_10_payload_en_10_we;
   logic cmd_info_10_payload_dir_10_qs;
   logic cmd_info_10_payload_dir_10_wd;
-  logic cmd_info_10_payload_dir_10_we;
+  logic cmd_info_11_we;
   logic [7:0] cmd_info_11_opcode_11_qs;
   logic [7:0] cmd_info_11_opcode_11_wd;
-  logic cmd_info_11_opcode_11_we;
   logic cmd_info_11_addr_en_11_qs;
   logic cmd_info_11_addr_en_11_wd;
-  logic cmd_info_11_addr_en_11_we;
   logic cmd_info_11_addr_swap_en_11_qs;
   logic cmd_info_11_addr_swap_en_11_wd;
-  logic cmd_info_11_addr_swap_en_11_we;
   logic cmd_info_11_addr_4b_affected_11_qs;
   logic cmd_info_11_addr_4b_affected_11_wd;
-  logic cmd_info_11_addr_4b_affected_11_we;
   logic [2:0] cmd_info_11_dummy_size_11_qs;
   logic [2:0] cmd_info_11_dummy_size_11_wd;
-  logic cmd_info_11_dummy_size_11_we;
   logic cmd_info_11_dummy_en_11_qs;
   logic cmd_info_11_dummy_en_11_wd;
-  logic cmd_info_11_dummy_en_11_we;
   logic [3:0] cmd_info_11_payload_en_11_qs;
   logic [3:0] cmd_info_11_payload_en_11_wd;
-  logic cmd_info_11_payload_en_11_we;
   logic cmd_info_11_payload_dir_11_qs;
   logic cmd_info_11_payload_dir_11_wd;
-  logic cmd_info_11_payload_dir_11_we;
+  logic cmd_info_12_we;
   logic [7:0] cmd_info_12_opcode_12_qs;
   logic [7:0] cmd_info_12_opcode_12_wd;
-  logic cmd_info_12_opcode_12_we;
   logic cmd_info_12_addr_en_12_qs;
   logic cmd_info_12_addr_en_12_wd;
-  logic cmd_info_12_addr_en_12_we;
   logic cmd_info_12_addr_swap_en_12_qs;
   logic cmd_info_12_addr_swap_en_12_wd;
-  logic cmd_info_12_addr_swap_en_12_we;
   logic cmd_info_12_addr_4b_affected_12_qs;
   logic cmd_info_12_addr_4b_affected_12_wd;
-  logic cmd_info_12_addr_4b_affected_12_we;
   logic [2:0] cmd_info_12_dummy_size_12_qs;
   logic [2:0] cmd_info_12_dummy_size_12_wd;
-  logic cmd_info_12_dummy_size_12_we;
   logic cmd_info_12_dummy_en_12_qs;
   logic cmd_info_12_dummy_en_12_wd;
-  logic cmd_info_12_dummy_en_12_we;
   logic [3:0] cmd_info_12_payload_en_12_qs;
   logic [3:0] cmd_info_12_payload_en_12_wd;
-  logic cmd_info_12_payload_en_12_we;
   logic cmd_info_12_payload_dir_12_qs;
   logic cmd_info_12_payload_dir_12_wd;
-  logic cmd_info_12_payload_dir_12_we;
+  logic cmd_info_13_we;
   logic [7:0] cmd_info_13_opcode_13_qs;
   logic [7:0] cmd_info_13_opcode_13_wd;
-  logic cmd_info_13_opcode_13_we;
   logic cmd_info_13_addr_en_13_qs;
   logic cmd_info_13_addr_en_13_wd;
-  logic cmd_info_13_addr_en_13_we;
   logic cmd_info_13_addr_swap_en_13_qs;
   logic cmd_info_13_addr_swap_en_13_wd;
-  logic cmd_info_13_addr_swap_en_13_we;
   logic cmd_info_13_addr_4b_affected_13_qs;
   logic cmd_info_13_addr_4b_affected_13_wd;
-  logic cmd_info_13_addr_4b_affected_13_we;
   logic [2:0] cmd_info_13_dummy_size_13_qs;
   logic [2:0] cmd_info_13_dummy_size_13_wd;
-  logic cmd_info_13_dummy_size_13_we;
   logic cmd_info_13_dummy_en_13_qs;
   logic cmd_info_13_dummy_en_13_wd;
-  logic cmd_info_13_dummy_en_13_we;
   logic [3:0] cmd_info_13_payload_en_13_qs;
   logic [3:0] cmd_info_13_payload_en_13_wd;
-  logic cmd_info_13_payload_en_13_we;
   logic cmd_info_13_payload_dir_13_qs;
   logic cmd_info_13_payload_dir_13_wd;
-  logic cmd_info_13_payload_dir_13_we;
+  logic cmd_info_14_we;
   logic [7:0] cmd_info_14_opcode_14_qs;
   logic [7:0] cmd_info_14_opcode_14_wd;
-  logic cmd_info_14_opcode_14_we;
   logic cmd_info_14_addr_en_14_qs;
   logic cmd_info_14_addr_en_14_wd;
-  logic cmd_info_14_addr_en_14_we;
   logic cmd_info_14_addr_swap_en_14_qs;
   logic cmd_info_14_addr_swap_en_14_wd;
-  logic cmd_info_14_addr_swap_en_14_we;
   logic cmd_info_14_addr_4b_affected_14_qs;
   logic cmd_info_14_addr_4b_affected_14_wd;
-  logic cmd_info_14_addr_4b_affected_14_we;
   logic [2:0] cmd_info_14_dummy_size_14_qs;
   logic [2:0] cmd_info_14_dummy_size_14_wd;
-  logic cmd_info_14_dummy_size_14_we;
   logic cmd_info_14_dummy_en_14_qs;
   logic cmd_info_14_dummy_en_14_wd;
-  logic cmd_info_14_dummy_en_14_we;
   logic [3:0] cmd_info_14_payload_en_14_qs;
   logic [3:0] cmd_info_14_payload_en_14_wd;
-  logic cmd_info_14_payload_en_14_we;
   logic cmd_info_14_payload_dir_14_qs;
   logic cmd_info_14_payload_dir_14_wd;
-  logic cmd_info_14_payload_dir_14_we;
+  logic cmd_info_15_we;
   logic [7:0] cmd_info_15_opcode_15_qs;
   logic [7:0] cmd_info_15_opcode_15_wd;
-  logic cmd_info_15_opcode_15_we;
   logic cmd_info_15_addr_en_15_qs;
   logic cmd_info_15_addr_en_15_wd;
-  logic cmd_info_15_addr_en_15_we;
   logic cmd_info_15_addr_swap_en_15_qs;
   logic cmd_info_15_addr_swap_en_15_wd;
-  logic cmd_info_15_addr_swap_en_15_we;
   logic cmd_info_15_addr_4b_affected_15_qs;
   logic cmd_info_15_addr_4b_affected_15_wd;
-  logic cmd_info_15_addr_4b_affected_15_we;
   logic [2:0] cmd_info_15_dummy_size_15_qs;
   logic [2:0] cmd_info_15_dummy_size_15_wd;
-  logic cmd_info_15_dummy_size_15_we;
   logic cmd_info_15_dummy_en_15_qs;
   logic cmd_info_15_dummy_en_15_wd;
-  logic cmd_info_15_dummy_en_15_we;
   logic [3:0] cmd_info_15_payload_en_15_qs;
   logic [3:0] cmd_info_15_payload_en_15_wd;
-  logic cmd_info_15_payload_en_15_we;
   logic cmd_info_15_payload_dir_15_qs;
   logic cmd_info_15_payload_dir_15_wd;
-  logic cmd_info_15_payload_dir_15_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1449,7 +1056,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rxf_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rxf_wd),
 
     // from internal hardware
@@ -1475,7 +1082,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rxlvl_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rxlvl_wd),
 
     // from internal hardware
@@ -1501,7 +1108,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_txlvl_we),
+    .we     (intr_state_we),
     .wd     (intr_state_txlvl_wd),
 
     // from internal hardware
@@ -1527,7 +1134,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rxerr_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rxerr_wd),
 
     // from internal hardware
@@ -1553,7 +1160,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rxoverflow_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rxoverflow_wd),
 
     // from internal hardware
@@ -1579,7 +1186,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_txunderflow_we),
+    .we     (intr_state_we),
     .wd     (intr_state_txunderflow_wd),
 
     // from internal hardware
@@ -1607,7 +1214,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rxf_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rxf_wd),
 
     // from internal hardware
@@ -1633,7 +1240,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rxlvl_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rxlvl_wd),
 
     // from internal hardware
@@ -1659,7 +1266,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_txlvl_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_txlvl_wd),
 
     // from internal hardware
@@ -1685,7 +1292,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rxerr_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rxerr_wd),
 
     // from internal hardware
@@ -1711,7 +1318,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rxoverflow_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rxoverflow_wd),
 
     // from internal hardware
@@ -1737,7 +1344,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_txunderflow_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_txunderflow_wd),
 
     // from internal hardware
@@ -1760,7 +1367,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_rxf (
     .re     (1'b0),
-    .we     (intr_test_rxf_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rxf_wd),
     .d      ('0),
     .qre    (),
@@ -1775,7 +1382,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_rxlvl (
     .re     (1'b0),
-    .we     (intr_test_rxlvl_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rxlvl_wd),
     .d      ('0),
     .qre    (),
@@ -1790,7 +1397,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_txlvl (
     .re     (1'b0),
-    .we     (intr_test_txlvl_we),
+    .we     (intr_test_we),
     .wd     (intr_test_txlvl_wd),
     .d      ('0),
     .qre    (),
@@ -1805,7 +1412,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_rxerr (
     .re     (1'b0),
-    .we     (intr_test_rxerr_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rxerr_wd),
     .d      ('0),
     .qre    (),
@@ -1820,7 +1427,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_rxoverflow (
     .re     (1'b0),
-    .we     (intr_test_rxoverflow_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rxoverflow_wd),
     .d      ('0),
     .qre    (),
@@ -1835,7 +1442,7 @@ module spi_device_reg_top (
     .DW    (1)
   ) u_intr_test_txunderflow (
     .re     (1'b0),
-    .we     (intr_test_txunderflow_we),
+    .we     (intr_test_we),
     .wd     (intr_test_txunderflow_wd),
     .d      ('0),
     .qre    (),
@@ -1873,7 +1480,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_abort_we),
+    .we     (control_we),
     .wd     (control_abort_wd),
 
     // from internal hardware
@@ -1899,7 +1506,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_mode_we),
+    .we     (control_we),
     .wd     (control_mode_wd),
 
     // from internal hardware
@@ -1925,7 +1532,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_rst_txfifo_we),
+    .we     (control_we),
     .wd     (control_rst_txfifo_wd),
 
     // from internal hardware
@@ -1951,7 +1558,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_rst_rxfifo_we),
+    .we     (control_we),
     .wd     (control_rst_rxfifo_wd),
 
     // from internal hardware
@@ -1977,7 +1584,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_sram_clk_en_we),
+    .we     (control_we),
     .wd     (control_sram_clk_en_wd),
 
     // from internal hardware
@@ -2005,7 +1612,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_cpol_we),
+    .we     (cfg_we),
     .wd     (cfg_cpol_wd),
 
     // from internal hardware
@@ -2031,7 +1638,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_cpha_we),
+    .we     (cfg_we),
     .wd     (cfg_cpha_wd),
 
     // from internal hardware
@@ -2057,7 +1664,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_tx_order_we),
+    .we     (cfg_we),
     .wd     (cfg_tx_order_wd),
 
     // from internal hardware
@@ -2083,7 +1690,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_rx_order_we),
+    .we     (cfg_we),
     .wd     (cfg_rx_order_wd),
 
     // from internal hardware
@@ -2109,7 +1716,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_timer_v_we),
+    .we     (cfg_we),
     .wd     (cfg_timer_v_wd),
 
     // from internal hardware
@@ -2135,7 +1742,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg_addr_4b_en_we),
+    .we     (cfg_we),
     .wd     (cfg_addr_4b_en_wd),
 
     // from internal hardware
@@ -2163,7 +1770,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_level_rxlvl_we),
+    .we     (fifo_level_we),
     .wd     (fifo_level_rxlvl_wd),
 
     // from internal hardware
@@ -2189,7 +1796,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fifo_level_txlvl_we),
+    .we     (fifo_level_we),
     .wd     (fifo_level_txlvl_wd),
 
     // from internal hardware
@@ -2211,7 +1818,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (8)
   ) u_async_fifo_level_rxlvl (
-    .re     (async_fifo_level_rxlvl_re),
+    .re     (async_fifo_level_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.async_fifo_level.rxlvl.d),
@@ -2226,7 +1833,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (8)
   ) u_async_fifo_level_txlvl (
-    .re     (async_fifo_level_txlvl_re),
+    .re     (async_fifo_level_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.async_fifo_level.txlvl.d),
@@ -2243,7 +1850,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_rxf_full (
-    .re     (status_rxf_full_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.rxf_full.d),
@@ -2258,7 +1865,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_rxf_empty (
-    .re     (status_rxf_empty_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.rxf_empty.d),
@@ -2273,7 +1880,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_txf_full (
-    .re     (status_txf_full_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.txf_full.d),
@@ -2288,7 +1895,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_txf_empty (
-    .re     (status_txf_empty_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.txf_empty.d),
@@ -2303,7 +1910,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_abort_done (
-    .re     (status_abort_done_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.abort_done.d),
@@ -2318,7 +1925,7 @@ module spi_device_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_csb (
-    .re     (status_csb_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.csb.d),
@@ -2341,7 +1948,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxf_ptr_rptr_we),
+    .we     (rxf_ptr_we),
     .wd     (rxf_ptr_rptr_wd),
 
     // from internal hardware
@@ -2421,7 +2028,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (txf_ptr_wptr_we),
+    .we     (txf_ptr_we),
     .wd     (txf_ptr_wptr_wd),
 
     // from internal hardware
@@ -2449,7 +2056,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxf_addr_base_we),
+    .we     (rxf_addr_we),
     .wd     (rxf_addr_base_wd),
 
     // from internal hardware
@@ -2475,7 +2082,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxf_addr_limit_we),
+    .we     (rxf_addr_we),
     .wd     (rxf_addr_limit_wd),
 
     // from internal hardware
@@ -2503,7 +2110,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (txf_addr_base_we),
+    .we     (txf_addr_we),
     .wd     (txf_addr_base_wd),
 
     // from internal hardware
@@ -2529,7 +2136,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (txf_addr_limit_we),
+    .we     (txf_addr_we),
     .wd     (txf_addr_limit_wd),
 
     // from internal hardware
@@ -2559,7 +2166,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_0_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_0_wd),
 
     // from internal hardware
@@ -2585,7 +2192,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_1_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_1_wd),
 
     // from internal hardware
@@ -2611,7 +2218,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_2_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_2_wd),
 
     // from internal hardware
@@ -2637,7 +2244,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_3_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_3_wd),
 
     // from internal hardware
@@ -2663,7 +2270,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_4_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_4_wd),
 
     // from internal hardware
@@ -2689,7 +2296,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_5_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_5_wd),
 
     // from internal hardware
@@ -2715,7 +2322,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_6_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_6_wd),
 
     // from internal hardware
@@ -2741,7 +2348,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_7_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_7_wd),
 
     // from internal hardware
@@ -2767,7 +2374,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_8_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_8_wd),
 
     // from internal hardware
@@ -2793,7 +2400,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_9_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_9_wd),
 
     // from internal hardware
@@ -2819,7 +2426,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_10_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_10_wd),
 
     // from internal hardware
@@ -2845,7 +2452,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_11_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_11_wd),
 
     // from internal hardware
@@ -2871,7 +2478,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_12_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_12_wd),
 
     // from internal hardware
@@ -2897,7 +2504,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_13_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_13_wd),
 
     // from internal hardware
@@ -2923,7 +2530,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_14_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_14_wd),
 
     // from internal hardware
@@ -2949,7 +2556,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_15_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_15_wd),
 
     // from internal hardware
@@ -2975,7 +2582,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_16_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_16_wd),
 
     // from internal hardware
@@ -3001,7 +2608,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_17_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_17_wd),
 
     // from internal hardware
@@ -3027,7 +2634,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_18_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_18_wd),
 
     // from internal hardware
@@ -3053,7 +2660,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_19_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_19_wd),
 
     // from internal hardware
@@ -3079,7 +2686,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_20_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_20_wd),
 
     // from internal hardware
@@ -3105,7 +2712,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_21_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_21_wd),
 
     // from internal hardware
@@ -3131,7 +2738,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_22_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_22_wd),
 
     // from internal hardware
@@ -3157,7 +2764,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_23_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_23_wd),
 
     // from internal hardware
@@ -3183,7 +2790,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_24_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_24_wd),
 
     // from internal hardware
@@ -3209,7 +2816,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_25_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_25_wd),
 
     // from internal hardware
@@ -3235,7 +2842,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_26_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_26_wd),
 
     // from internal hardware
@@ -3261,7 +2868,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_27_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_27_wd),
 
     // from internal hardware
@@ -3287,7 +2894,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_28_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_28_wd),
 
     // from internal hardware
@@ -3313,7 +2920,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_29_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_29_wd),
 
     // from internal hardware
@@ -3339,7 +2946,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_30_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_30_wd),
 
     // from internal hardware
@@ -3365,7 +2972,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_0_filter_31_we),
+    .we     (cmd_filter_0_we),
     .wd     (cmd_filter_0_filter_31_wd),
 
     // from internal hardware
@@ -3394,7 +3001,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_32_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_32_wd),
 
     // from internal hardware
@@ -3420,7 +3027,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_33_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_33_wd),
 
     // from internal hardware
@@ -3446,7 +3053,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_34_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_34_wd),
 
     // from internal hardware
@@ -3472,7 +3079,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_35_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_35_wd),
 
     // from internal hardware
@@ -3498,7 +3105,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_36_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_36_wd),
 
     // from internal hardware
@@ -3524,7 +3131,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_37_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_37_wd),
 
     // from internal hardware
@@ -3550,7 +3157,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_38_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_38_wd),
 
     // from internal hardware
@@ -3576,7 +3183,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_39_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_39_wd),
 
     // from internal hardware
@@ -3602,7 +3209,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_40_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_40_wd),
 
     // from internal hardware
@@ -3628,7 +3235,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_41_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_41_wd),
 
     // from internal hardware
@@ -3654,7 +3261,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_42_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_42_wd),
 
     // from internal hardware
@@ -3680,7 +3287,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_43_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_43_wd),
 
     // from internal hardware
@@ -3706,7 +3313,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_44_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_44_wd),
 
     // from internal hardware
@@ -3732,7 +3339,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_45_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_45_wd),
 
     // from internal hardware
@@ -3758,7 +3365,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_46_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_46_wd),
 
     // from internal hardware
@@ -3784,7 +3391,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_47_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_47_wd),
 
     // from internal hardware
@@ -3810,7 +3417,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_48_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_48_wd),
 
     // from internal hardware
@@ -3836,7 +3443,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_49_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_49_wd),
 
     // from internal hardware
@@ -3862,7 +3469,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_50_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_50_wd),
 
     // from internal hardware
@@ -3888,7 +3495,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_51_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_51_wd),
 
     // from internal hardware
@@ -3914,7 +3521,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_52_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_52_wd),
 
     // from internal hardware
@@ -3940,7 +3547,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_53_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_53_wd),
 
     // from internal hardware
@@ -3966,7 +3573,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_54_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_54_wd),
 
     // from internal hardware
@@ -3992,7 +3599,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_55_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_55_wd),
 
     // from internal hardware
@@ -4018,7 +3625,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_56_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_56_wd),
 
     // from internal hardware
@@ -4044,7 +3651,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_57_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_57_wd),
 
     // from internal hardware
@@ -4070,7 +3677,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_58_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_58_wd),
 
     // from internal hardware
@@ -4096,7 +3703,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_59_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_59_wd),
 
     // from internal hardware
@@ -4122,7 +3729,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_60_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_60_wd),
 
     // from internal hardware
@@ -4148,7 +3755,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_61_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_61_wd),
 
     // from internal hardware
@@ -4174,7 +3781,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_62_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_62_wd),
 
     // from internal hardware
@@ -4200,7 +3807,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_1_filter_63_we),
+    .we     (cmd_filter_1_we),
     .wd     (cmd_filter_1_filter_63_wd),
 
     // from internal hardware
@@ -4229,7 +3836,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_64_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_64_wd),
 
     // from internal hardware
@@ -4255,7 +3862,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_65_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_65_wd),
 
     // from internal hardware
@@ -4281,7 +3888,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_66_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_66_wd),
 
     // from internal hardware
@@ -4307,7 +3914,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_67_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_67_wd),
 
     // from internal hardware
@@ -4333,7 +3940,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_68_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_68_wd),
 
     // from internal hardware
@@ -4359,7 +3966,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_69_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_69_wd),
 
     // from internal hardware
@@ -4385,7 +3992,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_70_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_70_wd),
 
     // from internal hardware
@@ -4411,7 +4018,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_71_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_71_wd),
 
     // from internal hardware
@@ -4437,7 +4044,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_72_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_72_wd),
 
     // from internal hardware
@@ -4463,7 +4070,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_73_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_73_wd),
 
     // from internal hardware
@@ -4489,7 +4096,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_74_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_74_wd),
 
     // from internal hardware
@@ -4515,7 +4122,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_75_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_75_wd),
 
     // from internal hardware
@@ -4541,7 +4148,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_76_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_76_wd),
 
     // from internal hardware
@@ -4567,7 +4174,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_77_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_77_wd),
 
     // from internal hardware
@@ -4593,7 +4200,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_78_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_78_wd),
 
     // from internal hardware
@@ -4619,7 +4226,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_79_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_79_wd),
 
     // from internal hardware
@@ -4645,7 +4252,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_80_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_80_wd),
 
     // from internal hardware
@@ -4671,7 +4278,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_81_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_81_wd),
 
     // from internal hardware
@@ -4697,7 +4304,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_82_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_82_wd),
 
     // from internal hardware
@@ -4723,7 +4330,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_83_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_83_wd),
 
     // from internal hardware
@@ -4749,7 +4356,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_84_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_84_wd),
 
     // from internal hardware
@@ -4775,7 +4382,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_85_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_85_wd),
 
     // from internal hardware
@@ -4801,7 +4408,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_86_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_86_wd),
 
     // from internal hardware
@@ -4827,7 +4434,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_87_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_87_wd),
 
     // from internal hardware
@@ -4853,7 +4460,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_88_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_88_wd),
 
     // from internal hardware
@@ -4879,7 +4486,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_89_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_89_wd),
 
     // from internal hardware
@@ -4905,7 +4512,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_90_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_90_wd),
 
     // from internal hardware
@@ -4931,7 +4538,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_91_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_91_wd),
 
     // from internal hardware
@@ -4957,7 +4564,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_92_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_92_wd),
 
     // from internal hardware
@@ -4983,7 +4590,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_93_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_93_wd),
 
     // from internal hardware
@@ -5009,7 +4616,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_94_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_94_wd),
 
     // from internal hardware
@@ -5035,7 +4642,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_2_filter_95_we),
+    .we     (cmd_filter_2_we),
     .wd     (cmd_filter_2_filter_95_wd),
 
     // from internal hardware
@@ -5064,7 +4671,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_96_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_96_wd),
 
     // from internal hardware
@@ -5090,7 +4697,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_97_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_97_wd),
 
     // from internal hardware
@@ -5116,7 +4723,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_98_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_98_wd),
 
     // from internal hardware
@@ -5142,7 +4749,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_99_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_99_wd),
 
     // from internal hardware
@@ -5168,7 +4775,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_100_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_100_wd),
 
     // from internal hardware
@@ -5194,7 +4801,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_101_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_101_wd),
 
     // from internal hardware
@@ -5220,7 +4827,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_102_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_102_wd),
 
     // from internal hardware
@@ -5246,7 +4853,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_103_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_103_wd),
 
     // from internal hardware
@@ -5272,7 +4879,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_104_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_104_wd),
 
     // from internal hardware
@@ -5298,7 +4905,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_105_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_105_wd),
 
     // from internal hardware
@@ -5324,7 +4931,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_106_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_106_wd),
 
     // from internal hardware
@@ -5350,7 +4957,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_107_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_107_wd),
 
     // from internal hardware
@@ -5376,7 +4983,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_108_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_108_wd),
 
     // from internal hardware
@@ -5402,7 +5009,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_109_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_109_wd),
 
     // from internal hardware
@@ -5428,7 +5035,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_110_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_110_wd),
 
     // from internal hardware
@@ -5454,7 +5061,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_111_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_111_wd),
 
     // from internal hardware
@@ -5480,7 +5087,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_112_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_112_wd),
 
     // from internal hardware
@@ -5506,7 +5113,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_113_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_113_wd),
 
     // from internal hardware
@@ -5532,7 +5139,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_114_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_114_wd),
 
     // from internal hardware
@@ -5558,7 +5165,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_115_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_115_wd),
 
     // from internal hardware
@@ -5584,7 +5191,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_116_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_116_wd),
 
     // from internal hardware
@@ -5610,7 +5217,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_117_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_117_wd),
 
     // from internal hardware
@@ -5636,7 +5243,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_118_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_118_wd),
 
     // from internal hardware
@@ -5662,7 +5269,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_119_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_119_wd),
 
     // from internal hardware
@@ -5688,7 +5295,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_120_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_120_wd),
 
     // from internal hardware
@@ -5714,7 +5321,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_121_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_121_wd),
 
     // from internal hardware
@@ -5740,7 +5347,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_122_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_122_wd),
 
     // from internal hardware
@@ -5766,7 +5373,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_123_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_123_wd),
 
     // from internal hardware
@@ -5792,7 +5399,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_124_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_124_wd),
 
     // from internal hardware
@@ -5818,7 +5425,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_125_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_125_wd),
 
     // from internal hardware
@@ -5844,7 +5451,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_126_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_126_wd),
 
     // from internal hardware
@@ -5870,7 +5477,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_3_filter_127_we),
+    .we     (cmd_filter_3_we),
     .wd     (cmd_filter_3_filter_127_wd),
 
     // from internal hardware
@@ -5899,7 +5506,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_128_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_128_wd),
 
     // from internal hardware
@@ -5925,7 +5532,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_129_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_129_wd),
 
     // from internal hardware
@@ -5951,7 +5558,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_130_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_130_wd),
 
     // from internal hardware
@@ -5977,7 +5584,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_131_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_131_wd),
 
     // from internal hardware
@@ -6003,7 +5610,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_132_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_132_wd),
 
     // from internal hardware
@@ -6029,7 +5636,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_133_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_133_wd),
 
     // from internal hardware
@@ -6055,7 +5662,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_134_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_134_wd),
 
     // from internal hardware
@@ -6081,7 +5688,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_135_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_135_wd),
 
     // from internal hardware
@@ -6107,7 +5714,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_136_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_136_wd),
 
     // from internal hardware
@@ -6133,7 +5740,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_137_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_137_wd),
 
     // from internal hardware
@@ -6159,7 +5766,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_138_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_138_wd),
 
     // from internal hardware
@@ -6185,7 +5792,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_139_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_139_wd),
 
     // from internal hardware
@@ -6211,7 +5818,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_140_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_140_wd),
 
     // from internal hardware
@@ -6237,7 +5844,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_141_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_141_wd),
 
     // from internal hardware
@@ -6263,7 +5870,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_142_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_142_wd),
 
     // from internal hardware
@@ -6289,7 +5896,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_143_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_143_wd),
 
     // from internal hardware
@@ -6315,7 +5922,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_144_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_144_wd),
 
     // from internal hardware
@@ -6341,7 +5948,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_145_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_145_wd),
 
     // from internal hardware
@@ -6367,7 +5974,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_146_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_146_wd),
 
     // from internal hardware
@@ -6393,7 +6000,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_147_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_147_wd),
 
     // from internal hardware
@@ -6419,7 +6026,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_148_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_148_wd),
 
     // from internal hardware
@@ -6445,7 +6052,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_149_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_149_wd),
 
     // from internal hardware
@@ -6471,7 +6078,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_150_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_150_wd),
 
     // from internal hardware
@@ -6497,7 +6104,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_151_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_151_wd),
 
     // from internal hardware
@@ -6523,7 +6130,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_152_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_152_wd),
 
     // from internal hardware
@@ -6549,7 +6156,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_153_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_153_wd),
 
     // from internal hardware
@@ -6575,7 +6182,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_154_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_154_wd),
 
     // from internal hardware
@@ -6601,7 +6208,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_155_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_155_wd),
 
     // from internal hardware
@@ -6627,7 +6234,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_156_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_156_wd),
 
     // from internal hardware
@@ -6653,7 +6260,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_157_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_157_wd),
 
     // from internal hardware
@@ -6679,7 +6286,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_158_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_158_wd),
 
     // from internal hardware
@@ -6705,7 +6312,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_4_filter_159_we),
+    .we     (cmd_filter_4_we),
     .wd     (cmd_filter_4_filter_159_wd),
 
     // from internal hardware
@@ -6734,7 +6341,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_160_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_160_wd),
 
     // from internal hardware
@@ -6760,7 +6367,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_161_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_161_wd),
 
     // from internal hardware
@@ -6786,7 +6393,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_162_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_162_wd),
 
     // from internal hardware
@@ -6812,7 +6419,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_163_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_163_wd),
 
     // from internal hardware
@@ -6838,7 +6445,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_164_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_164_wd),
 
     // from internal hardware
@@ -6864,7 +6471,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_165_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_165_wd),
 
     // from internal hardware
@@ -6890,7 +6497,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_166_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_166_wd),
 
     // from internal hardware
@@ -6916,7 +6523,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_167_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_167_wd),
 
     // from internal hardware
@@ -6942,7 +6549,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_168_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_168_wd),
 
     // from internal hardware
@@ -6968,7 +6575,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_169_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_169_wd),
 
     // from internal hardware
@@ -6994,7 +6601,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_170_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_170_wd),
 
     // from internal hardware
@@ -7020,7 +6627,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_171_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_171_wd),
 
     // from internal hardware
@@ -7046,7 +6653,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_172_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_172_wd),
 
     // from internal hardware
@@ -7072,7 +6679,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_173_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_173_wd),
 
     // from internal hardware
@@ -7098,7 +6705,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_174_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_174_wd),
 
     // from internal hardware
@@ -7124,7 +6731,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_175_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_175_wd),
 
     // from internal hardware
@@ -7150,7 +6757,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_176_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_176_wd),
 
     // from internal hardware
@@ -7176,7 +6783,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_177_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_177_wd),
 
     // from internal hardware
@@ -7202,7 +6809,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_178_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_178_wd),
 
     // from internal hardware
@@ -7228,7 +6835,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_179_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_179_wd),
 
     // from internal hardware
@@ -7254,7 +6861,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_180_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_180_wd),
 
     // from internal hardware
@@ -7280,7 +6887,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_181_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_181_wd),
 
     // from internal hardware
@@ -7306,7 +6913,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_182_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_182_wd),
 
     // from internal hardware
@@ -7332,7 +6939,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_183_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_183_wd),
 
     // from internal hardware
@@ -7358,7 +6965,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_184_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_184_wd),
 
     // from internal hardware
@@ -7384,7 +6991,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_185_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_185_wd),
 
     // from internal hardware
@@ -7410,7 +7017,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_186_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_186_wd),
 
     // from internal hardware
@@ -7436,7 +7043,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_187_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_187_wd),
 
     // from internal hardware
@@ -7462,7 +7069,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_188_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_188_wd),
 
     // from internal hardware
@@ -7488,7 +7095,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_189_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_189_wd),
 
     // from internal hardware
@@ -7514,7 +7121,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_190_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_190_wd),
 
     // from internal hardware
@@ -7540,7 +7147,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_5_filter_191_we),
+    .we     (cmd_filter_5_we),
     .wd     (cmd_filter_5_filter_191_wd),
 
     // from internal hardware
@@ -7569,7 +7176,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_192_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_192_wd),
 
     // from internal hardware
@@ -7595,7 +7202,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_193_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_193_wd),
 
     // from internal hardware
@@ -7621,7 +7228,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_194_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_194_wd),
 
     // from internal hardware
@@ -7647,7 +7254,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_195_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_195_wd),
 
     // from internal hardware
@@ -7673,7 +7280,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_196_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_196_wd),
 
     // from internal hardware
@@ -7699,7 +7306,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_197_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_197_wd),
 
     // from internal hardware
@@ -7725,7 +7332,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_198_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_198_wd),
 
     // from internal hardware
@@ -7751,7 +7358,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_199_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_199_wd),
 
     // from internal hardware
@@ -7777,7 +7384,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_200_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_200_wd),
 
     // from internal hardware
@@ -7803,7 +7410,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_201_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_201_wd),
 
     // from internal hardware
@@ -7829,7 +7436,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_202_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_202_wd),
 
     // from internal hardware
@@ -7855,7 +7462,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_203_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_203_wd),
 
     // from internal hardware
@@ -7881,7 +7488,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_204_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_204_wd),
 
     // from internal hardware
@@ -7907,7 +7514,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_205_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_205_wd),
 
     // from internal hardware
@@ -7933,7 +7540,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_206_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_206_wd),
 
     // from internal hardware
@@ -7959,7 +7566,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_207_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_207_wd),
 
     // from internal hardware
@@ -7985,7 +7592,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_208_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_208_wd),
 
     // from internal hardware
@@ -8011,7 +7618,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_209_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_209_wd),
 
     // from internal hardware
@@ -8037,7 +7644,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_210_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_210_wd),
 
     // from internal hardware
@@ -8063,7 +7670,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_211_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_211_wd),
 
     // from internal hardware
@@ -8089,7 +7696,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_212_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_212_wd),
 
     // from internal hardware
@@ -8115,7 +7722,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_213_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_213_wd),
 
     // from internal hardware
@@ -8141,7 +7748,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_214_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_214_wd),
 
     // from internal hardware
@@ -8167,7 +7774,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_215_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_215_wd),
 
     // from internal hardware
@@ -8193,7 +7800,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_216_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_216_wd),
 
     // from internal hardware
@@ -8219,7 +7826,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_217_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_217_wd),
 
     // from internal hardware
@@ -8245,7 +7852,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_218_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_218_wd),
 
     // from internal hardware
@@ -8271,7 +7878,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_219_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_219_wd),
 
     // from internal hardware
@@ -8297,7 +7904,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_220_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_220_wd),
 
     // from internal hardware
@@ -8323,7 +7930,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_221_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_221_wd),
 
     // from internal hardware
@@ -8349,7 +7956,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_222_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_222_wd),
 
     // from internal hardware
@@ -8375,7 +7982,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_6_filter_223_we),
+    .we     (cmd_filter_6_we),
     .wd     (cmd_filter_6_filter_223_wd),
 
     // from internal hardware
@@ -8404,7 +8011,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_224_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_224_wd),
 
     // from internal hardware
@@ -8430,7 +8037,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_225_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_225_wd),
 
     // from internal hardware
@@ -8456,7 +8063,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_226_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_226_wd),
 
     // from internal hardware
@@ -8482,7 +8089,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_227_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_227_wd),
 
     // from internal hardware
@@ -8508,7 +8115,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_228_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_228_wd),
 
     // from internal hardware
@@ -8534,7 +8141,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_229_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_229_wd),
 
     // from internal hardware
@@ -8560,7 +8167,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_230_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_230_wd),
 
     // from internal hardware
@@ -8586,7 +8193,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_231_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_231_wd),
 
     // from internal hardware
@@ -8612,7 +8219,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_232_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_232_wd),
 
     // from internal hardware
@@ -8638,7 +8245,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_233_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_233_wd),
 
     // from internal hardware
@@ -8664,7 +8271,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_234_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_234_wd),
 
     // from internal hardware
@@ -8690,7 +8297,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_235_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_235_wd),
 
     // from internal hardware
@@ -8716,7 +8323,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_236_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_236_wd),
 
     // from internal hardware
@@ -8742,7 +8349,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_237_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_237_wd),
 
     // from internal hardware
@@ -8768,7 +8375,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_238_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_238_wd),
 
     // from internal hardware
@@ -8794,7 +8401,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_239_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_239_wd),
 
     // from internal hardware
@@ -8820,7 +8427,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_240_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_240_wd),
 
     // from internal hardware
@@ -8846,7 +8453,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_241_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_241_wd),
 
     // from internal hardware
@@ -8872,7 +8479,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_242_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_242_wd),
 
     // from internal hardware
@@ -8898,7 +8505,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_243_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_243_wd),
 
     // from internal hardware
@@ -8924,7 +8531,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_244_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_244_wd),
 
     // from internal hardware
@@ -8950,7 +8557,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_245_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_245_wd),
 
     // from internal hardware
@@ -8976,7 +8583,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_246_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_246_wd),
 
     // from internal hardware
@@ -9002,7 +8609,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_247_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_247_wd),
 
     // from internal hardware
@@ -9028,7 +8635,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_248_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_248_wd),
 
     // from internal hardware
@@ -9054,7 +8661,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_249_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_249_wd),
 
     // from internal hardware
@@ -9080,7 +8687,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_250_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_250_wd),
 
     // from internal hardware
@@ -9106,7 +8713,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_251_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_251_wd),
 
     // from internal hardware
@@ -9132,7 +8739,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_252_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_252_wd),
 
     // from internal hardware
@@ -9158,7 +8765,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_253_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_253_wd),
 
     // from internal hardware
@@ -9184,7 +8791,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_254_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_254_wd),
 
     // from internal hardware
@@ -9210,7 +8817,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_filter_7_filter_255_we),
+    .we     (cmd_filter_7_we),
     .wd     (cmd_filter_7_filter_255_wd),
 
     // from internal hardware
@@ -9295,7 +8902,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_opcode_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_opcode_0_wd),
 
     // from internal hardware
@@ -9321,7 +8928,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_addr_en_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_addr_en_0_wd),
 
     // from internal hardware
@@ -9347,7 +8954,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_addr_swap_en_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_addr_swap_en_0_wd),
 
     // from internal hardware
@@ -9373,7 +8980,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_addr_4b_affected_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_addr_4b_affected_0_wd),
 
     // from internal hardware
@@ -9399,7 +9006,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_dummy_size_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_dummy_size_0_wd),
 
     // from internal hardware
@@ -9425,7 +9032,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_dummy_en_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_dummy_en_0_wd),
 
     // from internal hardware
@@ -9451,7 +9058,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_payload_en_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_payload_en_0_wd),
 
     // from internal hardware
@@ -9477,7 +9084,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_0_payload_dir_0_we),
+    .we     (cmd_info_0_we),
     .wd     (cmd_info_0_payload_dir_0_wd),
 
     // from internal hardware
@@ -9506,7 +9113,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_opcode_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_opcode_1_wd),
 
     // from internal hardware
@@ -9532,7 +9139,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_addr_en_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_addr_en_1_wd),
 
     // from internal hardware
@@ -9558,7 +9165,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_addr_swap_en_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_addr_swap_en_1_wd),
 
     // from internal hardware
@@ -9584,7 +9191,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_addr_4b_affected_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_addr_4b_affected_1_wd),
 
     // from internal hardware
@@ -9610,7 +9217,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_dummy_size_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_dummy_size_1_wd),
 
     // from internal hardware
@@ -9636,7 +9243,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_dummy_en_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_dummy_en_1_wd),
 
     // from internal hardware
@@ -9662,7 +9269,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_payload_en_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_payload_en_1_wd),
 
     // from internal hardware
@@ -9688,7 +9295,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_1_payload_dir_1_we),
+    .we     (cmd_info_1_we),
     .wd     (cmd_info_1_payload_dir_1_wd),
 
     // from internal hardware
@@ -9717,7 +9324,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_opcode_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_opcode_2_wd),
 
     // from internal hardware
@@ -9743,7 +9350,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_addr_en_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_addr_en_2_wd),
 
     // from internal hardware
@@ -9769,7 +9376,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_addr_swap_en_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_addr_swap_en_2_wd),
 
     // from internal hardware
@@ -9795,7 +9402,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_addr_4b_affected_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_addr_4b_affected_2_wd),
 
     // from internal hardware
@@ -9821,7 +9428,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_dummy_size_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_dummy_size_2_wd),
 
     // from internal hardware
@@ -9847,7 +9454,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_dummy_en_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_dummy_en_2_wd),
 
     // from internal hardware
@@ -9873,7 +9480,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_payload_en_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_payload_en_2_wd),
 
     // from internal hardware
@@ -9899,7 +9506,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_2_payload_dir_2_we),
+    .we     (cmd_info_2_we),
     .wd     (cmd_info_2_payload_dir_2_wd),
 
     // from internal hardware
@@ -9928,7 +9535,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_opcode_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_opcode_3_wd),
 
     // from internal hardware
@@ -9954,7 +9561,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_addr_en_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_addr_en_3_wd),
 
     // from internal hardware
@@ -9980,7 +9587,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_addr_swap_en_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_addr_swap_en_3_wd),
 
     // from internal hardware
@@ -10006,7 +9613,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_addr_4b_affected_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_addr_4b_affected_3_wd),
 
     // from internal hardware
@@ -10032,7 +9639,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_dummy_size_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_dummy_size_3_wd),
 
     // from internal hardware
@@ -10058,7 +9665,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_dummy_en_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_dummy_en_3_wd),
 
     // from internal hardware
@@ -10084,7 +9691,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_payload_en_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_payload_en_3_wd),
 
     // from internal hardware
@@ -10110,7 +9717,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_3_payload_dir_3_we),
+    .we     (cmd_info_3_we),
     .wd     (cmd_info_3_payload_dir_3_wd),
 
     // from internal hardware
@@ -10139,7 +9746,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_opcode_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_opcode_4_wd),
 
     // from internal hardware
@@ -10165,7 +9772,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_addr_en_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_addr_en_4_wd),
 
     // from internal hardware
@@ -10191,7 +9798,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_addr_swap_en_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_addr_swap_en_4_wd),
 
     // from internal hardware
@@ -10217,7 +9824,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_addr_4b_affected_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_addr_4b_affected_4_wd),
 
     // from internal hardware
@@ -10243,7 +9850,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_dummy_size_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_dummy_size_4_wd),
 
     // from internal hardware
@@ -10269,7 +9876,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_dummy_en_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_dummy_en_4_wd),
 
     // from internal hardware
@@ -10295,7 +9902,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_payload_en_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_payload_en_4_wd),
 
     // from internal hardware
@@ -10321,7 +9928,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_4_payload_dir_4_we),
+    .we     (cmd_info_4_we),
     .wd     (cmd_info_4_payload_dir_4_wd),
 
     // from internal hardware
@@ -10350,7 +9957,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_opcode_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_opcode_5_wd),
 
     // from internal hardware
@@ -10376,7 +9983,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_addr_en_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_addr_en_5_wd),
 
     // from internal hardware
@@ -10402,7 +10009,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_addr_swap_en_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_addr_swap_en_5_wd),
 
     // from internal hardware
@@ -10428,7 +10035,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_addr_4b_affected_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_addr_4b_affected_5_wd),
 
     // from internal hardware
@@ -10454,7 +10061,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_dummy_size_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_dummy_size_5_wd),
 
     // from internal hardware
@@ -10480,7 +10087,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_dummy_en_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_dummy_en_5_wd),
 
     // from internal hardware
@@ -10506,7 +10113,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_payload_en_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_payload_en_5_wd),
 
     // from internal hardware
@@ -10532,7 +10139,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_5_payload_dir_5_we),
+    .we     (cmd_info_5_we),
     .wd     (cmd_info_5_payload_dir_5_wd),
 
     // from internal hardware
@@ -10561,7 +10168,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_opcode_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_opcode_6_wd),
 
     // from internal hardware
@@ -10587,7 +10194,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_addr_en_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_addr_en_6_wd),
 
     // from internal hardware
@@ -10613,7 +10220,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_addr_swap_en_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_addr_swap_en_6_wd),
 
     // from internal hardware
@@ -10639,7 +10246,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_addr_4b_affected_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_addr_4b_affected_6_wd),
 
     // from internal hardware
@@ -10665,7 +10272,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_dummy_size_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_dummy_size_6_wd),
 
     // from internal hardware
@@ -10691,7 +10298,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_dummy_en_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_dummy_en_6_wd),
 
     // from internal hardware
@@ -10717,7 +10324,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_payload_en_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_payload_en_6_wd),
 
     // from internal hardware
@@ -10743,7 +10350,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_6_payload_dir_6_we),
+    .we     (cmd_info_6_we),
     .wd     (cmd_info_6_payload_dir_6_wd),
 
     // from internal hardware
@@ -10772,7 +10379,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_opcode_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_opcode_7_wd),
 
     // from internal hardware
@@ -10798,7 +10405,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_addr_en_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_addr_en_7_wd),
 
     // from internal hardware
@@ -10824,7 +10431,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_addr_swap_en_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_addr_swap_en_7_wd),
 
     // from internal hardware
@@ -10850,7 +10457,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_addr_4b_affected_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_addr_4b_affected_7_wd),
 
     // from internal hardware
@@ -10876,7 +10483,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_dummy_size_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_dummy_size_7_wd),
 
     // from internal hardware
@@ -10902,7 +10509,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_dummy_en_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_dummy_en_7_wd),
 
     // from internal hardware
@@ -10928,7 +10535,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_payload_en_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_payload_en_7_wd),
 
     // from internal hardware
@@ -10954,7 +10561,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_7_payload_dir_7_we),
+    .we     (cmd_info_7_we),
     .wd     (cmd_info_7_payload_dir_7_wd),
 
     // from internal hardware
@@ -10983,7 +10590,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_opcode_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_opcode_8_wd),
 
     // from internal hardware
@@ -11009,7 +10616,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_addr_en_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_addr_en_8_wd),
 
     // from internal hardware
@@ -11035,7 +10642,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_addr_swap_en_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_addr_swap_en_8_wd),
 
     // from internal hardware
@@ -11061,7 +10668,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_addr_4b_affected_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_addr_4b_affected_8_wd),
 
     // from internal hardware
@@ -11087,7 +10694,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_dummy_size_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_dummy_size_8_wd),
 
     // from internal hardware
@@ -11113,7 +10720,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_dummy_en_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_dummy_en_8_wd),
 
     // from internal hardware
@@ -11139,7 +10746,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_payload_en_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_payload_en_8_wd),
 
     // from internal hardware
@@ -11165,7 +10772,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_8_payload_dir_8_we),
+    .we     (cmd_info_8_we),
     .wd     (cmd_info_8_payload_dir_8_wd),
 
     // from internal hardware
@@ -11194,7 +10801,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_opcode_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_opcode_9_wd),
 
     // from internal hardware
@@ -11220,7 +10827,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_addr_en_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_addr_en_9_wd),
 
     // from internal hardware
@@ -11246,7 +10853,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_addr_swap_en_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_addr_swap_en_9_wd),
 
     // from internal hardware
@@ -11272,7 +10879,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_addr_4b_affected_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_addr_4b_affected_9_wd),
 
     // from internal hardware
@@ -11298,7 +10905,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_dummy_size_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_dummy_size_9_wd),
 
     // from internal hardware
@@ -11324,7 +10931,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_dummy_en_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_dummy_en_9_wd),
 
     // from internal hardware
@@ -11350,7 +10957,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_payload_en_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_payload_en_9_wd),
 
     // from internal hardware
@@ -11376,7 +10983,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_9_payload_dir_9_we),
+    .we     (cmd_info_9_we),
     .wd     (cmd_info_9_payload_dir_9_wd),
 
     // from internal hardware
@@ -11405,7 +11012,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_opcode_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_opcode_10_wd),
 
     // from internal hardware
@@ -11431,7 +11038,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_addr_en_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_addr_en_10_wd),
 
     // from internal hardware
@@ -11457,7 +11064,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_addr_swap_en_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_addr_swap_en_10_wd),
 
     // from internal hardware
@@ -11483,7 +11090,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_addr_4b_affected_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_addr_4b_affected_10_wd),
 
     // from internal hardware
@@ -11509,7 +11116,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_dummy_size_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_dummy_size_10_wd),
 
     // from internal hardware
@@ -11535,7 +11142,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_dummy_en_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_dummy_en_10_wd),
 
     // from internal hardware
@@ -11561,7 +11168,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_payload_en_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_payload_en_10_wd),
 
     // from internal hardware
@@ -11587,7 +11194,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_10_payload_dir_10_we),
+    .we     (cmd_info_10_we),
     .wd     (cmd_info_10_payload_dir_10_wd),
 
     // from internal hardware
@@ -11616,7 +11223,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_opcode_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_opcode_11_wd),
 
     // from internal hardware
@@ -11642,7 +11249,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_addr_en_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_addr_en_11_wd),
 
     // from internal hardware
@@ -11668,7 +11275,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_addr_swap_en_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_addr_swap_en_11_wd),
 
     // from internal hardware
@@ -11694,7 +11301,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_addr_4b_affected_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_addr_4b_affected_11_wd),
 
     // from internal hardware
@@ -11720,7 +11327,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_dummy_size_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_dummy_size_11_wd),
 
     // from internal hardware
@@ -11746,7 +11353,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_dummy_en_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_dummy_en_11_wd),
 
     // from internal hardware
@@ -11772,7 +11379,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_payload_en_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_payload_en_11_wd),
 
     // from internal hardware
@@ -11798,7 +11405,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_11_payload_dir_11_we),
+    .we     (cmd_info_11_we),
     .wd     (cmd_info_11_payload_dir_11_wd),
 
     // from internal hardware
@@ -11827,7 +11434,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_opcode_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_opcode_12_wd),
 
     // from internal hardware
@@ -11853,7 +11460,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_addr_en_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_addr_en_12_wd),
 
     // from internal hardware
@@ -11879,7 +11486,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_addr_swap_en_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_addr_swap_en_12_wd),
 
     // from internal hardware
@@ -11905,7 +11512,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_addr_4b_affected_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_addr_4b_affected_12_wd),
 
     // from internal hardware
@@ -11931,7 +11538,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_dummy_size_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_dummy_size_12_wd),
 
     // from internal hardware
@@ -11957,7 +11564,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_dummy_en_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_dummy_en_12_wd),
 
     // from internal hardware
@@ -11983,7 +11590,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_payload_en_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_payload_en_12_wd),
 
     // from internal hardware
@@ -12009,7 +11616,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_12_payload_dir_12_we),
+    .we     (cmd_info_12_we),
     .wd     (cmd_info_12_payload_dir_12_wd),
 
     // from internal hardware
@@ -12038,7 +11645,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_opcode_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_opcode_13_wd),
 
     // from internal hardware
@@ -12064,7 +11671,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_addr_en_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_addr_en_13_wd),
 
     // from internal hardware
@@ -12090,7 +11697,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_addr_swap_en_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_addr_swap_en_13_wd),
 
     // from internal hardware
@@ -12116,7 +11723,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_addr_4b_affected_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_addr_4b_affected_13_wd),
 
     // from internal hardware
@@ -12142,7 +11749,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_dummy_size_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_dummy_size_13_wd),
 
     // from internal hardware
@@ -12168,7 +11775,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_dummy_en_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_dummy_en_13_wd),
 
     // from internal hardware
@@ -12194,7 +11801,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_payload_en_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_payload_en_13_wd),
 
     // from internal hardware
@@ -12220,7 +11827,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_13_payload_dir_13_we),
+    .we     (cmd_info_13_we),
     .wd     (cmd_info_13_payload_dir_13_wd),
 
     // from internal hardware
@@ -12249,7 +11856,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_opcode_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_opcode_14_wd),
 
     // from internal hardware
@@ -12275,7 +11882,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_addr_en_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_addr_en_14_wd),
 
     // from internal hardware
@@ -12301,7 +11908,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_addr_swap_en_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_addr_swap_en_14_wd),
 
     // from internal hardware
@@ -12327,7 +11934,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_addr_4b_affected_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_addr_4b_affected_14_wd),
 
     // from internal hardware
@@ -12353,7 +11960,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_dummy_size_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_dummy_size_14_wd),
 
     // from internal hardware
@@ -12379,7 +11986,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_dummy_en_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_dummy_en_14_wd),
 
     // from internal hardware
@@ -12405,7 +12012,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_payload_en_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_payload_en_14_wd),
 
     // from internal hardware
@@ -12431,7 +12038,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_14_payload_dir_14_we),
+    .we     (cmd_info_14_we),
     .wd     (cmd_info_14_payload_dir_14_wd),
 
     // from internal hardware
@@ -12460,7 +12067,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_opcode_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_opcode_15_wd),
 
     // from internal hardware
@@ -12486,7 +12093,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_addr_en_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_addr_en_15_wd),
 
     // from internal hardware
@@ -12512,7 +12119,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_addr_swap_en_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_addr_swap_en_15_wd),
 
     // from internal hardware
@@ -12538,7 +12145,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_addr_4b_affected_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_addr_4b_affected_15_wd),
 
     // from internal hardware
@@ -12564,7 +12171,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_dummy_size_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_dummy_size_15_wd),
 
     // from internal hardware
@@ -12590,7 +12197,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_dummy_en_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_dummy_en_15_wd),
 
     // from internal hardware
@@ -12616,7 +12223,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_payload_en_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_payload_en_15_wd),
 
     // from internal hardware
@@ -12642,7 +12249,7 @@ module spi_device_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cmd_info_15_payload_dir_15_we),
+    .we     (cmd_info_15_we),
     .wd     (cmd_info_15_payload_dir_15_wd),
 
     // from internal hardware
@@ -12750,1293 +12357,892 @@ module spi_device_reg_top (
                (addr_hit[37] & (|(SPI_DEVICE_PERMIT[37] & ~reg_be))) |
                (addr_hit[38] & (|(SPI_DEVICE_PERMIT[38] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_rxf_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxf_wd = reg_wdata[0];
 
-  assign intr_state_rxlvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxlvl_wd = reg_wdata[1];
 
-  assign intr_state_txlvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_txlvl_wd = reg_wdata[2];
 
-  assign intr_state_rxerr_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxerr_wd = reg_wdata[3];
 
-  assign intr_state_rxoverflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_state_txunderflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_txunderflow_wd = reg_wdata[5];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_rxf_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxf_wd = reg_wdata[0];
 
-  assign intr_enable_rxlvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxlvl_wd = reg_wdata[1];
 
-  assign intr_enable_txlvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_txlvl_wd = reg_wdata[2];
 
-  assign intr_enable_rxerr_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxerr_wd = reg_wdata[3];
 
-  assign intr_enable_rxoverflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_enable_txunderflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_txunderflow_wd = reg_wdata[5];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_rxf_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxf_wd = reg_wdata[0];
 
-  assign intr_test_rxlvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxlvl_wd = reg_wdata[1];
 
-  assign intr_test_txlvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_txlvl_wd = reg_wdata[2];
 
-  assign intr_test_rxerr_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxerr_wd = reg_wdata[3];
 
-  assign intr_test_rxoverflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_test_txunderflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_txunderflow_wd = reg_wdata[5];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
-  assign alert_test_wd = reg_wdata[0];
 
-  assign control_abort_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+  assign control_we = addr_hit[4] & reg_we & !reg_error;
+
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_mode_we = addr_hit[4] & reg_we & !reg_error;
   assign control_mode_wd = reg_wdata[5:4];
 
-  assign control_rst_txfifo_we = addr_hit[4] & reg_we & !reg_error;
   assign control_rst_txfifo_wd = reg_wdata[16];
 
-  assign control_rst_rxfifo_we = addr_hit[4] & reg_we & !reg_error;
   assign control_rst_rxfifo_wd = reg_wdata[17];
 
-  assign control_sram_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_sram_clk_en_wd = reg_wdata[31];
+  assign cfg_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign cfg_cpol_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_cpol_wd = reg_wdata[0];
 
-  assign cfg_cpha_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_cpha_wd = reg_wdata[1];
 
-  assign cfg_tx_order_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_tx_order_wd = reg_wdata[2];
 
-  assign cfg_rx_order_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_rx_order_wd = reg_wdata[3];
 
-  assign cfg_timer_v_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_timer_v_wd = reg_wdata[15:8];
 
-  assign cfg_addr_4b_en_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_addr_4b_en_wd = reg_wdata[16];
+  assign fifo_level_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign fifo_level_rxlvl_we = addr_hit[6] & reg_we & !reg_error;
   assign fifo_level_rxlvl_wd = reg_wdata[15:0];
 
-  assign fifo_level_txlvl_we = addr_hit[6] & reg_we & !reg_error;
   assign fifo_level_txlvl_wd = reg_wdata[31:16];
+  assign async_fifo_level_re = addr_hit[7] & reg_re & !reg_error;
+  assign status_re = addr_hit[8] & reg_re & !reg_error;
+  assign rxf_ptr_we = addr_hit[9] & reg_we & !reg_error;
 
-  assign async_fifo_level_rxlvl_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign async_fifo_level_txlvl_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign status_rxf_full_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign status_rxf_empty_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign status_txf_full_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign status_txf_empty_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign status_abort_done_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign status_csb_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign rxf_ptr_rptr_we = addr_hit[9] & reg_we & !reg_error;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
+  assign txf_ptr_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign txf_ptr_wptr_we = addr_hit[10] & reg_we & !reg_error;
   assign txf_ptr_wptr_wd = reg_wdata[31:16];
+  assign rxf_addr_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign rxf_addr_base_we = addr_hit[11] & reg_we & !reg_error;
   assign rxf_addr_base_wd = reg_wdata[15:0];
 
-  assign rxf_addr_limit_we = addr_hit[11] & reg_we & !reg_error;
   assign rxf_addr_limit_wd = reg_wdata[31:16];
+  assign txf_addr_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign txf_addr_base_we = addr_hit[12] & reg_we & !reg_error;
   assign txf_addr_base_wd = reg_wdata[15:0];
 
-  assign txf_addr_limit_we = addr_hit[12] & reg_we & !reg_error;
   assign txf_addr_limit_wd = reg_wdata[31:16];
+  assign cmd_filter_0_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign cmd_filter_0_filter_0_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_0_wd = reg_wdata[0];
 
-  assign cmd_filter_0_filter_1_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_1_wd = reg_wdata[1];
 
-  assign cmd_filter_0_filter_2_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_2_wd = reg_wdata[2];
 
-  assign cmd_filter_0_filter_3_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_3_wd = reg_wdata[3];
 
-  assign cmd_filter_0_filter_4_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_4_wd = reg_wdata[4];
 
-  assign cmd_filter_0_filter_5_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_5_wd = reg_wdata[5];
 
-  assign cmd_filter_0_filter_6_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_6_wd = reg_wdata[6];
 
-  assign cmd_filter_0_filter_7_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_7_wd = reg_wdata[7];
 
-  assign cmd_filter_0_filter_8_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_8_wd = reg_wdata[8];
 
-  assign cmd_filter_0_filter_9_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_9_wd = reg_wdata[9];
 
-  assign cmd_filter_0_filter_10_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_10_wd = reg_wdata[10];
 
-  assign cmd_filter_0_filter_11_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_11_wd = reg_wdata[11];
 
-  assign cmd_filter_0_filter_12_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_12_wd = reg_wdata[12];
 
-  assign cmd_filter_0_filter_13_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_13_wd = reg_wdata[13];
 
-  assign cmd_filter_0_filter_14_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_14_wd = reg_wdata[14];
 
-  assign cmd_filter_0_filter_15_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_15_wd = reg_wdata[15];
 
-  assign cmd_filter_0_filter_16_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_16_wd = reg_wdata[16];
 
-  assign cmd_filter_0_filter_17_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_17_wd = reg_wdata[17];
 
-  assign cmd_filter_0_filter_18_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_18_wd = reg_wdata[18];
 
-  assign cmd_filter_0_filter_19_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_19_wd = reg_wdata[19];
 
-  assign cmd_filter_0_filter_20_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_20_wd = reg_wdata[20];
 
-  assign cmd_filter_0_filter_21_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_21_wd = reg_wdata[21];
 
-  assign cmd_filter_0_filter_22_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_22_wd = reg_wdata[22];
 
-  assign cmd_filter_0_filter_23_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_23_wd = reg_wdata[23];
 
-  assign cmd_filter_0_filter_24_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_24_wd = reg_wdata[24];
 
-  assign cmd_filter_0_filter_25_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_25_wd = reg_wdata[25];
 
-  assign cmd_filter_0_filter_26_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_26_wd = reg_wdata[26];
 
-  assign cmd_filter_0_filter_27_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_27_wd = reg_wdata[27];
 
-  assign cmd_filter_0_filter_28_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_28_wd = reg_wdata[28];
 
-  assign cmd_filter_0_filter_29_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_29_wd = reg_wdata[29];
 
-  assign cmd_filter_0_filter_30_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_30_wd = reg_wdata[30];
 
-  assign cmd_filter_0_filter_31_we = addr_hit[13] & reg_we & !reg_error;
   assign cmd_filter_0_filter_31_wd = reg_wdata[31];
+  assign cmd_filter_1_we = addr_hit[14] & reg_we & !reg_error;
 
-  assign cmd_filter_1_filter_32_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_32_wd = reg_wdata[0];
 
-  assign cmd_filter_1_filter_33_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_33_wd = reg_wdata[1];
 
-  assign cmd_filter_1_filter_34_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_34_wd = reg_wdata[2];
 
-  assign cmd_filter_1_filter_35_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_35_wd = reg_wdata[3];
 
-  assign cmd_filter_1_filter_36_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_36_wd = reg_wdata[4];
 
-  assign cmd_filter_1_filter_37_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_37_wd = reg_wdata[5];
 
-  assign cmd_filter_1_filter_38_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_38_wd = reg_wdata[6];
 
-  assign cmd_filter_1_filter_39_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_39_wd = reg_wdata[7];
 
-  assign cmd_filter_1_filter_40_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_40_wd = reg_wdata[8];
 
-  assign cmd_filter_1_filter_41_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_41_wd = reg_wdata[9];
 
-  assign cmd_filter_1_filter_42_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_42_wd = reg_wdata[10];
 
-  assign cmd_filter_1_filter_43_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_43_wd = reg_wdata[11];
 
-  assign cmd_filter_1_filter_44_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_44_wd = reg_wdata[12];
 
-  assign cmd_filter_1_filter_45_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_45_wd = reg_wdata[13];
 
-  assign cmd_filter_1_filter_46_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_46_wd = reg_wdata[14];
 
-  assign cmd_filter_1_filter_47_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_47_wd = reg_wdata[15];
 
-  assign cmd_filter_1_filter_48_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_48_wd = reg_wdata[16];
 
-  assign cmd_filter_1_filter_49_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_49_wd = reg_wdata[17];
 
-  assign cmd_filter_1_filter_50_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_50_wd = reg_wdata[18];
 
-  assign cmd_filter_1_filter_51_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_51_wd = reg_wdata[19];
 
-  assign cmd_filter_1_filter_52_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_52_wd = reg_wdata[20];
 
-  assign cmd_filter_1_filter_53_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_53_wd = reg_wdata[21];
 
-  assign cmd_filter_1_filter_54_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_54_wd = reg_wdata[22];
 
-  assign cmd_filter_1_filter_55_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_55_wd = reg_wdata[23];
 
-  assign cmd_filter_1_filter_56_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_56_wd = reg_wdata[24];
 
-  assign cmd_filter_1_filter_57_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_57_wd = reg_wdata[25];
 
-  assign cmd_filter_1_filter_58_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_58_wd = reg_wdata[26];
 
-  assign cmd_filter_1_filter_59_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_59_wd = reg_wdata[27];
 
-  assign cmd_filter_1_filter_60_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_60_wd = reg_wdata[28];
 
-  assign cmd_filter_1_filter_61_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_61_wd = reg_wdata[29];
 
-  assign cmd_filter_1_filter_62_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_62_wd = reg_wdata[30];
 
-  assign cmd_filter_1_filter_63_we = addr_hit[14] & reg_we & !reg_error;
   assign cmd_filter_1_filter_63_wd = reg_wdata[31];
+  assign cmd_filter_2_we = addr_hit[15] & reg_we & !reg_error;
 
-  assign cmd_filter_2_filter_64_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_64_wd = reg_wdata[0];
 
-  assign cmd_filter_2_filter_65_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_65_wd = reg_wdata[1];
 
-  assign cmd_filter_2_filter_66_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_66_wd = reg_wdata[2];
 
-  assign cmd_filter_2_filter_67_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_67_wd = reg_wdata[3];
 
-  assign cmd_filter_2_filter_68_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_68_wd = reg_wdata[4];
 
-  assign cmd_filter_2_filter_69_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_69_wd = reg_wdata[5];
 
-  assign cmd_filter_2_filter_70_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_70_wd = reg_wdata[6];
 
-  assign cmd_filter_2_filter_71_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_71_wd = reg_wdata[7];
 
-  assign cmd_filter_2_filter_72_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_72_wd = reg_wdata[8];
 
-  assign cmd_filter_2_filter_73_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_73_wd = reg_wdata[9];
 
-  assign cmd_filter_2_filter_74_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_74_wd = reg_wdata[10];
 
-  assign cmd_filter_2_filter_75_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_75_wd = reg_wdata[11];
 
-  assign cmd_filter_2_filter_76_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_76_wd = reg_wdata[12];
 
-  assign cmd_filter_2_filter_77_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_77_wd = reg_wdata[13];
 
-  assign cmd_filter_2_filter_78_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_78_wd = reg_wdata[14];
 
-  assign cmd_filter_2_filter_79_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_79_wd = reg_wdata[15];
 
-  assign cmd_filter_2_filter_80_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_80_wd = reg_wdata[16];
 
-  assign cmd_filter_2_filter_81_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_81_wd = reg_wdata[17];
 
-  assign cmd_filter_2_filter_82_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_82_wd = reg_wdata[18];
 
-  assign cmd_filter_2_filter_83_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_83_wd = reg_wdata[19];
 
-  assign cmd_filter_2_filter_84_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_84_wd = reg_wdata[20];
 
-  assign cmd_filter_2_filter_85_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_85_wd = reg_wdata[21];
 
-  assign cmd_filter_2_filter_86_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_86_wd = reg_wdata[22];
 
-  assign cmd_filter_2_filter_87_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_87_wd = reg_wdata[23];
 
-  assign cmd_filter_2_filter_88_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_88_wd = reg_wdata[24];
 
-  assign cmd_filter_2_filter_89_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_89_wd = reg_wdata[25];
 
-  assign cmd_filter_2_filter_90_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_90_wd = reg_wdata[26];
 
-  assign cmd_filter_2_filter_91_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_91_wd = reg_wdata[27];
 
-  assign cmd_filter_2_filter_92_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_92_wd = reg_wdata[28];
 
-  assign cmd_filter_2_filter_93_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_93_wd = reg_wdata[29];
 
-  assign cmd_filter_2_filter_94_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_94_wd = reg_wdata[30];
 
-  assign cmd_filter_2_filter_95_we = addr_hit[15] & reg_we & !reg_error;
   assign cmd_filter_2_filter_95_wd = reg_wdata[31];
+  assign cmd_filter_3_we = addr_hit[16] & reg_we & !reg_error;
 
-  assign cmd_filter_3_filter_96_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_96_wd = reg_wdata[0];
 
-  assign cmd_filter_3_filter_97_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_97_wd = reg_wdata[1];
 
-  assign cmd_filter_3_filter_98_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_98_wd = reg_wdata[2];
 
-  assign cmd_filter_3_filter_99_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_99_wd = reg_wdata[3];
 
-  assign cmd_filter_3_filter_100_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_100_wd = reg_wdata[4];
 
-  assign cmd_filter_3_filter_101_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_101_wd = reg_wdata[5];
 
-  assign cmd_filter_3_filter_102_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_102_wd = reg_wdata[6];
 
-  assign cmd_filter_3_filter_103_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_103_wd = reg_wdata[7];
 
-  assign cmd_filter_3_filter_104_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_104_wd = reg_wdata[8];
 
-  assign cmd_filter_3_filter_105_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_105_wd = reg_wdata[9];
 
-  assign cmd_filter_3_filter_106_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_106_wd = reg_wdata[10];
 
-  assign cmd_filter_3_filter_107_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_107_wd = reg_wdata[11];
 
-  assign cmd_filter_3_filter_108_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_108_wd = reg_wdata[12];
 
-  assign cmd_filter_3_filter_109_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_109_wd = reg_wdata[13];
 
-  assign cmd_filter_3_filter_110_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_110_wd = reg_wdata[14];
 
-  assign cmd_filter_3_filter_111_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_111_wd = reg_wdata[15];
 
-  assign cmd_filter_3_filter_112_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_112_wd = reg_wdata[16];
 
-  assign cmd_filter_3_filter_113_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_113_wd = reg_wdata[17];
 
-  assign cmd_filter_3_filter_114_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_114_wd = reg_wdata[18];
 
-  assign cmd_filter_3_filter_115_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_115_wd = reg_wdata[19];
 
-  assign cmd_filter_3_filter_116_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_116_wd = reg_wdata[20];
 
-  assign cmd_filter_3_filter_117_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_117_wd = reg_wdata[21];
 
-  assign cmd_filter_3_filter_118_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_118_wd = reg_wdata[22];
 
-  assign cmd_filter_3_filter_119_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_119_wd = reg_wdata[23];
 
-  assign cmd_filter_3_filter_120_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_120_wd = reg_wdata[24];
 
-  assign cmd_filter_3_filter_121_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_121_wd = reg_wdata[25];
 
-  assign cmd_filter_3_filter_122_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_122_wd = reg_wdata[26];
 
-  assign cmd_filter_3_filter_123_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_123_wd = reg_wdata[27];
 
-  assign cmd_filter_3_filter_124_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_124_wd = reg_wdata[28];
 
-  assign cmd_filter_3_filter_125_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_125_wd = reg_wdata[29];
 
-  assign cmd_filter_3_filter_126_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_126_wd = reg_wdata[30];
 
-  assign cmd_filter_3_filter_127_we = addr_hit[16] & reg_we & !reg_error;
   assign cmd_filter_3_filter_127_wd = reg_wdata[31];
+  assign cmd_filter_4_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign cmd_filter_4_filter_128_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_128_wd = reg_wdata[0];
 
-  assign cmd_filter_4_filter_129_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_129_wd = reg_wdata[1];
 
-  assign cmd_filter_4_filter_130_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_130_wd = reg_wdata[2];
 
-  assign cmd_filter_4_filter_131_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_131_wd = reg_wdata[3];
 
-  assign cmd_filter_4_filter_132_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_132_wd = reg_wdata[4];
 
-  assign cmd_filter_4_filter_133_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_133_wd = reg_wdata[5];
 
-  assign cmd_filter_4_filter_134_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_134_wd = reg_wdata[6];
 
-  assign cmd_filter_4_filter_135_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_135_wd = reg_wdata[7];
 
-  assign cmd_filter_4_filter_136_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_136_wd = reg_wdata[8];
 
-  assign cmd_filter_4_filter_137_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_137_wd = reg_wdata[9];
 
-  assign cmd_filter_4_filter_138_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_138_wd = reg_wdata[10];
 
-  assign cmd_filter_4_filter_139_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_139_wd = reg_wdata[11];
 
-  assign cmd_filter_4_filter_140_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_140_wd = reg_wdata[12];
 
-  assign cmd_filter_4_filter_141_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_141_wd = reg_wdata[13];
 
-  assign cmd_filter_4_filter_142_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_142_wd = reg_wdata[14];
 
-  assign cmd_filter_4_filter_143_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_143_wd = reg_wdata[15];
 
-  assign cmd_filter_4_filter_144_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_144_wd = reg_wdata[16];
 
-  assign cmd_filter_4_filter_145_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_145_wd = reg_wdata[17];
 
-  assign cmd_filter_4_filter_146_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_146_wd = reg_wdata[18];
 
-  assign cmd_filter_4_filter_147_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_147_wd = reg_wdata[19];
 
-  assign cmd_filter_4_filter_148_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_148_wd = reg_wdata[20];
 
-  assign cmd_filter_4_filter_149_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_149_wd = reg_wdata[21];
 
-  assign cmd_filter_4_filter_150_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_150_wd = reg_wdata[22];
 
-  assign cmd_filter_4_filter_151_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_151_wd = reg_wdata[23];
 
-  assign cmd_filter_4_filter_152_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_152_wd = reg_wdata[24];
 
-  assign cmd_filter_4_filter_153_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_153_wd = reg_wdata[25];
 
-  assign cmd_filter_4_filter_154_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_154_wd = reg_wdata[26];
 
-  assign cmd_filter_4_filter_155_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_155_wd = reg_wdata[27];
 
-  assign cmd_filter_4_filter_156_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_156_wd = reg_wdata[28];
 
-  assign cmd_filter_4_filter_157_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_157_wd = reg_wdata[29];
 
-  assign cmd_filter_4_filter_158_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_158_wd = reg_wdata[30];
 
-  assign cmd_filter_4_filter_159_we = addr_hit[17] & reg_we & !reg_error;
   assign cmd_filter_4_filter_159_wd = reg_wdata[31];
+  assign cmd_filter_5_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign cmd_filter_5_filter_160_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_160_wd = reg_wdata[0];
 
-  assign cmd_filter_5_filter_161_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_161_wd = reg_wdata[1];
 
-  assign cmd_filter_5_filter_162_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_162_wd = reg_wdata[2];
 
-  assign cmd_filter_5_filter_163_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_163_wd = reg_wdata[3];
 
-  assign cmd_filter_5_filter_164_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_164_wd = reg_wdata[4];
 
-  assign cmd_filter_5_filter_165_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_165_wd = reg_wdata[5];
 
-  assign cmd_filter_5_filter_166_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_166_wd = reg_wdata[6];
 
-  assign cmd_filter_5_filter_167_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_167_wd = reg_wdata[7];
 
-  assign cmd_filter_5_filter_168_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_168_wd = reg_wdata[8];
 
-  assign cmd_filter_5_filter_169_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_169_wd = reg_wdata[9];
 
-  assign cmd_filter_5_filter_170_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_170_wd = reg_wdata[10];
 
-  assign cmd_filter_5_filter_171_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_171_wd = reg_wdata[11];
 
-  assign cmd_filter_5_filter_172_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_172_wd = reg_wdata[12];
 
-  assign cmd_filter_5_filter_173_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_173_wd = reg_wdata[13];
 
-  assign cmd_filter_5_filter_174_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_174_wd = reg_wdata[14];
 
-  assign cmd_filter_5_filter_175_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_175_wd = reg_wdata[15];
 
-  assign cmd_filter_5_filter_176_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_176_wd = reg_wdata[16];
 
-  assign cmd_filter_5_filter_177_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_177_wd = reg_wdata[17];
 
-  assign cmd_filter_5_filter_178_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_178_wd = reg_wdata[18];
 
-  assign cmd_filter_5_filter_179_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_179_wd = reg_wdata[19];
 
-  assign cmd_filter_5_filter_180_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_180_wd = reg_wdata[20];
 
-  assign cmd_filter_5_filter_181_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_181_wd = reg_wdata[21];
 
-  assign cmd_filter_5_filter_182_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_182_wd = reg_wdata[22];
 
-  assign cmd_filter_5_filter_183_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_183_wd = reg_wdata[23];
 
-  assign cmd_filter_5_filter_184_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_184_wd = reg_wdata[24];
 
-  assign cmd_filter_5_filter_185_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_185_wd = reg_wdata[25];
 
-  assign cmd_filter_5_filter_186_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_186_wd = reg_wdata[26];
 
-  assign cmd_filter_5_filter_187_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_187_wd = reg_wdata[27];
 
-  assign cmd_filter_5_filter_188_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_188_wd = reg_wdata[28];
 
-  assign cmd_filter_5_filter_189_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_189_wd = reg_wdata[29];
 
-  assign cmd_filter_5_filter_190_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_190_wd = reg_wdata[30];
 
-  assign cmd_filter_5_filter_191_we = addr_hit[18] & reg_we & !reg_error;
   assign cmd_filter_5_filter_191_wd = reg_wdata[31];
+  assign cmd_filter_6_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign cmd_filter_6_filter_192_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_192_wd = reg_wdata[0];
 
-  assign cmd_filter_6_filter_193_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_193_wd = reg_wdata[1];
 
-  assign cmd_filter_6_filter_194_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_194_wd = reg_wdata[2];
 
-  assign cmd_filter_6_filter_195_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_195_wd = reg_wdata[3];
 
-  assign cmd_filter_6_filter_196_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_196_wd = reg_wdata[4];
 
-  assign cmd_filter_6_filter_197_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_197_wd = reg_wdata[5];
 
-  assign cmd_filter_6_filter_198_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_198_wd = reg_wdata[6];
 
-  assign cmd_filter_6_filter_199_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_199_wd = reg_wdata[7];
 
-  assign cmd_filter_6_filter_200_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_200_wd = reg_wdata[8];
 
-  assign cmd_filter_6_filter_201_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_201_wd = reg_wdata[9];
 
-  assign cmd_filter_6_filter_202_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_202_wd = reg_wdata[10];
 
-  assign cmd_filter_6_filter_203_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_203_wd = reg_wdata[11];
 
-  assign cmd_filter_6_filter_204_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_204_wd = reg_wdata[12];
 
-  assign cmd_filter_6_filter_205_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_205_wd = reg_wdata[13];
 
-  assign cmd_filter_6_filter_206_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_206_wd = reg_wdata[14];
 
-  assign cmd_filter_6_filter_207_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_207_wd = reg_wdata[15];
 
-  assign cmd_filter_6_filter_208_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_208_wd = reg_wdata[16];
 
-  assign cmd_filter_6_filter_209_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_209_wd = reg_wdata[17];
 
-  assign cmd_filter_6_filter_210_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_210_wd = reg_wdata[18];
 
-  assign cmd_filter_6_filter_211_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_211_wd = reg_wdata[19];
 
-  assign cmd_filter_6_filter_212_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_212_wd = reg_wdata[20];
 
-  assign cmd_filter_6_filter_213_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_213_wd = reg_wdata[21];
 
-  assign cmd_filter_6_filter_214_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_214_wd = reg_wdata[22];
 
-  assign cmd_filter_6_filter_215_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_215_wd = reg_wdata[23];
 
-  assign cmd_filter_6_filter_216_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_216_wd = reg_wdata[24];
 
-  assign cmd_filter_6_filter_217_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_217_wd = reg_wdata[25];
 
-  assign cmd_filter_6_filter_218_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_218_wd = reg_wdata[26];
 
-  assign cmd_filter_6_filter_219_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_219_wd = reg_wdata[27];
 
-  assign cmd_filter_6_filter_220_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_220_wd = reg_wdata[28];
 
-  assign cmd_filter_6_filter_221_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_221_wd = reg_wdata[29];
 
-  assign cmd_filter_6_filter_222_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_222_wd = reg_wdata[30];
 
-  assign cmd_filter_6_filter_223_we = addr_hit[19] & reg_we & !reg_error;
   assign cmd_filter_6_filter_223_wd = reg_wdata[31];
+  assign cmd_filter_7_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign cmd_filter_7_filter_224_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_224_wd = reg_wdata[0];
 
-  assign cmd_filter_7_filter_225_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_225_wd = reg_wdata[1];
 
-  assign cmd_filter_7_filter_226_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_226_wd = reg_wdata[2];
 
-  assign cmd_filter_7_filter_227_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_227_wd = reg_wdata[3];
 
-  assign cmd_filter_7_filter_228_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_228_wd = reg_wdata[4];
 
-  assign cmd_filter_7_filter_229_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_229_wd = reg_wdata[5];
 
-  assign cmd_filter_7_filter_230_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_230_wd = reg_wdata[6];
 
-  assign cmd_filter_7_filter_231_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_231_wd = reg_wdata[7];
 
-  assign cmd_filter_7_filter_232_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_232_wd = reg_wdata[8];
 
-  assign cmd_filter_7_filter_233_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_233_wd = reg_wdata[9];
 
-  assign cmd_filter_7_filter_234_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_234_wd = reg_wdata[10];
 
-  assign cmd_filter_7_filter_235_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_235_wd = reg_wdata[11];
 
-  assign cmd_filter_7_filter_236_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_236_wd = reg_wdata[12];
 
-  assign cmd_filter_7_filter_237_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_237_wd = reg_wdata[13];
 
-  assign cmd_filter_7_filter_238_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_238_wd = reg_wdata[14];
 
-  assign cmd_filter_7_filter_239_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_239_wd = reg_wdata[15];
 
-  assign cmd_filter_7_filter_240_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_240_wd = reg_wdata[16];
 
-  assign cmd_filter_7_filter_241_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_241_wd = reg_wdata[17];
 
-  assign cmd_filter_7_filter_242_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_242_wd = reg_wdata[18];
 
-  assign cmd_filter_7_filter_243_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_243_wd = reg_wdata[19];
 
-  assign cmd_filter_7_filter_244_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_244_wd = reg_wdata[20];
 
-  assign cmd_filter_7_filter_245_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_245_wd = reg_wdata[21];
 
-  assign cmd_filter_7_filter_246_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_246_wd = reg_wdata[22];
 
-  assign cmd_filter_7_filter_247_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_247_wd = reg_wdata[23];
 
-  assign cmd_filter_7_filter_248_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_248_wd = reg_wdata[24];
 
-  assign cmd_filter_7_filter_249_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_249_wd = reg_wdata[25];
 
-  assign cmd_filter_7_filter_250_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_250_wd = reg_wdata[26];
 
-  assign cmd_filter_7_filter_251_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_251_wd = reg_wdata[27];
 
-  assign cmd_filter_7_filter_252_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_252_wd = reg_wdata[28];
 
-  assign cmd_filter_7_filter_253_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_253_wd = reg_wdata[29];
 
-  assign cmd_filter_7_filter_254_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_254_wd = reg_wdata[30];
 
-  assign cmd_filter_7_filter_255_we = addr_hit[20] & reg_we & !reg_error;
   assign cmd_filter_7_filter_255_wd = reg_wdata[31];
-
   assign addr_swap_mask_we = addr_hit[21] & reg_we & !reg_error;
+
   assign addr_swap_mask_wd = reg_wdata[31:0];
-
   assign addr_swap_data_we = addr_hit[22] & reg_we & !reg_error;
-  assign addr_swap_data_wd = reg_wdata[31:0];
 
-  assign cmd_info_0_opcode_0_we = addr_hit[23] & reg_we & !reg_error;
+  assign addr_swap_data_wd = reg_wdata[31:0];
+  assign cmd_info_0_we = addr_hit[23] & reg_we & !reg_error;
+
   assign cmd_info_0_opcode_0_wd = reg_wdata[7:0];
 
-  assign cmd_info_0_addr_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_en_0_wd = reg_wdata[8];
 
-  assign cmd_info_0_addr_swap_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_swap_en_0_wd = reg_wdata[9];
 
-  assign cmd_info_0_addr_4b_affected_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_addr_4b_affected_0_wd = reg_wdata[10];
 
-  assign cmd_info_0_dummy_size_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_dummy_size_0_wd = reg_wdata[14:12];
 
-  assign cmd_info_0_dummy_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_dummy_en_0_wd = reg_wdata[15];
 
-  assign cmd_info_0_payload_en_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_payload_en_0_wd = reg_wdata[19:16];
 
-  assign cmd_info_0_payload_dir_0_we = addr_hit[23] & reg_we & !reg_error;
   assign cmd_info_0_payload_dir_0_wd = reg_wdata[20];
+  assign cmd_info_1_we = addr_hit[24] & reg_we & !reg_error;
 
-  assign cmd_info_1_opcode_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
 
-  assign cmd_info_1_addr_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_en_1_wd = reg_wdata[8];
 
-  assign cmd_info_1_addr_swap_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_swap_en_1_wd = reg_wdata[9];
 
-  assign cmd_info_1_addr_4b_affected_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_addr_4b_affected_1_wd = reg_wdata[10];
 
-  assign cmd_info_1_dummy_size_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_dummy_size_1_wd = reg_wdata[14:12];
 
-  assign cmd_info_1_dummy_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_dummy_en_1_wd = reg_wdata[15];
 
-  assign cmd_info_1_payload_en_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_payload_en_1_wd = reg_wdata[19:16];
 
-  assign cmd_info_1_payload_dir_1_we = addr_hit[24] & reg_we & !reg_error;
   assign cmd_info_1_payload_dir_1_wd = reg_wdata[20];
+  assign cmd_info_2_we = addr_hit[25] & reg_we & !reg_error;
 
-  assign cmd_info_2_opcode_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
 
-  assign cmd_info_2_addr_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_en_2_wd = reg_wdata[8];
 
-  assign cmd_info_2_addr_swap_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_swap_en_2_wd = reg_wdata[9];
 
-  assign cmd_info_2_addr_4b_affected_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_addr_4b_affected_2_wd = reg_wdata[10];
 
-  assign cmd_info_2_dummy_size_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_dummy_size_2_wd = reg_wdata[14:12];
 
-  assign cmd_info_2_dummy_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_dummy_en_2_wd = reg_wdata[15];
 
-  assign cmd_info_2_payload_en_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_payload_en_2_wd = reg_wdata[19:16];
 
-  assign cmd_info_2_payload_dir_2_we = addr_hit[25] & reg_we & !reg_error;
   assign cmd_info_2_payload_dir_2_wd = reg_wdata[20];
+  assign cmd_info_3_we = addr_hit[26] & reg_we & !reg_error;
 
-  assign cmd_info_3_opcode_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
 
-  assign cmd_info_3_addr_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_en_3_wd = reg_wdata[8];
 
-  assign cmd_info_3_addr_swap_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_swap_en_3_wd = reg_wdata[9];
 
-  assign cmd_info_3_addr_4b_affected_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_addr_4b_affected_3_wd = reg_wdata[10];
 
-  assign cmd_info_3_dummy_size_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_dummy_size_3_wd = reg_wdata[14:12];
 
-  assign cmd_info_3_dummy_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_dummy_en_3_wd = reg_wdata[15];
 
-  assign cmd_info_3_payload_en_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_payload_en_3_wd = reg_wdata[19:16];
 
-  assign cmd_info_3_payload_dir_3_we = addr_hit[26] & reg_we & !reg_error;
   assign cmd_info_3_payload_dir_3_wd = reg_wdata[20];
+  assign cmd_info_4_we = addr_hit[27] & reg_we & !reg_error;
 
-  assign cmd_info_4_opcode_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
 
-  assign cmd_info_4_addr_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_en_4_wd = reg_wdata[8];
 
-  assign cmd_info_4_addr_swap_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_swap_en_4_wd = reg_wdata[9];
 
-  assign cmd_info_4_addr_4b_affected_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_addr_4b_affected_4_wd = reg_wdata[10];
 
-  assign cmd_info_4_dummy_size_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_dummy_size_4_wd = reg_wdata[14:12];
 
-  assign cmd_info_4_dummy_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_dummy_en_4_wd = reg_wdata[15];
 
-  assign cmd_info_4_payload_en_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_payload_en_4_wd = reg_wdata[19:16];
 
-  assign cmd_info_4_payload_dir_4_we = addr_hit[27] & reg_we & !reg_error;
   assign cmd_info_4_payload_dir_4_wd = reg_wdata[20];
+  assign cmd_info_5_we = addr_hit[28] & reg_we & !reg_error;
 
-  assign cmd_info_5_opcode_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
 
-  assign cmd_info_5_addr_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_en_5_wd = reg_wdata[8];
 
-  assign cmd_info_5_addr_swap_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_swap_en_5_wd = reg_wdata[9];
 
-  assign cmd_info_5_addr_4b_affected_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_addr_4b_affected_5_wd = reg_wdata[10];
 
-  assign cmd_info_5_dummy_size_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_dummy_size_5_wd = reg_wdata[14:12];
 
-  assign cmd_info_5_dummy_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_dummy_en_5_wd = reg_wdata[15];
 
-  assign cmd_info_5_payload_en_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_payload_en_5_wd = reg_wdata[19:16];
 
-  assign cmd_info_5_payload_dir_5_we = addr_hit[28] & reg_we & !reg_error;
   assign cmd_info_5_payload_dir_5_wd = reg_wdata[20];
+  assign cmd_info_6_we = addr_hit[29] & reg_we & !reg_error;
 
-  assign cmd_info_6_opcode_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
 
-  assign cmd_info_6_addr_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_en_6_wd = reg_wdata[8];
 
-  assign cmd_info_6_addr_swap_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_swap_en_6_wd = reg_wdata[9];
 
-  assign cmd_info_6_addr_4b_affected_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_addr_4b_affected_6_wd = reg_wdata[10];
 
-  assign cmd_info_6_dummy_size_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_dummy_size_6_wd = reg_wdata[14:12];
 
-  assign cmd_info_6_dummy_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_dummy_en_6_wd = reg_wdata[15];
 
-  assign cmd_info_6_payload_en_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_payload_en_6_wd = reg_wdata[19:16];
 
-  assign cmd_info_6_payload_dir_6_we = addr_hit[29] & reg_we & !reg_error;
   assign cmd_info_6_payload_dir_6_wd = reg_wdata[20];
+  assign cmd_info_7_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign cmd_info_7_opcode_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
 
-  assign cmd_info_7_addr_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_en_7_wd = reg_wdata[8];
 
-  assign cmd_info_7_addr_swap_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_swap_en_7_wd = reg_wdata[9];
 
-  assign cmd_info_7_addr_4b_affected_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_addr_4b_affected_7_wd = reg_wdata[10];
 
-  assign cmd_info_7_dummy_size_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_dummy_size_7_wd = reg_wdata[14:12];
 
-  assign cmd_info_7_dummy_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_dummy_en_7_wd = reg_wdata[15];
 
-  assign cmd_info_7_payload_en_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_payload_en_7_wd = reg_wdata[19:16];
 
-  assign cmd_info_7_payload_dir_7_we = addr_hit[30] & reg_we & !reg_error;
   assign cmd_info_7_payload_dir_7_wd = reg_wdata[20];
+  assign cmd_info_8_we = addr_hit[31] & reg_we & !reg_error;
 
-  assign cmd_info_8_opcode_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
 
-  assign cmd_info_8_addr_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_en_8_wd = reg_wdata[8];
 
-  assign cmd_info_8_addr_swap_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_swap_en_8_wd = reg_wdata[9];
 
-  assign cmd_info_8_addr_4b_affected_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_addr_4b_affected_8_wd = reg_wdata[10];
 
-  assign cmd_info_8_dummy_size_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_dummy_size_8_wd = reg_wdata[14:12];
 
-  assign cmd_info_8_dummy_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_dummy_en_8_wd = reg_wdata[15];
 
-  assign cmd_info_8_payload_en_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_payload_en_8_wd = reg_wdata[19:16];
 
-  assign cmd_info_8_payload_dir_8_we = addr_hit[31] & reg_we & !reg_error;
   assign cmd_info_8_payload_dir_8_wd = reg_wdata[20];
+  assign cmd_info_9_we = addr_hit[32] & reg_we & !reg_error;
 
-  assign cmd_info_9_opcode_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
 
-  assign cmd_info_9_addr_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_en_9_wd = reg_wdata[8];
 
-  assign cmd_info_9_addr_swap_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_swap_en_9_wd = reg_wdata[9];
 
-  assign cmd_info_9_addr_4b_affected_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_addr_4b_affected_9_wd = reg_wdata[10];
 
-  assign cmd_info_9_dummy_size_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_dummy_size_9_wd = reg_wdata[14:12];
 
-  assign cmd_info_9_dummy_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_dummy_en_9_wd = reg_wdata[15];
 
-  assign cmd_info_9_payload_en_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_payload_en_9_wd = reg_wdata[19:16];
 
-  assign cmd_info_9_payload_dir_9_we = addr_hit[32] & reg_we & !reg_error;
   assign cmd_info_9_payload_dir_9_wd = reg_wdata[20];
+  assign cmd_info_10_we = addr_hit[33] & reg_we & !reg_error;
 
-  assign cmd_info_10_opcode_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
 
-  assign cmd_info_10_addr_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_en_10_wd = reg_wdata[8];
 
-  assign cmd_info_10_addr_swap_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_swap_en_10_wd = reg_wdata[9];
 
-  assign cmd_info_10_addr_4b_affected_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_addr_4b_affected_10_wd = reg_wdata[10];
 
-  assign cmd_info_10_dummy_size_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_dummy_size_10_wd = reg_wdata[14:12];
 
-  assign cmd_info_10_dummy_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_dummy_en_10_wd = reg_wdata[15];
 
-  assign cmd_info_10_payload_en_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_payload_en_10_wd = reg_wdata[19:16];
 
-  assign cmd_info_10_payload_dir_10_we = addr_hit[33] & reg_we & !reg_error;
   assign cmd_info_10_payload_dir_10_wd = reg_wdata[20];
+  assign cmd_info_11_we = addr_hit[34] & reg_we & !reg_error;
 
-  assign cmd_info_11_opcode_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
 
-  assign cmd_info_11_addr_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_en_11_wd = reg_wdata[8];
 
-  assign cmd_info_11_addr_swap_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_swap_en_11_wd = reg_wdata[9];
 
-  assign cmd_info_11_addr_4b_affected_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_addr_4b_affected_11_wd = reg_wdata[10];
 
-  assign cmd_info_11_dummy_size_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_dummy_size_11_wd = reg_wdata[14:12];
 
-  assign cmd_info_11_dummy_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_dummy_en_11_wd = reg_wdata[15];
 
-  assign cmd_info_11_payload_en_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_payload_en_11_wd = reg_wdata[19:16];
 
-  assign cmd_info_11_payload_dir_11_we = addr_hit[34] & reg_we & !reg_error;
   assign cmd_info_11_payload_dir_11_wd = reg_wdata[20];
+  assign cmd_info_12_we = addr_hit[35] & reg_we & !reg_error;
 
-  assign cmd_info_12_opcode_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
 
-  assign cmd_info_12_addr_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_en_12_wd = reg_wdata[8];
 
-  assign cmd_info_12_addr_swap_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_swap_en_12_wd = reg_wdata[9];
 
-  assign cmd_info_12_addr_4b_affected_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_addr_4b_affected_12_wd = reg_wdata[10];
 
-  assign cmd_info_12_dummy_size_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_dummy_size_12_wd = reg_wdata[14:12];
 
-  assign cmd_info_12_dummy_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_dummy_en_12_wd = reg_wdata[15];
 
-  assign cmd_info_12_payload_en_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_payload_en_12_wd = reg_wdata[19:16];
 
-  assign cmd_info_12_payload_dir_12_we = addr_hit[35] & reg_we & !reg_error;
   assign cmd_info_12_payload_dir_12_wd = reg_wdata[20];
+  assign cmd_info_13_we = addr_hit[36] & reg_we & !reg_error;
 
-  assign cmd_info_13_opcode_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
 
-  assign cmd_info_13_addr_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_en_13_wd = reg_wdata[8];
 
-  assign cmd_info_13_addr_swap_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_swap_en_13_wd = reg_wdata[9];
 
-  assign cmd_info_13_addr_4b_affected_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_addr_4b_affected_13_wd = reg_wdata[10];
 
-  assign cmd_info_13_dummy_size_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_dummy_size_13_wd = reg_wdata[14:12];
 
-  assign cmd_info_13_dummy_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_dummy_en_13_wd = reg_wdata[15];
 
-  assign cmd_info_13_payload_en_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_payload_en_13_wd = reg_wdata[19:16];
 
-  assign cmd_info_13_payload_dir_13_we = addr_hit[36] & reg_we & !reg_error;
   assign cmd_info_13_payload_dir_13_wd = reg_wdata[20];
+  assign cmd_info_14_we = addr_hit[37] & reg_we & !reg_error;
 
-  assign cmd_info_14_opcode_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
 
-  assign cmd_info_14_addr_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_en_14_wd = reg_wdata[8];
 
-  assign cmd_info_14_addr_swap_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_swap_en_14_wd = reg_wdata[9];
 
-  assign cmd_info_14_addr_4b_affected_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_addr_4b_affected_14_wd = reg_wdata[10];
 
-  assign cmd_info_14_dummy_size_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_dummy_size_14_wd = reg_wdata[14:12];
 
-  assign cmd_info_14_dummy_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_dummy_en_14_wd = reg_wdata[15];
 
-  assign cmd_info_14_payload_en_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_payload_en_14_wd = reg_wdata[19:16];
 
-  assign cmd_info_14_payload_dir_14_we = addr_hit[37] & reg_we & !reg_error;
   assign cmd_info_14_payload_dir_14_wd = reg_wdata[20];
+  assign cmd_info_15_we = addr_hit[38] & reg_we & !reg_error;
 
-  assign cmd_info_15_opcode_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
 
-  assign cmd_info_15_addr_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_en_15_wd = reg_wdata[8];
 
-  assign cmd_info_15_addr_swap_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_swap_en_15_wd = reg_wdata[9];
 
-  assign cmd_info_15_addr_4b_affected_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_addr_4b_affected_15_wd = reg_wdata[10];
 
-  assign cmd_info_15_dummy_size_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_dummy_size_15_wd = reg_wdata[14:12];
 
-  assign cmd_info_15_dummy_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_dummy_en_15_wd = reg_wdata[15];
 
-  assign cmd_info_15_payload_en_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_payload_en_15_wd = reg_wdata[19:16];
 
-  assign cmd_info_15_payload_dir_15_we = addr_hit[38] & reg_we & !reg_error;
   assign cmd_info_15_payload_dir_15_wd = reg_wdata[20];
 
   // Read data return

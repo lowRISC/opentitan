@@ -104,152 +104,104 @@ module sensor_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
   logic alert_test_recov_as_wd;
-  logic alert_test_recov_as_we;
   logic alert_test_recov_cg_wd;
-  logic alert_test_recov_cg_we;
   logic alert_test_recov_gd_wd;
-  logic alert_test_recov_gd_we;
   logic alert_test_recov_ts_hi_wd;
-  logic alert_test_recov_ts_hi_we;
   logic alert_test_recov_ts_lo_wd;
-  logic alert_test_recov_ts_lo_we;
   logic alert_test_recov_fla_wd;
-  logic alert_test_recov_fla_we;
   logic alert_test_recov_otp_wd;
-  logic alert_test_recov_otp_we;
   logic alert_test_recov_ot0_wd;
-  logic alert_test_recov_ot0_we;
   logic alert_test_recov_ot1_wd;
-  logic alert_test_recov_ot1_we;
   logic alert_test_recov_ot2_wd;
-  logic alert_test_recov_ot2_we;
   logic alert_test_recov_ot3_wd;
-  logic alert_test_recov_ot3_we;
   logic alert_test_recov_ot4_wd;
-  logic alert_test_recov_ot4_we;
   logic alert_test_recov_ot5_wd;
-  logic alert_test_recov_ot5_we;
+  logic cfg_regwen_we;
   logic cfg_regwen_qs;
   logic cfg_regwen_wd;
-  logic cfg_regwen_we;
+  logic ack_mode_we;
   logic [1:0] ack_mode_val_0_qs;
   logic [1:0] ack_mode_val_0_wd;
-  logic ack_mode_val_0_we;
   logic [1:0] ack_mode_val_1_qs;
   logic [1:0] ack_mode_val_1_wd;
-  logic ack_mode_val_1_we;
   logic [1:0] ack_mode_val_2_qs;
   logic [1:0] ack_mode_val_2_wd;
-  logic ack_mode_val_2_we;
   logic [1:0] ack_mode_val_3_qs;
   logic [1:0] ack_mode_val_3_wd;
-  logic ack_mode_val_3_we;
   logic [1:0] ack_mode_val_4_qs;
   logic [1:0] ack_mode_val_4_wd;
-  logic ack_mode_val_4_we;
   logic [1:0] ack_mode_val_5_qs;
   logic [1:0] ack_mode_val_5_wd;
-  logic ack_mode_val_5_we;
   logic [1:0] ack_mode_val_6_qs;
   logic [1:0] ack_mode_val_6_wd;
-  logic ack_mode_val_6_we;
   logic [1:0] ack_mode_val_7_qs;
   logic [1:0] ack_mode_val_7_wd;
-  logic ack_mode_val_7_we;
   logic [1:0] ack_mode_val_8_qs;
   logic [1:0] ack_mode_val_8_wd;
-  logic ack_mode_val_8_we;
   logic [1:0] ack_mode_val_9_qs;
   logic [1:0] ack_mode_val_9_wd;
-  logic ack_mode_val_9_we;
   logic [1:0] ack_mode_val_10_qs;
   logic [1:0] ack_mode_val_10_wd;
-  logic ack_mode_val_10_we;
   logic [1:0] ack_mode_val_11_qs;
   logic [1:0] ack_mode_val_11_wd;
-  logic ack_mode_val_11_we;
   logic [1:0] ack_mode_val_12_qs;
   logic [1:0] ack_mode_val_12_wd;
-  logic ack_mode_val_12_we;
+  logic alert_trig_we;
   logic alert_trig_val_0_qs;
   logic alert_trig_val_0_wd;
-  logic alert_trig_val_0_we;
   logic alert_trig_val_1_qs;
   logic alert_trig_val_1_wd;
-  logic alert_trig_val_1_we;
   logic alert_trig_val_2_qs;
   logic alert_trig_val_2_wd;
-  logic alert_trig_val_2_we;
   logic alert_trig_val_3_qs;
   logic alert_trig_val_3_wd;
-  logic alert_trig_val_3_we;
   logic alert_trig_val_4_qs;
   logic alert_trig_val_4_wd;
-  logic alert_trig_val_4_we;
   logic alert_trig_val_5_qs;
   logic alert_trig_val_5_wd;
-  logic alert_trig_val_5_we;
   logic alert_trig_val_6_qs;
   logic alert_trig_val_6_wd;
-  logic alert_trig_val_6_we;
   logic alert_trig_val_7_qs;
   logic alert_trig_val_7_wd;
-  logic alert_trig_val_7_we;
   logic alert_trig_val_8_qs;
   logic alert_trig_val_8_wd;
-  logic alert_trig_val_8_we;
   logic alert_trig_val_9_qs;
   logic alert_trig_val_9_wd;
-  logic alert_trig_val_9_we;
   logic alert_trig_val_10_qs;
   logic alert_trig_val_10_wd;
-  logic alert_trig_val_10_we;
   logic alert_trig_val_11_qs;
   logic alert_trig_val_11_wd;
-  logic alert_trig_val_11_we;
   logic alert_trig_val_12_qs;
   logic alert_trig_val_12_wd;
-  logic alert_trig_val_12_we;
+  logic alert_state_we;
   logic alert_state_val_0_qs;
   logic alert_state_val_0_wd;
-  logic alert_state_val_0_we;
   logic alert_state_val_1_qs;
   logic alert_state_val_1_wd;
-  logic alert_state_val_1_we;
   logic alert_state_val_2_qs;
   logic alert_state_val_2_wd;
-  logic alert_state_val_2_we;
   logic alert_state_val_3_qs;
   logic alert_state_val_3_wd;
-  logic alert_state_val_3_we;
   logic alert_state_val_4_qs;
   logic alert_state_val_4_wd;
-  logic alert_state_val_4_we;
   logic alert_state_val_5_qs;
   logic alert_state_val_5_wd;
-  logic alert_state_val_5_we;
   logic alert_state_val_6_qs;
   logic alert_state_val_6_wd;
-  logic alert_state_val_6_we;
   logic alert_state_val_7_qs;
   logic alert_state_val_7_wd;
-  logic alert_state_val_7_we;
   logic alert_state_val_8_qs;
   logic alert_state_val_8_wd;
-  logic alert_state_val_8_we;
   logic alert_state_val_9_qs;
   logic alert_state_val_9_wd;
-  logic alert_state_val_9_we;
   logic alert_state_val_10_qs;
   logic alert_state_val_10_wd;
-  logic alert_state_val_10_we;
   logic alert_state_val_11_qs;
   logic alert_state_val_11_wd;
-  logic alert_state_val_11_we;
   logic alert_state_val_12_qs;
   logic alert_state_val_12_wd;
-  logic alert_state_val_12_we;
   logic status_ast_init_done_qs;
   logic [1:0] status_io_pok_qs;
 
@@ -261,7 +213,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_as (
     .re     (1'b0),
-    .we     (alert_test_recov_as_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_as_wd),
     .d      ('0),
     .qre    (),
@@ -276,7 +228,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_cg (
     .re     (1'b0),
-    .we     (alert_test_recov_cg_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_cg_wd),
     .d      ('0),
     .qre    (),
@@ -291,7 +243,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_gd (
     .re     (1'b0),
-    .we     (alert_test_recov_gd_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_gd_wd),
     .d      ('0),
     .qre    (),
@@ -306,7 +258,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ts_hi (
     .re     (1'b0),
-    .we     (alert_test_recov_ts_hi_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ts_hi_wd),
     .d      ('0),
     .qre    (),
@@ -321,7 +273,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ts_lo (
     .re     (1'b0),
-    .we     (alert_test_recov_ts_lo_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ts_lo_wd),
     .d      ('0),
     .qre    (),
@@ -336,7 +288,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_fla (
     .re     (1'b0),
-    .we     (alert_test_recov_fla_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_fla_wd),
     .d      ('0),
     .qre    (),
@@ -351,7 +303,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_otp (
     .re     (1'b0),
-    .we     (alert_test_recov_otp_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_otp_wd),
     .d      ('0),
     .qre    (),
@@ -366,7 +318,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot0 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot0_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot0_wd),
     .d      ('0),
     .qre    (),
@@ -381,7 +333,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot1 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot1_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot1_wd),
     .d      ('0),
     .qre    (),
@@ -396,7 +348,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot2 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot2_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot2_wd),
     .d      ('0),
     .qre    (),
@@ -411,7 +363,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot3 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot3_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot3_wd),
     .d      ('0),
     .qre    (),
@@ -426,7 +378,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot4 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot4_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot4_wd),
     .d      ('0),
     .qre    (),
@@ -441,7 +393,7 @@ module sensor_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_recov_ot5 (
     .re     (1'b0),
-    .we     (alert_test_recov_ot5_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_ot5_wd),
     .d      ('0),
     .qre    (),
@@ -492,7 +444,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_0_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_0_wd),
 
     // from internal hardware
@@ -518,7 +470,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_1_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_1_wd),
 
     // from internal hardware
@@ -544,7 +496,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_2_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_2_wd),
 
     // from internal hardware
@@ -570,7 +522,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_3_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_3_wd),
 
     // from internal hardware
@@ -596,7 +548,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_4_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_4_wd),
 
     // from internal hardware
@@ -622,7 +574,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_5_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_5_wd),
 
     // from internal hardware
@@ -648,7 +600,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_6_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_6_wd),
 
     // from internal hardware
@@ -674,7 +626,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_7_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_7_wd),
 
     // from internal hardware
@@ -700,7 +652,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_8_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_8_wd),
 
     // from internal hardware
@@ -726,7 +678,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_9_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_9_wd),
 
     // from internal hardware
@@ -752,7 +704,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_10_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_10_wd),
 
     // from internal hardware
@@ -778,7 +730,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_11_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_11_wd),
 
     // from internal hardware
@@ -804,7 +756,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ack_mode_val_12_we & cfg_regwen_qs),
+    .we     (ack_mode_we & cfg_regwen_qs),
     .wd     (ack_mode_val_12_wd),
 
     // from internal hardware
@@ -835,7 +787,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_0_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_0_wd),
 
     // from internal hardware
@@ -861,7 +813,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_1_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_1_wd),
 
     // from internal hardware
@@ -887,7 +839,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_2_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_2_wd),
 
     // from internal hardware
@@ -913,7 +865,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_3_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_3_wd),
 
     // from internal hardware
@@ -939,7 +891,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_4_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_4_wd),
 
     // from internal hardware
@@ -965,7 +917,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_5_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_5_wd),
 
     // from internal hardware
@@ -991,7 +943,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_6_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_6_wd),
 
     // from internal hardware
@@ -1017,7 +969,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_7_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_7_wd),
 
     // from internal hardware
@@ -1043,7 +995,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_8_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_8_wd),
 
     // from internal hardware
@@ -1069,7 +1021,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_9_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_9_wd),
 
     // from internal hardware
@@ -1095,7 +1047,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_10_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_10_wd),
 
     // from internal hardware
@@ -1121,7 +1073,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_11_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_11_wd),
 
     // from internal hardware
@@ -1147,7 +1099,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_trig_val_12_we),
+    .we     (alert_trig_we),
     .wd     (alert_trig_val_12_wd),
 
     // from internal hardware
@@ -1178,7 +1130,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_0_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_0_wd),
 
     // from internal hardware
@@ -1204,7 +1156,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_1_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_1_wd),
 
     // from internal hardware
@@ -1230,7 +1182,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_2_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_2_wd),
 
     // from internal hardware
@@ -1256,7 +1208,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_3_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_3_wd),
 
     // from internal hardware
@@ -1282,7 +1234,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_4_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_4_wd),
 
     // from internal hardware
@@ -1308,7 +1260,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_5_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_5_wd),
 
     // from internal hardware
@@ -1334,7 +1286,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_6_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_6_wd),
 
     // from internal hardware
@@ -1360,7 +1312,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_7_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_7_wd),
 
     // from internal hardware
@@ -1386,7 +1338,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_8_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_8_wd),
 
     // from internal hardware
@@ -1412,7 +1364,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_9_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_9_wd),
 
     // from internal hardware
@@ -1438,7 +1390,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_10_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_10_wd),
 
     // from internal hardware
@@ -1464,7 +1416,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_11_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_11_wd),
 
     // from internal hardware
@@ -1490,7 +1442,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_state_val_12_we),
+    .we     (alert_state_we),
     .wd     (alert_state_val_12_wd),
 
     // from internal hardware
@@ -1586,164 +1538,116 @@ module sensor_ctrl_reg_top (
                (addr_hit[4] & (|(SENSOR_CTRL_PERMIT[4] & ~reg_be))) |
                (addr_hit[5] & (|(SENSOR_CTRL_PERMIT[5] & ~reg_be)))));
   end
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign alert_test_recov_as_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_as_wd = reg_wdata[0];
 
-  assign alert_test_recov_cg_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_cg_wd = reg_wdata[1];
 
-  assign alert_test_recov_gd_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_gd_wd = reg_wdata[2];
 
-  assign alert_test_recov_ts_hi_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ts_hi_wd = reg_wdata[3];
 
-  assign alert_test_recov_ts_lo_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ts_lo_wd = reg_wdata[4];
 
-  assign alert_test_recov_fla_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_fla_wd = reg_wdata[5];
 
-  assign alert_test_recov_otp_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_otp_wd = reg_wdata[6];
 
-  assign alert_test_recov_ot0_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot0_wd = reg_wdata[7];
 
-  assign alert_test_recov_ot1_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot1_wd = reg_wdata[8];
 
-  assign alert_test_recov_ot2_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot2_wd = reg_wdata[9];
 
-  assign alert_test_recov_ot3_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot3_wd = reg_wdata[10];
 
-  assign alert_test_recov_ot4_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot4_wd = reg_wdata[11];
 
-  assign alert_test_recov_ot5_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot5_wd = reg_wdata[12];
-
   assign cfg_regwen_we = addr_hit[1] & reg_we & !reg_error;
-  assign cfg_regwen_wd = reg_wdata[0];
 
-  assign ack_mode_val_0_we = addr_hit[2] & reg_we & !reg_error;
+  assign cfg_regwen_wd = reg_wdata[0];
+  assign ack_mode_we = addr_hit[2] & reg_we & !reg_error;
+
   assign ack_mode_val_0_wd = reg_wdata[1:0];
 
-  assign ack_mode_val_1_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_1_wd = reg_wdata[3:2];
 
-  assign ack_mode_val_2_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_2_wd = reg_wdata[5:4];
 
-  assign ack_mode_val_3_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_3_wd = reg_wdata[7:6];
 
-  assign ack_mode_val_4_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_4_wd = reg_wdata[9:8];
 
-  assign ack_mode_val_5_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_5_wd = reg_wdata[11:10];
 
-  assign ack_mode_val_6_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_6_wd = reg_wdata[13:12];
 
-  assign ack_mode_val_7_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_7_wd = reg_wdata[15:14];
 
-  assign ack_mode_val_8_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_8_wd = reg_wdata[17:16];
 
-  assign ack_mode_val_9_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_9_wd = reg_wdata[19:18];
 
-  assign ack_mode_val_10_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_10_wd = reg_wdata[21:20];
 
-  assign ack_mode_val_11_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_11_wd = reg_wdata[23:22];
 
-  assign ack_mode_val_12_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_12_wd = reg_wdata[25:24];
+  assign alert_trig_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_trig_val_0_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_0_wd = reg_wdata[0];
 
-  assign alert_trig_val_1_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_1_wd = reg_wdata[1];
 
-  assign alert_trig_val_2_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_2_wd = reg_wdata[2];
 
-  assign alert_trig_val_3_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_3_wd = reg_wdata[3];
 
-  assign alert_trig_val_4_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_4_wd = reg_wdata[4];
 
-  assign alert_trig_val_5_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_5_wd = reg_wdata[5];
 
-  assign alert_trig_val_6_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_6_wd = reg_wdata[6];
 
-  assign alert_trig_val_7_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_7_wd = reg_wdata[7];
 
-  assign alert_trig_val_8_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_8_wd = reg_wdata[8];
 
-  assign alert_trig_val_9_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_9_wd = reg_wdata[9];
 
-  assign alert_trig_val_10_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_10_wd = reg_wdata[10];
 
-  assign alert_trig_val_11_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_11_wd = reg_wdata[11];
 
-  assign alert_trig_val_12_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_12_wd = reg_wdata[12];
+  assign alert_state_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign alert_state_val_0_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_0_wd = reg_wdata[0];
 
-  assign alert_state_val_1_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_1_wd = reg_wdata[1];
 
-  assign alert_state_val_2_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_2_wd = reg_wdata[2];
 
-  assign alert_state_val_3_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_3_wd = reg_wdata[3];
 
-  assign alert_state_val_4_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_4_wd = reg_wdata[4];
 
-  assign alert_state_val_5_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_5_wd = reg_wdata[5];
 
-  assign alert_state_val_6_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_6_wd = reg_wdata[6];
 
-  assign alert_state_val_7_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_7_wd = reg_wdata[7];
 
-  assign alert_state_val_8_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_8_wd = reg_wdata[8];
 
-  assign alert_state_val_9_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_9_wd = reg_wdata[9];
 
-  assign alert_state_val_10_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_10_wd = reg_wdata[10];
 
-  assign alert_state_val_11_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_11_wd = reg_wdata[11];
 
-  assign alert_state_val_12_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_12_wd = reg_wdata[12];
 
   // Read data return

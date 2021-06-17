@@ -104,35 +104,34 @@ module rv_timer_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic ctrl_we;
   logic ctrl_qs;
   logic ctrl_wd;
-  logic ctrl_we;
+  logic cfg0_we;
   logic [11:0] cfg0_prescale_qs;
   logic [11:0] cfg0_prescale_wd;
-  logic cfg0_prescale_we;
   logic [7:0] cfg0_step_qs;
   logic [7:0] cfg0_step_wd;
-  logic cfg0_step_we;
+  logic timer_v_lower0_we;
   logic [31:0] timer_v_lower0_qs;
   logic [31:0] timer_v_lower0_wd;
-  logic timer_v_lower0_we;
+  logic timer_v_upper0_we;
   logic [31:0] timer_v_upper0_qs;
   logic [31:0] timer_v_upper0_wd;
-  logic timer_v_upper0_we;
+  logic compare_lower0_0_we;
   logic [31:0] compare_lower0_0_qs;
   logic [31:0] compare_lower0_0_wd;
-  logic compare_lower0_0_we;
+  logic compare_upper0_0_we;
   logic [31:0] compare_upper0_0_qs;
   logic [31:0] compare_upper0_0_wd;
-  logic compare_upper0_0_we;
+  logic intr_enable0_we;
   logic intr_enable0_qs;
   logic intr_enable0_wd;
-  logic intr_enable0_we;
+  logic intr_state0_we;
   logic intr_state0_qs;
   logic intr_state0_wd;
-  logic intr_state0_we;
-  logic intr_test0_wd;
   logic intr_test0_we;
+  logic intr_test0_wd;
 
   // Register instances
 
@@ -176,7 +175,7 @@ module rv_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg0_prescale_we),
+    .we     (cfg0_we),
     .wd     (cfg0_prescale_wd),
 
     // from internal hardware
@@ -202,7 +201,7 @@ module rv_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cfg0_step_we),
+    .we     (cfg0_we),
     .wd     (cfg0_step_wd),
 
     // from internal hardware
@@ -433,35 +432,34 @@ module rv_timer_reg_top (
                (addr_hit[7] & (|(RV_TIMER_PERMIT[7] & ~reg_be))) |
                (addr_hit[8] & (|(RV_TIMER_PERMIT[8] & ~reg_be)))));
   end
-
   assign ctrl_we = addr_hit[0] & reg_we & !reg_error;
-  assign ctrl_wd = reg_wdata[0];
 
-  assign cfg0_prescale_we = addr_hit[1] & reg_we & !reg_error;
+  assign ctrl_wd = reg_wdata[0];
+  assign cfg0_we = addr_hit[1] & reg_we & !reg_error;
+
   assign cfg0_prescale_wd = reg_wdata[11:0];
 
-  assign cfg0_step_we = addr_hit[1] & reg_we & !reg_error;
   assign cfg0_step_wd = reg_wdata[23:16];
-
   assign timer_v_lower0_we = addr_hit[2] & reg_we & !reg_error;
+
   assign timer_v_lower0_wd = reg_wdata[31:0];
-
   assign timer_v_upper0_we = addr_hit[3] & reg_we & !reg_error;
+
   assign timer_v_upper0_wd = reg_wdata[31:0];
-
   assign compare_lower0_0_we = addr_hit[4] & reg_we & !reg_error;
+
   assign compare_lower0_0_wd = reg_wdata[31:0];
-
   assign compare_upper0_0_we = addr_hit[5] & reg_we & !reg_error;
+
   assign compare_upper0_0_wd = reg_wdata[31:0];
-
   assign intr_enable0_we = addr_hit[6] & reg_we & !reg_error;
+
   assign intr_enable0_wd = reg_wdata[0];
-
   assign intr_state0_we = addr_hit[7] & reg_we & !reg_error;
-  assign intr_state0_wd = reg_wdata[0];
 
+  assign intr_state0_wd = reg_wdata[0];
   assign intr_test0_we = addr_hit[8] & reg_we & !reg_error;
+
   assign intr_test0_wd = reg_wdata[0];
 
   // Read data return

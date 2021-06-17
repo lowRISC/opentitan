@@ -261,13 +261,14 @@ module ${mod_name} (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   % for r in regs_flat:
-    % if len(r.fields) == 1:
-${sig_gen(r.fields[0], r.name.lower(), r.hwext, r.shadowed)}\
-    % else:
-      % for f in r.fields:
-${sig_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed)}\
-      % endfor
-    % endif
+${reg_sig_decl(r)}\
+    % for f in r.fields:
+<%
+        fld_suff = '_' + f.name.lower() if len(r.fields) > 1 else ''
+        sig_name = r.name.lower() + fld_suff
+%>\
+${field_sig_decl(f, sig_name, r.hwext, r.shadowed)}\
+    % endfor
   % endfor
 
   // Register instances
@@ -287,7 +288,7 @@ ${sig_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed)}\
           fsig_name = r.reg.name.lower() + "[%d]" % k
           k = k + 1
 %>
-${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.shadowed)}
+${finst_gen(sr, f, finst_name, fsig_name)}
         % else:
           % for f in sr.fields:
 <%
@@ -299,7 +300,7 @@ ${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.
               fsig_name = r.reg.name.lower() + "[%d]" % k + "." + get_basename(f.name.lower())
 %>
   // F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.shadowed)}
+${finst_gen(sr, f, finst_name, fsig_name)}
           % endfor
 <%
           if not r.is_homogeneous():
@@ -316,7 +317,7 @@ ${finst_gen(f, finst_name, fsig_name, sr.hwext, sr.hwre, sr.hwqe, sr.regwen, sr.
         finst_name = r.name.lower()
         fsig_name = r.name.lower()
 %>
-${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shadowed)}
+${finst_gen(r, f, finst_name, fsig_name)}
 ######################## register with multiple fields ###########################
     % else:
   // R[${r.name.lower()}]: V(${str(r.hwext)})
@@ -326,7 +327,7 @@ ${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shado
         fsig_name = r.name.lower() + "." + f.name.lower()
 %>
   //   F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shadowed)}
+${finst_gen(r, f, finst_name, fsig_name)}
       % endfor
     % endif
 
@@ -366,11 +367,12 @@ ${finst_gen(f, finst_name, fsig_name, r.hwext, r.hwre, r.hwqe, r.regwen, r.shado
 % endif\
 
   % for i, r in enumerate(regs_flat):
+${reg_enable_gen(r, i)}\
     % if len(r.fields) == 1:
-${we_gen(r.fields[0], r.name.lower(), r.hwext, r.shadowed, i)}\
+${field_wd_gen(r.fields[0], r.name.lower(), r.hwext, r.shadowed, i)}\
     % else:
       % for f in r.fields:
-${we_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed, i)}\
+${field_wd_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed, i)}\
       % endfor
     % endif
   % endfor
@@ -443,27 +445,36 @@ ${bits.msb}\
 [${bits.msb-bits.lsb}:0] \
 % endif
 </%def>\
-<%def name="sig_gen(field, sig_name, hwext, shadowed)">\
+<%def name="reg_sig_decl(reg)">\
+  % if reg.needs_re():
+  logic ${reg.name.lower()}_re;
+  % endif
+  % if reg.needs_we():
+  logic ${reg.name.lower()}_we;
+  % endif
+</%def>\
+<%def name="field_sig_decl(field, sig_name, hwext, shadowed)">\
   % if field.swaccess.allows_read():
   logic ${str_arr_sv(field.bits)}${sig_name}_qs;
   % endif
   % if field.swaccess.allows_write():
   logic ${str_arr_sv(field.bits)}${sig_name}_wd;
-  logic ${sig_name}_we;
-  % endif
-  % if (field.swaccess.allows_read() and hwext) or shadowed:
-  logic ${sig_name}_re;
   % endif
 </%def>\
-<%def name="finst_gen(field, finst_name, fsig_name, hwext, hwre, hwqe, regwen, shadowed)">\
+<%def name="finst_gen(reg, field, finst_name, fsig_name)">\
 <%
-    re_expr = f'{finst_name}_re' if field.swaccess.allows_read() else "1'b0"
+    re_expr = f'{reg.name.lower()}_re' if field.swaccess.allows_read() else "1'b0"
 
     if field.swaccess.allows_write():
-      if regwen:
-        we_expr = f'{finst_name}_we & {regwen.lower()}_qs'
+      # We usually use the REG_we signal, but use REG_re for RC fields
+      # (which get updated on a read, not a write)
+      we_suffix = 're' if field.swaccess.swrd() == SwRdAccess.RC else 'we'
+      we_signal = f'{reg.name.lower()}_{we_suffix}'
+
+      if reg.regwen:
+        we_expr = f'{we_signal} & {reg.regwen.lower()}_qs'
       else:
-        we_expr = f'{finst_name}_we'
+        we_expr = we_signal
       wd_expr = f'{finst_name}_wd'
     else:
       we_expr = "1'b0"
@@ -476,10 +487,10 @@ ${bits.msb}\
       de_expr = "1'b0"
       d_expr = "'0"
 
-    qre_expr = f'reg2hw.{fsig_name}.re' if hwre or shadowed else ""
+    qre_expr = f'reg2hw.{fsig_name}.re' if reg.hwre or reg.shadowed else ""
 
     if field.hwaccess.allows_read():
-      qe_expr = f'reg2hw.{fsig_name}.qe' if hwqe else ''
+      qe_expr = f'reg2hw.{fsig_name}.qe' if reg.hwqe else ''
       q_expr = f'reg2hw.{fsig_name}.q'
     else:
       qe_expr = ''
@@ -487,7 +498,7 @@ ${bits.msb}\
 
     qs_expr = f'{finst_name}_qs' if field.swaccess.allows_read() else ''
 %>\
-  % if hwext:       ## if hwext, instantiate prim_subreg_ext
+  % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
   prim_subreg_ext #(
     .DW    (${field.bits.width()})
   ) u_${finst_name} (
@@ -511,7 +522,7 @@ ${bits.msb}\
                           field.swaccess.allows_write() or
                           field.swaccess.swrd() != SwRdAccess.RD)
 
-      subreg_block = 'prim_subreg' + ('_shadowed' if shadowed else '')
+      subreg_block = 'prim_subreg' + ('_shadowed' if reg.shadowed else '')
 %>\
     % if is_const_reg:
   // constant-only read
@@ -526,7 +537,7 @@ ${bits.msb}\
     .rst_ni  (rst_ni),
 
     // from register interface
-      % if shadowed:
+      % if reg.shadowed:
     .re     (${re_expr}),
       % endif
     .we     (${we_expr}),
@@ -541,7 +552,7 @@ ${bits.msb}\
     .q      (${q_expr}),
 
     // to register interface (read)
-      % if not shadowed:
+      % if not reg.shadowed:
     .qs     (${qs_expr})
       % else:
     .qs     (${qs_expr}),
@@ -554,25 +565,26 @@ ${bits.msb}\
     % endif  ## end non-constant prim_subreg
   % endif
 </%def>\
-<%def name="we_gen(field, sig_name, hwext, shadowed, idx)">\
+<%def name="reg_enable_gen(reg, idx)">\
+  % if reg.needs_re():
+  assign ${reg.name.lower()}_re = addr_hit[${idx}] & reg_re & !reg_error;
+  % endif
+  % if reg.needs_we():
+  assign ${reg.name.lower()}_we = addr_hit[${idx}] & reg_we & !reg_error;
+  % endif
+</%def>\
+<%def name="field_wd_gen(field, sig_name, hwext, shadowed, idx)">\
 <%
-    needs_we = field.swaccess.allows_write()
-    needs_re = (field.swaccess.allows_read() and hwext) or shadowed
-    space = '\n' if needs_we or needs_re else ''
+    needs_wd = field.swaccess.allows_write()
+    space = '\n' if needs_wd or needs_re else ''
 %>\
 ${space}\
-% if needs_we:
-  % if field.swaccess.swrd() != SwRdAccess.RC:
-  assign ${sig_name}_we = addr_hit[${idx}] & reg_we & !reg_error;
-  assign ${sig_name}_wd = reg_wdata[${str_bits_sv(field.bits)}];
-  % else:
-  ## Generate WE based on read request, read should clear
-  assign ${sig_name}_we = addr_hit[${idx}] & reg_re & !reg_error;
+% if needs_wd:
+  % if field.swaccess.swrd() == SwRdAccess.RC:
   assign ${sig_name}_wd = '1;
+  % else:
+  assign ${sig_name}_wd = reg_wdata[${str_bits_sv(field.bits)}];
   % endif
-% endif
-% if needs_re:
-  assign ${sig_name}_re = addr_hit[${idx}] & reg_re & !reg_error;
 % endif
 </%def>\
 <%def name="rdata_gen(field, sig_name)">\

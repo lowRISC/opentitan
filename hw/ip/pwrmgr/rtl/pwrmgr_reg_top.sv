@@ -104,66 +104,57 @@ module pwrmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_qs;
   logic intr_state_wd;
-  logic intr_state_we;
+  logic intr_enable_we;
   logic intr_enable_qs;
   logic intr_enable_wd;
-  logic intr_enable_we;
-  logic intr_test_wd;
   logic intr_test_we;
-  logic ctrl_cfg_regwen_qs;
+  logic intr_test_wd;
   logic ctrl_cfg_regwen_re;
+  logic ctrl_cfg_regwen_qs;
+  logic control_we;
   logic control_low_power_hint_qs;
   logic control_low_power_hint_wd;
-  logic control_low_power_hint_we;
   logic control_core_clk_en_qs;
   logic control_core_clk_en_wd;
-  logic control_core_clk_en_we;
   logic control_io_clk_en_qs;
   logic control_io_clk_en_wd;
-  logic control_io_clk_en_we;
   logic control_usb_clk_en_lp_qs;
   logic control_usb_clk_en_lp_wd;
-  logic control_usb_clk_en_lp_we;
   logic control_usb_clk_en_active_qs;
   logic control_usb_clk_en_active_wd;
-  logic control_usb_clk_en_active_we;
   logic control_main_pd_n_qs;
   logic control_main_pd_n_wd;
-  logic control_main_pd_n_we;
+  logic cfg_cdc_sync_we;
   logic cfg_cdc_sync_qs;
   logic cfg_cdc_sync_wd;
-  logic cfg_cdc_sync_we;
+  logic wakeup_en_regwen_we;
   logic wakeup_en_regwen_qs;
   logic wakeup_en_regwen_wd;
-  logic wakeup_en_regwen_we;
+  logic wakeup_en_we;
   logic wakeup_en_qs;
   logic wakeup_en_wd;
-  logic wakeup_en_we;
   logic wake_status_qs;
+  logic reset_en_regwen_we;
   logic reset_en_regwen_qs;
   logic reset_en_regwen_wd;
-  logic reset_en_regwen_we;
+  logic reset_en_we;
   logic reset_en_qs;
   logic reset_en_wd;
-  logic reset_en_we;
   logic reset_status_qs;
+  logic wake_info_capture_dis_we;
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
-  logic wake_info_capture_dis_we;
+  logic wake_info_re;
+  logic wake_info_we;
   logic wake_info_reasons_qs;
   logic wake_info_reasons_wd;
-  logic wake_info_reasons_we;
-  logic wake_info_reasons_re;
   logic wake_info_fall_through_qs;
   logic wake_info_fall_through_wd;
-  logic wake_info_fall_through_we;
-  logic wake_info_fall_through_re;
   logic wake_info_abort_qs;
   logic wake_info_abort_wd;
-  logic wake_info_abort_we;
-  logic wake_info_abort_re;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -264,7 +255,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_low_power_hint_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_low_power_hint_wd),
 
     // from internal hardware
@@ -290,7 +281,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_core_clk_en_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_core_clk_en_wd),
 
     // from internal hardware
@@ -316,7 +307,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_io_clk_en_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_io_clk_en_wd),
 
     // from internal hardware
@@ -342,7 +333,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_usb_clk_en_lp_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_usb_clk_en_lp_wd),
 
     // from internal hardware
@@ -368,7 +359,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_usb_clk_en_active_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_usb_clk_en_active_wd),
 
     // from internal hardware
@@ -394,7 +385,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_main_pd_n_we & ctrl_cfg_regwen_qs),
+    .we     (control_we & ctrl_cfg_regwen_qs),
     .wd     (control_main_pd_n_wd),
 
     // from internal hardware
@@ -640,8 +631,8 @@ module pwrmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_wake_info_reasons (
-    .re     (wake_info_reasons_re),
-    .we     (wake_info_reasons_we),
+    .re     (wake_info_re),
+    .we     (wake_info_we),
     .wd     (wake_info_reasons_wd),
     .d      (hw2reg.wake_info.reasons.d),
     .qre    (),
@@ -655,8 +646,8 @@ module pwrmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_wake_info_fall_through (
-    .re     (wake_info_fall_through_re),
-    .we     (wake_info_fall_through_we),
+    .re     (wake_info_re),
+    .we     (wake_info_we),
     .wd     (wake_info_fall_through_wd),
     .d      (hw2reg.wake_info.fall_through.d),
     .qre    (),
@@ -670,8 +661,8 @@ module pwrmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_wake_info_abort (
-    .re     (wake_info_abort_re),
-    .we     (wake_info_abort_we),
+    .re     (wake_info_re),
+    .we     (wake_info_we),
     .wd     (wake_info_abort_wd),
     .d      (hw2reg.wake_info.abort.d),
     .qre    (),
@@ -722,65 +713,55 @@ module pwrmgr_reg_top (
                (addr_hit[12] & (|(PWRMGR_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(PWRMGR_PERMIT[13] & ~reg_be)))));
   end
-
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+
   assign intr_state_wd = reg_wdata[0];
-
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+
   assign intr_enable_wd = reg_wdata[0];
-
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+
   assign intr_test_wd = reg_wdata[0];
-
   assign ctrl_cfg_regwen_re = addr_hit[3] & reg_re & !reg_error;
+  assign control_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign control_low_power_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign control_low_power_hint_wd = reg_wdata[0];
 
-  assign control_core_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_core_clk_en_wd = reg_wdata[4];
 
-  assign control_io_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_io_clk_en_wd = reg_wdata[5];
 
-  assign control_usb_clk_en_lp_we = addr_hit[4] & reg_we & !reg_error;
   assign control_usb_clk_en_lp_wd = reg_wdata[6];
 
-  assign control_usb_clk_en_active_we = addr_hit[4] & reg_we & !reg_error;
   assign control_usb_clk_en_active_wd = reg_wdata[7];
 
-  assign control_main_pd_n_we = addr_hit[4] & reg_we & !reg_error;
   assign control_main_pd_n_wd = reg_wdata[8];
-
   assign cfg_cdc_sync_we = addr_hit[5] & reg_we & !reg_error;
+
   assign cfg_cdc_sync_wd = reg_wdata[0];
-
   assign wakeup_en_regwen_we = addr_hit[6] & reg_we & !reg_error;
+
   assign wakeup_en_regwen_wd = reg_wdata[0];
-
   assign wakeup_en_we = addr_hit[7] & reg_we & !reg_error;
+
   assign wakeup_en_wd = reg_wdata[0];
-
   assign reset_en_regwen_we = addr_hit[9] & reg_we & !reg_error;
+
   assign reset_en_regwen_wd = reg_wdata[0];
-
   assign reset_en_we = addr_hit[10] & reg_we & !reg_error;
+
   assign reset_en_wd = reg_wdata[0];
-
   assign wake_info_capture_dis_we = addr_hit[12] & reg_we & !reg_error;
+
   assign wake_info_capture_dis_wd = reg_wdata[0];
+  assign wake_info_re = addr_hit[13] & reg_re & !reg_error;
+  assign wake_info_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign wake_info_reasons_we = addr_hit[13] & reg_we & !reg_error;
   assign wake_info_reasons_wd = reg_wdata[0];
-  assign wake_info_reasons_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign wake_info_fall_through_we = addr_hit[13] & reg_we & !reg_error;
   assign wake_info_fall_through_wd = reg_wdata[1];
-  assign wake_info_fall_through_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign wake_info_abort_we = addr_hit[13] & reg_we & !reg_error;
   assign wake_info_abort_wd = reg_wdata[2];
-  assign wake_info_abort_re = addr_hit[13] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

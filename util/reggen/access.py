@@ -101,6 +101,16 @@ class SWAccess:
     def allows_write(self) -> bool:
         return self.value[2] == SwWrAccess.WR
 
+    def needs_we(self) -> bool:
+        '''Should the register for this field have a write-enable signal?
+
+        This is almost the same as allows_write(), but doesn't return true for
+        RC registers, which should use a read-enable signal (connected to their
+        prim_subreg's we port).
+
+        '''
+        return self.value[1] != SwAccess.RC and self.allows_write()
+
 
 class HWAccess:
     def __init__(self, where: str, raw: object):

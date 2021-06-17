@@ -104,8 +104,8 @@ module rom_ctrl_regs_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic alert_test_wd;
   logic alert_test_we;
+  logic alert_test_wd;
   logic fatal_alert_cause_checker_error_qs;
   logic fatal_alert_cause_integrity_error_qs;
   logic [31:0] digest_0_qs;
@@ -681,8 +681,8 @@ module rom_ctrl_regs_reg_top (
                (addr_hit[16] & (|(ROM_CTRL_REGS_PERMIT[16] & ~reg_be))) |
                (addr_hit[17] & (|(ROM_CTRL_REGS_PERMIT[17] & ~reg_be)))));
   end
-
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+
   assign alert_test_wd = reg_wdata[0];
 
   // Read data return

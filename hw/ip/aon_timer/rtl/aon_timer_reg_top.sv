@@ -104,49 +104,45 @@ module aon_timer_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic wkup_ctrl_we;
   logic wkup_ctrl_enable_qs;
   logic wkup_ctrl_enable_wd;
-  logic wkup_ctrl_enable_we;
   logic [11:0] wkup_ctrl_prescaler_qs;
   logic [11:0] wkup_ctrl_prescaler_wd;
-  logic wkup_ctrl_prescaler_we;
+  logic wkup_thold_we;
   logic [31:0] wkup_thold_qs;
   logic [31:0] wkup_thold_wd;
-  logic wkup_thold_we;
+  logic wkup_count_we;
   logic [31:0] wkup_count_qs;
   logic [31:0] wkup_count_wd;
-  logic wkup_count_we;
+  logic wdog_regwen_we;
   logic wdog_regwen_qs;
   logic wdog_regwen_wd;
-  logic wdog_regwen_we;
+  logic wdog_ctrl_we;
   logic wdog_ctrl_enable_qs;
   logic wdog_ctrl_enable_wd;
-  logic wdog_ctrl_enable_we;
   logic wdog_ctrl_pause_in_sleep_qs;
   logic wdog_ctrl_pause_in_sleep_wd;
-  logic wdog_ctrl_pause_in_sleep_we;
+  logic wdog_bark_thold_we;
   logic [31:0] wdog_bark_thold_qs;
   logic [31:0] wdog_bark_thold_wd;
-  logic wdog_bark_thold_we;
+  logic wdog_bite_thold_we;
   logic [31:0] wdog_bite_thold_qs;
   logic [31:0] wdog_bite_thold_wd;
-  logic wdog_bite_thold_we;
+  logic wdog_count_we;
   logic [31:0] wdog_count_qs;
   logic [31:0] wdog_count_wd;
-  logic wdog_count_we;
+  logic intr_state_we;
   logic intr_state_wkup_timer_expired_qs;
   logic intr_state_wkup_timer_expired_wd;
-  logic intr_state_wkup_timer_expired_we;
   logic intr_state_wdog_timer_expired_qs;
   logic intr_state_wdog_timer_expired_wd;
-  logic intr_state_wdog_timer_expired_we;
+  logic intr_test_we;
   logic intr_test_wkup_timer_expired_wd;
-  logic intr_test_wkup_timer_expired_we;
   logic intr_test_wdog_timer_expired_wd;
-  logic intr_test_wdog_timer_expired_we;
+  logic wkup_cause_we;
   logic wkup_cause_qs;
   logic wkup_cause_wd;
-  logic wkup_cause_we;
 
   // Register instances
   // R[wkup_ctrl]: V(False)
@@ -161,7 +157,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_ctrl_enable_we),
+    .we     (wkup_ctrl_we),
     .wd     (wkup_ctrl_enable_wd),
 
     // from internal hardware
@@ -187,7 +183,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_ctrl_prescaler_we),
+    .we     (wkup_ctrl_we),
     .wd     (wkup_ctrl_prescaler_wd),
 
     // from internal hardware
@@ -296,7 +292,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wdog_ctrl_enable_we & wdog_regwen_qs),
+    .we     (wdog_ctrl_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_enable_wd),
 
     // from internal hardware
@@ -322,7 +318,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wdog_ctrl_pause_in_sleep_we & wdog_regwen_qs),
+    .we     (wdog_ctrl_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_pause_in_sleep_wd),
 
     // from internal hardware
@@ -431,7 +427,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_wkup_timer_expired_we),
+    .we     (intr_state_we),
     .wd     (intr_state_wkup_timer_expired_wd),
 
     // from internal hardware
@@ -457,7 +453,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_wdog_timer_expired_we),
+    .we     (intr_state_we),
     .wd     (intr_state_wdog_timer_expired_wd),
 
     // from internal hardware
@@ -480,7 +476,7 @@ module aon_timer_reg_top (
     .DW    (1)
   ) u_intr_test_wkup_timer_expired (
     .re     (1'b0),
-    .we     (intr_test_wkup_timer_expired_we),
+    .we     (intr_test_we),
     .wd     (intr_test_wkup_timer_expired_wd),
     .d      ('0),
     .qre    (),
@@ -495,7 +491,7 @@ module aon_timer_reg_top (
     .DW    (1)
   ) u_intr_test_wdog_timer_expired (
     .re     (1'b0),
-    .we     (intr_test_wdog_timer_expired_we),
+    .we     (intr_test_we),
     .wd     (intr_test_wdog_timer_expired_wd),
     .d      ('0),
     .qre    (),
@@ -567,50 +563,46 @@ module aon_timer_reg_top (
                (addr_hit[ 9] & (|(AON_TIMER_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be)))));
   end
+  assign wkup_ctrl_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign wkup_ctrl_enable_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_enable_wd = reg_wdata[0];
 
-  assign wkup_ctrl_prescaler_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_prescaler_wd = reg_wdata[12:1];
-
   assign wkup_thold_we = addr_hit[1] & reg_we & !reg_error;
+
   assign wkup_thold_wd = reg_wdata[31:0];
-
   assign wkup_count_we = addr_hit[2] & reg_we & !reg_error;
+
   assign wkup_count_wd = reg_wdata[31:0];
-
   assign wdog_regwen_we = addr_hit[3] & reg_we & !reg_error;
-  assign wdog_regwen_wd = reg_wdata[0];
 
-  assign wdog_ctrl_enable_we = addr_hit[4] & reg_we & !reg_error;
+  assign wdog_regwen_wd = reg_wdata[0];
+  assign wdog_ctrl_we = addr_hit[4] & reg_we & !reg_error;
+
   assign wdog_ctrl_enable_wd = reg_wdata[0];
 
-  assign wdog_ctrl_pause_in_sleep_we = addr_hit[4] & reg_we & !reg_error;
   assign wdog_ctrl_pause_in_sleep_wd = reg_wdata[1];
-
   assign wdog_bark_thold_we = addr_hit[5] & reg_we & !reg_error;
+
   assign wdog_bark_thold_wd = reg_wdata[31:0];
-
   assign wdog_bite_thold_we = addr_hit[6] & reg_we & !reg_error;
+
   assign wdog_bite_thold_wd = reg_wdata[31:0];
-
   assign wdog_count_we = addr_hit[7] & reg_we & !reg_error;
-  assign wdog_count_wd = reg_wdata[31:0];
 
-  assign intr_state_wkup_timer_expired_we = addr_hit[8] & reg_we & !reg_error;
+  assign wdog_count_wd = reg_wdata[31:0];
+  assign intr_state_we = addr_hit[8] & reg_we & !reg_error;
+
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_state_wdog_timer_expired_we = addr_hit[8] & reg_we & !reg_error;
   assign intr_state_wdog_timer_expired_wd = reg_wdata[1];
+  assign intr_test_we = addr_hit[9] & reg_we & !reg_error;
 
-  assign intr_test_wkup_timer_expired_we = addr_hit[9] & reg_we & !reg_error;
   assign intr_test_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_test_wdog_timer_expired_we = addr_hit[9] & reg_we & !reg_error;
   assign intr_test_wdog_timer_expired_wd = reg_wdata[1];
-
   assign wkup_cause_we = addr_hit[10] & reg_we & !reg_error;
+
   assign wkup_cause_wd = reg_wdata[0];
 
   // Read data return

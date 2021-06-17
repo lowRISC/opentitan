@@ -104,86 +104,75 @@ module lc_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
   logic alert_test_fatal_prog_error_wd;
-  logic alert_test_fatal_prog_error_we;
   logic alert_test_fatal_state_error_wd;
-  logic alert_test_fatal_state_error_we;
   logic alert_test_fatal_bus_integ_error_wd;
-  logic alert_test_fatal_bus_integ_error_we;
+  logic status_re;
   logic status_ready_qs;
-  logic status_ready_re;
   logic status_transition_successful_qs;
-  logic status_transition_successful_re;
   logic status_transition_count_error_qs;
-  logic status_transition_count_error_re;
   logic status_transition_error_qs;
-  logic status_transition_error_re;
   logic status_token_error_qs;
-  logic status_token_error_re;
   logic status_flash_rma_error_qs;
-  logic status_flash_rma_error_re;
   logic status_otp_error_qs;
-  logic status_otp_error_re;
   logic status_state_error_qs;
-  logic status_state_error_re;
   logic status_bus_integ_error_qs;
-  logic status_bus_integ_error_re;
   logic status_otp_partition_error_qs;
-  logic status_otp_partition_error_re;
+  logic claim_transition_if_re;
+  logic claim_transition_if_we;
   logic [7:0] claim_transition_if_qs;
   logic [7:0] claim_transition_if_wd;
-  logic claim_transition_if_we;
-  logic claim_transition_if_re;
-  logic transition_regwen_qs;
   logic transition_regwen_re;
-  logic transition_cmd_wd;
+  logic transition_regwen_qs;
   logic transition_cmd_we;
+  logic transition_cmd_wd;
+  logic transition_token_0_re;
+  logic transition_token_0_we;
   logic [31:0] transition_token_0_qs;
   logic [31:0] transition_token_0_wd;
-  logic transition_token_0_we;
-  logic transition_token_0_re;
+  logic transition_token_1_re;
+  logic transition_token_1_we;
   logic [31:0] transition_token_1_qs;
   logic [31:0] transition_token_1_wd;
-  logic transition_token_1_we;
-  logic transition_token_1_re;
+  logic transition_token_2_re;
+  logic transition_token_2_we;
   logic [31:0] transition_token_2_qs;
   logic [31:0] transition_token_2_wd;
-  logic transition_token_2_we;
-  logic transition_token_2_re;
+  logic transition_token_3_re;
+  logic transition_token_3_we;
   logic [31:0] transition_token_3_qs;
   logic [31:0] transition_token_3_wd;
-  logic transition_token_3_we;
-  logic transition_token_3_re;
+  logic transition_target_re;
+  logic transition_target_we;
   logic [3:0] transition_target_qs;
   logic [3:0] transition_target_wd;
-  logic transition_target_we;
-  logic transition_target_re;
+  logic otp_test_ctrl_re;
+  logic otp_test_ctrl_we;
   logic [7:0] otp_test_ctrl_qs;
   logic [7:0] otp_test_ctrl_wd;
-  logic otp_test_ctrl_we;
-  logic otp_test_ctrl_re;
-  logic [3:0] lc_state_qs;
   logic lc_state_re;
-  logic [4:0] lc_transition_cnt_qs;
+  logic [3:0] lc_state_qs;
   logic lc_transition_cnt_re;
-  logic [1:0] lc_id_state_qs;
+  logic [4:0] lc_transition_cnt_qs;
   logic lc_id_state_re;
-  logic [31:0] device_id_0_qs;
+  logic [1:0] lc_id_state_qs;
   logic device_id_0_re;
-  logic [31:0] device_id_1_qs;
+  logic [31:0] device_id_0_qs;
   logic device_id_1_re;
-  logic [31:0] device_id_2_qs;
+  logic [31:0] device_id_1_qs;
   logic device_id_2_re;
-  logic [31:0] device_id_3_qs;
+  logic [31:0] device_id_2_qs;
   logic device_id_3_re;
-  logic [31:0] device_id_4_qs;
+  logic [31:0] device_id_3_qs;
   logic device_id_4_re;
-  logic [31:0] device_id_5_qs;
+  logic [31:0] device_id_4_qs;
   logic device_id_5_re;
-  logic [31:0] device_id_6_qs;
+  logic [31:0] device_id_5_qs;
   logic device_id_6_re;
-  logic [31:0] device_id_7_qs;
+  logic [31:0] device_id_6_qs;
   logic device_id_7_re;
+  logic [31:0] device_id_7_qs;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -193,7 +182,7 @@ module lc_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_prog_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_prog_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_prog_error_wd),
     .d      ('0),
     .qre    (),
@@ -208,7 +197,7 @@ module lc_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_state_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_state_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_state_error_wd),
     .d      ('0),
     .qre    (),
@@ -223,7 +212,7 @@ module lc_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_bus_integ_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_bus_integ_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_bus_integ_error_wd),
     .d      ('0),
     .qre    (),
@@ -239,7 +228,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_ready (
-    .re     (status_ready_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.ready.d),
@@ -254,7 +243,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_successful (
-    .re     (status_transition_successful_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.transition_successful.d),
@@ -269,7 +258,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_count_error (
-    .re     (status_transition_count_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.transition_count_error.d),
@@ -284,7 +273,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_error (
-    .re     (status_transition_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.transition_error.d),
@@ -299,7 +288,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_token_error (
-    .re     (status_token_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.token_error.d),
@@ -314,7 +303,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_flash_rma_error (
-    .re     (status_flash_rma_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.flash_rma_error.d),
@@ -329,7 +318,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_error (
-    .re     (status_otp_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.otp_error.d),
@@ -344,7 +333,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_state_error (
-    .re     (status_state_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.state_error.d),
@@ -359,7 +348,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_bus_integ_error (
-    .re     (status_bus_integ_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.bus_integ_error.d),
@@ -374,7 +363,7 @@ module lc_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_partition_error (
-    .re     (status_otp_partition_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.otp_partition_error.d),
@@ -766,89 +755,56 @@ module lc_ctrl_reg_top (
                (addr_hit[20] & (|(LC_CTRL_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(LC_CTRL_PERMIT[21] & ~reg_be)))));
   end
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign alert_test_fatal_prog_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_prog_error_wd = reg_wdata[0];
 
-  assign alert_test_fatal_state_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_state_error_wd = reg_wdata[1];
 
-  assign alert_test_fatal_bus_integ_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_bus_integ_error_wd = reg_wdata[2];
-
-  assign status_ready_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_transition_successful_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_transition_count_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_transition_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_token_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_flash_rma_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_otp_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_state_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_bus_integ_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_otp_partition_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign claim_transition_if_we = addr_hit[2] & reg_we & !reg_error;
-  assign claim_transition_if_wd = reg_wdata[7:0];
+  assign status_re = addr_hit[1] & reg_re & !reg_error;
   assign claim_transition_if_re = addr_hit[2] & reg_re & !reg_error;
+  assign claim_transition_if_we = addr_hit[2] & reg_we & !reg_error;
 
+  assign claim_transition_if_wd = reg_wdata[7:0];
   assign transition_regwen_re = addr_hit[3] & reg_re & !reg_error;
-
   assign transition_cmd_we = addr_hit[4] & reg_we & !reg_error;
+
   assign transition_cmd_wd = reg_wdata[0];
-
-  assign transition_token_0_we = addr_hit[5] & reg_we & !reg_error;
-  assign transition_token_0_wd = reg_wdata[31:0];
   assign transition_token_0_re = addr_hit[5] & reg_re & !reg_error;
+  assign transition_token_0_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign transition_token_1_we = addr_hit[6] & reg_we & !reg_error;
-  assign transition_token_1_wd = reg_wdata[31:0];
+  assign transition_token_0_wd = reg_wdata[31:0];
   assign transition_token_1_re = addr_hit[6] & reg_re & !reg_error;
+  assign transition_token_1_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign transition_token_2_we = addr_hit[7] & reg_we & !reg_error;
-  assign transition_token_2_wd = reg_wdata[31:0];
+  assign transition_token_1_wd = reg_wdata[31:0];
   assign transition_token_2_re = addr_hit[7] & reg_re & !reg_error;
+  assign transition_token_2_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign transition_token_3_we = addr_hit[8] & reg_we & !reg_error;
-  assign transition_token_3_wd = reg_wdata[31:0];
+  assign transition_token_2_wd = reg_wdata[31:0];
   assign transition_token_3_re = addr_hit[8] & reg_re & !reg_error;
+  assign transition_token_3_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign transition_target_we = addr_hit[9] & reg_we & !reg_error;
-  assign transition_target_wd = reg_wdata[3:0];
+  assign transition_token_3_wd = reg_wdata[31:0];
   assign transition_target_re = addr_hit[9] & reg_re & !reg_error;
+  assign transition_target_we = addr_hit[9] & reg_we & !reg_error;
 
-  assign otp_test_ctrl_we = addr_hit[10] & reg_we & !reg_error;
-  assign otp_test_ctrl_wd = reg_wdata[7:0];
+  assign transition_target_wd = reg_wdata[3:0];
   assign otp_test_ctrl_re = addr_hit[10] & reg_re & !reg_error;
+  assign otp_test_ctrl_we = addr_hit[10] & reg_we & !reg_error;
 
+  assign otp_test_ctrl_wd = reg_wdata[7:0];
   assign lc_state_re = addr_hit[11] & reg_re & !reg_error;
-
   assign lc_transition_cnt_re = addr_hit[12] & reg_re & !reg_error;
-
   assign lc_id_state_re = addr_hit[13] & reg_re & !reg_error;
-
   assign device_id_0_re = addr_hit[14] & reg_re & !reg_error;
-
   assign device_id_1_re = addr_hit[15] & reg_re & !reg_error;
-
   assign device_id_2_re = addr_hit[16] & reg_re & !reg_error;
-
   assign device_id_3_re = addr_hit[17] & reg_re & !reg_error;
-
   assign device_id_4_re = addr_hit[18] & reg_re & !reg_error;
-
   assign device_id_5_re = addr_hit[19] & reg_re & !reg_error;
-
   assign device_id_6_re = addr_hit[20] & reg_re & !reg_error;
-
   assign device_id_7_re = addr_hit[21] & reg_re & !reg_error;
 
   // Read data return
