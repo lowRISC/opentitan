@@ -18,6 +18,8 @@ package otbn_env_pkg;
   import otbn_ral_pkg::*;
 
   import otbn_pkg::flags_t;
+  import bus_params_pkg::BUS_DW;
+  import top_pkg::TL_AIW;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -36,7 +38,17 @@ package otbn_env_pkg;
 
   // typedefs
   typedef virtual pins_if #(1) idle_vif;
+  typedef logic [TL_AIW-1:0]   tl_source_t;
 
+  // Expected data for a pending read (see exp_read_values in otbn_scoreboard.sv)
+  typedef struct packed {
+    bit                upd;
+    logic              chk;
+    logic [BUS_DW-1:0] val;
+  } otbn_exp_read_data_t;
+
+  // Used for coverage in otbn_env_cov.sv (where we need to convert string mnemonics to a packed
+  // integral type)
   parameter int unsigned MNEM_STR_LEN = 16;
   typedef bit [MNEM_STR_LEN*8-1:0] mnem_str_t;
 

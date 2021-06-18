@@ -166,6 +166,19 @@ module tb;
    .model_insn_cnt_i (model_insn_cnt)
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Model/RTL consistency checks
+  //
+  // These are the sort of checks that are easier to state at the design level than in terms of UVM
+  // transactions.
+
+  // Check that the idle output from the DUT is the inverse of the model's "done" signal.
+  // Separately, the code in otbn_idle_checker.sv checks that the idle output from the DUT is also
+  // the inverse of the "done" signal that we expect. Combining the two tells us that the RTL and
+  // model agree about whether they are running or not.
+  `ASSERT(MatchingDone_A, idle == !model_if.done, clk, rst_n)
+
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
