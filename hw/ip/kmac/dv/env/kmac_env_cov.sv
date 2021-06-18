@@ -135,15 +135,15 @@ class app_cg_wrap;
     single_data_beat: coverpoint single_beat;
 
     data_strb: coverpoint strb {
-      bins one_byte         = {'b0000_0001};
-      bins two_bytes        = {'b0000_0011};
-      bins three_bytes      = {'b0000_0111};
-      bins four_bytes       = {'b0000_1111};
-      bins five_bytes       = {'b0001_1111};
-      bins six_bytes        = {'b0011_1111};
-      bins seven_bytes      = {'b0111_1111};
-      bins full_data_beat   = {'1};
-      illegal_bins invalid  = default;
+      bins one_byte       = {'b0000_0001};
+      bins two_bytes      = {'b0000_0011};
+      bins three_bytes    = {'b0000_0111};
+      bins four_bytes     = {'b0000_1111};
+      bins five_bytes     = {'b0001_1111};
+      bins six_bytes      = {'b0011_1111};
+      bins seven_bytes    = {'b0111_1111};
+      bins full_data_beat = {'1};
+      bins invalid        = default;
     }
 
     app_err: coverpoint err;
