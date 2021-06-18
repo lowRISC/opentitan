@@ -204,7 +204,7 @@ copy (**origin**).
 
 ```console
 $ git checkout master
-$ git pull upstream master
+$ git pull --ff-only upstream master
 $ git push origin
 ```
 
@@ -233,6 +233,12 @@ $ git log
 
 And see that the changes you commited on the branch are at the top of
 the log followed by the latest changes on the `master` branch.
+
+Note: be mindful about which branch you are working on.
+If you have added new commits to your local `master` branch, aligning it with `upstream` using `git pull --ff-only` may fail.
+An alternative is to use `git pull --rebase` in that case, which directly rebases your local `master` branch onto `upstream/master`.
+Do not use plain `git pull` or `git merge` commands, as they do not preserve a linear commit history.
+See also [this tutorial](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) to learn more about `git rebase` vs `git merge`.
 
 ## Dealing with conflicts after a rebase
 
