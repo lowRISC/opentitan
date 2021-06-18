@@ -107,7 +107,7 @@
             - Setting `scanmode_i`.
 
             **Checks**:
-            Clock divider checks: since `scanmode_i` is asynchronous the checks
+            Clock divider checks: since `scanmode_i` is asynchronous, the checks
             are performed in behavioral code in the scoreboard; SVA assertions
             will be added, conditioned on scanmode being off.
             - When the external clock is selected (and not defeated by
