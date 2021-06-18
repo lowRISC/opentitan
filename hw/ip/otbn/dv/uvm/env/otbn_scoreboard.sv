@@ -19,6 +19,29 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   otbn_model_item iss_trace_queue[$];
   otbn_trace_item rtl_trace_queue[$];
 
+  // Each time we see a read on the A side, we set an entry in the exp_read_values associative
+  // array. There are three situations that we need to deal with:
+  //
+  //   (1) A read from a register that can only be written by SW, so the RAL's mirrored value should
+  //       already be right.
+  //
+  //   (2) A read from a register that can be updated by HW, but where we know what the value should
+  //       be.
+  //
+  //   (3) A read from a register that can be updated by HW and where we have no idea what the value
+  //       should be.
+  //
+  // To handle these three possibilities, we store a 34-bit otbn_exp_read_data_t value with fields
+  // upd, chk and val. Here upd and chk are 1 bit each and val is 32 bits.
+  //
+  // If upd is false, we ignore the other fields and do not update the RAL's mirrored value.
+  // Otherwise we update RAL's mirrored value to match the data from the D channel. If both upd and
+  // chk are True, we raise an error if the data from the D channel doesn't match val.
+  //
+  // To connect up the A-side request with a subsequent D-side response, we use an associative
+  // array, mapping the transaction source ID (a_source in the TL transaction) to an expected value.
+  otbn_exp_read_data_t exp_read_values [tl_source_t];
+
   // pending_start_counter is incremented on a TL transaction that should start the model.
   // expect_start_counter is decremented on a model transaction that shows we saw the start signal.
   // The model start signal should be asserted the cycle following the TL transaction.  In
@@ -28,6 +51,11 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // signals are in sync)
   int pending_start_counter = 0;
   int expect_start_counter = 0;
+
+  // The "running" field uses the OtbnModelStart and OtbnModelDone items on the model FIFO to track
+  // whether we think OTBN is running at the moment. We know that this is in sync with the RTL
+  // because of the MatchingDone_A assertion at testbench level.
+  bit running = 1'b0;
 
   `uvm_component_new
 
@@ -52,7 +80,11 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+
+    // Delete all the entries in exp_read_values: if there are D transactions pending after an A
+    // transaction, the reset will have caused them to be forgotten.
+    exp_read_values.delete();
+
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -64,11 +96,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task process_tl_addr(tl_seq_item item);
-    uvm_reg        csr;
-    uvm_reg_addr_t csr_addr;
-    string         csr_name;
-
-    bit [DataWidth-1:0] dw_one = {{DataWidth-1{1'b0}}, 1'b1};
+    uvm_reg              csr;
+    uvm_reg_addr_t       csr_addr;
+    otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
     // The only TL accesses we currently track are writes to the "start" bit of the CMD register.
     // These start the processor. We don't pass those to the model through UVM, because it's
@@ -84,26 +114,111 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     if (csr == null)
       return;
 
-    // Update the RAL model to reflect any write
     if (item.is_write()) begin
+      // If this is a write, update the RAL model
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+
+      case (csr.get_name())
+        // Spot writes to the "cmd" register, which tell us to start
+        "cmd": begin
+          // We start when we see a write that sets the "start" field of the register.
+          if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
+            this.pending_start_counter++;
+          end
+        end
+
+        default: begin
+          // No other special behaviour for writes
+        end
+      endcase
+      return;
     end
 
-    // The only TL transactions we're tracking at the moment are writes to the "cmd" register,
-    // which tell us to start.
-    csr_name = csr.get_name();
-    if (csr_name == "cmd") begin
-
-      // We start when we see a write that sets the "start" field of the register. We can read most
-      // register fields from the RAL, but this register is W1C, so that doesn't really work here.
-      if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
-        this.pending_start_counter++;
+    // Otherwise, this is a read transaction. Fill in an otbn_exp_read_data_t struct appropriately.
+    case (csr.get_name())
+      "intr_state": begin
+        // Interrupt state register.
+        //
+        // TODO: Track this more precisely. We know that it should latch !status.busy if intr_enable
+        // is set.
+        exp_read_data = '{upd: 1'b1, chk: 1'b0, val: 'x};
       end
-    end
+
+      "status": begin
+        // Status register
+        exp_read_data = '{upd: 1'b1, chk: 1'b1, val: {31'd0, running}};
+      end
+
+      "err_bits": begin
+        // Error bitfield
+        //
+        // TODO: Maybe this could be tracked more precisely. It should only update when an operation
+        // finishes.
+        exp_read_data = '{upd: 1'b1, chk: 1'b0, val: 'x};
+      end
+
+      "fatal_alert_cause": begin
+        // Bitfield for the cause of a fatal alert
+        //
+        // TODO: Maybe this could be tracked more precisely. It should only update when a fatal
+        // alert is signalled.
+        exp_read_data = '{upd: 1'b1, chk: 1'b0, val: 'x};
+      end
+
+      "insn_cnt": begin
+        // Instruction count
+        //
+        // TODO: Track this properly. We've got the magic number on the insn_cnt_if interface.
+        exp_read_data = '{upd: 1'b1, chk: 1'b0, val: 'x};
+      end
+
+      default: begin
+        // Other registers cannot be updated by the hardware, so don't need any special handling
+        // here. The registers that aren't write-only are: intr_enable and cmd.
+      end
+    endcase
+
+    // There shouldn't be an existing entry in exp_read_values for a_source: if there is, then the
+    // host side must have sent two messages for the same source without waiting for a response,
+    // violating the TL protocol.
+    `DV_CHECK_FATAL(!exp_read_values.exists(item.a_source))
+
+    exp_read_values[item.a_source] = exp_read_data;
   endtask
 
   task process_tl_data(tl_seq_item item);
-    // TODO: Fill this out to do any extra tracking on the data channel
+    uvm_reg              csr;
+    uvm_reg_addr_t       csr_addr;
+    otbn_exp_read_data_t exp_read_data;
+
+    // We're only interested in reads. Ignore any acks for memory or register writes that came in on
+    // the A channel.
+    if (item.is_write())
+      return;
+
+    // We're also only interested in registers; the scoreboard doesn't explicitly model memories in
+    // the RAL. Look to see if this is a valid register address. If not, it was to a memory and we
+    // can ignore it.
+    csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    csr = ral.default_map.get_reg_by_offset(csr_addr);
+    if (csr == null)
+      return;
+
+    // Look up the expected read data for item and then clear it (to get a quick error if something
+    // has come unstuck and we see two replies for a single addr + source combo)
+    `DV_CHECK_FATAL(exp_read_values.exists(item.a_source))
+    exp_read_data = exp_read_values[item.a_source];
+    exp_read_values.delete(item.a_source);
+
+    if (exp_read_data.upd) begin
+      if (exp_read_data.chk) begin
+        // This is a value that can be written by HW, but we think we know what the value should be
+        `DV_CHECK_EQ(item.d_data, exp_read_data.val,
+                     $sformatf("value for register %0s", csr.get_full_name()))
+      end
+      // Update the RAL model to match the value we've just read from HW
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
   endtask
 
   task process_model_fifo();
@@ -116,10 +231,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       case (item.item_type)
         OtbnModelStart: begin
           this.expect_start_counter--;
+          running = 1'b1;
         end
 
         OtbnModelDone: begin
-          // TODO: Handle this signal
+          `DV_CHECK_FATAL(running, "Got done signal when we didn't think model was running.")
+          running = 1'b0;
         end
 
         OtbnModelInsn: begin
