@@ -67,6 +67,7 @@ enum module_ {
   X(kErrorHmacInvalidArgument,        ERROR_(1, kModuleHmac, kInvalidArgument)), \
   X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadExponent,       ERROR_(2, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadKey,            ERROR_(3, kModuleSigverify, kInvalidArgument)), \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   X(kErrorManifestBadLength,          ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorManifestBadEntryPoint,      ERROR_(2, kModuleManifest, kInternal)), \
