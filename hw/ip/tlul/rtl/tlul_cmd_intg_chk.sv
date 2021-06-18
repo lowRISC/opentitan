@@ -28,7 +28,7 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
     .err_o(err)
   );
 
-  prim_secded_64_57_dec u_data_chk (
+  prim_secded_39_32_dec u_data_chk (
     .data_i({tl_i.a_user.data_intg, DataMaxWidth'(tl_i.a_data)}),
     .data_o(),
     .syndrome_o(),
