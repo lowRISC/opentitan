@@ -2092,6 +2092,7 @@ module top_earlgrey #(
       .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
       .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .rma_req_i(flash_ctrl_rma_req),
       .rma_ack_o(flash_ctrl_rma_ack),
       .rma_seed_i(flash_ctrl_rma_seed),

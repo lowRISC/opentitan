@@ -33,6 +33,7 @@ module flash_ctrl_wrapper (
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+  input        lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
   output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
@@ -89,6 +90,7 @@ module flash_ctrl_wrapper (
     .lc_iso_part_sw_rd_en_i,
     .lc_iso_part_sw_wr_en_i,
     .lc_seed_hw_rd_en_i,
+    .lc_escalate_en_i,
     .rma_req_i         (rma_req_i),
     .rma_seed_i        (rma_seed_i),
     .rma_ack_o         (rma_ack_o),
