@@ -417,25 +417,6 @@ module otbn
   logic unused_dmem_top_rdata;
   assign unused_dmem_top_rdata = &{1'b0, dmem_rdata[ExtWLEN-1:WLEN]};
 
-  // TODO: Integrity for dmem/imem calculated here, remove this once end to end integrity from Ibex
-  // writes has been enabled
-  //
-
-  tlul_pkg::tl_h2d_t tl_h2d_intg;
-  logic [38:0] tl_h2d_data_intg;
-  logic        unused_tl_h2d_data_intg;
-
-  prim_secded_39_32_enc u_otbn_mem_intg_gen (
-    .data_i(tl_i.a_data),
-    .data_o(tl_h2d_data_intg)
-  );
-
-  always_comb begin
-    tl_h2d_intg = tl_i;
-    tl_h2d_intg.a_user.data_intg = tl_h2d_data_intg[38:32];
-    unused_tl_h2d_data_intg = ^tl_h2d_data_intg[31:0];
-  end
-
   // Registers =================================================================
 
   logic reg_bus_integrity_error;
@@ -443,7 +424,7 @@ module otbn
   otbn_reg_top u_reg (
     .clk_i,
     .rst_ni (rst_n),
-    .tl_i(tl_h2d_intg),
+    .tl_i,
     .tl_o,
     .tl_win_o (tl_win_h2d),
     .tl_win_i (tl_win_d2h),

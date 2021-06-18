@@ -39,7 +39,7 @@ class cip_tl_seq_item extends tl_seq_item;
     cmd_with_intg = prim_secded_pkg::prim_secded_64_57_enc(H2DCmdMaxWidth'(cmd_intg_payload));
 
     // construct data integrity
-    data_with_intg = prim_secded_pkg::prim_secded_64_57_enc(DataMaxWidth'(a_data));
+    data_with_intg = prim_secded_pkg::prim_secded_39_32_enc(DataMaxWidth'(a_data));
 
     user.rsvd = '0;
     user.tl_type = tl_type;
@@ -62,7 +62,7 @@ class cip_tl_seq_item extends tl_seq_item;
     rsp_with_intg = prim_secded_pkg::prim_secded_64_57_enc(D2HRspMaxWidth'(rsp_intg_payload));
 
     // construct data integrity
-    data_with_intg = prim_secded_pkg::prim_secded_64_57_enc(DataMaxWidth'(d_data));
+    data_with_intg = prim_secded_pkg::prim_secded_39_32_enc(DataMaxWidth'(d_data));
 
     user.rsp_intg = rsp_with_intg[D2HRspFullWidth -1 -: D2HRspIntgWidth];
     user.data_intg = data_with_intg[DataFullWidth -1 -: DataIntgWidth];
