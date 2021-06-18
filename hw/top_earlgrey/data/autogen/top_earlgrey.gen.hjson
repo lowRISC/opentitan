@@ -3670,6 +3670,18 @@
           index: -1
         }
         {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
           name: rma_req
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -6078,6 +6090,7 @@
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
         aon_timer_aon.lc_escalate_en
+        flash_ctrl.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
@@ -14234,6 +14247,18 @@
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_seed_hw_rd_en
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {

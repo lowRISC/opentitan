@@ -704,7 +704,8 @@
       'lc_ctrl.lc_keymgr_en'       : [],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en'],
+                                      'sram_ctrl_ret_aon.lc_escalate_en',
+                                      'flash_ctrl.lc_escalate_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
 

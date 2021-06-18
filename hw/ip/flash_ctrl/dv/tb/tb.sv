@@ -61,6 +61,7 @@ module tb;
     .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On),
     .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
     .lc_nvm_debug_en_i          (lc_ctrl_pkg::Off),
+    .lc_escalate_en_i           (lc_ctrl_pkg::Off),
     .pwrmgr_o                   (pwrmgr_pkg::PWR_FLASH_DEFAULT),
     .rma_req_i                  (lc_ctrl_pkg::Off),
     .rma_seed_i                 ('0),
