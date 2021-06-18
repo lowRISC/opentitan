@@ -47,61 +47,96 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
-      process_tl_a_chan_fifo();
-      process_tl_d_chan_fifo();
-      if (cfg.list_of_alerts.size()) process_alert_fifos();
-      if (cfg.list_of_alerts.size()) check_alerts();
-    join_none
-  endtask
 
-  virtual task process_tl_a_chan_fifo();
-    foreach (tl_a_chan_fifos[i]) begin
-      automatic string ral_name = i;
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
       fork
-        forever begin
-          tl_seq_item item;
-          tl_a_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-
-          if (cfg.en_scb_tl_err_chk) begin
-            if (predict_tl_err(item, AddrChannel, ral_name)) continue;
-          end
-          if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
-            process_mem_write(item, ral_name);
-          end
-
-          if (!cfg.en_scb) continue;
-
-          process_tl_access(item, AddrChannel, ral_name);
-        end // forever
+        process_tl_fifos(i, tl_a_chan_fifos[i], tl_d_chan_fifos[i]);
+      join_none
+    end
+    if (cfg.list_of_alerts.size()) begin
+      fork
+        process_alert_fifos();
+        check_alerts();
       join_none
     end
   endtask
 
-  virtual task process_tl_d_chan_fifo();
-    foreach (tl_d_chan_fifos[i]) begin
-      automatic string ral_name = i;
-      fork
-        forever begin
-          tl_seq_item item;
-          tl_d_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+  // Process events on the A and D channels for a TL interface
+  //
+  // In each cycle, we guarantee to process items from the D channel before items from the A
+  // channel. This means that a pair of back-to-back reads are guaranteed to arrive in the order A0,
+  // D0, A1, D1, which makes it easier to predict expected read results. With this guaranteed
+  // ordering, a scoreboard can set an "expected read value" when processing the A transaction and
+  // use it when processing the D transaction. Without this guarantee, the scoreboard would need a
+  // queue to handle the other possible ordering (A0, A1, D0, D1). What's more, it also couldn't
+  // update predictions when handling the A channel, because two back-to-back reads of the same
+  // register would mess things up.
+  virtual task process_tl_fifos(string ral_name,
+                                uvm_tlm_analysis_fifo #(tl_seq_item) a_chan_fifo,
+                                uvm_tlm_analysis_fifo #(tl_seq_item) d_chan_fifo);
+    tl_seq_item a_item, d_item;
+    bit         a_seen = 0, d_seen = 0;
 
-          if (cfg.en_scb_tl_err_chk) begin
-            // check tl packet integrity
-            void'(item.is_ok());
-            if (predict_tl_err(item, DataChannel, ral_name)) continue;
-          end
-          if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item, ral_name)) begin
-            process_mem_read(item, ral_name);
-          end
+    // Spawn processes that read continuously from the A and D fifos
+    fork
+      forever begin
+        a_chan_fifo.get(a_item);
+        `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", a_item.sprint()), UVM_HIGH)
+        a_seen = 1;
+        wait (!a_seen);
+      end
+      forever begin
+        d_chan_fifo.get(d_item);
+        `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", d_item.sprint()), UVM_HIGH)
+        d_seen = 1;
+        wait (!d_seen);
+      end
+    join_none
 
-          if (!cfg.en_scb) continue;
+    forever begin
+      // Wait until one of the sampling processes sees something.
+      wait (a_seen || d_seen);
 
-          process_tl_access(item, DataChannel, ral_name);
-        end // forever
-      join_none
+      // At this point, we've seen an item on either the A or D channel, or possibly both (depending
+      // on the vagaries of the simulator's scheduling algorithm). If we've only seen one item, it's
+      // possible that there's another one that will appear at the same simulation time. Wait 1ps to
+      // guarantee that both items have arrived in this case.
+      #1ps;
+
+      // The wait has guaranteed that anything that was going to arrive this cycle has actually
+      // arrived. Handle any items that have arrived, doing D then A if there are both. We assume
+      // that the virtual task we call (process_tl_access) consumes no simulation time: if it does
+      // consume time, subsequent items might arrive out of order.
+      if (d_seen) begin
+        if (cfg.en_scb_tl_err_chk) begin
+          // check tl packet integrity
+          void'(d_item.is_ok());
+          if (predict_tl_err(d_item, DataChannel, ral_name)) continue;
+        end
+        if (cfg.en_scb_mem_chk && !d_item.is_write() && is_mem_addr(d_item, ral_name)) begin
+          process_mem_read(d_item, ral_name);
+        end
+
+        if (cfg.en_scb) begin
+          process_tl_access(d_item, DataChannel, ral_name);
+        end
+
+        d_seen = 0;
+      end
+      if (a_seen) begin
+        if (cfg.en_scb_tl_err_chk) begin
+          if (predict_tl_err(a_item, AddrChannel, ral_name)) continue;
+        end
+        if (cfg.en_scb_mem_chk && a_item.is_write() && is_mem_addr(a_item, ral_name)) begin
+          process_mem_write(a_item, ral_name);
+        end
+
+        if (cfg.en_scb) begin
+          process_tl_access(a_item, AddrChannel, ral_name);
+        end
+
+        a_seen = 0;
+      end
     end
   endtask
 
@@ -216,16 +251,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   // task to process tl access
+  //
+  // Subclasses must implement this task. It is not allowed to consume simulation time.
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 
-  virtual task process_mem_write(tl_seq_item item, string ral_name);
+  task process_mem_write(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     if (!cfg.under_reset)  exp_mem[ral_name].write(addr, item.a_data, item.a_mask);
   endtask
 
-  virtual task process_mem_read(tl_seq_item item, string ral_name);
+  task process_mem_read(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     if (!cfg.under_reset && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
       exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
