@@ -20,9 +20,12 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
     'sw_silicon_creator_mask_rom_sigverify',
     sources: [
       'sigverify_keys.c',
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
       sw_silicon_creator_lib_sigverify,
+      sw_silicon_creator_lib_driver_otp,
+      sw_lib_bitfield,
     ],
   ),
 )
@@ -274,9 +277,11 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
     sources: [
       'sigverify_keys.c',
       'sigverify_keys_unittest.cc',
+      hw_ip_otp_ctrl_reg_h,
     ] + sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests,
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_bitfield,
     ],
     native: true,
   ),
