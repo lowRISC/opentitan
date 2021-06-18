@@ -109,5 +109,5 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id,
       return kErrorOk;
     }
   }
-  return kErrorSigverifyBadEncodedMessage;
+  return kErrorSigverifyBadKey;
 }
