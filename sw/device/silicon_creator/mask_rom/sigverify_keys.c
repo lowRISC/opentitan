@@ -4,9 +4,15 @@
 
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
+#include <assert.h>
 #include <stddef.h>
 
+#include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
+
+#include "otp_ctrl_regs.h"
 
 /**
  * Public keys for signature verification.
@@ -99,12 +105,40 @@ const sigverify_rsa_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
         },
 };
 
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
+                  kSigVerifyNumRsaKeys,
+              "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
+              "`kSigVerifyNumRsaKeys` bytes.");
+
+/**
+ * Checks the validity of a key in OTP.
+ *
+ * Validity of each public key is encoded using a byte-sized
+ * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item.
+ *
+ * @param key_index Index of the key to check.
+ * @return Whether the key is valid or not.
+ */
+static rom_error_t key_is_valid_in_otp(size_t key_index) {
+  const uint32_t addr =
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_OFFSET +
+      (key_index / kSigverifyNumEntriesPerOtpWord) * sizeof(uint32_t);
+  const bitfield_field32_t field = {
+      .mask = UINT8_MAX,
+      .index = (key_index % kSigverifyNumEntriesPerOtpWord) * 8,
+  };
+  if (bitfield_field32_read(otp_read32(addr), field) == kHardenedByteBoolTrue) {
+    return kErrorOk;
+  }
+  return kErrorSigverifyBadKey;
+}
+
 rom_error_t sigverify_rsa_key_get(uint32_t key_id,
                                   const sigverify_rsa_key_t **key) {
-  // FIXME: Key validity check using OTP.
   for (size_t i = 0; i < kSigVerifyNumRsaKeys; ++i) {
     const sigverify_rsa_key_t *cand_key = &kSigVerifyRsaKeys[i];
     if (sigverify_rsa_key_id_get(&cand_key->n) == key_id) {
+      RETURN_IF_ERROR(key_is_valid_in_otp(i));
       *key = cand_key;
       return kErrorOk;
     }

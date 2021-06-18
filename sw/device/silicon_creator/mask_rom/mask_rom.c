@@ -15,6 +15,7 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
@@ -26,6 +27,11 @@
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+// TODO(#7325): Defined here for now to be able to use the OTP driver since
+// sec_mmio requires this symbol. For the actual target, we need to define a
+// memory region to share the data with ROM_EXT.
+sec_mmio_ctx_t sec_mmio_ctx;
 
 static inline rom_error_t mask_rom_irq_error(void) {
   uint32_t mcause;

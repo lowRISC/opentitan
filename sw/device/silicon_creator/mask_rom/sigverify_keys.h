@@ -19,6 +19,15 @@ enum {
    * Number of RSA public keys.
    */
   kSigVerifyNumRsaKeys = 2,
+  /**
+   * Number of key validity entries per OTP word.
+   *
+   * Validity of each public key is encoded using a byte-sized
+   * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item. Size
+   * of a `hardened_byte_bool_t` is 1 byte, thus each 32-bit OTP word has 4
+   * entries.
+   */
+  kSigverifyNumEntriesPerOtpWord = sizeof(uint32_t),
 };
 
 /**
@@ -30,6 +39,10 @@ extern const sigverify_rsa_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys];
 
 /**
  * Returns the key with the given ID.
+ *
+ * This function also checks whether the key with the given ID is valid by
+ * reading the corresponding entry from the `CREATOR_SW_CFG_KEY_IS_VALID` OTP
+ * item.
  *
  * @param key_id A key ID.
  * @param key Key with the given ID, valid only if it exists.
