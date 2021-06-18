@@ -41,9 +41,13 @@ typedef struct sigverify_rsa_key {
    */
   sigverify_rsa_buffer_t n;
   /**
-   * Negative of the multiplicative inverse of n modulo 2^32.
+   * Negative of the multiplicative inverse of n modulo 2^256, little-endian.
+   *
+   * Calculations performed on OTBN (word size: 256 bits) use the whole array
+   * while calculations performed on Ibex (word size: 32 bits) use only the
+   * first word, which is equal to -n^-1 mod 2^32.
    */
-  uint32_t n0_inv;
+  uint32_t n0_inv[8];
   /**
    * Exponent.
    */

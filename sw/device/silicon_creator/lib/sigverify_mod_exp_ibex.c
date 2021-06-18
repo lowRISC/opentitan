@@ -124,7 +124,7 @@ static void mont_mul(const sigverify_rsa_key_t *key,
 
     // Holds the sum of the first two addends in step 2.2.
     uint64_t acc0 = (uint64_t)x->data[i] * y->data[0] + result->data[0];
-    const uint32_t u_i = (uint32_t)acc0 * key->n0_inv;
+    const uint32_t u_i = (uint32_t)acc0 * key->n0_inv[0];
     // Holds the sum of the all three addends in step 2.2.
     uint64_t acc1 = (uint64_t)u_i * key->n.data[0] + (uint32_t)acc0;
 
