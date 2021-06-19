@@ -73,9 +73,8 @@ class Deploy():
         # Construct the job's command.
         self.cmd = self._construct_cmd()
 
-        # Create the launcher object. Launcher retains the handle to self for
-        # lookup & callbacks.
-        self.launcher = get_launcher(self)
+        # Launcher instance created later using create_launcher() method.
+        self.launcher = None
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.
@@ -131,6 +130,9 @@ class Deploy():
         be derived. Those are set by this method.
         """
         self._extract_attrs(self.sim_cfg.__dict__)
+
+        # Enable GUI mode.
+        self.gui = self.sim_cfg.gui
 
         # Output directory where the artifacts go (used by the launcher).
         self.odir = getattr(self, self.target + "_dir")
@@ -277,6 +279,15 @@ class Deploy():
 
         return "{}/{}.log".format(self.odir, self.target)
 
+    def create_launcher(self):
+        """Creates the launcher instance.
+
+        Note that the launcher instance for ALL jobs in the same job group must
+        be created before the Scheduler starts to dispatch one by one.
+        """
+        # Retain the handle to self for lookup & callbacks.
+        self.launcher = get_launcher(self)
+
 
 class CompileSim(Deploy):
     """Abstraction for building the simulation executable."""
@@ -317,6 +328,9 @@ class CompileSim(Deploy):
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
         super()._set_attrs()
+
+        # Dont run the compile job in GUI mode.
+        self.gui = False
 
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
@@ -399,8 +413,6 @@ class RunTest(Deploy):
         # arg's name.
         assert self.build_mode == build_job.name
 
-        self.launcher.renew_odir = True
-
     def _define_attrs(self):
         super()._define_attrs()
         self.mandatory_cmd_attrs.update({
@@ -440,9 +452,12 @@ class RunTest(Deploy):
             self.output_dirs += [self.cov_db_dir]
 
         # In GUI mode, the log file is not updated; hence, nothing to check.
-        if not self.sim_cfg.gui:
+        if not self.gui:
             self.pass_patterns = self.run_pass_patterns
             self.fail_patterns = self.run_fail_patterns
+
+    def pre_launch(self):
+        self.launcher.renew_odir = True
 
     def post_finish(self, status):
         if status != 'P':
