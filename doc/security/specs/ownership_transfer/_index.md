@@ -23,14 +23,26 @@ Implements transition from `OWNED` to `UNOWNED` state. The device must be in
 ### Ownership Transfer (or Ownership Assignment) {#ownership-transfer-top}
 
 Implements transition from `UNOWNED` to `OWNED` stage. The rest of this document
-refers to this functionality as Ownership Transfer. The following keys are
-provisioned as part of this flow:
+refers to this functionality as Ownership Transfer.
 
-Key        | Description
----------- | --------------------------------------------------------
-CODE_SIGN  | Used to verify the Silicon Owner first bootloader stage.
-UNLOCK     | Used to authenticate the Unlock Ownership command.
-NEXT_OWNER | Used to authenticate the Ownership Transfer command.
+## Owner Keys {#owner-keys}
+
+The following keys are provisioned as part of this flow.
+
+### CODE_SIGN
+
+*   **Description**: Used to verify the Silicon Owner first bootloader stage.
+*   **Key Type**: RSA-3072 public key with exponent 3 or F4.
+
+### UNLOCK
+
+*   **Description**: Used to authenticate the Unlock Ownership payload.
+*   **Key Type**: ECC NIST-P256 Curve.
+
+### NEXT_OWNER
+
+*   **Description**: Used to authenticate the Ownership Transfer payload.
+*   **Key Type**: ECC NIST-P256 Curve.
 
 The `UNLOCK` and `NEXT_OWNER` keys are required to ensure ownership state
 transitions are only triggered by authenticated and authorized commands.
@@ -78,23 +90,12 @@ following fields must be supported by the manifest implementation:
 
 #### signature
 
-Signature covering the signed manifest. The number of bytes depends on the
-`signature_algorithm` field.
+Signature covering the manifest.
 
 #### signature_algorithm
 
-Must match the signature algorithm used by the secure boot configuration. The
-following list is not exhaustive, and may change based on the implementation.
-The implementation shall choose the appropriate signature verification scheme
-based on the secure boot security level requirements.
-
-RSA 3072:
-
-*   `pkcs1-v1_5-with-sha-2-256`
-*   `pkcs1-v1_5-with-sha-2-512`
-*   `pkcs1-v1_5-with-sha-3-256`
-*   `pkcs1-v1_5-with-sha-3-384`
-*   `pkcs1-v1_5-with-sha-3-512`
+Signature algorithm. For this version of the specification it is always set
+to `ECDSA-sha256`.
 
 #### public_key
 
@@ -102,26 +103,15 @@ Public key to verify the signature with. The number of bytes depends on the
 `signature_algorithm` field. Depending on the ownership transfer model, the
 public key must match one of the following requirements:
 
- Endorsing Entity | Public Key Requirement                                   
+ Endorsing Entity | Public Key Requirement
  ---------------- | --------------------------------------------------------
  Silicon Creator  | The public key must be stored in the ROM_EXT and  integrity protected by the ROM_EXT signature.
  Previous Owner   | The public key must be stored in the previous owner slot and labeled as the `NEXT_OWNER` in the policy field. See `owner_keys` for more details.
 
 #### owner_keys (array)
 
-List of public keys endorsed by the manifest. The format of the public key
-descriptor depends on the `signature_algorithm` field. For example, RSA-3072
-with `pkcs1-v1_5-with-sha-2-256` contains the following fields:
-
-*   `public_key`: RSA (N|e) parameters.
-*   `policy`: Key usage policy, bitmap decoded to one or more of the following:
-    *   `CODE_SIGN`: Key used to verify the Silicon Owner first bootloader
-        stage.
-    *   `UNLOCK`: Key used to verify [unlock ownership](#unlock-ownership-top)
-        commands.
-    *   `NEXT_OWNER`: Used to verify
-        [ownership assignment](#ownership-transfer-top) commands, using the
-        proposed key endorsement manifest format.
+List of public keys endorsed by the manifest. See [Owner Keys](#owner-keys) for
+more details.
 
 #### Optional Parameters
 
