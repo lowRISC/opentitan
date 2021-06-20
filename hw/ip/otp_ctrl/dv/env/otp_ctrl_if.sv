@@ -13,8 +13,10 @@
 `define LC_PART_OTP_CMD_PATH \
     tb.dut.gen_partitions[6].gen_lifecycle.u_part_buf.otp_cmd_o
 
-`define PRIM_GENERIC_OTP_CMD_I_PATH \
-    tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+`ifndef PRIM_GENERIC_OTP_CMD_I_PATH
+  `define PRIM_GENERIC_OTP_CMD_I_PATH \
+      tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+`endif
 
 interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_env_pkg::*;
