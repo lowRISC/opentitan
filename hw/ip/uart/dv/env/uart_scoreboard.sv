@@ -468,7 +468,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           do_read_check = 1'b0;
         end
       end
-      "ovrd", "intr_enable", "timeout_ctrl": begin
+      "ovrd", "intr_enable", "timeout_ctrl", "alert_test": begin
         // no speical handle is needed
       end
       default: begin
