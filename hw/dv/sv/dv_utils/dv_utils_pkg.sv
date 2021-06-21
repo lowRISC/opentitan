@@ -99,6 +99,10 @@ package dv_utils_pkg;
 
   // return the biggest value within the given queue of integers.
   function automatic int max(const ref int int_q[$]);
+    `DV_CHECK_GT_FATAL(int_q.size(), 0, "max function cannot accept an empty queue of integers!",
+                       msg_id)
+    // Assign the first value from the queue in case of negative integers.
+    max = int_q[0];
     foreach (int_q[i]) max = max2(max, int_q[i]);
     return max;
   endfunction
