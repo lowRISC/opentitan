@@ -47,6 +47,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // in tb.sv (where we bind in the alert interfaces and register each with the UVM DB).
     list_of_alerts = otbn_env_pkg::LIST_OF_ALERTS;
 
+    // Tell the CIP base code how many interrupts we have (defaults to zero)
+    num_interrupts = 1;
+
     model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
 
     super.initialize(csr_base_addr);
