@@ -257,6 +257,38 @@ The code using an X Macro must:
     It is usually clearer if you split the definition over multiple lines.
 *   Immediately after the definition, include the `.def` file for the X Macro.
 
+### Undefined Behavior
+
+***All uses of Undefined Behavior (unless stated otherwise) must be flagged and subjected to careful review and justification.***
+
+Undefined Behavior, or UB, (as defined by C++14 or C11 as the case may be) must be treated as a security risk by default.
+Not only does it make programs more difficult to reason about, but also increases the likelihood of issues during toolchain upgrades.
+Thus, UB must be avoided unless absolutely necessary.
+
+Although not comprehensive, the following popular idioms are actually Undefined Behavior as defined by the standards.
+This list is provided to illustrate the subtle nature of UB, and how it runs counter to the semantics of C many programmers may have acquired over time.
+
+*   Casting an arbitrary `void *` to `uint32_t *` and dereferencing it.
+    This is the most common accidental violation of the Strict Aliasing Rule.
+    (See C11, S6.5p6 for the C version; the C++ rules are basically the same.)
+*   Creating unaligned pointers.
+    C and C++ consider merely creating such pointers, not just dereferencing them, to be UB.
+*   Comparing (by equality or order) non-null pointers of distinct provenance (e.g. pointers into different stack variables).
+*   Using vanilla `memcpy()` on `volatile` memory; any non-`volatile` access to `volatile` memory is UB.
+
+Sometimes, C and C++ cannot express precisely the semantics required when writing firmware, without technically invoking Undefined Behavior.
+Intentionally invoking undefined behavior is a measure of last resort that should be carefully reviewed and signed off by <TODO>.
+Most of the time, there is a sanctioned (but non-obvious) way to perform a particular operation.
+Justification for invocation of UB should include desired assembly output patterns and reasons why writing inline assembly is insufficient (such as pessimization or portability concerns).
+
+For example, `memcpy()` can be used to work around Strict Aliasing without incurring a performance penalty (as one might expect from the fact that it's a function call).
+
+The following is a complete list of all UB that has been assessed to be low-risk and may be used as required throughout the project.
+UB not on this list which has been granted approval must be flagged with `// UNDEFINED BEHAVIOR: ...`.
+
+*   Creating a pointer into arbitrary memory by casting from an address.
+    This is actually UB in C, but necessary for accessing hardware registers.
+    LLVM has special understanding of such "external memory" in its aliasing model.
 
 
 ## C++ Style Guide {#cxx-style-guide}
