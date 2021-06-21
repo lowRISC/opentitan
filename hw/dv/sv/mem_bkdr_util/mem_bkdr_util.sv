@@ -181,9 +181,8 @@ class mem_bkdr_util extends uvm_object;
     return data;
   endfunction
 
-  // Convenience macro to check the addr and data width for each flavor of read and write functions.
-  `define _ADDR_DW_CHECKS(_ADDR, _DW) \
-    `DV_CHECK_GE_FATAL(data_width, _DW, $sformatf("data_width %0d is < ``_DW``!", data_width)) \
+  // Convenience macro to check the addr for each flavor of read and write functions.
+  `define _ACCESS_CHECKS(_ADDR, _DW) \
     `DV_CHECK_EQ_FATAL(_ADDR % (_DW / 8), 0, $sformatf("addr 0x%0h not ``_DW``-bit aligned", _ADDR))
 
   // Read a single byte at specified address.
@@ -196,22 +195,22 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   virtual function logic [15:0] read16(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `_ADDR_DW_CHECKS(addr, 16)
+    `_ACCESS_CHECKS(addr, 16)
     return {read8(addr + 1), read8(addr)};
   endfunction
 
   virtual function logic [31:0] read32(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `_ADDR_DW_CHECKS(addr, 32)
+    `_ACCESS_CHECKS(addr, 32)
     return {read16(addr + 2), read16(addr)};
   endfunction
 
   virtual function logic [63:0] read64(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `_ADDR_DW_CHECKS(addr, 64)
+    `_ACCESS_CHECKS(addr, 64)
     return {read32(addr + 4), read32(addr)};
   endfunction
 
   virtual function logic [127:0] read128(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `_ADDR_DW_CHECKS(addr, 128)
+    `_ACCESS_CHECKS(addr, 128)
     return {read64(addr + 8), read64(addr)};
   endfunction
 
@@ -281,34 +280,34 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   virtual function void write16(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [15:0] data);
-    `_ADDR_DW_CHECKS(addr, 16)
+    `_ACCESS_CHECKS(addr, 16)
     if (!check_addr_valid(addr)) return;
     write8(addr, data[7:0]);
     write8(addr + 1, data[15:8]);
   endfunction
 
   virtual function void write32(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [31:0] data);
-    `_ADDR_DW_CHECKS(addr, 32)
+    `_ACCESS_CHECKS(addr, 32)
     if (!check_addr_valid(addr)) return;
     write16(addr, data[15:0]);
     write16(addr + 2, data[31:16]);
   endfunction
 
   virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);
-    `_ADDR_DW_CHECKS(addr, 64)
+    `_ACCESS_CHECKS(addr, 64)
     if (!check_addr_valid(addr)) return;
     write32(addr, data[31:0]);
     write32(addr + 4, data[63:32]);
   endfunction
 
   virtual function void write128(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [127:0] data);
-    `_ADDR_DW_CHECKS(addr, 128)
+    `_ACCESS_CHECKS(addr, 128)
     if (!check_addr_valid(addr)) return;
     write64(addr, data[63:0]);
     write64(addr + 4, data[127:63]);
   endfunction
 
-  `undef _ADDR_DW_CHECKS
+  `undef _ACCESS_CHECKS
 
   /////////////////////////////////////////////////////////
   // Wrapper functions for memory reads with ECC enabled //
