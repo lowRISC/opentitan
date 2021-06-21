@@ -24,9 +24,6 @@ module tb;
   wire otp_ctrl_pkg::sram_otp_key_req_t[NumSramKeyReqSlots-1:0] sram_req;
   wire otp_ctrl_pkg::sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0] sram_rsp;
 
-  // TODO: need to connect this properly
-  wire [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_test_ctrl;
-
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire intr_otp_operation_done, intr_otp_error;
 
@@ -92,7 +89,7 @@ module tb;
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
     .pwr_otp_o                  ({otp_ctrl_if.pwr_otp_done_o, otp_ctrl_if.pwr_otp_idle_o}),
     // lc
-    .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data, otp_test_ctrl}),
+    .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data, otp_ctrl_if.otp_test_ctrl_i}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),
