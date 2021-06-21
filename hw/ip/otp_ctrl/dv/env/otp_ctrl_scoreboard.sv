@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otp_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(otp_ctrl_env_cfg),
+class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
+  extends cip_base_scoreboard #(
+    .CFG_T(CFG_T),
     .RAL_T(otp_ctrl_reg_block),
     .COV_T(otp_ctrl_env_cov)
   );
-  `uvm_component_utils(otp_ctrl_scoreboard)
+  `uvm_component_param_utils(otp_ctrl_scoreboard #(CFG_T))
 
   // local variables
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
