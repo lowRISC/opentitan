@@ -761,14 +761,6 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
-    # Find the alert handler and extract the name of its clock
-    alert_clock = None
-    for instance in top['module']:
-        if instance['type'].lower() == 'alert_handler':
-            alert_clock = instance['clock_srcs']['clk_i']
-            break
-    assert alert_clock is not None
-
     for m in top["alert_module"]:
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -780,10 +772,12 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
         block = name_to_block[ip['type']]
 
         log.info("Adding alert from module %s" % ip["name"])
-        has_async_alerts = ip['clock_srcs']['clk_i'] != alert_clock
+        # Note: we assume that all alerts are asynchronous in order to make the
+        # design a homogeneous and more amenable to DV automation and synthesis
+        # constraint scripting.
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
-            alert_dict['async'] = '1' if has_async_alerts else '0'
+            alert_dict['async'] = '1'
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
             top["alert"].append(qual_sig)
