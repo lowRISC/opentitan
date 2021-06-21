@@ -11580,245 +11580,245 @@
       name: uart0_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: uart0
     }
     {
       name: uart1_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: uart1
     }
     {
       name: uart2_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: uart2
     }
     {
       name: uart3_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: uart3
     }
     {
       name: gpio_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: gpio
     }
     {
       name: spi_device_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: spi_device
     }
     {
       name: spi_host0_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: spi_host0
     }
     {
       name: spi_host1_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: spi_host1
     }
     {
       name: i2c0_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: i2c0
     }
     {
       name: i2c1_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: i2c1
     }
     {
       name: i2c2_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: i2c2
     }
     {
       name: pattgen_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: pattgen
     }
     {
       name: otp_ctrl_fatal_macro_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: otp_ctrl
     }
     {
       name: otp_ctrl_fatal_check_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: otp_ctrl
     }
     {
       name: lc_ctrl_fatal_prog_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: lc_ctrl
     }
     {
       name: lc_ctrl_fatal_state_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: lc_ctrl
     }
     {
       name: lc_ctrl_fatal_bus_integ_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: lc_ctrl
     }
     {
       name: sysrst_ctrl_aon_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sysrst_ctrl_aon
     }
     {
       name: adc_ctrl_aon_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: adc_ctrl_aon
     }
     {
       name: pinmux_aon_fatal_fault
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: pinmux_aon
     }
     {
       name: sensor_ctrl_aon_recov_as
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_cg
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_gd
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ts_hi
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ts_lo
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_fla
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_otp
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot0
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot1
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot2
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot3
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot4
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot5
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sensor_ctrl_aon
     }
     {
       name: sram_ctrl_ret_aon_fatal_intg_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sram_ctrl_ret_aon
     }
     {
       name: sram_ctrl_ret_aon_fatal_parity_error
       width: 1
       type: alert
-      async: "0"
+      async: "1"
       module_name: sram_ctrl_ret_aon
     }
     {
