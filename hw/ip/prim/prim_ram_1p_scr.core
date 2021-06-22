@@ -18,7 +18,16 @@ filesets:
       - rtl/prim_ram_1p_scr.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_ram_1p_scr.vlt
+    file_type: vlt
+
 targets:
   default:
     filesets:
+      - tool_verilator ? (files_verilator_waiver)
       - files_rtl
