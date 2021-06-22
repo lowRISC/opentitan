@@ -479,7 +479,7 @@ def _unpack_lx(where: str,
                            'insns.yml?')
 
     try:
-        gpr_type = RegOperandType('gpr', True)
+        gpr_type = RegOperandType('gpr', False, True)
         grd_op_val = gpr_type.str_to_op_val(grd)
         assert grd_op_val is not None
     except ValueError as err:

@@ -189,7 +189,7 @@ class RegOperandType(OperandType):
         'wdr': (5, 'w'),
     }
 
-    def __init__(self, reg_type: str, is_dest: bool) -> None:
+    def __init__(self, reg_type: str, is_src: bool, is_dest: bool) -> None:
         fmt = RegOperandType.TYPE_FMTS.get(reg_type)
         assert fmt is not None
         width, _ = fmt
@@ -197,10 +197,12 @@ class RegOperandType(OperandType):
         super().__init__(width)
 
         self.reg_type = reg_type
+        self._is_src = is_src
         self._is_dest = is_dest
 
     @staticmethod
     def make(reg_type: str,
+             is_src: bool,
              is_dest: bool,
              what: str,
              scheme_field: Optional[EncSchemeField]) -> 'RegOperandType':
@@ -216,7 +218,7 @@ class RegOperandType(OperandType):
                                  .format(what, scheme_field.bits.width,
                                          reg_type, width))
 
-        return RegOperandType(reg_type, is_dest)
+        return RegOperandType(reg_type, is_src, is_dest)
 
     def syntax_determines_value(self) -> bool:
         return True
@@ -250,7 +252,7 @@ class RegOperandType(OperandType):
 
     def is_src(self) -> bool:
         '''True if this operand is considered a source'''
-        return self.reg_type in ['csr', 'wsr'] or not self._is_dest
+        return self._is_src or self.reg_type in ['csr', 'wsr']
 
     def is_dest(self) -> bool:
         '''True if this operand is considered a destination'''
@@ -640,10 +642,11 @@ def parse_operand_type(fmt: str,
     '''Make sense of the operand type syntax'''
     # Registers
     reg_fmts = {
-        'grs': ('gpr', False),
-        'grd': ('gpr', True),
-        'wrs': ('wdr', False),
-        'wrd': ('wdr', True),
+        'grs': ('gpr', True, False),
+        'grd': ('gpr', False, True),
+        'wrs': ('wdr', True, False),
+        'wrd': ('wdr', False, True),
+        'wrb': ('wdr', True, True),
     }
     reg_match = reg_fmts.get(fmt)
     if reg_match is not None:
@@ -652,8 +655,8 @@ def parse_operand_type(fmt: str,
                              'type of register operand. It also has pc_rel '
                              'set, which is only allowed for immediates.'
                              .format(what, fmt))
-        reg_type, is_dest = reg_match
-        return RegOperandType.make(reg_type, is_dest, what, scheme_field)
+        reg_type, is_src, is_dest = reg_match
+        return RegOperandType.make(reg_type, is_src, is_dest, what, scheme_field)
 
     # CSR and WSR indices. These are treated like unsigned immediates, with
     # width 12 and 8, respectively.
