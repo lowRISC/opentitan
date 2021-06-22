@@ -14,7 +14,6 @@ filesets:
       - rtl/pwm_reg_pkg.sv
       - rtl/pwm_reg_top.sv
       - rtl/pwm_chan.sv
-      - rtl/pwm_cdc.sv
       - rtl/pwm_core.sv
       - rtl/pwm.sv
     file_type: systemVerilogSource
