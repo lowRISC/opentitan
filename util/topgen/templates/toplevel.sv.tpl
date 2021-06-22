@@ -505,7 +505,7 @@ mem_name = lib.Name(mem_name[1:])
     .ErrOnWrite(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
+    .EnableDataIntgGen(0)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),

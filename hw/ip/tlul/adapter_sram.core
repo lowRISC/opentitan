@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:tlul:common
     files:
+      - rtl/tlul_sram_byte.sv
       - rtl/tlul_adapter_sram.sv
     file_type: systemVerilogSource
 
