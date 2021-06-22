@@ -15,6 +15,21 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // TB base test ENV_T & CFG_T specification
+  //
+  // Specify the parameters for the otp_ctrl_base_test
+  // This will invoke the UVM registry and link this test type to
+  // the name 'otp_ctrl_base_test' as a test name passed by UVM_TESTNAME
+  //
+  // This is done explicitly only for the prim_pkg::ImplGeneric implementation
+  // since partner base tests inherit from otp_ctrl_base_test#(CFG_T, ENV_T) and
+  // specify directly (CFG_T, ENV_T) via the class extension and use a different
+  // UVM_TESTNAME
+  if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+    typedef otp_ctrl_base_test #(.CFG_T(otp_ctrl_env_cfg),
+                                 .ENV_T(otp_ctrl_env)) otp_ctrl_base_test_t;
+  end
+
   wire clk, rst_n;
   wire devmode;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
