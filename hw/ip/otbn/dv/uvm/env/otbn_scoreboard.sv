@@ -42,15 +42,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // array, mapping the transaction source ID (a_source in the TL transaction) to an expected value.
   otbn_exp_read_data_t exp_read_values [tl_source_t];
 
-  // pending_start_counter is incremented on a TL transaction that should start the model.
-  // expect_start_counter is decremented on a model transaction that shows we saw the start signal.
-  // The model start signal should be asserted the cycle following the TL transaction.  In
-  // check_start(), if pending_start_counter is non zero we decrement it and increment
-  // expect_start_counter. We check on every clock edge that expect_start_counter is zero (showing
-  // that the TL transaction results in a model transaction the following cycle, so the two
-  // signals are in sync)
-  int pending_start_counter = 0;
-  int expect_start_counter = 0;
+  bit saw_start_tl_trans = 1'b0;
+  bit waiting_for_model = 1'b0;
 
   // The "running" field uses the OtbnModelStart and OtbnModelDone items on the model FIFO to track
   // whether we think OTBN is running at the moment. We know that this is in sync with the RTL
@@ -123,7 +116,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
         "cmd": begin
           // We start when we see a write that sets the "start" field of the register.
           if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
-            this.pending_start_counter++;
+            saw_start_tl_trans = 1'b1;
           end
         end
 
@@ -230,7 +223,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
       case (item.item_type)
         OtbnModelStart: begin
-          this.expect_start_counter--;
+          // We should only see the model start if it was started by a TL transaction on the
+          // previous cycle.
+          `DV_CHECK_FATAL(waiting_for_model, "model started unbidden!")
+          waiting_for_model = 1'b0;
           running = 1'b1;
         end
 
@@ -267,19 +263,25 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // After each clock edge (we wait until the next negedge) any TL start transactions become
-  // expected starts. Check that the expected starts are actioned (indicated by
-  // `expect_start_counter` always being 0, greater than 0 indicates a TL start transaction was
-  // missed, less than 0 indicates a model start was seen without a TL start transaction).
+  // We track TL writes that should start the processor and the model transaction that says it has
+  // started. There should be a single cycle delay between the two: on the negedge of each clock,
+  // convert a "there was a TL write" event (saw_start_tl_trans) to "we expect to see the model
+  // start" (waiting_for_model).
+  //
+  // If we get to a negedge where waiting_for_model is true, that means that the model didn't start
+  // when we expected it to.
   task check_start();
     forever begin
       @(cfg.clk_rst_vif.cbn);
-      `DV_CHECK_EQ(this.expect_start_counter, 0)
 
-      if (this.pending_start_counter > 0) begin
-        pending_start_counter--;
-        expect_start_counter++;
+      `DV_CHECK(!waiting_for_model, "model didn't start when we expected it to")
+
+      if (saw_start_tl_trans) begin
+        waiting_for_model = 1'b1;
       end
+
+      // Unconditionally clear saw_start_tl_trans
+      saw_start_tl_trans = 1'b0;
     end
   endtask
 
