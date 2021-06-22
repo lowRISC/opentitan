@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:all:0.1
+      - lowrisc:prim:esc
       - lowrisc:dv:dv_lib
     files:
       - alert_esc_if.sv

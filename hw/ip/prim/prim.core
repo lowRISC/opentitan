@@ -22,7 +22,6 @@ filesets:
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
       - lowrisc:prim:alert
-      - lowrisc:prim:esc
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
