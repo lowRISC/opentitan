@@ -80,6 +80,50 @@ covergroup resets_cg (string name) with function sample(logic [1:0] resets);
   }
 endgroup
 
+// This covergroup sampled all kinds of TL error cases.
+covergroup tl_errors_cg (string ral_name)
+    with function sample(bit unmapped_err,
+                         bit csr_aligned_err,
+                         bit csr_size_err,
+                         bit mem_byte_access_err,
+                         bit mem_wo_err,
+                         bit mem_ro_err,
+                         bit tl_protocol_err);
+  option.per_instance = 1;
+  option.name = ral_name;
+
+  // these cp should be disabled (set weight to 0), when they're not applicable for the block
+  cp_unmapped_err: coverpoint unmapped_err;
+  cp_csr_aligned_err: coverpoint csr_aligned_err;
+  cp_csr_size_err: coverpoint csr_size_err;
+  cp_mem_byte_access_err: coverpoint mem_byte_access_err;
+  cp_mem_wo_err: coverpoint mem_wo_err;
+  cp_mem_ro_err: coverpoint mem_ro_err;
+
+  // we don't enumerate the various kinds of TL protocol errors here because there is a covergroup
+  // in tl_agent, which covers those
+  cp_tl_protocol_err: coverpoint tl_protocol_err;
+endgroup
+
+// This covergroup sampled all kinds of TL integrity error and numbers of error bits.
+covergroup tl_intg_err_cg (string ral_name) with function sample(tl_intg_err_e tl_intg_err_type,
+                                                                 uint          num_cmd_err_bits,
+                                                                 uint          num_data_err_bits,
+                                                                 bit           is_mem);
+  option.per_instance = 1;
+  option.name = ral_name;
+
+  cp_tl_intg_err_type: coverpoint tl_intg_err_type;
+
+  cp_num_cmd_err_bits: coverpoint num_cmd_err_bits {
+    bins values[] = {[0:MAX_TL_ECC_ERRORS]};
+  }
+  cp_num_data_err_bits: coverpoint num_data_err_bits {
+    bins values[] = {[0:MAX_TL_ECC_ERRORS]};
+  }
+  cp_is_mem: coverpoint is_mem;
+endgroup
+
 class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov #(CFG_T);
   `uvm_component_param_utils(cip_base_env_cov #(CFG_T))
 

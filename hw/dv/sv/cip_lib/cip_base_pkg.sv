@@ -42,6 +42,33 @@ package cip_base_pkg;
   typedef class cip_tl_seq_item;
 
   // functions
+  function automatic tl_intg_err_e get_tl_intg_err_type(bit is_cmd_ok, bit is_data_ok);
+    case ({is_cmd_ok, is_data_ok})
+      2'b11: return TlIntgErrNone;
+      2'b01: return TlIntgErrCmd;
+      2'b10: return TlIntgErrData;
+      2'b00: return TlIntgErrBoth;
+      default: ;
+    endcase
+  endfunction
+
+  // get mem attributes to know what error cases can be triggered
+  function automatic void get_all_mem_attrs(input dv_base_reg_block reg_block,
+                                            output bit has_mem_byte_access,
+                                            output bit has_wo_mem,
+                                            output bit has_ro_mem);
+    uvm_mem mems[$];
+    reg_block.get_memories(mems);
+
+    foreach (mems[i]) begin
+      dv_base_mem dv_mem;
+      `downcast(dv_mem, mems[i], , , msg_id)
+      if (dv_mem.get_mem_partial_write_support()) has_mem_byte_access = 1;
+      if (dv_mem.get_access() == "WO") has_wo_mem = 1;
+      if (dv_mem.get_access() == "RO") has_ro_mem = 1;
+    end
+  endfunction
+
   // package sources
   // base env
   `include "cip_base_env_cfg.sv"

@@ -1149,7 +1149,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     return digest;
   endfunction
 
-  virtual function bit is_tl_mem_access_allowed(tl_seq_item item, string ral_name);
+  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
+                                                output bit mem_byte_access_err,
+                                                output bit mem_wo_err,
+                                                output bit mem_ro_err);
     // If sw partition is read locked, then access policy changes from RO to no access
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
     if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
@@ -1171,7 +1174,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         return 0;
       end
     end
-    return super.is_tl_mem_access_allowed(item, ral_name);
+    return super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+                                          mem_ro_err);
   endfunction
 
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
