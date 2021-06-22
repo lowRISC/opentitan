@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(sram_ctrl_env_cfg),
+class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scoreboard #(
+    .CFG_T(sram_ctrl_env_cfg#(AddrWidth)),
     .RAL_T(sram_ctrl_regs_reg_block),
-    .COV_T(sram_ctrl_env_cov)
+    .COV_T(sram_ctrl_env_cov#(AddrWidth))
   );
-  `uvm_component_utils(sram_ctrl_scoreboard)
+  `uvm_component_param_utils(sram_ctrl_scoreboard#(AddrWidth))
   `uvm_component_new
 
   // local variables
@@ -257,11 +257,12 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
                 forever begin
                   // sample the covergroup every time a new TL request is seen
                   // while a key request is outstanding.
-                  @(posedge cfg.m_sram_cfg.vif.h2d.a_valid);
+                  @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
                   // zero delay to allow bus values to settle
                   #0;
                   if (cfg.en_cov) begin
-                    cov.access_during_key_req_cg.sample(cfg.m_sram_cfg.vif.h2d.a_opcode);
+                    cov.access_during_key_req_cg.sample(
+                        cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
                   end
                 end
                 ,
@@ -746,7 +747,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("exp_masked_data: 0x%0x", exp_masked_data), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x", act_masked_data), UVM_HIGH)
 
-    `DV_CHECK_EQ_FATAL(exp_masked_data, act_masked_data)
+    `DV_CHECK_EQ(exp_masked_data, act_masked_data)
   endfunction
 
 
@@ -760,6 +761,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+
+    if (ral_name != RAL_T::type_name) return;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
