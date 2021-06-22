@@ -219,7 +219,9 @@
   synopsis: Quarter-word Multiply and Accumulate with half-word writeback
   operands:
     - *mulqacc-zero-acc
-    - *mulqacc-wrd
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
     - name: wrd_hwsel
       abbrev: dh
       type: enum(L,U)

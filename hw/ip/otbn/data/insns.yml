@@ -113,7 +113,8 @@ encoding-schemes: enc-schemes.yml
 #             source; "grd" for a destination.
 #
 #  wdr:       The name of a wide register. Syntax "wrs" for a source;
-#             "wrd" for a destination.
+#             "wrd" for a destination; "wrb" for a register that is both a
+#             source and a destination.
 #
 #  csr:       The name of a CSR. Syntax "csr" (always considered a destination)
 #
