@@ -121,6 +121,8 @@ module tb;
 
     // set interfaces into uvm_config_db
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "clk_rst_vif_sram_ctrl_prim_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
@@ -128,8 +130,10 @@ module tb;
       "*.env.m_kdi_agent*", "vif", kdi_if);
     uvm_config_db#(virtual sram_ctrl_lc_if)::set(null, "*.env", "lc_vif", lc_if);
     uvm_config_db#(virtual sram_ctrl_exec_if)::set(null, "*.env", "exec_vif", exec_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_sram_tl_agent*", "vif", sram_tl_if);
+    uvm_config_db#(virtual tl_if)::set(
+        null, "*.env.m_tl_agent_sram_ctrl_regs_reg_block*", "vif", tl_if);
+    uvm_config_db#(virtual tl_if)::set(
+        null, "*.env.m_tl_agent_sram_ctrl_prim_reg_block*", "vif", sram_tl_if);
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
 
     $timeformat(-12, 0, " ps", 12);

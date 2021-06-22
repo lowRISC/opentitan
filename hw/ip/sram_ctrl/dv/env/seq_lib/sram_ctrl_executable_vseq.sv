@@ -15,7 +15,7 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
 
   bit [3:0] hw_debug_en;
   bit [7:0] en_sram_ifetch;
-  mubi4_e en_exec_csr;
+  bit [3:0] en_exec_csr;
 
   // These bits are used to create pseudo-weights for the constraint distributions
   // of the above values

@@ -8,9 +8,10 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class sram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg));
+class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
+    extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg#(AddrWidth)));
 
-  `uvm_component_utils(sram_ctrl_env_cov)
+  `uvm_component_param_utils(sram_ctrl_env_cov#(AddrWidth))
 
   // the base class provides the following handles for use:
   // sram_ctrl_env_cfg: cfg

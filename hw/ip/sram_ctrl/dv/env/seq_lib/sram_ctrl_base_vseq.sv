@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_base_vseq extends cip_base_vseq #(
+class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends cip_base_vseq #(
     .RAL_T               (sram_ctrl_regs_reg_block),
-    .CFG_T               (sram_ctrl_env_cfg),
-    .COV_T               (sram_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T (sram_ctrl_virtual_sequencer)
+    .CFG_T               (sram_ctrl_env_cfg#(AddrWidth)),
+    .COV_T               (sram_ctrl_env_cov#(AddrWidth)),
+    .VIRTUAL_SEQUENCER_T (sram_ctrl_virtual_sequencer#(AddrWidth))
   );
-  `uvm_object_utils(sram_ctrl_base_vseq)
+  `uvm_object_param_utils(sram_ctrl_base_vseq#(AddrWidth))
   `uvm_object_new
 
   // various knobs to enable certain routines
@@ -22,8 +22,8 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    super.apply_reset(kind);
     cfg.lc_vif.init();
+    super.apply_reset(kind);
     cfg.exec_vif.init();
     if (kind == "HARD") begin
       cfg.otp_clk_rst_vif.apply_reset();
@@ -67,6 +67,9 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                               input bit [TL_DW-1:0]    exp_rdata    = '0,
                               input mubi4_e            instr_type   = MuBi4False,
                               output logic [TL_DW-1:0] rdata);
+    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
+                    $sformatf("addr[0x%0x] is not in range", addr),
+                    `gfn)
     tl_access(.addr(addr),
               .data(rdata),
               .mask(mask),
@@ -76,7 +79,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
               .exp_data(exp_rdata),
               .compare_mask(mask),
               .instr_type(instr_type),
-              .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+              .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
@@ -86,13 +89,16 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                                bit [TL_DBW-1:0] mask        = get_rand_contiguous_mask(),
                                bit              blocking    = $urandom_range(0, 1),
                                mubi4_e          instr_type  = MuBi4False);
+    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
+                    $sformatf("addr[0x%0x] is not in range", addr),
+                    `gfn)
     tl_access(.addr(addr),
               .data(data),
               .mask(mask),
               .write(1'b1),
               .blocking(blocking),
               .instr_type(instr_type),
-              .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+              .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
@@ -103,6 +109,10 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                              bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
     mubi4_e instr_type;
+
+    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
+                    $sformatf("addr[0x%0x] is not in range", addr),
+                    `gfn)
 
     repeat (num_stress_ops) begin
       // fully randomize data
@@ -118,7 +128,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                 .check_rsp(!en_ifetch),
                 .blocking(1'b0),
                 .instr_type(instr_type),
-                .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+                .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
     end
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -141,7 +151,8 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
       // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+          addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]};)
 
       // never send InstrType transactions unless en_ifetch is enabled
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type, !en_ifetch -> instr_type == MuBi4False;)
@@ -155,7 +166,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                         .blocking(blocking),
                         .check_rsp(!en_ifetch),
                         .instr_type(instr_type),
-                        .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h),
+                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]),
                         .req_abort_pct((abort) ? 100 : 0));
     end
     csr_utils_pkg::wait_no_outstanding_access();
