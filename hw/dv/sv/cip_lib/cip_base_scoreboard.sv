@@ -101,7 +101,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         forever begin
           tl_seq_item item;
           tl_a_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+          `uvm_info(`gfn,
+                    $sformatf("received tl a_chan item from %0s:\n%0s", ral_name, item.sprint()),
+                    UVM_HIGH)
 
           if (cfg.en_scb_tl_err_chk) begin
             if (predict_tl_err(item, AddrChannel, ral_name)) continue;
@@ -125,7 +127,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         forever begin
           tl_seq_item item;
           tl_d_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+          `uvm_info(`gfn,
+                    $sformatf("received tl d_chan item from %0s:\n%0s", ral_name, item.sprint()),
+                    UVM_HIGH)
 
           if (cfg.en_scb_tl_err_chk) begin
             // check tl packet integrity
