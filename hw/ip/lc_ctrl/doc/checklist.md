@@ -48,7 +48,7 @@ Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
-RTL           | [ARCHITECTURE_FROZEN][] | Done        | Note that the KMAC token hashing interface change is deferred to after D2 (this is a security hardening task).
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
 RTL           | [REVIEW_TODO][]         | Done        |
 RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
