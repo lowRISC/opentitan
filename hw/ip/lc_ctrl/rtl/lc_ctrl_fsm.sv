@@ -28,6 +28,8 @@ module lc_ctrl_fsm
   input  lc_state_e             lc_state_i,
   input  lc_id_state_e          lc_id_state_i,
   input  lc_cnt_e               lc_cnt_i,
+  // Defines whether we switch to an external clock when initiating a transition.
+  input                         use_ext_clock_i,
   // Token input from OTP (these are all hash post-images).
   input  lc_token_t             test_unlock_token_i,
   input  lc_token_t             test_exit_token_i,
@@ -205,8 +207,9 @@ module lc_ctrl_fsm
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Clock mux state. If in RAW or TEST_LOCKED the bypass request is
-      // asserted and we have to wait until the clock mux and clock manager
+      // Clock mux state. If we are in RAW, TEST* or RMA, it is permissibleo
+      // to switch to an external clock source. If the bypass request is
+      // asserted, we have to wait until the clock mux and clock manager
       // have switched the mux and the clock divider. Also, we disable the
       // life cycle partition checks at this point since we are going to
       // alter the contents in the OTP memory array, which could lead to
@@ -216,9 +219,18 @@ module lc_ctrl_fsm
         if (lc_state_q inside {LcStRaw,
                                LcStTestLocked0,
                                LcStTestLocked1,
-                               LcStTestLocked2}) begin
-          lc_clk_byp_req = On;
-          if (lc_clk_byp_ack[0] == On) begin
+                               LcStTestLocked2,
+                               LcStTestUnlocked0,
+                               LcStTestUnlocked1,
+                               LcStTestUnlocked2,
+                               LcStTestUnlocked3,
+                               LcStRma}) begin
+          if (use_ext_clock_i) begin
+            lc_clk_byp_req = On;
+            if (lc_clk_byp_ack[0] == On) begin
+              fsm_state_d = CntIncrSt;
+            end
+          end else begin
             fsm_state_d = CntIncrSt;
           end
         end else begin

@@ -259,6 +259,7 @@ module lc_ctrl
   logic lc_idle_d;
 
   // OTP Vendor control bits
+  logic use_ext_clock_d, use_ext_clock_q;
   logic [CsrOtpTestCtrlWidth-1:0] otp_test_ctrl_d, otp_test_ctrl_q;
 
   always_comb begin : p_csr_assign_outputs
@@ -287,7 +288,8 @@ module lc_ctrl
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
       hw2reg.transition_regwen = lc_idle_d;
-      hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
+      hw2reg.otp_test_ctrl.val = otp_test_ctrl_q;
+      hw2reg.otp_test_ctrl.ext_clock = use_ext_clock_q;
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
@@ -295,7 +297,8 @@ module lc_ctrl
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
       tap_hw2reg.transition_regwen = lc_idle_d;
-      tap_hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
+      tap_hw2reg.otp_test_ctrl.val = otp_test_ctrl_q;
+      tap_hw2reg.otp_test_ctrl.ext_clock = use_ext_clock_q;
     end
   end
 
@@ -306,6 +309,7 @@ module lc_ctrl
     transition_target_d       = transition_target_q;
     transition_cmd            = 1'b0;
     otp_test_ctrl_d           = otp_test_ctrl_q;
+    use_ext_clock_d           = use_ext_clock_q;
 
     // SW mutex claim.
     if (tap_claim_transition_if_q != 8'hA5 &&
@@ -334,8 +338,11 @@ module lc_ctrl
           transition_target_d = dec_lc_state_e'(tap_reg2hw.transition_target.q);
         end
 
-        if (tap_reg2hw.otp_test_ctrl.qe) begin
-          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.q;
+        if (tap_reg2hw.otp_test_ctrl.ext_clock.qe) begin
+          use_ext_clock_d     = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+        end
+        if (tap_reg2hw.otp_test_ctrl.val.qe) begin
+          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
         end
       end else if (sw_claim_transition_if_q == 8'hA5) begin
         transition_cmd = reg2hw.transition_cmd.q &
@@ -351,8 +358,11 @@ module lc_ctrl
           transition_target_d = dec_lc_state_e'(reg2hw.transition_target.q);
         end
 
-        if (reg2hw.otp_test_ctrl.qe) begin
-          otp_test_ctrl_d = reg2hw.otp_test_ctrl.q;
+        if (reg2hw.otp_test_ctrl.ext_clock.qe) begin
+          use_ext_clock_d = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+        end
+        if (reg2hw.otp_test_ctrl.val.qe) begin
+          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
         end
       end
     end
@@ -374,6 +384,7 @@ module lc_ctrl
       otp_part_error_q          <= 1'b0;
       fatal_bus_integ_error_q   <= 1'b0;
       otp_test_ctrl_q           <= '0;
+      use_ext_clock_q           <= '0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d         | trans_success_q;
@@ -391,6 +402,7 @@ module lc_ctrl
       transition_token_q        <= transition_token_d;
       transition_target_q       <= transition_target_d;
       otp_test_ctrl_q           <= otp_test_ctrl_d;
+      use_ext_clock_q           <= use_ext_clock_d;
     end
   end
 
@@ -546,6 +558,7 @@ module lc_ctrl
     .lc_state_i             ( otp_lc_data_i.state             ),
     .lc_id_state_i          ( otp_lc_data_i.id_state          ),
     .lc_cnt_i               ( otp_lc_data_i.count             ),
+    .use_ext_clock_i        ( use_ext_clock_q                 ),
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token   ),
     .rma_token_i            ( otp_lc_data_i.rma_token         ),

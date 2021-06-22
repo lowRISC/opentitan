@@ -592,6 +592,13 @@
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
+        { bits: "16",
+          name: "EXT_CLOCK",
+          desc: '''
+          Switch to an externally supplied clock when initiating a life cycle state transition.
+          The clock mux will remain switched until the next system reset.
+          ''',
+        }
         { bits: "CsrOtpTestCtrlWidth-1:0",
           name: "VAL",
           desc: '''

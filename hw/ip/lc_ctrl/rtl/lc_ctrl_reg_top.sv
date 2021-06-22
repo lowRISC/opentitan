@@ -149,8 +149,10 @@ module lc_ctrl_reg_top (
   logic [3:0] transition_target_wd;
   logic otp_test_ctrl_re;
   logic otp_test_ctrl_we;
-  logic [7:0] otp_test_ctrl_qs;
-  logic [7:0] otp_test_ctrl_wd;
+  logic [7:0] otp_test_ctrl_val_qs;
+  logic [7:0] otp_test_ctrl_val_wd;
+  logic otp_test_ctrl_ext_clock_qs;
+  logic otp_test_ctrl_ext_clock_wd;
   logic lc_state_re;
   logic [3:0] lc_state_qs;
   logic lc_transition_cnt_re;
@@ -506,17 +508,33 @@ module lc_ctrl_reg_top (
 
   // R[otp_test_ctrl]: V(True)
 
+  //   F[val]: 7:0
   prim_subreg_ext #(
     .DW    (8)
-  ) u_otp_test_ctrl (
+  ) u_otp_test_ctrl_val (
     .re     (otp_test_ctrl_re),
     .we     (otp_test_ctrl_we & transition_regwen_qs),
-    .wd     (otp_test_ctrl_wd),
-    .d      (hw2reg.otp_test_ctrl.d),
+    .wd     (otp_test_ctrl_val_wd),
+    .d      (hw2reg.otp_test_ctrl.val.d),
     .qre    (),
-    .qe     (reg2hw.otp_test_ctrl.qe),
-    .q      (reg2hw.otp_test_ctrl.q),
-    .qs     (otp_test_ctrl_qs)
+    .qe     (reg2hw.otp_test_ctrl.val.qe),
+    .q      (reg2hw.otp_test_ctrl.val.q),
+    .qs     (otp_test_ctrl_val_qs)
+  );
+
+
+  //   F[ext_clock]: 16:16
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_otp_test_ctrl_ext_clock (
+    .re     (otp_test_ctrl_re),
+    .we     (otp_test_ctrl_we & transition_regwen_qs),
+    .wd     (otp_test_ctrl_ext_clock_wd),
+    .d      (hw2reg.otp_test_ctrl.ext_clock.d),
+    .qre    (),
+    .qe     (reg2hw.otp_test_ctrl.ext_clock.qe),
+    .q      (reg2hw.otp_test_ctrl.ext_clock.q),
+    .qs     (otp_test_ctrl_ext_clock_qs)
   );
 
 
@@ -794,7 +812,9 @@ module lc_ctrl_reg_top (
   assign otp_test_ctrl_re = addr_hit[10] & reg_re & !reg_error;
   assign otp_test_ctrl_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign otp_test_ctrl_wd = reg_wdata[7:0];
+  assign otp_test_ctrl_val_wd = reg_wdata[7:0];
+
+  assign otp_test_ctrl_ext_clock_wd = reg_wdata[16];
   assign lc_state_re = addr_hit[11] & reg_re & !reg_error;
   assign lc_transition_cnt_re = addr_hit[12] & reg_re & !reg_error;
   assign lc_id_state_re = addr_hit[13] & reg_re & !reg_error;
@@ -863,7 +883,8 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[7:0] = otp_test_ctrl_qs;
+        reg_rdata_next[7:0] = otp_test_ctrl_val_qs;
+        reg_rdata_next[16] = otp_test_ctrl_ext_clock_qs;
       end
 
       addr_hit[11]: begin
