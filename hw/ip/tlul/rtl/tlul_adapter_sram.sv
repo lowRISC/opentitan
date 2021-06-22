@@ -166,7 +166,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
       d_user   : '{default: '1, data_intg: d_valid ? rspfifo_rdata.data_intg : '1},
       d_error  : d_valid && d_error,
 
-      a_ready  : gnt_i & reqfifo_wready & sramreqfifo_wready
+      a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
 
 
@@ -182,8 +182,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   // assemble response, including read response, write response, and error for unsupported stuff
 
   // Output to SRAM:
-  //    Generate request only when no internal error occurs. If there's an error, we squash the
-  //    outgoing request (so as not to propagate rubbish to the rest of the block).
+  //    Generate request only when no internal error occurs. If error occurs, the request should be
+  //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
+  //    In this case, it is assumed the request is granted (may cause ordering issue later?)
   assign req_o      = tl_i.a_valid & reqfifo_wready & ~error_internal;
   assign req_type_o = tl_i.a_user.tl_type;
   assign we_o       = tl_i.a_valid & (tl_i.a_opcode inside {PutFullData, PutPartialData});
