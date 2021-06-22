@@ -28,6 +28,7 @@ libelf1
 libelf-dev
 libftdi1-2
 libftdi1-dev
+libftdi-devel
 # A requirement of the prebuilt clang toolchain.
 libncurses5
 libssl-dev
