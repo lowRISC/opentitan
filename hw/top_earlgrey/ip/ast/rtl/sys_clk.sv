@@ -18,11 +18,11 @@ module sys_clk (
   output logic clk_src_sys_val_o           // System Source Clock Valid
 );
 
-logic clk, sys_clk_en, rst_n;
+logic clk, osc_en, sys_clk_en, rst_n;
 
 assign rst_n = rst_sys_clk_ni;  // scan enabled
-assign sys_clk_en = scan_mode_i ||
-                    (clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni);
+assign osc_en = (clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni);
+assign sys_clk_en = scan_mode_i || osc_en;
 
 // Clock Oscilator
 ///////////////////////////////////////
@@ -48,7 +48,7 @@ prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_val_sync (
-  .clk_i ( clk ),
+  .clk_i ( clk_src_sys_o ),
   .rst_ni ( rst_val_n ),
   .d_i ( 1'b1 ),
   .q_o ( clk_src_sys_val_o )
