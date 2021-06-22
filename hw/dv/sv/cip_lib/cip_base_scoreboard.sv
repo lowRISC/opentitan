@@ -27,6 +27,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local bit is_fatal_alert[string];
   local int alert_chk_max_delay[string];
 
+  // covergroups
+  tl_errors_cg   tl_errors_cgs[string];
+  tl_intg_err_cg tl_intg_err_cgs[string];
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -42,6 +45,34 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (cfg.has_edn) edn_fifo = new("edn_fifo", this);
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       exp_mem[i] = mem_model#()::type_id::create({"exp_mem_", i}, this);
+    end
+
+    foreach (cfg.ral_models[ral_name]) begin
+      bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
+      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
+      bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
+      bit has_mem_byte_access;
+      bit has_wo_mem;
+      bit has_ro_mem;
+
+      if (has_mem) begin
+        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access, has_wo_mem, has_ro_mem);
+      end
+
+      tl_errors_cgs[ral_name] = new(ral_name);
+      if (!has_csr) begin
+        tl_errors_cgs[ral_name].cp_csr_aligned_err.option.weight = 0;
+        tl_errors_cgs[ral_name].cp_csr_size_err.option.weight = 0;
+      end
+      if (!has_unmapped)        tl_errors_cgs[ral_name].cp_unmapped_err.option.weight = 0;
+      if (!has_mem_byte_access) tl_errors_cgs[ral_name].cp_mem_byte_access_err.option.weight = 0;
+      if (!has_wo_mem)          tl_errors_cgs[ral_name].cp_mem_wo_err.option.weight = 0;
+      if (!has_ro_mem)          tl_errors_cgs[ral_name].cp_mem_ro_err.option.weight = 0;
+
+      if (cfg.en_tl_intg_gen) begin
+        tl_intg_err_cgs[ral_name] = new(ral_name);
+        if (!has_mem) tl_intg_err_cgs[ral_name].cp_is_mem.option.weight = 0;
+      end
     end
   endfunction
 
@@ -255,6 +286,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
     bit csr_aligned_err, csr_size_err, tl_item_err;
     bit has_intg_err;
+    bit mem_byte_access_err, mem_wo_err, mem_ro_err;
 
     if (!is_tl_access_mapped_addr(item, ral_name)) begin
       is_tl_unmapped_addr = 1;
@@ -264,7 +296,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    mem_access_err  = !is_tl_mem_access_allowed(item, ral_name);
+    mem_access_err  = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+                                                mem_ro_err);
     csr_aligned_err = !is_tl_csr_write_addr_word_aligned(item, ral_name);
     csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err     = item.get_exp_d_error();
@@ -272,8 +305,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (cfg.en_tl_intg_gen) begin
       has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
 
-      // integrity at d_user is from DUT, which should be always correct
-      if (channel == DataChannel) void'(item.is_d_chan_intg_ok(.throw_error(1)));
+      if (channel == DataChannel) begin
+        cip_tl_seq_item cip_item;
+        tl_intg_err_e tl_intg_err_type;
+        uint num_cmd_err_bits, num_data_err_bits;
+
+        // integrity at d_user is from DUT, which should be always correct
+        void'(item.is_d_chan_intg_ok(.throw_error(1)));
+
+        // sample covergroup
+        `downcast(cip_item, item)
+        cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
+        tl_intg_err_cgs[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+                                         is_mem_addr(item, ral_name));
+      end
     end
 
     if (!is_tl_err && (mem_access_err || csr_aligned_err || csr_size_err || tl_item_err ||
@@ -285,6 +330,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           $sformatf({"unmapped: %0d, mem_access_err: %0d, csr_aligned_err: %0d, csr_size_err: %0d",
                     " tl_item_err: %0d, has_intg_err: %0d"}, is_tl_unmapped_addr, mem_access_err,
                     csr_aligned_err, csr_size_err, tl_item_err, has_intg_err))
+
+      // these errors all have the same outcome. Only sample coverages when there is just one
+      // error, so that we know the error actually triggers the outcome
+      if (is_tl_unmapped_addr + csr_aligned_err + csr_size_err + mem_byte_access_err + mem_wo_err +
+          mem_ro_err + tl_item_err == 1) begin
+        tl_errors_cgs[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
+                                       .csr_aligned_err(csr_aligned_err),
+                                       .csr_size_err(csr_size_err),
+                                       .mem_byte_access_err(mem_byte_access_err),
+                                       .mem_wo_err(mem_wo_err),
+                                       .mem_ro_err(mem_ro_err),
+                                       .tl_protocol_err(tl_item_err));
+      end
+
     end
     return (is_tl_unmapped_addr || is_tl_err);
   endfunction
@@ -297,7 +356,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   // check if tl mem access will trigger error or not
-  virtual function bit is_tl_mem_access_allowed(tl_seq_item item, string ral_name);
+  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
+                                                output bit mem_byte_access_err,
+                                                output bit mem_wo_err,
+                                                output bit mem_ro_err);
     if (is_mem_addr(item, ral_name)) begin
       bit mem_partial_write_support;
       dv_base_mem mem;
@@ -310,10 +372,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // check if write isn't full word for mem that doesn't allow byte access
       if (!mem_partial_write_support && (item.a_size != 2 || item.a_mask != '1) &&
            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
-        return 0;
+        mem_byte_access_err = 1;
       end
       // check if mem read happens while mem doesn't allow read (WO)
-      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) return 0;
+      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) mem_wo_err = 0;
+      // check if mem write happens while mem is RO
+      if (mem_access == "RO" && (item.a_opcode != tlul_pkg::Get)) mem_ro_err = 0;
+
+      if (mem_byte_access_err || mem_wo_err || mem_ro_err) return 0;
     end
     return 1;
   endfunction
