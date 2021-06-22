@@ -198,11 +198,9 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
     return kDifLcCtrlBadArg;
   }
 
-  for (int i = 0; i < ARRAYSIZE(device_id->data); ++i) {
-    device_id->data[i] = mmio_region_read32(
-        lc->params.base_addr, LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * 4);
-  }
-
+  mmio_region_memcpy_from_mmio32(
+      lc->params.base_addr, LC_CTRL_DEVICE_ID_0_REG_OFFSET, device_id->data,
+      ARRAYSIZE(device_id->data) * sizeof(uint32_t));
   return kDifLcCtrlOk;
 }
 
