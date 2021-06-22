@@ -176,6 +176,24 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
   suite: 'mask_rom',
 )
 
+test('sw_silicon_creator_lib_epmp_unittest', executable(
+    'sw_silicon_creator_lib_epmp_unittest',
+    sources: [
+      'epmp_unittest.cc',
+      'epmp.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_csr,
+      sw_lib_testing_bitfield,
+    ],
+    native: true,
+    c_args: ['-DMOCK_CSR'],
+    cpp_args: ['-DMOCK_CSR'],
+    ),
+  suite: 'mask_rom',
+)
+
 sw_silicon_creator_lib_sigverify_functest = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_sigverify_functest',
