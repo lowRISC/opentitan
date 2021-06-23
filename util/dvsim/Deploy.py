@@ -633,9 +633,6 @@ class CovReport(Deploy):
                                     tablefmt="pipe",
                                     colalign=colalign)
 
-        # Delete the cov report - not needed.
-        rm_path(self.get_log_path())
-
 
 class CovAnalyze(Deploy):
     """Abstraction for running the coverage analysis tool."""

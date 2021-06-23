@@ -48,6 +48,7 @@
                //  - Read capability on registers, variables, and nets
                //  - Write (deposit) capability on registers and variables
                //  - Force capability on registers, variables, and nets
+               // TODO Trim this flag since +f hurts performance.
                "-debug_access+f",
                // This option is needed for uvm_hdl_*, when it accesses the array under `celldefine
                "-debug_region=cell+lib",
@@ -138,6 +139,8 @@
                      "+urg+lic+wait",
                      // Merge same assert instances found in different VDBs.
                      "-merge_across_libs",
+                     // This enables grading on the merged vdb.
+                     "-show tests",
                      // Enable union mode of flexible merging for covergroups.
                      "-flex_merge union",
                      // Use cov_db_dirs var for dir args; append -dir in front of each
@@ -243,7 +246,7 @@
     {
       name: vcs_waves
       is_sim_mode: 1
-      build_opts: ["-debug_access+all"]
+      build_opts: ["-debug_access"]
     }
     {
       name: vcs_cov
