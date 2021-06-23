@@ -29,6 +29,7 @@ IPS ?= aes           \
        otp_ctrl      \
        pattgen       \
        pinmux        \
+       pwm           \
        pwrmgr        \
        rom_ctrl      \
        rstmgr        \
