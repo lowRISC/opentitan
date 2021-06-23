@@ -104,6 +104,8 @@ module aon_timer_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
+  logic alert_test_wd;
   logic wkup_ctrl_we;
   logic wkup_ctrl_enable_qs;
   logic wkup_ctrl_enable_wd;
@@ -145,6 +147,22 @@ module aon_timer_reg_top (
   logic wkup_cause_wd;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
+    .qs     ()
+  );
+
+
   // R[wkup_ctrl]: V(False)
 
   //   F[enable]: 0:0
@@ -530,20 +548,21 @@ module aon_timer_reg_top (
 
 
 
-  logic [10:0] addr_hit;
+  logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == AON_TIMER_WKUP_CTRL_OFFSET);
-    addr_hit[ 1] = (reg_addr == AON_TIMER_WKUP_THOLD_OFFSET);
-    addr_hit[ 2] = (reg_addr == AON_TIMER_WKUP_COUNT_OFFSET);
-    addr_hit[ 3] = (reg_addr == AON_TIMER_WDOG_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == AON_TIMER_WDOG_CTRL_OFFSET);
-    addr_hit[ 5] = (reg_addr == AON_TIMER_WDOG_BARK_THOLD_OFFSET);
-    addr_hit[ 6] = (reg_addr == AON_TIMER_WDOG_BITE_THOLD_OFFSET);
-    addr_hit[ 7] = (reg_addr == AON_TIMER_WDOG_COUNT_OFFSET);
-    addr_hit[ 8] = (reg_addr == AON_TIMER_INTR_STATE_OFFSET);
-    addr_hit[ 9] = (reg_addr == AON_TIMER_INTR_TEST_OFFSET);
-    addr_hit[10] = (reg_addr == AON_TIMER_WKUP_CAUSE_OFFSET);
+    addr_hit[ 0] = (reg_addr == AON_TIMER_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == AON_TIMER_WKUP_CTRL_OFFSET);
+    addr_hit[ 2] = (reg_addr == AON_TIMER_WKUP_THOLD_OFFSET);
+    addr_hit[ 3] = (reg_addr == AON_TIMER_WKUP_COUNT_OFFSET);
+    addr_hit[ 4] = (reg_addr == AON_TIMER_WDOG_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == AON_TIMER_WDOG_CTRL_OFFSET);
+    addr_hit[ 6] = (reg_addr == AON_TIMER_WDOG_BARK_THOLD_OFFSET);
+    addr_hit[ 7] = (reg_addr == AON_TIMER_WDOG_BITE_THOLD_OFFSET);
+    addr_hit[ 8] = (reg_addr == AON_TIMER_WDOG_COUNT_OFFSET);
+    addr_hit[ 9] = (reg_addr == AON_TIMER_INTR_STATE_OFFSET);
+    addr_hit[10] = (reg_addr == AON_TIMER_INTR_TEST_OFFSET);
+    addr_hit[11] = (reg_addr == AON_TIMER_WKUP_CAUSE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -561,47 +580,51 @@ module aon_timer_reg_top (
                (addr_hit[ 7] & (|(AON_TIMER_PERMIT[ 7] & ~reg_be))) |
                (addr_hit[ 8] & (|(AON_TIMER_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(AON_TIMER_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be)))));
+               (addr_hit[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(AON_TIMER_PERMIT[11] & ~reg_be)))));
   end
-  assign wkup_ctrl_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign wkup_ctrl_we = addr_hit[1] & reg_we & !reg_error;
 
   assign wkup_ctrl_enable_wd = reg_wdata[0];
 
   assign wkup_ctrl_prescaler_wd = reg_wdata[12:1];
-  assign wkup_thold_we = addr_hit[1] & reg_we & !reg_error;
+  assign wkup_thold_we = addr_hit[2] & reg_we & !reg_error;
 
   assign wkup_thold_wd = reg_wdata[31:0];
-  assign wkup_count_we = addr_hit[2] & reg_we & !reg_error;
+  assign wkup_count_we = addr_hit[3] & reg_we & !reg_error;
 
   assign wkup_count_wd = reg_wdata[31:0];
-  assign wdog_regwen_we = addr_hit[3] & reg_we & !reg_error;
+  assign wdog_regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign wdog_regwen_wd = reg_wdata[0];
-  assign wdog_ctrl_we = addr_hit[4] & reg_we & !reg_error;
+  assign wdog_ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
   assign wdog_ctrl_enable_wd = reg_wdata[0];
 
   assign wdog_ctrl_pause_in_sleep_wd = reg_wdata[1];
-  assign wdog_bark_thold_we = addr_hit[5] & reg_we & !reg_error;
+  assign wdog_bark_thold_we = addr_hit[6] & reg_we & !reg_error;
 
   assign wdog_bark_thold_wd = reg_wdata[31:0];
-  assign wdog_bite_thold_we = addr_hit[6] & reg_we & !reg_error;
+  assign wdog_bite_thold_we = addr_hit[7] & reg_we & !reg_error;
 
   assign wdog_bite_thold_wd = reg_wdata[31:0];
-  assign wdog_count_we = addr_hit[7] & reg_we & !reg_error;
+  assign wdog_count_we = addr_hit[8] & reg_we & !reg_error;
 
   assign wdog_count_wd = reg_wdata[31:0];
-  assign intr_state_we = addr_hit[8] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[9] & reg_we & !reg_error;
 
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
 
   assign intr_state_wdog_timer_expired_wd = reg_wdata[1];
-  assign intr_test_we = addr_hit[9] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[10] & reg_we & !reg_error;
 
   assign intr_test_wkup_timer_expired_wd = reg_wdata[0];
 
   assign intr_test_wdog_timer_expired_wd = reg_wdata[1];
-  assign wkup_cause_we = addr_hit[10] & reg_we & !reg_error;
+  assign wkup_cause_we = addr_hit[11] & reg_we & !reg_error;
 
   assign wkup_cause_wd = reg_wdata[0];
 
@@ -610,50 +633,54 @@ module aon_timer_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[1]: begin
         reg_rdata_next[0] = wkup_ctrl_enable_qs;
         reg_rdata_next[12:1] = wkup_ctrl_prescaler_qs;
       end
 
-      addr_hit[1]: begin
+      addr_hit[2]: begin
         reg_rdata_next[31:0] = wkup_thold_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[3]: begin
         reg_rdata_next[31:0] = wkup_count_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = wdog_regwen_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = wdog_ctrl_enable_qs;
         reg_rdata_next[1] = wdog_ctrl_pause_in_sleep_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = wdog_bark_thold_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = wdog_bite_thold_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = wdog_count_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = intr_state_wkup_timer_expired_qs;
         reg_rdata_next[1] = intr_state_wdog_timer_expired_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = wkup_cause_qs;
       end
 

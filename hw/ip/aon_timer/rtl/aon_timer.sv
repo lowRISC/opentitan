@@ -5,7 +5,10 @@
 
 `include "prim_assert.sv"
 
-module aon_timer (
+module aon_timer import aon_timer_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input  logic                clk_i,
   input  logic                clk_aon_i,
   input  logic                rst_ni,
@@ -14,6 +17,10 @@ module aon_timer (
   // TLUL interface on clk_i domain
   input  tlul_pkg::tl_h2d_t   tl_i,
   output tlul_pkg::tl_d2h_t   tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // clk_i domain
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -58,6 +65,8 @@ module aon_timer (
   // Reset signals
   logic                      aon_rst_req_set;
   logic                      aon_rst_req_d, aon_rst_req_q;
+  // Alert signals
+  logic [NumAlerts-1:0]      aon_alert_test, aon_alerts;
 
   //////////////////////////////
   // Register Write Interface //
@@ -79,9 +88,34 @@ module aon_timer (
     .reg2hw     (aon_reg2hw),
     .hw2reg     (aon_hw2reg),
 
-    .intg_err_o (),
+    .intg_err_o (aon_alerts[0]),
     .devmode_i  (1'b1)
   );
+
+  ////////////
+  // Alerts //
+  ////////////
+
+  assign aon_alert_test = {
+    aon_reg2hw.alert_test.q &
+    aon_reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i         (clk_aon_i),
+      .rst_ni        (rst_aon_ni),
+      .alert_test_i  ( aon_alert_test[i] ),
+      .alert_req_i   ( aon_alerts[0]     ),
+      .alert_ack_o   (                   ),
+      .alert_state_o (                   ),
+      .alert_rx_i    ( alert_rx_i[i]     ),
+      .alert_tx_o    ( alert_tx_o[i]     )
+    );
+  end
 
   ///////////////////////////////////////
   // Sync TLUL signals into AON Domain //
@@ -227,6 +261,7 @@ module aon_timer (
   // clk_i domain
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(IntrWkupKnown_A, intr_wkup_timer_expired_o)
   `ASSERT_KNOWN(IntrWdogKnown_A, intr_wdog_timer_bark_o)
   // clk_aon_i domain
