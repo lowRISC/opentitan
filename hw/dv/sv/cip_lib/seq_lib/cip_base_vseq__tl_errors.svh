@@ -261,9 +261,10 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)
     fork
-      // run csr_rw seq to send some normal CSR accesses in the parallel
+      // run csr_rw seq to send some normal CSR accesses in parallel
       begin
         `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
+        apply_extra_excl_for_tl_intg_vseq();
         run_csr_vseq("rw");
       end
       begin
@@ -297,4 +298,13 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     dut_init("HARD");
   end
 endtask
+
+// in run_tl_intg_err_vseq, csr_rw seq is running in the parallel. And intg error will be injected
+// which may affect some CSR values. Use this function to add additional exclusion
+// TODO, as discussed at #7082, best approach is to standardize alert cause in all IPs, so that
+// we can check it in the automatic test. Let's wait until designers finalize the alert cause
+// keep this approach in case we still want it
+virtual function void apply_extra_excl_for_tl_intg_vseq();
+endfunction
+
 `undef create_tl_access_error_case
