@@ -15,6 +15,7 @@ filesets:
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
+      - lowrisc:ip:alert_handler_reg
     files:
       - rtl/rv_core_ibex.sv
     file_type: systemVerilogSource

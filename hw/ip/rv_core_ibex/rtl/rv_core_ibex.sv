@@ -143,7 +143,10 @@ module rv_core_ibex #(
   // Escalation receiver that converts differential
   // protocol into single ended signal.
   logic esc_irq_nm;
-  prim_esc_receiver u_prim_esc_receiver (
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_prim_esc_receiver (
     .clk_i    ( clk_esc_i  ),
     .rst_ni   ( rst_esc_ni ),
     .esc_en_o ( esc_irq_nm ),

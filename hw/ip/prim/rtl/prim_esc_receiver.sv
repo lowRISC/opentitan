@@ -21,6 +21,14 @@
 module prim_esc_receiver
   import prim_esc_pkg::*;
 #(
+  // The number of escalation severities. Should be set to the Alert Handler's N_ESC_SEV when this
+  // primitive is instantiated.
+  parameter int N_ESC_SEV = 4,
+
+  // The width of the Alert Handler's ping counter. Should be set to the Alert Handler's PING_CNT_DW
+  // when this primitive is instantiated.
+  parameter int PING_CNT_DW = 16,
+
   // This counter monitors incoming ping requests and auto-escalates if the alert handler
   // ceases to send them regularly. The maximum number of cycles between subsequent ping requests
   // is N_ESC_SEV x (2 x 2 x 2**PING_CNT_DW), see also implementation of the ping timer
@@ -33,10 +41,10 @@ module prim_esc_receiver
   localparam int NumWaitCounts = 2,
   localparam int NumTimeoutCounts = 2,
   parameter int TimeoutCntDw = $clog2(MarginFactor) +
-                               $clog2(alert_handler_reg_pkg::N_ESC_SEV) +
+                               $clog2(N_ESC_SEV) +
                                $clog2(NumWaitCounts) +
                                $clog2(NumTimeoutCounts) +
-                               alert_handler_reg_pkg::PING_CNT_DW
+                               PING_CNT_DW
 ) (
   input           clk_i,
   input           rst_ni,

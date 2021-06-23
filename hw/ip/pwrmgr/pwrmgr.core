@@ -9,11 +9,13 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:esc
       - lowrisc:prim:lc_sender
       - lowrisc:prim:all
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:alert_handler_reg
     files:
       - rtl/pwrmgr.sv
       - rtl/pwrmgr_cdc.sv
