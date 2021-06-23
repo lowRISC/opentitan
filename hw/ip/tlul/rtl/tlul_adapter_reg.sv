@@ -100,7 +100,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   if (EnableDataIntgGen) begin : gen_data_intg
     logic [DataMaxWidth-1:0] unused_data;
 
-    prim_secded_64_57_enc u_data_gen (
+    prim_secded_39_32_enc u_data_gen (
       .data_i(DataMaxWidth'(rdata)),
       .data_o({data_intg, unused_data})
     );
