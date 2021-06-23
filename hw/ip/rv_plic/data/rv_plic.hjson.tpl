@@ -36,6 +36,18 @@
       local: "true",
     },
   ],
+
+  // In order to not disturb the PLIC address map, we place the alert test
+  // register manually at a safe offset after the main CSRs.
+  no_auto_alert_regs: "True",
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the RV_PLIC unit.
+      '''
+    }
+  ],
+
   regwidth: "32",
   registers: [
     { multireg: {
@@ -122,5 +134,19 @@
       ],
     }
 % endfor
+  { skipto: "${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + target*0x100 | x}" }
+  { name: "ALERT_TEST",
+      desc: '''Alert Test Register.''',
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "True",
+      hwext:    "True",
+      fields: [
+        { bits: "0",
+          name: "fatal_fault",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+      ],
+    }
   ],
 }
