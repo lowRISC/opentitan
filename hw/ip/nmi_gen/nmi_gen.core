@@ -10,7 +10,6 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:prim:esc
     files:
       - rtl/nmi_gen_reg_pkg.sv
       - rtl/nmi_gen_reg_top.sv
