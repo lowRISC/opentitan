@@ -13,7 +13,7 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk_i, rst_ni;
+  wire clk, rst_n;
   wire devmode;
   wire intr_fmt_watermark;
   wire intr_rx_watermark;
@@ -41,19 +41,20 @@ module tb;
   wire cio_sda_en_o;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk_i), .rst_n(rst_ni));
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
-  tl_if tl_if(.clk(clk_i), .rst_n(rst_ni));
+  tl_if tl_if(.clk(clk), .rst_n(rst_n));
   i2c_if i2c_if();
 
+  // clk and rst_n is used for alert_if in `DV_ALERT_IF_CONNECT
   `DV_ALERT_IF_CONNECT
 
   // dut
   i2c dut (
-    .clk_i                   (clk_i      ),
-    .rst_ni                  (rst_ni     ),
+    .clk_i                   (clk        ),
+    .rst_ni                  (rst_n      ),
 
     .tl_i                    (tl_if.h2d  ),
     .tl_o                    (tl_if.d2h  ),
@@ -93,8 +94,8 @@ module tb;
   assign cio_sda_i = i2c_if.sda_o;
 
   // host -> device if
-  assign i2c_if.clk_i  = clk_i;
-  assign i2c_if.rst_ni = rst_ni;
+  assign i2c_if.clk_i  = clk;
+  assign i2c_if.rst_ni = rst_n;
 
   // interrupt
   assign interrupts[FmtWatermark]   = intr_fmt_watermark;
