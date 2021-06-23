@@ -133,7 +133,7 @@
                `lc_ctrl_pkg::On`.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_extclk"]
     }
     {
       name: jitter
@@ -151,7 +151,7 @@
             - The `jitter_en_o` output pin reflects the `jitter` CSR.
             '''
       milestone: V2
-      tests: ["clkmgr_extclk"]
+      tests: []
     }
   ]
   covergroups: [

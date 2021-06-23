@@ -13,10 +13,13 @@ class clkmgr_peri_cg_wrap;
   // This covergroup collects signals affecting peripheral clock.
   covergroup peri_cg(string name) with function sample(bit enable, bit ip_clk_en, bit scanmode);
     option.name = name;
+    option.per_instance = 1;
 
     csr_enable_cp: coverpoint enable;
     ip_clk_en_cp: coverpoint ip_clk_en;
     scanmode_cp: coverpoint scanmode;
+
+    peri_cross: cross csr_enable_cp, ip_clk_en_cp, scanmode_cp;
   endgroup
 
   function new(string name);
@@ -34,11 +37,14 @@ class clkmgr_trans_cg_wrap;
   covergroup trans_cg(string name) with function
       sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
     option.name = name;
+    option.per_instance = 1;
 
     csr_hint_cp: coverpoint hint;
     ip_clk_en_cp: coverpoint ip_clk_en;
     scanmode_cp: coverpoint scanmode;
     idle_cp: coverpoint idle;
+
+    trans_cross: cross csr_hint_cp, ip_clk_en_cp, scanmode_cp, idle_cp;
   endgroup
 
   function new(string name);
@@ -62,6 +68,17 @@ class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
   // These covergroups collect signals affecting transactional clocks.
   clkmgr_trans_cg_wrap trans_cg_wrap[clkmgr_env_pkg::NUM_TRANS];
 
+  // This embeded covergroup collects coverage for the external clock functionality.
+  covergroup extclk_cg with function
+      sample(bit sel, bit dft_en, bit byp_req, bit scanmode);
+    sel_cp: coverpoint sel;
+    dft_en_cp: coverpoint dft_en;
+    byp_req_cp: coverpoint byp_req;
+    scanmode_cp: coverpoint scanmode;
+
+    extclk_cross: cross sel_cp, dft_en_cp, byp_req_cp, scanmode_cp;
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // The peripheral covergoups.
@@ -74,6 +91,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
       clkmgr_env_pkg::trans_e trans = clkmgr_env_pkg::trans_e'(i);
       trans_cg_wrap[i] = new(trans.name);
     end
+    extclk_cg = new();
   endfunction : new
 
   function void update_peri_cgs(logic [clkmgr_env_pkg::NUM_PERI-1:0] enables, logic ip_clk_en,
