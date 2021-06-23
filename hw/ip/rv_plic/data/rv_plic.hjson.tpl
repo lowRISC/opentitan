@@ -117,7 +117,7 @@
       hwqe: "true",
       hwre: "true",
       fields: [
-        { bits: "${(src).bit_length()-1}:0" }
+        { bits: "${(src-1).bit_length()-1}:0" }
       ],
       tags: [// CC register value is related to IP
              "excl:CsrNonInitTests:CsrExclCheck"],

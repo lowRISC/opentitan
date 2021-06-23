@@ -367,8 +367,8 @@ module rv_plic_reg_top (
   logic [2:0] threshold0_wd;
   logic cc0_re;
   logic cc0_we;
-  logic [5:0] cc0_qs;
-  logic [5:0] cc0_wd;
+  logic [4:0] cc0_qs;
+  logic [4:0] cc0_wd;
   logic msip0_we;
   logic msip0_qs;
   logic msip0_wd;
@@ -3781,7 +3781,7 @@ module rv_plic_reg_top (
   // R[cc0]: V(True)
 
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (5)
   ) u_cc0 (
     .re     (cc0_re),
     .we     (cc0_we),
@@ -4160,7 +4160,7 @@ module rv_plic_reg_top (
   assign cc0_re = addr_hit[36] & reg_re & !reg_error;
   assign cc0_we = addr_hit[36] & reg_we & !reg_error;
 
-  assign cc0_wd = reg_wdata[5:0];
+  assign cc0_wd = reg_wdata[4:0];
   assign msip0_we = addr_hit[37] & reg_we & !reg_error;
 
   assign msip0_wd = reg_wdata[0];
@@ -4410,7 +4410,7 @@ module rv_plic_reg_top (
       end
 
       addr_hit[36]: begin
-        reg_rdata_next[5:0] = cc0_qs;
+        reg_rdata_next[4:0] = cc0_qs;
       end
 
       addr_hit[37]: begin

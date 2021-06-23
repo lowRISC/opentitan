@@ -361,7 +361,7 @@
       hwqe: "true",
       hwre: "true",
       fields: [
-        { bits: "5:0" }
+        { bits: "4:0" }
       ],
       tags: [// CC register value is related to IP
              "excl:CsrNonInitTests:CsrExclCheck"],
