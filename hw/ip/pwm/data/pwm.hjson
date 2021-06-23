@@ -23,6 +23,13 @@
       width: "6"
     }
   ]
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the PWM unit.
+      '''
+    }
+  ],
   registers: [
     { name: "REGEN",
       desc: "Register write enable for all control registers",

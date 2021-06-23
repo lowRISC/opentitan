@@ -11649,6 +11649,7 @@
     lc_ctrl
     sysrst_ctrl_aon
     adc_ctrl_aon
+    pwm_aon
     pinmux_aon
     sensor_ctrl_aon
     sram_ctrl_ret_aon
@@ -11799,6 +11800,13 @@
       type: alert
       async: "1"
       module_name: adc_ctrl_aon
+    }
+    {
+      name: pwm_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: pwm_aon
     }
     {
       name: pinmux_aon_fatal_fault

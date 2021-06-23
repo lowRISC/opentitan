@@ -27,6 +27,8 @@ module tb;
   pwm_if #(.NumChannels(pwm_reg_pkg::NOutputs)) pwm_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   pwm dut (
     .clk_i         (clk),
@@ -37,6 +39,9 @@ module tb;
 
     .tl_i          (tl_if.h2d),
     .tl_o          (tl_if.d2h),
+
+    .alert_rx_i    (alert_rx   ),
+    .alert_tx_o    (alert_tx   ),
 
     .cio_pwm_o     (pwm),
     .cio_pwm_en_o  (pwm_en)
