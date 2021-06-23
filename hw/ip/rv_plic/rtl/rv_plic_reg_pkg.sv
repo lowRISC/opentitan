@@ -160,7 +160,7 @@ package rv_plic_reg_pkg;
   } rv_plic_reg2hw_threshold0_reg_t;
 
   typedef struct packed {
-    logic [5:0]  q;
+    logic [4:0]  q;
     logic        qe;
     logic        re;
   } rv_plic_reg2hw_cc0_reg_t;
@@ -180,55 +180,55 @@ package rv_plic_reg_pkg;
   } rv_plic_hw2reg_ip_mreg_t;
 
   typedef struct packed {
-    logic [5:0]  d;
+    logic [4:0]  d;
   } rv_plic_hw2reg_cc0_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    rv_plic_reg2hw_le_mreg_t [31:0] le; // [173:142]
-    rv_plic_reg2hw_prio0_reg_t prio0; // [141:139]
-    rv_plic_reg2hw_prio1_reg_t prio1; // [138:136]
-    rv_plic_reg2hw_prio2_reg_t prio2; // [135:133]
-    rv_plic_reg2hw_prio3_reg_t prio3; // [132:130]
-    rv_plic_reg2hw_prio4_reg_t prio4; // [129:127]
-    rv_plic_reg2hw_prio5_reg_t prio5; // [126:124]
-    rv_plic_reg2hw_prio6_reg_t prio6; // [123:121]
-    rv_plic_reg2hw_prio7_reg_t prio7; // [120:118]
-    rv_plic_reg2hw_prio8_reg_t prio8; // [117:115]
-    rv_plic_reg2hw_prio9_reg_t prio9; // [114:112]
-    rv_plic_reg2hw_prio10_reg_t prio10; // [111:109]
-    rv_plic_reg2hw_prio11_reg_t prio11; // [108:106]
-    rv_plic_reg2hw_prio12_reg_t prio12; // [105:103]
-    rv_plic_reg2hw_prio13_reg_t prio13; // [102:100]
-    rv_plic_reg2hw_prio14_reg_t prio14; // [99:97]
-    rv_plic_reg2hw_prio15_reg_t prio15; // [96:94]
-    rv_plic_reg2hw_prio16_reg_t prio16; // [93:91]
-    rv_plic_reg2hw_prio17_reg_t prio17; // [90:88]
-    rv_plic_reg2hw_prio18_reg_t prio18; // [87:85]
-    rv_plic_reg2hw_prio19_reg_t prio19; // [84:82]
-    rv_plic_reg2hw_prio20_reg_t prio20; // [81:79]
-    rv_plic_reg2hw_prio21_reg_t prio21; // [78:76]
-    rv_plic_reg2hw_prio22_reg_t prio22; // [75:73]
-    rv_plic_reg2hw_prio23_reg_t prio23; // [72:70]
-    rv_plic_reg2hw_prio24_reg_t prio24; // [69:67]
-    rv_plic_reg2hw_prio25_reg_t prio25; // [66:64]
-    rv_plic_reg2hw_prio26_reg_t prio26; // [63:61]
-    rv_plic_reg2hw_prio27_reg_t prio27; // [60:58]
-    rv_plic_reg2hw_prio28_reg_t prio28; // [57:55]
-    rv_plic_reg2hw_prio29_reg_t prio29; // [54:52]
-    rv_plic_reg2hw_prio30_reg_t prio30; // [51:49]
-    rv_plic_reg2hw_prio31_reg_t prio31; // [48:46]
-    rv_plic_reg2hw_ie0_mreg_t [31:0] ie0; // [45:14]
-    rv_plic_reg2hw_threshold0_reg_t threshold0; // [13:11]
-    rv_plic_reg2hw_cc0_reg_t cc0; // [10:3]
+    rv_plic_reg2hw_le_mreg_t [31:0] le; // [172:141]
+    rv_plic_reg2hw_prio0_reg_t prio0; // [140:138]
+    rv_plic_reg2hw_prio1_reg_t prio1; // [137:135]
+    rv_plic_reg2hw_prio2_reg_t prio2; // [134:132]
+    rv_plic_reg2hw_prio3_reg_t prio3; // [131:129]
+    rv_plic_reg2hw_prio4_reg_t prio4; // [128:126]
+    rv_plic_reg2hw_prio5_reg_t prio5; // [125:123]
+    rv_plic_reg2hw_prio6_reg_t prio6; // [122:120]
+    rv_plic_reg2hw_prio7_reg_t prio7; // [119:117]
+    rv_plic_reg2hw_prio8_reg_t prio8; // [116:114]
+    rv_plic_reg2hw_prio9_reg_t prio9; // [113:111]
+    rv_plic_reg2hw_prio10_reg_t prio10; // [110:108]
+    rv_plic_reg2hw_prio11_reg_t prio11; // [107:105]
+    rv_plic_reg2hw_prio12_reg_t prio12; // [104:102]
+    rv_plic_reg2hw_prio13_reg_t prio13; // [101:99]
+    rv_plic_reg2hw_prio14_reg_t prio14; // [98:96]
+    rv_plic_reg2hw_prio15_reg_t prio15; // [95:93]
+    rv_plic_reg2hw_prio16_reg_t prio16; // [92:90]
+    rv_plic_reg2hw_prio17_reg_t prio17; // [89:87]
+    rv_plic_reg2hw_prio18_reg_t prio18; // [86:84]
+    rv_plic_reg2hw_prio19_reg_t prio19; // [83:81]
+    rv_plic_reg2hw_prio20_reg_t prio20; // [80:78]
+    rv_plic_reg2hw_prio21_reg_t prio21; // [77:75]
+    rv_plic_reg2hw_prio22_reg_t prio22; // [74:72]
+    rv_plic_reg2hw_prio23_reg_t prio23; // [71:69]
+    rv_plic_reg2hw_prio24_reg_t prio24; // [68:66]
+    rv_plic_reg2hw_prio25_reg_t prio25; // [65:63]
+    rv_plic_reg2hw_prio26_reg_t prio26; // [62:60]
+    rv_plic_reg2hw_prio27_reg_t prio27; // [59:57]
+    rv_plic_reg2hw_prio28_reg_t prio28; // [56:54]
+    rv_plic_reg2hw_prio29_reg_t prio29; // [53:51]
+    rv_plic_reg2hw_prio30_reg_t prio30; // [50:48]
+    rv_plic_reg2hw_prio31_reg_t prio31; // [47:45]
+    rv_plic_reg2hw_ie0_mreg_t [31:0] ie0; // [44:13]
+    rv_plic_reg2hw_threshold0_reg_t threshold0; // [12:10]
+    rv_plic_reg2hw_cc0_reg_t cc0; // [9:3]
     rv_plic_reg2hw_msip0_reg_t msip0; // [2:2]
     rv_plic_reg2hw_alert_test_reg_t alert_test; // [1:0]
   } rv_plic_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    rv_plic_hw2reg_ip_mreg_t [31:0] ip; // [69:6]
-    rv_plic_hw2reg_cc0_reg_t cc0; // [5:0]
+    rv_plic_hw2reg_ip_mreg_t [31:0] ip; // [68:5]
+    rv_plic_hw2reg_cc0_reg_t cc0; // [4:0]
   } rv_plic_hw2reg_t;
 
   // Register offsets
@@ -273,7 +273,7 @@ package rv_plic_reg_pkg;
   parameter logic [BlockAw-1:0] RV_PLIC_ALERT_TEST_OFFSET = 10'h 200;
 
   // Reset values for hwext registers and their fields
-  parameter logic [5:0] RV_PLIC_CC0_RESVAL = 6'h 0;
+  parameter logic [4:0] RV_PLIC_CC0_RESVAL = 5'h 0;
   parameter logic [0:0] RV_PLIC_ALERT_TEST_RESVAL = 1'h 0;
 
   // Register index
