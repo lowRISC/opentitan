@@ -49,6 +49,7 @@ parameter string LIST_OF_ALERTS[] = {
   "flash_ctrl_recov_mp_err",
   "flash_ctrl_recov_ecc_err",
   "flash_ctrl_fatal_intg_err",
+  "rv_plic_fatal_fault",
   "aes_recov_ctrl_update_err",
   "aes_fatal_fault",
   "hmac_fatal_fault",
@@ -67,4 +68,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 60;
+parameter uint NUM_ALERTS = 61;

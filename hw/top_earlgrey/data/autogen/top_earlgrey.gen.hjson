@@ -11658,6 +11658,7 @@
     sensor_ctrl_aon
     sram_ctrl_ret_aon
     flash_ctrl
+    rv_plic
     aes
     hmac
     kmac
@@ -11979,6 +11980,13 @@
       type: alert
       async: "1"
       module_name: flash_ctrl
+    }
+    {
+      name: rv_plic_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_plic
     }
     {
       name: aes_recov_ctrl_update_err

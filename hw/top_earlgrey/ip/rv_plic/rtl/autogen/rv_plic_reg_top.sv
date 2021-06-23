@@ -25,7 +25,7 @@ module rv_plic_reg_top (
 
   import rv_plic_reg_pkg::* ;
 
-  localparam int AW = 10;
+  localparam int AW = 11;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -1566,6 +1566,8 @@ module rv_plic_reg_top (
   logic msip0_we;
   logic msip0_qs;
   logic msip0_wd;
+  logic alert_test_we;
+  logic alert_test_wd;
 
   // Register instances
 
@@ -20598,9 +20600,25 @@ module rv_plic_reg_top (
   );
 
 
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
+    .qs     ()
+  );
 
 
-  logic [200:0] addr_hit;
+
+
+  logic [201:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[  0] = (reg_addr == RV_PLIC_IP_0_OFFSET);
@@ -20804,6 +20822,7 @@ module rv_plic_reg_top (
     addr_hit[198] = (reg_addr == RV_PLIC_THRESHOLD0_OFFSET);
     addr_hit[199] = (reg_addr == RV_PLIC_CC0_OFFSET);
     addr_hit[200] = (reg_addr == RV_PLIC_MSIP0_OFFSET);
+    addr_hit[201] = (reg_addr == RV_PLIC_ALERT_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -21011,7 +21030,8 @@ module rv_plic_reg_top (
                (addr_hit[197] & (|(RV_PLIC_PERMIT[197] & ~reg_be))) |
                (addr_hit[198] & (|(RV_PLIC_PERMIT[198] & ~reg_be))) |
                (addr_hit[199] & (|(RV_PLIC_PERMIT[199] & ~reg_be))) |
-               (addr_hit[200] & (|(RV_PLIC_PERMIT[200] & ~reg_be)))));
+               (addr_hit[200] & (|(RV_PLIC_PERMIT[200] & ~reg_be))) |
+               (addr_hit[201] & (|(RV_PLIC_PERMIT[201] & ~reg_be)))));
   end
   assign le_0_we = addr_hit[6] & reg_we & !reg_error;
 
@@ -22295,6 +22315,9 @@ module rv_plic_reg_top (
   assign msip0_we = addr_hit[200] & reg_we & !reg_error;
 
   assign msip0_wd = reg_wdata[0];
+  assign alert_test_we = addr_hit[201] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
 
   // Read data return
   always_comb begin
@@ -23624,6 +23647,10 @@ module rv_plic_reg_top (
 
       addr_hit[200]: begin
         reg_rdata_next[0] = msip0_qs;
+      end
+
+      addr_hit[201]: begin
+        reg_rdata_next[0] = '0;
       end
 
       default: begin
