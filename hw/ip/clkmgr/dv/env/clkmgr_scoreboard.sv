@@ -104,10 +104,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      monitor_ip_clk_en();
-      monitor_idle();
-      monitor_ip_clk_en();
-      monitor_scanmode();
       monitor_ast_clk_byp();
       begin : post_reset
         fork
@@ -151,6 +147,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       #0;
       gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div4_peri;
       check_clock("div4", gating_condition, gated_clock);
+      if (cfg.en_cov) begin
+        cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
+                                          cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
+                                          cfg.clkmgr_vif.scanmode_i);
+      end
     end
   endtask
 
@@ -163,6 +164,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       #0;
       gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div2_peri;
       check_clock("div2", gating_condition, gated_clock);
+      if (cfg.en_cov) begin
+        cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
+                                          cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
+                                          cfg.clkmgr_vif.scanmode_i);
+      end
     end
   endtask
 
@@ -175,6 +181,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       #0;
       gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_peri;
       check_clock("io", gating_condition, gated_clock);
+      if (cfg.en_cov) begin
+        cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
+                                        cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
+                                        cfg.clkmgr_vif.scanmode_i);
+      end
     end
   endtask
 
@@ -187,6 +198,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       #0;
       gated_clock = cfg.clkmgr_vif.clocks_o.clk_usb_peri;
       check_clock("usb", gating_condition, gated_clock);
+      if (cfg.en_cov) begin
+        cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
+                                         cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
+                                         cfg.clkmgr_vif.scanmode_i);
+      end
     end
   endtask
 
@@ -214,35 +230,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
         end
       endcase
+      if (cfg.en_cov) begin
+        cov.update_trans_cgs(cfg.clkmgr_vif.trans_cb.clk_hints, cfg.clkmgr_vif.trans_cb.ip_clk_en,
+                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.trans_cb.idle_i);
+      end
     end
-  endtask
-
-  task monitor_idle();
-    forever @cfg.clkmgr_vif.idle_i
-      if (cfg.en_cov) begin
-        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
-      end
-  endtask
-
-  task monitor_scanmode();
-    forever @cfg.clkmgr_vif.scanmode_i
-      if (cfg.en_cov) begin
-        cov.update_peri_cgs(ral.clk_enables.get(),cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                            cfg.clkmgr_vif.scanmode_i);
-        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
-      end
-  endtask
-
-  task monitor_ip_clk_en();
-    forever @cfg.clkmgr_vif.pwr_i.ip_clk_en
-      if (cfg.en_cov) begin
-        cov.update_peri_cgs(ral.clk_enables.get(),cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                            cfg.clkmgr_vif.scanmode_i);
-        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
-      end
   endtask
 
   task monitor_ast_clk_byp();
@@ -259,6 +251,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           (cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req == On)) begin
         `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On,
                      "Expected ast_clk_byp_req to be On")
+      end
+      if (cfg.en_cov) begin
+        cov.extclk_cg.sample(cfg.clkmgr_vif.extclk_cb.extclk_sel,
+                             cfg.clkmgr_vif.extclk_cb.lc_dft_en_i,
+                             cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req,
+                             cfg.clkmgr_vif.scanmode_i);
       end
     end
   endtask
@@ -322,7 +320,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                         cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup,
                         dividers.get_div4_clk(),
                         cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup),
-                    UVM_LOW)
+                    UVM_MEDIUM)
           // This delay seems to help with xcelium: without it the actual divided clocks are stale.
           #1;
           cfg.clkmgr_vif.update_exp_clk_io_divs(
@@ -396,19 +394,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "clk_enables":
         if (addr_phase_write) begin
           cfg.clkmgr_vif.update_clk_enables(item.a_data);
-          if (cfg.en_cov) begin
-            cov.update_peri_cgs(item.a_data, cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                                cfg.clkmgr_vif.scanmode_i);
-          end
         end
       "clk_hints":
         // Clearing a hint sets an expectation for the status to transition to zero.
         if (addr_phase_write) begin
           cfg.clkmgr_vif.update_clk_hints(item.a_data);
-          if (cfg.en_cov) begin
-            cov.update_trans_cgs(item.a_data, cfg.clkmgr_vif.pwr_i.ip_clk_en,
-                                 cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
-          end
         end
       "clk_hints_status": begin
         // The status will respond to the hint once the target unit is idle. We check it in
