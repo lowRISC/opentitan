@@ -77,7 +77,7 @@ module spi_host
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(i)
+      .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
