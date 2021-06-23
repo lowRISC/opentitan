@@ -20,6 +20,7 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = pwm_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
     // create m_pwm_agent_cfg
