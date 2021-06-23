@@ -240,6 +240,8 @@ module usbdev_reg_top (
   logic intr_test_frame_wd;
   logic intr_test_connected_wd;
   logic intr_test_link_out_err_wd;
+  logic alert_test_we;
+  logic alert_test_wd;
   logic usbctrl_we;
   logic usbctrl_enable_qs;
   logic usbctrl_enable_wd;
@@ -1705,6 +1707,22 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.link_out_err.qe),
     .q      (reg2hw.intr_test.link_out_err.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -5869,39 +5887,40 @@ module usbdev_reg_top (
 
 
 
-  logic [29:0] addr_hit;
+  logic [30:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == USBDEV_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == USBDEV_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == USBDEV_USBCTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == USBDEV_USBSTAT_OFFSET);
-    addr_hit[ 5] = (reg_addr == USBDEV_AVBUFFER_OFFSET);
-    addr_hit[ 6] = (reg_addr == USBDEV_RXFIFO_OFFSET);
-    addr_hit[ 7] = (reg_addr == USBDEV_RXENABLE_SETUP_OFFSET);
-    addr_hit[ 8] = (reg_addr == USBDEV_RXENABLE_OUT_OFFSET);
-    addr_hit[ 9] = (reg_addr == USBDEV_IN_SENT_OFFSET);
-    addr_hit[10] = (reg_addr == USBDEV_STALL_OFFSET);
-    addr_hit[11] = (reg_addr == USBDEV_CONFIGIN_0_OFFSET);
-    addr_hit[12] = (reg_addr == USBDEV_CONFIGIN_1_OFFSET);
-    addr_hit[13] = (reg_addr == USBDEV_CONFIGIN_2_OFFSET);
-    addr_hit[14] = (reg_addr == USBDEV_CONFIGIN_3_OFFSET);
-    addr_hit[15] = (reg_addr == USBDEV_CONFIGIN_4_OFFSET);
-    addr_hit[16] = (reg_addr == USBDEV_CONFIGIN_5_OFFSET);
-    addr_hit[17] = (reg_addr == USBDEV_CONFIGIN_6_OFFSET);
-    addr_hit[18] = (reg_addr == USBDEV_CONFIGIN_7_OFFSET);
-    addr_hit[19] = (reg_addr == USBDEV_CONFIGIN_8_OFFSET);
-    addr_hit[20] = (reg_addr == USBDEV_CONFIGIN_9_OFFSET);
-    addr_hit[21] = (reg_addr == USBDEV_CONFIGIN_10_OFFSET);
-    addr_hit[22] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
-    addr_hit[23] = (reg_addr == USBDEV_ISO_OFFSET);
-    addr_hit[24] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
-    addr_hit[25] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
-    addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
-    addr_hit[27] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
-    addr_hit[28] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
-    addr_hit[29] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
+    addr_hit[ 3] = (reg_addr == USBDEV_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == USBDEV_USBCTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == USBDEV_USBSTAT_OFFSET);
+    addr_hit[ 6] = (reg_addr == USBDEV_AVBUFFER_OFFSET);
+    addr_hit[ 7] = (reg_addr == USBDEV_RXFIFO_OFFSET);
+    addr_hit[ 8] = (reg_addr == USBDEV_RXENABLE_SETUP_OFFSET);
+    addr_hit[ 9] = (reg_addr == USBDEV_RXENABLE_OUT_OFFSET);
+    addr_hit[10] = (reg_addr == USBDEV_IN_SENT_OFFSET);
+    addr_hit[11] = (reg_addr == USBDEV_STALL_OFFSET);
+    addr_hit[12] = (reg_addr == USBDEV_CONFIGIN_0_OFFSET);
+    addr_hit[13] = (reg_addr == USBDEV_CONFIGIN_1_OFFSET);
+    addr_hit[14] = (reg_addr == USBDEV_CONFIGIN_2_OFFSET);
+    addr_hit[15] = (reg_addr == USBDEV_CONFIGIN_3_OFFSET);
+    addr_hit[16] = (reg_addr == USBDEV_CONFIGIN_4_OFFSET);
+    addr_hit[17] = (reg_addr == USBDEV_CONFIGIN_5_OFFSET);
+    addr_hit[18] = (reg_addr == USBDEV_CONFIGIN_6_OFFSET);
+    addr_hit[19] = (reg_addr == USBDEV_CONFIGIN_7_OFFSET);
+    addr_hit[20] = (reg_addr == USBDEV_CONFIGIN_8_OFFSET);
+    addr_hit[21] = (reg_addr == USBDEV_CONFIGIN_9_OFFSET);
+    addr_hit[22] = (reg_addr == USBDEV_CONFIGIN_10_OFFSET);
+    addr_hit[23] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
+    addr_hit[24] = (reg_addr == USBDEV_ISO_OFFSET);
+    addr_hit[25] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
+    addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
+    addr_hit[27] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
+    addr_hit[28] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
+    addr_hit[29] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
+    addr_hit[30] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5938,7 +5957,8 @@ module usbdev_reg_top (
                (addr_hit[26] & (|(USBDEV_PERMIT[26] & ~reg_be))) |
                (addr_hit[27] & (|(USBDEV_PERMIT[27] & ~reg_be))) |
                (addr_hit[28] & (|(USBDEV_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(USBDEV_PERMIT[29] & ~reg_be)))));
+               (addr_hit[29] & (|(USBDEV_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(USBDEV_PERMIT[30] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -6045,17 +6065,20 @@ module usbdev_reg_top (
   assign intr_test_connected_wd = reg_wdata[15];
 
   assign intr_test_link_out_err_wd = reg_wdata[16];
-  assign usbctrl_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign usbctrl_we = addr_hit[4] & reg_we & !reg_error;
 
   assign usbctrl_enable_wd = reg_wdata[0];
 
   assign usbctrl_device_address_wd = reg_wdata[22:16];
-  assign usbstat_re = addr_hit[4] & reg_re & !reg_error;
-  assign avbuffer_we = addr_hit[5] & reg_we & !reg_error;
+  assign usbstat_re = addr_hit[5] & reg_re & !reg_error;
+  assign avbuffer_we = addr_hit[6] & reg_we & !reg_error;
 
   assign avbuffer_wd = reg_wdata[4:0];
-  assign rxfifo_re = addr_hit[6] & reg_re & !reg_error;
-  assign rxenable_setup_we = addr_hit[7] & reg_we & !reg_error;
+  assign rxfifo_re = addr_hit[7] & reg_re & !reg_error;
+  assign rxenable_setup_we = addr_hit[8] & reg_we & !reg_error;
 
   assign rxenable_setup_setup_0_wd = reg_wdata[0];
 
@@ -6080,7 +6103,7 @@ module usbdev_reg_top (
   assign rxenable_setup_setup_10_wd = reg_wdata[10];
 
   assign rxenable_setup_setup_11_wd = reg_wdata[11];
-  assign rxenable_out_we = addr_hit[8] & reg_we & !reg_error;
+  assign rxenable_out_we = addr_hit[9] & reg_we & !reg_error;
 
   assign rxenable_out_out_0_wd = reg_wdata[0];
 
@@ -6105,7 +6128,7 @@ module usbdev_reg_top (
   assign rxenable_out_out_10_wd = reg_wdata[10];
 
   assign rxenable_out_out_11_wd = reg_wdata[11];
-  assign in_sent_we = addr_hit[9] & reg_we & !reg_error;
+  assign in_sent_we = addr_hit[10] & reg_we & !reg_error;
 
   assign in_sent_sent_0_wd = reg_wdata[0];
 
@@ -6130,7 +6153,7 @@ module usbdev_reg_top (
   assign in_sent_sent_10_wd = reg_wdata[10];
 
   assign in_sent_sent_11_wd = reg_wdata[11];
-  assign stall_we = addr_hit[10] & reg_we & !reg_error;
+  assign stall_we = addr_hit[11] & reg_we & !reg_error;
 
   assign stall_stall_0_wd = reg_wdata[0];
 
@@ -6155,7 +6178,7 @@ module usbdev_reg_top (
   assign stall_stall_10_wd = reg_wdata[10];
 
   assign stall_stall_11_wd = reg_wdata[11];
-  assign configin_0_we = addr_hit[11] & reg_we & !reg_error;
+  assign configin_0_we = addr_hit[12] & reg_we & !reg_error;
 
   assign configin_0_buffer_0_wd = reg_wdata[4:0];
 
@@ -6164,7 +6187,7 @@ module usbdev_reg_top (
   assign configin_0_pend_0_wd = reg_wdata[30];
 
   assign configin_0_rdy_0_wd = reg_wdata[31];
-  assign configin_1_we = addr_hit[12] & reg_we & !reg_error;
+  assign configin_1_we = addr_hit[13] & reg_we & !reg_error;
 
   assign configin_1_buffer_1_wd = reg_wdata[4:0];
 
@@ -6173,7 +6196,7 @@ module usbdev_reg_top (
   assign configin_1_pend_1_wd = reg_wdata[30];
 
   assign configin_1_rdy_1_wd = reg_wdata[31];
-  assign configin_2_we = addr_hit[13] & reg_we & !reg_error;
+  assign configin_2_we = addr_hit[14] & reg_we & !reg_error;
 
   assign configin_2_buffer_2_wd = reg_wdata[4:0];
 
@@ -6182,7 +6205,7 @@ module usbdev_reg_top (
   assign configin_2_pend_2_wd = reg_wdata[30];
 
   assign configin_2_rdy_2_wd = reg_wdata[31];
-  assign configin_3_we = addr_hit[14] & reg_we & !reg_error;
+  assign configin_3_we = addr_hit[15] & reg_we & !reg_error;
 
   assign configin_3_buffer_3_wd = reg_wdata[4:0];
 
@@ -6191,7 +6214,7 @@ module usbdev_reg_top (
   assign configin_3_pend_3_wd = reg_wdata[30];
 
   assign configin_3_rdy_3_wd = reg_wdata[31];
-  assign configin_4_we = addr_hit[15] & reg_we & !reg_error;
+  assign configin_4_we = addr_hit[16] & reg_we & !reg_error;
 
   assign configin_4_buffer_4_wd = reg_wdata[4:0];
 
@@ -6200,7 +6223,7 @@ module usbdev_reg_top (
   assign configin_4_pend_4_wd = reg_wdata[30];
 
   assign configin_4_rdy_4_wd = reg_wdata[31];
-  assign configin_5_we = addr_hit[16] & reg_we & !reg_error;
+  assign configin_5_we = addr_hit[17] & reg_we & !reg_error;
 
   assign configin_5_buffer_5_wd = reg_wdata[4:0];
 
@@ -6209,7 +6232,7 @@ module usbdev_reg_top (
   assign configin_5_pend_5_wd = reg_wdata[30];
 
   assign configin_5_rdy_5_wd = reg_wdata[31];
-  assign configin_6_we = addr_hit[17] & reg_we & !reg_error;
+  assign configin_6_we = addr_hit[18] & reg_we & !reg_error;
 
   assign configin_6_buffer_6_wd = reg_wdata[4:0];
 
@@ -6218,7 +6241,7 @@ module usbdev_reg_top (
   assign configin_6_pend_6_wd = reg_wdata[30];
 
   assign configin_6_rdy_6_wd = reg_wdata[31];
-  assign configin_7_we = addr_hit[18] & reg_we & !reg_error;
+  assign configin_7_we = addr_hit[19] & reg_we & !reg_error;
 
   assign configin_7_buffer_7_wd = reg_wdata[4:0];
 
@@ -6227,7 +6250,7 @@ module usbdev_reg_top (
   assign configin_7_pend_7_wd = reg_wdata[30];
 
   assign configin_7_rdy_7_wd = reg_wdata[31];
-  assign configin_8_we = addr_hit[19] & reg_we & !reg_error;
+  assign configin_8_we = addr_hit[20] & reg_we & !reg_error;
 
   assign configin_8_buffer_8_wd = reg_wdata[4:0];
 
@@ -6236,7 +6259,7 @@ module usbdev_reg_top (
   assign configin_8_pend_8_wd = reg_wdata[30];
 
   assign configin_8_rdy_8_wd = reg_wdata[31];
-  assign configin_9_we = addr_hit[20] & reg_we & !reg_error;
+  assign configin_9_we = addr_hit[21] & reg_we & !reg_error;
 
   assign configin_9_buffer_9_wd = reg_wdata[4:0];
 
@@ -6245,7 +6268,7 @@ module usbdev_reg_top (
   assign configin_9_pend_9_wd = reg_wdata[30];
 
   assign configin_9_rdy_9_wd = reg_wdata[31];
-  assign configin_10_we = addr_hit[21] & reg_we & !reg_error;
+  assign configin_10_we = addr_hit[22] & reg_we & !reg_error;
 
   assign configin_10_buffer_10_wd = reg_wdata[4:0];
 
@@ -6254,7 +6277,7 @@ module usbdev_reg_top (
   assign configin_10_pend_10_wd = reg_wdata[30];
 
   assign configin_10_rdy_10_wd = reg_wdata[31];
-  assign configin_11_we = addr_hit[22] & reg_we & !reg_error;
+  assign configin_11_we = addr_hit[23] & reg_we & !reg_error;
 
   assign configin_11_buffer_11_wd = reg_wdata[4:0];
 
@@ -6263,7 +6286,7 @@ module usbdev_reg_top (
   assign configin_11_pend_11_wd = reg_wdata[30];
 
   assign configin_11_rdy_11_wd = reg_wdata[31];
-  assign iso_we = addr_hit[23] & reg_we & !reg_error;
+  assign iso_we = addr_hit[24] & reg_we & !reg_error;
 
   assign iso_iso_0_wd = reg_wdata[0];
 
@@ -6288,7 +6311,7 @@ module usbdev_reg_top (
   assign iso_iso_10_wd = reg_wdata[10];
 
   assign iso_iso_11_wd = reg_wdata[11];
-  assign data_toggle_clear_we = addr_hit[24] & reg_we & !reg_error;
+  assign data_toggle_clear_we = addr_hit[25] & reg_we & !reg_error;
 
   assign data_toggle_clear_clear_0_wd = reg_wdata[0];
 
@@ -6313,8 +6336,8 @@ module usbdev_reg_top (
   assign data_toggle_clear_clear_10_wd = reg_wdata[10];
 
   assign data_toggle_clear_clear_11_wd = reg_wdata[11];
-  assign phy_pins_sense_re = addr_hit[25] & reg_re & !reg_error;
-  assign phy_pins_drive_we = addr_hit[26] & reg_we & !reg_error;
+  assign phy_pins_sense_re = addr_hit[26] & reg_re & !reg_error;
+  assign phy_pins_drive_we = addr_hit[27] & reg_we & !reg_error;
 
   assign phy_pins_drive_dp_o_wd = reg_wdata[0];
 
@@ -6335,7 +6358,7 @@ module usbdev_reg_top (
   assign phy_pins_drive_suspend_o_wd = reg_wdata[8];
 
   assign phy_pins_drive_en_wd = reg_wdata[16];
-  assign phy_config_we = addr_hit[27] & reg_we & !reg_error;
+  assign phy_config_we = addr_hit[28] & reg_we & !reg_error;
 
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
@@ -6352,7 +6375,7 @@ module usbdev_reg_top (
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
-  assign wake_config_we = addr_hit[28] & reg_we & !reg_error;
+  assign wake_config_we = addr_hit[29] & reg_we & !reg_error;
 
   assign wake_config_wake_en_wd = reg_wdata[0];
 
@@ -6423,11 +6446,15 @@ module usbdev_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = usbctrl_enable_qs;
         reg_rdata_next[22:16] = usbctrl_device_address_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[10:0] = usbstat_frame_qs;
         reg_rdata_next[11] = usbstat_host_lost_qs;
         reg_rdata_next[14:12] = usbstat_link_state_qs;
@@ -6438,18 +6465,18 @@ module usbdev_reg_top (
         reg_rdata_next[31] = usbstat_rx_empty_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[4:0] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[4:0] = rxfifo_buffer_qs;
         reg_rdata_next[14:8] = rxfifo_size_qs;
         reg_rdata_next[19] = rxfifo_setup_qs;
         reg_rdata_next[23:20] = rxfifo_ep_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = rxenable_setup_setup_0_qs;
         reg_rdata_next[1] = rxenable_setup_setup_1_qs;
         reg_rdata_next[2] = rxenable_setup_setup_2_qs;
@@ -6464,7 +6491,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = rxenable_setup_setup_11_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = rxenable_out_out_0_qs;
         reg_rdata_next[1] = rxenable_out_out_1_qs;
         reg_rdata_next[2] = rxenable_out_out_2_qs;
@@ -6479,7 +6506,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = rxenable_out_out_11_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = in_sent_sent_0_qs;
         reg_rdata_next[1] = in_sent_sent_1_qs;
         reg_rdata_next[2] = in_sent_sent_2_qs;
@@ -6494,7 +6521,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = in_sent_sent_11_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = stall_stall_0_qs;
         reg_rdata_next[1] = stall_stall_1_qs;
         reg_rdata_next[2] = stall_stall_2_qs;
@@ -6509,91 +6536,91 @@ module usbdev_reg_top (
         reg_rdata_next[11] = stall_stall_11_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[4:0] = configin_0_buffer_0_qs;
         reg_rdata_next[14:8] = configin_0_size_0_qs;
         reg_rdata_next[30] = configin_0_pend_0_qs;
         reg_rdata_next[31] = configin_0_rdy_0_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[4:0] = configin_1_buffer_1_qs;
         reg_rdata_next[14:8] = configin_1_size_1_qs;
         reg_rdata_next[30] = configin_1_pend_1_qs;
         reg_rdata_next[31] = configin_1_rdy_1_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[4:0] = configin_2_buffer_2_qs;
         reg_rdata_next[14:8] = configin_2_size_2_qs;
         reg_rdata_next[30] = configin_2_pend_2_qs;
         reg_rdata_next[31] = configin_2_rdy_2_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[4:0] = configin_3_buffer_3_qs;
         reg_rdata_next[14:8] = configin_3_size_3_qs;
         reg_rdata_next[30] = configin_3_pend_3_qs;
         reg_rdata_next[31] = configin_3_rdy_3_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[4:0] = configin_4_buffer_4_qs;
         reg_rdata_next[14:8] = configin_4_size_4_qs;
         reg_rdata_next[30] = configin_4_pend_4_qs;
         reg_rdata_next[31] = configin_4_rdy_4_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[4:0] = configin_5_buffer_5_qs;
         reg_rdata_next[14:8] = configin_5_size_5_qs;
         reg_rdata_next[30] = configin_5_pend_5_qs;
         reg_rdata_next[31] = configin_5_rdy_5_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[4:0] = configin_6_buffer_6_qs;
         reg_rdata_next[14:8] = configin_6_size_6_qs;
         reg_rdata_next[30] = configin_6_pend_6_qs;
         reg_rdata_next[31] = configin_6_rdy_6_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[4:0] = configin_7_buffer_7_qs;
         reg_rdata_next[14:8] = configin_7_size_7_qs;
         reg_rdata_next[30] = configin_7_pend_7_qs;
         reg_rdata_next[31] = configin_7_rdy_7_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[4:0] = configin_8_buffer_8_qs;
         reg_rdata_next[14:8] = configin_8_size_8_qs;
         reg_rdata_next[30] = configin_8_pend_8_qs;
         reg_rdata_next[31] = configin_8_rdy_8_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[4:0] = configin_9_buffer_9_qs;
         reg_rdata_next[14:8] = configin_9_size_9_qs;
         reg_rdata_next[30] = configin_9_pend_9_qs;
         reg_rdata_next[31] = configin_9_rdy_9_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[4:0] = configin_10_buffer_10_qs;
         reg_rdata_next[14:8] = configin_10_size_10_qs;
         reg_rdata_next[30] = configin_10_pend_10_qs;
         reg_rdata_next[31] = configin_10_rdy_10_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[4:0] = configin_11_buffer_11_qs;
         reg_rdata_next[14:8] = configin_11_size_11_qs;
         reg_rdata_next[30] = configin_11_pend_11_qs;
         reg_rdata_next[31] = configin_11_rdy_11_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = iso_iso_0_qs;
         reg_rdata_next[1] = iso_iso_1_qs;
         reg_rdata_next[2] = iso_iso_2_qs;
@@ -6608,7 +6635,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = iso_iso_11_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -6623,7 +6650,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = '0;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[0] = phy_pins_sense_rx_dp_i_qs;
         reg_rdata_next[1] = phy_pins_sense_rx_dn_i_qs;
         reg_rdata_next[2] = phy_pins_sense_rx_d_i_qs;
@@ -6636,7 +6663,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_sense_pwr_sense_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[0] = phy_pins_drive_dp_o_qs;
         reg_rdata_next[1] = phy_pins_drive_dn_o_qs;
         reg_rdata_next[2] = phy_pins_drive_d_o_qs;
@@ -6649,7 +6676,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_drive_en_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
         reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
@@ -6660,12 +6687,12 @@ module usbdev_reg_top (
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[0] = wake_config_wake_en_qs;
         reg_rdata_next[1] = wake_config_wake_ack_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[2:0] = wake_debug_qs;
       end
 
