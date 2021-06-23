@@ -11870,6 +11870,7 @@
     i2c1
     i2c2
     pattgen
+    usbdev
     otp_ctrl
     lc_ctrl
     pwrmgr_aon
@@ -11982,6 +11983,13 @@
       type: alert
       async: "1"
       module_name: pattgen
+    }
+    {
+      name: usbdev_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: usbdev
     }
     {
       name: otp_ctrl_fatal_macro_error

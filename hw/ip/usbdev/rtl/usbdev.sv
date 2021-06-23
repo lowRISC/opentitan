@@ -7,7 +7,12 @@
 //
 
 
-module usbdev import usbdev_pkg::*; (
+module usbdev
+  import usbdev_pkg::*;
+  import usbdev_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input  logic       clk_i,
   input  logic       rst_ni,
   input  logic       clk_aon_i,
@@ -18,6 +23,10 @@ module usbdev import usbdev_pkg::*; (
   // Register interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Data inputs
   input  logic       cio_d_i, // differential
@@ -724,6 +733,8 @@ module usbdev import usbdev_pkg::*; (
     .cfg_i      (ram_cfg_i)
   );
 
+  logic [NumAlerts-1:0] alert_test, alerts;
+
   // Register module
   usbdev_reg_top u_reg (
     .clk_i,
@@ -737,10 +748,33 @@ module usbdev import usbdev_pkg::*; (
 
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o (alerts[0]),
     .devmode_i (1'b1)
   );
 
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
+
+  // Interrupts
   prim_intr_hw #(.Width(1)) intr_hw_pkt_received (
     .clk_i,
     .rst_ni,
@@ -1150,6 +1184,8 @@ module usbdev import usbdev_pkg::*; (
   `ASSERT_KNOWN(USBSuspendKnown_A, usb_suspend_o)
   `ASSERT_KNOWN(USBRefValKnown_A, usb_ref_val_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
   `ASSERT_KNOWN(USBRefPulseKnown_A, usb_ref_pulse_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
+  // Assert Known for alerts
+  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   //Interrupt signals
   `ASSERT_KNOWN(USBIntrPktRcvdKnown_A, intr_pkt_received_o)
   `ASSERT_KNOWN(USBIntrPktSentKnown_A, intr_pkt_sent_o)

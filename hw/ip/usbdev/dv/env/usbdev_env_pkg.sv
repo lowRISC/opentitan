@@ -20,6 +20,10 @@ package usbdev_env_pkg;
 
   // parameters
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   // types
   typedef enum {
     IntrPktReceived = 0,
