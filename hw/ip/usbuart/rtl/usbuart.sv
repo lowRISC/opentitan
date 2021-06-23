@@ -5,7 +5,10 @@
 // Description: USB UART top level wrapper file
 //
 
-module usbuart (
+module usbuart import usbuart_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input        clk_i,
   input        rst_ni, // Reset synchronized to clk_i
   input        clk_usb_48mhz_i,
@@ -14,6 +17,10 @@ module usbuart (
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
   output       tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Generic IO
   input        cio_usb_dp_i,
@@ -42,6 +49,7 @@ module usbuart (
 
   import usbuart_reg_pkg::*;
 
+  logic [NumAlerts-1:0] alert_test, alerts;
   usbuart_reg2hw_t reg2hw;
   usbuart_hw2reg_t hw2reg;
 
@@ -54,6 +62,7 @@ module usbuart (
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
 
@@ -86,5 +95,27 @@ module usbuart (
     .intr_rx_timeout_o    (intr_rx_timeout_o   ),
     .intr_rx_parity_err_o (intr_rx_parity_err_o)
   );
+
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
 endmodule // usbuart
