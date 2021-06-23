@@ -24,6 +24,13 @@
       desc: "Raised if the watchdog timer has hit the bark threshold"
     },
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the AON_TIMER unit.
+      '''
+    }
+  ],
   wakeup_list: [
     { name: "aon_timer_wkup_req",
       desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"

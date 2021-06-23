@@ -11651,6 +11651,7 @@
     adc_ctrl_aon
     pwm_aon
     pinmux_aon
+    aon_timer_aon
     sensor_ctrl_aon
     sram_ctrl_ret_aon
     flash_ctrl
@@ -11814,6 +11815,13 @@
       type: alert
       async: "1"
       module_name: pinmux_aon
+    }
+    {
+      name: aon_timer_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aon_timer_aon
     }
     {
       name: sensor_ctrl_aon_recov_as
