@@ -91,6 +91,11 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       end
       if (cfg.has_edn) cfg.m_edn_pull_agent_cfg.zero_delays = 1;
     end
+
+    // Set the synchronise_ports flag on each of the TL agents configs
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      cfg.m_tl_agent_cfgs[i].synchronise_ports = 1'b1;
+    end
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
@@ -98,6 +103,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     foreach (m_tl_agents[i]) begin
       m_tl_agents[i].monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifos[i].analysis_export);
       m_tl_agents[i].monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifos[i].analysis_export);
+      m_tl_agents[i].monitor.channel_dir_port.connect(scoreboard.tl_dir_fifos[i].analysis_export);
     end
     foreach (cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];

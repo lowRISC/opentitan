@@ -9,8 +9,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   `uvm_component_param_utils(cip_base_scoreboard #(RAL_T, CFG_T, COV_T))
 
   // TLM fifos to pick up the packets
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifos[string];
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_channels_e) tl_dir_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_seq_item)   tl_a_chan_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_seq_item)   tl_d_chan_fifos[string];
 
   // Alert_fifo to notify scb if DUT sends an alert
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
@@ -38,6 +39,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       tl_a_chan_fifos[i] = new({"tl_a_chan_fifo_", i}, this);
       tl_d_chan_fifos[i] = new({"tl_d_chan_fifo_", i}, this);
+      tl_dir_fifos[i] = new({"tl_dir_fifo_", i}, this);
     end
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
@@ -93,61 +95,78 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      process_tl_a_chan_fifo();
-      process_tl_d_chan_fifo();
+      process_tl_fifos();
       if (cfg.list_of_alerts.size()) process_alert_fifos();
       if (cfg.list_of_alerts.size()) check_alerts();
     join_none
   endtask
 
-  virtual task process_tl_a_chan_fifo();
-    foreach (tl_a_chan_fifos[i]) begin
+  task process_tl_fifos();
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
       automatic string ral_name = i;
-      fork
-        forever begin
-          tl_seq_item item;
-          tl_a_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-
-          if (cfg.en_scb_tl_err_chk) begin
-            if (predict_tl_err(item, AddrChannel, ral_name)) continue;
-          end
-          if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
-            process_mem_write(item, ral_name);
-          end
-
-          if (!cfg.en_scb) continue;
-
-          process_tl_access(item, AddrChannel, ral_name);
-        end // forever
-      join_none
+      process_tl_fifo(i, tl_dir_fifos[i], tl_a_chan_fifos[i], tl_d_chan_fifos[i]);
     end
   endtask
 
-  virtual task process_tl_d_chan_fifo();
-    foreach (tl_d_chan_fifos[i]) begin
-      automatic string ral_name = i;
-      fork
-        forever begin
-          tl_seq_item item;
-          tl_d_chan_fifos[ral_name].get(item);
-          `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+  task process_tl_fifo(string ral_name,
+                       uvm_tlm_analysis_fifo #(tl_channels_e) dir_fifo,
+                       uvm_tlm_analysis_fifo #(tl_seq_item) a_chan_fifo,
+                       uvm_tlm_analysis_fifo #(tl_seq_item) d_chan_fifo);
+    tl_channels_e dir;
+    tl_seq_item   item;
 
-          if (cfg.en_scb_tl_err_chk) begin
-            // check tl packet integrity
-            void'(item.is_ok());
-            if (predict_tl_err(item, DataChannel, ral_name)) continue;
+    fork
+      forever begin
+        dir_fifo.get(dir);
+        case (dir)
+          AddrChannel: begin
+            `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                            "dir_fifo pointed at A channel, but a_chan_fifo empty")
+            process_tl_a_item(ral_name, item);
           end
-          if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item, ral_name)) begin
-            process_mem_read(item, ral_name);
+
+          DataChannel: begin
+            `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                            "dir_fifo pointed at D channel, but d_chan_fifo empty")
+            process_tl_d_item(ral_name, item);
           end
 
-          if (!cfg.en_scb) continue;
+          default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
+        endcase
+      end
+    join_none
+  endtask
 
-          process_tl_access(item, DataChannel, ral_name);
-        end // forever
-      join_none
+  task process_tl_a_item(string ral_name, tl_seq_item item);
+    `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+
+    if (cfg.en_scb_tl_err_chk) begin
+      if (predict_tl_err(item, AddrChannel, ral_name)) return;
     end
+    if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
+      process_mem_write(item, ral_name);
+    end
+
+    if (!cfg.en_scb) return;
+
+    process_tl_access(item, AddrChannel, ral_name);
+  endtask
+
+  task process_tl_d_item(string ral_name, tl_seq_item item);
+    `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+
+    if (cfg.en_scb_tl_err_chk) begin
+      // check tl packet integrity
+      void'(item.is_ok());
+      if (predict_tl_err(item, DataChannel, ral_name)) return;
+    end
+    if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item, ral_name)) begin
+      process_mem_read(item, ral_name);
+    end
+
+    if (!cfg.en_scb) return;
+
+    process_tl_access(item, DataChannel, ral_name);
   endtask
 
   virtual task process_alert_fifos();
