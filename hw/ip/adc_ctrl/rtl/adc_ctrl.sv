@@ -118,7 +118,7 @@ module adc_ctrl
   `ASSERT_KNOWN(WakeDebugCableKnown, debug_cable_wakeup_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-  `ASSERT_KNOWN(ADCPDKnown, adc_o.pd)
-  `ASSERT_KNOWN(ADCChnSelKnown, adc_o.channel_sel)
+  `ASSERT_KNOWN(AdcKnown_A, adc_o)
+  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
 endmodule

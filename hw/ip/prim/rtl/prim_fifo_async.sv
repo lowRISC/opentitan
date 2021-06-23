@@ -240,7 +240,7 @@ module prim_fifo_async #(
       for (int i = PTR_WIDTH-2; i >= 0; i--) begin
         dec_tmp[i] = dec_tmp[i+1] ^ grayval[i];
       end
-      dec_tmp_sub = (PTR_WIDTH-1)'(Depth) - dec_tmp - 1'b1;
+      dec_tmp_sub = (PTR_WIDTH)'(Depth) - dec_tmp - 1'b1;
       if (grayval[PTR_WIDTH-1]) begin
         gray2dec = dec_tmp_sub;
         // Override MSB
