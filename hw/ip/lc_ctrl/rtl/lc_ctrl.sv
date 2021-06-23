@@ -468,7 +468,10 @@ module lc_ctrl
   // This escalation action triggers the
   // lc_escalate_en life cycle control signal.
   logic esc_wipe_secrets;
-  prim_esc_receiver u_prim_esc_receiver1 (
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
     .esc_en_o (esc_wipe_secrets),
@@ -479,7 +482,10 @@ module lc_ctrl
   // This escalation action moves the life cycle
   // state into a temporary "SCRAP" state named "ESCALATE".
   logic esc_scrap_state;
-  prim_esc_receiver u_prim_esc_receiver2 (
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_prim_esc_receiver2 (
     .clk_i,
     .rst_ni,
     .esc_en_o (esc_scrap_state),

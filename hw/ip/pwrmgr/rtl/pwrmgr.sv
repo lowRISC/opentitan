@@ -71,7 +71,10 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   logic esc_rst_req;
 
-  prim_esc_receiver u_esc_rx (
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_esc_rx (
     .clk_i,
     .rst_ni,
     .esc_en_o(esc_rst_req),
