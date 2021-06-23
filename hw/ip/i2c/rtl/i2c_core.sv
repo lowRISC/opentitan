@@ -4,7 +4,9 @@
 //
 // Description: I2C core module
 
-module  i2c_core (
+module  i2c_core #(
+  parameter int                    FifoDepth = 64
+) (
   input                            clk_i,
   input                            rst_ni,
 
@@ -303,7 +305,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width   (13),
     .Pass    (1'b1),
-    .Depth   (64)
+    .Depth   (FifoDepth)
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni,
@@ -323,7 +325,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (64)
+    .Depth   (FifoDepth)
   ) u_i2c_rxfifo (
     .clk_i,
     .rst_ni,
@@ -348,7 +350,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width(8),
     .Pass(1'b1),
-    .Depth(64)
+    .Depth(FifoDepth)
   ) u_i2c_txfifo (
     .clk_i,
     .rst_ni,
@@ -368,7 +370,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width(10),
     .Pass(1'b0),
-    .Depth(64)
+    .Depth(FifoDepth)
   ) u_i2c_acqfifo (
     .clk_i,
     .rst_ni,

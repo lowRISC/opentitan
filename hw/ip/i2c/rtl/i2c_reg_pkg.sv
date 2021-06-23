@@ -7,6 +7,7 @@
 package i2c_reg_pkg;
 
   // Param list
+  parameter int FifoDepth = 64;
   parameter int NumAlerts = 1;
 
   // Address widths within the block

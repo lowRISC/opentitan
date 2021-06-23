@@ -70,6 +70,13 @@
       '''
     }
   ],
+  param_list: [
+    { name: "FifoDepth",
+      desc: "Depth of FMT, RX, TX, and ACQ FIFOs",
+      type: "int",
+      default: "64",
+    }
+  ],
 
   // REGISTER definition
   regwidth: "32"
