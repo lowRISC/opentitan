@@ -107,48 +107,51 @@ encoding-schemes: enc-schemes.yml
 #             encoded relative to the current PC. Optional boolean,
 #             defaults to false.
 #
-# The valid operand types are as follows:
+# The allowed values for the "type" field are:
 #
-#  gpr:       The name of a general purpose register. Syntax "grs" for a
-#             source; "grd" for a destination.
+#  grs    A source GPR. Read and not written.
 #
-#  wdr:       The name of a wide register. Syntax "wrs" for a source;
-#             "wrd" for a destination; "wrb" for a register that is both a
-#             source and a destination.
+#  grd    A destination GPR. Written and not read.
 #
-#  csr:       The name of a CSR. Syntax "csr" (always considered a destination)
+#  wrs    A source WDR. Read and not written.
 #
-#  wsr:       The name of a WSR. Syntax "wsr" (always considered a destination)
+#  wrd    A source WDR. Written and not read.
 #
-#  simm:      A signed immediate operand. The full syntax is simm12<<3 to mean
-#             a signed immediate of width 12 which must be divisible by 2**3
-#             and is encoded by shifting right by 3. If there is no shift, the
-#             syntax simm12 is the same as simm12<<0. Similarly, if there is no
-#             known width (which should be inferred from any encoding scheme),
-#             it can be written as just simm or simm<<3.
+#  wrb    A WDR that is both read and written.
 #
-#  uimm:      An unsigned immediate operand. Syntax as with simm, but starting
-#             with "uimm".
+#  csr    A CSR (may be read and/or written)
 #
-#  enum:      An immediate with weird syntax. The syntax is "enum(a,b,c,d)"
-#             where a..d are the different possible syntaxes that can be used.
-#             The values are interpreted as immediates in enumeration order (so
-#             a is 0; d is 3).
+#  wsr    A WSR (may be read and/or written)
 #
-#  option:    A 1-bit immediate with weird syntax. Written "option(foo)" to
-#             mean that if the string "foo" appears then the immediate has
-#             value 1 and if it doesn't the immediate has value 0.
+#  simm   A signed immediate operand. The full syntax is simm12<<3 to mean a
+#         signed immediate of width 12 which must be divisible by 2**3 and is
+#         encoded by shifting right by 3. The syntax simm12 means the same as
+#         simm12<<0. If there is no known width (which should be inferred from
+#         any encoding scheme), the type can be written as just simm or
+#         simm<<3.
+#
+#  uimm   An unsigned immediate operand. The full syntax is as with simm, but
+#         starting with "uimm".
+#
+#  enum   An immediate with weird syntax. The syntax is "enum(a,b,c,d)" where
+#         a..d are the different possible syntaxes that can be used. The values
+#         are interpreted as immediates in enumeration order (so a is 0; d is
+#         3).
+#
+#  option A 1-bit immediate with weird syntax. Written "option(foo)" to
+#         mean that if the string "foo" appears then the immediate has
+#         value 1 and if it doesn't the immediate has value 0.
 #
 # Operand types are inferred from names as follows:
 #
-#  grd:        GPR destination
-#  grs, grs<n> GPR source
-#  wrd:        WDR destination
-#  wrs, wrs<n> WDR source
-#  csr         CSR name
-#  wsr         WSR name
-#  imm, imm<n> Signed immediate (width <n> if specified)
-#  offset      Signed immediate (unspecified width)
+#  grd:        GPR destination (type grd)
+#  grs, grs<n> GPR source (type grs)
+#  wrd:        WDR destination (type wrd)
+#  wrs, wrs<n> WDR source (type wrs)
+#  csr         CSR (type csr)
+#  wsr         WSR (type wsr)
+#  imm, imm<n> Signed immediate (width <n> if specified) (type simm or simm<n>)
+#  offset      Signed immediate (unspecified width) (type simm)
 #
 # If specified, the lsu field for an instruction should be a dictionary with
 # the following fields:
