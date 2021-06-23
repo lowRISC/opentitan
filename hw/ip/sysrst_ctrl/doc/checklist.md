@@ -11,15 +11,15 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [SYSRST_CTRL Design Spec]({{<relref "." >}})
-Documentation | [CSR_DEFINED][]                | Not Started |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [SYSRST_CTRL Design Spec]({{<relref "." >}})
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
@@ -35,25 +35,25 @@ Code Quality  | [LINT_SETUP][]                 | Not Started |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Documentation | [NEW_FEATURES][]        | Done        |
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | In progress | Interface tables missing in markdown (carry over from design doc).
+Documentation | [MISSING_FUNC][]        | In progress | Align documentation with latest feature set (carry over from design doc).
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Done        |
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC tool setup not yet available.
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | In progress | Modify the CDC handling of the wakeup signal.
+Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [SYSRST_CTRL DV document]({{<relref "dv" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [SYSRST_CTRL Testplan]({{<relref "dv/index.md#testplan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
+Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
