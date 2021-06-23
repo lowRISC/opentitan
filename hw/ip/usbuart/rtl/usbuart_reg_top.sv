@@ -147,6 +147,8 @@ module usbuart_reg_top (
   logic intr_test_rx_break_err_wd;
   logic intr_test_rx_timeout_wd;
   logic intr_test_rx_parity_err_wd;
+  logic alert_test_we;
+  logic alert_test_wd;
   logic ctrl_we;
   logic ctrl_tx_qs;
   logic ctrl_tx_wd;
@@ -749,6 +751,22 @@ module usbuart_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.rx_parity_err.qe),
     .q      (reg2hw.intr_test.rx_parity_err.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -1482,23 +1500,24 @@ module usbuart_reg_top (
 
 
 
-  logic [13:0] addr_hit;
+  logic [14:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBUART_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == USBUART_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == USBUART_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == USBUART_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == USBUART_STATUS_OFFSET);
-    addr_hit[ 5] = (reg_addr == USBUART_RDATA_OFFSET);
-    addr_hit[ 6] = (reg_addr == USBUART_WDATA_OFFSET);
-    addr_hit[ 7] = (reg_addr == USBUART_FIFO_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == USBUART_FIFO_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == USBUART_OVRD_OFFSET);
-    addr_hit[10] = (reg_addr == USBUART_VAL_OFFSET);
-    addr_hit[11] = (reg_addr == USBUART_TIMEOUT_CTRL_OFFSET);
-    addr_hit[12] = (reg_addr == USBUART_USBSTAT_OFFSET);
-    addr_hit[13] = (reg_addr == USBUART_USBPARAM_OFFSET);
+    addr_hit[ 3] = (reg_addr == USBUART_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == USBUART_CTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == USBUART_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == USBUART_RDATA_OFFSET);
+    addr_hit[ 7] = (reg_addr == USBUART_WDATA_OFFSET);
+    addr_hit[ 8] = (reg_addr == USBUART_FIFO_CTRL_OFFSET);
+    addr_hit[ 9] = (reg_addr == USBUART_FIFO_STATUS_OFFSET);
+    addr_hit[10] = (reg_addr == USBUART_OVRD_OFFSET);
+    addr_hit[11] = (reg_addr == USBUART_VAL_OFFSET);
+    addr_hit[12] = (reg_addr == USBUART_TIMEOUT_CTRL_OFFSET);
+    addr_hit[13] = (reg_addr == USBUART_USBSTAT_OFFSET);
+    addr_hit[14] = (reg_addr == USBUART_USBPARAM_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1519,7 +1538,8 @@ module usbuart_reg_top (
                (addr_hit[10] & (|(USBUART_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(USBUART_PERMIT[11] & ~reg_be))) |
                (addr_hit[12] & (|(USBUART_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(USBUART_PERMIT[13] & ~reg_be)))));
+               (addr_hit[13] & (|(USBUART_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(USBUART_PERMIT[14] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1572,7 +1592,10 @@ module usbuart_reg_top (
   assign intr_test_rx_timeout_wd = reg_wdata[6];
 
   assign intr_test_rx_parity_err_wd = reg_wdata[7];
-  assign ctrl_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign ctrl_we = addr_hit[4] & reg_we & !reg_error;
 
   assign ctrl_tx_wd = reg_wdata[0];
 
@@ -1591,12 +1614,12 @@ module usbuart_reg_top (
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
   assign ctrl_nco_wd = reg_wdata[31:16];
-  assign status_re = addr_hit[4] & reg_re & !reg_error;
-  assign rdata_re = addr_hit[5] & reg_re & !reg_error;
-  assign wdata_we = addr_hit[6] & reg_we & !reg_error;
+  assign status_re = addr_hit[5] & reg_re & !reg_error;
+  assign rdata_re = addr_hit[6] & reg_re & !reg_error;
+  assign wdata_we = addr_hit[7] & reg_we & !reg_error;
 
   assign wdata_wd = reg_wdata[7:0];
-  assign fifo_ctrl_we = addr_hit[7] & reg_we & !reg_error;
+  assign fifo_ctrl_we = addr_hit[8] & reg_we & !reg_error;
 
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
@@ -1605,20 +1628,20 @@ module usbuart_reg_top (
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
   assign fifo_ctrl_txilvl_wd = reg_wdata[6:5];
-  assign fifo_status_re = addr_hit[8] & reg_re & !reg_error;
-  assign ovrd_we = addr_hit[9] & reg_we & !reg_error;
+  assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
+  assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
 
   assign ovrd_txen_wd = reg_wdata[0];
 
   assign ovrd_txval_wd = reg_wdata[1];
-  assign val_re = addr_hit[10] & reg_re & !reg_error;
-  assign timeout_ctrl_we = addr_hit[11] & reg_we & !reg_error;
+  assign val_re = addr_hit[11] & reg_re & !reg_error;
+  assign timeout_ctrl_we = addr_hit[12] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[23:0];
 
   assign timeout_ctrl_en_wd = reg_wdata[31];
-  assign usbstat_re = addr_hit[12] & reg_re & !reg_error;
-  assign usbparam_re = addr_hit[13] & reg_re & !reg_error;
+  assign usbstat_re = addr_hit[13] & reg_re & !reg_error;
+  assign usbparam_re = addr_hit[14] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1658,6 +1681,10 @@ module usbuart_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = ctrl_tx_qs;
         reg_rdata_next[1] = ctrl_rx_qs;
         reg_rdata_next[2] = ctrl_nf_qs;
@@ -1669,7 +1696,7 @@ module usbuart_reg_top (
         reg_rdata_next[31:16] = ctrl_nco_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = status_txfull_qs;
         reg_rdata_next[1] = status_rxfull_qs;
         reg_rdata_next[2] = status_txempty_qs;
@@ -1678,48 +1705,48 @@ module usbuart_reg_top (
         reg_rdata_next[5] = status_rxempty_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[7:0] = rdata_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = fifo_ctrl_rxrst_qs;
         reg_rdata_next[1] = fifo_ctrl_txrst_qs;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
         reg_rdata_next[6:5] = fifo_ctrl_txilvl_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[5:0] = fifo_status_txlvl_qs;
         reg_rdata_next[21:16] = fifo_status_rxlvl_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = ovrd_txen_qs;
         reg_rdata_next[1] = ovrd_txval_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[15:0] = val_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[23:0] = timeout_ctrl_val_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[10:0] = usbstat_frame_qs;
         reg_rdata_next[14] = usbstat_host_timeout_qs;
         reg_rdata_next[15] = usbstat_host_lost_qs;
         reg_rdata_next[22:16] = usbstat_device_address_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[15:0] = usbparam_baud_req_qs;
         reg_rdata_next[17:16] = usbparam_parity_req_qs;
       end

@@ -51,6 +51,13 @@
             which will never happen on the USB interface.
             '''}
   ]
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the USBUART unit.
+      '''
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "CTRL",
