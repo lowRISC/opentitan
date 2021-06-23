@@ -25,6 +25,12 @@ package dv_test_status_pkg;
       $display("  | |/ _ \\/ __| __| | |_ / _` | | |/ _ \\/ _` | |");
       $display("  | |  __/\\__ \\ |_  |  _| (_| | | |  __/ (_| |_|");
       $display("  |_|\\___||___/\\__| |_|  \\__,_|_|_|\\___|\\__,_(_)\n");
+
+      // Tag along a failure notification for coverage.
+      // TODO: need equivalent processing for other simulators. issue #7102.
+`ifdef VCS
+      $cm_post(`CM_TEST_STATUS, "fail");
+`endif
     end
   endfunction
 
