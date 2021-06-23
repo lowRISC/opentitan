@@ -74,6 +74,11 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // knob for device to enable/disable same cycle response
   bit device_can_rsp_on_same_cycle = 0;
 
+  // A configuration flag for the monitor that configures whether it should synchronise concurrent A
+  // and D transactions or not. See note above the definition of channel_dir_port in tl_monitor.sv
+  // for details.
+  bit synchronise_ports = 1'b0;
+
   // for same cycle response, need to know when a_valid and other data/control are available, so
   // that monitor can sample it, then send to sequence to get data for response in the same cycle
   // 10 means 10% of TL clock period. This var is only use when device_can_rsp_on_same_cycle = 1
