@@ -20,7 +20,10 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
+    tl_intg_alert_name = "fatal";
+
     ral_model_names.push_back("rom_ctrl_rom_reg_block");
+
     super.initialize(csr_base_addr);
     num_interrupts = 0;
 
