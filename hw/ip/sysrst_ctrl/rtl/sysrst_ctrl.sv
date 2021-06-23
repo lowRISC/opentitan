@@ -271,10 +271,11 @@ module sysrst_ctrl
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrSysRstCtrlOKnown, intr_sysrst_ctrl_o)
-  // TODO: delete?
-  //`ASSERT_KNOWN(GSCRstOKnown, gsc_rst_l_o)
+  `ASSERT_KNOWN(GSCWkOKnown, gsc_wk_o)
+  `ASSERT_KNOWN(GSCRstOKnown, gsc_rst_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
   `ASSERT_KNOWN(BatOKnown, cio_bat_disable_o)
   `ASSERT_KNOWN(ECRSTOKnown, cio_ec_rst_out_l_o)
   `ASSERT_KNOWN(PwrbOKnown, cio_pwrb_out_o)
