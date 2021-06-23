@@ -46,23 +46,23 @@ module sysrst_ctrl_ulpfsm #(
   end
 
   //three-state FSM
-  //IDLE->WAIT->DONE
+  //IDLE_ST->WAIT_ST->DONE_ST
   //The input signals can be inverted. Hence, both paths
   //FSM will detect a L2H or H2L transition or level H to enter the wait state
   //debounce timer defines the time to wait for input to stablize
   //FSM will check the input after the debounce period
   //FSM will stay in the DONEXXX state until SW uses cfg_fsm_rst to clear it
   typedef enum logic [1:0] {
-                            IDLE = 2'h0,
-                            WAIT = 2'h1,
-                            DONE = 2'h2
+                            IDLE_ST = 2'h0,
+                            WAIT_ST = 2'h1,
+                            DONE_ST = 2'h2
                             } timer_state_e;
 
   timer_state_e timer_state_q, timer_state_d;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_state_reg
     if (!rst_aon_ni) begin
-      timer_state_q    <= IDLE;
+      timer_state_q    <= IDLE_ST;
     end
     else begin
       timer_state_q    <= timer_state_d;
@@ -90,22 +90,22 @@ module sysrst_ctrl_ulpfsm #(
     timer_cnt_en = 1'b0;
 
     unique case (timer_state_q)
-      IDLE: begin
+      IDLE_ST: begin
         if (cfg_en_i &&  trigger) begin
           timer_cnt_clr = 1'b1;
-          timer_state_d = WAIT;
+          timer_state_d = WAIT_ST;
         end
       end
 
-      WAIT: begin
+      WAIT_ST: begin
         // timer has expired
         if (timer_cnt_q == cfg_timer_i) begin
           // if the trigger is stable as defined above, we are done
           if (trigger_stable) begin
-            timer_state_d = DONE;
-          // otherwise go back to idle
+            timer_state_d = DONE_ST;
+          // otherwise go back to IDLE_ST
           end else begin
-            timer_state_d = IDLE;
+            timer_state_d = IDLE_ST;
           end
         // else continue counting
         end else begin
@@ -113,13 +113,13 @@ module sysrst_ctrl_ulpfsm #(
         end
       end
 
-      DONE: timer_cond_met_o = 1'b1;
+      DONE_ST: timer_cond_met_o = 1'b1;
 
-      default: timer_state_d = IDLE;
+      default: timer_state_d = IDLE_ST;
     endcase
-    // Force the state into IDLE if FSM is disabled
+    // Force the state into IDLE_ST if FSM is disabled
     if (!cfg_en_i) begin
-      timer_state_d = IDLE;
+      timer_state_d = IDLE_ST;
     end
   end
 
