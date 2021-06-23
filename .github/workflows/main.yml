@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Mount bazel cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: "/home/runner/.cache/bazel"
           key: ${{ runner.os }}-bazel
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Mount bazel cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: "/home/runner/.cache/bazel"
           key: ${{ runner.os }}-bazel
