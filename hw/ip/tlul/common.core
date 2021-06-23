@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:fifo
       - lowrisc:tlul:headers
+      - lowrisc:tlul:trans_intg
     files:
       - rtl/tlul_fifo_sync.sv
       - rtl/tlul_fifo_async.sv
