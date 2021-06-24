@@ -16,6 +16,8 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
   tl_agent        m_eflash_tl_agent;
   tl_reg_adapter  m_eflash_tl_reg_adapter;
 
+  string hdl_path_root;
+
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -29,6 +31,10 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
       cfg.m_eflash_tl_agent_cfg.a_ready_delay_max = 0;
       cfg.m_eflash_tl_agent_cfg.d_ready_delay_min = 0;
       cfg.m_eflash_tl_agent_cfg.d_ready_delay_max = 0;
+    end
+    // Retrieve hdl_path_root from tb for ral.
+    if (!uvm_config_db#(string)::get(this, "", "hdl_path_root", hdl_path_root)) begin
+      `uvm_fatal(`gfn, $sformatf("failed to get hdl_path_root from uvm_config_db"))
     end
 
     // Retrieve the mem backdoor util instances.
@@ -67,9 +73,7 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     // We have a custom design wrapper around the flash controller, so we need to fix the
     // HDL path root.
-    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
-      cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl", "BkdrRegPathRtl");
-    end
+    cfg.ral.set_hdl_path_root(hdl_path_root, "BkdrRegPathRtl");
     super.end_of_elaboration_phase(phase);
   endfunction : end_of_elaboration_phase
 
