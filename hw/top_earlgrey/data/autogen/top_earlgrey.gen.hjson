@@ -11647,6 +11647,7 @@
     pattgen
     otp_ctrl
     lc_ctrl
+    pwrmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
     pwm_aon
@@ -11787,6 +11788,13 @@
       type: alert
       async: "1"
       module_name: lc_ctrl
+    }
+    {
+      name: pwrmgr_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: pwrmgr_aon
     }
     {
       name: sysrst_ctrl_aon_fatal_fault

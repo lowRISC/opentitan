@@ -42,25 +42,28 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     }
     // Normal parameters
     { name: "NAlerts",
-      desc: "Number of peripheral inputs",
+      desc: "Number of alert channels.",
       type: "int",
       default: "${n_alerts}",
       local: "true"
     },
     { name: "EscCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the escalation timer.",
       type: "int",
       default: "${esc_cnt_dw}",
       local: "true"
     },
     { name: "AccuCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the accumulation counter.",
       type: "int",
       default: "${accu_cnt_dw}",
       local: "true"
     },
     { name: "AsyncOn",
-      desc: "Number of peripheral outputs",
+      desc: '''
+            Each bit of this parameter corresponds to an escalation channel and
+            defines whether the protocol is synchronous (0) or asynchronous (1).
+            '''
       type: "logic [NAlerts-1:0]",
       default: "${async_on}",
       local: "true"

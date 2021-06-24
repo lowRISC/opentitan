@@ -18,6 +18,13 @@
   interrupt_list: [
     { name: "wakeup", desc: "Wake from low power state. See wake info for more details" },
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
 
   // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [

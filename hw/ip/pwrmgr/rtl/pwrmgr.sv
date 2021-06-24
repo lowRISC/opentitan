@@ -7,8 +7,12 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
-(
+module pwrmgr
+  import pwrmgr_pkg::*;
+  import pwrmgr_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   // Clocks and resets
   input clk_slow_i,
   input clk_i,
@@ -18,6 +22,10 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // AST interface
   input  pwr_ast_rsp_t pwr_ast_i,
@@ -142,6 +150,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ///  Register module
   ////////////////////////////
 
+  logic [NumAlerts-1:0] alert_test, alerts;
   logic low_power_hint;
   logic lowpwr_cfg_wen;
   logic clr_hint;
@@ -155,7 +164,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
 
@@ -174,6 +183,31 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   end
 
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
+
+  ////////////////////////////
+  ///  alerts
+  ////////////////////////////
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////////////////
   ///  cdc handling
@@ -431,6 +465,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid     )
   `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready     )
+  `ASSERT_KNOWN(AlertsKnownO_A,    alert_tx_o       )
   `ASSERT_KNOWN(AstKnownO_A,       pwr_ast_o        )
   `ASSERT_KNOWN(RstKnownO_A,       pwr_rst_o        )
   `ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )

@@ -27,6 +27,8 @@ module tb;
 
   pwrmgr_if pwrmgr_if(clk, rst_n, clk_slow, rst_slow_n);
 
+ `DV_ALERT_IF_CONNECT
+
   // dut
   pwrmgr dut (
     .clk_i                (clk       ),
@@ -36,6 +38,9 @@ module tb;
 
     .tl_i                 (tl_if.h2d),
     .tl_o                 (tl_if.d2h),
+
+    .alert_rx_i           (alert_rx),
+    .alert_tx_o           (alert_tx),
 
     .pwr_ast_i            (pwrmgr_if.pwr_ast_rsp),
     .pwr_ast_o            (pwrmgr_if.pwr_ast_req),
