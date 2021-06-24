@@ -169,15 +169,15 @@ module otbn
   logic [1:0] unused_imem_addr_core_wordbits;
   assign unused_imem_addr_core_wordbits = imem_addr_core[1:0];
 
-  otp_ctrl_pkg::otbn_key_t   otbn_imem_scramble_key;
-  otp_ctrl_pkg::otbn_nonce_t otbn_imem_scramble_nonce;
-  logic                      otbn_imem_scramble_valid;
-  logic                      otbn_imem_scramble_key_seed_valid;
+  otp_ctrl_pkg::otbn_key_t otbn_imem_scramble_key;
+  otbn_imem_nonce_t        otbn_imem_scramble_nonce;
+  logic                    otbn_imem_scramble_valid;
+  logic                    unused_otbn_imem_scramble_key_seed_valid;
 
-  otp_ctrl_pkg::otbn_key_t   otbn_dmem_scramble_key;
-  otp_ctrl_pkg::otbn_nonce_t otbn_dmem_scramble_nonce;
-  logic                      otbn_dmem_scramble_valid;
-  logic                      otbn_dmem_scramble_key_seed_valid;
+  otp_ctrl_pkg::otbn_key_t otbn_dmem_scramble_key;
+  otbn_dmem_nonce_t        otbn_dmem_scramble_nonce;
+  logic                    otbn_dmem_scramble_valid;
+  logic                    unused_otbn_dmem_scramble_key_seed_valid;
 
   otbn_scramble_ctrl #(
     .RndCnstOtbnKey   (RndCnstOtbnKey),
@@ -195,12 +195,12 @@ module otbn
     .otbn_dmem_scramble_key_o            (otbn_dmem_scramble_key           ),
     .otbn_dmem_scramble_nonce_o          (otbn_dmem_scramble_nonce         ),
     .otbn_dmem_scramble_valid_o          (otbn_dmem_scramble_valid         ),
-    .otbn_dmem_scramble_key_seed_valid_o (otbn_dmem_scramble_key_seed_valid),
+    .otbn_dmem_scramble_key_seed_valid_o (unused_otbn_dmem_scramble_key_seed_valid),
 
     .otbn_imem_scramble_key_o            (otbn_imem_scramble_key           ),
     .otbn_imem_scramble_nonce_o          (otbn_imem_scramble_nonce         ),
     .otbn_imem_scramble_valid_o          (otbn_imem_scramble_valid         ),
-    .otbn_imem_scramble_key_seed_valid_o (otbn_imem_scramble_key_seed_valid),
+    .otbn_imem_scramble_key_seed_valid_o (unused_otbn_imem_scramble_key_seed_valid),
 
     .otbn_dmem_scramble_new_req_i (1'b0),
     .otbn_imem_scramble_new_req_i (1'b0)
