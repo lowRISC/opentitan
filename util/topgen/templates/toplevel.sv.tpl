@@ -330,6 +330,10 @@ module top_${top["name"]} #(
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
+    // alert hooksup
+    .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
+    .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
+    .recov_core_event_o   (rv_core_ibex_recov_core_event),
 
     // dft bypass
     .scan_rst_ni,

@@ -8,7 +8,7 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex #(
+module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -71,7 +71,12 @@ module rv_core_ibex #(
 
   // dft bypass
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+
+  // alert events to peripheral module
+  output alert_event_t fatal_intg_event_o,
+  output alert_event_t fatal_core_event_o,
+  output alert_event_t recov_core_event_o
 );
 
   import top_pkg::*;
@@ -140,6 +145,14 @@ module rv_core_ibex #(
   logic [31:0] rvfi_mem_wdata;
 `endif
 
+  // integrity errors and core alert events
+  logic ibus_intg_err, dbus_intg_err;
+  logic alert_minor, alert_major;
+
+  assign fatal_intg_event_o = (ibus_intg_err | dbus_intg_err) ? EventOn : EventOff;
+  assign fatal_core_event_o = alert_major ? EventOn : EventOff;
+  assign recov_core_event_o = alert_minor ? EventOn : EventOff;
+
   // Escalation receiver that converts differential
   // protocol into single ended signal.
   logic esc_irq_nm;
@@ -164,13 +177,6 @@ module rv_core_ibex #(
     .d_i(esc_irq_nm),
     .q_o(irq_nm)
   );
-
-  // Alert outputs
-  // TODO - Wire these up once driven
-  logic alert_minor, alert_major;
-  logic unused_alert_minor, unused_alert_major;
-  assign unused_alert_minor = alert_minor;
-  assign unused_alert_major = alert_major;
 
   lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
   prim_lc_sync u_lc_sync (
@@ -281,7 +287,6 @@ module rv_core_ibex #(
   //
   // Convert ibex data/instruction bus to TL-UL
   //
-
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs)
   ) tl_adapter_host_i_ibex (
@@ -297,7 +302,7 @@ module rv_core_ibex #(
     .valid_o    (instr_rvalid),
     .rdata_o    (instr_rdata),
     .err_o      (instr_err),
-    .intg_err_o (),
+    .intg_err_o (ibus_intg_err),
     .tl_o       (tl_i_ibex2fifo),
     .tl_i       (tl_i_fifo2ibex)
   );
@@ -334,7 +339,7 @@ module rv_core_ibex #(
     .valid_o    (data_rvalid),
     .rdata_o    (data_rdata),
     .err_o      (data_err),
-    .intg_err_o (),
+    .intg_err_o (dbus_intg_err),
     .tl_o       (tl_d_ibex2fifo),
     .tl_i       (tl_d_fifo2ibex)
   );
