@@ -191,6 +191,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_core_ibex/lint/{tool}"
              },
+             {    name: rv_core_ibex_peri
+                  fusesoc_core: lowrisc:ip:rv_core_ibex_peri
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_core_ibex/lint/{tool}"
+             },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

@@ -208,7 +208,28 @@
           name:    "ram_cfg",
           act:     "rcv",
           package: "prim_ram_1p_pkg"
-        }
+        },
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "fatal_intg_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "fatal_core_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "recov_core_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
       ],
     }
     { name: "rv_dm",
@@ -596,7 +617,14 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
-    }
+    },
+    { name: "rv_core_ibex_peri",
+      type: "rv_core_ibex_peri",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x411F0000",
+    },
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -957,6 +985,12 @@
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
 
+      // rv core ibex peripheral connections
+      'rv_core_ibex.fatal_intg_event' : ['rv_core_ibex_peri.fatal_intg_event'],
+      'rv_core_ibex.fatal_core_event' : ['rv_core_ibex_peri.fatal_core_event'],
+      'rv_core_ibex.recov_core_event' : ['rv_core_ibex_peri.recov_core_event'],
+
+      // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
     }
 
