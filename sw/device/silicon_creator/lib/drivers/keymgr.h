@@ -16,6 +16,59 @@ extern "C" {
 #endif
 
 /**
+ * Key Manager states.
+ */
+typedef enum keymgr_state {
+  /**
+   * Key manager control is still in reset. Please wait for initialization
+   * complete before issuing operations
+   */
+  kKeymgrStateReset,
+  /**
+   * Key manager control has finished initialization and will now accept
+   * software commands.
+   */
+  kKeymgrStateInit,
+  /**
+   * Key manager control currently contains the creator root key.
+   */
+  kKeymgrStateCreatorRootKey,
+  /**
+   * Key manager control currently contains the owner intermediate key.
+   */
+  kKeymgrStateOwnerIntermediateKey,
+  /**
+   * Key manager control currently contains the owner key.
+   */
+  kKeymgrStateOwnerKey,
+  /**
+   * Key manager currently disabled. Please reset the key manager. Sideload keys
+   * are still valid.
+   */
+  kKeymgrStateDisabled,
+  /**
+   * Key manager currently invalid. Please reset the key manager. Sideload keys
+   * are no longer valid.
+   */
+  kKeymgrStateInvalid,
+  /**
+   * This is not a state - it is the total number of states.
+   */
+  kKeymgrStateNumStates,
+} keymgr_state_t;
+
+/**
+ * Sets the key manager inputs.
+ *
+ * @param binding_value Software binding value from the manifest of the next
+ * stage.
+ * @param max_key_version Maximum key version from the manifest of the next
+ * stage.
+ */
+void keymgr_set_next_stage_inputs(const keymgr_binding_value_t *binding_value,
+                                  uint32_t max_key_version);
+
+/**
  * Initializes the key manager.
  *
  * Initializes the key manager `entropy_reseed_interval` and advances the state
@@ -31,29 +84,25 @@ extern "C" {
 rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
 
 /**
- * Advances the state of the key manager to Creator Root Key state.
+ * Advances the state of the key manager.
  *
- * This operation is non-blocking to allow the software to continue with other
- * operations while the key manager is advancing its state. The caller is
- * responsible for calling the `keymgr_state_creator_check()` at a later time
- * to ensure the advance transition completed without errors.
+ * The `keymgr_check_state()` function must be called before this function to
+ * ensure the key manager is in the expected state and ready to receive op
+ * commands.
  *
- * @param binding_value Software binding value extracted from the ROM_EXT
- * manifest.
- * @param max_key_version Maximum key version extracted from the ROM_EXT
- * manifest.
- * @return The result of the operation.
+ * The caller is responsible for calling the `keymgr_check_state()` at a later
+ * time to ensure the advance transition completed without errors.
  */
-rom_error_t keymgr_state_advance_to_creator(
-    const keymgr_binding_value_t *binding_value, uint32_t max_key_version);
+void keymgr_advance_state(void);
 
 /**
  * Checks the state of the key manager.
  *
- * @return `kErrorOk` if the key manager is in Creator Root Key state and the
- * status is idle of success; otherwise retuns `kErrorKeymgrInternal`.
+ * @param expected_state Expected key manager state.
+ * @return `kErrorOk` if the key manager is in `expected_state` and the status
+ * is idle or success; otherwise returns `kErrorKeymgrInternal`.
  */
-rom_error_t keymgr_state_creator_check(void);
+rom_error_t keymgr_check_state(keymgr_state_t expected_state);
 
 #ifdef __cplusplus
 }
