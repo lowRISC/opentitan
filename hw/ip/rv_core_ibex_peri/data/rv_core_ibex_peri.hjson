@@ -1,0 +1,156 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "RV_CORE_IBEX_PERI",
+  clock_primary: "clk_i",
+  other_clock_list: [ ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  interrupt_list: [],
+  alert_list: [
+    { name: "fatal_sw_err",
+      desc: "Software triggered alert for fatal faults",
+    },
+    { name: "recov_sw_err",
+      desc: "Software triggered Alert for recoverable faults",
+    },
+    { name: "fatal_hw_err",
+      desc: "Ibex core triggered alert for fatal faults, including integrity faults",
+    },
+    { name: "recov_hw_err",
+      desc: "Ibex core triggered alert for recoverable faults",
+    },
+  ],
+
+  inter_signal_list: [
+    { struct:  "alert_event",
+      type:    "uni",
+      name:    "fatal_intg_event",
+      act:     "rcv",
+      package: "rv_core_ibex_peri_pkg",
+    },
+
+    { struct:  "alert_event",
+      type:    "uni",
+      name:    "fatal_core_event",
+      act:     "rcv",
+      package: "rv_core_ibex_peri_pkg",
+    },
+
+    { struct:  "alert_event",
+      type:    "uni",
+      name:    "recov_core_event",
+      act:     "rcv",
+      package: "rv_core_ibex_peri_pkg",
+    },
+
+  ],
+  param_list: [
+    { name: "NumSwAlerts",
+      desc: "Number of software triggerable alerts",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+  ],
+
+  regwidth: "32",
+  registers: [
+    { multireg: {
+        cname: "SW_ALERTS_REGWEN",
+        name: "SW_ALERT_REGWEN",
+        desc: "Software alert regwen.",
+        count: "NumSwAlerts",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Software alert write-enable.  Once set to 0, it can longer be configured to 1",
+            enum: [
+              { value: "0",
+                name: "Software alert locked",
+                desc: '''
+                        Software alert can no longer be configured until next reset.
+                        '''
+              },
+              { value: "1",
+                name: "Software alert enabled",
+                desc: '''
+                        Software alert can still be configured.
+                        '''
+              },
+                ]
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SW_ALERTS",
+        name: "SW_ALERT",
+        regwen: "SW_ALERT_REGWEN",
+        regwen_multi: true,
+        desc: '''
+                Software trigger alerts.
+                When set to 1, triggers an alert to the alert handler
+        ''',
+        count: "NumSwAlerts",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "1:0",
+            name: "VAL",
+            desc: '''
+                    Software alert trigger value.
+                    Any value NOT 1 will trigger an alert.
+            ''',
+            resval: "1"
+          },
+        ],
+      },
+    },
+
+    { name: "ERR_STATUS",
+      desc: "error status",
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "REG_INTG_ERR",
+          resval: "0x0"
+          desc: '''
+            rv_core_ibex_peri detected a register transmission integrity error
+          '''
+        },
+        { bits: "8",
+          name: "FATAL_INTG_ERR",
+          resval: "0x0"
+          desc: '''
+            rv_core_ibex detected a response integrity error
+          '''
+        },
+        { bits: "9",
+          name: "FATAL_CORE_ERR",
+          resval: "0x0"
+          desc: '''
+            rv_core_ibex detected a fatal internal error
+          '''
+        },
+        { bits: "10",
+          name: "RECOV_CORE_ERR",
+          resval: "0x0"
+          desc: '''
+            rv_core_ibex detected a recoverable internal error
+          '''
+        },
+      ]
+    },
+  ],
+}
