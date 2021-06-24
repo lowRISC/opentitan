@@ -13,6 +13,7 @@ package rom_ctrl_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import rom_ctrl_regs_ral_pkg::*;
+  import rom_ctrl_rom_ral_pkg::*;
   import kmac_app_agent_pkg::*;
   import mem_bkdr_util_pkg::*;
 
