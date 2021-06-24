@@ -57,7 +57,7 @@
   input lc_tx_t scanmode_i,
 
   // idle hints
-  input [4:0] idle_i,
+  input [3:0] idle_i,
 
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
@@ -561,26 +561,27 @@
   // clock target
   ////////////////////////////////////////////////////
 
-  logic clk_main_aes_hint;
-  logic clk_main_aes_en;
-  logic clk_main_hmac_hint;
-  logic clk_main_hmac_en;
-  logic clk_main_kmac_hint;
-  logic clk_main_kmac_en;
-  logic clk_main_otbn_hint;
-  logic clk_main_otbn_en;
-  logic clk_io_div4_otbn_hint;
-  logic clk_io_div4_otbn_en;
+  logic aes_hint;
+  logic aes_en;
+  logic hmac_hint;
+  logic hmac_en;
+  logic kmac_hint;
+  logic kmac_en;
+  logic otbn_hint;
+  logic otbn_en;
 
-  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[Aes];
+  assign aes_en = aes_hint | ~idle_i[Aes];
+  assign hmac_en = hmac_hint | ~idle_i[Hmac];
+  assign kmac_en = kmac_hint | ~idle_i[Kmac];
+  assign otbn_en = otbn_hint | ~idle_i[Otbn];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_aes_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .q_o(clk_main_aes_hint)
+    .d_i(reg2hw.clk_hints.aes_hint.q),
+    .q_o(aes_hint)
   );
 
   lc_tx_t clk_main_aes_scanmode;
@@ -598,20 +599,18 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_aes_en & clk_main_en),
+    .en_i(aes_en & clk_main_en),
     .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_aes)
   );
-
-  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[Hmac];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_hmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .q_o(clk_main_hmac_hint)
+    .d_i(reg2hw.clk_hints.hmac_hint.q),
+    .q_o(hmac_hint)
   );
 
   lc_tx_t clk_main_hmac_scanmode;
@@ -629,20 +628,18 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_hmac_en & clk_main_en),
+    .en_i(hmac_en & clk_main_en),
     .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_hmac)
   );
-
-  assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[Kmac];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_kmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_kmac_hint.q),
-    .q_o(clk_main_kmac_hint)
+    .d_i(reg2hw.clk_hints.kmac_hint.q),
+    .q_o(kmac_hint)
   );
 
   lc_tx_t clk_main_kmac_scanmode;
@@ -660,20 +657,18 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_kmac_en & clk_main_en),
+    .en_i(kmac_en & clk_main_en),
     .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_kmac)
   );
-
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[Otbn];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_otbn_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
-    .q_o(clk_main_otbn_hint)
+    .d_i(reg2hw.clk_hints.otbn_hint.q),
+    .q_o(otbn_hint)
   );
 
   lc_tx_t clk_main_otbn_scanmode;
@@ -691,20 +686,18 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_otbn_en & clk_main_en),
+    .en_i(otbn_en & clk_main_en),
     .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_otbn)
   );
-
-  assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[Otbn];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_io_div4_otbn_hint_sync (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .d_i(reg2hw.clk_hints.clk_io_div4_otbn_hint.q),
-    .q_o(clk_io_div4_otbn_hint)
+    .d_i(reg2hw.clk_hints.otbn_hint.q),
+    .q_o(otbn_hint)
   );
 
   lc_tx_t clk_io_div4_otbn_scanmode;
@@ -722,23 +715,21 @@
     .NoFpgaGate(1'b1)
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
-    .en_i(clk_io_div4_otbn_en & clk_io_div4_en),
+    .en_i(otbn_en & clk_io_div4_en),
     .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_otbn)
   );
 
 
   // state readback
-  assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_aes_val.d = clk_main_aes_en;
-  assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_hmac_val.d = clk_main_hmac_en;
-  assign hw2reg.clk_hints_status.clk_main_kmac_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_kmac_val.d = clk_main_kmac_en;
-  assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
-  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
+  assign hw2reg.clk_hints_status.aes_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.aes_val.d = aes_en;
+  assign hw2reg.clk_hints_status.hmac_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.hmac_val.d = hmac_en;
+  assign hw2reg.clk_hints_status.kmac_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.kmac_val.d = kmac_en;
+  assign hw2reg.clk_hints_status.otbn_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.otbn_val.d = otbn_en;
 
   assign jitter_en_o = reg2hw.jitter_enable.q;
 

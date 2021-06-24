@@ -515,7 +515,7 @@ module top_earlgrey #(
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
-  logic [4:0] clkmgr_aon_idle;
+  logic [3:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;

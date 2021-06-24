@@ -54,7 +54,7 @@ srcs = clks_attr['srcs']
   input lc_tx_t scanmode_i,
 
   // idle hints
-  input [${len(hint_clks)-1}:0] idle_i,
+  input [${len(hint_blocks)-1}:0] idle_i,
 
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
@@ -341,21 +341,28 @@ srcs = clks_attr['srcs']
   // clock target
   ////////////////////////////////////////////////////
 
-% for k in hint_clks:
+% for k in hint_blocks:
   logic ${k}_hint;
   logic ${k}_en;
 % endfor
 
-% for k,v in hint_clks.items():
-  assign ${k}_en = ${k}_hint | ~idle_i[${v["name"].capitalize()}];
+% for k in hint_blocks:
+  assign ${k}_en = ${k}_hint | ~idle_i[${k.capitalize()}];
+% endfor
 
+% for k,v in hint_clks.items():
+<%
+    block_name = v['name']
+    hint_signal = f'{block_name}_hint'
+    en_signal = f'{block_name}_en'
+%>\
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_hint_sync (
     .clk_i(clk_${v["src"]}_i),
     .rst_ni(rst_${v["src"]}_ni),
-    .d_i(reg2hw.clk_hints.${k}_hint.q),
-    .q_o(${k}_hint)
+    .d_i(reg2hw.clk_hints.${hint_signal}.q),
+    .q_o(${hint_signal})
   );
 
   lc_tx_t ${k}_scanmode;
@@ -373,7 +380,7 @@ srcs = clks_attr['srcs']
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
     .clk_i(clk_${v["src"]}_root),
-    .en_i(${k}_en & clk_${v["src"]}_en),
+    .en_i(${en_signal} & clk_${v["src"]}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
@@ -381,7 +388,7 @@ srcs = clks_attr['srcs']
 % endfor
 
   // state readback
-% for k,v in hint_clks.items():
+% for k in hint_blocks:
   assign hw2reg.clk_hints_status.${k}_val.de = 1'b1;
   assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
 % endfor

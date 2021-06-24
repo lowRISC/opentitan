@@ -142,7 +142,7 @@
       name:    "idle",
       act:     "rcv",
       package: "",
-      width:   "5"
+      width:   "4"
     },
   ],
 
@@ -267,47 +267,38 @@
       fields: [
         {
           bits: "0",
-          name: "CLK_MAIN_AES_HINT",
+          name: "AES_HINT",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_AES can be disabled.
-            1 CLK_MAIN_AES is enabled.
+            0: AES can be disabled.
+            1: AES is enabled.
           '''
         }
         {
           bits: "1",
-          name: "CLK_MAIN_HMAC_HINT",
+          name: "HMAC_HINT",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_HMAC can be disabled.
-            1 CLK_MAIN_HMAC is enabled.
+            0: HMAC can be disabled.
+            1: HMAC is enabled.
           '''
         }
         {
           bits: "2",
-          name: "CLK_MAIN_KMAC_HINT",
+          name: "KMAC_HINT",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_KMAC can be disabled.
-            1 CLK_MAIN_KMAC is enabled.
+            0: KMAC can be disabled.
+            1: KMAC is enabled.
           '''
         }
         {
           bits: "3",
-          name: "CLK_MAIN_OTBN_HINT",
+          name: "OTBN_HINT",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_OTBN can be disabled.
-            1 CLK_MAIN_OTBN is enabled.
-          '''
-        }
-        {
-          bits: "4",
-          name: "CLK_IO_DIV4_OTBN_HINT",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV4_OTBN can be disabled.
-            1 CLK_IO_DIV4_OTBN is enabled.
+            0: OTBN can be disabled.
+            1: OTBN is enabled.
           '''
         }
       ]
@@ -327,47 +318,38 @@
       fields: [
         {
           bits: "0",
-          name: "CLK_MAIN_AES_VAL",
+          name: "AES_VAL",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_AES is disabled.
-            1 CLK_MAIN_AES is enabled.
+            0: AES is disabled.
+            1: AES is enabled.
           '''
         }
         {
           bits: "1",
-          name: "CLK_MAIN_HMAC_VAL",
+          name: "HMAC_VAL",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_HMAC is disabled.
-            1 CLK_MAIN_HMAC is enabled.
+            0: HMAC is disabled.
+            1: HMAC is enabled.
           '''
         }
         {
           bits: "2",
-          name: "CLK_MAIN_KMAC_VAL",
+          name: "KMAC_VAL",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_KMAC is disabled.
-            1 CLK_MAIN_KMAC is enabled.
+            0: KMAC is disabled.
+            1: KMAC is enabled.
           '''
         }
         {
           bits: "3",
-          name: "CLK_MAIN_OTBN_VAL",
+          name: "OTBN_VAL",
           resval: 1,
           desc: '''
-            0 CLK_MAIN_OTBN is disabled.
-            1 CLK_MAIN_OTBN is enabled.
-          '''
-        }
-        {
-          bits: "4",
-          name: "CLK_IO_DIV4_OTBN_VAL",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV4_OTBN is disabled.
-            1 CLK_IO_DIV4_OTBN is enabled.
+            0: OTBN is disabled.
+            1: OTBN is enabled.
           '''
         }
       ]

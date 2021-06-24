@@ -48,56 +48,49 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_main_aes_hint;
+    } aes_hint;
     struct packed {
       logic        q;
-    } clk_main_hmac_hint;
+    } hmac_hint;
     struct packed {
       logic        q;
-    } clk_main_kmac_hint;
+    } kmac_hint;
     struct packed {
       logic        q;
-    } clk_main_otbn_hint;
-    struct packed {
-      logic        q;
-    } clk_io_div4_otbn_hint;
+    } otbn_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_aes_val;
+    } aes_val;
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_hmac_val;
+    } hmac_val;
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_kmac_val;
+    } kmac_val;
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_otbn_val;
-    struct packed {
-      logic        d;
-      logic        de;
-    } clk_io_div4_otbn_val;
+    } otbn_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [15:14]
-    clkmgr_reg2hw_extclk_sel_reg_t extclk_sel; // [13:10]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [9:9]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [8:5]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [4:0]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [14:13]
+    clkmgr_reg2hw_extclk_sel_reg_t extclk_sel; // [12:9]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [8:8]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [7:4]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [3:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [9:0]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [7:0]
   } clkmgr_hw2reg_t;
 
   // Register offsets

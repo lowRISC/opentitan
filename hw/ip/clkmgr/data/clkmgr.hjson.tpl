@@ -130,7 +130,7 @@ num_grps = len(grps)
       name:    "idle",
       act:     "rcv",
       package: "",
-      width:   "${len(hint_clks)}"
+      width:   "${len(hint_blocks)}"
     },
   ],
 
@@ -228,14 +228,14 @@ num_grps = len(grps)
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks:
+% for block in hint_blocks:
         {
           bits: "${loop.index}",
-          name: "${clk.upper()}_HINT",
+          name: "${block.upper()}_HINT",
           resval: 1,
           desc: '''
-            0 ${clk.upper()} can be disabled.
-            1 ${clk.upper()} is enabled.
+            0: ${block.upper()} can be disabled.
+            1: ${block.upper()} is enabled.
           '''
         }
 % endfor
@@ -254,14 +254,14 @@ num_grps = len(grps)
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-% for clk in hint_clks.keys():
+% for block in hint_blocks:
         {
           bits: "${loop.index}",
-          name: "${clk.upper()}_VAL",
+          name: "${block.upper()}_VAL",
           resval: 1,
           desc: '''
-            0 ${clk.upper()} is disabled.
-            1 ${clk.upper()} is enabled.
+            0: ${block.upper()} is disabled.
+            1: ${block.upper()} is enabled.
           '''
         }
 % endfor

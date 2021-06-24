@@ -2644,12 +2644,12 @@
           struct: logic
           type: uni
           act: rcv
-          width: 5
+          width: 4
           inst_name: clkmgr_aon
           default: ""
           package: ""
-          end_idx: 4
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: clkmgr_aon_idle
           index: -1
         }
@@ -13633,12 +13633,12 @@
         struct: logic
         type: uni
         act: rcv
-        width: 5
+        width: 4
         inst_name: clkmgr_aon
         default: ""
         package: ""
-        end_idx: 4
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: clkmgr_aon_idle
         index: -1
       }
@@ -17434,9 +17434,9 @@
         package: ""
         struct: logic
         signame: clkmgr_aon_idle
-        width: 5
+        width: 4
         type: uni
-        end_idx: 4
+        end_idx: -1
         act: rcv
         suffix: ""
         default: "'0"

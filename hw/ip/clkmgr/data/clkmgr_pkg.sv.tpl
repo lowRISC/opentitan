@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 clks_attr = cfg['clocks']
 grps = clks_attr['groups']
-num_hints = len(hint_clks)
+num_hints = len(hint_blocks)
 %>
 
 package clkmgr_pkg;
