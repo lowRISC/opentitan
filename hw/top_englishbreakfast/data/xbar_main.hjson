@@ -89,10 +89,6 @@
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       inst_type: "rv_plic",
-      addr_range: [{
-        base_addr: "0x40090000",
-        size_byte: "0x1000",
-        }],
       pipeline_byp: "false"
     },
     { name:      "sram_ctrl_main",
