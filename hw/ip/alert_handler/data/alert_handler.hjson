@@ -38,25 +38,28 @@
     }
     // Normal parameters
     { name: "NAlerts",
-      desc: "Number of peripheral inputs",
+      desc: "Number of alert channels.",
       type: "int",
       default: "4",
       local: "true"
     },
     { name: "EscCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the escalation timer.",
       type: "int",
       default: "32",
       local: "true"
     },
     { name: "AccuCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the accumulation counter.",
       type: "int",
       default: "16",
       local: "true"
     },
     { name: "AsyncOn",
-      desc: "Number of peripheral outputs",
+      desc: '''
+            Each bit of this parameter corresponds to an escalation channel and
+            defines whether the protocol is synchronous (0) or asynchronous (1).
+            '''
       type: "logic [NAlerts-1:0]",
       default: "'0",
       local: "true"

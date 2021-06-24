@@ -16,6 +16,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(pwrmgr_reg_block));
   virtual pwrmgr_if pwrmgr_vif;
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
   endfunction
 
