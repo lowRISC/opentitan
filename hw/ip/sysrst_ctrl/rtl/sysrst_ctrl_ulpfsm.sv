@@ -5,7 +5,7 @@
 // Description sysrst_ctrl ULP FSM module
 
 module sysrst_ctrl_ulpfsm #(
-  parameter EDGE_TYPE = "H", // can be LH, HL and H
+  parameter bit [15:0] EDGE_TYPE = "H", // can be LH, HL and H
   parameter int unsigned TIMERBIT = 16
   ) (
   input                clk_aon_i,
