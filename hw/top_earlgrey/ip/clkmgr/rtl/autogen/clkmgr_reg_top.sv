@@ -104,6 +104,8 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
+  logic alert_test_wd;
   logic extclk_sel_regwen_we;
   logic extclk_sel_regwen_qs;
   logic extclk_sel_regwen_wd;
@@ -140,6 +142,22 @@ module clkmgr_reg_top (
   logic clk_hints_status_clk_io_div4_otbn_val_qs;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
+    .qs     ()
+  );
+
+
   // R[extclk_sel_regwen]: V(False)
 
   prim_subreg #(
@@ -593,15 +611,16 @@ module clkmgr_reg_top (
 
 
 
-  logic [5:0] addr_hit;
+  logic [6:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == CLKMGR_EXTCLK_SEL_REGWEN_OFFSET);
-    addr_hit[1] = (reg_addr == CLKMGR_EXTCLK_SEL_OFFSET);
-    addr_hit[2] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
-    addr_hit[3] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
-    addr_hit[4] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
-    addr_hit[5] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
+    addr_hit[1] = (reg_addr == CLKMGR_EXTCLK_SEL_REGWEN_OFFSET);
+    addr_hit[2] = (reg_addr == CLKMGR_EXTCLK_SEL_OFFSET);
+    addr_hit[3] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
+    addr_hit[4] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
+    addr_hit[5] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
+    addr_hit[6] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -614,18 +633,22 @@ module clkmgr_reg_top (
                (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be))) |
                (addr_hit[3] & (|(CLKMGR_PERMIT[3] & ~reg_be))) |
                (addr_hit[4] & (|(CLKMGR_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(CLKMGR_PERMIT[5] & ~reg_be)))));
+               (addr_hit[5] & (|(CLKMGR_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(CLKMGR_PERMIT[6] & ~reg_be)))));
   end
-  assign extclk_sel_regwen_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign extclk_sel_regwen_we = addr_hit[1] & reg_we & !reg_error;
 
   assign extclk_sel_regwen_wd = reg_wdata[0];
-  assign extclk_sel_we = addr_hit[1] & reg_we & !reg_error;
+  assign extclk_sel_we = addr_hit[2] & reg_we & !reg_error;
 
   assign extclk_sel_wd = reg_wdata[3:0];
-  assign jitter_enable_we = addr_hit[2] & reg_we & !reg_error;
+  assign jitter_enable_we = addr_hit[3] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[0];
-  assign clk_enables_we = addr_hit[3] & reg_we & !reg_error;
+  assign clk_enables_we = addr_hit[4] & reg_we & !reg_error;
 
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
 
@@ -634,7 +657,7 @@ module clkmgr_reg_top (
   assign clk_enables_clk_io_peri_en_wd = reg_wdata[2];
 
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
-  assign clk_hints_we = addr_hit[4] & reg_we & !reg_error;
+  assign clk_hints_we = addr_hit[5] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -651,25 +674,29 @@ module clkmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = extclk_sel_regwen_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[3:0] = extclk_sel_qs;
+        reg_rdata_next[0] = extclk_sel_regwen_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = jitter_enable_qs;
+        reg_rdata_next[3:0] = extclk_sel_qs;
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = jitter_enable_qs;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
         reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
         reg_rdata_next[2] = clk_enables_clk_io_peri_en_qs;
         reg_rdata_next[3] = clk_enables_clk_usb_peri_en_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
@@ -677,7 +704,7 @@ module clkmgr_reg_top (
         reg_rdata_next[4] = clk_hints_clk_io_div4_otbn_hint_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;

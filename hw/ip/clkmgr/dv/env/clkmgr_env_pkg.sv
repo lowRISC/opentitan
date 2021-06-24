@@ -29,6 +29,10 @@ package clkmgr_env_pkg;
   localparam int  NUM_PERI = 4;
   localparam int  NUM_TRANS = 4;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   // types
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {PeriDiv4, PeriDiv2, PeriIo, PeriUsb} peri_e;
