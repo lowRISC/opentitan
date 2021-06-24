@@ -19,7 +19,7 @@ RTL           | [IP_INSTANTIABLE][]            | Done        |
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
 RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
-Code Quality  | [LINT_SETUP][]                 | Not started |
+Code Quality  | [LINT_SETUP][]                 | Done        |
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
