@@ -207,7 +207,7 @@ module lc_ctrl_fsm
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Clock mux state. If we are in RAW, TEST* or RMA, it is permissibleo
+      // Clock mux state. If we are in RAW, TEST* or RMA, it is permissible
       // to switch to an external clock source. If the bypass request is
       // asserted, we have to wait until the clock mux and clock manager
       // have switched the mux and the clock divider. Also, we disable the

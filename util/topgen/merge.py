@@ -773,7 +773,7 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
 
         log.info("Adding alert from module %s" % ip["name"])
         # Note: we assume that all alerts are asynchronous in order to make the
-        # design a homogeneous and more amenable to DV automation and synthesis
+        # design homogeneous and more amenable to DV automation and synthesis
         # constraint scripting.
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
