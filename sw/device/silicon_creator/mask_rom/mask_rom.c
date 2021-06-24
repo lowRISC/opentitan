@@ -109,10 +109,6 @@ rom_error_t mask_rom_boot(void) {
   // for ( current_rom_ext_manifest in rom_ext_manifests_to_try(boot_policy) ) {
   // // Boot Policy Module
   while (true) {
-    // TODO: Should we load the entropy_reseed_interval from OTP?
-    const uint16_t reseed_interval = 0x100;
-    RETURN_IF_ERROR(keymgr_init(reseed_interval));
-
     // Check ROM_EXT Manifest (2.c.ii)
     // **Open Q:** Integration with Secure Boot Hardware
     // - Header Format (ROM_EXT Manifest Module)
@@ -163,8 +159,9 @@ rom_error_t mask_rom_boot(void) {
     // CreatorRootKey (2.c.iv)
     // - This is only allowed to be done if we have verified the signature on
     //   the current ROM_EXT.
-    RETURN_IF_ERROR(keymgr_state_advance_to_creator(&manifest->binding_value,
-                                                    manifest->max_key_version));
+    RETURN_IF_ERROR(keymgr_check_state(kKeymgrStateReset));
+    keymgr_set_next_stage_inputs(&manifest->binding_value,
+                                 manifest->max_key_version);
 
     // Lock down Peripherals based on descriptors in ROM_EXT manifest.
     // - This does not cover key-related lockdown, which is done in
@@ -175,12 +172,6 @@ rom_error_t mask_rom_boot(void) {
     // **Open Q:** Integration with Secure Boot Hardware
     // **Open Q:** Do we need to prevent access to Mask ROM after final jump?
     // pmp_unlock_rom_ext(); // Hardened Jump Module.
-
-    // TODO(#6653): The keymgr lands in a disabled state with error code 0xe.
-    // RETURN_IF_ERROR(keymgr_state_creator_check());
-    if (keymgr_state_creator_check() != kErrorOk) {
-      base_printf("ERROR keymgr: Failed to reach creator state.\n");
-    }
 
     // Transfer Execution to ROM_EXT (2.c.vi)
     // **Open Q:** Integration with Secure Boot Hardware
