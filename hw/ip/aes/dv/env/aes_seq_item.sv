@@ -190,9 +190,9 @@ class aes_seq_item extends uvm_sequence_item;
     end
 
     if (ret_clean) begin
-      return ((&key_vld[0] & &key_vld[1]) || ~(|key_vld[0] | |key_vld[1]));
+      return ((&key_vld[0] && &key_vld[1]) || ~(|key_vld[0] || |key_vld[1]));
     end else begin
-      return (&key_vld[0] & &key_vld[1]);
+      return (&key_vld[0] && &key_vld[1]);
     end
   endfunction // key_clean
 
@@ -224,28 +224,28 @@ class aes_seq_item extends uvm_sequence_item;
     case(mode)
       AES_ECB: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b",
-                   key_vld[0], key_vld[1], &key_vld[0] & &key_vld[1]), UVM_MEDIUM)
-        return (&key_vld[0] & &key_vld[1]);
+                   key_vld[0], key_vld[1], &key_vld[0] && &key_vld[1]), UVM_MEDIUM)
+        return (&key_vld[0] && &key_vld[1]);
       end
       AES_CBC: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
-                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
-        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       AES_CFB: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b a",
-                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       AES_OFB: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
-                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
-        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
-                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
-        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
