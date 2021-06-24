@@ -14,7 +14,13 @@
 
 
 
-  module clkmgr import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; (
+  module clkmgr
+    import clkmgr_pkg::*;
+    import clkmgr_reg_pkg::*;
+    import lc_ctrl_pkg::lc_tx_t;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   // Primary module control clocks and resets
   // This drives the register interface
   input clk_i,
@@ -38,6 +44,10 @@
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // pwrmgr interface
   input pwrmgr_pkg::pwr_clk_req_t pwr_i,
@@ -71,6 +81,7 @@
   // Register Interface
   ////////////////////////////////////////////////////
 
+  logic [NumAlerts-1:0] alert_test, alerts;
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
@@ -81,10 +92,34 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(alerts[0]),
     .devmode_i(1'b1)
   );
 
+  ////////////////////////////////////////////////////
+  // Alerts
+  ////////////////////////////////////////////////////
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -727,6 +762,7 @@
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
   `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
