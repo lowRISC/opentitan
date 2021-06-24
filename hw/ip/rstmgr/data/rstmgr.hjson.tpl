@@ -76,11 +76,15 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
-    { struct:  "rstmgr_cpu",
+    { struct:  "logic",
       type:    "uni",
-      name:    "cpu",
+      name:    "rst_cpu_n",
       act:     "rcv",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ndmreset_req",
+      act:     "rcv",
     },
 
     { struct:  "alert_crashdump",

@@ -69,15 +69,15 @@ tl_device_t xbar_devices[$] = '{
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
 % for host in host_dev_map.keys():
-    '{"${host}", ${loop.index}, '{
+    '{"${host.replace('.', '__')}", ${loop.index}, '{
 <%
   host_devices = host_dev_map[host];
 %>\
   % for device in host_devices:
     % if loop.last:
-        "${device}"}}
+        "${device.replace('.', '__')}"}}
     % else:
-        "${device}",
+        "${device.replace('.', '__')}",
     % endif
   % endfor
   % if loop.last:

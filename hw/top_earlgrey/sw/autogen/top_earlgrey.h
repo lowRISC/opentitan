@@ -566,6 +566,42 @@ extern "C" {
 #define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for regs device on rv_dm in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_DM_REGS_BASE_ADDR 0x41200000u
+
+/**
+ * Peripheral size for regs device on rv_dm in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RV_DM_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_RV_DM_REGS_BASE_ADDR + TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for rom device on rv_dm in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_DM_ROM_BASE_ADDR 0x10000u
+
+/**
+ * Peripheral size for rom device on rv_dm in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RV_DM_ROM_BASE_ADDR and
+ * `TOP_EARLGREY_RV_DM_ROM_BASE_ADDR + TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for rv_plic in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1132,20 +1168,21 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSensorCtrlAon = 23, /**< sensor_ctrl_aon */
   kTopEarlgreyAlertPeripheralSramCtrlRetAon = 24, /**< sram_ctrl_ret_aon */
   kTopEarlgreyAlertPeripheralFlashCtrl = 25, /**< flash_ctrl */
-  kTopEarlgreyAlertPeripheralRvPlic = 26, /**< rv_plic */
-  kTopEarlgreyAlertPeripheralAes = 27, /**< aes */
-  kTopEarlgreyAlertPeripheralHmac = 28, /**< hmac */
-  kTopEarlgreyAlertPeripheralKmac = 29, /**< kmac */
-  kTopEarlgreyAlertPeripheralKeymgr = 30, /**< keymgr */
-  kTopEarlgreyAlertPeripheralCsrng = 31, /**< csrng */
-  kTopEarlgreyAlertPeripheralEntropySrc = 32, /**< entropy_src */
-  kTopEarlgreyAlertPeripheralEdn0 = 33, /**< edn0 */
-  kTopEarlgreyAlertPeripheralEdn1 = 34, /**< edn1 */
-  kTopEarlgreyAlertPeripheralSramCtrlMain = 35, /**< sram_ctrl_main */
-  kTopEarlgreyAlertPeripheralOtbn = 36, /**< otbn */
-  kTopEarlgreyAlertPeripheralRomCtrl = 37, /**< rom_ctrl */
-  kTopEarlgreyAlertPeripheralRvCoreIbexPeri = 38, /**< rv_core_ibex_peri */
-  kTopEarlgreyAlertPeripheralLast = 38, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralRvDm = 26, /**< rv_dm */
+  kTopEarlgreyAlertPeripheralRvPlic = 27, /**< rv_plic */
+  kTopEarlgreyAlertPeripheralAes = 28, /**< aes */
+  kTopEarlgreyAlertPeripheralHmac = 29, /**< hmac */
+  kTopEarlgreyAlertPeripheralKmac = 30, /**< kmac */
+  kTopEarlgreyAlertPeripheralKeymgr = 31, /**< keymgr */
+  kTopEarlgreyAlertPeripheralCsrng = 32, /**< csrng */
+  kTopEarlgreyAlertPeripheralEntropySrc = 33, /**< entropy_src */
+  kTopEarlgreyAlertPeripheralEdn0 = 34, /**< edn0 */
+  kTopEarlgreyAlertPeripheralEdn1 = 35, /**< edn1 */
+  kTopEarlgreyAlertPeripheralSramCtrlMain = 36, /**< sram_ctrl_main */
+  kTopEarlgreyAlertPeripheralOtbn = 37, /**< otbn */
+  kTopEarlgreyAlertPeripheralRomCtrl = 38, /**< rom_ctrl */
+  kTopEarlgreyAlertPeripheralRvCoreIbexPeri = 39, /**< rv_core_ibex_peri */
+  kTopEarlgreyAlertPeripheralLast = 39, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -1201,28 +1238,29 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 43, /**< flash_ctrl_recov_mp_err */
   kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 44, /**< flash_ctrl_recov_ecc_err */
   kTopEarlgreyAlertIdFlashCtrlFatalIntgErr = 45, /**< flash_ctrl_fatal_intg_err */
-  kTopEarlgreyAlertIdRvPlicFatalFault = 46, /**< rv_plic_fatal_fault */
-  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 47, /**< aes_recov_ctrl_update_err */
-  kTopEarlgreyAlertIdAesFatalFault = 48, /**< aes_fatal_fault */
-  kTopEarlgreyAlertIdHmacFatalFault = 49, /**< hmac_fatal_fault */
-  kTopEarlgreyAlertIdKmacFatalFault = 50, /**< kmac_fatal_fault */
-  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 51, /**< keymgr_fatal_fault_err */
-  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 52, /**< keymgr_recov_operation_err */
-  kTopEarlgreyAlertIdCsrngFatalAlert = 53, /**< csrng_fatal_alert */
-  kTopEarlgreyAlertIdEntropySrcRecovAlert = 54, /**< entropy_src_recov_alert */
-  kTopEarlgreyAlertIdEntropySrcFatalAlert = 55, /**< entropy_src_fatal_alert */
-  kTopEarlgreyAlertIdEdn0FatalAlert = 56, /**< edn0_fatal_alert */
-  kTopEarlgreyAlertIdEdn1FatalAlert = 57, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 58, /**< sram_ctrl_main_fatal_intg_error */
-  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 59, /**< sram_ctrl_main_fatal_parity_error */
-  kTopEarlgreyAlertIdOtbnFatal = 60, /**< otbn_fatal */
-  kTopEarlgreyAlertIdOtbnRecov = 61, /**< otbn_recov */
-  kTopEarlgreyAlertIdRomCtrlFatal = 62, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdRvCoreIbexPeriFatalSwErr = 63, /**< rv_core_ibex_peri_fatal_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriRecovSwErr = 64, /**< rv_core_ibex_peri_recov_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriFatalHwErr = 65, /**< rv_core_ibex_peri_fatal_hw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriRecovHwErr = 66, /**< rv_core_ibex_peri_recov_hw_err */
-  kTopEarlgreyAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdRvDmFatalFault = 46, /**< rv_dm_fatal_fault */
+  kTopEarlgreyAlertIdRvPlicFatalFault = 47, /**< rv_plic_fatal_fault */
+  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 48, /**< aes_recov_ctrl_update_err */
+  kTopEarlgreyAlertIdAesFatalFault = 49, /**< aes_fatal_fault */
+  kTopEarlgreyAlertIdHmacFatalFault = 50, /**< hmac_fatal_fault */
+  kTopEarlgreyAlertIdKmacFatalFault = 51, /**< kmac_fatal_fault */
+  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 52, /**< keymgr_fatal_fault_err */
+  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 53, /**< keymgr_recov_operation_err */
+  kTopEarlgreyAlertIdCsrngFatalAlert = 54, /**< csrng_fatal_alert */
+  kTopEarlgreyAlertIdEntropySrcRecovAlert = 55, /**< entropy_src_recov_alert */
+  kTopEarlgreyAlertIdEntropySrcFatalAlert = 56, /**< entropy_src_fatal_alert */
+  kTopEarlgreyAlertIdEdn0FatalAlert = 57, /**< edn0_fatal_alert */
+  kTopEarlgreyAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
+  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 59, /**< sram_ctrl_main_fatal_intg_error */
+  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 60, /**< sram_ctrl_main_fatal_parity_error */
+  kTopEarlgreyAlertIdOtbnFatal = 61, /**< otbn_fatal */
+  kTopEarlgreyAlertIdOtbnRecov = 62, /**< otbn_recov */
+  kTopEarlgreyAlertIdRomCtrlFatal = 63, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdRvCoreIbexPeriFatalSwErr = 64, /**< rv_core_ibex_peri_fatal_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriRecovSwErr = 65, /**< rv_core_ibex_peri_recov_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriFatalHwErr = 66, /**< rv_core_ibex_peri_fatal_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriRecovHwErr = 67, /**< rv_core_ibex_peri_recov_hw_err */
+  kTopEarlgreyAlertIdLast = 67, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1232,7 +1270,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[67];
+    top_earlgrey_alert_for_peripheral[68];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

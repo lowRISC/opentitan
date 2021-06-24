@@ -38,6 +38,8 @@ module rv_core_ibex
   // Clock domain for escalation receiver
   input  logic        clk_esc_i,
   input  logic        rst_esc_ni,
+  // Reset feedback to rstmgr
+  output logic        rst_cpu_n_o,
 
   input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
@@ -159,6 +161,9 @@ module rv_core_ibex
   assign fatal_intg_event_o = (ibus_intg_err | dbus_intg_err) ? EventOn : EventOff;
   assign fatal_core_event_o = alert_major ? EventOn : EventOff;
   assign recov_core_event_o = alert_minor ? EventOn : EventOff;
+
+  // Reset feedback to clkmgr
+  assign rst_cpu_n_o = rst_ni;
 
   // Escalation receiver that converts differential
   // protocol into single ended signal.

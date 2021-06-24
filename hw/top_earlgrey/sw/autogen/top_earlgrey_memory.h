@@ -272,6 +272,20 @@
  */
 #define TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000
 /**
+ * Peripheral base address for regs device on rv_dm in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_DM_REGS_BASE_ADDR 0x41200000
+/**
+ * Peripheral base address for rom device on rv_dm in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_DM_ROM_BASE_ADDR 0x10000
+/**
  * Peripheral base address for rv_plic in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
