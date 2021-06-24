@@ -311,6 +311,26 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for regs device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_BASE_ADDR = 32'h41200000;
+
+  /**
+   * Peripheral size in bytes for regs device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for rom device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_BASE_ADDR = 32'h10000;
+
+  /**
+   * Peripheral size in bytes for rom device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for rv_plic in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h41010000;

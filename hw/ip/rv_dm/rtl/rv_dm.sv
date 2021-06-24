@@ -12,32 +12,42 @@
 
 `include "prim_assert.sv"
 
-module rv_dm #(
-  parameter int               NrHarts = 1,
-  parameter logic [31:0]      IdcodeValue = 32'h 0000_0001
+module rv_dm
+  import rv_dm_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter logic [31:0]          IdcodeValue  = 32'h 0000_0001
 ) (
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
-                                          // here, not the system reset
-  input  lc_ctrl_pkg::lc_tx_t hw_debug_en_i,
+                                           // here, not the system reset
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t scanmode_i,
   input                       scan_rst_ni,
-  output logic                ndmreset_o,  // non-debug module reset
+  output logic                ndmreset_req_o,  // non-debug module reset
   output logic                dmactive_o,  // debug module is active
   output logic [NrHarts-1:0]  debug_req_o, // async debug request
   input  logic [NrHarts-1:0]  unavailable_i, // communicate whether the hart is unavailable
-                                            // (e.g.: power down)
+                                             // (e.g.: power down)
+
+  // bus device for comportable CSR access
+  input  tlul_pkg::tl_h2d_t  regs_tl_d_i,
+  output tlul_pkg::tl_d2h_t  regs_tl_d_o,
 
   // bus device with debug memory, for an execution based technique
-  input  tlul_pkg::tl_h2d_t  tl_d_i,
-  output tlul_pkg::tl_d2h_t  tl_d_o,
+  input  tlul_pkg::tl_h2d_t  rom_tl_d_i,
+  output tlul_pkg::tl_d2h_t  rom_tl_d_o,
 
   // bus host, for system bus accesses
-  output tlul_pkg::tl_h2d_t  tl_h_o,
-  input  tlul_pkg::tl_d2h_t  tl_h_i,
+  output tlul_pkg::tl_h2d_t  sba_tl_h_o,
+  input  tlul_pkg::tl_d2h_t  sba_tl_h_i,
 
-  input  jtag_pkg::jtag_req_t jtag_req_i,
-  output jtag_pkg::jtag_rsp_t jtag_rsp_o
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
+  input  jtag_pkg::jtag_req_t jtag_i,
+  output jtag_pkg::jtag_rsp_t jtag_o
 );
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
@@ -46,6 +56,59 @@ module rv_dm #(
   localparam int BusWidth = 32;
   // all harts have contiguous IDs
   localparam logic [NrHarts-1:0] SelectableHarts = {NrHarts{1'b1}};
+
+  // CSR Nodes
+  tlul_pkg::tl_h2d_t rom_tl_win_h2d;
+  tlul_pkg::tl_d2h_t rom_tl_win_d2h;
+  rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
+  logic regs_intg_error, rom_intg_error;
+
+  rv_dm_regs_reg_top u_reg_regs (
+    .clk_i,
+    .rst_ni,
+    .tl_i      (regs_tl_d_i    ),
+    .tl_o      (regs_tl_d_o    ),
+    .reg2hw    (regs_reg2hw    ),
+    .intg_err_o(regs_intg_error),
+    .devmode_i (1'b1           )
+  );
+
+  rv_dm_rom_reg_top u_reg_rom (
+    .clk_i,
+    .rst_ni,
+    .tl_i      (rom_tl_d_i    ),
+    .tl_o      (rom_tl_d_o    ),
+    .tl_win_o  (rom_tl_win_h2d),
+    .tl_win_i  (rom_tl_win_d2h),
+    .intg_err_o(rom_intg_error),
+    .devmode_i (1'b1          )
+  );
+
+  // Alerts
+  logic [NumAlerts-1:0] alert_test, alerts;
+
+  assign alerts[0] = regs_intg_error | rom_intg_error;
+
+  assign alert_test = {
+    regs_reg2hw.alert_test.q &
+    regs_reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   // Debug CSRs
   dm::hartinfo_t [NrHarts-1:0]      hartinfo;
@@ -121,7 +184,7 @@ module rv_dm #(
     .dmi_resp_valid_o        ( dmi_rsp_valid         ),
     .dmi_resp_ready_i        ( dmi_rsp_ready         ),
     .dmi_resp_o              ( dmi_rsp               ),
-    .ndmreset_o              ( ndmreset_o            ),
+    .ndmreset_o              ( ndmreset_req_o        ),
     .dmactive_o              ( dmactive_o            ),
     .hartsel_o               ( hartsel               ),
     .hartinfo_i              ( hartinfo              ),
@@ -214,8 +277,8 @@ module rv_dm #(
     .rdata_o      (host_r_rdata),
     .err_o        (host_r_err),
     .intg_err_o   (),
-    .tl_o         (tl_h_o),
-    .tl_i         (tl_h_i)
+    .tl_o         (sba_tl_h_o),
+    .tl_i         (sba_tl_h_i)
   );
 
   // DBG doesn't handle error responses so raise assertion if we see one
@@ -288,7 +351,7 @@ module rv_dm #(
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_clock_mux2 (
-    .clk0_i(jtag_req_i.tck),
+    .clk0_i(jtag_i.tck),
     .clk1_i(clk_i),
     .sel_i (testmode),
     .clk_o (tck_muxed)
@@ -297,7 +360,7 @@ module rv_dm #(
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_rst_n_mux2 (
-    .clk0_i(jtag_req_i.trst_n),
+    .clk0_i(jtag_i.trst_n),
     .clk1_i(scan_rst_ni),
     .sel_i (testmode),
     .clk_o (trst_n_muxed)
@@ -322,28 +385,28 @@ module rv_dm #(
 
     //JTAG
     .tck_i            (tck_muxed),
-    .tms_i            (jtag_req_i.tms),
+    .tms_i            (jtag_i.tms),
     .trst_ni          (trst_n_muxed),
-    .td_i             (jtag_req_i.tdi),
-    .td_o             (jtag_rsp_o.tdo),
-    .tdo_oe_o         (jtag_rsp_o.tdo_oe)
+    .td_i             (jtag_i.tdi),
+    .td_o             (jtag_o.tdo),
+    .tdo_oe_o         (jtag_o.tdo_oe)
   );
 `endif
 
 
   tlul_pkg::tl_instr_en_e en_ifetch;
-  lc_ctrl_pkg::lc_tx_t [0:0] hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_hw_debug_en;
 
   prim_lc_sync #(
     .NumCopies(1)
   ) u_lc_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(hw_debug_en_i),
-    .lc_en_o(hw_debug_en)
+    .lc_en_i(lc_hw_debug_en_i),
+    .lc_en_o(lc_hw_debug_en)
   );
 
-  assign en_ifetch = (hw_debug_en == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
+  assign en_ifetch = (lc_hw_debug_en == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
@@ -366,8 +429,8 @@ module rv_dm #(
     .rvalid_i    (rvalid),
     .rerror_i    (2'b00),
 
-    .tl_o        (tl_d_o),
-    .tl_i        (tl_d_i)
+    .tl_o        (rom_tl_win_d2h),
+    .tl_i        (rom_tl_win_h2d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -378,18 +441,21 @@ module rv_dm #(
     end
   end
 
-  `ASSERT_KNOWN(TlDODValidKnown_A, tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlDOAReadyKnown_A, tl_d_o.a_ready)
+  `ASSERT_KNOWN(TlRegsDValidKnown_A, regs_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlRegsAReadyKnown_A, regs_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(TlHOAValidKnown_A, tl_h_o.a_valid)
-  `ASSERT_KNOWN(TlHODReadyKnown_A, tl_h_o.d_ready)
+  `ASSERT_KNOWN(TlRomDValidKnown_A, rom_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlRomAReadyKnown_A, rom_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_o)
+  `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
+  `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
+
+  `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
   `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
 
   // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
-  `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_rsp_o.tdo, !jtag_req_i.tck, !jtag_req_i.trst_n)
-  `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_rsp_o.tdo_oe, !jtag_req_i.tck, !jtag_req_i.trst_n)
+  `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
+  `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
 
 endmodule

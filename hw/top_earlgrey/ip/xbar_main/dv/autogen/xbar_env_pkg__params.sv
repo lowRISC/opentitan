@@ -7,14 +7,17 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
+    '{"rv_dm__regs", '{
+        '{32'h41200000, 32'h41200fff}
+    }},
+    '{"rv_dm__rom", '{
+        '{32'h00010000, 32'h00010fff}
+    }},
     '{"rom_ctrl__rom", '{
         '{32'h00008000, 32'h0000bfff}
     }},
     '{"rom_ctrl__regs", '{
         '{32'h411e0000, 32'h411e0fff}
-    }},
-    '{"debug_mem", '{
-        '{32'h1a110000, 32'h1a110fff}
     }},
     '{"ram_main", '{
         '{32'h10000000, 32'h1001ffff}
@@ -72,14 +75,15 @@ tl_device_t xbar_devices[$] = '{
 tl_host_t xbar_hosts[$] = '{
     '{"corei", 0, '{
         "rom_ctrl__rom",
-        "debug_mem",
+        "rv_dm__rom",
         "ram_main",
         "eflash"}}
     ,
     '{"cored", 1, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
-        "debug_mem",
+        "rv_dm__rom",
+        "rv_dm__regs",
         "ram_main",
         "eflash",
         "peri",
@@ -98,9 +102,10 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main",
         "rv_core_ibex_peri"}}
     ,
-    '{"dm_sba", 2, '{
+    '{"rv_dm__sba", 2, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
+        "rv_dm__regs",
         "ram_main",
         "eflash",
         "peri",

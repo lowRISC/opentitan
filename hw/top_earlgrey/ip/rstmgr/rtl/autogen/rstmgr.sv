@@ -42,7 +42,8 @@ module rstmgr
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
 
   // cpu related inputs
-  input rstmgr_cpu_t cpu_i,
+  input logic rst_cpu_n_i,
+  input logic ndmreset_req_i,
 
   // Interface to alert handler
   input alert_pkg::alert_crashdump_t alert_dump_i,
@@ -157,7 +158,7 @@ module rstmgr
   ) u_sync (
     .clk_i,
     .rst_ni(local_rst_n),
-    .d_i(cpu_i.ndmreset_req),
+    .d_i(ndmreset_req_i),
     .q_o(ndmreset_req_q)
   );
 
@@ -722,7 +723,7 @@ module rstmgr
   ) u_cpu_reset_synced (
     .clk_i,
     .rst_ni(local_rst_n),
-    .d_i(cpu_i.rst_cpu_n),
+    .d_i(rst_cpu_n_i),
     .q_o(rst_cpu_nq)
   );
 

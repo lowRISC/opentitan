@@ -19,12 +19,13 @@ initial force dut.rst_fixed_ni = rst_n;
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(corei, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(cored, dut, clk_main_i, rst_n)
-`CONNECT_TL_HOST_IF(dm_sba, dut, clk_main_i, rst_n)
+`CONNECT_TL_HOST_IF(rv_dm__sba, dut, clk_main_i, rst_n)
 
 // Device TileLink interface connections
+`CONNECT_TL_DEVICE_IF(rv_dm__regs, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(rv_dm__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__regs, dut, clk_main_i, rst_n)
-`CONNECT_TL_DEVICE_IF(debug_mem, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(ram_main, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(eflash, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)

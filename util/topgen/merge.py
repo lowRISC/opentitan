@@ -175,9 +175,7 @@ def elaborate_instance(instance, block: IpBlock):
 # TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {
     "corei": "rv_core_ibex",
-    "cored": "rv_core_ibex",
-    "dm_sba": "rv_dm",
-    "debug_mem": "rv_dm"
+    "cored": "rv_core_ibex"
 }
 
 
@@ -316,36 +314,7 @@ def xbar_adddevice(top: Dict[str, object],
         # case 2: predefined_modules (debug_mem, rv_plic)
         # TODO: Find configurable solution not from predefined but from object?
         if device in predefined_modules:
-            if device == "debug_mem":
-                if node is None:
-                    # Add new debug_mem
-                    xbar["nodes"].append({
-                        "name": "debug_mem",
-                        "type": "device",
-                        "clock": xbar['clock'],
-                        "reset": xbar['reset'],
-                        "inst_type": predefined_modules["debug_mem"],
-                        "addr_range": [OrderedDict([
-                            ("base_addr", top["debug_mem_base_addr"]),
-                            ("size_byte", "0x1000"),
-                        ])],
-                        "xbar": False,
-                        "stub": False,
-                        "pipeline": "true",
-                        "pipeline_byp": "true"
-                    })  # yapf: disable
-                else:
-                    # Update if exists
-                    node["inst_type"] = predefined_modules["debug_mem"]
-                    node["addr_range"] = [
-                        OrderedDict([("base_addr", top["debug_mem_base_addr"]),
-                                     ("size_byte", "0x1000")])
-                    ]
-                    node["xbar"] = False
-                    node["stub"] = False
-                    process_pipeline_var(node)
-            else:
-                log.error("device %s shouldn't be host type" % device)
+            log.error("device %s shouldn't be host type" % device)
 
             return
 

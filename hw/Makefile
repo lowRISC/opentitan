@@ -34,6 +34,7 @@ IPS ?= aes           \
        rom_ctrl      \
        rstmgr        \
        rv_core_ibex_peri \
+       rv_dm         \
        rv_plic       \
        rv_timer      \
        sensor_ctrl   \

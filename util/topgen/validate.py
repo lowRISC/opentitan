@@ -44,8 +44,6 @@ top_required = {
     'module': ['l', 'list of modules to instantiate'],
     'memory': ['l', 'list of memories. At least one memory '
                     'is needed to run the software'],
-    'debug_mem_base_addr': ['d', 'Base address of RV_DM. '
-                                 'Planned to move to module'],
     'xbar': ['l', 'List of the xbar used in the top'],
     'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
     'pinout': ['g', 'Pinout configuration'],
