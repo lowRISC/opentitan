@@ -393,4 +393,7 @@ package otbn_pkg;
     128'h14e8cecae3040d5e12286bb3cc113298;
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonceDefault =
     256'hf79780bc735f38434f47570613cabf6490f795a48be7a10d930e0fdd326df627;
+
+  typedef logic [319:0] otbn_dmem_nonce_t;
+  typedef logic [63:0]  otbn_imem_nonce_t;
 endpackage

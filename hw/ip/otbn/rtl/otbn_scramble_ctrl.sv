@@ -9,6 +9,7 @@
  * key interface is used to request a new key and nonce when they are requested.
  */
 module otbn_scramble_ctrl
+  import otbn_pkg::*;
 #(
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = otbn_pkg::RndCnstOtbnKeyDefault,
@@ -26,15 +27,15 @@ module otbn_scramble_ctrl
   output otp_ctrl_pkg::otbn_otp_key_req_t otbn_otp_key_o,
   input  otp_ctrl_pkg::otbn_otp_key_rsp_t otbn_otp_key_i,
 
-  output otp_ctrl_pkg::otbn_key_t   otbn_dmem_scramble_key_o,
-  output otp_ctrl_pkg::otbn_nonce_t otbn_dmem_scramble_nonce_o,
-  output logic                      otbn_dmem_scramble_valid_o,
-  output logic                      otbn_dmem_scramble_key_seed_valid_o,
+  output otp_ctrl_pkg::otbn_key_t otbn_dmem_scramble_key_o,
+  output otbn_dmem_nonce_t        otbn_dmem_scramble_nonce_o,
+  output logic                    otbn_dmem_scramble_valid_o,
+  output logic                    otbn_dmem_scramble_key_seed_valid_o,
 
-  output otp_ctrl_pkg::otbn_key_t   otbn_imem_scramble_key_o,
-  output otp_ctrl_pkg::otbn_nonce_t otbn_imem_scramble_nonce_o,
-  output logic                      otbn_imem_scramble_valid_o,
-  output logic                      otbn_imem_scramble_key_seed_valid_o,
+  output otp_ctrl_pkg::otbn_key_t otbn_imem_scramble_key_o,
+  output otbn_imem_nonce_t        otbn_imem_scramble_nonce_o,
+  output logic                    otbn_imem_scramble_valid_o,
+  output logic                    otbn_imem_scramble_key_seed_valid_o,
 
   input  logic otbn_dmem_scramble_new_req_i,
   input  logic otbn_imem_scramble_new_req_i
@@ -59,34 +60,37 @@ module otbn_scramble_ctrl
   logic dmem_key_nonce_en;
   logic imem_key_nonce_en;
 
-  otp_ctrl_pkg::otbn_key_t   dmem_key_q;
-  otp_ctrl_pkg::otbn_key_t   imem_key_q;
+  otp_ctrl_pkg::otbn_key_t dmem_key_q;
+  otp_ctrl_pkg::otbn_key_t imem_key_q;
 
-  otp_ctrl_pkg::otbn_nonce_t dmem_nonce_q, dmem_nonce_d;
-  otp_ctrl_pkg::otbn_nonce_t imem_nonce_q, imem_nonce_d;
+  otbn_dmem_nonce_t dmem_nonce_q;
+  otbn_imem_nonce_t imem_nonce_q;
 
   logic                      otp_key_req, otp_key_ack;
   otp_ctrl_pkg::otbn_key_t   otp_key;
   otp_ctrl_pkg::otbn_nonce_t otp_nonce;
   logic                      otp_key_seed_valid;
 
+  // TODO: Sort out nonce widths. OTP provides us with 256-bit nonce, we need 320-bit for dmem. We
+  // could reuse nonce bits or use a replicated PRINCE keystream so only 64 bits of nonce would be
+  // required. https://github.com/lowRISC/opentitan/issues/7054
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dmem_key_q   <= RndCnstOtbnKey;
-      dmem_nonce_q <= RndCnstOtbnNonce;
+      dmem_nonce_q <= {64'b0, RndCnstOtbnNonce};
     end else if (dmem_key_nonce_en) begin
       dmem_key_q   <= otp_key;
-      dmem_nonce_q <= otp_nonce;
+      dmem_nonce_q <= {64'b0, otp_nonce};
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       imem_key_q   <= RndCnstOtbnKey;
-      imem_nonce_q <= RndCnstOtbnNonce;
+      imem_nonce_q <= RndCnstOtbnNonce[63:0];
     end else if (imem_key_nonce_en) begin
       imem_key_q   <= otp_key;
-      imem_nonce_q <= otp_nonce;
+      imem_nonce_q <= otp_nonce[63:0];
     end
   end
 
@@ -124,7 +128,7 @@ module otbn_scramble_ctrl
     state_d                     = state_q;
     otp_key_req                 = 1'b0;
 
-    case (state_q)
+    unique case (state_q)
       ScrambleCtrlIdle: begin
         if (dmem_scramble_req_pending_q) begin
           otp_key_req      = 1'b1;
