@@ -13,7 +13,12 @@
 `include "prim_assert.sv"
 
 // This top level controller is fairly hardcoded right now, but will be switched to a template
-module rstmgr import rstmgr_pkg::*; (
+module rstmgr
+  import rstmgr_pkg::*;
+  import rstmgr_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   // Primary module clocks
   input clk_i,
   input rst_ni, // this is connected to the top level reset
@@ -27,6 +32,10 @@ module rstmgr import rstmgr_pkg::*; (
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // pwrmgr interface
   input pwrmgr_pkg::pwr_rst_req_t pwr_i,
@@ -95,6 +104,7 @@ module rstmgr import rstmgr_pkg::*; (
   logic local_rst_n;
   assign local_rst_n = resets_o.rst_por_io_div2_n[DomainAonSel];
 
+  logic [NumAlerts-1:0] alert_test, alerts;
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
@@ -105,9 +115,34 @@ module rstmgr import rstmgr_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(alerts[0]),
     .devmode_i(1'b1)
   );
+
+  ////////////////////////////////////////////////////
+  // Alerts                                         //
+  ////////////////////////////////////////////////////
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////////////////////////////////////////
   // Input handling                                 //
@@ -775,6 +810,7 @@ module rstmgr import rstmgr_pkg::*; (
   // output known asserts
   `ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
   `ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
+  `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
   `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
   `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
   `ASSERT_KNOWN(AstResetsKnownO_A, resets_ast_o )
