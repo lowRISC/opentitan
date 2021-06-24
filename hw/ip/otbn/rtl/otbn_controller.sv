@@ -123,6 +123,7 @@ module otbn_controller
   output logic rnd_prefetch_req_o,
   input  logic rnd_valid_i,
 
+  input  logic        insn_cnt_reset_i,
   output logic [31:0] insn_cnt_o
 );
   otbn_state_e state_q, state_d, state_raw;
@@ -350,8 +351,8 @@ module otbn_controller
     end
   end
 
-  assign insn_cnt_d = start_i ? 32'd0 : (insn_cnt_q + 32'd1);
-  assign insn_cnt_en = (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) | start_i;
+  assign insn_cnt_d = insn_cnt_reset_i ? 32'd0 : (insn_cnt_q + 32'd1);
+  assign insn_cnt_en = (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) | insn_cnt_reset_i;
   assign insn_cnt_o = insn_cnt_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
