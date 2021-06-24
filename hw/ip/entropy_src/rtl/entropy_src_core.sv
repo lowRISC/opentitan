@@ -1866,8 +1866,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign sfifo_observe_wdata = pfifo_postht_rdata;
 
-  assign sfifo_observe_pop = fw_ov_mode &&
-         (fw_ov_fifo_rd_pulse || ((ObserveFifoDepth-1) == sfifo_observe_depth));
+  assign sfifo_observe_pop =
+         (fw_ov_mode &&
+          (fw_ov_fifo_rd_pulse ||
+           ((Clog2ObserveFifoDepth+1)'(ObserveFifoDepth-1) == sfifo_observe_depth)));
 
   // fifo err
   assign sfifo_observe_err =
