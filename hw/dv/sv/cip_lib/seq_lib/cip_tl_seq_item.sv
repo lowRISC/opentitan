@@ -160,9 +160,7 @@ class cip_tl_seq_item extends tl_seq_item;
     tl_a_user_t exp_a_user = compute_a_user();
     tl_a_user_t act_a_user = tl_a_user_t'(a_user);
 
-    // TODO, #6887, dat_intg isn't implemented in design
-    // is_a_chan_intg_ok = act_a_user == exp_a_user;
-    is_a_chan_intg_ok = (act_a_user.cmd_intg == exp_a_user.cmd_intg);
+    is_a_chan_intg_ok = act_a_user == exp_a_user;
 
     if (!is_a_chan_intg_ok) begin
       string str = $sformatf("a_user act (%p) != exp (%p)", act_a_user, exp_a_user);

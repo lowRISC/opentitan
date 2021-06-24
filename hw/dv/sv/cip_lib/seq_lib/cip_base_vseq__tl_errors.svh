@@ -269,16 +269,17 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       end
       begin
         bit [BUS_DW-1:0] data = $urandom;
+        bit              write;
         tl_intg_err_e    tl_intg_err_type;
 
         #($urandom_range(10, 1000) * 1ns);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
-                                           tl_intg_err_type != TlIntgErrNone;
-                                           // TODO, #6887
-                                           // Data intg check hasn't been implemented in DUT
-                                           tl_intg_err_type != TlIntgErrData;)
+                                           tl_intg_err_type != TlIntgErrNone;)
+        // data integrity doesn't apply to read
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write,
+            tl_intg_err_type inside {TlIntgErrData, TlIntgErrBoth} -> write == 1;)
 
-        tl_access(.addr($urandom), .write($urandom_range(0, 1)), .data(data),
+        tl_access(.addr($urandom), .write(write), .data(data),
                   .tl_intg_err_type(tl_intg_err_type));
 
         `DV_CHECK_FATAL(cfg.tl_intg_alert_name inside {cfg.list_of_alerts}, $sformatf(
