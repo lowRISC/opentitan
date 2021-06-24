@@ -32,6 +32,7 @@ enum module_ {
   kModuleMaskRom = 0x524d,       // ASCII "MR".
   kModuleRomextimage = 0x4552,   // ASCII "RE".
   kModuleInterrupt = 0x5249,     // ASCII "IR".
+  kModuleEpmp = 0x5045,          // ASCII "EP",
 };
 
 /**
@@ -77,6 +78,7 @@ enum module_ {
   X(kErrorMaskRomBootFailed,          ERROR_(1, kModuleMaskRom, kFailedPrecondition)), \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
+  X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

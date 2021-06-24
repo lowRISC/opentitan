@@ -77,6 +77,29 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
   ),
 )
 
+# Silicon creator ePMP library.
+sw_silicon_creator_lib_epmp = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_epmp',
+    sources: [
+      'epmp.c',
+    ],
+  ),
+)
+
+# Silicon creator ePMP test utilities.
+sw_silicon_creator_lib_epmp_test_unlock = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_epmp_test_unlock',
+    sources: [
+      'epmp_test_unlock.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_epmp,
+    ],
+  ),
+)
+
 test('sw_silicon_creator_lib_shutdown_unittest', executable(
     'sw_silicon_creator_lib_shutdown_unittest',
     sources: [
