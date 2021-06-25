@@ -187,6 +187,8 @@ dif_kmac_result_t dif_kmac_configure(dif_kmac_t *kmac,
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_FAST_PROCESS_BIT,
                                  config.entropy_fast_process);
   cfg_reg =
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SIDELOAD_BIT, config.sideload);
+  cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_READY_BIT, entropy_ready);
   mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
 

@@ -155,6 +155,12 @@ typedef struct dif_kmac_config {
    * granularity.
    */
   bool output_big_endian;
+
+  /**
+   * Place kmac inside key sideload mode
+   */
+  bool sideload;
+
 } dif_kmac_config_t;
 
 /**
