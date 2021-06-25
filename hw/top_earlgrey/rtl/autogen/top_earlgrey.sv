@@ -283,6 +283,7 @@ module top_earlgrey #(
   // sram_ctrl_main
   // otbn
   // rom_ctrl
+  // rv_core_ibex_peri
 
 
   logic [179:0]  intr_vector;
@@ -538,6 +539,9 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
+  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_intg_event;
+  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_core_event;
+  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_recov_core_event;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic [4:0] pwrmgr_aon_wakeups;
@@ -576,6 +580,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
   tlul_pkg::tl_h2d_t       keymgr_tl_req;
   tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       rv_core_ibex_peri_tl_req;
+  tlul_pkg::tl_d2h_t       rv_core_ibex_peri_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
@@ -798,6 +804,10 @@ module top_earlgrey #(
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
+    // alert hooksup
+    .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
+    .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
+    .recov_core_event_o   (rv_core_ibex_recov_core_event),
 
     // dft bypass
     .scan_rst_ni,
@@ -2507,6 +2517,28 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
+  rv_core_ibex_peri #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:61])
+  ) u_rv_core_ibex_peri (
+      // [61]: fatal_sw_err
+      // [62]: recov_sw_err
+      // [63]: fatal_hw_err
+      // [64]: recov_hw_err
+      .alert_tx_o  ( alert_tx[64:61] ),
+      .alert_rx_i  ( alert_rx[64:61] ),
+
+      // Inter-module signals
+      .fatal_intg_event_i(rv_core_ibex_fatal_intg_event),
+      .fatal_core_event_i(rv_core_ibex_fatal_core_event),
+      .recov_core_event_i(rv_core_ibex_recov_core_event),
+      .tl_i(rv_core_ibex_peri_tl_req),
+      .tl_o(rv_core_ibex_peri_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_otbn_done, // IDs [179 +: 1]
@@ -2750,6 +2782,10 @@ module top_earlgrey #(
     // port: tl_keymgr
     .tl_keymgr_o(keymgr_tl_req),
     .tl_keymgr_i(keymgr_tl_rsp),
+
+    // port: tl_rv_core_ibex_peri
+    .tl_rv_core_ibex_peri_o(rv_core_ibex_peri_tl_req),
+    .tl_rv_core_ibex_peri_i(rv_core_ibex_peri_tl_rsp),
 
     // port: tl_sram_ctrl_main
     .tl_sram_ctrl_main_o(sram_ctrl_main_tl_req),

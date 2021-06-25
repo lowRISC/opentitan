@@ -141,6 +141,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_rv_core_ibex_peri"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_sram_ctrl_main"
       act:    "req"
       package: "tlul_pkg"

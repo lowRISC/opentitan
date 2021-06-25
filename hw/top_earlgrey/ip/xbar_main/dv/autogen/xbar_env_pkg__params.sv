@@ -61,6 +61,9 @@ tl_device_t xbar_devices[$] = '{
     '{"keymgr", '{
         '{32'h41130000, 32'h41130fff}
     }},
+    '{"rv_core_ibex_peri", '{
+        '{32'h411f0000, 32'h411f0fff}
+    }},
     '{"sram_ctrl_main", '{
         '{32'h411c0000, 32'h411c0fff}
 }}};
@@ -92,7 +95,8 @@ tl_host_t xbar_hosts[$] = '{
         "otbn",
         "keymgr",
         "kmac",
-        "sram_ctrl_main"}}
+        "sram_ctrl_main",
+        "rv_core_ibex_peri"}}
     ,
     '{"dm_sba", 2, '{
         "rom_ctrl__rom",
@@ -112,5 +116,6 @@ tl_host_t xbar_hosts[$] = '{
         "otbn",
         "keymgr",
         "kmac",
-        "sram_ctrl_main"}}
+        "sram_ctrl_main",
+        "rv_core_ibex_peri"}}
 };

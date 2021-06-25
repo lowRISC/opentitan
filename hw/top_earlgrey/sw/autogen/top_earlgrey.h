@@ -799,6 +799,24 @@ extern "C" {
  */
 #define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x4000u
 
+/**
+ * Peripheral base address for rv_core_ibex_peri in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR 0x411F0000u
+
+/**
+ * Peripheral size for rv_core_ibex_peri in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR and
+ * `TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES 0x1000u
+
 
 /**
  * Memory base address for ram_main in top earlgrey.
@@ -1125,7 +1143,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSramCtrlMain = 34, /**< sram_ctrl_main */
   kTopEarlgreyAlertPeripheralOtbn = 35, /**< otbn */
   kTopEarlgreyAlertPeripheralRomCtrl = 36, /**< rom_ctrl */
-  kTopEarlgreyAlertPeripheralLast = 36, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralRvCoreIbexPeri = 37, /**< rv_core_ibex_peri */
+  kTopEarlgreyAlertPeripheralLast = 37, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -1196,7 +1215,11 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdOtbnFatal = 58, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 59, /**< otbn_recov */
   kTopEarlgreyAlertIdRomCtrlFatal = 60, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdLast = 60, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdRvCoreIbexPeriFatalSwErr = 61, /**< rv_core_ibex_peri_fatal_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriRecovSwErr = 62, /**< rv_core_ibex_peri_recov_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriFatalHwErr = 63, /**< rv_core_ibex_peri_fatal_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexPeriRecovHwErr = 64, /**< rv_core_ibex_peri_recov_hw_err */
+  kTopEarlgreyAlertIdLast = 64, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1206,7 +1229,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[61];
+    top_earlgrey_alert_for_peripheral[65];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
