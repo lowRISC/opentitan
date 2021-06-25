@@ -175,7 +175,8 @@ This drop point will save on conditioner power, and still preserve `esfinal` FIF
 
 The above process will be repeated for as long as entropy bits are to be collected and processed.
 
-At any time, the `ENABLE` field can be cleared to halt the entropy generation (and health check testing) immediately.
+At any time, the `ENABLE` field can be cleared to halt the entropy generation (and health check testing).
+See the Programmers Guide section for more details on the ENTROPY_SRC block disable sequence.
 
 ## Block Diagram
 
@@ -234,11 +235,6 @@ The sub-state machines with smaller circles show more detail about how the large
 
 ![ENTROPY_SRC State Diagram](es_main_sm.svg)
 
-
-## Future Features
-
-- Timer to pace health checks only when there is no demand for entropy seeds
-- Support for golden test pattern
 
 ### Entropy Source Hardware Interface
 The following waveform shows an example of how the entropy source hardware interface works, which is much like a FIFO.
@@ -410,6 +406,15 @@ int entropy_src_entropy(unsigned int numEntropyBits) {
 
 Note that when software makes frequent re-seed requests to CSRNG, any stored up entropy seeds in the final entropy FIFO will quickly consumed.
 Once the FIFO is empty, subsequent entropy seed requests will have to wait the worst case latency time while new entropy is being created.
+
+
+## Entropy Source Module Disable
+
+A useful feature for the ENTROPY_SRC block is the ability to disable it in a graceful matter.
+Since there exists another feature to avoid power spikes between ENTROPY_SRC and CSRNG, software needs to monitor the disabling process.
+Bit 16 in the {{< regref "DEBUG_STATUS" >}} should be polled after the ENTROPY_SRC enable bits are cleared in the {{< regref "CONF" >}} register.
+After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
+
 
 ## Error conditions
 
