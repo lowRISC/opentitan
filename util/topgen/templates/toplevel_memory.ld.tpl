@@ -21,10 +21,13 @@ def memory_to_flags(memory):
 
 /**
  * Partial linker script for chip memory configuration.
+ * eflash virtual is a fixed address that does not physically exist but is used as the
+ * translation base
  */
 MEMORY {
   rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x4000
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor
+  eflash_virtual(rx) : ORIGIN = 0x80000000, LENGTH = 0x100000
 }

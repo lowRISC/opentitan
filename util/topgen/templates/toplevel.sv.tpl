@@ -334,7 +334,9 @@ module top_${top["name"]} #(
     .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
     .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
     .recov_core_event_o   (rv_core_ibex_recov_core_event),
-
+    // address translation configuration
+    .ibus_region_cfg_i    (rv_core_ibex_peri_ibus_region_cfg),
+    .dbus_region_cfg_i    (rv_core_ibex_peri_dbus_region_cfg),
     // dft bypass
     .scan_rst_ni,
     .scanmode_i
