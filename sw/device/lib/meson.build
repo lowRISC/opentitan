@@ -23,6 +23,20 @@ sw_lib_flash_ctrl = declare_dependency(
   )
 )
 
+# Temp ibex peri library (sw_lib_ibex)
+sw_lib_ibex = declare_dependency(
+  link_with: static_library(
+    'ibex_ot',
+    sources: [
+      hw_ip_ibex_reg_h,
+      'ibex_peri.c',
+    ],
+    dependencies: [
+      top_earlgrey,
+    ]
+  )
+)
+
 # PINMUX library (sw_lib_pinmux)
 sw_lib_pinmux = declare_dependency(
   link_with: static_library(
