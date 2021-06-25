@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "scrambled_ecc32_mem_area.h"
-#include "scramble_model.h"
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <sstream>
 
+#include "scramble_model.h"
 #include "sv_scoped.h"
 
 // This is the maximum width of a nonce that's supported by the code in
@@ -115,13 +115,15 @@ std::vector<uint8_t> ScrambledEcc32MemArea::GetScrambleNonce() const {
 }
 
 ScrambledEcc32MemArea::ScrambledEcc32MemArea(const std::string &scope,
-                                             uint32_t size, uint32_t width_32)
+                                             uint32_t size, uint32_t width_32,
+                                             bool repeat_keystream)
     : Ecc32MemArea(
           SVScoped::join_sv_scopes(
               scope, "u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic"),
           size, width_32),
       scr_scope_(scope) {
   addr_width_ = vbits(size);
+  repeat_keystream_ = repeat_keystream;
 }
 
 uint32_t ScrambledEcc32MemArea::GetPhysWidth() const {
@@ -133,7 +135,11 @@ uint32_t ScrambledEcc32MemArea::GetPhysWidthByte() const {
 }
 
 uint32_t ScrambledEcc32MemArea::GetPrinceReplications() const {
-  return (GetPhysWidthByte() + 7) / 8;
+  if (repeat_keystream_) {
+    return 1;
+  } else {
+    return (GetPhysWidthByte() + 7) / 8;
+  }
 }
 
 uint32_t ScrambledEcc32MemArea::GetNonceWidth() const {
@@ -157,7 +163,7 @@ void ScrambledEcc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
   // Scramble data with integrity
   scramble_buf = scramble_encrypt_data(
       scramble_buf, GetPhysWidth(), 39, AddrIntToBytes(dst_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey());
+      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
 
   // Copy scrambled data to write buffer
   std::copy(scramble_buf.begin(), scramble_buf.end(), &buf[0]);
@@ -171,7 +177,7 @@ void ScrambledEcc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
       std::vector<uint8_t>(buf, buf + GetPhysWidthByte());
   std::vector<uint8_t> unscrambled_data = scramble_decrypt_data(
       scrambled_data, GetPhysWidth(), 39, AddrIntToBytes(src_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey());
+      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
 
   // Strip integrity to give final result
   Ecc32MemArea::ReadBuffer(data, &unscrambled_data[0], src_word);

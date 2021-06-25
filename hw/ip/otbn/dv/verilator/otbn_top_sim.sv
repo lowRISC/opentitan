@@ -19,9 +19,8 @@ module otbn_top_sim (
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
   // Fixed key and nonce for scrambling in verilator environment
-  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
-  // 320-bit nonce has 0s in top bits as nonce from OTP is only 256-bit for now
-  localparam logic [319:0] TestScrambleNonce = 320'h19286173144131c12c2607f5e72aca1fb72adea0a4ff82b9f88c2578fa4cd123;
+  localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
 
   logic      otbn_done_d, otbn_done_q;
   err_bits_t otbn_err_bits_d, otbn_err_bits_q;
@@ -169,10 +168,11 @@ module otbn_top_sim (
   assign unused_dmem_addr = dmem_addr[DmemAddrWidth-DmemIndexWidth-1:0];
 
   prim_ram_1p_scr #(
-    .Width           ( ExtWLEN       ),
-    .Depth           ( DmemSizeWords ),
-    .DataBitsPerMask ( 39            ),
-    .EnableParity    ( 0             )
+    .Width              ( ExtWLEN       ),
+    .Depth              ( DmemSizeWords ),
+    .DataBitsPerMask    ( 39            ),
+    .EnableParity       ( 0             ),
+    .ReplicateKeyStream ( 1             )
   ) u_dmem (
     .clk_i        ( IO_CLK            ),
     .rst_ni       ( IO_RST_N          ),
@@ -224,7 +224,7 @@ module otbn_top_sim (
 
     .key_valid_i  ( 1'b1                    ),
     .key_i        ( TestScrambleKey         ),
-    .nonce_i      ( TestScrambleNonce[63:0] ),
+    .nonce_i      ( TestScrambleNonce       ),
 
     .init_seed_i  ( '0                      ),
     .init_req_i   ( 1'b0                    ),

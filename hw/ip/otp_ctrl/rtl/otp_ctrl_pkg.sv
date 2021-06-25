@@ -161,12 +161,12 @@ package otp_ctrl_pkg;
 
   parameter int FlashKeySeedWidth = 256;
   parameter int SramKeySeedWidth  = 128;
-  parameter int KeyMgrKeyWidth   = 256;
-  parameter int FlashKeyWidth    = 128;
-  parameter int SramKeyWidth     = 128;
-  parameter int SramNonceWidth   = 128;
-  parameter int OtbnKeyWidth     = 128;
-  parameter int OtbnNonceWidth   = 256;
+  parameter int KeyMgrKeyWidth    = 256;
+  parameter int FlashKeyWidth     = 128;
+  parameter int SramKeyWidth      = 128;
+  parameter int SramNonceWidth    = 128;
+  parameter int OtbnKeyWidth      = 128;
+  parameter int OtbnNonceWidth    = 64;
 
   typedef logic [SramKeyWidth-1:0]   sram_key_t;
   typedef logic [SramNonceWidth-1:0] sram_nonce_t;
