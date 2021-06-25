@@ -47,10 +47,31 @@
       package: "rv_core_ibex_peri_pkg",
     },
 
+    { struct:  "region_cfg",
+      type:    "uni",
+      name:    "ibus_region_cfg",
+      act:     "req",
+      package: "rv_core_ibex_peri_pkg",
+    },
+
+    { struct:  "region_cfg",
+      type:    "uni",
+      name:    "dbus_region_cfg",
+      act:     "req",
+      package: "rv_core_ibex_peri_pkg",
+    },
+
   ],
   param_list: [
     { name: "NumSwAlerts",
       desc: "Number of software triggerable alerts",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+
+    { name: "NumRegions",
+      desc: "Number of translatable regions per ibex bus",
       type: "int",
       default: "2",
       local: "true"
@@ -116,6 +137,230 @@
         ],
       },
     },
+
+    { multireg: {
+        cname: "IBUS_REGWEN",
+        name: "IBUS_REGWEN",
+        desc: "Ibus address control regwen.",
+        count: "NumRegions",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Ibus address controls write enable.  Once set to 0, it can longer be configured to 1",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: '''
+                        Address controls can no longer be configured until next reset.
+                        '''
+              },
+              { value: "1",
+                name: "enabled",
+                desc: '''
+                        Address controls can still be configured.
+                        '''
+              },
+            ]
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "IBUS_ADDR_CFG",
+        name: "IBUS_ADDR_EN",
+        regwen: "IBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          Enable Ibus address matching
+        ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+              Enable ibus address matching.
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "IBUS_ADDR_MATCHING",
+        name: "IBUS_ADDR_MATCHING",
+        regwen: "IBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          Matching region programming for ibus.
+
+          The value programmed is done at power-of-2 alignment.
+          For example, if the intended matching region is 0x8000_0000 to 0x8000_FFFF, the value programmed is 0x8000_7FFF.
+
+          The value programmed can be determined from the translation granule.
+          Assume the user wishes to translate a specific 64KB block to a different address.
+          64KB has a hex value of 0x10000.
+          Subtract 1 from this value and then right shift by one to obtain 0x7FFF.
+          This value OR'd with the upper matching address bits that select which 64KB block to translate would then be programmed.
+
+          Given a value of 0x8000_7FFF, it specifies that the 0x8000-th 64KB block is the translation target.
+        ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+              Matching region value
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "IBUS_REMAP_ADDR",
+        name: "IBUS_REMAP_ADDR",
+        regwen: "IBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          The remap address after a match has been made.
+          The remap bits apply only to top portion of address bits not covered by the matching region.
+
+          For example, if the translation region is 64KB, the remapped address applies only to the upper
+          address bits that select which 64KB to be translated.
+        ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+              Remap addr value
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "DBUS_REGWEN",
+        name: "DBUS_REGWEN",
+        desc: "Dbus address control regwen.",
+        count: "NumRegions",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Ibus address controls write enable.  Once set to 0, it can longer be configured to 1",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: '''
+                        Address controls can no longer be configured until next reset.
+                        '''
+              },
+              { value: "1",
+                name: "enabled",
+                desc: '''
+                        Address controls can still be configured.
+                        '''
+              },
+            ]
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "DBUS_ADDR_CFG",
+        name: "DBUS_ADDR_EN",
+        regwen: "DBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          Enable dbus address matching
+        ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+              Enable dbus address matching.
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "DBUS_ADDR_MATCHING",
+        name: "DBUS_ADDR_MATCHING",
+        regwen: "DBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          See !!IBUS_ADDR_MATCHING for detailed description.
+          ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+              Matching region value
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "DBUS_REMAP_ADDR",
+        name: "DBUS_REMAP_ADDR",
+        regwen: "DBUS_REGWEN",
+        regwen_multi: true,
+        desc: '''
+          See !!IBUS_REMAP_ADDR for a detailed description.
+        ''',
+        count: "NumRegions",
+        compact: false,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+              Remap addr value
+            ''',
+            resval: "0"
+          },
+        ],
+      },
+    },
+
 
     { name: "ERR_STATUS",
       desc: "error status",

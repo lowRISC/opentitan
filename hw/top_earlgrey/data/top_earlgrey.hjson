@@ -230,6 +230,20 @@
           act:     "req",
           package: "rv_core_ibex_peri_pkg",
         },
+
+        { struct:  "region_cfg",
+          type:    "uni",
+          name:    "ibus_region_cfg",
+          act:     "rcv",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "region_cfg",
+          type:    "uni",
+          name:    "dbus_region_cfg",
+          act:     "rcv",
+          package: "rv_core_ibex_peri_pkg",
+        },
       ],
     }
     { name: "rv_dm",
@@ -989,6 +1003,8 @@
       'rv_core_ibex.fatal_intg_event' : ['rv_core_ibex_peri.fatal_intg_event'],
       'rv_core_ibex.fatal_core_event' : ['rv_core_ibex_peri.fatal_core_event'],
       'rv_core_ibex.recov_core_event' : ['rv_core_ibex_peri.recov_core_event'],
+      'rv_core_ibex_peri.ibus_region_cfg' : ['rv_core_ibex.ibus_region_cfg'],
+      'rv_core_ibex_peri.dbus_region_cfg' : ['rv_core_ibex.dbus_region_cfg'],
 
       // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']

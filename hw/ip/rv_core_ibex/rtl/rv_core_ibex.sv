@@ -8,7 +8,10 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
+module rv_core_ibex
+  import rv_core_ibex_peri_pkg::*;
+  import rv_core_ibex_peri_reg_pkg::*;
+#(
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -76,7 +79,11 @@ module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
   // alert events to peripheral module
   output alert_event_t fatal_intg_event_o,
   output alert_event_t fatal_core_event_o,
-  output alert_event_t recov_core_event_o
+  output alert_event_t recov_core_event_o,
+
+  // configurations for address translation
+  input region_cfg_t [NumRegions-1:0] ibus_region_cfg_i,
+  input region_cfg_t [NumRegions-1:0] dbus_region_cfg_i
 );
 
   import top_pkg::*;
@@ -287,6 +294,18 @@ module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
   //
   // Convert ibex data/instruction bus to TL-UL
   //
+  logic [31:0] instr_addr_trans;
+  rv_core_addr_trans #(
+    .AddrWidth(32),
+    .NumRegions(NumRegions)
+  ) u_ibus_trans (
+    .clk_i,
+    .rst_ni,
+    .region_cfg_i(ibus_region_cfg_i),
+    .addr_i(instr_addr),
+    .addr_o(instr_addr_trans)
+  );
+
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs)
   ) tl_adapter_host_i_ibex (
@@ -295,7 +314,7 @@ module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
     .req_i      (instr_req),
     .type_i     (tlul_pkg::InstrType),
     .gnt_o      (instr_gnt),
-    .addr_i     (instr_addr),
+    .addr_i     (instr_addr_trans),
     .we_i       (1'b0),
     .wdata_i    (32'b0),
     .be_i       (4'hF),
@@ -324,6 +343,18 @@ module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
+  logic [31:0] data_addr_trans;
+  rv_core_addr_trans #(
+    .AddrWidth(32),
+    .NumRegions(NumRegions)
+  ) u_dbus_trans (
+    .clk_i,
+    .rst_ni,
+    .region_cfg_i(dbus_region_cfg_i),
+    .addr_i(data_addr),
+    .addr_o(data_addr_trans)
+  );
+
   tlul_adapter_host #(
     .MAX_REQS(2)
   ) tl_adapter_host_d_ibex (
@@ -332,7 +363,7 @@ module rv_core_ibex import rv_core_ibex_peri_pkg::*; #(
     .req_i      (data_req),
     .type_i     (tlul_pkg::DataType),
     .gnt_o      (data_gnt),
-    .addr_i     (data_addr),
+    .addr_i     (data_addr_trans),
     .we_i       (data_we),
     .wdata_i    (data_wdata),
     .be_i       (data_be),

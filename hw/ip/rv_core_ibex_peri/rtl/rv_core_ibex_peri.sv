@@ -25,6 +25,10 @@ module rv_core_ibex_peri
   input alert_event_t fatal_core_event_i,
   input alert_event_t recov_core_event_i,
 
+  // region configuration to ibex
+  output region_cfg_t [NumRegions-1:0] ibus_region_cfg_o,
+  output region_cfg_t [NumRegions-1:0] dbus_region_cfg_o,
+
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
@@ -45,6 +49,22 @@ module rv_core_ibex_peri
     .intg_err_o (intg_err),
     .devmode_i  (1'b1) // connect to real devmode signal in the future
   );
+
+  ///////////////////////
+  // Region assignments
+  ///////////////////////
+
+  for(genvar i = 0; i < NumRegions; i++) begin : gen_ibus_region_cfgs
+    assign ibus_region_cfg_o[i].en = reg2hw.ibus_addr_en[i];
+    assign ibus_region_cfg_o[i].matching_region = reg2hw.ibus_addr_matching[i];
+    assign ibus_region_cfg_o[i].remap_addr = reg2hw.ibus_remap_addr[i];
+  end
+
+  for(genvar i = 0; i < NumRegions; i++) begin : gen_dbus_region_cfgs
+    assign dbus_region_cfg_o[i].en = reg2hw.dbus_addr_en[i];
+    assign dbus_region_cfg_o[i].matching_region = reg2hw.dbus_addr_matching[i];
+    assign dbus_region_cfg_o[i].remap_addr = reg2hw.dbus_remap_addr[i];
+  end
 
   ///////////////////////
   // Error assignment
