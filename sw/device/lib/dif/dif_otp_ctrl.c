@@ -489,46 +489,46 @@ static const partition_info_t kPartitions[] = {
     // See #3904.
     [kDifOtpCtrlPartitionCreatorSwCfg] =
         {
-            .start_addr = 0,
-            .len = 0x300,
+            .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+            .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
             .align_mask = 0x3,
             .is_software = true,
         },
     [kDifOtpCtrlPartitionOwnerSwCfg] =
         {
-            .start_addr = 0x300,
-            .len = 0x300,
+            .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+            .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
             .align_mask = 0x3,
             .is_software = true,
         },
     [kDifOtpCtrlPartitionHwCfg] =
         {
-            .start_addr = 0x600,
-            .len = 0xb0,
+            .start_addr = OTP_CTRL_PARAM_HW_CFG_OFFSET,
+            .len = OTP_CTRL_PARAM_HW_CFG_SIZE,
             .align_mask = 0x3,
         },
     [kDifOtpCtrlPartitionSecret0] =
         {
-            .start_addr = 0x6b0,
-            .len = 0x28,
+            .start_addr = OTP_CTRL_PARAM_SECRET0_OFFSET,
+            .len = OTP_CTRL_PARAM_SECRET0_SIZE,
             .align_mask = 0x7,
         },
     [kDifOtpCtrlPartitionSecret1] =
         {
-            .start_addr = 0x6d8,
-            .len = 0x58,
+            .start_addr = OTP_CTRL_PARAM_SECRET1_OFFSET,
+            .len = OTP_CTRL_PARAM_SECRET1_SIZE,
             .align_mask = 0x7,
         },
     [kDifOtpCtrlPartitionSecret2] =
         {
-            .start_addr = 0x730,
-            .len = 0x58,
+            .start_addr = OTP_CTRL_PARAM_SECRET2_OFFSET,
+            .len = OTP_CTRL_PARAM_SECRET2_SIZE,
             .align_mask = 0x7,
         },
     [kDifOtpCtrlPartitionLifeCycle] =
         {
-            .start_addr = 0x7a8,
-            .len = 0x58,
+            .start_addr = OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET,
+            .len = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE,
             .align_mask = 0x3,
         },
 };
