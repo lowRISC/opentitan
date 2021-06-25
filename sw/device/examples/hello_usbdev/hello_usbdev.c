@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
             &spi) == kDifSpiDeviceOk);
   CHECK(dif_spi_device_configure(
             &spi, (dif_spi_device_config_t){
-                      .clock_polarity = kDifSpiDeviceEdgePositive,
-                      .data_phase = kDifSpiDeviceEdgeNegative,
+                      .clock_polarity = kDifSpiDeviceClockPositive,
+                      .clock_phase = kDifSpiDevicePhaseSampleLeading,
                       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
                       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
                       .rx_fifo_timeout = 63,
