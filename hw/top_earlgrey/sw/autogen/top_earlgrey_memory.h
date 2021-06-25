@@ -362,6 +362,13 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000
+/**
+ * Peripheral base address for rv_core_ibex_peri in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR 0x411F0000
 #endif  // __ASSEMBLER__
 
 #endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_

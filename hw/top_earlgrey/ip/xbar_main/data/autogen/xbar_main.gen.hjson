@@ -56,6 +56,7 @@
       keymgr
       kmac
       sram_ctrl_main
+      rv_core_ibex_peri
     ]
     dm_sba:
     [
@@ -77,6 +78,7 @@
       keymgr
       kmac
       sram_ctrl_main
+      rv_core_ibex_peri
     ]
   }
   nodes:
@@ -430,6 +432,24 @@
       [
         {
           base_addr: 0x41130000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: rv_core_ibex_peri
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: rv_core_ibex_peri
+      addr_range:
+      [
+        {
+          base_addr: 0x411f0000
           size_byte: 0x1000
         }
       ]

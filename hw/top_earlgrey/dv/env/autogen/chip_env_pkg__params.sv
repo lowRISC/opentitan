@@ -65,7 +65,11 @@ parameter string LIST_OF_ALERTS[] = {
   "sram_ctrl_main_fatal_parity_error",
   "otbn_fatal",
   "otbn_recov",
-  "rom_ctrl_fatal"
+  "rom_ctrl_fatal",
+  "rv_core_ibex_peri_fatal_sw_err",
+  "rv_core_ibex_peri_recov_sw_err",
+  "rv_core_ibex_peri_fatal_hw_err",
+  "rv_core_ibex_peri_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 61;
+parameter uint NUM_ALERTS = 65;
