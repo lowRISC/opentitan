@@ -82,6 +82,7 @@ Once the programming is confirmed, the life cycle controller reports a success t
 
 For conditional transitions, such as those that require a token (RAW_UNLOCK, TEST_UNLOCK, TEST_EXIT, RMA_UNLOCK), the life cycle controller advances the state via OTP programming only after it is supplied with the valid token.
 [Some tokens]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}) are hardcoded design constants, while others are stored in OTP.
+Note that conditional transitions will only be allowed if the OTP partition holding the corresponding token has been provisioned and locked.
 
 Since unlock tokens are considered secret, they are not stored in their raw form.
 Instead, the tokens are wrapped and unwrapped based on a global constant using a [PRESENT-based scrambling mechanism]({{< relref "hw/ip/otp_ctrl/doc/_index.md#secret-vs-non-secret-partitions" >}}).
