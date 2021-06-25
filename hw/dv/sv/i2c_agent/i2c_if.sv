@@ -158,14 +158,18 @@ interface i2c_if;
   endtask: device_send_bit
 
   task automatic device_send_ack(ref timing_cfg_t tc);
-    device_send_bit(tc, 1'b0); // special case
+    device_send_bit(tc, 1'b0); // special case for ack bit
   endtask: device_send_ack
 
   // when the I2C module is in transmit mode, `scl_interference` interrupt
   // will be asserted if the IP identifies that some other device (host or target) on the bus
   // is forcing scl low and interfering with the transmission.
   task automatic device_stretch_host_clk(ref timing_cfg_t tc);
-    if (tc.enbTimeOut && tc.tTimeOut > 0) begin
+    int stretch_cycle = tc.tClockLow + tc.tSetupBit + tc.tStretchHostClock;
+    int data_cycle = tc.tClockLow + tc.tSetupBit + tc.tClockPulse + tc.tHoldBit;
+
+    if (tc.enbTimeOut && tc.tTimeOut > 0 &&
+        stretch_cycle < data_cycle) begin // target can stretch only during data cycle
       wait_for_dly(tc.tClockLow + tc.tSetupBit + tc.tSclInterference - 1);
       scl_o = 1'b0;
       wait_for_dly(tc.tStretchHostClock - tc.tSclInterference + 1);
