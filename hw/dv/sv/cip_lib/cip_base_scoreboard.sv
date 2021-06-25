@@ -283,11 +283,21 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // check if there is any tl error, return 1 in case of error or if it is an unmapped addr
-  // if it is data channel, will check if d_error is set correctly
-  //  - access unmapped address
-  //  - memory/register write addr isn't word-aligned
-  //  - memory write isn't full word
+  // Check if there is any tl error.
+  //
+  // On the Addr channel, returns 1 if the item should cause a TL error.
+  //
+  // On the Data channel, this also asserts that the item's D channel integrity is correct (because
+  // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
+  // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
+  // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've
+  // seen an integrity error" bit.
+  //
+  // The following situations might cause a TL error:
+  //
+  //  - unmapped address
+  //  - write address isn't word-aligned
+  //  - memory write isn't a full word
   //  - register write size is less than actual register width
   //  - TL protocol violation
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -312,6 +322,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     if (cfg.en_tl_intg_gen) begin
       has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
+
+      // If we got an error response caused by an integrity failure, update the mirrored value for
+      // any bus integrity alert field (if there is one).
+      if (has_intg_err) begin
+        update_tl_alert_field_prediction();
+      end
 
       if (channel == DataChannel) begin
         cip_tl_seq_item cip_item;
@@ -444,6 +460,43 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.check_phase(phase);
     foreach (tl_a_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifos[i])
     foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
+  endfunction
+
+  virtual function void update_tl_alert_field_prediction();
+    string        regname;
+    string        fldname;
+    string        name_components[$];
+    uvm_reg       register;
+    uvm_reg_field field;
+
+    if (cfg.tl_intg_alert_field == "") begin
+      // No field configured. Return immediately.
+      return;
+    end
+
+    // Split the string into register and field name.
+    str_utils_pkg::str_split(.s(cfg.tl_intg_alert_field),
+                             .result(name_components),
+                             .delim("."),
+                             .strip_whitespaces(1'b0));
+    `DV_CHECK_EQ_FATAL(name_components.size(), 2,
+                       $sformatf("tl_intg_alert_field must have form REG.FIELD. It is `%0s'.",
+                                 cfg.tl_intg_alert_field))
+
+    regname = name_components[0];
+    fldname = name_components[1];
+
+    register = ral.get_reg_by_name(regname);
+    `DV_CHECK_FATAL(register,
+                    $sformatf("No register called %0s (from tl_intg_alert_field)", regname))
+
+    field = register.get_field_by_name(fldname);
+    `DV_CHECK_FATAL(field,
+                    $sformatf("No field called %0s in the %0s register (from tl_intg_alert_field)",
+                              fldname, regname))
+
+    // Set the field
+    `DV_CHECK_FATAL(field.predict(.value(1), .kind(UVM_PREDICT_READ)));
   endfunction
 
 endclass

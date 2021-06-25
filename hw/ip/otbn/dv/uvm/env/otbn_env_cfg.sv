@@ -50,8 +50,10 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Tell the CIP base code how many interrupts we have (defaults to zero)
     num_interrupts = 1;
 
-    // Tell the CIP base code what alert we generate if we see a TL fault
+    // Tell the CIP base code what alert we generate if we see a TL fault and the field in the
+    // FATAL_ALERT_CAUSE register that it should expect to see get set.
     tl_intg_alert_name = "fatal";
+    tl_intg_alert_field = "fatal_alert_cause.bus_integrity_error";
 
     model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
 
