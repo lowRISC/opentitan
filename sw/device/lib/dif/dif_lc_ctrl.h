@@ -216,6 +216,13 @@ typedef struct dif_lc_ctrl_token {
 } dif_lc_ctrl_token_t;
 
 /**
+ * A 256-bit device id stored in OTP's hw_cfg partition.
+ */
+typedef struct dif_lc_ctrl_device_id {
+  uint32_t data[256 / 32];
+} dif_lc_ctrl_device_id_t;
+
+/**
  * Hardware instantiation parameters for a lifecycle controller.
  *
  * This struct describes information about the underlying hardware that is
@@ -387,6 +394,18 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
 DIF_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
                                               dif_lc_ctrl_id_state_t *state);
+
+/**
+ * Returns the current device id reading from lifecycle controller's device id
+ * registers.
+ *
+ * @param lc A lifecycle handle.
+ * @param[out] device_id Out-param for the device id.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
+    const dif_lc_ctrl_t *lc, dif_lc_ctrl_device_id_t *device_id);
 
 /**
  * Forces a particular alert, causing it to be escalated as if the hardware had

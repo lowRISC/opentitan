@@ -5,6 +5,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 
 #include "sw/device/lib/base/memory.h"
+
 #include "lc_ctrl_regs.h"  // Generated.
 
 dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
@@ -186,6 +187,20 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
       break;
     default:
       return kDifLcCtrlError;
+  }
+
+  return kDifLcCtrlOk;
+}
+
+dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
+    const dif_lc_ctrl_t *lc, dif_lc_ctrl_device_id_t *device_id) {
+  if (lc == NULL) {
+    return kDifLcCtrlBadArg;
+  }
+
+  for (int i = 0; i < ARRAYSIZE(device_id->data); ++i) {
+    device_id->data[i] = mmio_region_read32(
+        lc->params.base_addr, LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * 4);
   }
 
   return kDifLcCtrlOk;
