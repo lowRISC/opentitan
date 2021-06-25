@@ -179,10 +179,18 @@ module aon_timer import aon_timer_reg_pkg::*;
   ////////////////////
 
   // Wakeup request is set by HW and cleared by SW
-  assign aon_hw2reg.wkup_cause.de = (aon_wkup_intr_set | aon_wdog_intr_set) & sleep_mode;
+  // The wakeup cause is always captured and only sent out when the system has entered sleep mode
+  assign aon_hw2reg.wkup_cause.de = aon_wkup_intr_set | aon_wdog_intr_set;
   assign aon_hw2reg.wkup_cause.d  = 1'b1;
 
-  assign aon_timer_wkup_req_o = aon_reg2hw.wkup_cause.q;
+  // wakeup output is flopped in case of clock domain crossing
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      aon_timer_wkup_req_o <= '0;
+    end else begin
+      aon_timer_wkup_req_o <= aon_reg2hw.wkup_cause.q & sleep_mode;
+    end
+  end
 
   ////////////////////////
   // Interrupt Handling //
