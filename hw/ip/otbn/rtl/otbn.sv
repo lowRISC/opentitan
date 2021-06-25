@@ -375,11 +375,12 @@ module otbn
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
   prim_ram_1p_scr #(
-    .Width           (ExtWLEN),
-    .Depth           (DmemSizeWords),
-    .DataBitsPerMask (39),
-    .EnableParity    (0),
-    .DiffWidth       (39)
+    .Width              (ExtWLEN),
+    .Depth              (DmemSizeWords),
+    .DataBitsPerMask    (39),
+    .EnableParity       (0),
+    .DiffWidth          (39),
+    .ReplicateKeyStream (1)
   ) u_dmem (
     .clk_i,
     .rst_ni      (rst_n),

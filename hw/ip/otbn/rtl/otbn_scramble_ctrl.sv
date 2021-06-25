@@ -71,26 +71,23 @@ module otbn_scramble_ctrl
   otp_ctrl_pkg::otbn_nonce_t otp_nonce;
   logic                      otp_key_seed_valid;
 
-  // TODO: Sort out nonce widths. OTP provides us with 256-bit nonce, we need 320-bit for dmem. We
-  // could reuse nonce bits or use a replicated PRINCE keystream so only 64 bits of nonce would be
-  // required. https://github.com/lowRISC/opentitan/issues/7054
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dmem_key_q   <= RndCnstOtbnKey;
-      dmem_nonce_q <= {64'b0, RndCnstOtbnNonce};
+      dmem_nonce_q <= RndCnstOtbnNonce;
     end else if (dmem_key_nonce_en) begin
       dmem_key_q   <= otp_key;
-      dmem_nonce_q <= {64'b0, otp_nonce};
+      dmem_nonce_q <= otp_nonce;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       imem_key_q   <= RndCnstOtbnKey;
-      imem_nonce_q <= RndCnstOtbnNonce[63:0];
+      imem_nonce_q <= RndCnstOtbnNonce;
     end else if (imem_key_nonce_en) begin
       imem_key_q   <= otp_key;
-      imem_nonce_q <= otp_nonce[63:0];
+      imem_nonce_q <= otp_nonce;
     end
   end
 

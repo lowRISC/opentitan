@@ -5,9 +5,9 @@
 #ifndef OPENTITAN_HW_DV_VERILATOR_CPP_SCRAMBLED_ECC32_MEM_AREA_H_
 #define OPENTITAN_HW_DV_VERILATOR_CPP_SCRAMBLED_ECC32_MEM_AREA_H_
 
-#include "ecc32_mem_area.h"
-
 #include <vector>
+
+#include "ecc32_mem_area.h"
 
 /**
  * A memory that implements scrambling over a 32-bit ECC integrity protection
@@ -23,9 +23,14 @@ class ScrambledEcc32MemArea : public Ecc32MemArea {
    * at scope. It is size words long. Each memory word is 4 * width_32 bytes
    * wide in the address space and 39 * width_32 bits wide in the physical
    * memory.
+   *
+   * If the keystream of one single PRINCE instance should be repeated,
+   * set "repeat_keystream" to true. If this is set to false, multiple
+   * PRINCE instances are employed to produce the keystream.
+   *
    */
   ScrambledEcc32MemArea(const std::string &scope, uint32_t size,
-                        uint32_t width_32);
+                        uint32_t width_32, bool repeat_keystream = true);
 
  private:
   void WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
@@ -49,6 +54,7 @@ class ScrambledEcc32MemArea : public Ecc32MemArea {
 
   std::string scr_scope_;
   uint32_t addr_width_;
+  bool repeat_keystream_;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_SCRAMBLED_ECC32_MEM_AREA_H_

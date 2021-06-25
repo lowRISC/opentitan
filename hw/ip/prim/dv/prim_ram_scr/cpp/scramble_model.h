@@ -37,15 +37,16 @@ std::vector<uint8_t> scramble_addr(const std::vector<uint8_t> &addr_in,
  * @param addr_width       Width of the address in bits
  * @param nonce            Byte vector of scrambling nonce
  * @param key              Byte vector of scrambling key
+ * @param repeat_keystream Repeat the keystream of one single PRINCE instance if
+ *                         set to true. Otherwise multiple PRINCE instances are
+ *                         used.
  * @return Byte vector with decrypted data
  */
-std::vector<uint8_t> scramble_decrypt_data(const std::vector<uint8_t> &data_in,
-                                           uint32_t data_width,
-                                           uint32_t subst_perm_width,
-                                           const std::vector<uint8_t> &addr,
-                                           uint32_t addr_width,
-                                           const std::vector<uint8_t> &nonce,
-                                           const std::vector<uint8_t> &key);
+std::vector<uint8_t> scramble_decrypt_data(
+    const std::vector<uint8_t> &data_in, uint32_t data_width,
+    uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
+    uint32_t addr_width, const std::vector<uint8_t> &nonce,
+    const std::vector<uint8_t> &key, bool repeat_keystream);
 
 /** Encrypt scrambled data
  * @param data_in          Byte vector of data to encrypt
@@ -56,14 +57,15 @@ std::vector<uint8_t> scramble_decrypt_data(const std::vector<uint8_t> &data_in,
  * @param addr_width       Width of the address in bits
  * @param nonce            Byte vector of scrambling nonce
  * @param key              Byte vector of scrambling key
+ * @param repeat_keystream Repeat the keystream of one single PRINCE instance if
+ *                         set to true. Otherwise multiple PRINCE instances are
+ *                         used.
  * @return Byte vector with encrypted data
  */
-std::vector<uint8_t> scramble_encrypt_data(const std::vector<uint8_t> &data_in,
-                                           uint32_t data_width,
-                                           uint32_t subst_perm_width,
-                                           const std::vector<uint8_t> &addr,
-                                           uint32_t addr_width,
-                                           const std::vector<uint8_t> &nonce,
-                                           const std::vector<uint8_t> &key);
+std::vector<uint8_t> scramble_encrypt_data(
+    const std::vector<uint8_t> &data_in, uint32_t data_width,
+    uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
+    uint32_t addr_width, const std::vector<uint8_t> &nonce,
+    const std::vector<uint8_t> &key, bool repeat_keystream);
 
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_RAM_SCR_CPP_SCRAMBLE_MODEL_H_
