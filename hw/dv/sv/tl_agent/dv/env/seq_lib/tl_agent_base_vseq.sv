@@ -19,7 +19,7 @@ class tl_agent_base_vseq extends dv_base_vseq #(.CFG_T               (tl_agent_e
   virtual task run_device_seq_nonblocking();
     fork begin
       tl_device_seq device_seq;
-      device_seq = tl_device_seq::type_id::create("device_seq");
+      device_seq = tl_device_seq#()::type_id::create("device_seq");
       `DV_CHECK_RANDOMIZE_FATAL(device_seq)
       device_seq.out_of_order_rsp = out_of_order_rsp;
       device_seq.start(p_sequencer.device_seqr);
@@ -28,7 +28,7 @@ class tl_agent_base_vseq extends dv_base_vseq #(.CFG_T               (tl_agent_e
 
   virtual task run_host_seq();
     tl_host_seq host_seq;
-    host_seq = tl_host_seq::type_id::create("host_seq");
+    host_seq = tl_host_seq#()::type_id::create("host_seq");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(host_seq,
                                    req_cnt inside {[min_req_cnt : max_req_cnt]};)
     host_seq.start(p_sequencer.host_seqr);
