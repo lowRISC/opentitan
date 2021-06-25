@@ -157,7 +157,7 @@ inline rom_error_t manifest_signed_region_get(
     const manifest_t *manifest, manifest_signed_region_t *signed_region) {
   if (manifest->image_length < kManifestImageLengthMin ||
       manifest->image_length > kManifestImageLengthMax) {
-    return kErrorManifestInternal;
+    return kErrorManifestBadLength;
   }
   *signed_region = (manifest_signed_region_t){
       .start = &manifest->image_length,

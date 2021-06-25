@@ -28,11 +28,13 @@ TEST(Manifest, SignedRegionGetBadLength) {
 
   manifest.image_length = kManifestImageLengthMax + 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
-            kErrorManifestInternal);
+            kErrorManifestBadLength);
 
   manifest.image_length = kManifestImageLengthMin - 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
-            kErrorManifestInternal);
+            kErrorManifestBadLength);
+}
+
 TEST(Manifest, CodeRegionGet) {
   manifest_t manifest{};
   manifest.image_length = 0x1000;
