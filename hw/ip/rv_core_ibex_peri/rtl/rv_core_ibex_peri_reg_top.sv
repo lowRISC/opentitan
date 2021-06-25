@@ -25,7 +25,7 @@ module rv_core_ibex_peri_reg_top (
 
   import rv_core_ibex_peri_reg_pkg::* ;
 
-  localparam int AW = 5;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -121,6 +121,54 @@ module rv_core_ibex_peri_reg_top (
   logic sw_alert_1_we;
   logic [1:0] sw_alert_1_qs;
   logic [1:0] sw_alert_1_wd;
+  logic ibus_regwen_0_we;
+  logic ibus_regwen_0_qs;
+  logic ibus_regwen_0_wd;
+  logic ibus_regwen_1_we;
+  logic ibus_regwen_1_qs;
+  logic ibus_regwen_1_wd;
+  logic ibus_addr_en_0_we;
+  logic ibus_addr_en_0_qs;
+  logic ibus_addr_en_0_wd;
+  logic ibus_addr_en_1_we;
+  logic ibus_addr_en_1_qs;
+  logic ibus_addr_en_1_wd;
+  logic ibus_addr_matching_0_we;
+  logic [31:0] ibus_addr_matching_0_qs;
+  logic [31:0] ibus_addr_matching_0_wd;
+  logic ibus_addr_matching_1_we;
+  logic [31:0] ibus_addr_matching_1_qs;
+  logic [31:0] ibus_addr_matching_1_wd;
+  logic ibus_remap_addr_0_we;
+  logic [31:0] ibus_remap_addr_0_qs;
+  logic [31:0] ibus_remap_addr_0_wd;
+  logic ibus_remap_addr_1_we;
+  logic [31:0] ibus_remap_addr_1_qs;
+  logic [31:0] ibus_remap_addr_1_wd;
+  logic dbus_regwen_0_we;
+  logic dbus_regwen_0_qs;
+  logic dbus_regwen_0_wd;
+  logic dbus_regwen_1_we;
+  logic dbus_regwen_1_qs;
+  logic dbus_regwen_1_wd;
+  logic dbus_addr_en_0_we;
+  logic dbus_addr_en_0_qs;
+  logic dbus_addr_en_0_wd;
+  logic dbus_addr_en_1_we;
+  logic dbus_addr_en_1_qs;
+  logic dbus_addr_en_1_wd;
+  logic dbus_addr_matching_0_we;
+  logic [31:0] dbus_addr_matching_0_qs;
+  logic [31:0] dbus_addr_matching_0_wd;
+  logic dbus_addr_matching_1_we;
+  logic [31:0] dbus_addr_matching_1_qs;
+  logic [31:0] dbus_addr_matching_1_wd;
+  logic dbus_remap_addr_0_we;
+  logic [31:0] dbus_remap_addr_0_qs;
+  logic [31:0] dbus_remap_addr_0_wd;
+  logic dbus_remap_addr_1_we;
+  logic [31:0] dbus_remap_addr_1_qs;
+  logic [31:0] dbus_remap_addr_1_wd;
   logic err_status_we;
   logic err_status_reg_intg_err_qs;
   logic err_status_reg_intg_err_wd;
@@ -306,6 +354,454 @@ module rv_core_ibex_peri_reg_top (
   );
 
 
+
+  // Subregister 0 of Multireg ibus_regwen
+  // R[ibus_regwen_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_ibus_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_regwen_0_we),
+    .wd     (ibus_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (ibus_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg ibus_regwen
+  // R[ibus_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_ibus_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_regwen_1_we),
+    .wd     (ibus_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (ibus_regwen_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg ibus_addr_en
+  // R[ibus_addr_en_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_ibus_addr_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_addr_en_0_we & ibus_regwen_0_qs),
+    .wd     (ibus_addr_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_addr_en[0].q),
+
+    // to register interface (read)
+    .qs     (ibus_addr_en_0_qs)
+  );
+
+  // Subregister 1 of Multireg ibus_addr_en
+  // R[ibus_addr_en_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_ibus_addr_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_addr_en_1_we & ibus_regwen_1_qs),
+    .wd     (ibus_addr_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_addr_en[1].q),
+
+    // to register interface (read)
+    .qs     (ibus_addr_en_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg ibus_addr_matching
+  // R[ibus_addr_matching_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_ibus_addr_matching_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_addr_matching_0_we & ibus_regwen_0_qs),
+    .wd     (ibus_addr_matching_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_addr_matching[0].q),
+
+    // to register interface (read)
+    .qs     (ibus_addr_matching_0_qs)
+  );
+
+  // Subregister 1 of Multireg ibus_addr_matching
+  // R[ibus_addr_matching_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_ibus_addr_matching_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_addr_matching_1_we & ibus_regwen_1_qs),
+    .wd     (ibus_addr_matching_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_addr_matching[1].q),
+
+    // to register interface (read)
+    .qs     (ibus_addr_matching_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg ibus_remap_addr
+  // R[ibus_remap_addr_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_ibus_remap_addr_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_remap_addr_0_we & ibus_regwen_0_qs),
+    .wd     (ibus_remap_addr_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_remap_addr[0].q),
+
+    // to register interface (read)
+    .qs     (ibus_remap_addr_0_qs)
+  );
+
+  // Subregister 1 of Multireg ibus_remap_addr
+  // R[ibus_remap_addr_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_ibus_remap_addr_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ibus_remap_addr_1_we & ibus_regwen_1_qs),
+    .wd     (ibus_remap_addr_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ibus_remap_addr[1].q),
+
+    // to register interface (read)
+    .qs     (ibus_remap_addr_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg dbus_regwen
+  // R[dbus_regwen_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_dbus_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_regwen_0_we),
+    .wd     (dbus_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (dbus_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg dbus_regwen
+  // R[dbus_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_dbus_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_regwen_1_we),
+    .wd     (dbus_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (dbus_regwen_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg dbus_addr_en
+  // R[dbus_addr_en_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dbus_addr_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_addr_en_0_we & dbus_regwen_0_qs),
+    .wd     (dbus_addr_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_addr_en[0].q),
+
+    // to register interface (read)
+    .qs     (dbus_addr_en_0_qs)
+  );
+
+  // Subregister 1 of Multireg dbus_addr_en
+  // R[dbus_addr_en_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dbus_addr_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_addr_en_1_we & dbus_regwen_1_qs),
+    .wd     (dbus_addr_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_addr_en[1].q),
+
+    // to register interface (read)
+    .qs     (dbus_addr_en_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg dbus_addr_matching
+  // R[dbus_addr_matching_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dbus_addr_matching_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_addr_matching_0_we & dbus_regwen_0_qs),
+    .wd     (dbus_addr_matching_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_addr_matching[0].q),
+
+    // to register interface (read)
+    .qs     (dbus_addr_matching_0_qs)
+  );
+
+  // Subregister 1 of Multireg dbus_addr_matching
+  // R[dbus_addr_matching_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dbus_addr_matching_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_addr_matching_1_we & dbus_regwen_1_qs),
+    .wd     (dbus_addr_matching_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_addr_matching[1].q),
+
+    // to register interface (read)
+    .qs     (dbus_addr_matching_1_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg dbus_remap_addr
+  // R[dbus_remap_addr_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dbus_remap_addr_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_remap_addr_0_we & dbus_regwen_0_qs),
+    .wd     (dbus_remap_addr_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_remap_addr[0].q),
+
+    // to register interface (read)
+    .qs     (dbus_remap_addr_0_qs)
+  );
+
+  // Subregister 1 of Multireg dbus_remap_addr
+  // R[dbus_remap_addr_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dbus_remap_addr_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dbus_remap_addr_1_we & dbus_regwen_1_qs),
+    .wd     (dbus_remap_addr_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dbus_remap_addr[1].q),
+
+    // to register interface (read)
+    .qs     (dbus_remap_addr_1_qs)
+  );
+
+
   // R[err_status]: V(False)
 
   //   F[reg_intg_err]: 0:0
@@ -414,15 +910,31 @@ module rv_core_ibex_peri_reg_top (
 
 
 
-  logic [5:0] addr_hit;
+  logic [21:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == RV_CORE_IBEX_PERI_ALERT_TEST_OFFSET);
-    addr_hit[1] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_0_OFFSET);
-    addr_hit[2] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_1_OFFSET);
-    addr_hit[3] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_0_OFFSET);
-    addr_hit[4] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_1_OFFSET);
-    addr_hit[5] = (reg_addr == RV_CORE_IBEX_PERI_ERR_STATUS_OFFSET);
+    addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_PERI_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_0_OFFSET);
+    addr_hit[ 2] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_1_OFFSET);
+    addr_hit[ 3] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_0_OFFSET);
+    addr_hit[ 4] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_1_OFFSET);
+    addr_hit[ 5] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REGWEN_0_OFFSET);
+    addr_hit[ 6] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REGWEN_1_OFFSET);
+    addr_hit[ 7] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_EN_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_EN_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[10] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[11] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[12] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[13] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REGWEN_0_OFFSET);
+    addr_hit[14] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REGWEN_1_OFFSET);
+    addr_hit[15] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_EN_0_OFFSET);
+    addr_hit[16] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_EN_1_OFFSET);
+    addr_hit[17] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[18] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[19] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[20] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[21] = (reg_addr == RV_CORE_IBEX_PERI_ERR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -430,12 +942,28 @@ module rv_core_ibex_peri_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(RV_CORE_IBEX_PERI_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(RV_CORE_IBEX_PERI_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(RV_CORE_IBEX_PERI_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(RV_CORE_IBEX_PERI_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(RV_CORE_IBEX_PERI_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(RV_CORE_IBEX_PERI_PERMIT[5] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(RV_CORE_IBEX_PERI_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(RV_CORE_IBEX_PERI_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(RV_CORE_IBEX_PERI_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(RV_CORE_IBEX_PERI_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(RV_CORE_IBEX_PERI_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(RV_CORE_IBEX_PERI_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(RV_CORE_IBEX_PERI_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(RV_CORE_IBEX_PERI_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(RV_CORE_IBEX_PERI_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(RV_CORE_IBEX_PERI_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(RV_CORE_IBEX_PERI_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(RV_CORE_IBEX_PERI_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(RV_CORE_IBEX_PERI_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(RV_CORE_IBEX_PERI_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(RV_CORE_IBEX_PERI_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(RV_CORE_IBEX_PERI_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(RV_CORE_IBEX_PERI_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(RV_CORE_IBEX_PERI_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(RV_CORE_IBEX_PERI_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(RV_CORE_IBEX_PERI_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(RV_CORE_IBEX_PERI_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(RV_CORE_IBEX_PERI_PERMIT[21] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -458,7 +986,55 @@ module rv_core_ibex_peri_reg_top (
   assign sw_alert_1_we = addr_hit[4] & reg_we & !reg_error;
 
   assign sw_alert_1_wd = reg_wdata[1:0];
-  assign err_status_we = addr_hit[5] & reg_we & !reg_error;
+  assign ibus_regwen_0_we = addr_hit[5] & reg_we & !reg_error;
+
+  assign ibus_regwen_0_wd = reg_wdata[0];
+  assign ibus_regwen_1_we = addr_hit[6] & reg_we & !reg_error;
+
+  assign ibus_regwen_1_wd = reg_wdata[0];
+  assign ibus_addr_en_0_we = addr_hit[7] & reg_we & !reg_error;
+
+  assign ibus_addr_en_0_wd = reg_wdata[0];
+  assign ibus_addr_en_1_we = addr_hit[8] & reg_we & !reg_error;
+
+  assign ibus_addr_en_1_wd = reg_wdata[0];
+  assign ibus_addr_matching_0_we = addr_hit[9] & reg_we & !reg_error;
+
+  assign ibus_addr_matching_0_wd = reg_wdata[31:0];
+  assign ibus_addr_matching_1_we = addr_hit[10] & reg_we & !reg_error;
+
+  assign ibus_addr_matching_1_wd = reg_wdata[31:0];
+  assign ibus_remap_addr_0_we = addr_hit[11] & reg_we & !reg_error;
+
+  assign ibus_remap_addr_0_wd = reg_wdata[31:0];
+  assign ibus_remap_addr_1_we = addr_hit[12] & reg_we & !reg_error;
+
+  assign ibus_remap_addr_1_wd = reg_wdata[31:0];
+  assign dbus_regwen_0_we = addr_hit[13] & reg_we & !reg_error;
+
+  assign dbus_regwen_0_wd = reg_wdata[0];
+  assign dbus_regwen_1_we = addr_hit[14] & reg_we & !reg_error;
+
+  assign dbus_regwen_1_wd = reg_wdata[0];
+  assign dbus_addr_en_0_we = addr_hit[15] & reg_we & !reg_error;
+
+  assign dbus_addr_en_0_wd = reg_wdata[0];
+  assign dbus_addr_en_1_we = addr_hit[16] & reg_we & !reg_error;
+
+  assign dbus_addr_en_1_wd = reg_wdata[0];
+  assign dbus_addr_matching_0_we = addr_hit[17] & reg_we & !reg_error;
+
+  assign dbus_addr_matching_0_wd = reg_wdata[31:0];
+  assign dbus_addr_matching_1_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign dbus_addr_matching_1_wd = reg_wdata[31:0];
+  assign dbus_remap_addr_0_we = addr_hit[19] & reg_we & !reg_error;
+
+  assign dbus_remap_addr_0_wd = reg_wdata[31:0];
+  assign dbus_remap_addr_1_we = addr_hit[20] & reg_we & !reg_error;
+
+  assign dbus_remap_addr_1_wd = reg_wdata[31:0];
+  assign err_status_we = addr_hit[21] & reg_we & !reg_error;
 
   assign err_status_reg_intg_err_wd = reg_wdata[0];
 
@@ -496,6 +1072,70 @@ module rv_core_ibex_peri_reg_top (
       end
 
       addr_hit[5]: begin
+        reg_rdata_next[0] = ibus_regwen_0_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[0] = ibus_regwen_1_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[0] = ibus_addr_en_0_qs;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[0] = ibus_addr_en_1_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = ibus_addr_matching_0_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = ibus_addr_matching_1_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[31:0] = ibus_remap_addr_0_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[31:0] = ibus_remap_addr_1_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[0] = dbus_regwen_0_qs;
+      end
+
+      addr_hit[14]: begin
+        reg_rdata_next[0] = dbus_regwen_1_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[0] = dbus_addr_en_0_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[0] = dbus_addr_en_1_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = dbus_addr_matching_0_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[31:0] = dbus_addr_matching_1_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = dbus_remap_addr_0_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[31:0] = dbus_remap_addr_1_qs;
+      end
+
+      addr_hit[21]: begin
         reg_rdata_next[0] = err_status_reg_intg_err_qs;
         reg_rdata_next[8] = err_status_fatal_intg_err_qs;
         reg_rdata_next[9] = err_status_fatal_core_err_qs;
