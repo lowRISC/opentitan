@@ -21,14 +21,15 @@ extern "C" {
 /**
  * Manifest for boot stage images stored in flash.
  *
- * OpenTitan secure boot, at a minimum, consists of four boot stages: ROM,
- * ROM_EXT, BL0, and Kernel. ROM is stored in the read-only Mask ROM while
- * remaining stages are stored in flash. This structure must be placed at the
- * start of ROM_EXT and BL0 images so that ROM and ROM_EXT can verify the
- * integrity and authenticity of the next stage and configure peripherals as
- * needed before handing over execution.
+ * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
+ * ROM_EXT, and the first owner boot stage, e.g. BL0. ROM is stored in the
+ * read-only Mask ROM while remaining stages are stored in flash. This structure
+ * must be placed at the start of ROM_EXT and first owner boot stage images so
+ * that ROM and ROM_EXT can verify the integrity and authenticity of the next
+ * stage and configure peripherals as needed before handing over execution.
  *
- * Use of this struct for stages following BL0 is optional.
+ * Use of this struct for stages following the first owner boot stage is
+ * optional.
  *
  * Note: The definitions in
  * sw/host/rom_ext_image_tools/signer/image/src/manifest.rs must be updated if
