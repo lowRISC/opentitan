@@ -28,8 +28,9 @@ package lc_ctrl_state_pkg;
   parameter int NumLcCountStates = 17;
   parameter int DecLcCountWidth = vbits(NumLcCountStates);
 
-  parameter int NumLcIdStateValues = 1;
-  parameter int LcIdStateWidth = NumLcIdStateValues * LcValueWidth;
+  // This state is not stored in OTP, but inferred from the locked
+  // status of the secret partitions. Hence, only the decoded ID state
+  // is declared here for exposure through the CSR interface.
   parameter int NumLcIdStates = 2;
   parameter int DecLcIdStateWidth = vbits(NumLcIdStates+1);
 
@@ -47,7 +48,7 @@ package lc_ctrl_state_pkg;
   // - Minimum Hamming weight: 8
   // - Maximum Hamming weight: 16
   // - Minimum Hamming distance from any other value: 6
-  // - Maximum Hamming distance from any other value: 20
+  // - Maximum Hamming distance from any other value: 18
   //
   // Hamming distance histogram:
   //
@@ -57,21 +58,21 @@ package lc_ctrl_state_pkg;
   //  3: --
   //  4: --
   //  5: --
-  //  6: |||| (6.84%)
+  //  6: |||| (6.95%)
   //  7: --
-  //  8: ||||||||||| (16.70%)
+  //  8: |||||||||| (16.36%)
   //  9: --
-  // 10: ||||||||||||||||||| (29.10%)
+  // 10: ||||||||||||||||||| (29.22%)
   // 11: --
-  // 12: |||||||||||||||||||| (29.82%)
+  // 12: |||||||||||||||||||| (29.81%)
   // 13: --
-  // 14: |||||||| (12.83%)
+  // 14: |||||||| (13.18%)
   // 15: --
-  // 16: || (4.30%)
+  // 16: || (4.16%)
   // 17: --
-  // 18:  (0.36%)
+  // 18:  (0.32%)
   // 19: --
-  // 20:  (0.06%)
+  // 20: --
   // 21: --
   // 22: --
   //
@@ -167,11 +168,6 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] D15 = 16'b0101110011111101; // ECC: 6'b111110
 
 
-  // The E/F values are used for the encoded ID state.
-  parameter logic [15:0] E0 = 16'b1110000000101100; // ECC: 6'b111001
-  parameter logic [15:0] F0 = 16'b1110010110111101; // ECC: 6'b111101
-
-
   parameter logic [15:0] ZRO = 16'h0;
 
   ////////////////////////
@@ -193,11 +189,6 @@ package lc_ctrl_state_pkg;
     LcStRma           = {B11, B10,  A9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
     LcStScrap         = {B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0}
   } lc_state_e;
-
-  typedef enum logic [LcIdStateWidth-1:0] {
-    LcIdBlank        = { E0},
-    LcIdPersonalized = { F0}
-  } lc_id_state_e;
 
   typedef enum logic [LcCountWidth-1:0] {
     LcCnt0  = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},

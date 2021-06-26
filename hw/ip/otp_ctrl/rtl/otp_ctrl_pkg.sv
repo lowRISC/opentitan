@@ -105,16 +105,25 @@ package otp_ctrl_pkg;
   // Typedefs for LC Interface //
   ///////////////////////////////
 
+  // The tokens below are all hash post-images
   typedef struct packed {
     logic                            valid;
     logic                            error;
     lc_ctrl_state_pkg::lc_state_e    state;
     lc_ctrl_state_pkg::lc_cnt_e      count;
-    // These are all hash post-images
+    // This is set to "On" if the partition containing the
+    // root secrets have been locked. In that case, the device
+    // is considered "personalized".
+    lc_ctrl_pkg::lc_tx_t             secrets_valid;
+    // This is set to "On" if the partition containing the
+    // test tokens has been locked.
+    lc_ctrl_pkg::lc_tx_t             test_tokens_valid;
     lc_ctrl_state_pkg::lc_token_t    test_unlock_token;
     lc_ctrl_state_pkg::lc_token_t    test_exit_token;
+    // This is set to "On" if the partition containing the
+    // test tokens has been locked.
+    lc_ctrl_pkg::lc_tx_t             rma_token_valid;
     lc_ctrl_state_pkg::lc_token_t    rma_token;
-    lc_ctrl_state_pkg::lc_id_state_e id_state;
   } otp_lc_data_t;
 
   // Default for dangling connection.
@@ -126,10 +135,12 @@ package otp_ctrl_pkg;
     error: 1'b0,
     state: lc_ctrl_state_pkg::LcStTestUnlocked0,
     count: lc_ctrl_state_pkg::LcCnt1,
+    secrets_valid: lc_ctrl_pkg::Off,
+    test_tokens_valid: lc_ctrl_pkg::Off,
     test_unlock_token: '0,
     test_exit_token: '0,
-    rma_token: '0,
-    id_state: lc_ctrl_state_pkg::LcIdBlank
+    rma_token_valid: lc_ctrl_pkg::Off,
+    rma_token: '0
   };
 
   typedef struct packed {
