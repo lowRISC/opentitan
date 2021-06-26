@@ -19,6 +19,7 @@ parameter string LIST_OF_ALERTS[] = {
   "pattgen_fatal_fault",
   "otp_ctrl_fatal_macro_error",
   "otp_ctrl_fatal_check_error",
+  "otp_ctrl_fatal_bus_integ_error",
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
   "lc_ctrl_fatal_bus_integ_error",
@@ -72,4 +73,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_peri_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 65;
+parameter uint NUM_ALERTS = 66;

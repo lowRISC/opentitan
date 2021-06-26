@@ -99,7 +99,7 @@ package otp_ctrl_reg_pkg;
   parameter int LcTransitionCntSize = 32;
   parameter int LcStateOffset = 2024;
   parameter int LcStateSize = 24;
-  parameter int NumAlerts = 2;
+  parameter int NumAlerts = 3;
 
   // Address widths within the block
   parameter int BlockAw = 14;
@@ -146,6 +146,10 @@ package otp_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } fatal_check_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_bus_integ_error;
   } otp_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -255,6 +259,9 @@ package otp_ctrl_reg_pkg;
     } key_deriv_fsm_error;
     struct packed {
       logic        d;
+    } bus_integ_error;
+    struct packed {
+      logic        d;
     } dai_idle;
     struct packed {
       logic        d;
@@ -299,10 +306,10 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [194:193]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [192:191]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [190:187]
-    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [186:183]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [196:195]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [194:193]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [192:189]
+    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [188:183]
     otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [182:177]
     otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [176:166]
     otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [165:102]
@@ -316,8 +323,8 @@ package otp_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [494:491]
-    otp_ctrl_hw2reg_status_reg_t status; // [490:476]
+    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [495:492]
+    otp_ctrl_hw2reg_status_reg_t status; // [491:476]
     otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [475:449]
     otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [448:448]
     otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [447:384]
@@ -368,10 +375,11 @@ package otp_ctrl_reg_pkg;
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_ERROR_RESVAL = 1'h 0;
-  parameter logic [1:0] OTP_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [2:0] OTP_CTRL_ALERT_TEST_RESVAL = 3'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_CHECK_ERROR_RESVAL = 1'h 0;
-  parameter logic [14:0] OTP_CTRL_STATUS_RESVAL = 15'h 0;
+  parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
+  parameter logic [15:0] OTP_CTRL_STATUS_RESVAL = 16'h 0;
   parameter logic [26:0] OTP_CTRL_ERR_CODE_RESVAL = 27'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;

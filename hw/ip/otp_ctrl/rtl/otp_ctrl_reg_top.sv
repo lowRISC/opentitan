@@ -173,6 +173,7 @@ module otp_ctrl_reg_top (
   logic alert_test_we;
   logic alert_test_fatal_macro_error_wd;
   logic alert_test_fatal_check_error_wd;
+  logic alert_test_fatal_bus_integ_error_wd;
   logic status_re;
   logic status_creator_sw_cfg_error_qs;
   logic status_owner_sw_cfg_error_qs;
@@ -187,6 +188,7 @@ module otp_ctrl_reg_top (
   logic status_lfsr_fsm_error_qs;
   logic status_scrambling_fsm_error_qs;
   logic status_key_deriv_fsm_error_qs;
+  logic status_bus_integ_error_qs;
   logic status_dai_idle_qs;
   logic status_check_pending_qs;
   logic err_code_re;
@@ -440,6 +442,21 @@ module otp_ctrl_reg_top (
   );
 
 
+  //   F[fatal_bus_integ_error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_bus_integ_error (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_bus_integ_error_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_bus_integ_error.qe),
+    .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
+    .qs     ()
+  );
+
+
   // R[status]: V(True)
 
   //   F[creator_sw_cfg_error]: 0:0
@@ -637,7 +654,22 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[dai_idle]: 13:13
+  //   F[bus_integ_error]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_bus_integ_error (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.bus_integ_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_bus_integ_error_qs)
+  );
+
+
+  //   F[dai_idle]: 14:14
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_dai_idle (
@@ -652,7 +684,7 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[check_pending]: 14:14
+  //   F[check_pending]: 15:15
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_check_pending (
@@ -1511,6 +1543,8 @@ module otp_ctrl_reg_top (
   assign alert_test_fatal_macro_error_wd = reg_wdata[0];
 
   assign alert_test_fatal_check_error_wd = reg_wdata[1];
+
+  assign alert_test_fatal_bus_integ_error_wd = reg_wdata[2];
   assign status_re = addr_hit[4] & reg_re & !reg_error;
   assign err_code_re = addr_hit[5] & reg_re & !reg_error;
   assign direct_access_regwen_re = addr_hit[6] & reg_re & !reg_error;
@@ -1593,6 +1627,7 @@ module otp_ctrl_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[4]: begin
@@ -1609,8 +1644,9 @@ module otp_ctrl_reg_top (
         reg_rdata_next[10] = status_lfsr_fsm_error_qs;
         reg_rdata_next[11] = status_scrambling_fsm_error_qs;
         reg_rdata_next[12] = status_key_deriv_fsm_error_qs;
-        reg_rdata_next[13] = status_dai_idle_qs;
-        reg_rdata_next[14] = status_check_pending_qs;
+        reg_rdata_next[13] = status_bus_integ_error_qs;
+        reg_rdata_next[14] = status_dai_idle_qs;
+        reg_rdata_next[15] = status_check_pending_qs;
       end
 
       addr_hit[5]: begin

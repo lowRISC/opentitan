@@ -57,6 +57,9 @@
     { name: "fatal_check_error",
       desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
     }
+    { name: "fatal_bus_integ_error",
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
   ],
 
   ////////////////
@@ -372,10 +375,17 @@
                 '''
         }
         { bits: "${num_part+6}"
+          name: "BUS_INTEG_ERROR"
+          desc: '''
+                This bit is set to 1 if a fatal bus integrity fault is detected.
+                This error triggers a fatal_bus_integ_error alert.
+                '''
+        }
+        { bits: "${num_part+7}"
           name: "DAI_IDLE"
           desc: "Set to 1 if the DAI is idle and ready to accept commands."
         }
-        { bits: "${num_part+7}"
+        { bits: "${num_part+8}"
           name: "CHECK_PENDING"
           desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
         }

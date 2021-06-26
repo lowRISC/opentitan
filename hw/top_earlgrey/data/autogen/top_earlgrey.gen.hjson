@@ -11938,6 +11938,13 @@
       module_name: otp_ctrl
     }
     {
+      name: otp_ctrl_fatal_bus_integ_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+    }
+    {
       name: lc_ctrl_fatal_prog_error
       width: 1
       type: alert
