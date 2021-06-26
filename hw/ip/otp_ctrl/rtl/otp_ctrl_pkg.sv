@@ -23,6 +23,12 @@ package otp_ctrl_pkg;
 
   parameter int SwWindowAddrWidth = vbits(NumSwCfgWindowWords);
 
+  // Background check timer LFSR width.
+  parameter int LfsrWidth = 40;
+  // The LFSR will be reseeded once LfsrUsageThreshold
+  // values have been drawn from it.
+  parameter int LfsrUsageThreshold = 16;
+
   // Redundantly encoded and complementary values are used to for signalling to the partition
   // controller FSMs and the DAI whether a partition is locked or not. Any other value than
   // "Unlocked" is interpreted as "Locked" in those FSMs.
@@ -265,7 +271,6 @@ package otp_ctrl_pkg;
 
   // These LFSR parameters have been generated with
   // $ util/design/gen-lfsr-seed.py --width 40 --seed 4247488366
-  localparam int LfsrWidth = 40;
   typedef logic [LfsrWidth-1:0]                        lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
   localparam lfsr_seed_t RndCnstLfsrSeedDefault = 40'h453d28ea98;

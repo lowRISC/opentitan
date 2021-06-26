@@ -19,8 +19,8 @@
 // programmed. If a particular check times out, chk_timeout_o will be asserted, which will raise
 // an alert via the error logic.
 //
-// The EntropyWidth LSBs of the LFSR are periodically reseeded with fresh entropy from
-// CSRNG every 2^ReseedLfsrWidth cycles.
+// The EntropyWidth LSBs of the LFSR are reseeded with fresh entropy from EDN once
+// LfsrUsageThreshold values have been drawn from the LFSR.
 //
 // It is also possible to trigger one-off checks via integ_chk_trig_i and cnsty_chk_trig_i.
 // This can be useful if SW chooses to leave the periodic checks disabled.
@@ -32,8 +32,6 @@ module otp_ctrl_lfsr_timer
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
 #(
-  // Entropy reseeding is triggered every time this counter expires.
-  parameter int         ReseedLfsrWidth = 16,
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
@@ -64,19 +62,26 @@ module otp_ctrl_lfsr_timer
   // Reseed counter //
   ////////////////////
 
-  logic reseed_en;
-  logic [ReseedLfsrWidth-1:0] reseed_timer_d, reseed_timer_q;
+  // Count how many times the LFSR has been used to generate a value.
+  // Once we've reached the limit, we request new entropy from EDN to reseed
+  // the LFSR. Note that this is not a blocking operation for the timer below.
+  // I.e., the timer is allowed to continue its operation, and may draw more
+  // values, even if the EDN reseed request is still in progress.
+  logic reseed_en, lfsr_en;
+  logic [$clog2(LfsrUsageThreshold+1)-1:0] reseed_cnt_d, reseed_cnt_q;
+  assign reseed_cnt_d = (reseed_en) ? '0                  :
+                        (edn_req_o) ? reseed_cnt_q        :
+                        (lfsr_en)   ? reseed_cnt_q + 1'b1 :
+                                      reseed_cnt_q;
 
-  assign reseed_timer_d = (reseed_timer_q > '0) ? reseed_timer_q - 1'b1   :
-                          (reseed_en)           ? {ReseedLfsrWidth{1'b1}} : '0;
-  assign edn_req_o = (reseed_timer_q == '0);
+  assign edn_req_o = (reseed_cnt_q >= LfsrUsageThreshold);
   assign reseed_en = edn_req_o & edn_ack_i;
 
   ///////////////////////////
   // Tandem LFSR Instances //
   ///////////////////////////
 
-  logic lfsr_en, lfsr_en_unbuf;
+  logic lfsr_en_unbuf;
   logic [LfsrWidth-1:0] entropy_unbuf;
   logic [1:0][LfsrWidth-1:0] lfsr_state;
 
@@ -406,17 +411,17 @@ module otp_ctrl_lfsr_timer
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      integ_chk_req_q <= '0;
-      cnsty_chk_req_q <= '0;
-      chk_timeout_q   <= 1'b0;
-      reseed_timer_q  <= {ReseedLfsrWidth{1'b1}};
+      integ_chk_req_q  <= '0;
+      cnsty_chk_req_q  <= '0;
+      chk_timeout_q    <= 1'b0;
+      reseed_cnt_q     <= '0;
       integ_chk_trig_q <= 1'b0;
       cnsty_chk_trig_q <= 1'b0;
     end else begin
-      integ_chk_req_q <= integ_chk_req_d;
-      cnsty_chk_req_q <= cnsty_chk_req_d;
-      chk_timeout_q   <= chk_timeout_d;
-      reseed_timer_q  <= reseed_timer_d;
+      integ_chk_req_q  <= integ_chk_req_d;
+      cnsty_chk_req_q  <= cnsty_chk_req_d;
+      chk_timeout_q    <= chk_timeout_d;
+      reseed_cnt_q     <= reseed_cnt_d;
       integ_chk_trig_q <= integ_chk_trig_d;
       cnsty_chk_trig_q <= cnsty_chk_trig_d;
     end
