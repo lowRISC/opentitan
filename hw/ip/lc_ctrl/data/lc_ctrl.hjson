@@ -30,7 +30,7 @@
       desc: "This alert triggers if an error in the life cycle state or life cycle controller FSM is detected.",
     }
     { name: "fatal_bus_integ_error",
-      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the LC_CTRL unit."
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
     }
   ],
 

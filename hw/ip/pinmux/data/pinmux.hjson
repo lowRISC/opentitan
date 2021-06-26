@@ -22,7 +22,7 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the PINMUX unit.
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
       '''
     }
   ],
