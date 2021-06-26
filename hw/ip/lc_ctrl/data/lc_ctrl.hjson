@@ -386,7 +386,7 @@
           name: "BUS_INTEG_ERROR"
           desc: '''
                 This bit is set to 1 if a fatal bus integrity fault is detected.
-                This error triggers a fatal_bus_fault alert.
+                This error triggers a fatal_bus_integ_error alert.
                 '''
         }
         { bits: "9"
