@@ -84,9 +84,10 @@ package lc_ctrl_state_pkg;
   parameter int NumLcCountStates = ${len(lc_st_enc.config['lc_cnt'])};
   parameter int DecLcCountWidth = vbits(NumLcCountStates);
 
-  parameter int NumLcIdStateValues = ${lc_st_enc.config['num_lc_id_state_words']};
-  parameter int LcIdStateWidth = NumLcIdStateValues * LcValueWidth;
-  parameter int NumLcIdStates = ${len(lc_st_enc.config['lc_id_state'])};
+  // This state is not stored in OTP, but inferred from the locked
+  // status of the secret partitions. Hence, only the decoded ID state
+  // is declared here for exposure through the CSR interface.
+  parameter int NumLcIdStates = 2;
   parameter int DecLcIdStateWidth = vbits(NumLcIdStates+1);
 
   /////////////////////////////////////////////
@@ -129,13 +130,6 @@ package lc_ctrl_state_pkg;
 
 % endfor
 
-  // The E/F values are used for the encoded ID state.
-% for word in lc_st_enc.config['genwords']['lc_id_state']:
-  parameter logic [${data_width-1}:0] E${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
-  parameter logic [${data_width-1}:0] F${loop.index} = ${data_width}'b${word[1][ecc_width:]}; // ECC: ${ecc_width}'b${word[1][0:ecc_width]}
-
-% endfor
-
   parameter logic [${data_width-1}:0] ZRO = ${data_width}'h0;
 
   ////////////////////////
@@ -145,10 +139,6 @@ package lc_ctrl_state_pkg;
   typedef enum logic [LcStateWidth-1:0] {
 ${_print_state_enum('LcSt', 'lc_state', lc_st_enc.config)}
   } lc_state_e;
-
-  typedef enum logic [LcIdStateWidth-1:0] {
-${_print_state_enum('Lc', 'lc_id_state', lc_st_enc.config)}
-  } lc_id_state_e;
 
   typedef enum logic [LcCountWidth-1:0] {
 ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
@@ -165,9 +155,8 @@ ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   } dec_lc_state_e;
 
   typedef enum logic [DecLcIdStateWidth-1:0] {
-% for state in lc_st_enc.config['lc_id_state'].keys():
-    DecLc${_to_pascal_case(state)},
-% endfor
+    DecLcIdBlank,
+    DecLcIdPersonalized,
     DecLcIdInvalid
   } dec_lc_id_state_e;
 

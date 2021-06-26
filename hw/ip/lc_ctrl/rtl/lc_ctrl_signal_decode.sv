@@ -21,8 +21,8 @@ module lc_ctrl_signal_decode
   // Life cycle state vector.
   input  logic           lc_state_valid_i,
   input  lc_state_e      lc_state_i,
-  input  lc_id_state_e   lc_id_state_i,
   input  fsm_state_e     fsm_state_i,
+  input  lc_tx_t         secrets_valid_i,
   // Local life cycle signal
   output lc_tx_t         lc_test_or_rma_o,
   // Life cycle broadcast outputs.
@@ -120,14 +120,13 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_rd_en   = On;
               lc_keymgr_div_d        = RndCnstLcKeymgrDivProduction;
               // Only allow provisioning if the device has not yet been personalized.
-              if (lc_id_state_i == LcIdBlank) begin
+              if (secrets_valid_i == Off) begin
                 lc_creator_seed_sw_rw_en = On;
               end
               // Only allow hardware to consume the seeds once personalized.
-              if (lc_id_state_i == LcIdPersonalized) begin
+              if (secrets_valid_i == On) begin
                 lc_seed_hw_rd_en = On;
               end
-
             end
             ///////////////////////////////////////////////////////////////////
             // Same functions as PROD, but with additional debug functionality.
@@ -140,11 +139,11 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_rd_en   = On;
               lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
               // Only allow provisioning if the device has not yet been personalized.
-              if (lc_id_state_i == LcIdBlank) begin
+              if (secrets_valid_i == Off) begin
                 lc_creator_seed_sw_rw_en = On;
               end
               // Only allow hardware to consume the seeds once personalized.
-              if (lc_id_state_i == LcIdPersonalized) begin
+              if (secrets_valid_i == On) begin
                 lc_seed_hw_rd_en = On;
               end
             end

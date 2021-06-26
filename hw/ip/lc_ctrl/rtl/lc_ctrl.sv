@@ -476,7 +476,6 @@ module lc_ctrl
   // state into a temporary "SCRAP" state named "ESCALATE",
   // and asserts the lc_escalate_en life cycle control signal.
   logic esc_scrap_state0;
-  logic esc_scrap_state1;
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
@@ -490,7 +489,7 @@ module lc_ctrl
 
   // This escalation action moves the life cycle
   // state into a temporary "SCRAP" state named "ESCALATE".
-  logic esc_scrap_state;
+  logic esc_scrap_state1;
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
@@ -571,12 +570,14 @@ module lc_ctrl
     .esc_scrap_state1_i     ( esc_scrap_state1                ),
     .lc_state_valid_i       ( otp_lc_data_i.valid             ),
     .lc_state_i             ( otp_lc_data_i.state             ),
-    .lc_id_state_i          ( otp_lc_data_i.id_state          ),
+    .secrets_valid_i        ( otp_lc_data_i.secrets_valid     ),
     .lc_cnt_i               ( otp_lc_data_i.count             ),
     .use_ext_clock_i        ( use_ext_clock_q                 ),
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token   ),
+    .test_tokens_valid_i    ( otp_lc_data_i.test_tokens_valid ),
     .rma_token_i            ( otp_lc_data_i.rma_token         ),
+    .rma_token_valid_i      ( otp_lc_data_i.rma_token_valid   ),
     .trans_cmd_i            ( transition_cmd                  ),
     .trans_target_i         ( transition_target_q             ),
     .dec_lc_state_o         ( dec_lc_state                    ),

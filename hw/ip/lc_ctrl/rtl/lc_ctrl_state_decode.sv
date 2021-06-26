@@ -11,8 +11,8 @@ module lc_ctrl_state_decode
   // Life cycle state vector.
   input  logic              lc_state_valid_i,
   input  lc_state_e         lc_state_i,
-  input  lc_id_state_e      lc_id_state_i,
   input  lc_cnt_e           lc_cnt_i,
+  input  lc_tx_t            secrets_valid_i,
   // Main FSM state.
   input  fsm_state_e        fsm_state_i,
   // Decoded state vector.
@@ -92,11 +92,13 @@ module lc_ctrl_state_decode
           default:  state_invalid_error_o = 1'b1;
         endcase // lc_cnt_i
 
-        unique case (lc_id_state_i)
-          LcIdBlank:        dec_lc_id_state_o = DecLcIdBlank;
-          LcIdPersonalized: dec_lc_id_state_o = DecLcIdPersonalized;
-          default:          state_invalid_error_o = 1'b1;
-        endcase // lc_id_state_i
+        unique case (secrets_valid_i)
+          // If the secrets have not been provisioned, the ID state is "blank".
+          Off:  dec_lc_id_state_o = DecLcIdBlank;
+          // If the secrets have been provisioned, the ID state is "personalized".
+          On:   dec_lc_id_state_o = DecLcIdPersonalized;
+          default: state_invalid_error_o = 1'b1;
+        endcase // secrets_valid_i
 
         // Require that any non-raw state has a valid, nonzero
         // transition count.
@@ -106,7 +108,7 @@ module lc_ctrl_state_decode
 
         // We can't have a personalized device that is
         // still in RAW or any of the test states.
-        if ((lc_id_state_i == LcIdPersonalized) &&
+        if ((secrets_valid_i == On) &&
             !(lc_state_i inside {LcStDev,
                                  LcStProd,
                                  LcStProdEnd,

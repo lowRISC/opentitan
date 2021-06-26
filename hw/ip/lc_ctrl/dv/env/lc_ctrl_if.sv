@@ -47,7 +47,10 @@ interface lc_ctrl_if(input clk, input rst_n);
     otp_i.test_unlock_token = lc_ctrl_env_pkg::get_random_token();
     otp_i.test_exit_token   = lc_ctrl_env_pkg::get_random_token();
     otp_i.rma_token         = lc_ctrl_env_pkg::get_random_token();
-    otp_i.id_state          = LcIdBlank;
+    // TODO: need to randomize this,
+    otp_i.secrets_valid = Off;
+    otp_i.test_tokens_valid = On;
+    otp_i.rma_token_valid = On;
 
     otp_device_id_i = 0;
 
