@@ -28,6 +28,7 @@ filesets:
       - rtl/aon_osc.sv
       - rtl/ast_reg_top.sv
       - rtl/ast_entropy.sv
+      - rtl/dev_entropy.sv
       - rtl/ast_alert.sv
       - rtl/vcc_pok.sv
       - rtl/vio_pok.sv

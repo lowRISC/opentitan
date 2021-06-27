@@ -18,13 +18,13 @@ module aon_osc (
 );
 
 `ifndef SYNTHESIS
+// Behavioral Model
+////////////////////////////////////////
 timeunit 1ns / 10ps;
 import ast_bhv_pkg::* ;
 
-// Behavioral Model
-////////////////////////////////////////
 localparam time AonClkPeriod = 5000ns; // 5000ns (200Khz)
-logic clk, en_dly, en_osc, en_osc_re, en_osc_fe;
+logic clk, clk_n, en_dly, en_osc, en_osc_re, en_osc_fe;
 
 initial begin
   clk = 1'b0;
@@ -37,9 +37,10 @@ end
 logic aon_en_dly;
 assign #(AON_EN_RDLY) aon_en_dly = aon_en_i;
 assign en_osc_re = vcore_pok_h_i && aon_en_i && (aon_en_dly && en_dly);
+assign clk_n = !clk;
 
 // Syncronize en_osc_fe to clk FE for glitch free disable
-always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -52,19 +53,17 @@ assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 always begin
   #(AonClkPeriod/2) clk = ~clk && en_osc;
 end
-
-assign aon_clk_o = clk;
 `else  // of SYNTHESIS
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-logic clk, en_osc, en_osc_re, en_osc_fe;
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+logic clk, clk_n, en_osc, en_osc_re, en_osc_fe;
 
 assign en_osc_re = vcore_pok_h_i && aon_en_i;
+assign clk_n = !clk;
 
 // Syncronize en_osc to clk FE for glitch free disable
-always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -81,14 +80,11 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
 end
+`endif
 
-prim_buf u_buf (
-  .in_i(clk),
-  .out_o(aon_clk_o)
+prim_clock_buf u_buf (
+  .clk_i ( clk ),
+  .clk_o ( aon_clk_o )
 );
-
-`endif // !`ifndef SYNTHESIS
-
-
 
 endmodule : aon_osc
