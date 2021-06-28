@@ -342,27 +342,49 @@ srcs = clks_attr['srcs']
   ////////////////////////////////////////////////////
 
 % for k in hint_blocks:
-  logic ${k}_hint;
+  logic ${k}_idle;
   logic ${k}_en;
 % endfor
 
+  // sync idle into configuration clock domain and combine
+  // with software hint
 % for k in hint_blocks:
-  assign ${k}_en = ${k}_hint | ~idle_i[${k.capitalize()}];
+<%
+    idle_signal = f'{k}_idle'
+    hint_signal = f'{k}_hint'
+    en_signal = f'{k}_en'
+%>\
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_${k}_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(idle_i[${k.capitalize()}]),
+    .q_o(${idle_signal})
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ${en_signal} <= '0;
+    end else begin
+      ${en_signal} <= ~${idle_signal} | reg2hw.clk_hints.${hint_signal}.q;
+    end
+  end
+
 % endfor
 
 % for k,v in hint_clks.items():
 <%
-    block_name = v['name']
-    hint_signal = f'{block_name}_hint'
-    en_signal = f'{block_name}_en'
+   en_signal = f'{v["name"]}_en'
 %>\
+  // transactional clock gating for ${k}
+  logic ${k}_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_hint_sync (
     .clk_i(clk_${v["src"]}_i),
     .rst_ni(rst_${v["src"]}_ni),
-    .d_i(reg2hw.clk_hints.${hint_signal}.q),
-    .q_o(${hint_signal})
+    .d_i(${en_signal}),
+    .q_o(${k}_en_synced)
   );
 
   lc_tx_t ${k}_scanmode;
@@ -380,7 +402,7 @@ srcs = clks_attr['srcs']
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
     .clk_i(clk_${v["src"]}_root),
-    .en_i(${en_signal} & clk_${v["src"]}_en),
+    .en_i(${k}_en_synced & clk_${v["src"]}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );

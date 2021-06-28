@@ -561,27 +561,91 @@
   // clock target
   ////////////////////////////////////////////////////
 
-  logic aes_hint;
+  logic aes_idle;
   logic aes_en;
-  logic hmac_hint;
+  logic hmac_idle;
   logic hmac_en;
-  logic kmac_hint;
+  logic kmac_idle;
   logic kmac_en;
-  logic otbn_hint;
+  logic otbn_idle;
   logic otbn_en;
 
-  assign aes_en = aes_hint | ~idle_i[Aes];
-  assign hmac_en = hmac_hint | ~idle_i[Hmac];
-  assign kmac_en = kmac_hint | ~idle_i[Kmac];
-  assign otbn_en = otbn_hint | ~idle_i[Otbn];
+  // sync idle into configuration clock domain and combine
+  // with software hint
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_aes_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(idle_i[Aes]),
+    .q_o(aes_idle)
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      aes_en <= '0;
+    end else begin
+      aes_en <= ~aes_idle | reg2hw.clk_hints.aes_hint.q;
+    end
+  end
 
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_hmac_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(idle_i[Hmac]),
+    .q_o(hmac_idle)
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      hmac_en <= '0;
+    end else begin
+      hmac_en <= ~hmac_idle | reg2hw.clk_hints.hmac_hint.q;
+    end
+  end
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_kmac_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(idle_i[Kmac]),
+    .q_o(kmac_idle)
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_en <= '0;
+    end else begin
+      kmac_en <= ~kmac_idle | reg2hw.clk_hints.kmac_hint.q;
+    end
+  end
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_otbn_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(idle_i[Otbn]),
+    .q_o(otbn_idle)
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      otbn_en <= '0;
+    end else begin
+      otbn_en <= ~otbn_idle | reg2hw.clk_hints.otbn_hint.q;
+    end
+  end
+
+
+  // transactional clock gating for clk_main_aes
+  logic clk_main_aes_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_aes_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.aes_hint.q),
-    .q_o(aes_hint)
+    .d_i(aes_en),
+    .q_o(clk_main_aes_en_synced)
   );
 
   lc_tx_t clk_main_aes_scanmode;
@@ -599,18 +663,20 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
-    .en_i(aes_en & clk_main_en),
+    .en_i(clk_main_aes_en_synced & clk_main_en),
     .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_aes)
   );
 
+  // transactional clock gating for clk_main_hmac
+  logic clk_main_hmac_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_hmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.hmac_hint.q),
-    .q_o(hmac_hint)
+    .d_i(hmac_en),
+    .q_o(clk_main_hmac_en_synced)
   );
 
   lc_tx_t clk_main_hmac_scanmode;
@@ -628,18 +694,20 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
-    .en_i(hmac_en & clk_main_en),
+    .en_i(clk_main_hmac_en_synced & clk_main_en),
     .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
+  // transactional clock gating for clk_main_kmac
+  logic clk_main_kmac_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_kmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.kmac_hint.q),
-    .q_o(kmac_hint)
+    .d_i(kmac_en),
+    .q_o(clk_main_kmac_en_synced)
   );
 
   lc_tx_t clk_main_kmac_scanmode;
@@ -657,18 +725,20 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
-    .en_i(kmac_en & clk_main_en),
+    .en_i(clk_main_kmac_en_synced & clk_main_en),
     .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_kmac)
   );
 
+  // transactional clock gating for clk_main_otbn
+  logic clk_main_otbn_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_main_otbn_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.otbn_hint.q),
-    .q_o(otbn_hint)
+    .d_i(otbn_en),
+    .q_o(clk_main_otbn_en_synced)
   );
 
   lc_tx_t clk_main_otbn_scanmode;
@@ -686,18 +756,20 @@
     .NoFpgaGate(1'b1)
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
-    .en_i(otbn_en & clk_main_en),
+    .en_i(clk_main_otbn_en_synced & clk_main_en),
     .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_otbn)
   );
 
+  // transactional clock gating for clk_io_div4_otbn
+  logic clk_io_div4_otbn_en_synced;
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_io_div4_otbn_hint_sync (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .d_i(reg2hw.clk_hints.otbn_hint.q),
-    .q_o(otbn_hint)
+    .d_i(otbn_en),
+    .q_o(clk_io_div4_otbn_en_synced)
   );
 
   lc_tx_t clk_io_div4_otbn_scanmode;
@@ -715,7 +787,7 @@
     .NoFpgaGate(1'b1)
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
-    .en_i(otbn_en & clk_io_div4_en),
+    .en_i(clk_io_div4_otbn_en_synced & clk_io_div4_en),
     .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_otbn)
   );
