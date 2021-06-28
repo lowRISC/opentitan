@@ -187,16 +187,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         if (err_code == exp_err_code) begin
           error_cnt++;
         end else if (err_code != OtpFsmStateError) begin
-          // If error code is not `exp_err_code`, then it has to be `FsmStateError` expect this
-          // corner case where sequence inject ECC correctable error on LC partition.
-          // Design has not processed the LC partition, then other uncorrectable error triggered
-          // fatal alert. Because fatal alert triggered by other FSMs won't affect LC partition,
-          // LC partition status stays as no error.
-          if (i != OtpLifeCycleErrIdx) begin
-            `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", i, err_code.name))
-          end else if (err_code == OtpNoError) begin
-            exp_status[OtpLifeCycleErrIdx] = 0;
-          end
+          `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", i, err_code.name))
         end
         if (cfg.en_cov) cov.collect_err_code_field_cov(i, err_code);
       end
