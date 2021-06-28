@@ -229,12 +229,8 @@ class OTBNState:
         '''Run before running an instruction'''
         self.loop_stack.check_insn(self.pc, insn_affects_control)
 
-    def check_next_pc(self) -> None:
-        '''Check whether the next program counter is valid.
-
-        If not, generates a BadAddrError.
-
-        '''
+    def is_next_pc_valid(self) -> bool:
+        '''Return whether the next program counter is valid.'''
         next_pc = self.get_next_pc()
 
         # The PC should always be non-negative (it's an error in the simulator
@@ -243,16 +239,17 @@ class OTBNState:
 
         # Check the new PC is word-aligned
         if next_pc & 3:
-            self._err_bits |= BAD_INSN_ADDR
+            return False
 
         # Check the new PC lies in instruction memory
         if next_pc >= self.imem_size:
-            self._err_bits |= BAD_INSN_ADDR
+            return False
+
+        return True
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.ext_regs.increment_insn_cnt()
-        self.check_next_pc()
         self.loop_step()
         self.gprs.post_insn()
 
@@ -261,6 +258,14 @@ class OTBNState:
                            self.loop_stack.err_bits())
         if self._err_bits:
             self.pending_halt = True
+
+        # Check the next PC is valid, but only if we're not stopping anyway. We
+        # do this right at the end of post_insn because any of the errors that
+        # we've just checked for would squash the "next PC" check.
+        if not self.pending_halt:
+            if not self.is_next_pc_valid():
+                self._err_bits |= BAD_INSN_ADDR
+                self.pending_halt = True
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
