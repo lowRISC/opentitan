@@ -11,7 +11,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   // local variables
   csrng_item              cs_item;
-  bit [TL_DW-1:0]         rdata;
   bit [RSD_CTR_LEN-1:0]   reseed_counter;
   bit [BLOCK_LEN-1:0]     v;
   bit [KEY_LEN-1:0]       key;
@@ -113,6 +112,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "genbits": begin
         do_read_check = 1'b0;
       end
+      "halt_main_sm": begin
+      end
+      "main_sm_sts": begin
+        do_read_check = 1'b0;
+      end
       "int_state_val": begin
         do_read_check = 1'b0;
       end
@@ -146,28 +150,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
-
-    // Compare internal state
-  task check_int_state();
-// TODO: Halt main state machine and poll first
-// TODO: Check FIPs and instantiated too
-    csr_wr(.ptr(ral.int_state_num), .value(1'b0));
-    for (int i = 0; i < RSD_CTR_LEN/TL_DW; i++) begin
-      csr_rd(.ptr(ral.int_state_val), .value(rdata));
-      reseed_counter = (rdata<<TL_DW*i) + reseed_counter;
-    end
-    `DV_CHECK_EQ_FATAL(reseed_counter, cfg.reseed_counter)
-    for (int i = 0; i < BLOCK_LEN/TL_DW; i++) begin
-      csr_rd(.ptr(ral.int_state_val), .value(rdata));
-      v = (rdata<<TL_DW*i) + v;
-    end
-    `DV_CHECK_EQ_FATAL(v, cfg.v)
-    for (int i = 0; i < KEY_LEN/TL_DW; i++) begin
-      csr_rd(.ptr(ral.int_state_val), .value(rdata));
-      key = (rdata<<TL_DW*i) + key;
-    end
-    `DV_CHECK_EQ_FATAL(key, cfg.key)
-  endtask
 
   // From NIST.SP.800-90Ar1
   function bit [csrng_env_pkg::BLOCK_LEN-1:0] block_encrypt(bit [csrng_env_pkg::KEY_LEN-1:0] key,
@@ -230,6 +212,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.v = 'h0;
     ctr_drbg_update(seed_material, cfg.key, cfg.v);
     cfg.reseed_counter = 1'b1;
+    cfg.status = 1'b1;
   endfunction
 
   function void ctr_drbg_reseed(bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
@@ -248,8 +231,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       csrng_cmd_fifo.get(cs_item);
+      seed = '0;
       for (int i = 0; i < cs_item.cmd_data_q.size(); i++) begin
-        seed = (cs_item.cmd_data_q[i] << i * 32) + seed;
+        seed = (cs_item.cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) + seed;
       end
 
       case (cs_item.acmd)
@@ -257,8 +241,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           ctr_drbg_instantiate(seed);
         end
       endcase
-
-      check_int_state();
     end
   endtask
 

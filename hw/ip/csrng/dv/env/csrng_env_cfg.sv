@@ -24,6 +24,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand bit [3:0]   cmd_length, cmd_flags;
 
   // Variables
+  bit                                    compliance, status;
   bit [csrng_env_pkg::KEY_LEN-1:0]       key;
   bit [csrng_env_pkg::BLOCK_LEN-1:0]     v;
   bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter;
@@ -40,14 +41,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint c_chk_int_state {chk_int_state dist { 1 :/ chk_int_state_pct,
                                                    0 :/ (100 - chk_int_state_pct)
                                                  };}
-
-  constraint c_cmd_length_0 {cmd_length dist { 0      :/ cmd_length_0_pct,
-                                               [1:12] :/ (100 - cmd_length_0_pct)
-                                             };}
-
-  constraint c_cmd_flags_0 {cmd_flags dist { 0 :/ cmd_flags_0_pct,
-                                             1 :/ (100 - cmd_flags_0_pct)
-                                           };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
@@ -68,6 +61,40 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       end
     end
   endfunction
+
+    // Compare internal state
+  task check_int_state();
+    bit [TL_DW-1:0]                        rdata;
+    bit                                    hw_compliance, hw_status;
+    bit [csrng_env_pkg::KEY_LEN-1:0]       hw_key;
+    bit [csrng_env_pkg::BLOCK_LEN-1:0]     hw_v;
+    bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   hw_reseed_counter;
+
+    csr_wr(.ptr(ral.halt_main_sm), .value(1'b1));
+    csr_spinwait(.ptr(ral.main_sm_sts), .exp_data(1'b1));
+    csr_wr(.ptr(ral.int_state_num), .value(1'b0));
+    for (int i = 0; i < RSD_CTR_LEN/TL_DW; i++) begin
+      csr_rd(.ptr(ral.int_state_val), .value(rdata));
+      hw_reseed_counter = (rdata<<TL_DW*i) + hw_reseed_counter;
+    end
+    `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter)
+    for (int i = 0; i < BLOCK_LEN/TL_DW; i++) begin
+      csr_rd(.ptr(ral.int_state_val), .value(rdata));
+      hw_v = (rdata<<TL_DW*i) + hw_v;
+    end
+    `DV_CHECK_EQ_FATAL(hw_v, v)
+    for (int i = 0; i < KEY_LEN/TL_DW; i++) begin
+      csr_rd(.ptr(ral.int_state_val), .value(rdata));
+      hw_key = (rdata<<TL_DW*i) + hw_key;
+    end
+    `DV_CHECK_EQ_FATAL(hw_key, key)
+    csr_rd(.ptr(ral.int_state_val), .value(rdata));
+    hw_compliance = rdata[1];
+    hw_status     = rdata[0];
+    `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance, status})
+    csr_wr(.ptr(ral.halt_main_sm), .value(1'b0));
+    csr_spinwait(.ptr(ral.main_sm_sts), .exp_data(1'b0));
+ endtask
 
   virtual function string convert2string();
     string str = "";

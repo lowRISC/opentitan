@@ -64,6 +64,7 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.clen  = item.h_data[7:4];
           cs_item.flags = item.h_data[11:8];
           cs_item.glen  = item.h_data[30:12];
+          cs_item.cmd_data_q.delete();
         end
         else begin
           cs_item.cmd_data_q.push_back(item.h_data);

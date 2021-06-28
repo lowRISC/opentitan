@@ -9,13 +9,12 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   rand bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]   entropy_val;
-  csrng_item                                             cs_item;
+  rand csrng_item                                        cs_item;
   bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]                   cmd_data, cmd_data_q[$];
   bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]                 genbits;
 
 
   task body();
-    // Enable CSRNG, Disable AES Cipher Core
     ral.ctrl.enable.set(1'b1);
     ral.ctrl.aes_cipher_disable.set(cfg.aes_cipher_disable);
     csr_update(.csr(ral.ctrl));
@@ -49,11 +48,15 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
       begin
         //instantiate cmd
-        for (int i = 0; i < cfg.cmd_length; i++)
-          cmd_data_q.push_back(32'hdeadbeef);
-        send_cmd_req(.acmd(csrng_pkg::INS), .clen(cfg.cmd_length), .flags(cfg.cmd_flags), .glen(19'h0), .data_q(cmd_data_q));
+        for (int i = 0; i < 10; i++) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                       cs_item.acmd  == csrng_pkg::INS;
+                                       cs_item.flags == 4'h1;
+                                       cs_item.glen  == 'h0;)
+        send_cmd_req(cs_item);
+      end
 
-	// TODO: add other commands
+        // TODO: add other commands
         // //generate cmd
         // send_cmd_req(.acmd(csrng_pkg::GEN), .clen(4'h0), .flags(4'h0), .glen(19'h1));
         // genbits = ctr_drbg_generate();
