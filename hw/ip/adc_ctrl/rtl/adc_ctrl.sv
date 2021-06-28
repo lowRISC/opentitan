@@ -52,10 +52,7 @@ module adc_ctrl
 
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
-  assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
-  };
+  assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -64,12 +61,12 @@ module adc_ctrl
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
-      .alert_ack_o   (               ),
-      .alert_state_o (               ),
-      .alert_rx_i    ( alert_rx_i[i] ),
-      .alert_tx_o    ( alert_tx_o[i] )
+      .alert_test_i (alert_test[i]),
+      .alert_req_i  (alerts[0]),
+      .alert_ack_o  (),
+      .alert_state_o(),
+      .alert_rx_i   (alert_rx_i[i]),
+      .alert_tx_o   (alert_tx_o[i])
     );
   end
 
