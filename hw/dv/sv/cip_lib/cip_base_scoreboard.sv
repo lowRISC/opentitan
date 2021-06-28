@@ -28,8 +28,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local int alert_chk_max_delay[string];
 
   // covergroups
-  tl_errors_cg   tl_errors_cgs[string];
-  tl_intg_err_cg tl_intg_err_cgs[string];
+  tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
+  tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -59,19 +59,27 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access, has_wo_mem, has_ro_mem);
       end
 
-      tl_errors_cgs[ral_name] = new(ral_name);
+      tl_errors_cgs_wrap[ral_name] = new(ral_name);
       if (!has_csr) begin
-        tl_errors_cgs[ral_name].cp_csr_aligned_err.option.weight = 0;
-        tl_errors_cgs[ral_name].cp_csr_size_err.option.weight = 0;
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_aligned_err.option.weight = 0;
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
       end
-      if (!has_unmapped)        tl_errors_cgs[ral_name].cp_unmapped_err.option.weight = 0;
-      if (!has_mem_byte_access) tl_errors_cgs[ral_name].cp_mem_byte_access_err.option.weight = 0;
-      if (!has_wo_mem)          tl_errors_cgs[ral_name].cp_mem_wo_err.option.weight = 0;
-      if (!has_ro_mem)          tl_errors_cgs[ral_name].cp_mem_ro_err.option.weight = 0;
+      if (!has_unmapped) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
+      end
+      if (!has_mem_byte_access) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err. option.weight = 0;
+      end
+      if (!has_wo_mem) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
+      end
+      if (!has_ro_mem) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
+      end
 
       if (cfg.en_tl_intg_gen) begin
-        tl_intg_err_cgs[ral_name] = new(ral_name);
-        if (!has_mem) tl_intg_err_cgs[ral_name].cp_is_mem.option.weight = 0;
+        tl_intg_err_cgs_wrap[ral_name] = new(ral_name);
+        if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
       end
     end
   endfunction
@@ -316,7 +324,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         // sample covergroup
         `downcast(cip_item, item)
         cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
-        tl_intg_err_cgs[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
                                          is_mem_addr(item, ral_name));
       end
     end
@@ -335,7 +343,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // error, so that we know the error actually triggers the outcome
       if (is_tl_unmapped_addr + csr_aligned_err + csr_size_err + mem_byte_access_err + mem_wo_err +
           mem_ro_err + tl_item_err == 1) begin
-        tl_errors_cgs[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
+        tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
                                        .csr_aligned_err(csr_aligned_err),
                                        .csr_size_err(csr_size_err),
                                        .mem_byte_access_err(mem_byte_access_err),
