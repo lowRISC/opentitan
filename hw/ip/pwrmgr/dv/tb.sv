@@ -34,6 +34,8 @@ module tb;
     .rst_n(rst_n)
   );
 
+  assign interrupts[0] = pwrmgr_if.intr_wakeup;
+
   pwrmgr_if pwrmgr_if (
     .clk,
     .rst_n,

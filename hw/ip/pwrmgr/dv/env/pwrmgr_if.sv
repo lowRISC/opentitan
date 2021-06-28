@@ -48,36 +48,8 @@ interface pwrmgr_if (
 
   logic                                                        intr_wakeup;
 
-  function automatic void update_ast_rsp(pwrmgr_pkg::pwr_ast_rsp_t rsp);
-    pwr_ast_rsp = rsp;
-  endfunction
-
   function automatic void update_ast_main_pok(logic value);
     pwr_ast_rsp.main_pok = value;
-  endfunction
-
-  function automatic void update_ast_core_clk_val(logic value);
-    pwr_ast_rsp.core_clk_val = value;
-  endfunction
-
-  function automatic void update_ast_io_clk_val(logic value);
-    pwr_ast_rsp.io_clk_val = value;
-  endfunction
-
-  function automatic void update_ast_usb_clk_val(logic value);
-    pwr_ast_rsp.usb_clk_val = value;
-  endfunction
-
-  function automatic void update_clk_status(logic value);
-    pwr_clk_rsp.clk_status = value;
-  endfunction
-
-  function automatic void update_rst_lc_src(int index, logic value);
-    pwr_rst_rsp.rst_lc_src_n[index] = value;
-  endfunction
-
-  function automatic void update_rst_sys_src(int index, logic value);
-    pwr_rst_rsp.rst_sys_src_n[index] = value;
   endfunction
 
   function automatic void update_otp_done(logic value);
@@ -127,4 +99,20 @@ interface pwrmgr_if (
     rom_ctrl = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
     esc_rst_tx = prim_esc_pkg::ESC_TX_DEFAULT;
   end
+
+  clocking slow_cb @(posedge clk_slow);
+    input  pwr_ast_req;
+    output pwr_ast_rsp;
+  endclocking
+
+  clocking fast_cb @(posedge clk);
+    input  pwr_rst_req;
+    output pwr_rst_rsp;
+    input  pwr_clk_req;
+    output pwr_clk_rsp;
+    input  pwr_lc_req;
+    output pwr_lc_rsp;
+    input  pwr_otp_req;
+    output pwr_otp_rsp;
+  endclocking
 endinterface

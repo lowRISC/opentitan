@@ -26,8 +26,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     bit [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     start_slow_fsm();
-    start_fast_from_low_power();
     cfg.slow_clk_rst_vif.wait_clks(10);
+    `uvm_info(`gfn, "smoke waiting for fast active", UVM_MEDIUM)
 
     wait_for_fast_fsm_active();
     csr_rd_check(.ptr(ral.wake_status), .compare_value(0));
@@ -37,23 +37,25 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     wakeup_en = '1;
     csr_wr(.ptr(ral.wakeup_en), .value(wakeup_en));
     wait_for_csr_to_propagate_to_slow_domain();
+    `uvm_info(`gfn, "smoke waiting for wakeup propagate", UVM_MEDIUM)
 
     // Initiate low power transition.
     csr_wr(.ptr(ral.control.low_power_hint), .value(1'b1));
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
     fast_to_low_power();
-    turn_clocks_off_for_slow_to_low_power();
-    wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
+    if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
+      wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
+    end
 
     // Now bring it back.
     cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
 
     start_slow_fsm();
-    start_fast_from_low_power();
     cfg.slow_clk_rst_vif.wait_clks(10);
 
     wait_for_fast_fsm_active();
+    `uvm_info(`gfn, "smoke back from wakeup", UVM_MEDIUM)
 
     csr_rd_check(.ptr(ral.wake_status), .compare_value(wakeups & wakeup_en));
     csr_rd_check(.ptr(ral.reset_status), .compare_value(0));
@@ -70,9 +72,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     wait_for_reset_cause(pwrmgr_pkg::HwReq);
 
     // Now bring it back: the slow fsm doesn't participate on this.
-    assert_rstmgr_resets();
-    start_fast_from_low_power();
-    cfg.slow_clk_rst_vif.wait_clks(10);
+    cfg.slow_clk_rst_vif.wait_clks(15);
 
     csr_rd_check(.ptr(ral.wake_status), .compare_value(wakeups & wakeup_en));
     csr_rd_check(.ptr(ral.reset_status), .compare_value(resets & reset_en));
