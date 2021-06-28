@@ -81,7 +81,6 @@
             ''',
     }
   ],
-
   regwidth: "32",
   registers: [
     { name: "REGWEN",
