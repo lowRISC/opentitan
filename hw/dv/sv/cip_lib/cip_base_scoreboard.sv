@@ -59,7 +59,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access, has_wo_mem, has_ro_mem);
       end
 
-      tl_errors_cgs_wrap[ral_name] = new(ral_name);
+      tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
       if (!has_csr) begin
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_aligned_err.option.weight = 0;
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
@@ -68,7 +68,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
       end
       if (!has_mem_byte_access) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err. option.weight = 0;
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
       end
       if (!has_wo_mem) begin
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
@@ -78,7 +78,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
 
       if (cfg.en_tl_intg_gen) begin
-        tl_intg_err_cgs_wrap[ral_name] = new(ral_name);
+        tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
         if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
       end
     end
@@ -341,7 +341,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         `downcast(cip_item, item)
         cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
         tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
-                                         is_mem_addr(item, ral_name));
+                                              is_mem_addr(item, ral_name));
       end
     end
 
