@@ -11,5 +11,5 @@
     life_stage:         "L1",
     design_stage:       "D1",
     verification_stage: "V0",
-    notes:              "will be verified at top level; formal at block level",
+    notes:              "Use FPV to perform block level verification.",
 }
