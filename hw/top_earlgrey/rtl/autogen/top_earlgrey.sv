@@ -542,6 +542,8 @@ module top_earlgrey #(
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_intg_event;
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_core_event;
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_recov_core_event;
+  rv_core_ibex_peri_pkg::region_cfg_t       rv_core_ibex_peri_ibus_region_cfg;
+  rv_core_ibex_peri_pkg::region_cfg_t       rv_core_ibex_peri_dbus_region_cfg;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic [4:0] pwrmgr_aon_wakeups;
@@ -808,7 +810,9 @@ module top_earlgrey #(
     .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
     .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
     .recov_core_event_o   (rv_core_ibex_recov_core_event),
-
+    // address translation configuration
+    .ibus_region_cfg_i    (rv_core_ibex_peri_ibus_region_cfg),
+    .dbus_region_cfg_i    (rv_core_ibex_peri_dbus_region_cfg),
     // dft bypass
     .scan_rst_ni,
     .scanmode_i
@@ -2531,6 +2535,8 @@ module top_earlgrey #(
       .fatal_intg_event_i(rv_core_ibex_fatal_intg_event),
       .fatal_core_event_i(rv_core_ibex_fatal_core_event),
       .recov_core_event_i(rv_core_ibex_recov_core_event),
+      .ibus_region_cfg_o(rv_core_ibex_peri_ibus_region_cfg),
+      .dbus_region_cfg_o(rv_core_ibex_peri_dbus_region_cfg),
       .tl_i(rv_core_ibex_peri_tl_req),
       .tl_o(rv_core_ibex_peri_tl_rsp),
 
