@@ -6,7 +6,7 @@
 ##  - harts:  number of HART in timer module
 ##  - timers: number of timers in each hart
 { name: "rv_timer",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

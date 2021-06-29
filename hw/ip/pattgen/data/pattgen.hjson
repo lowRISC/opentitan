@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 { name: "pattgen",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

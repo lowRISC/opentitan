@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "spi_host",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_core_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_core_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_core_i", reset: "rst_core_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

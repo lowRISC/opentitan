@@ -16,17 +16,15 @@ num_grps = len(grps)
 {
   name: "CLKMGR",
   scan: "true",
-  clock_primary: "clk_i",
-  other_clock_list: [],
-  reset_primary: "rst_ni",
-  other_reset_list: [
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
 % for src in srcs:
     % if src['aon'] == 'no':
-    "rst_${src['name']}_ni"
+    {reset: "rst_${src['name']}_ni"},
     % endif
 % endfor
 % for src in div_srcs:
-    "rst_${src['name']}_ni"
+    {reset: "rst_${src['name']}_ni"},
 % endfor
   ]
   bus_interfaces: [

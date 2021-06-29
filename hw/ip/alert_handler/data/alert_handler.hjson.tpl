@@ -16,10 +16,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
   name: "ALERT_HANDLER",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_edn_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_edn_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

@@ -11,10 +11,10 @@
 
 
 { name: "FLASH_CTRL",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_otp_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_otp_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_otp_i", reset: "rst_otp_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "prim" }

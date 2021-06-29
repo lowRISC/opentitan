@@ -10,7 +10,7 @@
 #  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

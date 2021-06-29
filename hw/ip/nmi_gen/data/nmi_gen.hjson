@@ -5,7 +5,7 @@
 # NMI_GEN register template
 {
   name: "NMI_GEN",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
