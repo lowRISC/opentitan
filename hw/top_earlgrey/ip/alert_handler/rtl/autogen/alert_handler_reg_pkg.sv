@@ -18,6 +18,12 @@ package alert_handler_reg_pkg;
   parameter int PING_CNT_DW = 16;
   parameter int PHASE_DW = 2;
   parameter int CLASS_DW = 2;
+  parameter int LOCAL_ALERT_ID_ALERT_PINGFAIL = 0;
+  parameter int LOCAL_ALERT_ID_ESC_PINGFAIL = 1;
+  parameter int LOCAL_ALERT_ID_ALERT_INTEGFAIL = 2;
+  parameter int LOCAL_ALERT_ID_ESC_INTEGFAIL = 3;
+  parameter int LOCAL_ALERT_ID_BUS_INTEGFAIL = 4;
+  parameter int LOCAL_ALERT_ID_LAST = 4;
 
   // Address widths within the block
   parameter int BlockAw = 11;
