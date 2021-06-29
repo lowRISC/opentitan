@@ -338,6 +338,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
       [kDifOtpCtrlStatusCodeScramblingError] =
           OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
       [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeBusIntegError] =
+          OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
       [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
   };
