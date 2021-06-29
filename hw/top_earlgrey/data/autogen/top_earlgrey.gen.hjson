@@ -526,6 +526,30 @@
           top_signame: rv_core_ibex_recov_core_event
           index: -1
         }
+        {
+          struct: region_cfg
+          type: uni
+          name: ibus_region_cfg
+          act: rcv
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: rv_core_ibex_peri_ibus_region_cfg
+          index: -1
+        }
+        {
+          struct: region_cfg
+          type: uni
+          name: dbus_region_cfg
+          act: rcv
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: rv_core_ibex_peri_dbus_region_cfg
+          index: -1
+        }
       ]
     }
     {
@@ -5492,6 +5516,34 @@
           index: -1
         }
         {
+          name: ibus_region_cfg
+          struct: region_cfg
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_peri_ibus_region_cfg
+          index: -1
+        }
+        {
+          name: dbus_region_cfg
+          struct: region_cfg
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_peri_dbus_region_cfg
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -6254,6 +6306,14 @@
       rv_core_ibex.recov_core_event:
       [
         rv_core_ibex_peri.recov_core_event
+      ]
+      rv_core_ibex_peri.ibus_region_cfg:
+      [
+        rv_core_ibex.ibus_region_cfg
+      ]
+      rv_core_ibex_peri.dbus_region_cfg:
+      [
+        rv_core_ibex.dbus_region_cfg
       ]
       spi_device.passthrough:
       [
@@ -15461,6 +15521,34 @@
         index: -1
       }
       {
+        name: ibus_region_cfg
+        struct: region_cfg
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_peri_ibus_region_cfg
+        index: -1
+      }
+      {
+        name: dbus_region_cfg
+        struct: region_cfg
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_peri_dbus_region_cfg
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16471,6 +16559,30 @@
         end_idx: -1
         top_type: broadcast
         top_signame: rv_core_ibex_recov_core_event
+        index: -1
+      }
+      {
+        struct: region_cfg
+        type: uni
+        name: ibus_region_cfg
+        act: rcv
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: rv_core_ibex_peri_ibus_region_cfg
+        index: -1
+      }
+      {
+        struct: region_cfg
+        type: uni
+        name: dbus_region_cfg
+        act: rcv
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: rv_core_ibex_peri_dbus_region_cfg
         index: -1
       }
       {
@@ -18020,6 +18132,28 @@
         act: req
         suffix: ""
         default: rv_core_ibex_peri_pkg::ALERT_EVENT_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: region_cfg
+        signame: rv_core_ibex_peri_ibus_region_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::REGION_CFG_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: region_cfg
+        signame: rv_core_ibex_peri_dbus_region_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::REGION_CFG_DEFAULT
       }
       {
         package: spi_device_pkg
