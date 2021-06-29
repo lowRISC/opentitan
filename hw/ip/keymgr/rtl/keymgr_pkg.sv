@@ -8,6 +8,7 @@
 package keymgr_pkg;
 
   parameter int KeyWidth = 256;
+  parameter int Versions = 1;          // 2 versions of root, sealing / attestation
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
   parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
