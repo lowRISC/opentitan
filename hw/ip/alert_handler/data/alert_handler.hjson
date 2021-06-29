@@ -106,6 +106,36 @@
       default: "2",
       local: "true"
     },
+    { name: "LOCAL_ALERT_ID_ALERT_PINGFAIL",
+      desc: "Local alert ID",
+      type: "int",
+      default: "0",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_PINGFAIL",
+      desc: "Local alert ID",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ALERT_INTEGFAIL",
+      desc: "Local alert ID",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_INTEGFAIL",
+      desc: "Local alert ID",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_BUS_INTEGFAIL",
+      desc: "Local alert ID",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
   ],
 
   inter_signal_list: [
