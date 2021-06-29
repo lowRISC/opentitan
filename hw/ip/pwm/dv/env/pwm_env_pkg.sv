@@ -29,41 +29,41 @@ package pwm_env_pkg;
 
   // datatype
   typedef enum bit [1:0] {
-    Standard   = 2'b00,
-    Blinking   = 2'b01,
-    Heartbeat  = 2'b11,
-    Allmodes   = 2'b10
+    Standard  = 2'b00,
+    Blinking  = 2'b01,
+    Heartbeat = 2'b11,
+    Allmodes  = 2'b10
   } pwm_mode_e;
 
   typedef enum bit {
-    Enable     = 1'b1,
-    Disable    = 1'b0
+    Enable  = 1'b1,
+    Disable = 1'b0
   } pwm_status_e;
 
   typedef struct {
     // cfg reg
-    rand bit [3:0]    dc_resn;
-    rand bit [26:0]   clk_div;
-    bit               cntr_en;
+    rand bit [3:0] dc_resn;
+    rand bit [26:0] clk_div;
+    bit cntr_en;
     // en reg
-    rand bit [PWM_NUM_CHANNELS-1:0]         pwm_en;
+    rand bit [PWM_NUM_CHANNELS-1:0] pwm_en;
     // invert multireg
-    rand bit [PWM_NUM_CHANNELS-1:0]         invert;
+    rand bit [PWM_NUM_CHANNELS-1:0] invert;
     // param multireg
-    rand bit [PWM_NUM_CHANNELS-1:0]         blink_en;
-    rand bit [PWM_NUM_CHANNELS-1:0]         htbt_en;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   phase_delay;
+    rand bit [PWM_NUM_CHANNELS-1:0] blink_en;
+    rand bit [PWM_NUM_CHANNELS-1:0] htbt_en;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0] phase_delay;
     // duty_cycle multireg
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   duty_cycle_a;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   duty_cycle_b;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0] duty_cycle_a;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0] duty_cycle_b;
     // blink_param multireg
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   blink_param_x;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0]   blink_param_y;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0] blink_param_x;
+    rand bit [PWM_NUM_CHANNELS-1:0][15:0] blink_param_y;
     // mode multireg
-    rand pwm_mode_e [PWM_NUM_CHANNELS-1:0]  pwm_mode;
+    rand pwm_mode_e [PWM_NUM_CHANNELS-1:0] pwm_mode;
     // derived params
-    bit  [27:0] beat_cycle;   // 2**(clk_div+1) core cycles
-    bit  [16:0] pulse_cycle;  // 2**(dc_resn+1) beat cycles
+    bit [27:0] beat_cycle;  // 2**(clk_div+1) core cycles
+    bit [16:0] pulse_cycle;  // 2**(dc_resn+1) beat cycles
   } pwm_regs_t;
 
   // function

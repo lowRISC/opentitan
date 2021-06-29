@@ -37,23 +37,30 @@ class pwm_base_vseq extends cip_base_vseq #(
     // constraints for multi regs
     foreach (pwm_regs.pwm_mode[i]) {
       if (cfg.seq_cfg.pwm_run_mode == Allmodes) {
-        pwm_regs.pwm_mode[i] dist { Standard  :/ 1, Blinking  :/ 1, Heartbeat :/ 0 };
+        pwm_regs.pwm_mode[i] dist {
+          Standard  :/ 1,
+          Blinking  :/ 1,
+          Heartbeat :/ 0
+        };
       } else {
         pwm_regs.pwm_mode[i] == cfg.seq_cfg.pwm_run_mode;
       }
     }
     foreach (pwm_regs.blink_en[i]) {pwm_regs.blink_en[i] == (pwm_regs.pwm_mode[i] != Standard);}
-    foreach (pwm_regs.htbt_en[i])  {pwm_regs.htbt_en[i]  == (pwm_regs.pwm_mode[i] == Heartbeat);}
+    foreach (pwm_regs.htbt_en[i]) {pwm_regs.htbt_en[i] == (pwm_regs.pwm_mode[i] == Heartbeat);}
     pwm_regs.pwm_en inside {[1 : (1 << cfg.seq_cfg.pwm_run_channel) - 1]};
     foreach (pwm_regs.invert[i]) {
       if (pwm_regs.pwm_en[i]) {
-        pwm_regs.invert[i] dist {1'b1 :/ 1, 1'b0 :/ 1};
+        pwm_regs.invert[i] dist {
+          1'b1 :/ 1,
+          1'b0 :/ 1
+        };
       } else {
         pwm_regs.invert[i] == 1'b0;
       }
     }
     foreach (pwm_regs.phase_delay[i]) {
-      pwm_regs.phase_delay[i] inside {[0 : 2**(pwm_regs.dc_resn + 1)]};
+      pwm_regs.phase_delay[i] inside {[0 : 2 ** (pwm_regs.dc_resn + 1)]};
     }
     foreach (pwm_regs.blink_param_x[i]) {
       pwm_regs.blink_param_x[i] inside {[cfg.seq_cfg.pwm_min_param : cfg.seq_cfg.pwm_max_param]};
@@ -62,10 +69,10 @@ class pwm_base_vseq extends cip_base_vseq #(
       pwm_regs.blink_param_y[i] inside {[cfg.seq_cfg.pwm_min_param : cfg.seq_cfg.pwm_max_param]};
     }
     foreach (pwm_regs.duty_cycle_a[i]) {
-      pwm_regs.duty_cycle_a[i] inside {[1 : 2**(pwm_regs.dc_resn + 1) - 1]};
+      pwm_regs.duty_cycle_a[i] inside {[1 : 2 ** (pwm_regs.dc_resn + 1) - 1]};
     }
     foreach (pwm_regs.duty_cycle_b[i]) {
-      pwm_regs.duty_cycle_b[i] inside {[1 : 2**(pwm_regs.dc_resn + 1) - 1]};
+      pwm_regs.duty_cycle_b[i] inside {[1 : 2 ** (pwm_regs.dc_resn + 1) - 1]};
     }
   }
 
@@ -103,8 +110,8 @@ class pwm_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_core_vif.wait_clks(runtime);
     foreach (pwm_regs.pwm_en[i]) begin
       if (pwm_regs.pwm_en[i]) begin
-        `uvm_info(`gfn, $sformatf("\n  base_vseq: generate %0d pulse in channel %0d",
-            cfg.num_pulses, i), UVM_DEBUG)
+        `uvm_info(`gfn, $sformatf(
+                  "\n  base_vseq: generate %0d pulse in channel %0d", cfg.num_pulses, i), UVM_DEBUG)
       end
     end
     // disable channels and clear phase counter
@@ -121,10 +128,11 @@ class pwm_base_vseq extends cip_base_vseq #(
 
   virtual task program_pwm_cfg_regs();
     // derived params
-    `uvm_info(`gfn, $sformatf("\n  base_vseq: clk_div %0d and dc_resn %0d ",
-        pwm_regs.clk_div, pwm_regs.dc_resn), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf(
+              "\n  base_vseq: clk_div %0d and dc_resn %0d ", pwm_regs.clk_div, pwm_regs.dc_resn),
+              UVM_DEBUG)
     pwm_regs.beat_cycle  = pwm_regs.clk_div + 1;
-    pwm_regs.pulse_cycle = 2**(pwm_regs.dc_resn + 1);
+    pwm_regs.pulse_cycle = 2 ** (pwm_regs.dc_resn + 1);
     ral.cfg.clk_div.set(pwm_regs.clk_div);
     ral.cfg.dc_resn.set(pwm_regs.dc_resn);
     csr_update(ral.cfg);
@@ -136,8 +144,8 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.cfg);
     csr_spinwait(.ptr(ral.cfg.cntr_en), .exp_data(pwm_regs.cntr_en));
     cfg.m_pwm_monitor_cfg.cntr_en = pwm_regs.cntr_en;
-    `uvm_info(`gfn, $sformatf("\n  base_vseq: phase counters %s",
-        pwm_regs.cntr_en ? "enable" : "clear"), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf(
+              "\n  base_vseq: phase counters %s", pwm_regs.cntr_en ? "enable" : "clear"), UVM_DEBUG)
   endtask : program_pwm_cnt_regs
 
   virtual task program_pwm_enb_regs(pwm_status_e status = Enable);
@@ -166,10 +174,10 @@ class pwm_base_vseq extends cip_base_vseq #(
   virtual task program_pwm_duty_cycle_regs(int channel);
     dv_base_reg base_reg = get_dv_base_reg_by_name("duty_cycle", channel);
     // set reg fields but not update
-    set_dv_base_reg_field_by_name("duty_cycle", "a",
-      pwm_regs.duty_cycle_a[channel], channel, channel, 1'b0);
-    set_dv_base_reg_field_by_name("duty_cycle", "b",
-      pwm_regs.duty_cycle_b[channel], channel, channel, 1'b0);
+    set_dv_base_reg_field_by_name("duty_cycle", "a", pwm_regs.duty_cycle_a[channel], channel,
+                                  channel, 1'b0);
+    set_dv_base_reg_field_by_name("duty_cycle", "b", pwm_regs.duty_cycle_b[channel], channel,
+                                  channel, 1'b0);
     // update fields in same cycle
     csr_update(base_reg);
   endtask : program_pwm_duty_cycle_regs
@@ -177,10 +185,10 @@ class pwm_base_vseq extends cip_base_vseq #(
   virtual task program_pwm_blink_param_regs(int channel);
     dv_base_reg base_reg = get_dv_base_reg_by_name("blink_param", channel);
     // set reg fields but not update
-    set_dv_base_reg_field_by_name("blink_param", "x",
-        pwm_regs.blink_param_x[channel], channel, channel, 1'b0);
-    set_dv_base_reg_field_by_name("blink_param", "y",
-        pwm_regs.blink_param_y[channel], channel, channel, 1'b0);
+    set_dv_base_reg_field_by_name("blink_param", "x", pwm_regs.blink_param_x[channel], channel,
+                                  channel, 1'b0);
+    set_dv_base_reg_field_by_name("blink_param", "y", pwm_regs.blink_param_y[channel], channel,
+                                  channel, 1'b0);
     // update fields in same cycle
     csr_update(base_reg);
   endtask : program_pwm_blink_param_regs
@@ -229,18 +237,15 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : do_phase_align_reset
 
   // set field of reg/mreg using name and index, need to call csr_update after setting
-  virtual task set_dv_base_reg_field_by_name(string  csr_name,
-                                             string  field_name,
-                                             uint    field_value,
-                                             int     field_idx = -1,
-                                             int     csr_idx = -1,
-                                             bit     update  = 1'b1);
+  virtual task set_dv_base_reg_field_by_name(string csr_name, string field_name, uint field_value,
+                                             int field_idx = -1, int csr_idx = -1,
+                                             bit update = 1'b1);
     string        reg_name;
     uvm_reg_field reg_field;
     dv_base_reg   base_reg;
 
-    base_reg = get_dv_base_reg_by_name(csr_name, csr_idx);
-    reg_name = (field_idx == -1) ? field_name : $sformatf("%s_%0d", field_name, field_idx);
+    base_reg  = get_dv_base_reg_by_name(csr_name, csr_idx);
+    reg_name  = (field_idx == -1) ? field_name : $sformatf("%s_%0d", field_name, field_idx);
     reg_field = base_reg.get_field_by_name(reg_name);
     `DV_CHECK_NE_FATAL(reg_field, null, reg_name)
     reg_field.set(field_value);
@@ -249,8 +254,7 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask : set_dv_base_reg_field_by_name
 
   // set reg/mreg using name and index
-  virtual function dv_base_reg get_dv_base_reg_by_name(string csr_name,
-                                                       int    csr_idx = -1);
+  virtual function dv_base_reg get_dv_base_reg_by_name(string csr_name, int csr_idx = -1);
     string  reg_name;
     uvm_reg reg_uvm;
 
