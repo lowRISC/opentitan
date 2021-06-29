@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "RV_CORE_IBEX_PERI",
-  clock_primary: "clk_i",
-  other_clock_list: [ ]
-  reset_primary: "rst_ni",
-  other_reset_list: [ ]
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

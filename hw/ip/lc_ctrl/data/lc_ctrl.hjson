@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "lc_ctrl",
-  clock_primary: "clk_i",
-  other_clock_list: [
-    "clk_kmac_i"
-  ],
-  reset_primary: "rst_ni",
-  other_reset_list: [
-    "rst_kmac_ni"
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_kmac_i", reset: "rst_kmac_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

@@ -189,19 +189,6 @@ def check_str_list(obj: object, what: str) -> List[str]:
     return cast(List[str], lst)
 
 
-def check_name_list(obj: object, what: str) -> List[str]:
-    '''Check that the given object is a list of valid names
-
-    If not, raise a ValueError; the what argument names the object.
-
-    '''
-    lst = check_list(obj, what)
-    for idx, elt in enumerate(lst):
-        check_name(elt, 'Element {} of {}'.format(idx + 1, what))
-
-    return cast(List[str], lst)
-
-
 def check_int(obj: object, what: str) -> int:
     '''Check that obj is an integer or a string that parses to an integer.
 
@@ -250,6 +237,11 @@ def check_xint(obj: object, what: str) -> Optional[int]:
 def check_optional_str(obj: object, what: str) -> Optional[str]:
     '''Check that obj is a string or None'''
     return None if obj is None else check_str(obj, what)
+
+
+def check_optional_name(obj: object, what: str) -> Optional[str]:
+    '''Check that obj is a valid name or None'''
+    return None if obj is None else check_name(obj, what)
 
 
 def get_basename(name: str) -> str:

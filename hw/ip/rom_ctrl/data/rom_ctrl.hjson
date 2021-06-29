@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "rom_ctrl"
-  clock_primary: "clk_i"
-  reset_primary: "rst_ni",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   regwidth: "32"
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "regs" }
