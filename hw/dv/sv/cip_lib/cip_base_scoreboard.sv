@@ -51,12 +51,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
       bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
       bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
-      bit has_mem_byte_access;
+      bit has_mem_byte_access_err;
       bit has_wo_mem;
       bit has_ro_mem;
 
       if (has_mem) begin
-        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access, has_wo_mem, has_ro_mem);
+        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
       end
 
       tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
@@ -67,7 +67,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       if (!has_unmapped) begin
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
       end
-      if (!has_mem_byte_access) begin
+      if (!has_mem_byte_access_err) begin
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
       end
       if (!has_wo_mem) begin
