@@ -10,7 +10,6 @@ use std::mem::size_of;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use memoffset::offset_of;
 use thiserror::Error;
 use zerocopy::AsBytes;
 use zerocopy::LayoutVerified;
@@ -46,7 +45,7 @@ impl<'a> Image<'a> {
     }
 
     pub fn signed_bytes(&self) -> Vec<u8> {
-        self.bytes().split_off(offset_of!(Manifest, image_length))
+        self.bytes().split_off(self.manifest.signature.as_bytes().len())
     }
 }
 

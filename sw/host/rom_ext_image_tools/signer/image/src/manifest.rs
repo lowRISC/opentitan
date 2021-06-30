@@ -32,20 +32,20 @@ pub const MANIFEST_SIZE: u32 = 848;
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct Manifest {
-    pub identifier: u32,
     pub signature: SigverifyRsaBuffer,
-    pub image_length: u32,
-    pub image_major_version: u32,
-    pub image_minor_version: u32,
-    pub image_timestamp: u64,
+    pub modulus: SigverifyRsaBuffer,
     pub exponent: u32,
+    pub identifier: u32,
+    pub length: u32,
+    pub version_major: u32,
+    pub version_minor: u32,
+    pub security_version: u32,
+    pub timestamp: u64,
     pub binding_value: KeymgrBindingValue,
     pub max_key_version: u32,
-    pub modulus: SigverifyRsaBuffer,
     pub code_start: u32,
     pub code_end: u32,
     pub entry_point: u32,
-    pub padding: u32,
 }
 
 /// A type that holds 96 32-bit words for RSA-3072.
@@ -73,19 +73,19 @@ pub struct KeymgrBindingValue {
 /// requires a nightly compiler.
 /// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
 pub fn check_manifest_layout() {
-    assert_eq!(offset_of!(Manifest, identifier), 0);
-    assert_eq!(offset_of!(Manifest, signature), 4);
-    assert_eq!(offset_of!(Manifest, image_length), 388);
-    assert_eq!(offset_of!(Manifest, image_major_version), 392);
-    assert_eq!(offset_of!(Manifest, image_minor_version), 396);
-    assert_eq!(offset_of!(Manifest, image_timestamp), 400);
-    assert_eq!(offset_of!(Manifest, exponent), 408);
-    assert_eq!(offset_of!(Manifest, binding_value), 412);
-    assert_eq!(offset_of!(Manifest, max_key_version), 444);
-    assert_eq!(offset_of!(Manifest, modulus), 448);
-    assert_eq!(offset_of!(Manifest, code_start), 832);
-    assert_eq!(offset_of!(Manifest, code_end), 836);
-    assert_eq!(offset_of!(Manifest, entry_point), 840);
-    assert_eq!(offset_of!(Manifest, padding), 844);
+    assert_eq!(offset_of!(Manifest, signature), 0);
+    assert_eq!(offset_of!(Manifest, modulus), 384);
+    assert_eq!(offset_of!(Manifest, exponent), 768);
+    assert_eq!(offset_of!(Manifest, identifier), 772);
+    assert_eq!(offset_of!(Manifest, length), 776);
+    assert_eq!(offset_of!(Manifest, version_major), 780);
+    assert_eq!(offset_of!(Manifest, version_minor), 784);
+    assert_eq!(offset_of!(Manifest, security_version), 788);
+    assert_eq!(offset_of!(Manifest, timestamp), 792);
+    assert_eq!(offset_of!(Manifest, binding_value), 800);
+    assert_eq!(offset_of!(Manifest, max_key_version), 832);
+    assert_eq!(offset_of!(Manifest, code_start), 836);
+    assert_eq!(offset_of!(Manifest, code_end), 840);
+    assert_eq!(offset_of!(Manifest, entry_point), 844);
     assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
 }
