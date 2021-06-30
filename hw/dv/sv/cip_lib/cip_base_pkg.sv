@@ -54,7 +54,7 @@ package cip_base_pkg;
 
   // get mem attributes to know what error cases can be triggered
   function automatic void get_all_mem_attrs(input dv_base_reg_block reg_block,
-                                            output bit has_mem_byte_access,
+                                            output bit has_mem_byte_access_err,
                                             output bit has_wo_mem,
                                             output bit has_ro_mem);
     uvm_mem mems[$];
@@ -63,7 +63,7 @@ package cip_base_pkg;
     foreach (mems[i]) begin
       dv_base_mem dv_mem;
       `downcast(dv_mem, mems[i], , , msg_id)
-      if (dv_mem.get_mem_partial_write_support()) has_mem_byte_access = 1;
+      if (!dv_mem.get_mem_partial_write_support()) has_mem_byte_access_err = 1;
       if (dv_mem.get_access() == "WO") has_wo_mem = 1;
       if (dv_mem.get_access() == "RO") has_ro_mem = 1;
     end

@@ -193,7 +193,7 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
   addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
   bit has_mem = (loc_mem_range.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
-  bit has_mem_byte_access;
+  bit has_mem_byte_access_err;
   bit has_wo_mem;
   bit has_ro_mem;
 
@@ -223,7 +223,7 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
     end
   end
 
-  get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access, has_wo_mem, has_ro_mem);
+  get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
 
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
@@ -248,7 +248,7 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
                 cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
 
                 // only run this task when the error can be triggered
-                !has_mem_byte_access: tl_write_mem_less_than_word(ral_name);
+                has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
                 has_wo_mem: tl_read_wo_mem_err(ral_name);
                 has_ro_mem: tl_write_ro_mem_err(ral_name);
               endcase
