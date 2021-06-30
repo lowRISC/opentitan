@@ -5,7 +5,7 @@
 
 import logging as log
 import os
-from typing import List
+from typing import List, Union
 
 import yaml
 
@@ -14,6 +14,7 @@ from mako.lookup import TemplateLookup  # type: ignore
 from pkg_resources import resource_filename
 
 from .ip_block import IpBlock
+from .multi_register import MultiRegister
 from .register import Register
 from .window import Window
 
@@ -23,7 +24,7 @@ def bcname(esc_if_name: str) -> str:
     return esc_if_name + "_reg_block"
 
 
-def rcname(esc_if_name: str, r: Register) -> str:
+def rcname(esc_if_name: str, r: Union[Register, MultiRegister]) -> str:
     '''Get the name of the dv_base_reg subclass for this register'''
     return '{}_reg_{}'.format(esc_if_name, r.name.lower())
 
