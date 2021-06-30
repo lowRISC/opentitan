@@ -95,11 +95,7 @@ fn update_image_manifest(
 
     *image.manifest = Manifest {
         identifier: 0x4552544f,
-        image_length: u32::try_from(image.bytes().len())?,
-        entry_point: {
-            let addr = u32::try_from(elf.entry())?;
-            addr.checked_sub(manifest_addr).context("Overflow")?
-        },
+        length: u32::try_from(image.bytes().len())?,
         code_start: {
             let addr = u32::try_from(
                 elf.section_by_name(".vectors")
@@ -117,6 +113,10 @@ fn update_image_manifest(
                     .checked_add(text.size())
                     .context("Overflow")?,
             )?;
+            addr.checked_sub(manifest_addr).context("Overflow")?
+        },
+        entry_point: {
+            let addr = u32::try_from(elf.entry())?;
             addr.checked_sub(manifest_addr).context("Overflow")?
         },
         ..Default::default()

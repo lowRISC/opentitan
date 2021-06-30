@@ -12,13 +12,13 @@ namespace {
 
 TEST(Manifest, SignedRegionGet) {
   manifest_t manifest{};
-  manifest.image_length = 4096;
+  manifest.length = 4096;
   manifest_signed_region_t signed_region;
 
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region), kErrorOk);
-  // Signed region starts at `image_length` and ends at the end of the image.
-  EXPECT_EQ(&manifest.image_length, signed_region.start);
-  EXPECT_EQ(manifest.image_length - offsetof(manifest_t, image_length),
+  // Signed region starts at `modulus` and ends at the end of the image.
+  EXPECT_EQ(&manifest.modulus, signed_region.start);
+  EXPECT_EQ(manifest.length - offsetof(manifest_t, modulus),
             signed_region.length);
 }
 
@@ -26,18 +26,18 @@ TEST(Manifest, SignedRegionGetBadLength) {
   manifest_t manifest{};
   manifest_signed_region_t signed_region;
 
-  manifest.image_length = kManifestImageLengthMax + 1;
+  manifest.length = kManifestLengthMax + 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
             kErrorManifestBadLength);
 
-  manifest.image_length = kManifestImageLengthMin - 1;
+  manifest.length = kManifestLengthMin - 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
             kErrorManifestBadLength);
 }
 
 TEST(Manifest, CodeRegionGet) {
   manifest_t manifest{};
-  manifest.image_length = 0x1000;
+  manifest.length = 0x1000;
   manifest.code_start = 0x400;
   manifest.code_end = 0x800;
   epmp_region_t code_region;
@@ -57,7 +57,7 @@ TEST(Manifest, CodeRegionGet) {
             kErrorManifestBadCodeRegion);
   // Code region must be inside the image.
   manifest.code_start = 0x400;
-  manifest.code_end = manifest.image_length + 1;
+  manifest.code_end = manifest.length + 1;
   EXPECT_EQ(manifest_code_region_get(&manifest, &code_region),
             kErrorManifestBadCodeRegion);
   // Start and end offsets must be word aligned.
@@ -73,7 +73,7 @@ TEST(Manifest, CodeRegionGet) {
 
 TEST(Manifest, EntryPointGet) {
   manifest_t manifest{};
-  manifest.image_length = 0x1000;
+  manifest.length = 0x1000;
   manifest.code_start = 0x400;
   manifest.entry_point = 0x500;
   manifest.code_end = 0x800;
@@ -91,7 +91,7 @@ TEST(Manifest, EntryPointGet) {
   EXPECT_EQ(manifest_entry_point_get(&manifest, &entry_point),
             kErrorManifestBadEntryPoint);
   // entry_point must be before the end of the image.
-  manifest.entry_point = manifest.image_length;
+  manifest.entry_point = manifest.length;
   EXPECT_EQ(manifest_entry_point_get(&manifest, &entry_point),
             kErrorManifestBadEntryPoint);
   // entry_point must be word aligned.

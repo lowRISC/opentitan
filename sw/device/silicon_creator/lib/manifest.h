@@ -37,37 +37,53 @@ extern "C" {
  */
 typedef struct manifest {
   /**
-   * Manifest identifier.
-   */
-  uint32_t identifier;
-  /**
    * Image signature.
    *
-   * The signed region of an image starts at `image_length` and ends at the
-   * end of the image. The start and the length of the signed region can be
-   * obtained using `manifest_signed_region_get`.
+   * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
+   * private key and the SHA-256 hash function. The signed region of an image
+   * starts immediately after this field and ends at the end of the image. The
+   * start and the length of the signed region can be obtained using
+   * `manifest_signed_region_get`.
    */
   sigverify_rsa_buffer_t signature;
   /**
-   * Image length in bytes.
+   * Modulus of the signer's 3072-bit RSA public key.
    */
-  uint32_t image_length;
-  /**
-   * Image major version.
-   */
-  uint32_t image_major_version;
-  /**
-   * Image minor version.
-   */
-  uint32_t image_minor_version;
-  /**
-   * Image timestamp.
-   */
-  uint64_t image_timestamp;
+  sigverify_rsa_buffer_t modulus;
   /**
    * Exponent of the signer's RSA public key.
    */
   uint32_t exponent;
+  /**
+   * Manifest identifier.
+   */
+  uint32_t identifier;
+  /**
+   * Length of the image including the manifest in bytes.
+   *
+   * Note that the length includes the signature but the signature is excluded
+   * from the signed region.
+   */
+  uint32_t length;
+  /**
+   * Image major version.
+   */
+  uint32_t version_major;
+  /**
+   * Image minor version.
+   */
+  uint32_t version_minor;
+  /**
+   * Security version of the image used for anti-rollback protection.
+   */
+  uint32_t security_version;
+  /**
+   * Image timestamp.
+   *
+   * Unix timestamp that gives the creation time of the image, seconds since
+   * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
+   */
+  uint64_t timestamp;
   /**
    * Binding value used by key manager to derive secret values.
    *
@@ -80,10 +96,6 @@ typedef struct manifest {
    * Maximum allowed version for keys generated at the next boot stage.
    */
   uint32_t max_key_version;
-  /**
-   * Modulus of the signer's RSA public key.
-   */
-  sigverify_rsa_buffer_t modulus;
   /**
    * Offset of the start of the executable region of the image from the start
    * of the manifest in bytes.
@@ -99,26 +111,22 @@ typedef struct manifest {
    * the manifest in bytes.
    */
   uint32_t entry_point;
-  /**
-   * Trailing padding (due to image_timestamp and the size of the struct).
-   */
-  uint32_t padding;
 } manifest_t;
 
-OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 0);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 4);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_length, 388);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_major_version, 392);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_minor_version, 396);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, image_timestamp, 400);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 408);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 412);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 444);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 448);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 832);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 836);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 840);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, padding, 844);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 384);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 768);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 772);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 776);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 780);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 784);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 788);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 792);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 800);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 844);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
@@ -136,12 +144,12 @@ typedef struct manifest_signed_region {
 } manifest_signed_region_t;
 
 /**
- * Allowed bounds for the `image_length` field.
+ * Allowed bounds for the `length` field.
  */
 enum {
   // FIXME: Update min value after we have a fairly representative ROM_EXT.
-  kManifestImageLengthMin = sizeof(manifest_t),
-  kManifestImageLengthMax = 64 * 1024,
+  kManifestLengthMin = sizeof(manifest_t),
+  kManifestLengthMax = 64 * 1024,
 };
 
 /**
@@ -156,13 +164,13 @@ enum {
  */
 inline rom_error_t manifest_signed_region_get(
     const manifest_t *manifest, manifest_signed_region_t *signed_region) {
-  if (manifest->image_length < kManifestImageLengthMin ||
-      manifest->image_length > kManifestImageLengthMax) {
+  if (manifest->length < kManifestLengthMin ||
+      manifest->length > kManifestLengthMax) {
     return kErrorManifestBadLength;
   }
   *signed_region = (manifest_signed_region_t){
-      .start = &manifest->image_length,
-      .length = manifest->image_length - offsetof(manifest_t, image_length),
+      .start = (const char *)manifest + sizeof(manifest->signature),
+      .length = manifest->length - sizeof(manifest->signature),
   };
   return kErrorOk;
 }
@@ -181,7 +189,7 @@ inline rom_error_t manifest_code_region_get(const manifest_t *manifest,
                                             epmp_region_t *code_region) {
   if (manifest->code_start >= manifest->code_end ||
       manifest->code_start < sizeof(manifest_t) ||
-      manifest->code_end > manifest->image_length ||
+      manifest->code_end > manifest->length ||
       // FIXME: Replace this when we have a function/macro for alignment checks.
       (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
     return kErrorManifestBadCodeRegion;
@@ -212,7 +220,7 @@ inline rom_error_t manifest_entry_point_get(const manifest_t *manifest,
                                             uintptr_t *entry_point) {
   if (manifest->entry_point < manifest->code_start ||
       manifest->entry_point >= manifest->code_end ||
-      manifest->entry_point >= manifest->image_length ||
+      manifest->entry_point >= manifest->length ||
       // FIXME: Replace this when we have a function/macro for alignment checks.
       (manifest->entry_point & 0x3) != 0) {
     return kErrorManifestBadEntryPoint;
