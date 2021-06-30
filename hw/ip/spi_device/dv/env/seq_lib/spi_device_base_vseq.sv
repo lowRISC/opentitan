@@ -10,7 +10,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
     );
   `uvm_object_utils(spi_device_base_vseq)
 
-  bit do_spi_device_init    = 1'b0;
   bit do_spi_device_mem_cfg = 1'b1;
 
   bit [1:0] spi_mode = 0; // TODO fixed value in spec now
@@ -83,12 +82,21 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
-    cfg.clk_rst_vif.wait_clks(1);
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    if (do_spi_device_init) spi_device_init();
+    delay_after_reset_before_access_csr();
+  endtask
+
+  virtual task read_and_check_all_csrs_after_reset();
+    delay_after_reset_before_access_csr();
+    super.read_and_check_all_csrs_after_reset();
+  endtask
+
+  virtual task delay_after_reset_before_access_csr();
+    // SPI inputs are async. It takes 2 cycles to synchronize them to status CSR
+    cfg.clk_rst_vif.wait_clks(2);
   endtask
 
   // check if any remaining data
