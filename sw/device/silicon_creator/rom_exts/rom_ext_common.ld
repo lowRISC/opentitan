@@ -62,6 +62,9 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
   } > eflash
 
   /**
