@@ -39,6 +39,11 @@ class RegBlock:
         # A list of registers and multiregisters (unexpanded)
         self.all_regs = []  # type: List[Union[Register, MultiRegister]]
 
+        # A list of all the underlying register types used in the block. This
+        # has one entry for each actual Register, plus a single entry giving
+        # the underlying register for each MultiRegister.
+        self.type_regs = []  # type: List[Register]
+
         # A list with everything in order
         self.entries = []  # type: List[object]
 
@@ -204,6 +209,7 @@ class RegBlock:
 
         self.multiregs.append(mr)
         self.all_regs.append(mr)
+        self.type_regs.append(mr.reg)
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
 
@@ -221,6 +227,7 @@ class RegBlock:
 
         self.registers.append(reg)
         self.all_regs.append(reg)
+        self.type_regs.append(reg)
         self.entries.append(reg)
         self.offset = reg.next_offset(self._addrsep)
 
