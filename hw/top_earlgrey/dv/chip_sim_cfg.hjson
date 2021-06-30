@@ -46,6 +46,9 @@
                 "{proj_root}/hw/top_earlgrey/dv/chip_mask_rom_tests.hjson",
                 ]
 
+  // Chip specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/dv/cov/unr_exclude.el"]
+
   // Override existing project defaults to supply chip-specific values.
   overrides: [
     // Chip level design is markedly different from our Comportable IPs (and so
