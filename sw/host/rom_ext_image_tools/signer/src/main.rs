@@ -122,6 +122,19 @@ fn update_image_manifest(
         ..Default::default()
     };
 
+    // Code region must be 32-bit aligned due to PMP constraints.
+    fn is_word_aligned(addr: u32) -> bool {
+        return addr % 4 == 0;
+    }
+    ensure!(
+        is_word_aligned(image.manifest.code_start),
+        "Unaligned code start."
+    );
+    ensure!(
+        is_word_aligned(image.manifest.code_end),
+        "Unaligned code end."
+    );
+
     let exponent_be = key.public_exponent_be();
     let dest = image.manifest.exponent.as_bytes_mut().iter_mut();
     let src = exponent_be.iter().rev().copied();
