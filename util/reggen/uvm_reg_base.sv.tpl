@@ -137,7 +137,7 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
       ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs",
       ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 %   else:
-      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}",
+      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if r.hwext else ""}",
       ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 %   endif
 %   if shadowed and not hwext:
