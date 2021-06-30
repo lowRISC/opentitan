@@ -78,6 +78,15 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // transaction, the reset will have caused them to be forgotten.
     exp_read_values.delete();
 
+    // Clear waiting_for_model. This handles a corner case where a TL transaction comes in to start
+    // OTBN just before a reset and the reset hits after the negedge of the clock (so we have set
+    // waiting_for_model) but before the following clock cycle (which would have generated the
+    // OtbnModelStart transaction).
+    waiting_for_model = 1'b0;
+
+    // Clear saw_start_tl_trans. Any "start" TL transaction will have been discarded by the reset,
+    // so we shouldn't still be tracking it.
+    saw_start_tl_trans = 1'b0;
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -274,14 +283,22 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(cfg.clk_rst_vif.cbn);
 
-      `DV_CHECK(!waiting_for_model, "model didn't start when we expected it to")
+      if (!cfg.clk_rst_vif.rst_n) begin
+        // We're in reset. Wait until we start again.
+        @(posedge cfg.clk_rst_vif.rst_n);
+      end else begin
+        // We're not in reset. Check that waiting_for_model is false. If not, we've had a cycle
+        // since the model should have started.
+        `DV_CHECK(!waiting_for_model, "model didn't start when we expected it to")
 
-      if (saw_start_tl_trans) begin
-        waiting_for_model = 1'b1;
+        // If we've just seen a write to the CMD register that should start OTBN, set the
+        // waiting_for_model flag. This gives a single cycle delay (on the next cycle, we'll check
+        // it worked properly using the DV_CHECK above).
+        if (saw_start_tl_trans) begin
+          waiting_for_model = 1'b1;
+          saw_start_tl_trans = 1'b0;
+        end
       end
-
-      // Unconditionally clear saw_start_tl_trans
-      saw_start_tl_trans = 1'b0;
     end
   endtask
 
