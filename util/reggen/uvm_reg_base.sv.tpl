@@ -32,8 +32,8 @@
 package ${esc_if_name}_ral_pkg;
 ${make_ral_pkg_hdr(dv_base_prefix, [])}
 
-${make_ral_pkg_fwd_decls(esc_if_name, rb.flat_regs, rb.windows)}
-% for reg in rb.flat_regs:
+${make_ral_pkg_fwd_decls(esc_if_name, rb.all_type_regs, rb.windows)}
+% for reg in rb.all_type_regs:
 
 ${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)}
 % endfor
@@ -48,8 +48,8 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
   class ${reg_block_name} extends ${dv_base_prefix}_reg_block;
 % if rb.flat_regs:
     // registers
-%   for r in rb.flat_regs:
-    rand ${gen_dv.rcname(esc_if_name, r)} ${r.name.lower()};
+%   for r in rb.all_regs:
+    rand ${gen_dv.rtname(esc_if_name, r)} ${gen_dv.riname(r)};
 %   endfor
 % endif
 % if rb.windows:
@@ -85,20 +85,71 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
 %   for r in rb.flat_regs:
 <%
       reg_name = r.name.lower()
+      reg_inst_name = gen_dv.riname_w_idx(r)
+      reg_type_name = gen_dv.rtname(esc_if_name, r)
       reg_offset = "{}'h{:x}".format(reg_width, r.offset)
       reg_tags = r.tags
       reg_shadowed = r.shadowed
 
-      type_id_indent = ' ' * (len(reg_name) + 4)
+      inst_id_indent = ' ' * (len(reg_inst_name) + 4)
+      inst_path_indent = ' ' * (len(reg_inst_name) + 20)
 %>\
-      ${reg_name} = (${gen_dv.rcname(esc_if_name, r)}::
-      ${type_id_indent}type_id::create("${reg_name}"));
-      ${reg_name}.configure(.blk_parent(this));
-      ${reg_name}.build(csr_excl);
-      default_map.add_reg(.rg(${reg_name}),
+      ${reg_inst_name} = (${reg_type_name}::
+      ${inst_id_indent}type_id::create("${reg_name}"));
+      ${reg_inst_name}.configure(.blk_parent(this));
+      ${reg_inst_name}.build(csr_excl);
+      default_map.add_reg(.rg(${reg_inst_name}),
                           .offset(${reg_offset}));
+% if r.shadowed and r.hwext:
+<%
+    shadowed_reg_path = ''
+    for tag in r.tags:
+      parts = tag.split(':')
+      if parts[0] == 'shadowed_reg_path':
+        shadowed_reg_path = parts[1]
+
+    if not shadowed_reg_path:
+      print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
+      assert 0
+
+    bit_idx = r.fields[-1].bits.msb + 1
+
+%>\
+      ${reg_inst_name}.add_update_err_alert("${r.update_err_alert}");
+      ${reg_inst_name}.add_storage_err_alert("${r.storage_err_alert}");
+      ${reg_inst_name}.add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q",
+      ${inst_path_indent}0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
+      ${reg_inst_name}.add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q",
+      ${inst_path_indent}0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
+% endif
+% for field in r.fields:
+<%
+    field_size = field.bits.width()
+    if len(r.fields) == 1:
+      reg_field_name = reg_name
+    else:
+      reg_field_name = reg_name + "_" + field.name.lower()
+%>\
+%   if ((field.hwaccess.value[1] == HwAccess.NONE and\
+       field.swaccess.swrd() == SwRdAccess.RD and\
+       not field.swaccess.allows_write())):
+      // constant reg
+      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs",
+      ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+%   else:
+      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}",
+      ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+%   endif
+%   if shadowed and not hwext:
+      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.committed_reg.q",
+      ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+      ${reg_inst_name}.add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
+      ${inst_path_indent}${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
+%   endif
+% endfor
+
 %     if reg_shadowed:
-      ${reg_name}.set_is_shadowed();
+      ${reg_inst_name}.set_is_shadowed();
 %     endif
 %     if reg_tags:
       // create register tags
@@ -107,7 +158,7 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
         tag = reg_tag.split(":")
 %>\
 %         if tag[0] == "excl":
-      csr_excl.add_excl(${reg_name}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${reg_inst_name}.get_full_name(), ${tag[2]}, ${tag[1]});
 %         endif
 %       endfor
 %     endif
@@ -122,15 +173,18 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
 % if any_regwen:
       // assign locked reg to its regwen reg
 %     for r in rb.flat_regs:
+<%
+      reg_inst_name = gen_dv.riname_w_idx(r)
+%>\
 %       if r.regwen:
 %         for reg in rb.flat_regs:
 %           if r.regwen.lower() == reg.name.lower():
-      ${r.regwen.lower()}.add_lockable_reg_or_fld(${r.name.lower()});
+      ${r.regwen.lower()}.add_lockable_reg_or_fld(${reg_inst_name});
 <% break %>\
 %           elif reg.name.lower() in r.regwen.lower():
 %             for field in reg.get_field_list():
 %               if r.regwen.lower() == (reg.name.lower() + "_" + field.name.lower()):
-      ${r.regwen.lower()}.${field.name.lower()}.add_lockable_reg_or_fld(${r.name.lower()});
+      ${r.regwen.lower()}.${field.name.lower()}.add_lockable_reg_or_fld(${reg_inst_name});
 <% break %>\
 %               endif
 %             endfor
@@ -185,9 +239,9 @@ endpackage
 ##
 ##    windows          a list of Window objects
 ##
-<%def name="make_ral_pkg_fwd_decls(esc_if_name, flat_regs, windows)">\
+<%def name="make_ral_pkg_fwd_decls(esc_if_name, all_type_regs, windows)">\
   // Forward declare all register/memory/block classes
-% for r in flat_regs:
+% for r in all_type_regs:
   typedef class ${gen_dv.rcname(esc_if_name, r)};
 % endfor
 % for w in windows:
@@ -249,28 +303,6 @@ endpackage
 %>\
 ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg.hwext, reg_field_name, field)}
 % endfor
-% if reg.shadowed and reg.hwext:
-<%
-    shadowed_reg_path = ''
-    for tag in reg.tags:
-      parts = tag.split(':')
-      if parts[0] == 'shadowed_reg_path':
-        shadowed_reg_path = parts[1]
-
-    if not shadowed_reg_path:
-      print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
-      assert 0
-
-    bit_idx = reg.fields[-1].bits.msb + 1
-
-%>\
-      add_update_err_alert("${reg.update_err_alert}");
-      add_storage_err_alert("${reg.storage_err_alert}");
-      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q",
-                         0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q",
-                         0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
-% endif
 % if is_ext:
       set_is_ext_reg(1);
 % endif
@@ -324,23 +356,8 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
         .has_reset(1),
         .is_rand(1),
         .individually_accessible(1));
+
       ${fname}.set_original_access("${field_access}");
-% if ((field.hwaccess.value[1] == HwAccess.NONE and\
-       field.swaccess.swrd() == SwRdAccess.RD and\
-       not field.swaccess.allows_write())):
-      // constant reg
-      add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs",
-                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
-% else:
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}",
-                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
-% endif
-% if shadowed and not hwext:
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.committed_reg.q",
-                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
-                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
-% endif
 % if field_tags:
       // create field tags
 %     for field_tag in field_tags:

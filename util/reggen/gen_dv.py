@@ -6,6 +6,7 @@
 import logging as log
 import os
 from typing import List
+from reggen.multi_register import MultiRegister
 
 import yaml
 
@@ -15,6 +16,7 @@ from pkg_resources import resource_filename
 
 from .ip_block import IpBlock
 from .register import Register
+from .reg_base import RegBase
 from .window import Window
 
 
@@ -26,6 +28,35 @@ def bcname(esc_if_name: str) -> str:
 def rcname(esc_if_name: str, r: Register) -> str:
     '''Get the name of the dv_base_reg subclass for this register'''
     return '{}_reg_{}'.format(esc_if_name, r.name.lower())
+
+
+def rtname(esc_if_name: str, r: RegBase) -> str:
+    '''Get the name of the dv_base_reg object type for this register'''
+    if isinstance(r, MultiRegister):
+        reg_name = r.reg.name.lower()
+    elif r.mname:
+        reg_name = r.mname.lower()
+    else:
+        reg_name = r.name.lower()
+    return '{}_reg_{}'.format(esc_if_name, reg_name)
+
+
+def riname(r: RegBase) -> str:
+    '''Get the name of the dv_base_reg object instance for this register'''
+    if isinstance(r, MultiRegister) and r.count == 1:
+        return r.reg.name.lower()
+    elif isinstance(r, MultiRegister) and r.count > 1:
+        return '{}[{}]'.format(r.reg.name.lower(), r.count)
+    else:
+        return r.name.lower()
+
+
+def riname_w_idx(r: Register) -> str:
+    '''Get the name of the dv_base_reg object instance for this register'''
+    if r.mname:
+        return '{}[{}]'.format(r.mname.lower(), r.creg_idx)
+    else:
+        return r.name.lower()
 
 
 def mcname(esc_if_name: str, m: Window) -> str:

@@ -72,6 +72,14 @@ OPTIONAL_FIELDS = {
         's',
         "alert that will be triggered if "
         "this shadowed register has storage error"
+    ],
+    'mname': [
+        's',
+        "multireg name if this is generated from a multireg"
+    ],
+    'creg_idx': [
+        's',
+        "index of this reg if this is generated from a multireg"
     ]
 }
 
@@ -91,7 +99,9 @@ class Register(RegBase):
                  shadowed: bool,
                  fields: List[Field],
                  update_err_alert: Optional[str],
-                 storage_err_alert: Optional[str]):
+                 storage_err_alert: Optional[str],
+                 mname: Optional[str],
+                 creg_idx: Optional[int]):
         super().__init__(offset)
         self.name = name
         self.desc = desc
@@ -177,6 +187,8 @@ class Register(RegBase):
 
         self.update_err_alert = update_err_alert
         self.storage_err_alert = storage_err_alert
+        self.mname = mname
+        self.creg_idx = creg_idx
 
     @staticmethod
     def from_raw(reg_width: int,
@@ -263,7 +275,8 @@ class Register(RegBase):
         return Register(offset, name, desc,
                         hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
-                        update_err_alert, storage_err_alert)
+                        update_err_alert, storage_err_alert,
+                        mname=None, creg_idx=None)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + addrsep
@@ -345,6 +358,8 @@ class Register(RegBase):
         assert 0 <= min_reg_idx <= max_reg_idx
         assert compact or (min_reg_idx == max_reg_idx)
 
+        mname = self.name if creg_count > 1 else None
+
         new_name = ('{}_{}'.format(self.name, creg_idx)
                     if creg_count > 1
                     else self.name)
@@ -383,7 +398,8 @@ class Register(RegBase):
         return Register(offset, new_name, self.desc,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
-                        self.update_err_alert, self.storage_err_alert)
+                        self.update_err_alert, self.storage_err_alert,
+                        mname, creg_idx)
 
     def check_valid_regwen(self) -> None:
         '''Check that this register is valid for use as a REGWEN'''

@@ -69,6 +69,7 @@ class MultiRegister(RegBase):
         self.cname = check_name(rd['cname'],
                                 'cname field of multireg {}'
                                 .format(self.reg.name))
+        self.name = self.cname
 
         self.regwen_multi = check_bool(rd.get('regwen_multi', False),
                                        'regwen_multi field of multireg {}'
