@@ -413,6 +413,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // Task to clear register intr status bits
   virtual task clear_all_interrupts();
+    if (cfg.num_interrupts == 0) return;
     foreach (intr_state_csrs[i]) begin
       bit [BUS_DW-1:0] data;
       csr_rd(.ptr(intr_state_csrs[i]), .value(data));
