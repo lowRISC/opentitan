@@ -14,7 +14,7 @@ module adc_ctrl
   input clk_i,  //regular core clock for SW config interface
   input clk_aon_i,  //always-on slow clock for internal logic
   input rst_ni,  //power-on hardware reset
-  input rst_slow_ni,  //power-on reset for the 200KHz clock(logic)
+  input rst_aon_ni,  //power-on reset for the 200KHz clock(logic)
 
   //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -72,8 +72,10 @@ module adc_ctrl
 
   // Register module
   adc_ctrl_reg_top u_reg (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_aon_ni,
     .tl_i(tl_i),
     .tl_o(tl_o),
     .reg2hw(reg2hw),
@@ -83,27 +85,16 @@ module adc_ctrl
   );
 
   // Instantiate DCD core module
-  adc_ctrl_core i_adc_ctrl_core (
+  adc_ctrl_core u_adc_ctrl_core (
     .clk_aon_i(clk_aon_i),
-    .rst_slow_ni(rst_slow_ni),
+    .rst_aon_ni(rst_aon_ni),
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .adc_en_ctl_i(reg2hw.adc_en_ctl),
-    .adc_pd_ctl_i(reg2hw.adc_pd_ctl),
-    .adc_lp_sample_ctl_i(reg2hw.adc_lp_sample_ctl),
-    .adc_sample_ctl_i(reg2hw.adc_sample_ctl),
-    .adc_fsm_rst_i(reg2hw.adc_fsm_rst),
-    .adc_chn0_filter_ctl_i(reg2hw.adc_chn0_filter_ctl),
-    .adc_chn1_filter_ctl_i(reg2hw.adc_chn1_filter_ctl),
-    .adc_wakeup_ctl_i(reg2hw.adc_wakeup_ctl),
-    .adc_intr_ctl_i(reg2hw.adc_intr_ctl),
-    .adc_chn_val_o(hw2reg.adc_chn_val),
-    .intr_state_i(reg2hw.intr_state),
-    .intr_enable_i(reg2hw.intr_enable),
-    .intr_test_i(reg2hw.intr_test),
+    .reg2hw_i(reg2hw),
     .intr_state_o(hw2reg.intr_state),
+    .adc_chn_val_o(hw2reg.adc_chn_val),
     .adc_intr_status_o(hw2reg.adc_intr_status),
-    .adc_wakeup_status_o(hw2reg.adc_wakeup_status),
+    .aon_filter_status_o(hw2reg.filter_status),
     .debug_cable_wakeup_o(debug_cable_wakeup_o),
     .intr_debug_cable_o(intr_debug_cable_o),
     .adc_i(adc_i),

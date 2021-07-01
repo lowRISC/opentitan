@@ -372,7 +372,7 @@
       type: "adc_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io_div4", rst_slow_ni: "sys_aon"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       clock_reset_export: ["ast"],
       domain: "Aon",
       base_addr: "0x40440000"

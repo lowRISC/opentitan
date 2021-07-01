@@ -2763,7 +2763,7 @@
       reset_connections:
       {
         rst_ni: sys_io_div4
-        rst_slow_ni: sys_aon
+        rst_aon_ni: sys_aon
       }
       clock_reset_export:
       [

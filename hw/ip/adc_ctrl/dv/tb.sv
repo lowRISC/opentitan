@@ -41,7 +41,7 @@ module tb;
     .clk_i               (clk),
     .rst_ni              (rst_n),
     .clk_aon_i           (clk_aon),
-    .rst_slow_ni         (rst_aon_n),
+    .rst_aon_ni          (rst_aon_n),
     .tl_i                (tl_if.h2d),
     .tl_o                (tl_if.d2h),
     .alert_rx_i          (alert_rx),

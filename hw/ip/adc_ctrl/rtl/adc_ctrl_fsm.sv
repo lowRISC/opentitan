@@ -8,26 +8,26 @@ module adc_ctrl_fsm
   import adc_ctrl_reg_pkg::*;
 (
   input clk_aon_i,
-  input rst_slow_ni,
-  input cfg_fsm_rst,
-  input cfg_adc_enable,
-  input cfg_oneshot_mode,
-  input cfg_lp_mode,
-  input [3:0] cfg_pwrup_time,
-  input [23:0] cfg_wakeup_time,
-  input [7:0]  cfg_lp_sample_cnt,
-  input [15:0] cfg_np_sample_cnt,
-  input [NumAdcFilter-1:0] adc_ctrl_match,
-  input [9:0] adc_d,
-  input       adc_d_val,//valid bit for ADC value
-  output logic      adc_pd,
-  output logic[1:0] adc_chn_sel,
-  output logic      chn0_val_we,
-  output logic      chn1_val_we,
-  output logic [9:0] chn0_val,
-  output logic [9:0] chn1_val,
-  output logic       adc_ctrl_done,
-  output logic       oneshot_done
+  input rst_aon_ni,
+  input cfg_fsm_rst_i,
+  input cfg_adc_enable_i,
+  input cfg_oneshot_mode_i,
+  input cfg_lp_mode_i,
+  input [3:0] cfg_pwrup_time_i,
+  input [23:0] cfg_wakeup_time_i,
+  input [7:0]  cfg_lp_sample_cnt_i,
+  input [15:0] cfg_np_sample_cnt_i,
+  input [NumAdcFilter-1:0] adc_ctrl_match_i,
+  input [9:0] adc_d_i,
+  input       adc_d_val_i,//valid bit for ADC value
+  output logic      adc_pd_o,
+  output logic[1:0] adc_chn_sel_o,
+  output logic      chn0_val_we_o,
+  output logic      chn1_val_we_o,
+  output logic [9:0] chn0_val_o,
+  output logic [9:0] chn1_val_o,
+  output logic       adc_ctrl_done_o,
+  output logic       oneshot_done_o
 );
 
   logic trigger_q;
@@ -73,27 +73,27 @@ module adc_ctrl_fsm
 
   fsm_state_e fsm_state_q, fsm_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_trigger_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       trigger_q <= 1'b0;
     end
-    else if (cfg_fsm_rst) begin
+    else if (cfg_fsm_rst_i) begin
       trigger_q <= 1'b0;
     end else begin
-      trigger_q  <= cfg_adc_enable;
+      trigger_q  <= cfg_adc_enable_i;
     end
   end
 
-  assign trigger_l2h = (trigger_q == 1'b0) && (cfg_adc_enable == 1'b1);
-  assign trigger_h2l = (trigger_q == 1'b1) && (cfg_adc_enable == 1'b0);
+  assign trigger_l2h = (trigger_q == 1'b0) && (cfg_adc_enable_i == 1'b1);
+  assign trigger_h2l = (trigger_q == 1'b1) && (cfg_adc_enable_i == 1'b0);
 
   assign pwrup_timer_cnt_d = (pwrup_timer_cnt_en) ? pwrup_timer_cnt_q + 1'b1 : pwrup_timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_pwrup_timer_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       pwrup_timer_cnt_q    <= '0;
     end
-    else if (pwrup_timer_cnt_clr || cfg_fsm_rst) begin
+    else if (pwrup_timer_cnt_clr || cfg_fsm_rst_i) begin
        pwrup_timer_cnt_q <= '0;
     end else begin
        pwrup_timer_cnt_q <= pwrup_timer_cnt_d;
@@ -102,11 +102,11 @@ module adc_ctrl_fsm
 
   assign lp_sample_cnt_d = (lp_sample_cnt_en) ? lp_sample_cnt_q + 1'b1 : lp_sample_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_lp_sample_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       lp_sample_cnt_q    <= '0;
     end
-    else if (lp_sample_cnt_clr || cfg_fsm_rst) begin
+    else if (lp_sample_cnt_clr || cfg_fsm_rst_i) begin
       lp_sample_cnt_q <= '0;
     end else begin
       lp_sample_cnt_q <= lp_sample_cnt_d;
@@ -115,11 +115,11 @@ module adc_ctrl_fsm
 
   assign np_sample_cnt_d = (np_sample_cnt_en) ? np_sample_cnt_q + 1'b1 : np_sample_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_np_sample_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       np_sample_cnt_q    <= '0;
     end
-    else if (np_sample_cnt_clr || cfg_fsm_rst) begin
+    else if (np_sample_cnt_clr || cfg_fsm_rst_i) begin
       np_sample_cnt_q <= '0;
     end else begin
       np_sample_cnt_q <= np_sample_cnt_d;
@@ -129,11 +129,11 @@ module adc_ctrl_fsm
   assign wakeup_timer_cnt_d = (wakeup_timer_cnt_en) ?
            wakeup_timer_cnt_q + 1'b1 : wakeup_timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_wakeup_timer_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       wakeup_timer_cnt_q    <= '0;
     end
-    else if (wakeup_timer_cnt_clr || cfg_fsm_rst) begin
+    else if (wakeup_timer_cnt_clr || cfg_fsm_rst_i) begin
       wakeup_timer_cnt_q <= '0;
     end else begin
       wakeup_timer_cnt_q <= wakeup_timer_cnt_d;
@@ -141,59 +141,59 @@ module adc_ctrl_fsm
   end
 
   assign fsm_chn0_sel = (fsm_state_q == ONEST_0) || (fsm_state_q == LP_0) || (fsm_state_q == NP_0);
-  assign chn0_val_we_d = fsm_chn0_sel && adc_d_val;//adc_d_val is a valid pulse
-  assign chn0_val_d = (chn0_val_we_d) ? adc_d : chn0_val;
+  assign chn0_val_we_d = fsm_chn0_sel && adc_d_val_i;//adc_d_val_i is a valid pulse
+  assign chn0_val_d = (chn0_val_we_d) ? adc_d_i : chn0_val_o;
 
   assign fsm_chn1_sel = (fsm_state_q == ONEST_1) || (fsm_state_q == LP_1) || (fsm_state_q == NP_1);
-  assign chn1_val_we_d = fsm_chn1_sel && adc_d_val;
-  assign chn1_val_d = (chn1_val_we_d) ? adc_d : chn1_val;
+  assign chn1_val_we_d = fsm_chn1_sel && adc_d_val_i;
+  assign chn1_val_d = (chn1_val_we_d) ? adc_d_i : chn1_val_o;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_chn01_val_we_reg
-    if (!rst_slow_ni) begin
-      chn0_val_we    <= '0;
-      chn1_val_we    <= '0;
-      chn0_val       <= '0;
-      chn1_val       <= '0;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      chn0_val_we_o  <= '0;
+      chn1_val_we_o  <= '0;
+      chn0_val_o     <= '0;
+      chn1_val_o     <= '0;
     end
-    else if (cfg_fsm_rst) begin
-      chn0_val_we    <= '0;
-      chn1_val_we    <= '0;
-      chn0_val       <= '0;
-      chn1_val       <= '0;
+    else if (cfg_fsm_rst_i) begin
+      chn0_val_we_o  <= '0;
+      chn1_val_we_o  <= '0;
+      chn0_val_o     <= '0;
+      chn1_val_o     <= '0;
     end else begin
-      chn0_val_we    <= chn0_val_we_d;
-      chn1_val_we    <= chn1_val_we_d;
-      chn0_val       <= chn0_val_d;
-      chn1_val       <= chn1_val_d;
+      chn0_val_we_o  <= chn0_val_we_d;
+      chn1_val_we_o  <= chn1_val_we_d;
+      chn0_val_o     <= chn0_val_d;
+      chn1_val_o     <= chn1_val_d;
     end
   end
 
   for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_fst_lp_match
     assign fst_lp_match[k] =
-    ((lp_sample_cnt_q == 8'd1) && (fsm_state_q == LP_EVAL)) ? adc_ctrl_match[k] : 1'b0;
+    ((lp_sample_cnt_q == 8'd1) && (fsm_state_q == LP_EVAL)) ? adc_ctrl_match_i[k] : 1'b0;
   end
 
   assign any_fst_lp_match = |fst_lp_match;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_adc_ctrl_match_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
         adc_ctrl_match_q  <= '0;
     end
-    else if (cfg_fsm_rst) begin
+    else if (cfg_fsm_rst_i) begin
         adc_ctrl_match_q  <= '0;
     end
     else if ((fsm_state_q == LP_EVAL) || (fsm_state_q == NP_EVAL)) begin
-        adc_ctrl_match_q  <= adc_ctrl_match;
+        adc_ctrl_match_q  <= adc_ctrl_match_i;
     end
   end
 
-  assign stay_match = any_fst_lp_match || (adc_ctrl_match == adc_ctrl_match_q);
+  assign stay_match = any_fst_lp_match || (adc_ctrl_match_i == adc_ctrl_match_q);
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_fsm_state_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
       fsm_state_q    <= PWRDN;
     end
-    else if (trigger_h2l || cfg_fsm_rst) begin
+    else if (trigger_h2l || cfg_fsm_rst_i) begin
       fsm_state_q    <= PWRDN;
     end else begin
       fsm_state_q    <= fsm_state_d;
@@ -203,8 +203,8 @@ module adc_ctrl_fsm
   always_comb begin: adc_fsm
     fsm_state_d = fsm_state_q;
     //outputs
-    adc_chn_sel = 2'b0;
-    adc_pd = 1'b1;//default value
+    adc_chn_sel_o = 2'b0;
+    adc_pd_o = 1'b1;//default value
     pwrup_timer_cnt_clr = 1'b0;
     pwrup_timer_cnt_en = 1'b0;
     lp_sample_cnt_clr = 1'b0;
@@ -213,8 +213,8 @@ module adc_ctrl_fsm
     wakeup_timer_cnt_en = 1'b0;
     np_sample_cnt_clr = 1'b0;
     np_sample_cnt_en = 1'b0;
-    adc_ctrl_done = 1'b0;
-    oneshot_done = 1'b0;
+    adc_ctrl_done_o = 1'b0;
+    oneshot_done_o = 1'b0;
 
     unique case (fsm_state_q)
       PWRDN: begin
@@ -224,145 +224,145 @@ module adc_ctrl_fsm
       end
 
       PWRUP: begin
-        adc_pd = 1'b0;
-        if (pwrup_timer_cnt_q != cfg_pwrup_time) begin
+        adc_pd_o = 1'b0;
+        if (pwrup_timer_cnt_q != cfg_pwrup_time_i) begin
           pwrup_timer_cnt_en = 1'b1;
         end
-        else if (pwrup_timer_cnt_q == cfg_pwrup_time) begin
+        else if (pwrup_timer_cnt_q == cfg_pwrup_time_i) begin
           pwrup_timer_cnt_clr = 1'b1;
           fsm_state_d = IDLE;
         end
       end
 
       IDLE: begin
-        adc_pd = 1'b0;
-        if (cfg_oneshot_mode) begin
+        adc_pd_o = 1'b0;
+        if (cfg_oneshot_mode_i) begin
           fsm_state_d = ONEST_0;
         end
-        else if (cfg_lp_mode) begin
+        else if (cfg_lp_mode_i) begin
           fsm_state_d = LP_0;
         end
-        else if (!cfg_lp_mode) begin
+        else if (!cfg_lp_mode_i) begin
           fsm_state_d = NP_0;
         end
       end
 
       ONEST_0: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b01;
-        if (adc_d_val) begin//sample chn0 value
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b01;
+        if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = ONEST_021;
         end
       end
 
-      ONEST_021: begin//transition betwenn chn0 and chn1; adc_chn_sel=2'b0
-        adc_pd = 1'b0;
+      ONEST_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+        adc_pd_o = 1'b0;
         fsm_state_d = ONEST_1;
       end
 
       ONEST_1: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b10;
-        if (adc_d_val) begin//sample chn1 value
-          oneshot_done = 1'b1;
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b10;
+        if (adc_d_val_i) begin//sample chn1 value
+          oneshot_done_o = 1'b1;
           fsm_state_d = PWRDN;
         end
       end
 
       LP_0: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b01;
-        if (adc_d_val) begin//sample chn0 value
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b01;
+        if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = LP_021;
         end
       end
 
-      LP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel=2'b0
-        adc_pd = 1'b0;
+      LP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+        adc_pd_o = 1'b0;
         fsm_state_d = LP_1;
       end
 
       LP_1: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b10;
-        if (adc_d_val) begin//sample chn1 value
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b10;
+        if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = LP_EVAL;
           lp_sample_cnt_en = 1'b1;
         end
       end
 
       LP_EVAL: begin
-        adc_pd = 1'b0;
-        if ((lp_sample_cnt_q != cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
+        adc_pd_o = 1'b0;
+        if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
           fsm_state_d = LP_SLP;
         end
-        else if ((lp_sample_cnt_q != cfg_lp_sample_cnt) && (stay_match != 1'b1)) begin
+        else if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match != 1'b1)) begin
           fsm_state_d = LP_SLP;
           lp_sample_cnt_clr = 1'b1;
         end
-        else if ((lp_sample_cnt_q == cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
+        else if ((lp_sample_cnt_q == cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
           lp_sample_cnt_clr = 1'b1;
         end
       end
 
       LP_SLP: begin
-        adc_pd = 1'b1;
-        if (wakeup_timer_cnt_q  != cfg_wakeup_time) begin
+        adc_pd_o = 1'b1;
+        if (wakeup_timer_cnt_q  != cfg_wakeup_time_i) begin
           wakeup_timer_cnt_en = 1'b1;
         end
-        else if (wakeup_timer_cnt_q == cfg_wakeup_time) begin
+        else if (wakeup_timer_cnt_q == cfg_wakeup_time_i) begin
           fsm_state_d = LP_PWRUP;
           wakeup_timer_cnt_clr = 1'b1;
         end
       end
 
       LP_PWRUP: begin
-        adc_pd = 1'b0;
-        if (pwrup_timer_cnt_q != cfg_pwrup_time) begin
+        adc_pd_o = 1'b0;
+        if (pwrup_timer_cnt_q != cfg_pwrup_time_i) begin
           pwrup_timer_cnt_en = 1'b1;
         end
-        else if (pwrup_timer_cnt_q == cfg_pwrup_time) begin
+        else if (pwrup_timer_cnt_q == cfg_pwrup_time_i) begin
           pwrup_timer_cnt_clr = 1'b1;
           fsm_state_d = LP_0;
         end
       end
 
       NP_0: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b01;
-        if (adc_d_val) begin//sample chn0 value
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b01;
+        if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = NP_021;
         end
       end
 
-      NP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel=2'b0
-        adc_pd = 1'b0;
+      NP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+        adc_pd_o = 1'b0;
         fsm_state_d = NP_1;
       end
 
       NP_1: begin
-        adc_pd = 1'b0;
-        adc_chn_sel = 2'b10;
-        if (adc_d_val) begin//sample chn1 value
+        adc_pd_o = 1'b0;
+        adc_chn_sel_o = 2'b10;
+        if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = NP_EVAL;
           np_sample_cnt_en = 1'b1;
         end
       end
 
       NP_EVAL: begin
-        adc_pd = 1'b0;
-        if ((np_sample_cnt_q != cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
+        adc_pd_o = 1'b0;
+        if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
         end
-        else if ((np_sample_cnt_q != cfg_np_sample_cnt) && (stay_match != 1'b1)) begin
+        else if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match != 1'b1)) begin
           fsm_state_d = NP_0;
           np_sample_cnt_clr = 1'b1;
         end
-        else if ((np_sample_cnt_q == cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
+        else if ((np_sample_cnt_q == cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
           np_sample_cnt_clr = 1'b1;
-          adc_ctrl_done = 1'b1;
+          adc_ctrl_done_o = 1'b1;
         end
       end
 
