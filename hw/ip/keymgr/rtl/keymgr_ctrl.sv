@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module keymgr_ctrl import keymgr_pkg::*;(
+module keymgr_ctrl import keymgr_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -17,6 +17,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // Software interface
   input op_start_i,
   input keymgr_ops_e op_i,
+  input [CdiWidth-1:0] op_cdi_sel_i,
   output logic op_done_o,
   output keymgr_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
@@ -31,6 +32,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
   output keymgr_gen_out_e hw_sel_o,
   output keymgr_stage_e stage_sel_o,
+  output logic [CdiWidth-1:0] cdi_sel_o,
 
   // KMAC ctrl interface
   output logic adv_en_o,
@@ -54,9 +56,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   localparam int EntropyWidth = LfsrWidth / 2;
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
   localparam int EntropyRndWidth = prim_util_pkg::vbits(EntropyRounds);
-  localparam int VersionWidth = prim_util_pkg::vbits(Versions);
-  localparam int CntMax = EntropyRounds > Versions ? EntropyRounds : Versions;
-  localparam int CntWidth = prim_util_pkg::vbits(CntMax);
+  localparam int CntWidth = EntropyRounds > CDIs ? EntropyRndWidth : CdiWidth;
 
   // Enumeration for working state
   typedef enum logic [3:0] {
@@ -88,10 +88,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // There are two versions of the key state, one for sealing one for attestation
   // Among each version, there are multiple shares
   // Each share is a fixed multiple of the entropy width
-  logic [VersionWidth-1:0] key_sel;
-  logic [Versions-1:0][Shares-1:0][EntropyRounds-1:0][EntropyWidth-1:0] key_state_q, key_state_d;
+  logic [CDIs-1:0][Shares-1:0][EntropyRounds-1:0][EntropyWidth-1:0] key_state_q, key_state_d;
   logic [CntWidth-1:0] cnt;
-  logic [VersionWidth-1:0] version_cnt;
+  logic [CdiWidth-1:0] cdi_cnt;
 
   logic key_update;
   logic data_update;
@@ -176,14 +175,13 @@ module keymgr_ctrl import keymgr_pkg::*;(
   //   state.
   // - when there are no operations, the key state also should be exposed.
   assign key_o.valid = op_req;
-  // TODO, hook-up extra command info from registers
-  assign key_sel = '0;
+  assign cdi_sel_o = advance_sel ? cdi_cnt : op_cdi_sel_i;
   assign key_o.key_share0 = stage_sel_o == Disable ?
                             {EntropyRounds{entropy_i[0]}} :
-                            key_state_q[cnt[key_sel]][0];
+                            key_state_q[cnt[cdi_sel_o]][0];
   assign key_o.key_share1 = stage_sel_o == Disable ?
                             {EntropyRounds{entropy_i[1]}} :
-                            key_state_q[cnt[key_sel]][1];
+                            key_state_q[cnt[cdi_sel_o]][1];
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin
@@ -208,8 +206,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   assign update_sel = wipe_req ? KeyUpdateWipe :
                       init_o   ? KeyUpdateRoot : op_update_sel;
 
-  //assign version_cnt = cnt[VersionWidth-1:0];
-  assign version_cnt = cnt[VersionWidth-1:0];
+  assign cdi_cnt = cnt[CdiWidth-1:0];
 
   always_comb begin
     key_state_d = key_state_q;
@@ -223,7 +220,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
     unique case (update_sel)
       KeyUpdateRandom: begin
-        for (int i = 0; i < Versions; i++) begin
+        for (int i = 0; i < CDIs; i++) begin
           for (int j = 0; j < Shares; j++) begin
             key_state_d[i][j][cnt[EntropyRndWidth-1:0]] = entropy_i[j];
           end
@@ -232,7 +229,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
       KeyUpdateRoot: begin
         if (root_key_valid_q) begin
-          for (int i = 0; i < Versions; i++) begin
+          for (int i = 0; i < CDIs; i++) begin
             key_state_d[i][0] = root_key_i.key_share0;
             key_state_d[i][1] = root_key_i.key_share1;
           end
@@ -242,18 +239,18 @@ module keymgr_ctrl import keymgr_pkg::*;(
       KeyUpdateKmac: begin
         data_valid_o = data_update & ~fault_err & ~op_err;
         key_update_vld = key_update & ~fault_err & ~op_err;
-        key_state_d[version_cnt] = key_update_vld ? kmac_data_i : key_state_q;
+        key_state_d[cdi_sel_o] = key_update_vld ? kmac_data_i : key_state_q[cdi_sel_o];
       end
 
       KeyUpdateInvalid: begin
         data_valid_o = data_update;
         key_update_vld = key_update;
-        key_state_d[version_cnt] = key_update_vld ? kmac_data_i : key_state_q;
+        key_state_d[cdi_sel_o] = key_update_vld ? kmac_data_i : key_state_q[cdi_sel_o];
       end
 
       KeyUpdateWipe: begin
         wipe_key_o = 1'b1;
-        for (int i = 0; i < Versions; i++) begin
+        for (int i = 0; i < CDIs; i++) begin
           for (int j = 0; j < Shares; j++) begin
             key_state_d[i][j] = {EntropyRounds{entropy_i[j]}};
           end
@@ -499,7 +496,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
     endcase // unique case (state_q)
   end
 
-  // if working over multiple versions, a fault of any version
+  // if working over multiple CDIs, a fault of any
   // is considered an overall fault
   logic clr_err;
 
@@ -560,10 +557,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
       StAdv: begin
         adv_en_o = 1'b1;
 
-        if (kmac_done_i && (version_cnt == Versions-1)) begin
+        if (kmac_done_i && (cdi_cnt == CDIs-1)) begin
           op_ack = 1'b1;
           op_state_d = StIdle;
-        end else if (kmac_done_i && (version_cnt < Versions-1)) begin
+        end else if (kmac_done_i && (cdi_cnt < CDIs-1)) begin
           op_update = 1'b1;
           op_state_d = StAdvAck;
         end

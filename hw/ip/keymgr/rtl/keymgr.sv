@@ -191,6 +191,7 @@ module keymgr
   logic [Shares-1:0][KeyWidth-1:0] kmac_data;
   logic [ErrLastPos-1:0] err_code;
   logic sw_binding_unlock;
+  logic [CdiWidth-1:0] cdi_sel;
 
   keymgr_ctrl u_ctrl (
     .clk_i,
@@ -202,6 +203,7 @@ module keymgr
     .entropy_i(ctrl_rand),
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
+    .op_cdi_sel_i(reg2hw.control.cdi_sel.q),
     .op_done_o(op_done),
     .init_o(init),
     .sw_binding_unlock_o(sw_binding_unlock),
@@ -213,6 +215,7 @@ module keymgr
     .root_key_i(otp_key_i),
     .hw_sel_o(key_sel),
     .stage_sel_o(stage_sel),
+    .cdi_sel_o(cdi_sel),
     .wipe_key_o(wipe_key),
     .adv_en_o(adv_en),
     .id_en_o(id_en),
@@ -303,6 +306,10 @@ module keymgr
   logic health_state_vld;
   logic key_version_vld;
 
+  // software binding
+  logic [SwBindingWidth-1:0] sw_binding;
+  assign sw_binding = (cdi_sel == 0) ? reg2hw.sealing_sw_binding :
+                      (cdi_sel == 1) ? reg2hw.attest_sw_binding  : '0;
 
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill
@@ -314,7 +321,7 @@ module keymgr
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-  assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
+  assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
                                               RndCnstRevisionSeed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
@@ -329,11 +336,11 @@ module keymgr
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.sw_binding,owner_seed});
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding,owner_seed});
   assign adv_dvalid[OwnerInt] = owner_seed_vld;
 
   // Advance to owner_key
-  assign adv_matrix[Owner] = AdvDataWidth'(reg2hw.sw_binding);
+  assign adv_matrix[Owner] = AdvDataWidth'(sw_binding);
   assign adv_dvalid[Owner] = 1'b1;
 
   // Generate Identity operation input construction
