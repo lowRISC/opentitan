@@ -120,6 +120,7 @@ config = {
         "hw/ip/pwm/data/pwm_testplan.hjson",
         "hw/ip/pwrmgr/data/pwrmgr_testplan.hjson",
         "hw/ip/rom_ctrl/data/rom_ctrl_testplan.hjson",
+        "hw/ip/rstmgr/data/rstmgr_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/spi_device/data/spi_device_testplan.hjson",
@@ -428,8 +429,9 @@ def invoke_hugo(preview, bind_wan, hugo_opts, hugo_bin_path):
         args += ["server"]
         # --bind-wan only applies when previewing.
         if bind_wan:
-            args += ["--bind", "0.0.0.0", "--baseURL", "http://"+socket.getfqdn()]
-    if hugo_opts != None:
+            args += ["--bind", "0.0.0.0", "--baseURL",
+                     "http://" + socket.getfqdn()]
+    if hugo_opts is not None:
         args += hugo_opts
 
     subprocess.run(args, check=True, cwd=str(SRCTREE_TOP))
