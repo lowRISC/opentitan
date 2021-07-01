@@ -389,7 +389,7 @@ TEST_P(AdvanceToOperational, Success) {
   size_t binding_len = sizeof(kStateParams.binding_value) /
                        sizeof(kStateParams.binding_value[0]);
   for (size_t i = 0; i < binding_len; ++i) {
-    EXPECT_WRITE32(KEYMGR_SW_BINDING_0_REG_OFFSET + i * 4,
+    EXPECT_WRITE32(KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + i * 4,
                    kStateParams.binding_value[i]);
   }
   EXPECT_WRITE32(KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
