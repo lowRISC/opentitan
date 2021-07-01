@@ -16,7 +16,7 @@
  * incoming tlul transaction is directly muxed out.
  */
 module tlul_sram_byte import tlul_pkg::*; #(
-  parameter int EnableIntg  = 0  // Enable integrity handling at byte level
+  parameter bit EnableIntg  = 0  // Enable integrity handling at byte level
 ) (
   input clk_i,
   input rst_ni,
@@ -75,8 +75,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
   assign byte_req_ack = byte_wr_txn & a_ack & ~error_i;
 
   // when to select internal signals instead of passthru
-  if (EnableIntg == 1) begin : gen_dyn_sel
-    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn & (EnableIntg == 1);
+  if (EnableIntg) begin : gen_dyn_sel
+    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
     assign sel_int = byte_wr_txn | stall_host ? SelInt : SelPassThru;
   end else begin : gen_static_sel
     assign byte_wr_txn = '0;
