@@ -252,7 +252,7 @@ This signal is dependent on the personalization state of the device and will onl
 #### ISO_PART_SW_RD_EN and ISO_PART_SW_WR_EN
 
 These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
-The isolated partition is both read and writable during the DEV / PROD / PROD_END / RMA states.
+The isolated partition is both read and writable during the PROD / PROD_END / RMA states.
 In all other states it is inaccessible, except during the TEST_UNLOCKED* states where the partition is write-only.
 This construction allows to write a value to that partitition and keep it secret before advancing into any of the production states.
 
