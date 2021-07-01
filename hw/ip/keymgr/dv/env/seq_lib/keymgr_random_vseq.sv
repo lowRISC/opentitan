@@ -19,7 +19,7 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
 
     csr_random_n_add_to_q(ral.sw_binding_regwen, csr_update_q);
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
       csr_random_n_add_to_q(rg, csr_update_q);
     end
     for (int i = 0; i < keymgr_reg_pkg::NumSaltReg; i++) begin

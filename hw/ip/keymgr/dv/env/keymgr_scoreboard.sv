@@ -47,6 +47,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     NotUpdate
   } update_result_e;
 
+  int adv_cnt = 0;
+
   // local variables
   keymgr_pkg::keymgr_working_state_e current_state;
   keymgr_pkg::keymgr_op_status_e     current_op_status;
@@ -167,10 +169,41 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void process_kmac_data_rsp(kmac_app_item item);
     update_result_e update_result;
+    bit process_update;
+    bit adv_from_non_reset;
+    int cdis;
 
     is_kmac_rsp_err = item.rsp_error;
     is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
-    update_result = process_update_after_op_done();
+
+    // TODO: hack alert.  Since advance operations take 2 passes now, add the following
+    // to inform the function when to actaully process the update.
+    // This is not entirely correct, because an error that shows up during the first pass
+    // is still considered an error.  The process function must be updated to account for that.
+    adv_from_non_reset = 1'b0;
+    if (get_operation() == keymgr_pkg::OpAdvance && current_state != keymgr_pkg::StReset) begin
+      adv_from_non_reset = 1'b1;
+    end
+
+    cdis = keymgr_pkg::CDIs - 1;
+    if (adv_from_non_reset && (adv_cnt == cdis)) begin
+      `uvm_info(`gfn, $sformatf("complete advance"), UVM_MEDIUM)
+      adv_cnt = 0;
+      process_update = 1'b1;
+    end else if (adv_from_non_reset && (adv_cnt < cdis)) begin
+      `uvm_info(`gfn, $sformatf("partial advance"), UVM_MEDIUM)
+      adv_cnt = adv_cnt + 1;
+      process_update = 1'b0;
+      update_result = UpdateInternalKey;
+    end else if (get_operation() != keymgr_pkg::OpAdvance) begin
+      `uvm_info(`gfn, $sformatf("not advance"), UVM_MEDIUM)
+      adv_cnt = 0;
+      process_update = 1'b1;
+    end
+
+    if (process_update) begin
+      update_result = process_update_after_op_done();
+    end
 
     case (update_result)
       UpdateInternalKey: begin
@@ -697,7 +730,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
 
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
       exp.SoftwareBinding[i] = `gmv(rg);
     end
 
@@ -726,7 +759,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
       exp.SoftwareBinding[i] = `gmv(rg);
     end
 
@@ -752,7 +785,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
       exp.SoftwareBinding[i] = `gmv(rg);
     end
 
