@@ -484,6 +484,72 @@
           top_signame: ast_ram_1p_cfg
           index: -1
         }
+        {
+          struct: alert_event
+          type: uni
+          name: fatal_intg_event
+          act: req
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_fatal_intg_event
+          index: -1
+        }
+        {
+          struct: alert_event
+          type: uni
+          name: fatal_core_event
+          act: req
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_fatal_core_event
+          index: -1
+        }
+        {
+          struct: alert_event
+          type: uni
+          name: recov_core_event
+          act: req
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_recov_core_event
+          index: -1
+        }
+        {
+          struct: region_cfg
+          type: uni
+          name: ibus_region_cfg
+          act: rcv
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: rv_core_ibex_peri_ibus_region_cfg
+          index: -1
+        }
+        {
+          struct: region_cfg
+          type: uni
+          name: dbus_region_cfg
+          act: rcv
+          package: rv_core_ibex_peri_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: rv_core_ibex_peri_dbus_region_cfg
+          index: -1
+        }
       ]
     }
     {
@@ -5393,6 +5459,109 @@
         }
       ]
     }
+    {
+      name: rv_core_ibex_peri
+      type: rv_core_ibex_peri
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain: "0"
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: fatal_intg_event
+          struct: alert_event
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          top_signame: rv_core_ibex_fatal_intg_event
+          index: -1
+        }
+        {
+          name: fatal_core_event
+          struct: alert_event
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          top_signame: rv_core_ibex_fatal_core_event
+          index: -1
+        }
+        {
+          name: recov_core_event
+          struct: alert_event
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          top_signame: rv_core_ibex_recov_core_event
+          index: -1
+        }
+        {
+          name: ibus_region_cfg
+          struct: region_cfg
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_peri_ibus_region_cfg
+          index: -1
+        }
+        {
+          name: dbus_region_cfg
+          struct: region_cfg
+          package: rv_core_ibex_peri_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_peri_dbus_region_cfg
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: rv_core_ibex_peri
+          default: ""
+          end_idx: -1
+          top_signame: rv_core_ibex_peri_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x411F0000
+      }
+    }
   ]
   memory:
   [
@@ -6126,6 +6295,26 @@
         otp_ctrl.lc_seed_hw_rd_en
         flash_ctrl.lc_seed_hw_rd_en
       ]
+      rv_core_ibex.fatal_intg_event:
+      [
+        rv_core_ibex_peri.fatal_intg_event
+      ]
+      rv_core_ibex.fatal_core_event:
+      [
+        rv_core_ibex_peri.fatal_core_event
+      ]
+      rv_core_ibex.recov_core_event:
+      [
+        rv_core_ibex_peri.recov_core_event
+      ]
+      rv_core_ibex_peri.ibus_region_cfg:
+      [
+        rv_core_ibex.ibus_region_cfg
+      ]
+      rv_core_ibex_peri.dbus_region_cfg:
+      [
+        rv_core_ibex.dbus_region_cfg
+      ]
       spi_device.passthrough:
       [
         spi_host0.passthrough
@@ -6210,6 +6399,10 @@
       keymgr.tl:
       [
         main.tl_keymgr
+      ]
+      rv_core_ibex_peri.tl:
+      [
+        main.tl_rv_core_ibex_peri
       ]
       sram_ctrl_main.tl:
       [
@@ -6439,6 +6632,7 @@
           keymgr
           kmac
           sram_ctrl_main
+          rv_core_ibex_peri
         ]
         dm_sba:
         [
@@ -6460,6 +6654,7 @@
           keymgr
           kmac
           sram_ctrl_main
+          rv_core_ibex_peri
         ]
       }
       nodes:
@@ -6821,6 +7016,24 @@
           pipeline: "true"
         }
         {
+          name: rv_core_ibex_peri
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: rv_core_ibex_peri
+          addr_range:
+          [
+            {
+              base_addr: 0x411f0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
           name: sram_ctrl_main
           type: device
           clock: clk_main_i
@@ -7094,6 +7307,18 @@
           inst_name: main
           default: ""
           top_signame: keymgr_tl
+          index: -1
+        }
+        {
+          name: tl_rv_core_ibex_peri
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: rv_core_ibex_peri_tl
           index: -1
         }
         {
@@ -11645,6 +11870,7 @@
     i2c1
     i2c2
     pattgen
+    usbdev
     otp_ctrl
     lc_ctrl
     pwrmgr_aon
@@ -11658,6 +11884,7 @@
     sensor_ctrl_aon
     sram_ctrl_ret_aon
     flash_ctrl
+    rv_plic
     aes
     hmac
     kmac
@@ -11669,6 +11896,7 @@
     sram_ctrl_main
     otbn
     rom_ctrl
+    rv_core_ibex_peri
   ]
   alert:
   [
@@ -11757,6 +11985,13 @@
       module_name: pattgen
     }
     {
+      name: usbdev_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: usbdev
+    }
+    {
       name: otp_ctrl_fatal_macro_error
       width: 1
       type: alert
@@ -11765,6 +12000,13 @@
     }
     {
       name: otp_ctrl_fatal_check_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_fatal_bus_integ_error
       width: 1
       type: alert
       async: "1"
@@ -11981,6 +12223,13 @@
       module_name: flash_ctrl
     }
     {
+      name: rv_plic_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_plic
+    }
+    {
       name: aes_recov_ctrl_update_err
       width: 1
       type: alert
@@ -12091,6 +12340,34 @@
       type: alert
       async: "1"
       module_name: rom_ctrl
+    }
+    {
+      name: rv_core_ibex_peri_fatal_sw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex_peri
+    }
+    {
+      name: rv_core_ibex_peri_recov_sw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex_peri
+    }
+    {
+      name: rv_core_ibex_peri_fatal_hw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex_peri
+    }
+    {
+      name: rv_core_ibex_peri_recov_hw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex_peri
     }
   ]
   exported_rsts:
@@ -15223,6 +15500,83 @@
         index: -1
       }
       {
+        name: fatal_intg_event
+        struct: alert_event
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        top_signame: rv_core_ibex_fatal_intg_event
+        index: -1
+      }
+      {
+        name: fatal_core_event
+        struct: alert_event
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        top_signame: rv_core_ibex_fatal_core_event
+        index: -1
+      }
+      {
+        name: recov_core_event
+        struct: alert_event
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        top_signame: rv_core_ibex_recov_core_event
+        index: -1
+      }
+      {
+        name: ibus_region_cfg
+        struct: region_cfg
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_peri_ibus_region_cfg
+        index: -1
+      }
+      {
+        name: dbus_region_cfg
+        struct: region_cfg
+        package: rv_core_ibex_peri_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_peri_dbus_region_cfg
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: rv_core_ibex_peri
+        default: ""
+        end_idx: -1
+        top_signame: rv_core_ibex_peri_tl
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -15734,6 +16088,18 @@
         index: -1
       }
       {
+        name: tl_rv_core_ibex_peri
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: rv_core_ibex_peri_tl
+        index: -1
+      }
+      {
         name: tl_sram_ctrl_main
         struct: tl
         package: tlul_pkg
@@ -16166,6 +16532,72 @@
         width: 1
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        struct: alert_event
+        type: uni
+        name: fatal_intg_event
+        act: req
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_fatal_intg_event
+        index: -1
+      }
+      {
+        struct: alert_event
+        type: uni
+        name: fatal_core_event
+        act: req
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_fatal_core_event
+        index: -1
+      }
+      {
+        struct: alert_event
+        type: uni
+        name: recov_core_event
+        act: req
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_recov_core_event
+        index: -1
+      }
+      {
+        struct: region_cfg
+        type: uni
+        name: ibus_region_cfg
+        act: rcv
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: rv_core_ibex_peri_ibus_region_cfg
+        index: -1
+      }
+      {
+        struct: region_cfg
+        type: uni
+        name: dbus_region_cfg
+        act: rcv
+        package: rv_core_ibex_peri_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: rv_core_ibex_peri_dbus_region_cfg
         index: -1
       }
       {
@@ -17684,6 +18116,61 @@
         default: lc_ctrl_pkg::Off
       }
       {
+        package: rv_core_ibex_peri_pkg
+        struct: alert_event
+        signame: rv_core_ibex_fatal_intg_event
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::ALERT_EVENT_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: alert_event
+        signame: rv_core_ibex_fatal_core_event
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::ALERT_EVENT_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: alert_event
+        signame: rv_core_ibex_recov_core_event
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::ALERT_EVENT_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: region_cfg
+        signame: rv_core_ibex_peri_ibus_region_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::REGION_CFG_DEFAULT
+      }
+      {
+        package: rv_core_ibex_peri_pkg
+        struct: region_cfg
+        signame: rv_core_ibex_peri_dbus_region_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rv_core_ibex_peri_pkg::REGION_CFG_DEFAULT
+      }
+      {
         package: spi_device_pkg
         struct: passthrough_req
         signame: spi_device_passthrough_req
@@ -18094,6 +18581,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: keymgr_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: rv_core_ibex_peri_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: rv_core_ibex_peri_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

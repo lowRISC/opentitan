@@ -197,7 +197,8 @@ class i2c_base_vseq extends cip_base_vseq #(
       i2c_init(Device);
       agent_init(Host);
     end
-    `uvm_info(`gfn, "\n  initialization is done", UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\n  initialization is done, DUT/AGENT = %s",
+        (mode == Host) ? "Host/Target" : "Target/Host"), UVM_LOW)
   endtask : initialization
 
   virtual task agent_init(if_mode_e mode = Device);

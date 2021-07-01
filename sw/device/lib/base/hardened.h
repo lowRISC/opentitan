@@ -32,4 +32,24 @@ typedef enum hardened_bool {
   kHardenedBoolFalse = 0x1d4u,
 } hardened_bool_t;
 
+/**
+ * A byte-sized hardened boolean.
+ *
+ * This type is intended for cases where a byte-sized hardened boolean is
+ * required, e.g. for the entries of the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item.
+ *
+ * The values below were chosen to ensure that the hamming difference between
+ * them is greater than 5 and they are not bitwise complements of each other.
+ */
+typedef enum hardened_byte_bool {
+  /**
+   * The truthy value.
+   */
+  kHardenedByteBoolTrue = 0xa5,
+  /**
+   * The falsy value.
+   */
+  kHardenedByteBoolFalse = 0x4b,
+} hardened_byte_bool_t;
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_

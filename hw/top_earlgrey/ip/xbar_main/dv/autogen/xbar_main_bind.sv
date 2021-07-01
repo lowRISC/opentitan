@@ -134,6 +134,12 @@ module xbar_main_bind;
     .h2d    (tl_keymgr_o),
     .d2h    (tl_keymgr_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_core_ibex_peri (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_rv_core_ibex_peri_o),
+    .d2h    (tl_rv_core_ibex_peri_i)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_main (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

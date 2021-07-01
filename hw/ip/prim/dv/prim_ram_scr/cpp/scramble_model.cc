@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "scramble_model.h"
+
 #include <algorithm>
 #include <cassert>
 #include <functional>
 #include <iostream>
 #include <stdint.h>
 #include <vector>
+
 #include "prince_ref.h"
 
 uint8_t PRESENT_SBOX4[] = {0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd,
@@ -175,17 +177,25 @@ static std::vector<uint8_t> scramble_subst_perm_dec(
   return state;
 }
 
-// Generate a keystream for XORing with data using PRINCE. Multiple PRINCE
-// instantiations are used when the keystream is greater than a single PRINCE
-// width (64-bit).
+// Generate a keystream for XORing with data using PRINCE.
+// If repeat_keystream is set to true, the output from one PRINCE instance is
+// repeated when the keystream is greater than a single PRINCE width (64bit).
+// Otherwise, multiple PRINCEs are instantiated to form the keystream.
 static std::vector<uint8_t> scramble_gen_keystream(
     const std::vector<uint8_t> &addr, uint32_t addr_width,
     const std::vector<uint8_t> &nonce, const std::vector<uint8_t> &key,
-    uint32_t keystream_width, uint32_t num_half_rounds) {
+    uint32_t keystream_width, uint32_t num_half_rounds, bool repeat_keystream) {
   assert(key.size() == (kPrinceWidthByte * 2));
 
   // Determine how many PRINCE replications are required
-  uint32_t num_princes = (keystream_width + kPrinceWidth - 1) / kPrinceWidth;
+  uint32_t num_princes, num_repetitions;
+  if (repeat_keystream) {
+    num_princes = 1;
+    num_repetitions = (keystream_width + kPrinceWidth - 1) / kPrinceWidth;
+  } else {
+    num_princes = (keystream_width + kPrinceWidth - 1) / kPrinceWidth;
+    num_repetitions = 1;
+  }
 
   std::vector<uint8_t> keystream;
 
@@ -217,8 +227,11 @@ static std::vector<uint8_t> scramble_gen_keystream(
 
     // Flip keystream into little endian order and add to keystream vector
     keystream_block = byte_reverse_vector(keystream_block);
-    keystream.insert(keystream.end(), keystream_block.begin(),
-                     keystream_block.end());
+    // Repeat the output of a single PRINCE instance if needed
+    for (int k = 0; k < num_repetitions; ++k) {
+      keystream.insert(keystream.end(), keystream_block.begin(),
+                       keystream_block.end());
+    }
   }
 
   // Total keystream bits generated are some multiple of kPrinceWidth. This can
@@ -305,21 +318,20 @@ std::vector<uint8_t> scramble_addr(const std::vector<uint8_t> &addr_in,
                                  kNumAddrSubstPermRounds);
 }
 
-std::vector<uint8_t> scramble_encrypt_data(const std::vector<uint8_t> &data_in,
-                                           uint32_t data_width,
-                                           uint32_t subst_perm_width,
-                                           const std::vector<uint8_t> &addr,
-                                           uint32_t addr_width,
-                                           const std::vector<uint8_t> &nonce,
-                                           const std::vector<uint8_t> &key) {
+std::vector<uint8_t> scramble_encrypt_data(
+    const std::vector<uint8_t> &data_in, uint32_t data_width,
+    uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
+    uint32_t addr_width, const std::vector<uint8_t> &nonce,
+    const std::vector<uint8_t> &key, bool repeat_keystream) {
   assert(data_in.size() == ((data_width + 7) / 8));
   assert(addr.size() == ((addr_width + 7) / 8));
 
   // Data is encrypted by XORing with keystream then applying
   // substitution/permutation layer
 
-  auto keystream = scramble_gen_keystream(addr, addr_width, nonce, key,
-                                          data_width, kNumPrinceHalfRounds);
+  auto keystream =
+      scramble_gen_keystream(addr, addr_width, nonce, key, data_width,
+                             kNumPrinceHalfRounds, repeat_keystream);
 
   auto data_enc = xor_vectors(data_in, keystream);
 
@@ -327,13 +339,11 @@ std::vector<uint8_t> scramble_encrypt_data(const std::vector<uint8_t> &data_in,
                                         true);
 }
 
-std::vector<uint8_t> scramble_decrypt_data(const std::vector<uint8_t> &data_in,
-                                           uint32_t data_width,
-                                           uint32_t subst_perm_width,
-                                           const std::vector<uint8_t> &addr,
-                                           uint32_t addr_width,
-                                           const std::vector<uint8_t> &nonce,
-                                           const std::vector<uint8_t> &key) {
+std::vector<uint8_t> scramble_decrypt_data(
+    const std::vector<uint8_t> &data_in, uint32_t data_width,
+    uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
+    uint32_t addr_width, const std::vector<uint8_t> &nonce,
+    const std::vector<uint8_t> &key, bool repeat_keystream) {
   assert(data_in.size() == ((data_width + 7) / 8));
   assert(addr.size() == ((addr_width + 7) / 8));
 
@@ -342,8 +352,9 @@ std::vector<uint8_t> scramble_decrypt_data(const std::vector<uint8_t> &data_in,
   auto data_sp_out = scramble_subst_perm_full_width(data_in, data_width,
                                                     subst_perm_width, false);
 
-  auto keystream = scramble_gen_keystream(addr, addr_width, nonce, key,
-                                          data_width, kNumPrinceHalfRounds);
+  auto keystream =
+      scramble_gen_keystream(addr, addr_width, nonce, key, data_width,
+                             kNumPrinceHalfRounds, repeat_keystream);
 
   auto data_dec = xor_vectors(data_sp_out, keystream);
 

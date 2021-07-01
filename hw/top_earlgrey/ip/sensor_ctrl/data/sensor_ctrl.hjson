@@ -9,7 +9,7 @@
 #
 {
   name: "SENSOR_CTRL",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

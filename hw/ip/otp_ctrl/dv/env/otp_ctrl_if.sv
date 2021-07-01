@@ -37,6 +37,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i, scanmode_i;
   otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
 
+  // Unused in prim_generic_otp memory.
+  logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_test_ctrl_i;
+
   // Connect with lc_prog push_pull interface.
   logic lc_prog_req, lc_prog_err;
   logic lc_prog_err_dly1, lc_prog_no_sta_check;
@@ -96,6 +99,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     scan_en_i                  = $urandom();
     scan_rst_ni                = $urandom();
     scanmode_i                 = $urandom();
+    otp_test_ctrl_i            = 0;
   endtask
 
   task automatic drive_pwr_otp_init(logic val);

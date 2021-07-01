@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 r"""Shared subfunctions.
 """
-import logging as log
 import random
 import textwrap
 from math import ceil, log2
@@ -201,6 +200,16 @@ def scatter_bits(mask, bits):
             j += 1
 
     return scatterword
+
+
+def permute_bits(bits, permutation):
+    '''Permute the bits in a bitstring'''
+    bitlen = len(bits)
+    assert bitlen == len(permutation)
+    permword = ''
+    for k in permutation:
+        permword = bits[bitlen - k - 1] + permword
+    return permword
 
 
 def random_or_hexvalue(dict_obj, key, num_bits):

@@ -16,10 +16,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
   name: "ALERT_HANDLER",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_edn_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_edn_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -108,6 +108,42 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       desc: "Width of class ID",
       type: "int",
       default: "${int(math.ceil(math.log2(n_classes)))}",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ALERT_PINGFAIL",
+      desc: "Local alert ID for alert ping failure.",
+      type: "int",
+      default: "0",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_PINGFAIL",
+      desc: "Local alert ID for escalation ping failure.",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ALERT_INTEGFAIL",
+      desc: "Local alert ID for alert integrity failure.",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_INTEGFAIL",
+      desc: "Local alert ID for escalation integrity failure.",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_BUS_INTEGFAIL",
+      desc: "Local alert ID for bus integrity failure.",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_LAST",
+      desc: "Last local alert ID.",
+      type: "int",
+      default: "4",
       local: "true"
     },
   ],

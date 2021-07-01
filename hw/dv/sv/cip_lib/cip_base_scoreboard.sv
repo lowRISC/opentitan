@@ -27,6 +27,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local bit is_fatal_alert[string];
   local int alert_chk_max_delay[string];
 
+  // covergroups
+  tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
+  tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -42,6 +45,42 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (cfg.has_edn) edn_fifo = new("edn_fifo", this);
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       exp_mem[i] = mem_model#()::type_id::create({"exp_mem_", i}, this);
+    end
+
+    foreach (cfg.ral_models[ral_name]) begin
+      bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
+      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
+      bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
+      bit has_mem_byte_access_err;
+      bit has_wo_mem;
+      bit has_ro_mem;
+
+      if (has_mem) begin
+        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
+      end
+
+      tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
+      if (!has_csr) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_aligned_err.option.weight = 0;
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
+      end
+      if (!has_unmapped) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
+      end
+      if (!has_mem_byte_access_err) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
+      end
+      if (!has_wo_mem) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
+      end
+      if (!has_ro_mem) begin
+        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
+      end
+
+      if (cfg.en_tl_intg_gen) begin
+        tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
+        if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+      end
     end
   endfunction
 
@@ -244,17 +283,28 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // check if there is any tl error, return 1 in case of error or if it is an unmapped addr
-  // if it is data channel, will check if d_error is set correctly
-  //  - access unmapped address
-  //  - memory/register write addr isn't word-aligned
-  //  - memory write isn't full word
+  // Check if there is any tl error.
+  //
+  // On the Addr channel, returns 1 if the item should cause a TL error.
+  //
+  // On the Data channel, this also asserts that the item's D channel integrity is correct (because
+  // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
+  // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
+  // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've
+  // seen an integrity error" bit.
+  //
+  // The following situations might cause a TL error:
+  //
+  //  - unmapped address
+  //  - write address isn't word-aligned
+  //  - memory write isn't a full word
   //  - register write size is less than actual register width
   //  - TL protocol violation
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
     bit csr_aligned_err, csr_size_err, tl_item_err;
     bit has_intg_err;
+    bit mem_byte_access_err, mem_wo_err, mem_ro_err;
 
     if (!is_tl_access_mapped_addr(item, ral_name)) begin
       is_tl_unmapped_addr = 1;
@@ -264,7 +314,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    mem_access_err  = !is_tl_mem_access_allowed(item, ral_name);
+    mem_access_err  = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+                                                mem_ro_err);
     csr_aligned_err = !is_tl_csr_write_addr_word_aligned(item, ral_name);
     csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err     = item.get_exp_d_error();
@@ -272,8 +323,26 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (cfg.en_tl_intg_gen) begin
       has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
 
-      // integrity at d_user is from DUT, which should be always correct
-      if (channel == DataChannel) void'(item.is_d_chan_intg_ok(.throw_error(1)));
+      // If we got an error response caused by an integrity failure, update the mirrored value for
+      // any bus integrity alert field (if there is one).
+      if (has_intg_err) begin
+        update_tl_alert_field_prediction();
+      end
+
+      if (channel == DataChannel) begin
+        cip_tl_seq_item cip_item;
+        tl_intg_err_e tl_intg_err_type;
+        uint num_cmd_err_bits, num_data_err_bits;
+
+        // integrity at d_user is from DUT, which should be always correct
+        void'(item.is_d_chan_intg_ok(.throw_error(1)));
+
+        // sample covergroup
+        `downcast(cip_item, item)
+        cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
+        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+                                              is_mem_addr(item, ral_name));
+      end
     end
 
     if (!is_tl_err && (mem_access_err || csr_aligned_err || csr_size_err || tl_item_err ||
@@ -285,6 +354,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           $sformatf({"unmapped: %0d, mem_access_err: %0d, csr_aligned_err: %0d, csr_size_err: %0d",
                     " tl_item_err: %0d, has_intg_err: %0d"}, is_tl_unmapped_addr, mem_access_err,
                     csr_aligned_err, csr_size_err, tl_item_err, has_intg_err))
+
+      // these errors all have the same outcome. Only sample coverages when there is just one
+      // error, so that we know the error actually triggers the outcome
+      if (is_tl_unmapped_addr + csr_aligned_err + csr_size_err + mem_byte_access_err + mem_wo_err +
+          mem_ro_err + tl_item_err == 1) begin
+        tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
+                                       .csr_aligned_err(csr_aligned_err),
+                                       .csr_size_err(csr_size_err),
+                                       .mem_byte_access_err(mem_byte_access_err),
+                                       .mem_wo_err(mem_wo_err),
+                                       .mem_ro_err(mem_ro_err),
+                                       .tl_protocol_err(tl_item_err));
+      end
+
     end
     return (is_tl_unmapped_addr || is_tl_err);
   endfunction
@@ -297,7 +380,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   // check if tl mem access will trigger error or not
-  virtual function bit is_tl_mem_access_allowed(tl_seq_item item, string ral_name);
+  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
+                                                output bit mem_byte_access_err,
+                                                output bit mem_wo_err,
+                                                output bit mem_ro_err);
     if (is_mem_addr(item, ral_name)) begin
       bit mem_partial_write_support;
       dv_base_mem mem;
@@ -310,10 +396,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // check if write isn't full word for mem that doesn't allow byte access
       if (!mem_partial_write_support && (item.a_size != 2 || item.a_mask != '1) &&
            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
-        return 0;
+        mem_byte_access_err = 1;
       end
       // check if mem read happens while mem doesn't allow read (WO)
-      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) return 0;
+      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) mem_wo_err = 0;
+      // check if mem write happens while mem is RO
+      if (mem_access == "RO" && (item.a_opcode != tlul_pkg::Get)) mem_ro_err = 0;
+
+      if (mem_byte_access_err || mem_wo_err || mem_ro_err) return 0;
     end
     return 1;
   endfunction
@@ -370,6 +460,43 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.check_phase(phase);
     foreach (tl_a_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifos[i])
     foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
+  endfunction
+
+  virtual function void update_tl_alert_field_prediction();
+    string        regname;
+    string        fldname;
+    string        name_components[$];
+    uvm_reg       register;
+    uvm_reg_field field;
+
+    if (cfg.tl_intg_alert_field == "") begin
+      // No field configured. Return immediately.
+      return;
+    end
+
+    // Split the string into register and field name.
+    str_utils_pkg::str_split(.s(cfg.tl_intg_alert_field),
+                             .result(name_components),
+                             .delim("."),
+                             .strip_whitespaces(1'b0));
+    `DV_CHECK_EQ_FATAL(name_components.size(), 2,
+                       $sformatf("tl_intg_alert_field must have form REG.FIELD. It is `%0s'.",
+                                 cfg.tl_intg_alert_field))
+
+    regname = name_components[0];
+    fldname = name_components[1];
+
+    register = ral.get_reg_by_name(regname);
+    `DV_CHECK_FATAL(register,
+                    $sformatf("No register called %0s (from tl_intg_alert_field)", regname))
+
+    field = register.get_field_by_name(fldname);
+    `DV_CHECK_FATAL(field,
+                    $sformatf("No field called %0s in the %0s register (from tl_intg_alert_field)",
+                              fldname, regname))
+
+    // Set the field
+    `DV_CHECK_FATAL(field.predict(.value(1), .kind(UVM_PREDICT_READ)));
   endfunction
 
 endclass

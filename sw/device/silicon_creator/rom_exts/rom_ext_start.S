@@ -21,15 +21,8 @@
 /**
  * `_rom_ext_interrupt_vector` is an ibex-compatible interrupt vector.
  *
- * Interrupt vectors in Ibex have 32 entries for 32 possible interrupts. The
+ * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts. The
  * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
- *
- * The ROM_EXT uses the address directly after the first possible interrupt
- * vector when starting execution after Mask ROM, which we choose to make look
- * like an extra entry. This is designed to match how Ibex chooses to implement
- * its initial execution address after boot.
- *
- * Thus this vector has exactly 33 4-byte entries.
  *
  * Only the following will be used by Ibex:
  * - Exception Handler (Entry 0)
@@ -37,7 +30,6 @@
  * - Machine Timer Interrupt Handler (Entry 7)
  * - Machine External Interrupt Handler (Entry 11)
  * - Vendor Interrupt Handlers (Entries 16-31)
- * - Reset Handler (Entry 32)
  *
  * More information about Ibex's interrupts can be found here:
  *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
@@ -84,23 +76,13 @@ _rom_ext_interrupt_vector:
 
   // Vendor Interrupt Handlers:
 
-  // On Ibex interrupt ids 30-16 are for "fast" interrupts.
+  // On Ibex interrupt ids 16-30 are for "fast" interrupts.
   .rept 15
   unimp
   .endr
 
   // On Ibex interrupt id 31 is for non-maskable interrupts.
   unimp
-
-  /**
-   * ROM_EXT entry point.
-   *
-   * ROM_EXT is the second boot stage, which means that
-   * this entry will be hit as a result of the jump from the Mask ROM, and
-   * not the power-on. This indirection insures that Mask ROM has a well
-   * defined address to jump to.
-   */
-  j _rom_ext_start_boot
 
   // Set size so this vector can be disassembled.
   .size _rom_ext_interrupt_vector, .-_rom_ext_interrupt_vector
@@ -130,9 +112,8 @@ _rom_ext_interrupt_vector:
 /**
  * Entry point.
  *
- * This symbol is jumped to from `_rom_ext_interrupt_vector + (32 * 4)`, and
- * is part of a two jump Mask ROM execution handover to ROM_EXT (`mask_rom_boot`
- * -> `_rom_ext_interrupt_vector + (32 * 4)` -> `_rom_ext_start_boot`).
+ * This symbol is jumped to from `mask_rom_boot` using the `entry_point` field
+ * of the manifest.
  */
   .globl _rom_ext_start_boot
   .type _rom_ext_start_boot, @function

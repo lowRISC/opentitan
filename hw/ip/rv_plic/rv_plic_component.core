@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:alert
     files:
       - rtl/rv_plic_gateway.sv
       - rtl/rv_plic_target.sv

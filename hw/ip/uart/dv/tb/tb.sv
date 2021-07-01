@@ -86,6 +86,6 @@ module tb;
   end
 
   // we expect the output enable to be always 1
-  `ASSERT(UartTxEnTiedTo1_A, uart_tx_en, !rst_n, clk)
+  `ASSERT(UartTxEnTiedTo1_A, uart_tx_en, clk, !rst_n)
 
 endmodule

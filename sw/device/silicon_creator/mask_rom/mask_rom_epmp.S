@@ -1,0 +1,155 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/silicon_creator/lib/epmp_defs.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+
+/**
+ * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg
+ * field in the pmpcfg{N} register.
+ *
+ * Example: set value for pmp5cfg which is a field of pmpcfg1.
+ *
+ *   li   t0, CFG_INDEX(5 % 4, v)
+ *   csrw pmpcfg1, t0
+ */
+#define CFG_INDEX(i, v) ((v) << (i*8))
+
+/**
+ * Encode address for Top-Of-Range addressing mode.
+ */
+#define TOR(addr) ((addr) >> 2)
+
+/**
+ * Encode address and length for Naturally-Aligned-Power-Of-Two addressing
+ * mode.
+ */
+#define NAPOT(addr, len) (((addr) >> 2) | (((len) - 1) >> 3))
+
+/**
+ * The "ax" flag below is necessary to ensure that this section
+ * is allocated space in ROM by the linker.
+ */
+.section .crt, "ax", @progbits
+
+/**
+ * Configure the CPU's Enhanced Physical Memory Protection (ePMP) feature.
+ *
+ * The steps are:
+ *
+ *   1. Enable Rule Locking Bypass (RLB). RLB allows later boot stages to
+ *      modify locked PMP entries.
+ *   2. Configure access permissions for each address space of interest.
+ *   3. Enable Machine Mode Whitelist Policy (MMWP). MMWP stops any access
+ *      that does not match a PMP entry.
+ *
+ * This function follows the standard ILP32 calling convention but does not
+ * require a valid stack pointer, thread pointer or global pointer.
+ *
+ * May clobber temporary registers (t0-t6).
+ */
+mask_rom_epmp_init:
+  .globl mask_rom_epmp_init
+  .type mask_rom_epmp_init, @function
+
+  // Enable Rule Locking Bypass (RLB).
+  csrsi EPMP_MSECCFG, EPMP_MSECCFG_RLB
+
+  // Clear all PMP configuration registers.
+  csrw pmpcfg0, zero
+  csrw pmpcfg1, zero
+  csrw pmpcfg2, zero
+  csrw pmpcfg3, zero
+
+  // Pre-encoded addresses defined in linker script.
+  .extern _epmp_text_tor_lo
+  .extern _epmp_text_tor_hi
+  .extern _epmp_stack_guard_na4
+
+  // Setup PMP address registers.
+
+  // ROM TEXT
+  la   t0, _epmp_text_tor_lo
+  csrw pmpaddr0, t0
+  la   t0, _epmp_text_tor_hi
+  csrw pmpaddr1, t0
+
+  // ROM
+  li   t0, NAPOT(TOP_EARLGREY_ROM_BASE_ADDR, TOP_EARLGREY_ROM_SIZE_BYTES)
+  csrw pmpaddr2, t0
+
+  // ROM_EXT TEXT (configured after signature verification)
+  csrw pmpaddr3, zero // ROM_EXT TEXT low
+  csrw pmpaddr4, zero // ROM_EXT TEXT high
+
+  // eFLASH
+  li   t0, NAPOT(TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES)
+  csrw pmpaddr5, t0
+
+  // Free entries
+  csrw pmpaddr6, zero
+  csrw pmpaddr7, zero
+  csrw pmpaddr8, zero
+  csrw pmpaddr9, zero
+
+  // MMIO
+  li   t0, TOR(0x40000000) // TODO(#7117): generate MMIO start address.
+  csrw pmpaddr10, t0
+  li   t0, TOR(0x50000000) // TODO(#7117): generate MMIO end address.
+  csrw pmpaddr11, t0
+
+  // Free entries
+  csrw pmpaddr12, zero
+  csrw pmpaddr13, zero
+
+  // Stack guard
+  la   t0, _epmp_stack_guard_na4
+  csrw pmpaddr14, t0
+
+  // RAM
+  li   t0, NAPOT(TOP_EARLGREY_RAM_MAIN_BASE_ADDR, TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
+  csrw pmpaddr15, t0
+
+  // Set PMP configuration registers.
+  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
+           CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
+  li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
+  li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
+  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_LRW) | /* Stack Guard */ \
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
+  csrw pmpcfg0, t0
+  csrw pmpcfg1, t1
+  csrw pmpcfg2, t2
+  csrw pmpcfg3, t3
+
+  // Enable Machine Mode Whitelist Policy (MMWP).
+  // TODO(#5653): Enable Machine Mode Lockdown (MML)?
+  csrsi EPMP_MSECCFG, EPMP_MSECCFG_MMWP
+
+  ret
+
+  // Set function size to allow disassembly.
+  .size mask_rom_epmp_init, .-mask_rom_epmp_init
+
+/**
+ * Disable all accesses to the stack guard word.
+ *
+ * This function follows the standard ILP32 calling convention but does not
+ * require a valid stack pointer, thread pointer or global pointer.
+ *
+ * Clobbers t0.
+ */
+mask_rom_epmp_stack_guard_init:
+  .globl mask_rom_epmp_stack_guard_init
+  .type mask_rom_epmp_stack_guard_init, @function
+
+  // Remove all permissions from entry 14 (the stack guard).
+  li   t0, CFG_INDEX(14 % 4, EPMP_CFG_R | EPMP_CFG_W | EPMP_CFG_X)
+  csrc pmpcfg3, t0
+
+  ret
+
+  // Set function size to allow disassembly.
+  .size mask_rom_epmp_stack_guard_init, .-mask_rom_epmp_stack_guard_init

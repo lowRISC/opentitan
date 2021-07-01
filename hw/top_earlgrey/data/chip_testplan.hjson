@@ -898,7 +898,7 @@
             - Reset the chip and repeat the first 2 steps to verify a different set of values.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
       name: chip_lc_ctrl_init
@@ -1758,7 +1758,7 @@
             Xref'ed with corresponding IP tests that receive these bits.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
       name: chip_otp_ctrl_lc_signals

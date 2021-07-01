@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:pwm_test
       - lowrisc:dv:pwm_sva
+      - lowrisc:dv:pwm_cov
     files:
       - tb.sv
     file_type: systemVerilogSource

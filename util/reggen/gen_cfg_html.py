@@ -43,11 +43,12 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     # clocks
     gen_kv(outfile,
            'Primary Clock',
-           '<b><code>{}</code></b>'.format(cfgs.clock_signals[0]))
-    if len(cfgs.clock_signals) > 1:
-        other_clocks = ['<b><code>{}</code></b>'.format(clk)
-                        for clk in cfgs.clock_signals[1:]]
-        gen_kv(outfile, 'Other Clocks', ', '.join(other_clocks))
+           '<b><code>{}</code></b>'.format(cfgs.clocking.primary.clock))
+    other_clocks = cfgs.clocking.other_clocks()
+    if other_clocks:
+        other_clocks_str = ['<b><code>{}</code></b>'.format(clk)
+                            for clk in other_clocks]
+        gen_kv(outfile, 'Other Clocks', ', '.join(other_clocks_str))
     else:
         gen_kv(outfile, 'Other Clocks', '<i>none</i>')
 

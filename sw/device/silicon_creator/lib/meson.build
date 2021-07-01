@@ -59,6 +59,69 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
   ),
 )
 
+sw_silicon_creator_lib_shutdown = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_shutdown',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+      hw_ip_keymgr_reg_h,
+      hw_ip_sram_ctrl_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      'shutdown.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+      sw_silicon_creator_lib_driver_alert,
+    ],
+  ),
+)
+
+# Silicon creator ePMP library.
+sw_silicon_creator_lib_epmp = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_epmp',
+    sources: [
+      'epmp.c',
+    ],
+  ),
+)
+
+# Silicon creator ePMP test utilities.
+sw_silicon_creator_lib_epmp_test_unlock = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_epmp_test_unlock',
+    sources: [
+      'epmp_test_unlock.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_epmp,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_shutdown_unittest', executable(
+    'sw_silicon_creator_lib_shutdown_unittest',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+      hw_ip_keymgr_reg_h,
+      hw_ip_sram_ctrl_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      'shutdown.c',
+      'shutdown_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
+)
+
 test('sw_silicon_creator_lib_error_unittest', executable(
     'sw_silicon_creator_lib_error_unittest',
     sources: [
@@ -110,6 +173,24 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
     ],
     native: true,
   ),
+  suite: 'mask_rom',
+)
+
+test('sw_silicon_creator_lib_epmp_unittest', executable(
+    'sw_silicon_creator_lib_epmp_unittest',
+    sources: [
+      'epmp_unittest.cc',
+      'epmp.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_csr,
+      sw_lib_testing_bitfield,
+    ],
+    native: true,
+    c_args: ['-DMOCK_CSR'],
+    cpp_args: ['-DMOCK_CSR'],
+    ),
   suite: 'mask_rom',
 )
 

@@ -52,10 +52,17 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_lib_runtime_hart,
         sw_lib_runtime_print,
         sw_silicon_creator_lib_manifest_section,
+
+        # TODO: ePMP test status dependency should be removed from
+        # production ROM_EXT. Tests should unlock the test status
+        # address themselves (via a library or similar).
+        sw_silicon_creator_lib_epmp_test_unlock,
       ],
       link_with: static_library(
         slot + '_rom_ext_lib',
-        sources: ['rom_ext.c'],
+        sources: [
+          'rom_ext.c',
+        ],
         link_depends: [slot_link_args[1]],
     )
   )

@@ -1,7 +1,5 @@
 ---
 title: "Mask ROM"
-aliases:
-- /sw/device/silicon_creator/mask_rom/boot
 ---
 
 <p style="color: red; text-align: right;">
@@ -118,18 +116,14 @@ Dependencies:
 *   Entropy?
 *   Clocks
 
-## Lockdown
+## Memory Protection
 
-This is responsible for managing memory protection regions as well as
-disallowing reconfiguration of peripherals.
+This is responsible for managing the read (R), write (W) and execute (X)
+permissions for memory regions.
 
 Dependencies:
 
-*   ePMP
-*   Flash Controller
-*   SRAM Scrambling Sequence
-*   Pinmux / Padctrl / Alert Handler
-
+*   [Enhanced Physical Memory Protection (ePMP)](https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html)
 
 ## System State
 

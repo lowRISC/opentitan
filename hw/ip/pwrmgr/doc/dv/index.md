@@ -57,32 +57,137 @@ The PWRMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralg
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Stimulus strategy
+The sequences are closely related to the testplan's testpoints.
+Testpoints and coverage are described in more detail in the [testplan](#dv-plan).
 #### Test sequences
 All test sequences reside in `hw/ip/pwrmgr/dv/env/seq_lib`.
 The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `pwrmgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* task `start_slow_fsm`:
+  Sets external inputs as needed for the slow fsm to start the fast fsm.
+  Randomizes some waits.
+* task `start_fast_from_low_power`:
+  Sets external inputs as needed for the fast fsm to go active.
+  Randomizes some waits.
+* task `turn_clocks_off_for_slow_to_low_power`:
+  Drivers inputs from AST turning required clocks off per the `control` CSR.
+* task `wait_for_fast_fsm_active`:
+  Waits for the `ctrl_cfg_regwen` to become 1, indicating the fast fsm is active.
+* task `wait_for_csr_to_propagate_to_slow_domain`:
+  Waits for `cfg_cdc_sync` CSR to be clear, indicating the CDC to the slow clock has completed.
+* task `wait_for_reset_cause`:
+  Waits for the `pwr_rst_req.reset_cause` output to match an expected cause.
+
+The `pwrmgr_smoke_vseq` sequence tests the pwrmgr through POR, entry and exit from software initiated low power and reset.
+
+The `pwrmgr_wakeup_vseq` sequence checks the transitions to low power and the wakeup settings.
+It randomizes wakeup inputs, wakeup enables, the wakeup info capture enable, and the interrupt enable.
+
+The `pwrmgr_clks_en_vseq` sequence checks that the peripheral clock enables match the settings of the `control` CSR during low power. It uses a subset of the wakeup sequence.
+
+The `pwrmgr_aborted_lowpower_vseq` sequence creates scenarios that lead to aborting a lowpower transition.
+The abort can be due to the processor waking up very soon, or otp, lc, or flash being busy.
+
+The `pwrmgr_reset_vseq` sequence checks the pwrmgr response to resets and reset enables.
+
+The `pwrmgr_escalation_reset_vseq` sequence checks the response to an escalation reset.
+
+The `pwrmgr_reset_wakeup_vseq` sequence aligns reset and low power entry
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* wakeup_cg
+* lowpower_clock_enables_cg
+* reset_cg
+* reset_lowpower_distance_cg
+
+More details about these sequences and covergroups can be found at `hw/ip/pwrmgr/data/pwrmgr_testplan.hjson`.
 
 ### Self-checking strategy
 #### Scoreboard
 The `pwrmgr_scoreboard` is primarily used for end to end checking.
+
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * analysis port1:
 * analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+
+Many inputs must have specific transitions to prevent the pwrmgr fsms from wait forever.
+When possible the transitions are triggered by pwrmgr output changes.
+These are described according to the unit that originates or is the recepient ot the ports.
+See also the test plan for specific ways these are driven to trigger different testpoints.
+
+##### AST
+- Output `slow_clk_en` is always on.
+- Input `slow_clk_val` is unused.
+- Outputs `core_clk_en`, `io_clk_en`, and `usb_clk_en` reset low, and go high prior to the slow fsm requesting the fast fsm to wakeup.
+  Notice the usb clock can be programmed to stay low on wakeup via the `control` CSR.
+  These clock enables should match their corresponding enables in the `control` CSR on low power transitions.
+  These clock enables are cleared on reset.
+  These clock enables are checked in the scoreboard.
+- Inputs `core_clk_val`, `io_clk_val`, and `usb_clk_val` track the corresponding enables.
+  They are driven by sequences, which turn them off when their enables go off, and turn them back on a few random slow clock cycles after their enables go on.
+  Slow fsm waits for them to go high prior to requesting fast fsm wakeup.
+  Lack of a high transition when needed is detected via timeout.
+  Such timeout would be due to the corresponding enables being set incorrectly.
+- Output `main_pd_n` resets high, should match `control.main_pd_n` CSR on low power transitions.
+  Goes high when during slow fsm transition to power up.
+- Input `main_pok` should turn on for the slow fsm to start power up sequence.
+  Sequences will turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
+  Lack of a high transition causes a timeout, and would point to `main_pd_n` being set incorrectly.
+
+##### RSTMGR
+- Output `rst_lc_req` resets to 1, also set on reset transition, and on low power transitions that turn off main clock.
+  Cleared early on during the steps to fast fsm active.
+- Input `rst_lc_src_n` go low in response to `rst_lc_req` high, go high when `rst_lc_req` clears (and lc is reset).
+  Driven by sequences in response to `rst_lc_req`, waiting a few random cycles prior to transitions.
+  Fast fsm waits for it to go low before deactivating, and for it to go high before activating.
+  Checked implicitly by lack of timeout: a timeout would be due to `rst_lc_req` being set incorrectly.
+- Output `rst_sys_req` resets to 1, also set to on reset, and on low power transitions that turn off main clock.
+Cleared right before the fast fsm goes active.
+- Input `rst_sys_src_n` go low in response to `rst_sys_req` high.
+  Transitions go high when `rst_sysd_req` clears (and lc is reset).
+  Fast fsm waits for it to go low before deactivating.
+  Checked implicitly by lack of timeout.
+- Output `rstreqs` correspond to the enabled pwrmgr rstreqs inputs plus escalation reset. Checked in scoreboard.
+- Output `reset_cause` indicates a reset is due to low power entry or a reset request. Checked in scoreboard.
+
+##### CLKMGR
+- Output `ip_clk_en` resets low, is driven high by fast fsm when going active, and driven low when going inactive.
+- Input `clk_status` is expected to track `ip_clk_en`.
+  Fast fsm waits for it going high prior to going active, and for it to go low prior to deactivating.
+  Driven by sequences, which turns it off when `ip_clk_en` goes low, and rurn it back on a few random cycles after `ip_clk_en` going high.
+  Checked by lack of a timeout: such timeout would be due to `ip_clk_en` being set incorrectly.
+
+##### OTP
+- Output `otp_init` resets low, goes high when the fast fsm is going active, and low after the `otp_done` input goes high.
+- Input `otp_done` is driven by sequences.
+  It is initialized low, and goes high some random cycles after `otp_init` goes high.
+  The sequencer will timeout if `otp_init` is not driven high.
+- Input `otp_idle` will be normally be set high, but will be set low by the `pwrmgr_aborted_lowpower_vseq` sequence.
+
+###### LC
+The pins connecting to LC behave pretty much the same way as those to OTP.
+
+##### FLASH
+- Input `flash_idle` is handled much like `lc_idle` and `otp_idle`.
+
+##### CPU
+- Input `core_sleeping` is driven by sequences.
+  It is driven low to enable a transition to low power.
+  After the transition is under way it is a don't care.
+  The `pwrmgr_aborted_lowpower_vseq` sequence sets it carefully to abort a low power entry soon after the attempt because the processor wakes up.
+
+##### Wakepus and Resets
+There are a number of wakeup and reset requests.
+They are driven by sequences as they need to.
 
 #### Assertions
 * TLUL assertions: The `tb/pwrmgr_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
+
 * assert prop 1:
 * assert prop 2:
 

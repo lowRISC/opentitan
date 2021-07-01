@@ -9,6 +9,7 @@ import argparse
 import datetime
 import logging as log
 import random
+import re
 from pathlib import Path
 
 import hjson
@@ -40,6 +41,33 @@ def _override_seed(args, name, config):
         if config.setdefault('seed', new_seed) == new_seed:
             log.warning('No {} specified, setting to {}.'.format(
                 name, new_seed))
+
+
+def _permutation_string(data_perm):
+    '''Check permutation format and expand the ranges'''
+
+    if not isinstance(data_perm, str):
+        TypeError()
+
+    if not data_perm:
+        return ''
+
+    # Check the format first
+    pattern = r'^((?:\[[0-9]+:[0-9]+\])+(?:,\[[0-9]+:[0-9]+\])*)'
+    match = re.fullmatch(pattern, data_perm)
+    if match is None:
+        raise ValueError()
+    # Expand the ranges
+    expanded_perm = []
+    groups = match.groups()
+    for group in groups[0].split(','):
+        k1, k0 = [int(x) for x in group[1:-1].split(':')]
+        if k1 > k0:
+            expanded_perm = list(range(k0, k1 + 1)) + expanded_perm
+        else:
+            expanded_perm = list(range(k0, k1 - 1, -1)) + expanded_perm
+
+    return expanded_perm
 
 
 # TODO: this can be removed when we have moved to Python 3.8
@@ -141,6 +169,22 @@ def main():
                         Note that seed values in additional configuration files
                         are ignored.
                         ''')
+    parser.add_argument('--data-perm',
+                        type=_permutation_string,
+                        metavar='<map>',
+                        default='',
+                        help='''
+                        This is a post-processing option and allows permuting
+                        the bit positions before writing the hexfile.
+                        The bit mapping needs to be supplied as a comma separated list
+                        of bit slices, where the numbers refer to the bit positions in
+                        the original data word before remapping, for example:
+
+                        "[7:0],[16:8]".
+
+                        The mapping must be bijective - otherwise this will generate
+                        an error.
+                        ''')
 
     args = parser.parse_args()
 
@@ -163,7 +207,7 @@ def main():
     _override_seed(args, 'img_seed', img_cfg)
 
     try:
-        otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg)
+        otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg, args.data_perm)
 
         for f in args.add_cfg:
             log.info(

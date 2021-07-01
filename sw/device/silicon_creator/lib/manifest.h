@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/epmp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
@@ -20,13 +21,15 @@ extern "C" {
 /**
  * Manifest for boot stage images stored in flash.
  *
- * OpenTitan secure boot, at a minimum, consists of four boot stages: ROM,
- * ROM_EXT, BL0, and Kernel. ROM is stored in the read-only Mask ROM while
- * remaning stages are stored in flash. This structure must be placed at the
- * beginning of ROM_EXT and BL0 images so that ROM and ROM_EXT can verify
- * integrity and authenticity of the next stage before handing over execution.
+ * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
+ * ROM_EXT, and the first owner boot stage, e.g. BL0. ROM is stored in the
+ * read-only Mask ROM while remaining stages are stored in flash. This structure
+ * must be placed at the start of ROM_EXT and first owner boot stage images so
+ * that ROM and ROM_EXT can verify the integrity and authenticity of the next
+ * stage and configure peripherals as needed before handing over execution.
  *
- * Use of this struct for stages following BL0 is optional.
+ * Use of this struct for stages following the first owner boot stage is
+ * optional.
  *
  * Note: The definitions in
  * sw/host/rom_ext_image_tools/signer/image/src/manifest.rs must be updated if
@@ -81,6 +84,25 @@ typedef struct manifest {
    * Modulus of the signer's RSA public key.
    */
   sigverify_rsa_buffer_t modulus;
+  /**
+   * Offset of the start of the executable region of the image from the start
+   * of the manifest in bytes.
+   */
+  uint32_t code_start;
+  /**
+   * Offset of the end of the executable region (exclusive) of the image from
+   * the start of the manifest in bytes.
+   */
+  uint32_t code_end;
+  /**
+   * Offset of the first instruction to execute in the image from the start of
+   * the manifest in bytes.
+   */
+  uint32_t entry_point;
+  /**
+   * Trailing padding (due to image_timestamp and the size of the struct).
+   */
+  uint32_t padding;
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 0);
@@ -93,6 +115,10 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 408);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 412);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 444);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 448);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, padding, 844);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
@@ -132,7 +158,7 @@ inline rom_error_t manifest_signed_region_get(
     const manifest_t *manifest, manifest_signed_region_t *signed_region) {
   if (manifest->image_length < kManifestImageLengthMin ||
       manifest->image_length > kManifestImageLengthMax) {
-    return kErrorManifestInternal;
+    return kErrorManifestBadLength;
   }
   *signed_region = (manifest_signed_region_t){
       .start = &manifest->image_length,
@@ -141,25 +167,58 @@ inline rom_error_t manifest_signed_region_get(
   return kErrorOk;
 }
 
-// FIXME: Remove this after adding the entry_point field.
-static_assert(sizeof(manifest_t) > 768 && sizeof(manifest_t) <= 1024,
-              "kEntryPointOffset must be updated");
+/**
+ * Gets the executable region of the image.
+ *
+ * This function also checks that the executable region is non-empty, inside
+ * the image, located after the manifest, and word aligned.
+ *
+ * @param manifest A manifest.
+ * @param[out] code_region Executable region of the image.
+ * @return The result of the operation.
+ */
+inline rom_error_t manifest_code_region_get(const manifest_t *manifest,
+                                            epmp_region_t *code_region) {
+  if (manifest->code_start >= manifest->code_end ||
+      manifest->code_start < sizeof(manifest_t) ||
+      manifest->code_end > manifest->image_length ||
+      // FIXME: Replace this when we have a function/macro for alignment checks.
+      (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
+    return kErrorManifestBadCodeRegion;
+  }
+  *code_region = (epmp_region_t){
+      .start = (uintptr_t)manifest + manifest->code_start,
+      .end = (uintptr_t)manifest + manifest->code_end,
+  };
+  return kErrorOk;
+}
 
 /**
  * Gets the entry point of an image.
  *
- * Entry point is the address that a boot stage jumps to handle execution to the
- * next stage in the boot chain. This function returns a `uintptr_t` instead of
- * a function pointer to accommodate for entry points with different parameters
- * and return types.
+ * Entry point is the address that a boot stage jumps to transfer execution to
+ * the next stage in the boot chain. This function returns a `uintptr_t` instead
+ * of a function pointer to accommodate for entry points with different
+ * parameters and return types.
+ *
+ * This function also checks that the entry point is inside both the image and
+ * the executable region of the image and word aligned.
  *
  * @param manfiest A manifest.
- * @return The entry point.
+ * @param[out] entry_point Entry point address.
+ * @return The result of the operation.
  */
-inline uintptr_t manifest_entry_point_address_get(const manifest_t *manifest) {
-  // FIXME: Remove this after adding the entry_point field.
-  enum { kEntryPointOffset = 1152 };
-  return (uintptr_t)manifest + kEntryPointOffset;
+inline rom_error_t manifest_entry_point_get(const manifest_t *manifest,
+                                            uintptr_t *entry_point) {
+  if (manifest->entry_point < manifest->code_start ||
+      manifest->entry_point >= manifest->code_end ||
+      manifest->entry_point >= manifest->image_length ||
+      // FIXME: Replace this when we have a function/macro for alignment checks.
+      (manifest->entry_point & 0x3) != 0) {
+    return kErrorManifestBadEntryPoint;
+  }
+  *entry_point = (uintptr_t)manifest + manifest->entry_point;
+  return kErrorOk;
 }
 
 // TODO: Move this definition to a more suitable place. Defined here for now

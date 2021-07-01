@@ -183,6 +183,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_eflash_tl_agent*", "vif", eflash_tl_if);
+    // Define flash_ctrl path as string to pass to flash_ctrl_env for ral hdl_path.
+    uvm_config_db#(string)::set(null, "*.env", "hdl_path_root", "tb.dut.u_flash_ctrl");
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

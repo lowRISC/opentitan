@@ -895,7 +895,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_adata (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable),
+    .clr_i      (!cs_enable || packer_adata_pop_q),
     .wvalid_i   (acmd_mop),
     .wdata_i    (acmd_bus),
     .wready_o   (),

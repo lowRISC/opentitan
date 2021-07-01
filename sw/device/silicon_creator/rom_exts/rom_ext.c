@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -22,6 +23,12 @@ int main(int argc, char *argv[]);
 //        this function will change to pass the relevant information from
 //        the Mask ROM.
 void rom_ext_boot(void) {
+  // Unlock the DV address space so that test results can be written out.
+  // TODO: move to a test library.
+  if (!epmp_unlock_test_status(NULL)) {
+    abort();
+  }
+
   dif_uart_result_t init_result = dif_uart_init(
       (dif_uart_params_t){
           .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),

@@ -47,6 +47,27 @@ sw_tests += {
   }
 }
 
+lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
+  link_with: static_library(
+    'lc_ctrl_otp_hw_cfg_test_lib',
+    sources: [
+      'lc_ctrl_otp_hw_cfg_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'lc_ctrl_otp_hw_cfg_test': {
+    'library': lc_ctrl_otp_hw_cfg_test_lib,
+  }
+}
+
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
     'usbdev_test_lib',
@@ -281,6 +302,7 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
           rom_ext_signer_export.full_path(),
           '@INPUT@',
           key_info['path'],
+          sw_test_elf.full_path(),
           '@OUTPUT@',
         ],
         depends: rom_ext_signer_export,

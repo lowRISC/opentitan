@@ -40,4 +40,5 @@ initial force dut.rst_fixed_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rv_plic, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(otbn, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(keymgr, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(rv_core_ibex_peri, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main, dut, clk_main_i, rst_n)

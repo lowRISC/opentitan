@@ -330,7 +330,13 @@ module top_${top["name"]} #(
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
-
+    // alert hooksup
+    .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
+    .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
+    .recov_core_event_o   (rv_core_ibex_recov_core_event),
+    // address translation configuration
+    .ibus_region_cfg_i    (rv_core_ibex_peri_ibus_region_cfg),
+    .dbus_region_cfg_i    (rv_core_ibex_peri_dbus_region_cfg),
     // dft bypass
     .scan_rst_ni,
     .scanmode_i
@@ -505,7 +511,7 @@ mem_name = lib.Name(mem_name[1:])
     .ErrOnWrite(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
+    .EnableDataIntgGen(0)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),

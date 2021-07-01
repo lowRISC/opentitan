@@ -10,18 +10,7 @@
 #
 {
   name: "CLKMGR",
-  clock_primary: "clk_i",
-  other_clock_list: [
-    "clk_main_i",
-    "clk_fixed_i",
-    "clk_usb_48mhz_i",
-  ],
-  reset_primary: "rst_ni",
-  other_reset_list: [
-    "rst_main_ni"
-    "rst_fixed_ni"
-    "rst_usb_48mhz_ni"
-  ]
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

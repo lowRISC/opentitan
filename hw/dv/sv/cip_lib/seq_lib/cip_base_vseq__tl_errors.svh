@@ -134,7 +134,7 @@ virtual task tl_write_mem_less_than_word(string ral_name);
   end
 endtask
 
-virtual task tl_read_mem_err(string ral_name);
+virtual task tl_read_wo_mem_err(string ral_name);
   uint mem_idx;
   addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
   repeat ($urandom_range(10, 100)) begin
@@ -144,12 +144,31 @@ virtual task tl_read_mem_err(string ral_name);
     if (get_mem_access_by_addr(cfg.ral_models[ral_name],
         cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "WO") continue;
     `create_tl_access_error_case(
-        tl_read_mem_err,
+        tl_read_wo_mem_err,
         opcode == tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr :
               loc_mem_ranges[mem_idx].end_addr]};, ,
         p_sequencer.tl_sequencer_hs[ral_name]
+        )
+  end
+endtask
+
+virtual task tl_write_ro_mem_err(string ral_name);
+  uint mem_idx;
+  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+  repeat ($urandom_range(10, 100)) begin
+    if (cfg.under_reset) return;
+    // if more than one memories, randomly select one memory
+    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
+    if (get_mem_access_by_addr(cfg.ral_models[ral_name],
+        cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "RO") continue;
+    `create_tl_access_error_case(
+        tl_write_ro_mem_err,
+        opcode != tlul_pkg::Get;
+        (addr & csr_addr_mask[ral_name]) inside
+            {[loc_mem_ranges[mem_idx].start_addr :
+              loc_mem_ranges[mem_idx].end_addr]};
         )
   end
 endtask
@@ -174,6 +193,9 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
   addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
   bit has_mem = (loc_mem_range.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
+  bit has_mem_byte_access_err;
+  bit has_wo_mem;
+  bit has_ro_mem;
 
   bit has_csr_addrs = (cfg.ral_models[ral_name].csr_addrs.size() > 0);
 
@@ -201,6 +223,8 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
     end
   end
 
+  get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
+
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     // TODO: once devmode is not tied internally in design, randomly drive devmode_vif
@@ -215,18 +239,18 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
           fork
             begin
               randcase
-                1: tl_write_less_than_csr_width(ral_name);
                 1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
-
                 // only run when csr addresses exist
+                has_csr_addrs: tl_write_less_than_csr_width(ral_name);
                 has_csr_addrs: tl_write_csr_word_unaligned_addr(ral_name);
 
                 // only run when unmapped addr exists
                 cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
 
-                // only run this task when there is an mem
-                has_mem: tl_write_mem_less_than_word(ral_name);
-                has_mem: tl_read_mem_err(ral_name);
+                // only run this task when the error can be triggered
+                has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
+                has_wo_mem: tl_read_wo_mem_err(ral_name);
+                has_ro_mem: tl_write_ro_mem_err(ral_name);
               endcase
             end
           join_none
@@ -264,13 +288,14 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       // run csr_rw seq to send some normal CSR accesses in parallel
       begin
         `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
-        apply_extra_excl_for_tl_intg_vseq();
         run_csr_vseq("rw");
       end
       begin
+        bit [BUS_AW-1:0] addr;
         bit [BUS_DW-1:0] data = $urandom;
         bit              write;
         tl_intg_err_e    tl_intg_err_type;
+        bit              has_mem = cfg.ral_models[ral_name].mem_ranges.size > 0;
 
         #($urandom_range(10, 1000) * 1ns);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
@@ -279,6 +304,16 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write,
             tl_intg_err_type inside {TlIntgErrData, TlIntgErrBoth} -> write == 1;)
 
+        randcase
+          // any address
+          1: addr = $urandom;
+          // mem address
+          has_mem: begin
+            int mem_idx = $urandom_range(0, cfg.ral_models[ral_name].mem_ranges.size - 1);
+            addr = $urandom_range(cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr,
+                                  cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
+          end
+        endcase
         tl_access(.addr($urandom), .write(write), .data(data),
                   .tl_intg_err_type(tl_intg_err_type));
 
@@ -299,13 +334,5 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     dut_init("HARD");
   end
 endtask
-
-// in run_tl_intg_err_vseq, csr_rw seq is running in the parallel. And intg error will be injected
-// which may affect some CSR values. Use this function to add additional exclusion
-// TODO, as discussed at #7082, best approach is to standardize alert cause in all IPs, so that
-// we can check it in the automatic test. Let's wait until designers finalize the alert cause
-// keep this approach in case we still want it
-virtual function void apply_extra_excl_for_tl_intg_vseq();
-endfunction
 
 `undef create_tl_access_error_case

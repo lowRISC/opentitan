@@ -172,13 +172,13 @@ class cip_tl_seq_item extends tl_seq_item;
     end
   endfunction : is_a_chan_intg_ok
 
-  virtual function bit is_d_channel_intg_ok(bit throw_error = 1'b1);
+  virtual function bit is_d_chan_intg_ok(bit throw_error = 1'b1);
     tl_d_user_t exp_d_user = compute_d_user();
     tl_d_user_t act_d_user = tl_d_user_t'(d_user);
 
-    is_d_channel_intg_ok = act_d_user == exp_d_user;
+    is_d_chan_intg_ok = act_d_user == exp_d_user;
 
-    if (!is_d_channel_intg_ok) begin
+    if (!is_d_chan_intg_ok) begin
       string str = $sformatf("d_user act (%p) != exp (%p)", act_d_user, exp_d_user);
       if (throw_error) begin
         `uvm_error(`gfn, str)
@@ -186,6 +186,33 @@ class cip_tl_seq_item extends tl_seq_item;
         `uvm_info(`gfn, str, UVM_MEDIUM)
       end
     end
-  endfunction : is_d_channel_intg_ok
+  endfunction : is_d_chan_intg_ok
+
+  // extract error info for coverage
+  virtual function void get_a_chan_err_info(output tl_intg_err_e tl_intg_err_type,
+                                             output uint num_cmd_err_bits,
+                                             output uint num_data_err_bits);
+    tl_a_user_t exp_a_user = compute_a_user();
+    tl_a_user_t act_a_user = tl_a_user_t'(a_user);
+    bit         is_cmd_ok  = (act_a_user.cmd_intg == exp_a_user.cmd_intg);
+    bit         is_data_ok = (act_a_user.data_intg == exp_a_user.data_intg);
+
+    num_cmd_err_bits  = $countones(exp_a_user.cmd_intg ^ act_a_user.cmd_intg);
+    num_data_err_bits = $countones(exp_a_user.data_intg ^ act_a_user.data_intg);
+    tl_intg_err_type  = get_tl_intg_err_type(is_cmd_ok, is_data_ok);
+  endfunction : get_a_chan_err_info
+
+  virtual function void get_d_chan_err_info(output tl_intg_err_e tl_intg_err_type,
+                                             output uint num_cmd_err_bits,
+                                             output uint num_data_err_bits);
+    tl_d_user_t exp_d_user = compute_d_user();
+    tl_d_user_t act_d_user = tl_d_user_t'(d_user);
+    bit         is_cmd_ok  = (act_d_user.rsp_intg == exp_d_user.rsp_intg);
+    bit         is_data_ok = (act_d_user.data_intg == exp_d_user.data_intg);
+
+    num_cmd_err_bits = $countones(exp_d_user.rsp_intg ^ act_d_user.rsp_intg);
+    num_data_err_bits = $countones(exp_d_user.data_intg ^ act_d_user.data_intg);
+    tl_intg_err_type = get_tl_intg_err_type(is_cmd_ok, is_data_ok);
+  endfunction : get_d_chan_err_info
 
 endclass

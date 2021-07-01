@@ -17,15 +17,13 @@
 {
   name: "CLKMGR",
   scan: "true",
-  clock_primary: "clk_i",
-  other_clock_list: [],
-  reset_primary: "rst_ni",
-  other_reset_list: [
-    "rst_main_ni"
-    "rst_io_ni"
-    "rst_usb_ni"
-    "rst_io_div2_ni"
-    "rst_io_div4_ni"
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_main_ni"},
+    {reset: "rst_io_ni"},
+    {reset: "rst_usb_ni"},
+    {reset: "rst_io_div2_ni"},
+    {reset: "rst_io_div4_ni"},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

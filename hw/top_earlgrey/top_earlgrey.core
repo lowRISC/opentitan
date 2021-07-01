@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_core_ibex_peri
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
       - lowrisc:ip:pinmux

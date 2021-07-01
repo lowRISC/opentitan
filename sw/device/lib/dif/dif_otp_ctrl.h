@@ -313,7 +313,6 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `Secret2` partition.
    */
   kDifOtpCtrlStatusCodeSecret2Error,
-
   /**
    * Indicates an error occurred in the direct access interface.
    */
@@ -322,7 +321,6 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the lifecycle interface.
    */
   kDifOtpCtrlStatusCodeLciError,
-
   /**
    * This is not a status code; rather, it represents the last error code which
    * has a corresponding "cause" register.
@@ -330,7 +328,6 @@ typedef enum dif_otp_ctrl_status_code {
    * See `dif_otp_ctrl_status_t` for information on how to use this.
    */
   kDifOtpCtrlStatusCodeHasCauseLast = kDifOtpCtrlStatusCodeLciError,
-
   /**
    * Indicates that an integrity or consistency check has timed out.
    *
@@ -356,7 +353,12 @@ typedef enum dif_otp_ctrl_status_code {
    * This error is unrecoverable.
    */
   kDifOtpCtrlStatusCodeKdfError,
-
+  /**
+   * Indicates a bus integrity error.
+   *
+   * This error will raise an alert.
+   */
+  kDifOtpCtrlStatusCodeBusIntegError,
   /**
    * Indicates that the direct access interface is idle.
    */

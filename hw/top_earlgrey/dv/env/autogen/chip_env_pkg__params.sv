@@ -17,8 +17,10 @@ parameter string LIST_OF_ALERTS[] = {
   "i2c1_fatal_fault",
   "i2c2_fatal_fault",
   "pattgen_fatal_fault",
+  "usbdev_fatal_fault",
   "otp_ctrl_fatal_macro_error",
   "otp_ctrl_fatal_check_error",
+  "otp_ctrl_fatal_bus_integ_error",
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
   "lc_ctrl_fatal_bus_integ_error",
@@ -49,6 +51,7 @@ parameter string LIST_OF_ALERTS[] = {
   "flash_ctrl_recov_mp_err",
   "flash_ctrl_recov_ecc_err",
   "flash_ctrl_fatal_intg_err",
+  "rv_plic_fatal_fault",
   "aes_recov_ctrl_update_err",
   "aes_fatal_fault",
   "hmac_fatal_fault",
@@ -64,7 +67,11 @@ parameter string LIST_OF_ALERTS[] = {
   "sram_ctrl_main_fatal_parity_error",
   "otbn_fatal",
   "otbn_recov",
-  "rom_ctrl_fatal"
+  "rom_ctrl_fatal",
+  "rv_core_ibex_peri_fatal_sw_err",
+  "rv_core_ibex_peri_recov_sw_err",
+  "rv_core_ibex_peri_fatal_hw_err",
+  "rv_core_ibex_peri_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 60;
+parameter uint NUM_ALERTS = 67;

@@ -202,7 +202,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[60] = {
+    top_earlgrey_alert_for_peripheral[67] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
@@ -215,8 +215,10 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdI2c1FatalFault] = kTopEarlgreyAlertPeripheralI2c1,
   [kTopEarlgreyAlertIdI2c2FatalFault] = kTopEarlgreyAlertPeripheralI2c2,
   [kTopEarlgreyAlertIdPattgenFatalFault] = kTopEarlgreyAlertPeripheralPattgen,
+  [kTopEarlgreyAlertIdUsbdevFatalFault] = kTopEarlgreyAlertPeripheralUsbdev,
   [kTopEarlgreyAlertIdOtpCtrlFatalMacroError] = kTopEarlgreyAlertPeripheralOtpCtrl,
   [kTopEarlgreyAlertIdOtpCtrlFatalCheckError] = kTopEarlgreyAlertPeripheralOtpCtrl,
+  [kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] = kTopEarlgreyAlertPeripheralOtpCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalProgError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalStateError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalBusIntegError] = kTopEarlgreyAlertPeripheralLcCtrl,
@@ -247,6 +249,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdFlashCtrlRecovMpErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
   [kTopEarlgreyAlertIdFlashCtrlRecovEccErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
   [kTopEarlgreyAlertIdFlashCtrlFatalIntgErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdRvPlicFatalFault] = kTopEarlgreyAlertPeripheralRvPlic,
   [kTopEarlgreyAlertIdAesRecovCtrlUpdateErr] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdAesFatalFault] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdHmacFatalFault] = kTopEarlgreyAlertPeripheralHmac,
@@ -263,5 +266,9 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdOtbnFatal] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdOtbnRecov] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdRomCtrlFatal] = kTopEarlgreyAlertPeripheralRomCtrl,
+  [kTopEarlgreyAlertIdRvCoreIbexPeriFatalSwErr] = kTopEarlgreyAlertPeripheralRvCoreIbexPeri,
+  [kTopEarlgreyAlertIdRvCoreIbexPeriRecovSwErr] = kTopEarlgreyAlertPeripheralRvCoreIbexPeri,
+  [kTopEarlgreyAlertIdRvCoreIbexPeriFatalHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbexPeri,
+  [kTopEarlgreyAlertIdRvCoreIbexPeriRecovHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbexPeri,
 };
 

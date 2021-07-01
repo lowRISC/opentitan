@@ -71,6 +71,16 @@ module otp_ctrl_kdi
   // Make sure EDN interface has compatible width.
   `ASSERT_INIT(EntropyWidthDividesDigestBlockWidth_A, (ScrmblKeyWidth % EdnDataWidth) == 0)
 
+  localparam int OtbnNonceSel  = OtbnNonceWidth / ScrmblBlockWidth;
+  localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
+  localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
+
+  // Get maximum nonce width
+  localparam int NumNonceChunks =
+    (OtbnNonceWidth > FlashKeyWidth) ?
+    ((OtbnNonceWidth > SramNonceSel) ? OtbnNonceWidth : SramNonceSel) :
+    ((FlashKeyWidth > SramNonceSel)  ? FlashKeyWidth  : SramNonceSel);
+
   ///////////////////////////////////
   // Input Mapping and Arbitration //
   ///////////////////////////////////
@@ -189,7 +199,7 @@ module otp_ctrl_kdi
   logic key_reg_en, nonce_reg_en;
   logic seed_valid_d, seed_valid_q;
   logic [ScrmblKeyWidth/ScrmblBlockWidth-1:0][ScrmblBlockWidth-1:0] key_out_d, key_out_q;
-  logic [3:0][ScrmblBlockWidth-1:0] nonce_out_d, nonce_out_q;
+  logic [NumNonceChunks-1:0][ScrmblBlockWidth-1:0] nonce_out_d, nonce_out_q;
 
   always_comb begin : p_outregs
     key_out_d    = key_out_q;
@@ -208,18 +218,16 @@ module otp_ctrl_kdi
 
   // Connect keys/nonce outputs to output regs.
   assign otbn_otp_key_o.key          = key_out_q;
-  assign otbn_otp_key_o.nonce        = nonce_out_q;
+  assign otbn_otp_key_o.nonce        = nonce_out_q[OtbnNonceSel-1:0];
   assign otbn_otp_key_o.seed_valid   = seed_valid_q;
 
-  localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
   assign flash_otp_key_o.key         = key_out_q;
   assign flash_otp_key_o.rand_key    = nonce_out_q[FlashNonceSel-1:0];
   assign flash_otp_key_o.seed_valid  = seed_valid_q;
 
-  localparam int NonceIdx = SramNonceWidth / ScrmblBlockWidth;
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign
     assign sram_otp_key_o[k].key        = key_out_q;
-    assign sram_otp_key_o[k].nonce      = nonce_out_q[NonceIdx-1:0];
+    assign sram_otp_key_o[k].nonce      = nonce_out_q[SramNonceSel-1:0];
     assign sram_otp_key_o[k].seed_valid = seed_valid_q;
   end
 

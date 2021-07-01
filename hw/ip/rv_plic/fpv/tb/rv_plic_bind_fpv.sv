@@ -14,6 +14,8 @@ module rv_plic_bind_fpv;
     .clk_i,
     .rst_ni,
     .intr_src_i,
+    .alert_rx_i,
+    .alert_tx_o,
     .irq_o,
     .irq_id_o,
     .msip_o,

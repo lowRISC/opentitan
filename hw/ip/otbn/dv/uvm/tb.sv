@@ -68,9 +68,7 @@ module tb;
   end
 
   localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
-  // Full nonce is 320 bits but OTP only provides 256-bits for now
-  localparam logic [255:0] TestScrambleNonce =
-    256'h19286173144131c12c2607f5e72aca1fb72adea0a4ff82b9f88c2578fa4cd123;
+  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
 
   assign otp_key_rsp.ack = otp_key_ack_q;
   assign otp_key_rsp.key = TestScrambleKey;

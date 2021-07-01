@@ -15,3 +15,6 @@ regex = "1"
 nix = "0.17.0"
 bitflags = "1.0"
 log = "0.4"
+
+erased-serde = "0.3.12"
+opentitantool_derive = {path = "opentitantool_derive"}

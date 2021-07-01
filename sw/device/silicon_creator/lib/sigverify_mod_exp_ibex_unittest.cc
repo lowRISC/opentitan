@@ -97,7 +97,17 @@ constexpr SigTestCase kSigTestCases[2]{
                     0xd8dc61f4, 0x9404e8bc, 0x0db76fe3, 0x3491d3b0, 0x6ca44e27,
                     0xcda63719,
                 }},
-                .n0_inv = 0x9c9a176b,
+                .n0_inv =
+                    {
+                        0x9c9a176b,
+                        0x44d6fa52,
+                        0x71a63ec4,
+                        0xadc94595,
+                        0x3fd9bc73,
+                        0xa83cdc95,
+                        0xbe1bc819,
+                        0x2b421fae,
+                    },
                 .exponent = 65537,
             },
         .sig =
@@ -153,7 +163,17 @@ constexpr SigTestCase kSigTestCases[2]{
                     0x4ba4c007, 0xce2dbf0b, 0xfc7d8504, 0x2712580b, 0xd0293151,
                     0xa4dbbff3,
                 }},
-                .n0_inv = 0x079056e5,
+                .n0_inv =
+                    {
+                        0x079056e5,
+                        0xe151dae1,
+                        0xd4f9deee,
+                        0xe18c4cab,
+                        0x868f9abe,
+                        0x8643ed1c,
+                        0x58022be6,
+                        0x8f8972c9,
+                    },
                 .exponent = 3,
             },
         .sig =

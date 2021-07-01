@@ -7,4 +7,7 @@
 // Extern declarations for the inline functions in the manifest header.
 extern rom_error_t manifest_signed_region_get(
     const manifest_t *manifest, manifest_signed_region_t *signed_region);
-extern uintptr_t manifest_entry_point_address_get(const manifest_t *manifest);
+extern rom_error_t manifest_code_region_get(const manifest_t *manifest,
+                                            epmp_region_t *code_region);
+extern rom_error_t manifest_entry_point_get(const manifest_t *manifest,
+                                            uintptr_t *entry_point);

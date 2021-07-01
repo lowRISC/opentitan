@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/flash_ctrl.h"
+#include "sw/device/lib/ibex_peri.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -27,6 +28,8 @@
  * for that.
  */
 extern struct { void (*entry)(void); } _flash_header;
+extern uint32_t _vflash_size;
+extern uint32_t _flash_start;
 
 static dif_uart_t uart0;
 
@@ -62,6 +65,13 @@ void _boot_start(void) {
     // Currently the only way to recover is by a hard reset.
     test_status_set(kTestStatusFailed);
   }
+
+  // Simple transalation on flash
+  uint32_t src_addr = (uint32_t)&_flash_header;
+  uint32_t size = (uint32_t)&_vflash_size;
+  uint32_t dst_addr = (uint32_t)&_flash_start;
+
+  init_translation(src_addr, size, dst_addr);
 
   LOG_INFO("Boot ROM initialisation has completed, jump into flash!");
 

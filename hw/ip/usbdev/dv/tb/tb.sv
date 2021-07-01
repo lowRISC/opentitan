@@ -43,6 +43,8 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   usb20_if usb20_if();
 
+ `DV_ALERT_IF_CONNECT
+
   // dut
   usbdev dut (
     .clk_i                (clk        ),
@@ -54,6 +56,9 @@ module tb;
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),
+
+    .alert_rx_i           (alert_rx   ),
+    .alert_tx_o           (alert_tx   ),
 
     // pinmux wakeup interface
     .usb_state_debug_i    ('0),

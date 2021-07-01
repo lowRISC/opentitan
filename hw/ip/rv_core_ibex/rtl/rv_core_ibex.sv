@@ -8,7 +8,10 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex #(
+module rv_core_ibex
+  import rv_core_ibex_peri_pkg::*;
+  import rv_core_ibex_peri_reg_pkg::*;
+#(
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -71,7 +74,16 @@ module rv_core_ibex #(
 
   // dft bypass
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+
+  // alert events to peripheral module
+  output alert_event_t fatal_intg_event_o,
+  output alert_event_t fatal_core_event_o,
+  output alert_event_t recov_core_event_o,
+
+  // configurations for address translation
+  input region_cfg_t [NumRegions-1:0] ibus_region_cfg_i,
+  input region_cfg_t [NumRegions-1:0] dbus_region_cfg_i
 );
 
   import top_pkg::*;
@@ -140,6 +152,14 @@ module rv_core_ibex #(
   logic [31:0] rvfi_mem_wdata;
 `endif
 
+  // integrity errors and core alert events
+  logic ibus_intg_err, dbus_intg_err;
+  logic alert_minor, alert_major;
+
+  assign fatal_intg_event_o = (ibus_intg_err | dbus_intg_err) ? EventOn : EventOff;
+  assign fatal_core_event_o = alert_major ? EventOn : EventOff;
+  assign recov_core_event_o = alert_minor ? EventOn : EventOff;
+
   // Escalation receiver that converts differential
   // protocol into single ended signal.
   logic esc_irq_nm;
@@ -164,13 +184,6 @@ module rv_core_ibex #(
     .d_i(esc_irq_nm),
     .q_o(irq_nm)
   );
-
-  // Alert outputs
-  // TODO - Wire these up once driven
-  logic alert_minor, alert_major;
-  logic unused_alert_minor, unused_alert_major;
-  assign unused_alert_minor = alert_minor;
-  assign unused_alert_major = alert_major;
 
   lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
   prim_lc_sync u_lc_sync (
@@ -281,6 +294,17 @@ module rv_core_ibex #(
   //
   // Convert ibex data/instruction bus to TL-UL
   //
+  logic [31:0] instr_addr_trans;
+  rv_core_addr_trans #(
+    .AddrWidth(32),
+    .NumRegions(NumRegions)
+  ) u_ibus_trans (
+    .clk_i,
+    .rst_ni,
+    .region_cfg_i(ibus_region_cfg_i),
+    .addr_i(instr_addr),
+    .addr_o(instr_addr_trans)
+  );
 
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs)
@@ -290,14 +314,14 @@ module rv_core_ibex #(
     .req_i      (instr_req),
     .type_i     (tlul_pkg::InstrType),
     .gnt_o      (instr_gnt),
-    .addr_i     (instr_addr),
+    .addr_i     (instr_addr_trans),
     .we_i       (1'b0),
     .wdata_i    (32'b0),
     .be_i       (4'hF),
     .valid_o    (instr_rvalid),
     .rdata_o    (instr_rdata),
     .err_o      (instr_err),
-    .intg_err_o (),
+    .intg_err_o (ibus_intg_err),
     .tl_o       (tl_i_ibex2fifo),
     .tl_i       (tl_i_fifo2ibex)
   );
@@ -319,6 +343,18 @@ module rv_core_ibex #(
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
+  logic [31:0] data_addr_trans;
+  rv_core_addr_trans #(
+    .AddrWidth(32),
+    .NumRegions(NumRegions)
+  ) u_dbus_trans (
+    .clk_i,
+    .rst_ni,
+    .region_cfg_i(dbus_region_cfg_i),
+    .addr_i(data_addr),
+    .addr_o(data_addr_trans)
+  );
+
   tlul_adapter_host #(
     .MAX_REQS(2)
   ) tl_adapter_host_d_ibex (
@@ -327,14 +363,14 @@ module rv_core_ibex #(
     .req_i      (data_req),
     .type_i     (tlul_pkg::DataType),
     .gnt_o      (data_gnt),
-    .addr_i     (data_addr),
+    .addr_i     (data_addr_trans),
     .we_i       (data_we),
     .wdata_i    (data_wdata),
     .be_i       (data_be),
     .valid_o    (data_rvalid),
     .rdata_o    (data_rdata),
     .err_o      (data_err),
-    .intg_err_o (),
+    .intg_err_o (dbus_intg_err),
     .tl_o       (tl_d_ibex2fifo),
     .tl_i       (tl_d_fifo2ibex)
   );

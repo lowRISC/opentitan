@@ -11,7 +11,7 @@
 #  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -36,6 +36,18 @@
       local: "true",
     },
   ],
+
+  // In order to not disturb the PLIC address map, we place the alert test
+  // register manually at a safe offset after the main CSRs.
+  no_auto_alert_regs: "True",
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+
   regwidth: "32",
   registers: [
     { multireg: {
@@ -105,7 +117,7 @@
       hwqe: "true",
       hwre: "true",
       fields: [
-        { bits: "${(src).bit_length()-1}:0" }
+        { bits: "${(src-1).bit_length()-1}:0" }
       ],
       tags: [// CC register value is related to IP
              "excl:CsrNonInitTests:CsrExclCheck"],
@@ -122,5 +134,19 @@
       ],
     }
 % endfor
+  { skipto: "${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + target*0x100 | x}" }
+  { name: "ALERT_TEST",
+      desc: '''Alert Test Register.''',
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "True",
+      hwext:    "True",
+      fields: [
+        { bits: "0",
+          name: "fatal_fault",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+      ],
+    }
   ],
 }

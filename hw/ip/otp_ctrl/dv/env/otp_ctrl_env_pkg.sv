@@ -27,8 +27,10 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error", "fatal_check_error"};
-  parameter uint NUM_ALERTS              = 2;
+  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error",
+                                            "fatal_check_error",
+                                            "fatal_bus_integ_error"};
+  parameter uint NUM_ALERTS              = 3;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
@@ -88,7 +90,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_ROUND          = 31;
 
   parameter uint NUM_SRAM_EDN_REQ = 12;
-  parameter uint NUM_OTBN_EDN_REQ = 16;
+  parameter uint NUM_OTBN_EDN_REQ = 10;
 
   parameter uint NUM_UNBUFF_PARTS = 2;
   parameter uint NUM_BUFF_PARTS   = 5;
@@ -96,8 +98,8 @@ package otp_ctrl_env_pkg;
   parameter uint CHK_TIMEOUT_CYC = 40;
 
   // When fatal alert triggered, all partitions go to error state and status will be
-  // set to 1, except LC partition index.
-  parameter bit [8:0] FATAL_EXP_STATUS = 9'b1_1011_1111;
+  // set to 1.
+  parameter bit [8:0] FATAL_EXP_STATUS = '1;
 
   // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
@@ -140,6 +142,7 @@ package otp_ctrl_env_pkg;
     OtpLfsrFsmErrIdx,
     OtpScramblingFsmErrIdx,
     OtpDerivKeyFsmErrIdx,
+    OtpBusIntegErrorIdx,
     OtpDaiIdleIdx,
     OtpCheckPendingIdx,
     OtpStatusFieldSize
