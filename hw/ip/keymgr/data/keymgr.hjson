@@ -296,8 +296,34 @@
                 Note the disabled state is terminal and cannot be recovered without a reset.
                 '''
             },
-          ]
+          ],
         },
+
+        { bits: "7",
+          name: "CDI_SEL",
+          desc: '''
+            When the OPERATION field is programmed to generate output, this field selects
+            the appropriate CDI to use.
+
+            This field should be programmed for both hw / sw generation.
+          ''',
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "Sealing CDI",
+              desc: '''
+                Sealing CDI is selected
+                '''
+            },
+            { value: "1",
+              name: "Attestation CDI",
+              desc: '''
+                Attestation CDI is selected
+                '''
+            },
+          ],
+        },
+
 
         { bits: "13:12",
           name: "DEST_SEL",
@@ -399,7 +425,7 @@
 
     { multireg: {
         cname: "KEYMGR",
-        name: "SW_BINDING",
+        name: "SEALING_SW_BINDING",
         regwen: "SW_BINDING_REGWEN",
         desc: '''
           Software binding input to sealing portion of the key manager.
@@ -423,31 +449,31 @@
       },
     },
 
-    //{ multireg: {
-    //    cname: "KEYMGR",
-    //    name: "ATTEST_SW_BINDING",
-    //    regwen: "SW_BINDING_REGWEN",
-    //    desc: '''
-    //      Software binding input to the attestation portion of the key manager.
-    //      This register is lockable and shared between key manager stages.
-    //      This binding value is not considered secret, however its integrity is very important.
-    //
-    //      The software binding is locked by software and unlocked by hardware upon a successful advance operation.
-    //    ''',
-    //    count: "NumSwBindingReg",
-    //    swaccess: "rw",
-    //    hwaccess: "hro",
-    //    fields: [
-    //        { bits: "31:0",
-    //          name: "VAL",
-    //          desc: '''
-    //            Software binding value
-    //          ''',
-    //          resval: "0"
-    //        },
-    //    ],
-    //  },
-    //},
+    { multireg: {
+        cname: "KEYMGR",
+        name: "ATTEST_SW_BINDING",
+        regwen: "SW_BINDING_REGWEN",
+        desc: '''
+          Software binding input to the attestation portion of the key manager.
+          This register is lockable and shared between key manager stages.
+          This binding value is not considered secret, however its integrity is very important.
+
+          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
+        ''',
+        count: "NumSwBindingReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software binding value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
 
     { multireg: {
         cname: "KEYMGR",
