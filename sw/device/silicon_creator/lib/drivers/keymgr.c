@@ -74,7 +74,7 @@ void keymgr_set_next_stage_inputs(const keymgr_binding_value_t *binding_value,
   // FIXME: Consider using sec_mmio module for the following register writes.
   for (size_t i = 0; i < ARRAYSIZE(binding_value->data); ++i) {
     abs_mmio_write32(
-        kBase + KEYMGR_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
+        kBase + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
         binding_value->data[i]);
   }
   abs_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);

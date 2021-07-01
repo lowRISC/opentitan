@@ -9,33 +9,33 @@
 #include "keymgr_regs.h"  // Generated.
 
 /**
- * Address spaces of SW_BINDING_N, SALT_N, SW_SHARE0_OUTPUT_N, and
+ * Address spaces of SEALING_SW_BINDING_N, SALT_N, SW_SHARE0_OUTPUT_N, and
  * SW_SHARE1_OUTPUT_N registers must be contiguous to be able to use
  * `mmio_region_memcpy_to/from_mmio32()`.
  */
-static_assert(KEYMGR_SW_BINDING_1_REG_OFFSET ==
-                  KEYMGR_SW_BINDING_0_REG_OFFSET + 4,
-              "SW_BINDING_N registers must be contiguous.");
-static_assert(KEYMGR_SW_BINDING_2_REG_OFFSET ==
-                  KEYMGR_SW_BINDING_0_REG_OFFSET + 8,
-              "SW_BINDING_N registers must be contiguous.");
-static_assert(KEYMGR_SW_BINDING_3_REG_OFFSET ==
-                  KEYMGR_SW_BINDING_0_REG_OFFSET + 12,
-              "SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_1_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 4,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_2_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 8,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_3_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 12,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
 // TODO: Uncomment when lowRISC/opentitan#5194 is completed.
 // TODO: Consider defining a macro once all assertions are enabled.
-// static_assert(KEYMGR_SW_BINDING_4_REG_OFFSET ==
-//                   KEYMGR_SW_BINDING_0_REG_OFFSET + 16,
-//               "SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SW_BINDING_5_REG_OFFSET ==
-//                   KEYMGR_SW_BINDING_0_REG_OFFSET + 20,
-//               "SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SW_BINDING_6_REG_OFFSET ==
-//                   KEYMGR_SW_BINDING_0_REG_OFFSET + 24,
-//               "SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SW_BINDING_7_REG_OFFSET ==
-//                   KEYMGR_SW_BINDING_0_REG_OFFSET + 28,
-//               "SW_BINDING_N registers must be contiguous.");
+// static_assert(KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET ==
+//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 16,
+//               "SEALING_SW_BINDING_N registers must be contiguous.");
+// static_assert(KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET ==
+//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 20,
+//               "SEALING_SW_BINDING_N registers must be contiguous.");
+// static_assert(KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET ==
+//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 24,
+//               "SEALING_SW_BINDING_N registers must be contiguous.");
+// static_assert(KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET ==
+//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 28,
+//               "SEALING_SW_BINDING_N registers must be contiguous.");
 
 static_assert(KEYMGR_SALT_1_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 4,
               "SALT_N registers must be contiguous.");
@@ -328,7 +328,7 @@ dif_keymgr_lockable_result_t dif_keymgr_advance_state(
       return kDifKeymgrLockableBadArg;
     }
 
-    // Check if SW_BINDING_N registers are locked
+    // Check if SEALING_SW_BINDING_N registers are locked
     uint32_t reg_sw_binding_wen = mmio_region_read32(
         keymgr->params.base_addr, KEYMGR_SW_BINDING_REGWEN_REG_OFFSET);
     if (!bitfield_bit32_read(reg_sw_binding_wen,
@@ -347,7 +347,7 @@ dif_keymgr_lockable_result_t dif_keymgr_advance_state(
     // Write and lock (rw0c) the software binding value. This register is
     // unlocked by hardware upon a successful state transition.
     mmio_region_memcpy_to_mmio32(
-        keymgr->params.base_addr, KEYMGR_SW_BINDING_0_REG_OFFSET,
+        keymgr->params.base_addr, KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
         params->binding_value, sizeof(params->binding_value));
     mmio_region_write32(keymgr->params.base_addr,
                         KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);

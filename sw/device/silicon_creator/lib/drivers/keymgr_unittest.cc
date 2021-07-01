@@ -52,21 +52,21 @@ TEST_F(KeymgrTest, Initialize) {
 }
 
 TEST_F(KeymgrTest, SetNextStageInputs) {
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_0_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
                      cfg_.binding_value.data[0]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_1_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_1_REG_OFFSET,
                      cfg_.binding_value.data[1]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_2_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_2_REG_OFFSET,
                      cfg_.binding_value.data[2]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_3_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_3_REG_OFFSET,
                      cfg_.binding_value.data[3]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_4_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET,
                      cfg_.binding_value.data[4]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_5_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET,
                      cfg_.binding_value.data[5]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_6_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET,
                      cfg_.binding_value.data[6]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_7_REG_OFFSET,
+  EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
                      cfg_.binding_value.data[7]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
