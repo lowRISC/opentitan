@@ -24,7 +24,7 @@
   </tr>
   <tr>
     <td style="text-align:left">DEV</td>
-    <td>Y*</td><td>Y</td><td>Y*</td><td>Y</td><td>Y</td>
+    <td>Y*</td><td>Y</td><td>Y*</td><td colspan="1" style="background:#dadce0"></td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left">PROD</td>

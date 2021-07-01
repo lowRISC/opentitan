@@ -127,17 +127,17 @@ module lc_ctrl_signal_decode
               if (lc_id_state_i == LcIdPersonalized) begin
                 lc_seed_hw_rd_en = On;
               end
-
             end
             ///////////////////////////////////////////////////////////////////
-            // Same functions as PROD, but with additional debug functionality.
+            // Similar functions as PROD, with the following differences:
+            // - hardware debug functionality (CPU TAP) is enabled,
+            // - access to the isolated flash partition is disabled.
             LcStDev: begin
               lc_hw_debug_en         = On;
               lc_cpu_en              = On;
               lc_keymgr_en           = On;
               lc_owner_seed_sw_rw_en = On;
               lc_iso_part_sw_wr_en   = On;
-              lc_iso_part_sw_rd_en   = On;
               lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
               // Only allow provisioning if the device has not yet been personalized.
               if (lc_id_state_i == LcIdBlank) begin
