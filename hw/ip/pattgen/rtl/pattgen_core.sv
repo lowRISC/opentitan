@@ -88,4 +88,8 @@ module pattgen_core
     .intr_o                 (intr_done_ch1_o)
   );
 
+  // unused registers
+  logic unused_reg;
+  assign unused_reg = ^reg2hw.alert_test;
+
 endmodule : pattgen_core
