@@ -194,12 +194,12 @@ def _validate_tokens(config):
         random_or_hexvalue(token, 'value', config['token_size'])
         hashed_token = OrderedDict()
         hashed_token['name'] = token['name'] + 'Hashed'
-        data = token['value'].to_bytes(num_bytes, byteorder='big')
+        data = token['value'].to_bytes(num_bytes, byteorder='little')
         # Custom string chosen for life cycle KMAC App interface
         custom = 'LC_CTRL'.encode('UTF-8')
         hashobj = cSHAKE128.new(data=data, custom=custom)
         hashed_token['value'] = int.from_bytes(hashobj.read(num_bytes),
-                                               byteorder='big')
+                                               byteorder='little')
         hashed_tokens.append(hashed_token)
 
     config['tokens'] += hashed_tokens
