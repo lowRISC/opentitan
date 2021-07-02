@@ -275,6 +275,23 @@ class VcsToolReq(ToolReq):
         return '{}.{}{}'.format(major, minor, comb)
 
 
+class NinjaToolReq(ToolReq):
+    tool_cmd = ['ninja', '--version']
+
+    def to_semver(self, version, from_req):
+        # There exist different version string variants that we need to be
+        # able to parse. Some only contain the semantic version, e.g. "1.10.0",
+        # while others contain an additional suffix, e.g.
+        # "1.10.0.git.kitware.jobserver-1". This parser only extracts the first
+        # three digits and ignores the rest.
+        m = re.fullmatch(r'([0-9]+)\.([0-9]+)\.([0-9]+).*', version)
+        if m is None:
+            raise ValueError("{} has invalid version string format."
+                             .format(version))
+
+        return '.'.join(m.group(1, 2, 3))
+
+
 class PyModuleToolReq(ToolReq):
     '''A tool in a Python module (its version can be found by running pip)'''
     version_regex = re.compile(r'Version: (.*)')
@@ -325,6 +342,7 @@ def dict_to_tool_req(path, tool, raw):
         'verible': VeribleToolReq,
         'verilator': VerilatorToolReq,
         'vivado': VivadoToolReq,
+        'ninja': NinjaToolReq
     }
     cls = classes.get(tool, ToolReq)
 
