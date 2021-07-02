@@ -489,4 +489,8 @@ module uart_core (
     .intr_o                 (intr_rx_parity_err_o)
   );
 
+  // unused registers
+  logic unused_reg;
+  assign unused_reg = ^reg2hw.alert_test;
+
 endmodule
