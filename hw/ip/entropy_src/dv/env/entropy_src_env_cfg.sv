@@ -19,8 +19,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // Knobs & Weights
   uint          efuse_es_sw_reg_en_pct, enable_pct, mode_ptrng_pct, route_software_pct,
-                type_bypass_pct;
-  rand bit      efuse_es_sw_reg_en, enable, route_software, type_bypass;
+                type_bypass_pct, boot_bypass_disable_pct;
+  rand bit      efuse_es_sw_reg_en, enable, route_software, type_bypass,
+                boot_bypass_disable;
   rand mode_e   mode;
 
   // Constraints
@@ -46,6 +47,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint c_bypass {type_bypass dist { 1 :/ type_bypass_pct,
                                           0 :/ (100 - type_bypass_pct) };}
 
+  constraint c_boot_bypass_disable {boot_bypass_disable dist { 1 :/ boot_bypass_disable_pct,
+                                                               0 :/ (100 - boot_bypass_disable_pct)
+                                                             };}
+
   // Functions
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = entropy_src_env_pkg::LIST_OF_ALERTS;
@@ -70,19 +75,21 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |********** entropy_src_env_cfg ****************| \t")                  };
-    str = {str,  $sformatf("\n\t |***** enable                 : %10d *****| \t", enable)                };
-    str = {str,  $sformatf("\n\t |***** mode                   : %10s *****| \t", mode.name())           };
-    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en     : %10d *****| \t", efuse_es_sw_reg_en)    };
-    str = {str,  $sformatf("\n\t |***** route_software         : %10d *****| \t", route_software)        };
-    str = {str,  $sformatf("\n\t |***** type_bypass            : %10d *****| \t", type_bypass)           };
-    str = {str,  $sformatf("\n\t |---------- knobs ------------------------------| \t")                  };
-    str = {str,  $sformatf("\n\t |***** enable_pct             : %10d *****| \t", enable_pct)            };
-    str = {str,  $sformatf("\n\t |***** mode_ptrng_pct         : %10d *****| \t", mode_ptrng_pct)        };
-    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en_pct : %10d *****| \t", efuse_es_sw_reg_en_pct)};
-    str = {str,  $sformatf("\n\t |***** route_software_pct     : %10d *****| \t", route_software_pct)    };
-    str = {str,  $sformatf("\n\t |***** type_bypass_pct        : %10d *****| \t", type_bypass_pct)       };
-    str = {str,  $sformatf("\n\t |***********************************************| \t")                  };
+    str = {str,  $sformatf("\n\t |************ entropy_src_env_cfg ****************| \t")                    };
+    str = {str,  $sformatf("\n\t |***** enable                   : %10d *****| \t", enable)                  };
+    str = {str,  $sformatf("\n\t |***** mode                     : %10s *****| \t", mode.name())             };
+    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en       : %10d *****| \t", efuse_es_sw_reg_en)      };
+    str = {str,  $sformatf("\n\t |***** route_software           : %10d *****| \t", route_software)          };
+    str = {str,  $sformatf("\n\t |***** type_bypass              : %10d *****| \t", type_bypass)             };
+    str = {str,  $sformatf("\n\t |***** boot_bypass_disable      : %10d *****| \t", boot_bypass_disable)     };
+    str = {str,  $sformatf("\n\t |------------ knobs ------------------------------| \t")                    };
+    str = {str,  $sformatf("\n\t |***** enable_pct               : %10d *****| \t", enable_pct)              };
+    str = {str,  $sformatf("\n\t |***** mode_ptrng_pct           : %10d *****| \t", mode_ptrng_pct)          };
+    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en_pct   : %10d *****| \t", efuse_es_sw_reg_en_pct)  };
+    str = {str,  $sformatf("\n\t |***** route_software_pct       : %10d *****| \t", route_software_pct)      };
+    str = {str,  $sformatf("\n\t |***** type_bypass_pct          : %10d *****| \t", type_bypass_pct)         };
+    str = {str,  $sformatf("\n\t |***** boot_bypass_disable_pct  : %10d *****| \t", boot_bypass_disable_pct) };
+    str = {str,  $sformatf("\n\t |*************************************************| \t")                    };
     str = {str, "\n"};
     return str;
   endfunction
