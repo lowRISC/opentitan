@@ -45,8 +45,8 @@ It is expected to protect against 1st order SCA attacks by implementing masked s
 
 The above figure shows the KMAC/SHA3 HWIP block diagram.
 The KMAC has register interfaces for SW to configure the module, initiate the hashing process, and acquire the result digest from the STATE memory region.
-It also has interfaces tot he KeyMgr to get the secret key (masked) and the message data.
-The interface to the KeyMgr is mainly for Key Derivative Functions (KDF).
+It also has an interface to the KeyMgr to get the secret key (masked).
+The IP has N x [application interfaces](#application-interface), which allows other HWIPs to request any pre-defined hashing operations.
 
 As similar with HMAC, KMAC HWIP also has a message FIFO (MSG_FIFO) whose depth was determined based on a few criteria such as the register interface width, and its latency, the latency of hashing algorithm (Keccak).
 Based on the given criteria, the MSG_FIFO depth was determined to store the incoming message while the SHA3 core is in computation.
@@ -57,10 +57,10 @@ It gives some freedome to the software not requiring to align the messages.
 It also doesn't need the message length information.
 
 The fed messages go into the KMAC core regardless of KMAC enabled or not.
-But the KMAC core just forwards the messages to SHA3 core in case of KMAC disabled.
+The KMAC core forwards the messages to SHA3 core in case KMAC hash functionality is disabled.
 KMAC core prepends the encoded secret key as described in the SHA3 Derived Functions specification.
 It is expected that the software writes the encoded output length at the end of the message.
-For KDF triggered by KeyMgr, the encoded output length is appended inside the KeyMgr interface module in KMAC HWIP.
+For hashing operations triggered by an IP through the application interface, the encoded output length is appended inside the AppIntf module in the KMAC HWIP.
 
 The SHA3 core is the main Keccak processing module.
 It supports SHA3 hashing functions, SHAKE128, SHAKE256 extended output functions, and also cSHAKE128, cSHAKE256 functions in order to support KMAC operation.
@@ -197,33 +197,40 @@ While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
 
-### KeyMgr Interface
+### Application Interface
 
-![](keymgr-intf.svg)
+![](application-interface.svg)
 
-KMAC/SHA3 HWIP has an option to receive the secret key from KeyMgr via sideload key interface.
-The software should set !!CFG.sideload to use the KeyMgr sideloaded key in SW-initiated KMAC operation.
+KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
+The software should set !!CFG.sideload to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
 `keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
 KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
 If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
 
-KeyMgr may initiate the KMAC operation via the KeyMgr data interface `keymgr_pkg::kmac_data_{req|rsp}_t`.
-KeyMgr sends 64-bit data (`MsgWidth`) in a beat with the message strobe signal.
-The state machine inside the KeyMgr interface logic starts when it receives the first valid data.
-Because this logic sees the first valid data as an initiator, KeyMgr cannot run KDF with an empty message.
-After the logic switches to accept the message bitstream from KeyMgr, it forces the KMAC to use the sideloaded key as a secret key.
+The IP has N number of the application interface. The apps connected to the KMAC IP may initiate the SHA3/cSHAKE/KMAC hashing operation via the application interface `kmac_pkg::app_{req|rsp}_t`.
+The type of the hashing operation is determined in the compile-time parameter `kmac_pkf::AppCfg`.
+In the current version of IP, the IP has three application interfaces, which are KeyMgr, LC_CTRL, and ROM_CTRL.
+KeyMgr uses the KMAC operation with CSR prefix value.
+LC_CTRL and ROM_CTRL use the cSHAKE operation with the compile-time parameter prefixes.
+
+The app sends 64-bit data (`MsgWidth`) in a beat with the message strobe signal.
+The state machine inside the AppIntf logic starts when it receives the first valid data from any of the AppIntf.
+The AppIntf module chooses the winner based on the fixed priority.
+Then it forwards the selected App to the next stage.
+Because this logic sees the first valid data as an initiator, the Apps cannot run the hashing operation with an empty message.
+After the logic switches to accept the message bitstream from the selected App, if the hashing operation is KMAC, the logic forces the sideloaded key to be used as a secret.
 Also it ignores the command issued from the software.
 Instead it generates the commands and sends them to the KMAC core.
 
-The last beat of the KeyMgr data moves the state machine to append the encoded output length.
-The output length is the digest width, which is 256 bit.
+The last beat of the App data moves the state machine to append the encoded output length if the hashing operation is KMAC.
+The output length is the digest width, which is 256 bit always.
 It means that the logic appends `0x020100` (little-endian) to the end of the message.
 The output data from this logic goes to MSG_FIFO.
 Because the MSG_FIFO handles un-aligned data inside, KeyMgr interface logic sends the encoded output length value in a separate beat.
 
 After the encoded output length is pushed to the KMAC core, the interface logic issues a Process command to run the hashing logic.
 
-After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the KeyMgr data response channel.
+After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the App response channel.
 The result digest always comes in two shares.
 If the `EnMasking` parameter is not set, the second share is always zero.
 
