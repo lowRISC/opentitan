@@ -10,7 +10,7 @@ package rstmgr_reg_pkg;
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
   parameter int NumHwResets = 3;
-  parameter int NumSwResets = 7;
+  parameter int NumSwResets = 9;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
@@ -109,24 +109,24 @@ package rstmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [35:34]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [33:31]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [30:26]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [25:21]
-    rstmgr_reg2hw_sw_rst_regen_mreg_t [6:0] sw_rst_regen; // [20:14]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [6:0] sw_rst_ctrl_n; // [13:0]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [41:40]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [39:37]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [36:32]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [31:27]
+    rstmgr_reg2hw_sw_rst_regen_mreg_t [8:0] sw_rst_regen; // [26:18]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [8:0] sw_rst_ctrl_n; // [17:0]
   } rstmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [90:83]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [82:81]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [80:77]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [76:45]
-    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [44:43]
-    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [42:39]
-    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [38:7]
-    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [6:0] sw_rst_ctrl_n; // [6:0]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [92:85]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [84:83]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [82:79]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [78:47]
+    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [46:45]
+    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [44:41]
+    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [40:9]
+    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [8:0] sw_rst_ctrl_n; // [8:0]
   } rstmgr_hw2reg_t;
 
   // Register offsets
@@ -154,7 +154,7 @@ package rstmgr_reg_pkg;
   parameter logic [3:0] RSTMGR_CPU_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
   parameter logic [31:0] RSTMGR_CPU_INFO_RESVAL = 32'h 0;
   parameter logic [31:0] RSTMGR_CPU_INFO_VALUE_RESVAL = 32'h 0;
-  parameter logic [6:0] RSTMGR_SW_RST_CTRL_N_RESVAL = 7'h 7f;
+  parameter logic [8:0] RSTMGR_SW_RST_CTRL_N_RESVAL = 9'h 1ff;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_0_RESVAL = 1'h 1;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_1_RESVAL = 1'h 1;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_2_RESVAL = 1'h 1;
@@ -162,6 +162,8 @@ package rstmgr_reg_pkg;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_4_RESVAL = 1'h 1;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_5_RESVAL = 1'h 1;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_6_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_7_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_8_RESVAL = 1'h 1;
 
   // Register index
   typedef enum int {
@@ -191,8 +193,8 @@ package rstmgr_reg_pkg;
     4'b 0001, // index[ 7] RSTMGR_CPU_INFO_CTRL
     4'b 0001, // index[ 8] RSTMGR_CPU_INFO_ATTR
     4'b 1111, // index[ 9] RSTMGR_CPU_INFO
-    4'b 0001, // index[10] RSTMGR_SW_RST_REGEN
-    4'b 0001  // index[11] RSTMGR_SW_RST_CTRL_N
+    4'b 0011, // index[10] RSTMGR_SW_RST_REGEN
+    4'b 0011  // index[11] RSTMGR_SW_RST_CTRL_N
   };
 
 endpackage
