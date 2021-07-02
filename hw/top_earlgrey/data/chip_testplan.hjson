@@ -915,11 +915,11 @@
     }
     {
       name: chip_lc_ctrl_transitions
-      desc: '''Verify the LC ctrl can transition from one state to another legal state.
+      desc: '''Verify the LC ctrl can transition from one state to another valid state.
 
-            - Initiate am LC ctrl state transition
+            - Initiate an LC ctrl state transition.
             - Ensure that the LC program request is received by the OTP ctrl.
-            - Verify the updated data output from OTP ctrl to LC ctrl for correctness.
+            - Verify the updated data output from OTP ctrl to LC ctrl is correct.
             - Ensure that there is no background or otp_init error.
             - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
 
