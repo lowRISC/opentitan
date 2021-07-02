@@ -11,8 +11,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
 
   // local variables
   push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  rng_item;
-  bit [31:0]   entropy_data_q[$];
-  bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]   fips_csrng_q[$];
+  bit [31:0]                                                       entropy_data_q[$];
+  bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]                  fips_csrng_q[$];
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
@@ -168,7 +168,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   task collect_entropy();
-    bit [15:0]                                 window_size;
+    bit [15:0]   window_size;
     bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0]   rng_data_q[$];
 
     // TODO: Read window size from register
@@ -178,13 +178,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       window_size = 2048;
 
     forever begin
-      do begin
-        rng_fifo.get(rng_item);
-        rng_data_q.push_back(rng_item.h_data);
+      rng_fifo.get(rng_item);
+      rng_data_q.push_back(rng_item.h_data);
+      if (rng_data_q.size() == entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH) begin
+        fips_csrng_q.push_back(predict_fips_csrng(rng_data_q[0:entropy_src_pkg::CSRNG_BUS_WIDTH-1]));
+        for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH; i++) begin
+          rng_data_q.delete(0);
+        end
       end
-      while (rng_data_q.size() <= window_size/entropy_src_pkg::RNG_BUS_WIDTH);
-      fips_csrng_q.push_back(predict_fips_csrng(rng_data_q));
-      rng_data_q.delete();
     end
   endtask
 

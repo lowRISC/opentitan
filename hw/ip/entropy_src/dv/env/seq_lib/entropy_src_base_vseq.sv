@@ -37,6 +37,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Enable entropy_src in ptrng or lfsr mode
     ral.conf.enable.set(cfg.mode);
+    ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
     csr_update(.csr(ral.conf));
 
   endtask
