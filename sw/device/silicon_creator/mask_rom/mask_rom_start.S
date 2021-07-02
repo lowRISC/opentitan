@@ -6,6 +6,7 @@
 #include "entropy_src_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
+#include "sram_ctrl_regs.h"
 
 /**
  * Mask ROM Interrupt Vector
@@ -148,17 +149,24 @@ _mask_rom_start_boot:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
   // FIXME: Enable entropy complex - this is not the full enable.
-  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li   t0, 0x2
-  sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+  // TODO(#7221): Switch entropy source mode from LFSR to PTRNG.
+  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li t0, (2 << ENTROPY_SRC_CONF_ENABLE_OFFSET) // LFSR mode.
+  sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
 
-  li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
-  li   t0, 0x1
-  sw   t0, CSRNG_CTRL_REG_OFFSET(a0)
+  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li t0, (1 << CSRNG_CTRL_ENABLE_BIT)
+  sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
-  li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
-  li   t0, 0x9
-  sw   t0, EDN_CTRL_REG_OFFSET(a0)
+  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li t0, (1 << EDN_CTRL_EDN_ENABLE_BIT) | (EDN_CTRL_HW_REQ_MODE_VALUE_BOOT_REQ_MODE << EDN_CTRL_HW_REQ_MODE_OFFSET)
+  sw t0, EDN_CTRL_REG_OFFSET(a0)
+
+  // Scramble and initialize main memory (main SRAM).
+  // Memory accesses will stall until initialization is complete.
+  li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR
+  li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
+  sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 
   // Set up the stack pointer.
   //
@@ -228,16 +236,8 @@ _mask_rom_start_boot:
   .extern mask_rom_epmp_stack_guard_init
 
   // Must be called prior to any Main RAM access.
+  // FIXME: merge these two functions.
   call mask_rom_epmp_init
-
-  // TODO: Setup SRAM Scrambling
-  // Temporarily: Zero out ram_main
-  li   a0, TOP_EARLGREY_RAM_MAIN_BASE_ADDR
-  li   a1, (TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
-  call crt_section_clear
-
-  // Must be called after RAM zeroing to avoid triggering stack overflow fault
-  // as it will write into the `_stack_start` address.
   call mask_rom_epmp_stack_guard_init
 
   /**
