@@ -12,7 +12,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
   // local variables
   push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  rng_item;
   bit [31:0]   entropy_data_q[$];
-  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   csrng_q[$];
+  bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]   fips_csrng_q[$];
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
@@ -149,22 +149,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  function bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] predict_csrng (
+  function bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0] predict_fips_csrng (
       bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0] data_q[$]);
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH - 1:0]   csrng_data;
+    bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH - 1:0]   fips_csrng_data;
+    bit [entropy_src_pkg::CSRNG_BUS_WIDTH - 1:0]        csrng_data;
+    bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]         fips_data;
 
     // TODO: Add shah3/lfsr prediction
     if (cfg.type_bypass) begin
-      for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH; i++) begin
-	csrng_data = (csrng_data << 4) + data_q[i];
-      end
-      csrng_data = {<<4{csrng_data}};
+      fips_data = '0;
     end
+    for (int i = data_q.size() - 1; i >= 0 ; i--) begin
+      csrng_data = (csrng_data << 4) + data_q[i];
+    end
+    fips_csrng_data = {fips_data, csrng_data};
 
     return csrng_data;
   endfunction
 
-  task collect_entropy;
+  task collect_entropy();
     bit [15:0]                                 window_size;
     bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0]   rng_data_q[$];
 
@@ -180,20 +183,20 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
         rng_data_q.push_back(rng_item.h_data);
       end
       while (rng_data_q.size() <= window_size/entropy_src_pkg::RNG_BUS_WIDTH);
-      csrng_q.push_back(predict_csrng(rng_data_q));
+      fips_csrng_q.push_back(predict_fips_csrng(rng_data_q));
       rng_data_q.delete();
     end
   endtask
 
   virtual task process_csrng();
     push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  item;
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH - 1:0]   csrng_data;
+    bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH - 1:0]   fips_csrng_data;
 
     forever begin
       csrng_fifo.get(item);
-      csrng_data = item.d_data;
-      `DV_CHECK_EQ_FATAL(csrng_data, csrng_q[0])
-      csrng_q.pop_front();
+      fips_csrng_data = item.d_data;
+      `DV_CHECK_EQ_FATAL(fips_csrng_data, fips_csrng_q[0])
+      fips_csrng_q.pop_front();
     end
   endtask
 
