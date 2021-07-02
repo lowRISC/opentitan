@@ -54,7 +54,7 @@
       desc: '''
         Compile-time random reset value for IMem/DMem scrambling nonce.
       '''
-      randcount: "256",
+      randcount: "64",
       randtype: "data"
     },
   ]
