@@ -27,6 +27,8 @@ use zerocopy::FromBytes;
 //      -- -I./ -Isw/device/lib/base/freestanding
 
 pub const MANIFEST_SIZE: u32 = 848;
+pub const MANIFEST_LENGTH_FIELD_MIN: u32 = 848;
+pub const MANIFEST_LENGTH_FIELD_MAX: u32 = 65536;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]

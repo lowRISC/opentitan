@@ -146,11 +146,9 @@ typedef struct manifest_signed_region {
 /**
  * Allowed bounds for the `length` field.
  */
-enum {
-  // FIXME: Update min value after we have a fairly representative ROM_EXT.
-  kManifestLengthMin = sizeof(manifest_t),
-  kManifestLengthMax = 64 * 1024,
-};
+// FIXME: Update min value after we have a fairly representative ROM_EXT.
+#define MANIFEST_LENGTH_FIELD_MIN MANIFEST_SIZE
+#define MANIFEST_LENGTH_FIELD_MAX 65536
 
 /**
  * Gets the signed region of an image.
@@ -164,8 +162,8 @@ enum {
  */
 inline rom_error_t manifest_signed_region_get(
     const manifest_t *manifest, manifest_signed_region_t *signed_region) {
-  if (manifest->length < kManifestLengthMin ||
-      manifest->length > kManifestLengthMax) {
+  if (manifest->length < MANIFEST_LENGTH_FIELD_MIN ||
+      manifest->length > MANIFEST_LENGTH_FIELD_MAX) {
     return kErrorManifestBadLength;
   }
   *signed_region = (manifest_signed_region_t){
