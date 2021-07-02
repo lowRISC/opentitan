@@ -26,6 +26,7 @@ module pwm_cdc #(
 
   // Regen field does not need syncing, but assign it a value for completeness.
   assign reg2hw_sync.regen.q = 1'b0;
+  assign reg2hw_sync.alert_test = '0;
 
   reg [31:0] common_sync_q;
 
@@ -104,9 +105,13 @@ module pwm_cdc #(
 
   end : gen_chan_cdc
 
-  // All fields in reg2hw are synced across the CDC except REGEN (the register write enable).
-  // Explicitly waive that here.
+  // All fields in reg2hw are synced across the CDC except REGEN (the register write enable)
+  // and ALERT_TEST. Explicitly waive them here.
   logic unused_regen;
   assign unused_regen = reg2hw.regen;
+
+  // unused register configuration
+  logic unused_reg;
+  assign unused_reg = ^reg2hw.alert_test;
 
 endmodule : pwm_cdc
