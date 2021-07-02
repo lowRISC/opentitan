@@ -5373,11 +5373,11 @@
           name: RndCnstOtbnNonce
           desc: Compile-time random reset value for IMem/DMem scrambling nonce.
           type: otp_ctrl_pkg::otbn_nonce_t
-          randcount: 256
+          randcount: 64
           randtype: data
           name_top: RndCnstOtbnOtbnNonce
-          default: 0xe58a331208f189de6265edc8fde06db0ce44cbff5e09e6dd3ae54e9e45da6e66
-          randwidth: 256
+          default: 0x3ae54e9e45da6e66
+          randwidth: 64
         }
       ]
       inter_signal_list:
@@ -5500,7 +5500,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrlScrNonce
-          default: 0xf678e7d227881bcf
+          default: 0xce44cbff5e09e6dd
           randwidth: 64
         }
         {
@@ -5510,7 +5510,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrlScrKey
-          default: 0xd38bd8674f4b542dfcc581b66ae11d33
+          default: 0xe58a331208f189de6265edc8fde06db0
           randwidth: 128
         }
       ]

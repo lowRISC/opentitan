@@ -250,7 +250,7 @@ package top_earlgrey_rnd_cnst_pkg;
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
-    256'hE58A331208F189DE6265EDC8FDE06DB0CE44CBFF5E09E6DD3AE54E9E45DA6E66
+    64'h3AE54E9E45DA6E66
   };
 
   ////////////////////////////////////////////
@@ -258,12 +258,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrlScrNonce = {
-    64'hF678E7D227881BCF
+    64'hCE44CBFF5E09E6DD
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrlScrKey = {
-    128'hD38BD8674F4B542DFCC581B66AE11D33
+    128'hE58A331208F189DE6265EDC8FDE06DB0
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg
