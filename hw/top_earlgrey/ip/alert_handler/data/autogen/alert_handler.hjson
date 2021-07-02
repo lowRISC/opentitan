@@ -48,7 +48,7 @@
     { name: "NAlerts",
       desc: "Number of alert channels.",
       type: "int",
-      default: "68",
+      default: "69",
       local: "true"
     },
     { name: "EscCntDw",
@@ -69,7 +69,7 @@
             defines whether the protocol is synchronous (0) or asynchronous (1).
             '''
       type: "logic [NAlerts-1:0]",
-      default: "68'hfffffffffffffffff",
+      default: "69'h1fffffffffffffffff",
       local: "true"
     },
     { name: "N_CLASSES",

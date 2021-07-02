@@ -202,7 +202,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[68] = {
+    top_earlgrey_alert_for_peripheral[69] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
@@ -215,6 +215,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdI2c1FatalFault] = kTopEarlgreyAlertPeripheralI2c1,
   [kTopEarlgreyAlertIdI2c2FatalFault] = kTopEarlgreyAlertPeripheralI2c2,
   [kTopEarlgreyAlertIdPattgenFatalFault] = kTopEarlgreyAlertPeripheralPattgen,
+  [kTopEarlgreyAlertIdRvTimerFatalFault] = kTopEarlgreyAlertPeripheralRvTimer,
   [kTopEarlgreyAlertIdUsbdevFatalFault] = kTopEarlgreyAlertPeripheralUsbdev,
   [kTopEarlgreyAlertIdOtpCtrlFatalMacroError] = kTopEarlgreyAlertPeripheralOtpCtrl,
   [kTopEarlgreyAlertIdOtpCtrlFatalCheckError] = kTopEarlgreyAlertPeripheralOtpCtrl,

@@ -12056,6 +12056,7 @@
     i2c1
     i2c2
     pattgen
+    rv_timer
     usbdev
     otp_ctrl
     lc_ctrl
@@ -12170,6 +12171,13 @@
       type: alert
       async: "1"
       module_name: pattgen
+    }
+    {
+      name: rv_timer_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_timer
     }
     {
       name: usbdev_fatal_fault
