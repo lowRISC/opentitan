@@ -26,11 +26,11 @@ TEST(Manifest, SignedRegionGetBadLength) {
   manifest_t manifest{};
   manifest_signed_region_t signed_region;
 
-  manifest.length = kManifestLengthMax + 1;
+  manifest.length = MANIFEST_LENGTH_FIELD_MAX + 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
             kErrorManifestBadLength);
 
-  manifest.length = kManifestLengthMin - 1;
+  manifest.length = MANIFEST_LENGTH_FIELD_MIN - 1;
   EXPECT_EQ(manifest_signed_region_get(&manifest, &signed_region),
             kErrorManifestBadLength);
 }

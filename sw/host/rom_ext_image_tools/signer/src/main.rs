@@ -122,19 +122,6 @@ fn update_image_manifest(
         ..Default::default()
     };
 
-    // Code region must be 32-bit aligned due to PMP constraints.
-    fn is_word_aligned(addr: u32) -> bool {
-        return addr % 4 == 0;
-    }
-    ensure!(
-        is_word_aligned(image.manifest.code_start),
-        "Unaligned code start."
-    );
-    ensure!(
-        is_word_aligned(image.manifest.code_end),
-        "Unaligned code end."
-    );
-
     let exponent_be = key.public_exponent_be();
     let dest = image.manifest.exponent.as_bytes_mut().iter_mut();
     let src = exponent_be.iter().rev().copied();
@@ -150,6 +137,44 @@ fn update_image_manifest(
     for (d, s) in Iterator::zip(dest, src) {
         *d = s;
     }
+
+    /// Checks if an address is word (32-bit) aligned.
+    fn is_word_aligned(addr: u32) -> bool {
+        return addr % 4 == 0;
+    }
+
+    ensure!(
+        is_word_aligned(image.manifest.code_start),
+        "`code_start` is not word aligned."
+    );
+    ensure!(
+        is_word_aligned(image.manifest.code_end),
+        "`code_end` is not word aligned."
+    );
+    ensure!(
+        is_word_aligned(image.manifest.entry_point),
+        "`entry_point` is not word aligned."
+    );
+    ensure!(
+        (manifest::MANIFEST_SIZE..image.manifest.code_end)
+            .contains(&image.manifest.code_start),
+        "`code_start` is outside the allowed range."
+    );
+    ensure!(
+        (manifest::MANIFEST_SIZE..=image.manifest.length)
+            .contains(&image.manifest.code_end),
+        "`code_end` is outside the allowed range."
+    );
+    ensure!(
+        (image.manifest.code_start..image.manifest.code_end)
+            .contains(&image.manifest.entry_point),
+        "`entry_point` is outside the code region."
+    );
+    ensure!(
+        (manifest::MANIFEST_LENGTH_FIELD_MIN..=manifest::MANIFEST_LENGTH_FIELD_MAX)
+            .contains(&image.manifest.length),
+        "`length` is outside the allowed range."
+    );
 
     Ok(())
 }
