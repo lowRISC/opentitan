@@ -104,6 +104,8 @@ module rv_timer_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
+  logic alert_test_wd;
   logic ctrl_we;
   logic ctrl_qs;
   logic ctrl_wd;
@@ -134,6 +136,22 @@ module rv_timer_reg_top (
   logic intr_test0_wd;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
+    .qs     ()
+  );
+
+
 
   // Subregister 0 of Multireg ctrl
   // R[ctrl]: V(False)
@@ -403,18 +421,19 @@ module rv_timer_reg_top (
 
 
 
-  logic [8:0] addr_hit;
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == RV_TIMER_CTRL_OFFSET);
-    addr_hit[1] = (reg_addr == RV_TIMER_CFG0_OFFSET);
-    addr_hit[2] = (reg_addr == RV_TIMER_TIMER_V_LOWER0_OFFSET);
-    addr_hit[3] = (reg_addr == RV_TIMER_TIMER_V_UPPER0_OFFSET);
-    addr_hit[4] = (reg_addr == RV_TIMER_COMPARE_LOWER0_0_OFFSET);
-    addr_hit[5] = (reg_addr == RV_TIMER_COMPARE_UPPER0_0_OFFSET);
-    addr_hit[6] = (reg_addr == RV_TIMER_INTR_ENABLE0_OFFSET);
-    addr_hit[7] = (reg_addr == RV_TIMER_INTR_STATE0_OFFSET);
-    addr_hit[8] = (reg_addr == RV_TIMER_INTR_TEST0_OFFSET);
+    addr_hit[0] = (reg_addr == RV_TIMER_ALERT_TEST_OFFSET);
+    addr_hit[1] = (reg_addr == RV_TIMER_CTRL_OFFSET);
+    addr_hit[2] = (reg_addr == RV_TIMER_CFG0_OFFSET);
+    addr_hit[3] = (reg_addr == RV_TIMER_TIMER_V_LOWER0_OFFSET);
+    addr_hit[4] = (reg_addr == RV_TIMER_TIMER_V_UPPER0_OFFSET);
+    addr_hit[5] = (reg_addr == RV_TIMER_COMPARE_LOWER0_0_OFFSET);
+    addr_hit[6] = (reg_addr == RV_TIMER_COMPARE_UPPER0_0_OFFSET);
+    addr_hit[7] = (reg_addr == RV_TIMER_INTR_ENABLE0_OFFSET);
+    addr_hit[8] = (reg_addr == RV_TIMER_INTR_STATE0_OFFSET);
+    addr_hit[9] = (reg_addr == RV_TIMER_INTR_TEST0_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -430,35 +449,39 @@ module rv_timer_reg_top (
                (addr_hit[5] & (|(RV_TIMER_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(RV_TIMER_PERMIT[6] & ~reg_be))) |
                (addr_hit[7] & (|(RV_TIMER_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(RV_TIMER_PERMIT[8] & ~reg_be)))));
+               (addr_hit[8] & (|(RV_TIMER_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(RV_TIMER_PERMIT[9] & ~reg_be)))));
   end
-  assign ctrl_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign ctrl_we = addr_hit[1] & reg_we & !reg_error;
 
   assign ctrl_wd = reg_wdata[0];
-  assign cfg0_we = addr_hit[1] & reg_we & !reg_error;
+  assign cfg0_we = addr_hit[2] & reg_we & !reg_error;
 
   assign cfg0_prescale_wd = reg_wdata[11:0];
 
   assign cfg0_step_wd = reg_wdata[23:16];
-  assign timer_v_lower0_we = addr_hit[2] & reg_we & !reg_error;
+  assign timer_v_lower0_we = addr_hit[3] & reg_we & !reg_error;
 
   assign timer_v_lower0_wd = reg_wdata[31:0];
-  assign timer_v_upper0_we = addr_hit[3] & reg_we & !reg_error;
+  assign timer_v_upper0_we = addr_hit[4] & reg_we & !reg_error;
 
   assign timer_v_upper0_wd = reg_wdata[31:0];
-  assign compare_lower0_0_we = addr_hit[4] & reg_we & !reg_error;
+  assign compare_lower0_0_we = addr_hit[5] & reg_we & !reg_error;
 
   assign compare_lower0_0_wd = reg_wdata[31:0];
-  assign compare_upper0_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign compare_upper0_0_we = addr_hit[6] & reg_we & !reg_error;
 
   assign compare_upper0_0_wd = reg_wdata[31:0];
-  assign intr_enable0_we = addr_hit[6] & reg_we & !reg_error;
+  assign intr_enable0_we = addr_hit[7] & reg_we & !reg_error;
 
   assign intr_enable0_wd = reg_wdata[0];
-  assign intr_state0_we = addr_hit[7] & reg_we & !reg_error;
+  assign intr_state0_we = addr_hit[8] & reg_we & !reg_error;
 
   assign intr_state0_wd = reg_wdata[0];
-  assign intr_test0_we = addr_hit[8] & reg_we & !reg_error;
+  assign intr_test0_we = addr_hit[9] & reg_we & !reg_error;
 
   assign intr_test0_wd = reg_wdata[0];
 
@@ -467,39 +490,43 @@ module rv_timer_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = ctrl_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[1]: begin
+        reg_rdata_next[0] = ctrl_qs;
+      end
+
+      addr_hit[2]: begin
         reg_rdata_next[11:0] = cfg0_prescale_qs;
         reg_rdata_next[23:16] = cfg0_step_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[3]: begin
         reg_rdata_next[31:0] = timer_v_lower0_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[4]: begin
         reg_rdata_next[31:0] = timer_v_upper0_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = compare_lower0_0_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = compare_upper0_0_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = intr_enable0_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = intr_state0_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = '0;
       end
 

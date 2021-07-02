@@ -23,6 +23,13 @@
 % endfor
 % endfor
   ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the RV_TIMER unit.
+      '''
+    }
+  ],
   param_list: [
     { name: "N_HARTS",
       desc: "Number of harts",
@@ -46,7 +53,10 @@
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-          { bits: "0", name: "active", desc: "If 1, timer operates" }
+          { bits: "0", name: "active",
+            desc: "If 1, timer operates",
+            tags: [// prevent timer from being enabled
+                   "excl:CsrNonInitTests:CsrExclWrite"] }
         ],
       }
     },
@@ -117,7 +127,9 @@
         swaccess: "rw1c",
         hwaccess: "hrw",
         fields: [
-          { bits: "0", name: "IS", desc: "Interrupt status for timer" }
+          { bits: "0", name: "IS", desc: "Interrupt status for timer",
+            tags: [// intr_state csr is affected by writes to other csrs - skip write-check
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"] }
         ],
       }
     },
@@ -131,7 +143,9 @@
         hwext: "true",
         hwqe: "true",
         fields: [
-          { bits: "0", name: "T", desc: "Interrupt test for timer" }
+          { bits: "0", name: "T", desc: "Interrupt test for timer",
+            tags: [// intr_test csr is WO which - it reads back 0s
+                   "excl:CsrNonInitTests:CsrExclWrite"] }
         ]
       }
     },

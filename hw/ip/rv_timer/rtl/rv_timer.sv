@@ -6,18 +6,21 @@
 
 `include "prim_assert.sv"
 
-module rv_timer (
+module rv_timer import rv_timer_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input clk_i,
   input rst_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   output logic intr_timer_expired_0_0_o
 );
-
-  localparam int N_HARTS  = 1;
-  localparam int N_TIMERS = 1;
 
   import rv_timer_reg_pkg::*;
 
@@ -112,6 +115,7 @@ module rv_timer (
   end : gen_harts
 
   // Register module
+  logic [NumAlerts-1:0] alert_test, alerts;
   rv_timer_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -122,15 +126,38 @@ module rv_timer (
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o (),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
+
+  // Alerts
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////
   // Assertions //
   ////////////////
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(IntrTimerExpired00Known, intr_timer_expired_0_0_o)
 
 endmodule

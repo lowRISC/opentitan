@@ -22,6 +22,10 @@ package rv_timer_env_pkg;
   parameter uint NUM_HARTS = 1;
   parameter uint NUM_TIMERS = 1;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   typedef class rv_timer_env_cfg;
   typedef class rv_timer_env_cov;
   typedef cip_base_virtual_sequencer #(rv_timer_env_cfg,
