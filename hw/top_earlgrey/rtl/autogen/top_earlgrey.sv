@@ -544,8 +544,8 @@ module top_earlgrey #(
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_intg_event;
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_core_event;
   rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_recov_core_event;
-  rv_core_ibex_peri_pkg::region_cfg_t       rv_core_ibex_peri_ibus_region_cfg;
-  rv_core_ibex_peri_pkg::region_cfg_t       rv_core_ibex_peri_dbus_region_cfg;
+  rv_core_ibex_peri_pkg::region_cfg_t [1:0] rv_core_ibex_peri_ibus_region_cfg;
+  rv_core_ibex_peri_pkg::region_cfg_t [1:0] rv_core_ibex_peri_dbus_region_cfg;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;

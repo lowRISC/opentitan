@@ -235,6 +235,7 @@
           type:    "uni",
           name:    "ibus_region_cfg",
           act:     "rcv",
+          width:   "2",
           package: "rv_core_ibex_peri_pkg",
         },
 
@@ -242,6 +243,7 @@
           type:    "uni",
           name:    "dbus_region_cfg",
           act:     "rcv",
+          width:   "2",
           package: "rv_core_ibex_peri_pkg",
         },
       ],

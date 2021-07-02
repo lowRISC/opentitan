@@ -531,9 +531,9 @@
           type: uni
           name: ibus_region_cfg
           act: rcv
+          width: 2
           package: rv_core_ibex_peri_pkg
           inst_name: rv_core_ibex
-          width: 1
           default: ""
           top_signame: rv_core_ibex_peri_ibus_region_cfg
           index: -1
@@ -543,9 +543,9 @@
           type: uni
           name: dbus_region_cfg
           act: rcv
+          width: 2
           package: rv_core_ibex_peri_pkg
           inst_name: rv_core_ibex
-          width: 1
           default: ""
           top_signame: rv_core_ibex_peri_dbus_region_cfg
           index: -1
@@ -5658,7 +5658,7 @@
           package: rv_core_ibex_peri_pkg
           type: uni
           act: req
-          width: 1
+          width: 2
           inst_name: rv_core_ibex_peri
           default: ""
           end_idx: -1
@@ -5672,7 +5672,7 @@
           package: rv_core_ibex_peri_pkg
           type: uni
           act: req
-          width: 1
+          width: 2
           inst_name: rv_core_ibex_peri
           default: ""
           end_idx: -1
@@ -15854,7 +15854,7 @@
         package: rv_core_ibex_peri_pkg
         type: uni
         act: req
-        width: 1
+        width: 2
         inst_name: rv_core_ibex_peri
         default: ""
         end_idx: -1
@@ -15868,7 +15868,7 @@
         package: rv_core_ibex_peri_pkg
         type: uni
         act: req
-        width: 1
+        width: 2
         inst_name: rv_core_ibex_peri
         default: ""
         end_idx: -1
@@ -16907,9 +16907,9 @@
         type: uni
         name: ibus_region_cfg
         act: rcv
+        width: 2
         package: rv_core_ibex_peri_pkg
         inst_name: rv_core_ibex
-        width: 1
         default: ""
         top_signame: rv_core_ibex_peri_ibus_region_cfg
         index: -1
@@ -16919,9 +16919,9 @@
         type: uni
         name: dbus_region_cfg
         act: rcv
+        width: 2
         package: rv_core_ibex_peri_pkg
         inst_name: rv_core_ibex
-        width: 1
         default: ""
         top_signame: rv_core_ibex_peri_dbus_region_cfg
         index: -1
@@ -18466,7 +18466,7 @@
         package: rv_core_ibex_peri_pkg
         struct: region_cfg
         signame: rv_core_ibex_peri_ibus_region_cfg
-        width: 1
+        width: 2
         type: uni
         end_idx: -1
         act: req
@@ -18477,7 +18477,7 @@
         package: rv_core_ibex_peri_pkg
         struct: region_cfg
         signame: rv_core_ibex_peri_dbus_region_cfg
-        width: 1
+        width: 2
         type: uni
         end_idx: -1
         act: req
