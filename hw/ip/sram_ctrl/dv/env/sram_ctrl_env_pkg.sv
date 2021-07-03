@@ -12,7 +12,7 @@ package sram_ctrl_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
-  import sram_ctrl_ral_pkg::*;
+  import sram_ctrl_regs_ral_pkg::*;
   import sram_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
   import lc_ctrl_pkg::*;
@@ -24,8 +24,8 @@ package sram_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = { "fatal_intg_error", "fatal_parity_error"};
-  parameter uint   NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[] = { "fatal_bus_integ_error"};
+  parameter uint   NUM_ALERTS = 1;
 
   // Number of bits in the otp_ctrl_pkg::sram_otp_key_rsp_t struct:
   // 1 bit for valid, SramKeyWidth bits for the key, SramNonceWidth bits for the nonce.
@@ -47,11 +47,12 @@ package sram_ctrl_env_pkg;
     SramCtrlInit        = 1
   } sram_ctrl_e;
 
-  typedef enum bit [1:0] {
+  typedef enum bit [2:0] {
     SramCtrlError           = 0,
     SramCtrlEscalated       = 1,
     SramCtrlScrKeyValid     = 2,
-    SramCtrlScrKeySeedValid = 3
+    SramCtrlScrKeySeedValid = 3,
+    SramCtrlInitDone        = 4
   } sram_ctrl_status_e;
 
   // package sources

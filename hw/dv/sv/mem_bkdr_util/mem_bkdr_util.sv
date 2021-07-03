@@ -204,6 +204,12 @@ class mem_bkdr_util extends uvm_object;
     return {read16(addr + 2), read16(addr)};
   endfunction
 
+  // this is used to read 32bit of data plus 7 raw integrity bits.
+  virtual function logic [38:0] read39integ(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    `_ACCESS_CHECKS(addr, 32) // this is essentially an aligned 32bit access.
+    return read(addr) & 39'h7fffffffff;
+  endfunction
+
   virtual function logic [63:0] read64(bit [bus_params_pkg::BUS_AW-1:0] addr);
     `_ACCESS_CHECKS(addr, 64)
     return {read32(addr + 4), read32(addr)};
@@ -291,6 +297,13 @@ class mem_bkdr_util extends uvm_object;
     if (!check_addr_valid(addr)) return;
     write16(addr, data[15:0]);
     write16(addr + 2, data[31:16]);
+  endfunction
+
+  // this is used to write 32bit of data plus 7 raw integrity bits.
+  virtual function void write39integ(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [38:0] data);
+    `_ACCESS_CHECKS(addr, 32) // this is essentially an aligned 32bit access.
+    if (!check_addr_valid(addr)) return;
+    write(addr, data);
   endfunction
 
   virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);

@@ -8,7 +8,8 @@
   ]
 
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device", name: "regs" }
+    { protocol: "tlul", direction: "device", name: "ram" },
   ],
 
   ///////////////////////////
@@ -16,12 +17,9 @@
   ///////////////////////////
 
   alert_list: [
-    { name: "fatal_intg_error",
-      desc: "An integrity error has occurred in the SRAM."
-    },
-    { name: "fatal_parity_error",
-      desc: "An parity error has occurred in the SRAM."
-    },
+    { name: "fatal_bus_integ_error",
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
   ],
 
   ////////////////
@@ -40,11 +38,23 @@
       randcount: "128",
       randtype:  "data", // randomize randcount databits
     },
-    { name:      "RndCnstSramLfsrPerm",
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "sram_ctrl_pkg::lfsr_seed_t"
+      randcount: "32",
+      randtype:  "data", // randomize randcount databits
+    }
+    { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
       type:      "sram_ctrl_pkg::lfsr_perm_t"
       randcount: "32",
-      randtype:  "perm",
+      randtype:  "perm", // random permutation for randcount elements
+    }
+    // This parameter is overridden by topgen to set the actual RAM size.
+    { name:      "MemSizeRam",
+      desc:      "Memory size of the RAM (in bytes).",
+      type:      "int",
+      default:   "0x1000"
     },
     { name:      "InstrExec",
       desc:      "Support execution from SRAM",
@@ -68,21 +78,13 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     },
-    // Interface with SRAM scrambling wrapper
-    { struct:  "sram_scr"
-      type:    "req_rsp"
-      name:    "sram_scr"
-      act:     "req"
+    // SRAM attribute input
+    { struct:  "ram_1p_cfg"
+      type:    "uni"
+      name:    "cfg"
+      act:     "rcv"
       default: "'0"
-      package: "sram_ctrl_pkg"
-    },
-    // Interface with SRAM scrambling wrapper init interface
-    { struct:  "sram_scr_init"
-      type:    "req_rsp"
-      name:    "sram_scr_init"
-      act:     "req"
-      default: "'0"
-      package: "sram_ctrl_pkg"
+      package: "prim_ram_1p_pkg"
     },
     // Broadcast from LC
     { struct:  "lc_tx"
@@ -106,159 +108,146 @@
       package: "otp_ctrl_pkg",
       default: "'0"
     },
-    { struct:  "tl_instr_en",
-      type:    "uni",
-      name:    "en_ifetch",
-      act:     "req",
-      package: "tlul_pkg",
-    },
-    { struct:  "logic",
-      type:    "uni",
-      name:    "intg_error",
-      act:     "rcv",
-      package: ""
-    },
-  ] // inter_signal_list
+  ]
 
   regwidth: "32",
-  registers: [
+  registers: {
+    regs: [
+      ////////////////////////
+      // Ctrl / Status CSRs //
+      ////////////////////////
 
-    ////////////////////////
-    // Ctrl / Status CSRs //
-    ////////////////////////
+      { name: "STATUS",
+        desc: "SRAM status register.",
+        swaccess: "ro",
+        hwaccess: "hrw",
+        hwqe:     "false",
+        fields: [
+          { bits: "0"
+            name: "BUS_INTEG_ERROR"
+            desc: '''
+                  This bit is set to 1 if a fatal bus integrity fault is detected.
+                  This error triggers a fatal_bus_integ_error alert.
+                  ''',
+            resval: 0,
+          }
+          { bits: "1"
+            name: "ESCALATED"
+            desc: '''
+                  Set to 1 if the sram controller has received an escalate request.
+                  If this is set to 1, the scrambling keys have been reset to the default values
+                  and all subsequent memory requests will be blocked.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
+          { bits: "2"
+            name: "SCR_KEY_VALID"
+            desc: '''
+                  Set to 1 if a new scrambling key has been successfully obtained from OTP.
+                  Note that if this is set to 0, the SRAM contents are still scrambled, but a
+                  default all-zero key and nonce are used to do so.
+                  ''',
+            resval: 0,
+          }
+          { bits: "3"
+            name: "SCR_KEY_SEED_VALID"
+            desc: '''
+                  Set to 1 if the scrambling key has been derived from a valid key seed in OTP.
+                  If !!STATUS.SCR_KEY_VALID is set to 1, !!STATUS.SCR_KEY_SEED_VALID should be 1
+                  except for cases where the scrambling key seeds have not yet been provisioned to
+                  OTP. In such a case, the scrambling key is still ephemeral (i.e., it is derived
+                  using entropy from CSRNG), but a default all-zero value is used as the key seed.
+                  ''',
+            resval: 0,
+          }
+          { bits: "4"
+            name: "INIT_DONE"
+            desc: '''
+                  Set to 1 if the hardware initialization triggered via !!CTRL.INIT has completed.
+                  ''',
+            resval: 0,
+          }
+        ]
+      }
+      { name: "EXEC_REGWEN",
+        desc: "Lock register for execution enable register.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0"
+            desc: '''
+                  When cleared to zero, !!EXEC can not be written anymore.
+                  ''',
+            resval: 1
+          }
+        ]
+      }
+      { name: "EXEC",
+        desc: "Sram execution enable.",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "EXEC_REGWEN"
+        fields: [
+          { bits: "2:0",
+            name: "EN",
+            desc: '''
+                  Write 0x5 to this field to enable execution from SRAM.
+                  Note that this register only takes effect if the EN_SRAM_IFETCH chicken switch
+                  in the OTP HW_CFG partition is set to 0xA5. Otherwise execution from SRAM cannot be
+                  enabled via this register.
+                  ''',
+            resval: 0
+          },
+        ]
+      },
+      { name: "CTRL_REGWEN",
+        desc: "Lock register for control register.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0"
+            desc: '''
+                  When cleared to zero, !!CTRL can not be written anymore.
+                  ''',
+            resval: 1
+          }
+        ]
+      }
+      { name: "CTRL",
+        desc: "SRAM ctrl register.",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe:     "true",
+        regwen:   "CTRL_REGWEN"
+        tags: [// avoid writing to CTRL, as this will cause STATUS to be modified
+               "excl:CsrNonInitTests:CsrExclWrite"]
+        fields: [
+          { bits: "0",
+            name: "RENEW_SCR_KEY",
+            desc: '''
+                  Write 1 to request a new scrambling key from OTP. After writing to this register, SRAM transactions will
+                  be blocked until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
+                  before triggering a key renewal, hardware will automatically clear that status bit such that software
+                  can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
+                  to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
+                  a key request is pending has no effect.
+                  '''
+          },
+          { bits: "1",
+            name: "INIT",
+            desc: '''
+                  Write 1 to request memory init.
+                  The init mechanism uses an LFSR that is seeded with a part of the nonce supplied when requesting a scrambling key.
+                  Once seeded, the memory is initialized with pseudo-random data pulled from the LFSR.
+                  '''
+          },
+        ]
+      },
+    ],
 
-    { name: "STATUS",
-      desc: "SRAM status register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "false",
-      hwext:    "true",
-      fields: [
-        { bits: "0"
-          name: "ERROR"
-          desc: '''
-                Set to 1 if an uncorrectable parity error has occurred in the SRAM macro.
-                The address of the faulty access is exposed in the !!ERROR_ADDRESS register
-                for debugging purposes. This is an unrecoverable error condition and causes
-                the SRAM controller to continuously send out fatal_parity_error alerts.
-                The error bit is sticky and can only be cleared via a reset.
-                '''
-        }
-        { bits: "1"
-          name: "ESCALATED"
-          desc: '''
-                Set to 1 if the sram controller has received an escalate request.
-                If this is set to 1, the scrambling keys have been reset to the default values
-                and all subsequent memory requests will be blocked.
-                This condition is terminal.
-                '''
-        }
-        { bits: "2"
-          name: "SCR_KEY_VALID"
-          desc: '''
-                Set to 1 if a new scrambling key has been successfully obtained from OTP.
-                Note that if this is set to 0, the SRAM contents are still scrambled, but a
-                default all-zero key and nonce are used to do so.
-                '''
-        }
-        { bits: "3"
-          name: "SCR_KEY_SEED_VALID"
-          desc: '''
-                Set to 1 if the scrambling key has been derived from a valid key seed in OTP.
-                If !!STATUS.SCR_KEY_VALID is set to 1, !!STATUS.SCR_KEY_SEED_VALID should be 1
-                except for cases where the scrambling key seeds have not yet been provisioned to
-                OTP. In such a case, the scrambling key is still ephemeral (i.e., it is derived
-                using entropy from CSRNG), but a default all-zero value is used as the key seed.
-                '''
-        }
-      ]
-    }
-    { name: "EXEC_REGWEN",
-      desc: "Lock register for execution enable register.",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0"
-          desc: '''
-                When cleared to zero, !!EXEC can not be written anymore.
-                ''',
-          resval: 1
-        }
-      ]
-    }
-    { name: "EXEC",
-      desc: "Sram execution enable.",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "EXEC_REGWEN"
-      fields: [
-        { bits: "2:0",
-          name: "EN",
-          desc: '''
-                  Write 5 (3b101) to this field to enable execution from SRAM
-                '''
-        },
-      ]
-    },
-    { name: "CTRL_REGWEN",
-      desc: "Lock register for control register.",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0"
-          desc: '''
-                When cleared to zero, !!CTRL can not be written anymore.
-                ''',
-          resval: 1
-        }
-      ]
-    }
-    { name: "CTRL",
-      desc: "SRAM ctrl register.",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      hwqe:     "true",
-      hwext:    "true",
-      regwen:   "CTRL_REGWEN"
-      tags: [// avoid writing to CTRL, as this will cause STATUS to be modified
-             "excl:CsrNonInitTests:CsrExclWrite"]
-      fields: [
-        { bits: "0",
-          name: "RENEW_SCR_KEY",
-          desc: '''
-                Write 1 to request a new scrambling key from OTP. After writing to this register, SRAM transactions will
-                be blocked until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
-                before triggering a key renewal, hardware will automatically clear that status bit such that software
-                can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
-                to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
-                a key request is pending has no effect.
-                '''
-        },
-        { bits: "1",
-          name: "INIT",
-          desc: '''
-                Write 1 to request memory init.
-                The init process is seeded using the a nonce that is supplied during the init process.
-                The resulting memory is programmed with random data instead of deterministic values.
-                '''
-        },
-      ]
-    },
-
-    { name: "ERROR_ADDRESS",
-      desc: "Error address register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwqe:     "false",
-      hwext:    "false",
-      fields: [
-        { bits: "31:0"
-          name: "ADDRESS"
-          desc: '''
-                Contains the byte address of the last parity error.
-                '''
-        }
-      ]
-    }
-  ],
+    ram: [
+      // no CSRs defined here.
+    ]
+  }
 }

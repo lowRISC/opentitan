@@ -3383,12 +3383,27 @@
       {
         InstrExec: "0"
       }
+      base_addrs:
+      {
+        regs: 0x40500000
+        ram: 0x40600000
+      }
+      memory:
+      {
+        ram:
+        {
+          label: ram_ret_aon
+          swaccess: rw
+          exec: True
+          byte_write: True
+          size: 0x1000
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      memory: {}
       param_list:
       [
         {
@@ -3412,14 +3427,31 @@
           randwidth: 128
         }
         {
-          name: RndCnstSramLfsrPerm
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: sram_ctrl_pkg::lfsr_seed_t
+          randcount: 32
+          randtype: data
+          name_top: RndCnstSramCtrlRetAonLfsrSeed
+          default: 0xae24af11
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
           desc: Compile-time random permutation for LFSR output
           type: sram_ctrl_pkg::lfsr_perm_t
           randcount: 32
           randtype: perm
-          name_top: RndCnstSramCtrlRetAonSramLfsrPerm
+          name_top: RndCnstSramCtrlRetAonLfsrPerm
           default: 0x25da5869dc96fe354f1da55e9123cb082c63b331
           randwidth: 160
+        }
+        {
+          name: MemSizeRam
+          desc: Memory size of the RAM (in bytes).
+          type: int
+          name_top: MemSizeSramCtrlRetAonRam
+          default: 4096
         }
         {
           name: InstrExec
@@ -3445,29 +3477,15 @@
           index: 1
         }
         {
-          name: sram_scr
-          struct: sram_scr
-          package: sram_ctrl_pkg
-          type: req_rsp
-          act: req
+          name: cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
           width: 1
           default: "'0"
           inst_name: sram_ctrl_ret_aon
-          end_idx: -1
-          top_signame: sram_ctrl_ret_aon_sram_scr
-          index: -1
-        }
-        {
-          name: sram_scr_init
-          struct: sram_scr_init
-          package: sram_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: sram_ctrl_ret_aon
-          end_idx: -1
-          top_signame: sram_ctrl_ret_aon_sram_scr_init
+          top_signame: ast_ram_1p_cfg
           index: -1
         }
         {
@@ -3507,33 +3525,7 @@
           index: -1
         }
         {
-          name: en_ifetch
-          struct: tl_instr_en
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: sram_ctrl_ret_aon
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: sram_ctrl_ret_aon_en_ifetch
-          index: -1
-        }
-        {
-          name: intg_error
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: sram_ctrl_ret_aon
-          default: ""
-          package: ""
-          top_signame: ram_ret_aon_intg_error
-          index: -1
-        }
-        {
-          name: tl
+          name: regs_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -3542,14 +3534,23 @@
           inst_name: sram_ctrl_ret_aon
           default: ""
           end_idx: -1
-          top_signame: sram_ctrl_ret_aon_tl
+          top_signame: sram_ctrl_ret_aon_regs_tl
+          index: -1
+        }
+        {
+          name: ram_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_ret_aon
+          default: ""
+          end_idx: -1
+          top_signame: sram_ctrl_ret_aon_ram_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x40500000
-      }
     }
     {
       name: flash_ctrl
@@ -5199,13 +5200,28 @@
       {
         InstrExec: "1"
       }
+      base_addrs:
+      {
+        regs: 0x411C0000
+        ram: 0x10000000
+      }
+      memory:
+      {
+        ram:
+        {
+          label: ram_main
+          swaccess: rw
+          exec: True
+          byte_write: True
+          size: 0x20000
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      memory: {}
       param_list:
       [
         {
@@ -5229,14 +5245,31 @@
           randwidth: 128
         }
         {
-          name: RndCnstSramLfsrPerm
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: sram_ctrl_pkg::lfsr_seed_t
+          randcount: 32
+          randtype: data
+          name_top: RndCnstSramCtrlMainLfsrSeed
+          default: 0xaa9fbe94
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
           desc: Compile-time random permutation for LFSR output
           type: sram_ctrl_pkg::lfsr_perm_t
           randcount: 32
           randtype: perm
-          name_top: RndCnstSramCtrlMainSramLfsrPerm
+          name_top: RndCnstSramCtrlMainLfsrPerm
           default: 0x2dc87cedcba3e48e7595fc2221a74051acdc4fc1
           randwidth: 160
+        }
+        {
+          name: MemSizeRam
+          desc: Memory size of the RAM (in bytes).
+          type: int
+          name_top: MemSizeSramCtrlMainRam
+          default: 131072
         }
         {
           name: InstrExec
@@ -5262,29 +5295,15 @@
           index: 0
         }
         {
-          name: sram_scr
-          struct: sram_scr
-          package: sram_ctrl_pkg
-          type: req_rsp
-          act: req
+          name: cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
           width: 1
           default: "'0"
           inst_name: sram_ctrl_main
-          end_idx: -1
-          top_signame: sram_ctrl_main_sram_scr
-          index: -1
-        }
-        {
-          name: sram_scr_init
-          struct: sram_scr_init
-          package: sram_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: sram_ctrl_main
-          end_idx: -1
-          top_signame: sram_ctrl_main_sram_scr_init
+          top_signame: ast_ram_1p_cfg
           index: -1
         }
         {
@@ -5324,33 +5343,7 @@
           index: -1
         }
         {
-          name: en_ifetch
-          struct: tl_instr_en
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: sram_ctrl_main
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: sram_ctrl_main_en_ifetch
-          index: -1
-        }
-        {
-          name: intg_error
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: sram_ctrl_main
-          default: ""
-          package: ""
-          top_signame: ram_main_intg_error
-          index: -1
-        }
-        {
-          name: tl
+          name: regs_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -5359,14 +5352,23 @@
           inst_name: sram_ctrl_main
           default: ""
           end_idx: -1
-          top_signame: sram_ctrl_main_tl
+          top_signame: sram_ctrl_main_regs_tl
+          index: -1
+        }
+        {
+          name: ram_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_main
+          default: ""
+          end_idx: -1
+          top_signame: sram_ctrl_main_ram_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x411C0000
-      }
     }
     {
       name: otbn
@@ -6136,208 +6138,6 @@
   memory:
   [
     {
-      name: ram_main
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: infra
-      reset_connections:
-      {
-        rst_ni: sys
-      }
-      type: ram_1p_scr
-      base_addr: 0x10000000
-      size: 0x20000
-      byte_write: "true"
-      integ_width: 7
-      exec: "1"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: ram_main
-          width: 1
-          default: ""
-          end_idx: -1
-          top_signame: ram_main_tl
-          index: -1
-        }
-        {
-          struct: sram_scr
-          package: sram_ctrl_pkg
-          type: req_rsp
-          name: sram_scr
-          act: rsp
-          inst_name: ram_main
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_main_sram_scr
-          index: -1
-        }
-        {
-          struct: sram_scr_init
-          package: sram_ctrl_pkg
-          type: req_rsp
-          name: sram_scr_init
-          act: rsp
-          inst_name: ram_main
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_main_sram_scr_init
-          index: -1
-        }
-        {
-          struct: tl_instr_en
-          package: tlul_pkg
-          type: uni
-          name: en_ifetch
-          act: rcv
-          inst_name: ram_main
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_main_en_ifetch
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          type: uni
-          name: intg_error
-          act: req
-          inst_name: ram_main
-          width: 1
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ram_main_intg_error
-          index: -1
-        }
-        {
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          name: cfg
-          act: rcv
-          inst_name: ram_main
-          width: 1
-          default: ""
-          top_signame: ast_ram_1p_cfg
-          index: -1
-        }
-      ]
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_infra
-      }
-      domain: "0"
-    }
-    {
-      name: ram_ret_aon
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: infra
-      reset_connections:
-      {
-        rst_ni: sys_io_div4
-      }
-      domain: Aon
-      type: ram_1p_scr
-      base_addr: 0x40600000
-      size: 0x1000
-      byte_write: "true"
-      integ_width: 7
-      exec: "0"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          end_idx: -1
-          top_signame: ram_ret_aon_tl
-          index: -1
-        }
-        {
-          struct: sram_scr
-          package: sram_ctrl_pkg
-          type: req_rsp
-          name: sram_scr
-          act: rsp
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_ret_aon_sram_scr
-          index: -1
-        }
-        {
-          struct: sram_scr_init
-          package: sram_ctrl_pkg
-          type: req_rsp
-          name: sram_scr_init
-          act: rsp
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_ret_aon_sram_scr_init
-          index: -1
-        }
-        {
-          struct: tl_instr_en
-          package: tlul_pkg
-          type: uni
-          name: en_ifetch
-          act: rcv
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          top_signame: sram_ctrl_ret_aon_en_ifetch
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          type: uni
-          name: intg_error
-          act: req
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ram_ret_aon_intg_error
-          index: -1
-        }
-        {
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          name: cfg
-          act: rcv
-          inst_name: ram_ret_aon
-          width: 1
-          default: ""
-          top_signame: ast_ram_1p_cfg
-          index: -1
-        }
-      ]
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_infra
-      }
-    }
-    {
       name: eflash
       clock_srcs:
       {
@@ -6571,8 +6371,8 @@
       ast.ram_1p_cfg:
       [
         otbn.ram_cfg
-        ram_main.cfg
-        ram_ret_aon.cfg
+        sram_ctrl_main.cfg
+        sram_ctrl_ret_aon.cfg
         rv_core_ibex.ram_cfg
       ]
       ast.ram_2p_cfg:
@@ -6642,38 +6442,6 @@
       flash_ctrl.rma_seed:
       [
         lc_ctrl.lc_flash_rma_seed
-      ]
-      sram_ctrl_main.sram_scr:
-      [
-        ram_main.sram_scr
-      ]
-      sram_ctrl_main.sram_scr_init:
-      [
-        ram_main.sram_scr_init
-      ]
-      sram_ctrl_ret_aon.sram_scr:
-      [
-        ram_ret_aon.sram_scr
-      ]
-      sram_ctrl_ret_aon.sram_scr_init:
-      [
-        ram_ret_aon.sram_scr_init
-      ]
-      sram_ctrl_main.en_ifetch:
-      [
-        ram_main.en_ifetch
-      ]
-      sram_ctrl_ret_aon.en_ifetch:
-      [
-        ram_ret_aon.en_ifetch
-      ]
-      ram_main.intg_error:
-      [
-        sram_ctrl_main.intg_error
-      ]
-      ram_ret_aon.intg_error:
-      [
-        sram_ctrl_ret_aon.intg_error
       ]
       otp_ctrl.sram_otp_key:
       [
@@ -6945,10 +6713,6 @@
       [
         main.tl_rom_ctrl__regs
       ]
-      ram_main.tl:
-      [
-        main.tl_ram_main
-      ]
       eflash.tl:
       [
         main.tl_eflash
@@ -7009,9 +6773,13 @@
       [
         main.tl_rv_core_ibex__cfg
       ]
-      sram_ctrl_main.tl:
+      sram_ctrl_main.regs_tl:
       [
-        main.tl_sram_ctrl_main
+        main.tl_sram_ctrl_main__regs
+      ]
+      sram_ctrl_main.ram_tl:
+      [
+        main.tl_sram_ctrl_main__ram
       ]
       uart0.tl:
       [
@@ -7089,10 +6857,6 @@
       [
         peri.tl_pinmux_aon
       ]
-      ram_ret_aon.tl:
-      [
-        peri.tl_ram_ret_aon
-      ]
       otp_ctrl.core_tl:
       [
         peri.tl_otp_ctrl__core
@@ -7113,9 +6877,13 @@
       [
         peri.tl_alert_handler
       ]
-      sram_ctrl_ret_aon.tl:
+      sram_ctrl_ret_aon.regs_tl:
       [
-        peri.tl_sram_ctrl_ret_aon
+        peri.tl_sram_ctrl_ret_aon__regs
+      ]
+      sram_ctrl_ret_aon.ram_tl:
+      [
+        peri.tl_sram_ctrl_ret_aon__ram
       ]
       aon_timer_aon.tl:
       [
@@ -7215,7 +6983,7 @@
         [
           rom_ctrl.rom
           rv_dm.rom
-          ram_main
+          sram_ctrl_main.ram
           eflash
         ]
         rv_core_ibex.cored:
@@ -7224,7 +6992,7 @@
           rom_ctrl.regs
           rv_dm.rom
           rv_dm.regs
-          ram_main
+          sram_ctrl_main.ram
           eflash
           peri
           flash_ctrl.core
@@ -7239,7 +7007,7 @@
           otbn
           keymgr
           kmac
-          sram_ctrl_main
+          sram_ctrl_main.regs
           rv_core_ibex.cfg
         ]
         rv_dm.sba:
@@ -7247,7 +7015,7 @@
           rom_ctrl.rom
           rom_ctrl.regs
           rv_dm.regs
-          ram_main
+          sram_ctrl_main.ram
           eflash
           peri
           flash_ctrl.core
@@ -7262,7 +7030,7 @@
           otbn
           keymgr
           kmac
-          sram_ctrl_main
+          sram_ctrl_main.regs
           rv_core_ibex.cfg
         ]
       }
@@ -7367,24 +7135,6 @@
             {
               base_addr: 0x411e0000
               size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: ram_main
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          pipeline: "false"
-          inst_type: ram_1p_scr
-          addr_range:
-          [
-            {
-              base_addr: 0x10000000
-              size_byte: 0x20000
             }
           ]
           xbar: false
@@ -7661,7 +7411,7 @@
           pipeline: "true"
         }
         {
-          name: sram_ctrl_main
+          name: sram_ctrl_main.regs
           type: device
           clock: clk_main_i
           reset: rst_main_ni
@@ -7672,6 +7422,24 @@
             {
               base_addr: 0x411c0000
               size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: sram_ctrl_main.ram
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: "false"
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x10000000
+              size_byte: 0x20000
             }
           ]
           xbar: false
@@ -7768,18 +7536,6 @@
           inst_name: main
           default: ""
           top_signame: rom_ctrl_regs_tl
-          index: -1
-        }
-        {
-          name: tl_ram_main
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: ram_main_tl
           index: -1
         }
         {
@@ -7964,7 +7720,7 @@
           index: -1
         }
         {
-          name: tl_sram_ctrl_main
+          name: tl_sram_ctrl_main__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -7972,7 +7728,19 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: sram_ctrl_main_tl
+          top_signame: sram_ctrl_main_regs_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_main__ram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: sram_ctrl_main_ram_tl
           index: -1
         }
       ]
@@ -8016,14 +7784,14 @@
           rstmgr_aon
           clkmgr_aon
           pinmux_aon
-          ram_ret_aon
           otp_ctrl.core
           otp_ctrl.prim
           lc_ctrl
           sensor_ctrl_aon
           alert_handler
           ast
-          sram_ctrl_ret_aon
+          sram_ctrl_ret_aon.ram
+          sram_ctrl_ret_aon.regs
           aon_timer_aon
           adc_ctrl_aon
           sysrst_ctrl_aon
@@ -8386,24 +8154,6 @@
           pipeline_byp: "true"
         }
         {
-          name: ram_ret_aon
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: ram_1p_scr
-          addr_range:
-          [
-            {
-              base_addr: 0x40600000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
           name: otp_ctrl.core
           type: device
           clock: clk_peri_i
@@ -8494,7 +8244,7 @@
           pipeline_byp: "true"
         }
         {
-          name: sram_ctrl_ret_aon
+          name: sram_ctrl_ret_aon.regs
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -8504,6 +8254,24 @@
           [
             {
               base_addr: 0x40500000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: sram_ctrl_ret_aon.ram
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40600000
               size_byte: 0x1000
             }
           ]
@@ -8829,18 +8597,6 @@
           index: -1
         }
         {
-          name: tl_ram_ret_aon
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: ram_ret_aon_tl
-          index: -1
-        }
-        {
           name: tl_otp_ctrl__core
           struct: tl
           package: tlul_pkg
@@ -8901,7 +8657,7 @@
           index: -1
         }
         {
-          name: tl_sram_ctrl_ret_aon
+          name: tl_sram_ctrl_ret_aon__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -8909,7 +8665,19 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: sram_ctrl_ret_aon_tl
+          top_signame: sram_ctrl_ret_aon_regs_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_ret_aon__ram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: sram_ctrl_ret_aon_ram_tl
           index: -1
         }
         {
@@ -12888,14 +12656,7 @@
       module_name: sensor_ctrl_aon
     }
     {
-      name: sram_ctrl_ret_aon_fatal_intg_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_ret_aon
-    }
-    {
-      name: sram_ctrl_ret_aon_fatal_parity_error
+      name: sram_ctrl_ret_aon_fatal_bus_integ_error
       width: 1
       type: alert
       async: "1"
@@ -13021,14 +12782,7 @@
       module_name: edn1
     }
     {
-      name: sram_ctrl_main_fatal_intg_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_main
-    }
-    {
-      name: sram_ctrl_main_fatal_parity_error
+      name: sram_ctrl_main_fatal_bus_integ_error
       width: 1
       type: alert
       async: "1"
@@ -15138,29 +14892,15 @@
         index: 1
       }
       {
-        name: sram_scr
-        struct: sram_scr
-        package: sram_ctrl_pkg
-        type: req_rsp
-        act: req
+        name: cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
         width: 1
         default: "'0"
         inst_name: sram_ctrl_ret_aon
-        end_idx: -1
-        top_signame: sram_ctrl_ret_aon_sram_scr
-        index: -1
-      }
-      {
-        name: sram_scr_init
-        struct: sram_scr_init
-        package: sram_ctrl_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        default: "'0"
-        inst_name: sram_ctrl_ret_aon
-        end_idx: -1
-        top_signame: sram_ctrl_ret_aon_sram_scr_init
+        top_signame: ast_ram_1p_cfg
         index: -1
       }
       {
@@ -15200,33 +14940,7 @@
         index: -1
       }
       {
-        name: en_ifetch
-        struct: tl_instr_en
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: sram_ctrl_ret_aon
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: sram_ctrl_ret_aon_en_ifetch
-        index: -1
-      }
-      {
-        name: intg_error
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: sram_ctrl_ret_aon
-        default: ""
-        package: ""
-        top_signame: ram_ret_aon_intg_error
-        index: -1
-      }
-      {
-        name: tl
+        name: regs_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -15235,7 +14949,20 @@
         inst_name: sram_ctrl_ret_aon
         default: ""
         end_idx: -1
-        top_signame: sram_ctrl_ret_aon_tl
+        top_signame: sram_ctrl_ret_aon_regs_tl
+        index: -1
+      }
+      {
+        name: ram_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_ret_aon
+        default: ""
+        end_idx: -1
+        top_signame: sram_ctrl_ret_aon_ram_tl
         index: -1
       }
       {
@@ -16162,29 +15889,15 @@
         index: 0
       }
       {
-        name: sram_scr
-        struct: sram_scr
-        package: sram_ctrl_pkg
-        type: req_rsp
-        act: req
+        name: cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
         width: 1
         default: "'0"
         inst_name: sram_ctrl_main
-        end_idx: -1
-        top_signame: sram_ctrl_main_sram_scr
-        index: -1
-      }
-      {
-        name: sram_scr_init
-        struct: sram_scr_init
-        package: sram_ctrl_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        default: "'0"
-        inst_name: sram_ctrl_main
-        end_idx: -1
-        top_signame: sram_ctrl_main_sram_scr_init
+        top_signame: ast_ram_1p_cfg
         index: -1
       }
       {
@@ -16224,33 +15937,7 @@
         index: -1
       }
       {
-        name: en_ifetch
-        struct: tl_instr_en
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: sram_ctrl_main
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: sram_ctrl_main_en_ifetch
-        index: -1
-      }
-      {
-        name: intg_error
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: sram_ctrl_main
-        default: ""
-        package: ""
-        top_signame: ram_main_intg_error
-        index: -1
-      }
-      {
-        name: tl
+        name: regs_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -16259,7 +15946,20 @@
         inst_name: sram_ctrl_main
         default: ""
         end_idx: -1
-        top_signame: sram_ctrl_main_tl
+        top_signame: sram_ctrl_main_regs_tl
+        index: -1
+      }
+      {
+        name: ram_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_main
+        default: ""
+        end_idx: -1
+        top_signame: sram_ctrl_main_ram_tl
         index: -1
       }
       {
@@ -16661,156 +16361,6 @@
         index: -1
       }
       {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: ram_main
-        width: 1
-        default: ""
-        end_idx: -1
-        top_signame: ram_main_tl
-        index: -1
-      }
-      {
-        struct: sram_scr
-        package: sram_ctrl_pkg
-        type: req_rsp
-        name: sram_scr
-        act: rsp
-        inst_name: ram_main
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_main_sram_scr
-        index: -1
-      }
-      {
-        struct: sram_scr_init
-        package: sram_ctrl_pkg
-        type: req_rsp
-        name: sram_scr_init
-        act: rsp
-        inst_name: ram_main
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_main_sram_scr_init
-        index: -1
-      }
-      {
-        struct: tl_instr_en
-        package: tlul_pkg
-        type: uni
-        name: en_ifetch
-        act: rcv
-        inst_name: ram_main
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_main_en_ifetch
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        type: uni
-        name: intg_error
-        act: req
-        inst_name: ram_main
-        width: 1
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ram_main_intg_error
-        index: -1
-      }
-      {
-        struct: ram_1p_cfg
-        package: prim_ram_1p_pkg
-        type: uni
-        name: cfg
-        act: rcv
-        inst_name: ram_main
-        width: 1
-        default: ""
-        top_signame: ast_ram_1p_cfg
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        end_idx: -1
-        top_signame: ram_ret_aon_tl
-        index: -1
-      }
-      {
-        struct: sram_scr
-        package: sram_ctrl_pkg
-        type: req_rsp
-        name: sram_scr
-        act: rsp
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_ret_aon_sram_scr
-        index: -1
-      }
-      {
-        struct: sram_scr_init
-        package: sram_ctrl_pkg
-        type: req_rsp
-        name: sram_scr_init
-        act: rsp
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_ret_aon_sram_scr_init
-        index: -1
-      }
-      {
-        struct: tl_instr_en
-        package: tlul_pkg
-        type: uni
-        name: en_ifetch
-        act: rcv
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        top_signame: sram_ctrl_ret_aon_en_ifetch
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        type: uni
-        name: intg_error
-        act: req
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ram_ret_aon_intg_error
-        index: -1
-      }
-      {
-        struct: ram_1p_cfg
-        package: prim_ram_1p_pkg
-        type: uni
-        name: cfg
-        act: rcv
-        inst_name: ram_ret_aon
-        width: 1
-        default: ""
-        top_signame: ast_ram_1p_cfg
-        index: -1
-      }
-      {
         struct: flash
         type: req_rsp
         name: flash_ctrl
@@ -17006,18 +16556,6 @@
         index: -1
       }
       {
-        name: tl_ram_main
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: ram_main_tl
-        index: -1
-      }
-      {
         name: tl_eflash
         struct: tl
         package: tlul_pkg
@@ -17199,7 +16737,7 @@
         index: -1
       }
       {
-        name: tl_sram_ctrl_main
+        name: tl_sram_ctrl_main__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17207,7 +16745,19 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: sram_ctrl_main_tl
+        top_signame: sram_ctrl_main_regs_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_main__ram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: sram_ctrl_main_ram_tl
         index: -1
       }
       {
@@ -17451,18 +17001,6 @@
         index: -1
       }
       {
-        name: tl_ram_ret_aon
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: ram_ret_aon_tl
-        index: -1
-      }
-      {
         name: tl_otp_ctrl__core
         struct: tl
         package: tlul_pkg
@@ -17523,7 +17061,7 @@
         index: -1
       }
       {
-        name: tl_sram_ctrl_ret_aon
+        name: tl_sram_ctrl_ret_aon__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17531,7 +17069,19 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: sram_ctrl_ret_aon_tl
+        top_signame: sram_ctrl_ret_aon_regs_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_ret_aon__ram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: sram_ctrl_ret_aon_ram_tl
         index: -1
       }
       {
@@ -18382,138 +17932,6 @@
         act: rcv
         suffix: ""
         default: lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_req
-        signame: sram_ctrl_main_sram_scr_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_rsp
-        signame: sram_ctrl_main_sram_scr_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_init_req
-        signame: sram_ctrl_main_sram_scr_init_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_init_rsp
-        signame: sram_ctrl_main_sram_scr_init_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_req
-        signame: sram_ctrl_ret_aon_sram_scr_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_rsp
-        signame: sram_ctrl_ret_aon_sram_scr_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_init_req
-        signame: sram_ctrl_ret_aon_sram_scr_init_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: sram_ctrl_pkg
-        struct: sram_scr_init_rsp
-        signame: sram_ctrl_ret_aon_sram_scr_init_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
-        package: tlul_pkg
-        struct: tl_instr_en
-        signame: sram_ctrl_main_en_ifetch
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: tlul_pkg::TL_INSTR_EN_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_instr_en
-        signame: sram_ctrl_ret_aon_en_ifetch
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: tlul_pkg::TL_INSTR_EN_DEFAULT
-      }
-      {
-        package: ""
-        struct: logic
-        signame: ram_main_intg_error
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: ram_ret_aon_intg_error
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
       }
       {
         package: otp_ctrl_pkg
@@ -19387,28 +18805,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: ram_main_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: ram_main_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: eflash_tl_req
         width: 1
         type: req_rsp
@@ -19739,7 +19135,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: sram_ctrl_main_tl_req
+        signame: sram_ctrl_main_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -19750,7 +19146,29 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: sram_ctrl_main_tl_rsp
+        signame: sram_ctrl_main_regs_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sram_ctrl_main_ram_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_main_ram_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20179,28 +19597,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: ram_ret_aon_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: ram_ret_aon_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: otp_ctrl_core_tl_req
         width: 1
         type: req_rsp
@@ -20311,7 +19707,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: sram_ctrl_ret_aon_tl_req
+        signame: sram_ctrl_ret_aon_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20322,7 +19718,29 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: sram_ctrl_ret_aon_tl_rsp
+        signame: sram_ctrl_ret_aon_regs_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sram_ctrl_ret_aon_ram_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_ret_aon_ram_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -95,6 +95,7 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
                     .en_ifetch(en_ifetch));
       end
     end
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask : body
 
 endclass : sram_ctrl_smoke_vseq

@@ -414,7 +414,8 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
       mem_n_bits = w.validbits
       mem_size = w.items
 %>\
-      ${mem_name} = ${gen_dv.mcname(esc_if_name, w)}::type_id::create("${mem_name}");
+      ${mem_name} =
+          ${gen_dv.mcname(esc_if_name, w)}::type_id::create("${mem_name}");
       ${mem_name}.configure(.parent(this));
       default_map.add_mem(.mem(${mem_name}),
                           .offset(${mem_offset}),

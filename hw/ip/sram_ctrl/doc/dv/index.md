@@ -68,11 +68,12 @@ typedef enum bit {
   SramCtrlInit        = 1
 } sram_ctrl_e;
 
-typedef enum bit [1:0] {
+typedef enum bit [2:0] {
   SramCtrlError           = 0,
   SramCtrlEscalated       = 1,
   SramCtrlScrKeyValid     = 2,
-  SramCtrlScrKeySeedValid = 3
+  SramCtrlScrKeySeedValid = 3,
+  SramCtrlInitDone        = 4
 } sram_ctrl_status_e;
 ```
 ### TL_agent
