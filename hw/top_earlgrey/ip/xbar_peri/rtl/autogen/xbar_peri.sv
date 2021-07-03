@@ -26,14 +26,14 @@
 //     -> rstmgr_aon
 //     -> clkmgr_aon
 //     -> pinmux_aon
-//     -> ram_ret_aon
 //     -> otp_ctrl.core
 //     -> otp_ctrl.prim
 //     -> lc_ctrl
 //     -> sensor_ctrl_aon
 //     -> alert_handler
 //     -> ast
-//     -> sram_ctrl_ret_aon
+//     -> sram_ctrl_ret_aon.ram
+//     -> sram_ctrl_ret_aon.regs
 //     -> aon_timer_aon
 //     -> adc_ctrl_aon
 //     -> sysrst_ctrl_aon
@@ -86,8 +86,6 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
   output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
   input  tlul_pkg::tl_d2h_t tl_pinmux_aon_i,
-  output tlul_pkg::tl_h2d_t tl_ram_ret_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_ram_ret_aon_i,
   output tlul_pkg::tl_h2d_t tl_otp_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_otp_ctrl__core_i,
   output tlul_pkg::tl_h2d_t tl_otp_ctrl__prim_o,
@@ -98,8 +96,10 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_sensor_ctrl_aon_i,
   output tlul_pkg::tl_h2d_t tl_alert_handler_o,
   input  tlul_pkg::tl_d2h_t tl_alert_handler_i,
-  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret_aon__regs_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon__regs_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret_aon__ram_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon__ram_i,
   output tlul_pkg::tl_h2d_t tl_aon_timer_aon_o,
   input  tlul_pkg::tl_d2h_t tl_aon_timer_aon_i,
   output tlul_pkg::tl_h2d_t tl_sysrst_ctrl_aon_o,
@@ -186,29 +186,29 @@ module xbar_peri (
   assign tl_pinmux_aon_o = tl_s1n_31_ds_h2d[17];
   assign tl_s1n_31_ds_d2h[17] = tl_pinmux_aon_i;
 
-  assign tl_ram_ret_aon_o = tl_s1n_31_ds_h2d[18];
-  assign tl_s1n_31_ds_d2h[18] = tl_ram_ret_aon_i;
+  assign tl_otp_ctrl__core_o = tl_s1n_31_ds_h2d[18];
+  assign tl_s1n_31_ds_d2h[18] = tl_otp_ctrl__core_i;
 
-  assign tl_otp_ctrl__core_o = tl_s1n_31_ds_h2d[19];
-  assign tl_s1n_31_ds_d2h[19] = tl_otp_ctrl__core_i;
+  assign tl_otp_ctrl__prim_o = tl_s1n_31_ds_h2d[19];
+  assign tl_s1n_31_ds_d2h[19] = tl_otp_ctrl__prim_i;
 
-  assign tl_otp_ctrl__prim_o = tl_s1n_31_ds_h2d[20];
-  assign tl_s1n_31_ds_d2h[20] = tl_otp_ctrl__prim_i;
+  assign tl_lc_ctrl_o = tl_s1n_31_ds_h2d[20];
+  assign tl_s1n_31_ds_d2h[20] = tl_lc_ctrl_i;
 
-  assign tl_lc_ctrl_o = tl_s1n_31_ds_h2d[21];
-  assign tl_s1n_31_ds_d2h[21] = tl_lc_ctrl_i;
+  assign tl_sensor_ctrl_aon_o = tl_s1n_31_ds_h2d[21];
+  assign tl_s1n_31_ds_d2h[21] = tl_sensor_ctrl_aon_i;
 
-  assign tl_sensor_ctrl_aon_o = tl_s1n_31_ds_h2d[22];
-  assign tl_s1n_31_ds_d2h[22] = tl_sensor_ctrl_aon_i;
+  assign tl_alert_handler_o = tl_s1n_31_ds_h2d[22];
+  assign tl_s1n_31_ds_d2h[22] = tl_alert_handler_i;
 
-  assign tl_alert_handler_o = tl_s1n_31_ds_h2d[23];
-  assign tl_s1n_31_ds_d2h[23] = tl_alert_handler_i;
+  assign tl_ast_o = tl_s1n_31_ds_h2d[23];
+  assign tl_s1n_31_ds_d2h[23] = tl_ast_i;
 
-  assign tl_ast_o = tl_s1n_31_ds_h2d[24];
-  assign tl_s1n_31_ds_d2h[24] = tl_ast_i;
+  assign tl_sram_ctrl_ret_aon__ram_o = tl_s1n_31_ds_h2d[24];
+  assign tl_s1n_31_ds_d2h[24] = tl_sram_ctrl_ret_aon__ram_i;
 
-  assign tl_sram_ctrl_ret_aon_o = tl_s1n_31_ds_h2d[25];
-  assign tl_s1n_31_ds_d2h[25] = tl_sram_ctrl_ret_aon_i;
+  assign tl_sram_ctrl_ret_aon__regs_o = tl_s1n_31_ds_h2d[25];
+  assign tl_s1n_31_ds_d2h[25] = tl_sram_ctrl_ret_aon__regs_i;
 
   assign tl_aon_timer_aon_o = tl_s1n_31_ds_h2d[26];
   assign tl_s1n_31_ds_d2h[26] = tl_aon_timer_aon_i;
@@ -301,35 +301,35 @@ module xbar_peri (
       dev_sel_s1n_31 = 5'd17;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
+                  ~(ADDR_MASK_OTP_CTRL__CORE)) == ADDR_SPACE_OTP_CTRL__CORE) begin
       dev_sel_s1n_31 = 5'd18;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_OTP_CTRL__CORE)) == ADDR_SPACE_OTP_CTRL__CORE) begin
+                  ~(ADDR_MASK_OTP_CTRL__PRIM)) == ADDR_SPACE_OTP_CTRL__PRIM) begin
       dev_sel_s1n_31 = 5'd19;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_OTP_CTRL__PRIM)) == ADDR_SPACE_OTP_CTRL__PRIM) begin
+                  ~(ADDR_MASK_LC_CTRL)) == ADDR_SPACE_LC_CTRL) begin
       dev_sel_s1n_31 = 5'd20;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_LC_CTRL)) == ADDR_SPACE_LC_CTRL) begin
+                  ~(ADDR_MASK_SENSOR_CTRL_AON)) == ADDR_SPACE_SENSOR_CTRL_AON) begin
       dev_sel_s1n_31 = 5'd21;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_SENSOR_CTRL_AON)) == ADDR_SPACE_SENSOR_CTRL_AON) begin
+                  ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
       dev_sel_s1n_31 = 5'd22;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
+                  ~(ADDR_MASK_AST)) == ADDR_SPACE_AST) begin
       dev_sel_s1n_31 = 5'd23;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_AST)) == ADDR_SPACE_AST) begin
+                  ~(ADDR_MASK_SRAM_CTRL_RET_AON__RAM)) == ADDR_SPACE_SRAM_CTRL_RET_AON__RAM) begin
       dev_sel_s1n_31 = 5'd24;
 
     end else if ((tl_s1n_31_us_h2d.a_address &
-                  ~(ADDR_MASK_SRAM_CTRL_RET_AON)) == ADDR_SPACE_SRAM_CTRL_RET_AON) begin
+                  ~(ADDR_MASK_SRAM_CTRL_RET_AON__REGS)) == ADDR_SPACE_SRAM_CTRL_RET_AON__REGS) begin
       dev_sel_s1n_31 = 5'd25;
 
     end else if ((tl_s1n_31_us_h2d.a_address &

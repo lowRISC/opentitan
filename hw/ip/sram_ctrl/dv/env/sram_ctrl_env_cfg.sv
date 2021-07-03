@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
+class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_regs_reg_block));
 
   `uvm_object_utils_begin(sram_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -26,10 +26,6 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
     list_of_alerts = sram_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_intg_error";
     super.initialize(csr_base_addr);
-
-    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtl");
-    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtlCommitted");
-    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtlShadow");
 
     // Build KDI cfg object and configure
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");

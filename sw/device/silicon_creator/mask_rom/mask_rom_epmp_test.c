@@ -266,7 +266,7 @@ static void test_noexec_rodata(void) {
  * Test that the .data section in RAM is not executable.
  */
 static void test_noexec_rwdata(void) {
-  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR)) {
+  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR)) {
     base_printf("failed to enable main RAM execution\n");
   }
   CHECK(is_in_address_space(illegal_ins_rw, TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
@@ -305,7 +305,7 @@ static void test_noexec_eflash(void) {
 static void test_noexec_mmio(void) {
   // Note: execution of retention RAM always fails regardless of controller or
   // ePMP configurations however it doesn't hurt to check it anyway.
-  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR)) {
+  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR)) {
     base_printf("failed to enable retention RAM execution\n");
   }
   uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;

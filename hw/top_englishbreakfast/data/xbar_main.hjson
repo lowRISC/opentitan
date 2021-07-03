@@ -53,12 +53,6 @@
       reset:     "rst_main_ni",
       pipeline:  "false",
     },
-    { name:      "ram_main",
-      type:      "device",
-      clock:     "clk_main_i",
-      reset:     "rst_main_ni",
-      pipeline:  "false",
-    },
     { name:      "eflash",
       type:      "device",
       clock:     "clk_main_i",
@@ -102,7 +96,13 @@
       inst_type: "rv_plic",
       pipeline_byp: "false"
     },
-    { name:      "sram_ctrl_main",
+    { name:      "sram_ctrl_main.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipeline: "false"
+    },
+    { name:      "sram_ctrl_main.ram",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -110,14 +110,16 @@
     },
   ],
   connections: {
-    corei:  ["rom_ctrl.rom", "rv_dm.rom", "ram_main", "eflash"],
+    corei:  ["rom_ctrl.rom", "rv_dm.rom", "sram_ctrl_main.ram", "eflash"],
     cored:  [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs", "ram_main", "eflash", "peri",
-      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main"
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs", "eflash", "peri",
+      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main.ram",
+      "sram_ctrl_main.regs"
     ],
     rv_dm.sba: [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "ram_main", "eflash", "peri",
-      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main"
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "eflash", "peri",
+      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main.ram",
+      "sram_ctrl_main.regs"
     ],
   },
 }

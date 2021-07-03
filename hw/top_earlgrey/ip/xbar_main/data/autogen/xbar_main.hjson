@@ -57,12 +57,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_ram_main"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_eflash"
       act:    "req"
       package: "tlul_pkg"
@@ -153,7 +147,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sram_ctrl_main"
+      name:   "tl_sram_ctrl_main__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_main__ram"
       act:    "req"
       package: "tlul_pkg"
     }

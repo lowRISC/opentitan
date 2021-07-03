@@ -218,7 +218,7 @@ package sram_scrambler_pkg;
   // After that, the XORed data neeeds to them be passed through the S&P network one byte at a time.
   //
   // TODO: We currently do not support data size of >64bits.
-  function automatic state_t encrypt_sram_data(logic data[], int data_width,
+  function automatic state_t encrypt_sram_data(logic data[], int data_width, bit byte_diff,
                                                logic addr[], int addr_width,
                                                logic key[], logic nonce[]);
     // Generate the keystream
@@ -226,10 +226,10 @@ package sram_scrambler_pkg;
     logic data_enc[] = new[data_width];
     logic byte_to_enc[] = new[8];
     logic enc_byte[] = new[8];
-    logic zero_key[] = new[8];
+    logic zero_key[] = new[data_width];
 
     // the key used for byte diffusion is all-zero.
-    for (int i = 0; i < zero_key.size(); i++) begin
+    for (int i = 0; i < data_width; i++) begin
       zero_key[i] = '0;
     end
 
@@ -243,27 +243,31 @@ package sram_scrambler_pkg;
     end
 
     // pass each byte of the encoded result through the subst/perm network
-    for (int i = 0; i < data_width / 8; i++) begin
-      byte_to_enc = data_enc[i*8 +: 8];
-      enc_byte = sp_encrypt(byte_to_enc, 8, zero_key);
-      data_enc[i*8 +: 8] = enc_byte;
+    if (byte_diff) begin
+      for (int i = 0; i < data_width / 8; i++) begin
+        byte_to_enc = data_enc[i*8 +: 8];
+        enc_byte = sp_encrypt(byte_to_enc, 8, zero_key);
+        data_enc[i*8 +: 8] = enc_byte;
+      end
+    // pass the entire word through the subst/perm network
+    end else begin
+      data_enc = sp_encrypt(data_enc, data_width, zero_key);
     end
-
     return data_enc;
 
   endfunction : encrypt_sram_data
 
-  function automatic state_t decrypt_sram_data(logic data[], int data_width,
+  function automatic state_t decrypt_sram_data(logic data[], int data_width, bit byte_diff,
                                                logic addr[], int addr_width,
                                                logic key[], logic nonce[]);
     logic keystream[] = new[SRAM_BLOCK_WIDTH];
     logic data_dec[] = new[data_width];
     logic byte_to_dec[] = new[8];
     logic dec_byte[] = new[8];
-    logic zero_key[] = new[8];
+    logic zero_key[] = new[data_width];
 
     // the key used for byte diffusion is all-zero.
-    for (int i = 0; i < zero_key.size(); i++) begin
+    for (int i = 0; i < data_width; i++) begin
       zero_key[i] = '0;
     end
 
@@ -271,10 +275,15 @@ package sram_scrambler_pkg;
     keystream = gen_keystream(addr, addr_width, key, nonce);
 
     // pass each byte of the data through the subst/perm network
-    for (int i = 0; i < data_width / 8; i++) begin
-      byte_to_dec = data[i*8 +: 8];
-      dec_byte = sp_decrypt(byte_to_dec, 8, zero_key);
-      data_dec[i*8 +: 8] = dec_byte;
+    if (byte_diff) begin
+      for (int i = 0; i < data_width / 8; i++) begin
+        byte_to_dec = data[i*8 +: 8];
+        dec_byte = sp_decrypt(byte_to_dec, 8, zero_key);
+        data_dec[i*8 +: 8] = dec_byte;
+      end
+    // pass the entire word through the subst/perm network
+    end else begin
+      data_dec = sp_decrypt(data, data_width, zero_key);
     end
 
     // XOR result data with the keystream

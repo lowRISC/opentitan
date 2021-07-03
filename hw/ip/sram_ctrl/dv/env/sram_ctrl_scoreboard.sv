@@ -4,7 +4,7 @@
 
 class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     .CFG_T(sram_ctrl_env_cfg),
-    .RAL_T(sram_ctrl_reg_block),
+    .RAL_T(sram_ctrl_regs_reg_block),
     .COV_T(sram_ctrl_env_cov)
   );
   `uvm_component_utils(sram_ctrl_scoreboard)
@@ -282,6 +282,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       wait(!cfg.under_reset);
       @(posedge in_init);
+      // clear the init done signal
+      exp_status[SramCtrlInitDone] = 0;
       // initialization process only starts once the corresponding key request finishes
       @(negedge in_key_req);
       // wait 1 cycle for initialization to start
@@ -291,6 +293,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space
       cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
+      // if we are in escalated state, scr_key_seed_valid will always stay low. otherwise
+      // we can set the init done flag here.
+      exp_status[SramCtrlInitDone] = status_lc_esc ? 0 : 1;
       in_init = 0;
       `uvm_info(`gfn, "dropped in_init", UVM_HIGH)
     end
@@ -321,6 +326,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
       exp_status[SramCtrlEscalated]       = 1;
       exp_status[SramCtrlScrKeySeedValid] = 0;
+      exp_status[SramCtrlInitDone]        = 0;
 
       // escalation resets the key and nonce back to defaults
       key   = sram_ctrl_pkg::RndCnstSramKeyDefault;
@@ -611,8 +617,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
             in_raw_hazard = 1;
             held_trans = data_trans;
             waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
-            held_data = cfg.mem_bkdr_util_h.sram_encrypt_read32(waddr, data_trans.key,
-                                                                data_trans.nonce);
+            held_data = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(waddr, data_trans.key,
+                                                                      data_trans.nonce);
 
             // sample covergroup
             if (cfg.en_cov) begin
@@ -724,7 +730,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     bit_mask = expand_bit_mask(t.mask);
 
     // backdoor read the mem
-    exp_data = cfg.mem_bkdr_util_h.sram_encrypt_read32(word_addr, t.key, t.nonce);
+    exp_data = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(word_addr, t.key, t.nonce);
     `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_HIGH)
 
     exp_masked_data = exp_data & bit_mask;

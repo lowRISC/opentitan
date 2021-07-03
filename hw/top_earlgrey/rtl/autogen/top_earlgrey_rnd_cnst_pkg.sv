@@ -69,8 +69,13 @@ package top_earlgrey_rnd_cnst_pkg;
     128'hFE8F673FBA39BB679D58AA91AEB2691C
   };
 
+  // Compile-time random bits for initial LFSR seed
+  parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlRetAonLfsrSeed = {
+    32'hAE24AF11
+  };
+
   // Compile-time random permutation for LFSR output
-  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonSramLfsrPerm = {
+  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonLfsrPerm = {
     160'h25DA5869DC96FE354F1DA55E9123CB082C63B331
   };
 
@@ -229,8 +234,13 @@ package top_earlgrey_rnd_cnst_pkg;
     128'h5120695530D16A94098E681252F1C774
   };
 
+  // Compile-time random bits for initial LFSR seed
+  parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMainLfsrSeed = {
+    32'hAA9FBE94
+  };
+
   // Compile-time random permutation for LFSR output
-  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainSramLfsrPerm = {
+  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainLfsrPerm = {
     160'h2DC87CEDCBA3E48E7595FC2221A74051ACDC4FC1
   };
 

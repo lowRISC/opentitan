@@ -201,7 +201,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[69] = {
+    top_earlgrey_alert_for_peripheral[67] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
@@ -243,8 +243,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdSensorCtrlAonRecovOt3] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovOt4] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovOt5] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
-  [kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError] = kTopEarlgreyAlertPeripheralSramCtrlRetAon,
-  [kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlRetAon,
+  [kTopEarlgreyAlertIdSramCtrlRetAonFatalBusIntegError] = kTopEarlgreyAlertPeripheralSramCtrlRetAon,
   [kTopEarlgreyAlertIdFlashCtrlRecovErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
   [kTopEarlgreyAlertIdFlashCtrlRecovMpErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
   [kTopEarlgreyAlertIdFlashCtrlRecovEccErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
@@ -262,8 +261,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdEntropySrcFatalAlert] = kTopEarlgreyAlertPeripheralEntropySrc,
   [kTopEarlgreyAlertIdEdn0FatalAlert] = kTopEarlgreyAlertPeripheralEdn0,
   [kTopEarlgreyAlertIdEdn1FatalAlert] = kTopEarlgreyAlertPeripheralEdn1,
-  [kTopEarlgreyAlertIdSramCtrlMainFatalIntgError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
-  [kTopEarlgreyAlertIdSramCtrlMainFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
+  [kTopEarlgreyAlertIdSramCtrlMainFatalBusIntegError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
   [kTopEarlgreyAlertIdOtbnFatal] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdOtbnRecov] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdRomCtrlFatal] = kTopEarlgreyAlertPeripheralRomCtrl,

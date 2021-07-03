@@ -243,10 +243,6 @@ module otbn
     .key_i       (otbn_imem_scramble_key),
     .nonce_i     (otbn_imem_scramble_nonce),
 
-    .init_seed_i ('0),
-    .init_req_i  (1'b0),
-    .init_ack_o  (),
-
     .req_i       (imem_req),
     // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
     // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
@@ -262,7 +258,6 @@ module otbn
     .rvalid_o    (imem_rvalid),
     .raddr_o     (),
     .rerror_o    (),
-    .intg_error_o(),
     .cfg_i       (ram_cfg_i)
   );
 
@@ -412,10 +407,6 @@ module otbn
     .key_i       (otbn_dmem_scramble_key),
     .nonce_i     (otbn_dmem_scramble_nonce),
 
-    .init_seed_i ('0),
-    .init_req_i  (1'b0),
-    .init_ack_o  (),
-
     .req_i       (dmem_req),
     // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
     // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
@@ -430,7 +421,6 @@ module otbn
     .rdata_o     (dmem_rdata),
     .rvalid_o    (dmem_rvalid),
     .raddr_o     (),
-    .intg_error_o(),
     .rerror_o    (),
     .cfg_i       (ram_cfg_i)
   );

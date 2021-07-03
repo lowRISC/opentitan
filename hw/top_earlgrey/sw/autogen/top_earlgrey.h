@@ -530,22 +530,40 @@ extern "C" {
 #define TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for sram_ctrl_ret_aon in top earlgrey.
+ * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR 0x40500000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0x40500000u
 
 /**
- * Peripheral size for sram_ctrl_ret_aon in top earlgrey.
+ * Peripheral size for regs device on sram_ctrl_ret_aon in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR and
- * `TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x40600000u
+
+/**
+ * Peripheral size for ram device on sram_ctrl_ret_aon in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for core device on flash_ctrl in top earlgrey.
@@ -782,22 +800,40 @@ extern "C" {
 #define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for sram_ctrl_main in top earlgrey.
+ * Peripheral base address for regs device on sram_ctrl_main in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR 0x411C0000u
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR 0x411C0000u
 
 /**
- * Peripheral size for sram_ctrl_main in top earlgrey.
+ * Peripheral size for regs device on sram_ctrl_main in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR and
- * `TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
+
+/**
+ * Peripheral size for ram device on sram_ctrl_main in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.
@@ -873,14 +909,14 @@ extern "C" {
 
 
 /**
- * Memory base address for ram_main in top earlgrey.
+ * Memory base address for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_MAIN_BASE_ADDR 0x10000000u
+#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
 
 /**
- * Memory size for ram_main in top earlgrey.
+ * Memory size for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000u
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
 
 /**
  * Memory base address for ram_ret_aon in top earlgrey.
@@ -893,14 +929,14 @@ extern "C" {
 #define TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES 0x1000u
 
 /**
- * Memory base address for eflash in top earlgrey.
+ * Memory base address for ram_main in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
+#define TOP_EARLGREY_RAM_MAIN_BASE_ADDR 0x10000000u
 
 /**
- * Memory size for eflash in top earlgrey.
+ * Memory size for ram_main in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
+#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000u
 
 /**
  * Memory base address for rom in top earlgrey.
@@ -1260,35 +1296,33 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt3 = 38, /**< sensor_ctrl_aon_recov_ot3 */
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt4 = 39, /**< sensor_ctrl_aon_recov_ot4 */
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt5 = 40, /**< sensor_ctrl_aon_recov_ot5 */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError = 41, /**< sram_ctrl_ret_aon_fatal_intg_error */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError = 42, /**< sram_ctrl_ret_aon_fatal_parity_error */
-  kTopEarlgreyAlertIdFlashCtrlRecovErr = 43, /**< flash_ctrl_recov_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 44, /**< flash_ctrl_recov_mp_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 45, /**< flash_ctrl_recov_ecc_err */
-  kTopEarlgreyAlertIdFlashCtrlFatalIntgErr = 46, /**< flash_ctrl_fatal_intg_err */
-  kTopEarlgreyAlertIdRvDmFatalFault = 47, /**< rv_dm_fatal_fault */
-  kTopEarlgreyAlertIdRvPlicFatalFault = 48, /**< rv_plic_fatal_fault */
-  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 49, /**< aes_recov_ctrl_update_err */
-  kTopEarlgreyAlertIdAesFatalFault = 50, /**< aes_fatal_fault */
-  kTopEarlgreyAlertIdHmacFatalFault = 51, /**< hmac_fatal_fault */
-  kTopEarlgreyAlertIdKmacFatalFault = 52, /**< kmac_fatal_fault */
-  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 53, /**< keymgr_fatal_fault_err */
-  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 54, /**< keymgr_recov_operation_err */
-  kTopEarlgreyAlertIdCsrngFatalAlert = 55, /**< csrng_fatal_alert */
-  kTopEarlgreyAlertIdEntropySrcRecovAlert = 56, /**< entropy_src_recov_alert */
-  kTopEarlgreyAlertIdEntropySrcFatalAlert = 57, /**< entropy_src_fatal_alert */
-  kTopEarlgreyAlertIdEdn0FatalAlert = 58, /**< edn0_fatal_alert */
-  kTopEarlgreyAlertIdEdn1FatalAlert = 59, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 60, /**< sram_ctrl_main_fatal_intg_error */
-  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 61, /**< sram_ctrl_main_fatal_parity_error */
-  kTopEarlgreyAlertIdOtbnFatal = 62, /**< otbn_fatal */
-  kTopEarlgreyAlertIdOtbnRecov = 63, /**< otbn_recov */
-  kTopEarlgreyAlertIdRomCtrlFatal = 64, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 65, /**< rv_core_ibex_fatal_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 66, /**< rv_core_ibex_recov_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 67, /**< rv_core_ibex_fatal_hw_err */
-  kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 68, /**< rv_core_ibex_recov_hw_err */
-  kTopEarlgreyAlertIdLast = 68, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalBusIntegError = 41, /**< sram_ctrl_ret_aon_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdFlashCtrlRecovErr = 42, /**< flash_ctrl_recov_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 43, /**< flash_ctrl_recov_mp_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 44, /**< flash_ctrl_recov_ecc_err */
+  kTopEarlgreyAlertIdFlashCtrlFatalIntgErr = 45, /**< flash_ctrl_fatal_intg_err */
+  kTopEarlgreyAlertIdRvDmFatalFault = 46, /**< rv_dm_fatal_fault */
+  kTopEarlgreyAlertIdRvPlicFatalFault = 47, /**< rv_plic_fatal_fault */
+  kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 48, /**< aes_recov_ctrl_update_err */
+  kTopEarlgreyAlertIdAesFatalFault = 49, /**< aes_fatal_fault */
+  kTopEarlgreyAlertIdHmacFatalFault = 50, /**< hmac_fatal_fault */
+  kTopEarlgreyAlertIdKmacFatalFault = 51, /**< kmac_fatal_fault */
+  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 52, /**< keymgr_fatal_fault_err */
+  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 53, /**< keymgr_recov_operation_err */
+  kTopEarlgreyAlertIdCsrngFatalAlert = 54, /**< csrng_fatal_alert */
+  kTopEarlgreyAlertIdEntropySrcRecovAlert = 55, /**< entropy_src_recov_alert */
+  kTopEarlgreyAlertIdEntropySrcFatalAlert = 56, /**< entropy_src_fatal_alert */
+  kTopEarlgreyAlertIdEdn0FatalAlert = 57, /**< edn0_fatal_alert */
+  kTopEarlgreyAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
+  kTopEarlgreyAlertIdSramCtrlMainFatalBusIntegError = 59, /**< sram_ctrl_main_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdOtbnFatal = 60, /**< otbn_fatal */
+  kTopEarlgreyAlertIdOtbnRecov = 61, /**< otbn_recov */
+  kTopEarlgreyAlertIdRomCtrlFatal = 62, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 63, /**< rv_core_ibex_fatal_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 64, /**< rv_core_ibex_recov_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
+  kTopEarlgreyAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1298,7 +1332,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[69];
+    top_earlgrey_alert_for_peripheral[67];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

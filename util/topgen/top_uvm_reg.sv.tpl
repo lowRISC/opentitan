@@ -129,7 +129,8 @@ ${make_ral_pkg_window_class(dv_base_prefix, 'chip', window)}
 
         hpr_indent = (len(if_inst) + len('.set_hdl_path_root(')) * ' '
 %>\
-      ${if_inst} = ${bcname(esc_if_name)}::type_id::create("${if_inst}");
+      ${if_inst} =
+          ${bcname(esc_if_name)}::type_id::create("${if_inst}");
       ${if_inst}.configure(.parent(this));
       ${if_inst}.build(.base_addr(base_addr + ${base_addr_txt}), .csr_excl(csr_excl));
       ${if_inst}.set_hdl_path_root("${hdl_path}",

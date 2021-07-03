@@ -46,8 +46,7 @@ parameter string LIST_OF_ALERTS[] = {
   "sensor_ctrl_aon_recov_ot3",
   "sensor_ctrl_aon_recov_ot4",
   "sensor_ctrl_aon_recov_ot5",
-  "sram_ctrl_ret_aon_fatal_intg_error",
-  "sram_ctrl_ret_aon_fatal_parity_error",
+  "sram_ctrl_ret_aon_fatal_bus_integ_error",
   "flash_ctrl_recov_err",
   "flash_ctrl_recov_mp_err",
   "flash_ctrl_recov_ecc_err",
@@ -65,8 +64,7 @@ parameter string LIST_OF_ALERTS[] = {
   "entropy_src_fatal_alert",
   "edn0_fatal_alert",
   "edn1_fatal_alert",
-  "sram_ctrl_main_fatal_intg_error",
-  "sram_ctrl_main_fatal_parity_error",
+  "sram_ctrl_main_fatal_bus_integ_error",
   "otbn_fatal",
   "otbn_recov",
   "rom_ctrl_fatal",
@@ -76,4 +74,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 69;
+parameter uint NUM_ALERTS = 67;
