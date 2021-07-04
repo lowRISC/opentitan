@@ -116,12 +116,12 @@ module spi_host_data_cdc #(
     assign tx_data_be_async_fifo = tx_data_be;
     assign tx_valid_async_fifo   = tx_valid_i;
     assign tx_ready_o            = tx_ready_async_fifo;
-    assign tx_depth_total        = byte'(tx_depth_async_fifo);
+    assign tx_depth_total        = 8'(tx_depth_async_fifo);
 
   end else begin : gen_tx_async_plus_sync
 
     logic [TxSyncDepthW-1:0] tx_depth_sync_fifo;
-    assign tx_depth_total = byte'(tx_depth_async_fifo) + byte'(tx_depth_sync_fifo);
+    assign tx_depth_total = 8'(tx_depth_async_fifo) + 8'(tx_depth_sync_fifo);
 
     prim_fifo_sync #(
       .Width(36),
@@ -187,12 +187,12 @@ module spi_host_data_cdc #(
     assign rx_data_unordered   = rx_data_async_fifo;
     assign rx_valid_o          = rx_valid_async_fifo;
     assign rx_ready_async_fifo = rx_ready_i;
-    assign rx_depth_total      = byte'(rx_depth_async_fifo);
+    assign rx_depth_total      = 8'(rx_depth_async_fifo);
 
   end else begin : gen_rx_async_plus_sync
 
     logic [RxSyncDepthW-1:0] rx_depth_sync_fifo;
-    assign rx_depth_total = byte'(rx_depth_async_fifo) + byte'(rx_depth_sync_fifo);
+    assign rx_depth_total = 8'(rx_depth_async_fifo) + 8'(rx_depth_sync_fifo);
 
     prim_fifo_sync #(
       .Width(32),
