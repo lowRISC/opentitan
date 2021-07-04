@@ -179,8 +179,6 @@ module spi_host
   logic test_dir_inval;
   logic test_speed_inval;
 
-  logic [CSW-1:0] csid;
-
   assign test_csid_inval  = (reg2hw.csid.q >= NumCS);
 
   always_comb begin
@@ -219,25 +217,35 @@ module spi_host
     endcase
   end
 
-  assign csid             = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
   assign error_csid_inval = command_valid & ~command_busy &
                             test_csid_inval;
   assign error_cmd_inval  = command_valid & ~command_busy &
                             (test_speed_inval | test_dir_inval);
 
-  assign command.configopts.clkdiv    = reg2hw.configopts[csid].clkdiv.q;
-  assign command.configopts.csnidle   = reg2hw.configopts[csid].csnidle.q;
-  assign command.configopts.csnlead   = reg2hw.configopts[csid].csnlead.q;
-  assign command.configopts.csntrail  = reg2hw.configopts[csid].csntrail.q;
-  assign command.configopts.full_cyc  = reg2hw.configopts[csid].fullcyc.q;
-  assign command.configopts.cpha      = reg2hw.configopts[csid].cpha.q;
-  assign command.configopts.cpol      = reg2hw.configopts[csid].cpol.q;
+  spi_host_reg_pkg::spi_host_reg2hw_configopts_mreg_t configopts;
 
-  assign command.segment.len          = reg2hw.command.len.q;
-  assign command.segment.csaat        = reg2hw.command.csaat.q;
-  assign command.segment.speed        = reg2hw.command.speed.q;
+  if (NumCS == 1) begin : gen_single_device
+    assign configopts   = reg2hw.configopts[0];
+    assign command.csid = '0;
+  end else begin : gen_multiple_devices
+    logic [CSW-1:0] csid;
+    assign csid         = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
+    assign configopts   = reg2hw.configopts[csid];
+    assign command.csid = csid;
+  end : gen_multiple_devices
 
-  assign command.csid                 = csid[CSW-1:0];
+  assign command.configopts.clkdiv   = configopts.clkdiv.q;
+  assign command.configopts.csnidle  = configopts.csnidle.q;
+  assign command.configopts.csnlead  = configopts.csnlead.q;
+  assign command.configopts.csntrail = configopts.csntrail.q;
+  assign command.configopts.full_cyc = configopts.fullcyc.q;
+  assign command.configopts.cpha     = configopts.cpha.q;
+  assign command.configopts.cpol     = configopts.cpol.q;
+
+  assign command.segment.len         = reg2hw.command.len.q;
+  assign command.segment.csaat       = reg2hw.command.csaat.q;
+  assign command.segment.speed       = reg2hw.command.speed.q;
+
 
   logic [3:0] cmd_qes;
 
