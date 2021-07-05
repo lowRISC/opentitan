@@ -27,8 +27,10 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error", "fatal_check_error"};
-  parameter uint NUM_ALERTS              = 2;
+  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error",
+                                            "fatal_check_error",
+                                            "fatal_bus_integ_error"};
+  parameter uint NUM_ALERTS              = 3;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
@@ -88,13 +90,16 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_ROUND          = 31;
 
   parameter uint NUM_SRAM_EDN_REQ = 12;
-  parameter uint NUM_OTBN_EDN_REQ = 16;
+  parameter uint NUM_OTBN_EDN_REQ = 10;
+
+  parameter uint NUM_UNBUFF_PARTS = 2;
+  parameter uint NUM_BUFF_PARTS   = 5;
 
   parameter uint CHK_TIMEOUT_CYC = 40;
 
   // When fatal alert triggered, all partitions go to error state and status will be
-  // set to 1, except LC partition index.
-  parameter bit [8:0] FATAL_EXP_STATUS = 9'b1_1011_1111;
+  // set to 1.
+  parameter bit [8:0] FATAL_EXP_STATUS = '1;
 
   // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
@@ -123,7 +128,7 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [4:0] {
+  typedef enum bit [5:0] {
     OtpCreatorSwCfgErrIdx,
     OtpOwnerSwCfgErrIdx,
     OtpHwCfgErrIdx,
@@ -137,8 +142,10 @@ package otp_ctrl_env_pkg;
     OtpLfsrFsmErrIdx,
     OtpScramblingFsmErrIdx,
     OtpDerivKeyFsmErrIdx,
+    OtpBusIntegErrorIdx,
     OtpDaiIdleIdx,
-    OtpCheckPendingIdx
+    OtpCheckPendingIdx,
+    OtpStatusFieldSize
   } otp_status_e;
 
   typedef enum bit [2:0] {
@@ -226,6 +233,46 @@ package otp_ctrl_env_pkg;
     if ($urandom_range(0, 1)) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(randomize_lc_tx_t_val,
           randomize_lc_tx_t_val inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off};, , "otp_ctrl_env_pkg")
+    end
+  endfunction
+
+  function automatic bit [TL_DW-1:0] normalize_dai_addr(bit [TL_DW-1:0] dai_addr);
+    normalize_dai_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 3 :
+                                                                        dai_addr >> 2 << 2;
+  endfunction
+
+  // When secret data write into otp_array, it will be scrambled
+  function automatic bit [SCRAMBLE_DATA_SIZE-1:0] scramble_data(
+    bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
+    int part_idx
+  );
+
+    int secret_idx = part_idx - Secret0Idx;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
+                                                   RndCnstKey[secret_idx],
+                                                   SCRAMBLE_KEY_SIZE == 80,
+                                                   output_data);
+    scramble_data = output_data[NUM_ROUND-1];
+  endfunction
+
+  // When secret data read out of otp_array, it will be descrambled
+  function automatic bit [SCRAMBLE_DATA_SIZE-1:0] descramble_data(
+    bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
+    int part_idx
+  );
+
+    int secret_idx = part_idx - Secret0Idx;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] padded_input;
+
+    padded_input[NUM_ROUND-1] = input_data;
+    crypto_dpi_present_pkg::sv_dpi_present_decrypt(padded_input,
+                                                   RndCnstKey[secret_idx],
+                                                   SCRAMBLE_KEY_SIZE == 80,
+                                                   output_data);
+    descramble_data = output_data[NUM_ROUND-1];
+    if (input_data != 0) begin
     end
   endfunction
 

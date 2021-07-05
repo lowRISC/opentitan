@@ -578,6 +578,9 @@ ast_alert u_alert_ot3 (
   .alert_req_o ( alert_req_o.alerts[Ot3Sel] )
 ); // of u_alert_ot2
 
+// temporary assignment
+assign alert_req_o.alerts[Ot4Sel] = '{p: 1'b0, n: 1'b1};
+assign alert_req_o.alerts[Ot5Sel] = '{p: 1'b0, n: 1'b1};
 
 ///////////////////////////////////////
 // AST Registers (Always ON)

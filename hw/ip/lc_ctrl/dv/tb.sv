@@ -28,8 +28,8 @@ module tb;
   pins_if      #(LcPwrIfWidth) pwr_lc_if(pwr_lc);
   tl_if        tl_if(.clk(clk), .rst_n(rst_n));
   lc_ctrl_if   lc_ctrl_if(.clk(clk), .rst_n(rst_n));
-  alert_esc_if esc_wipe_secrets_if(.clk(clk), .rst_n(rst_n));
-  alert_esc_if esc_scrap_state_if(.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_scrap_state1_if(.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_scrap_state0_if(.clk(clk), .rst_n(rst_n));
   jtag_if      jtag_if();
   push_pull_if #(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                otp_prog_if(.clk(clk), .rst_n(rst_n));
@@ -88,10 +88,10 @@ module tb;
     .jtag_o                     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
     .scanmode_i                 (1'b0     ),
 
-    .esc_wipe_secrets_tx_i      (esc_wipe_secrets_if.esc_tx),
-    .esc_wipe_secrets_rx_o      (esc_wipe_secrets_if.esc_rx),
-    .esc_scrap_state_tx_i       (esc_scrap_state_if.esc_tx),
-    .esc_scrap_state_rx_o       (esc_scrap_state_if.esc_rx),
+    .esc_scrap_state0_tx_i      (esc_scrap_state0_if.esc_tx),
+    .esc_scrap_state0_rx_o      (esc_scrap_state0_if.esc_rx),
+    .esc_scrap_state1_tx_i      (esc_scrap_state1_if.esc_tx),
+    .esc_scrap_state1_rx_o      (esc_scrap_state1_if.esc_rx),
 
     .pwr_lc_i                   (pwr_lc[LcPwrInitReq]),
     .pwr_lc_o                   (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
@@ -142,10 +142,10 @@ module tb;
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent.m_jtag_agent*", "vif",
                                          jtag_if);
 
-    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_wipe_secrets_agent*", "vif",
-                                              esc_wipe_secrets_if);
-    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_scrap_state_agent*", "vif",
-                                              esc_scrap_state_if);
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_scrap_state1_agent*", "vif",
+                                              esc_scrap_state1_if);
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_scrap_state0_agent*", "vif",
+                                              esc_scrap_state0_if);
 
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::

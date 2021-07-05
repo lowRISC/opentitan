@@ -11,6 +11,16 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   tl_agent_cfg        m_tl_agent_cfg;
   rand tl_agent_cfg   m_tl_agent_cfgs[string];
 
+  // Override this alert name at `initialize` if it's not as below
+  string              tl_intg_alert_name = "fatal_fault";
+  // If there is a bit in an "alert cause" register that will be set by a corrupt bus access, this
+  // should be the name of that field (with syntax "reg.field"). Used by cip_base_scoreboard to
+  // update the relevant field in the RAL model if it sees an error.
+  string              tl_intg_alert_field = "";
+  // Enables TL integrity generation & checking with *_user bits.
+  // Assume ALL TL agents have integrity check enabled or disabled altogether.
+  bit                 en_tl_intg_gen = 1;
+
   alert_esc_agent_cfg m_alert_agent_cfg[string];
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 

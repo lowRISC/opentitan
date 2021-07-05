@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 { name: "pattgen",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -27,7 +27,7 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the PATTGEN unit.
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
       '''
     }
   ],

@@ -306,6 +306,7 @@ package flash_ctrl_pkg;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
     logic                 intg_err;
+    lc_ctrl_pkg::lc_tx_t  flash_disable;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -336,7 +337,8 @@ package flash_ctrl_pkg;
     alert_trig:    1'b0,
     alert_ack:     1'b0,
     jtag_req:      '0,
-    intg_err:      '0
+    intg_err:      '0,
+    flash_disable:       lc_ctrl_pkg::Off
   };
 
   // memory to flash controller

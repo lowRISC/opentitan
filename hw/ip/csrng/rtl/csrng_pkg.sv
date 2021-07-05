@@ -44,4 +44,7 @@ package csrng_pkg;
     GENU = 3'h7
   } acmd_e;
 
+  parameter int CsKeymgrDivWidth = 384;
+  typedef logic [CsKeymgrDivWidth-1:0] cs_keymgr_div_t;
+
 endpackage : csrng_pkg

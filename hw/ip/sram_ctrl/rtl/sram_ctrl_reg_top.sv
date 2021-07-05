@@ -104,35 +104,29 @@ module sram_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
   logic alert_test_fatal_intg_error_wd;
-  logic alert_test_fatal_intg_error_we;
   logic alert_test_fatal_parity_error_wd;
-  logic alert_test_fatal_parity_error_we;
+  logic status_re;
   logic status_error_qs;
-  logic status_error_re;
   logic status_escalated_qs;
-  logic status_escalated_re;
   logic status_scr_key_valid_qs;
-  logic status_scr_key_valid_re;
   logic status_scr_key_seed_valid_qs;
-  logic status_scr_key_seed_valid_re;
+  logic exec_regwen_we;
   logic exec_regwen_qs;
   logic exec_regwen_wd;
-  logic exec_regwen_we;
+  logic exec_we;
   logic [2:0] exec_qs;
   logic [2:0] exec_wd;
-  logic exec_we;
+  logic ctrl_regwen_we;
   logic ctrl_regwen_qs;
   logic ctrl_regwen_wd;
-  logic ctrl_regwen_we;
+  logic ctrl_re;
+  logic ctrl_we;
   logic ctrl_renew_scr_key_qs;
   logic ctrl_renew_scr_key_wd;
-  logic ctrl_renew_scr_key_we;
-  logic ctrl_renew_scr_key_re;
   logic ctrl_init_qs;
   logic ctrl_init_wd;
-  logic ctrl_init_we;
-  logic ctrl_init_re;
   logic [31:0] error_address_qs;
 
   // Register instances
@@ -143,7 +137,7 @@ module sram_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_intg_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_intg_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_intg_error_wd),
     .d      ('0),
     .qre    (),
@@ -158,7 +152,7 @@ module sram_ctrl_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_parity_error (
     .re     (1'b0),
-    .we     (alert_test_fatal_parity_error_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_parity_error_wd),
     .d      ('0),
     .qre    (),
@@ -174,7 +168,7 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_error (
-    .re     (status_error_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.error.d),
@@ -189,7 +183,7 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_escalated (
-    .re     (status_escalated_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.escalated.d),
@@ -204,7 +198,7 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_scr_key_valid (
-    .re     (status_scr_key_valid_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.scr_key_valid.d),
@@ -219,7 +213,7 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_scr_key_seed_valid (
-    .re     (status_scr_key_seed_valid_re),
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.status.scr_key_seed_valid.d),
@@ -317,8 +311,8 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_renew_scr_key (
-    .re     (ctrl_renew_scr_key_re),
-    .we     (ctrl_renew_scr_key_we & ctrl_regwen_qs),
+    .re     (ctrl_re),
+    .we     (ctrl_we & ctrl_regwen_qs),
     .wd     (ctrl_renew_scr_key_wd),
     .d      (hw2reg.ctrl.renew_scr_key.d),
     .qre    (),
@@ -332,8 +326,8 @@ module sram_ctrl_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_init (
-    .re     (ctrl_init_re),
-    .we     (ctrl_init_we & ctrl_regwen_qs),
+    .re     (ctrl_re),
+    .we     (ctrl_we & ctrl_regwen_qs),
     .wd     (ctrl_init_wd),
     .d      (hw2reg.ctrl.init.d),
     .qre    (),
@@ -397,37 +391,27 @@ module sram_ctrl_reg_top (
                (addr_hit[5] & (|(SRAM_CTRL_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(SRAM_CTRL_PERMIT[6] & ~reg_be)))));
   end
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign alert_test_fatal_intg_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_intg_error_wd = reg_wdata[0];
 
-  assign alert_test_fatal_parity_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_parity_error_wd = reg_wdata[1];
-
-  assign status_error_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_escalated_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_scr_key_valid_re = addr_hit[1] & reg_re & !reg_error;
-
-  assign status_scr_key_seed_valid_re = addr_hit[1] & reg_re & !reg_error;
-
+  assign status_re = addr_hit[1] & reg_re & !reg_error;
   assign exec_regwen_we = addr_hit[2] & reg_we & !reg_error;
+
   assign exec_regwen_wd = reg_wdata[0];
-
   assign exec_we = addr_hit[3] & reg_we & !reg_error;
+
   assign exec_wd = reg_wdata[2:0];
-
   assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
+
   assign ctrl_regwen_wd = reg_wdata[0];
+  assign ctrl_re = addr_hit[5] & reg_re & !reg_error;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign ctrl_renew_scr_key_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_renew_scr_key_wd = reg_wdata[0];
-  assign ctrl_renew_scr_key_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign ctrl_init_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_init_wd = reg_wdata[1];
-  assign ctrl_init_re = addr_hit[5] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

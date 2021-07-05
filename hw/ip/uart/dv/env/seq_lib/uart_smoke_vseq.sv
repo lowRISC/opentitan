@@ -8,7 +8,7 @@ class uart_smoke_vseq extends uart_tx_rx_vseq;
   `uvm_object_utils(uart_smoke_vseq)
 
   constraint num_trans_c {
-    num_trans == 10;
+    num_trans == 2;
   }
 
   constraint num_tx_bytes_c {

@@ -30,6 +30,7 @@ module flash_ctrl
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t core_tl_i,
@@ -215,6 +216,9 @@ module flash_ctrl
   lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
+
+  // flash functional disable
+  lc_ctrl_pkg::lc_tx_t flash_disable;
 
   // synchronize enables into local domain
   prim_lc_sync #(
@@ -804,8 +808,6 @@ module flash_ctrl
   assign flash_phy_busy = flash_i.init_busy;
 
 
-
-
   // Interface to pwrmgr
   // flash is not idle as long as there is a stateful operation ongoing
   logic flash_idle_d;
@@ -870,6 +872,23 @@ module flash_ctrl
     );
   end
 
+  //////////////////////////////////////
+  // Flash Disable
+  //////////////////////////////////////
+  assign flash_disable = reg2hw.flash_disable.q ? lc_ctrl_pkg::On :
+                         fatal_intg_err         ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_escalation_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_escalate_en_i),
+    .lc_en_o(lc_escalate_en)
+  );
+
+  assign flash_o.flash_disable = flash_disable | lc_escalate_en;
 
   //////////////////////////////////////
   // Errors and Interrupts

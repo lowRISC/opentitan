@@ -84,32 +84,57 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     #1ps;
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    bit one_reset_deasserted;
+  virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      if (cfg.clk_rst_vifs.size > 0) begin
+      if (cfg.clk_rst_vifs.size() > 0) begin
         fork
           begin : isolation_fork
             foreach (cfg.clk_rst_vifs[i]) begin
               automatic string ral_name = i;
               fork
                 cfg.clk_rst_vifs[ral_name].apply_reset();
-                one_reset_deasserted = 1;
               join_none
             end
-            if (concurrent_deassert_resets) begin
-              wait(one_reset_deasserted);
-              disable fork;
-              foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-            end else begin
-              wait fork;
-            end
+            wait fork;
           end : isolation_fork
         join
       end else begin // no ral model and only has default clk_rst_vif
         cfg.clk_rst_vif.apply_reset();
       end
     end // if (kind == "HARD")
+  endtask
+
+  // Apply all resets in the DUT concurrently to generate a random in-test reset scenario.
+  //
+  // - Assert resets concurrently to make sure all resets are issued.
+  // - Deassert resets concurrently is a specific requirement of the `stress_all_with_rand_reset`
+  // sequence, which will randomly issue resets and terminate the parallel sequence once all DUT
+  // resets are deasserted. If DUT resets are deasserted at different time, the parallel sequence
+  // might send a transaction request to driver between different resets are deasserting. Then when
+  // `stress_all_with_rand_reset` sequence tries to terminate the parallel sequence, an UVM_ERROR
+  // will be thrown by the sequencer saying `task responsible for requesting a wait_for_grant has
+  // been killed`.
+  // In order to ensure all resets at least being asserted for one clock cycle, this task takes an
+  // optional input `reset_duration_ps` if the DUT has additional resets. The task uses this input
+  // to compute the minimal time required to keep all resets asserted.
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+
+    // Has one or more RAL models in DUT.
+    if (cfg.clk_rst_vifs.size() > 0) begin
+      foreach (cfg.clk_rst_vifs[i]) begin
+        cfg.clk_rst_vifs[i].drive_rst_pin(0);
+        reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vifs[i].clk_period_ps);
+      end
+      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+      foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+
+    // No RAL model and only has default clk_rst_vif.
+    end else begin
+      cfg.clk_rst_vif.drive_rst_pin(0);
+      reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vif.clk_period_ps);
+      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+      cfg.clk_rst_vif.drive_rst_pin(1);
+    end
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",
@@ -187,7 +212,11 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
       // run write-only sequence to randomize the csr values
       m_csr_write_seq = csr_write_seq::type_id::create("m_csr_write_seq");
-      m_csr_write_seq.models = cfg.ral_models;
+      // We have to assign this array in a loop because the element types aren't equivalent, so
+      // the array types aren't assignment compatible.
+      foreach (cfg.ral_models[i]) begin
+        m_csr_write_seq.models[i] = cfg.ral_models[i];
+      end
       m_csr_write_seq.external_checker = cfg.en_scb;
       m_csr_write_seq.en_rand_backdoor_write = 1'b1;
       m_csr_write_seq.start(null);
@@ -204,7 +233,11 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
     // create base csr seq and pass our ral
     m_csr_seq = csr_base_seq::type_id::create("m_csr_seq");
-    m_csr_seq.models = cfg.ral_models;
+    // We have to assign this array in a loop because the element types aren't equivalent, so
+    // the array types aren't assignment compatible.
+    foreach (cfg.ral_models[i])  begin
+      m_csr_seq.models[i] = cfg.ral_models[i];
+    end
     m_csr_seq.external_checker = cfg.en_scb;
     m_csr_seq.num_test_csrs = num_test_csrs;
     m_csr_seq.start(null);

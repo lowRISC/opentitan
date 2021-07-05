@@ -35,6 +35,10 @@ package spi_device_env_pkg;
     SramSpaceAvail
   } sram_avail_type_e;
 
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
   // SPI SRAM is 2kB
   parameter uint SRAM_OFFSET              = 'h1000;
   parameter uint SRAM_SIZE                = 4096; // 672 depth

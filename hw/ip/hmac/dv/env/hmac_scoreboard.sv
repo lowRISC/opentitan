@@ -37,7 +37,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     uvm_reg_addr_t  csr_addr        = ral.get_word_aligned_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       csr_name = csr.get_name();
@@ -121,7 +121,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             str_index = csr_name.substr(4,4);
             key[str_index.atoi()] = item.a_data;
           end
-          "wipe_secret", "intr_enable", "intr_state": begin
+          "wipe_secret", "intr_enable", "intr_state", "alert_test": begin
             // Do nothing
           end
           "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7",
@@ -204,7 +204,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         end
         "err_code": if (cfg.en_cov) cov.err_code_cg.sample(item.d_data);
         "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "cfg", "cmd",
-        "intr_enable", "intr_test", "wipe_secret", "msg_length_upper": begin
+        "intr_enable", "intr_test", "wipe_secret", "msg_length_upper", "alert_test": begin
           // Do nothing
         end
         default: begin

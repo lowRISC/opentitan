@@ -102,8 +102,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   logic lc_init;
   logic low_power_q, low_power_d;
 
-  assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
-                              pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
+  assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:OffDomainSelStart] == '0 &
+                              pwr_rst_i.rst_sys_src_n[PowerDomains-1:OffDomainSelStart] == '0;
 
   assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
                              pwr_rst_i.rst_sys_src_n == '0;
@@ -273,7 +273,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         end
       end
 
-
       FastPwrStateActive: begin
         // only in active state, allow processor to execute
         fetch_en_d = lc_ctrl_pkg::On;
@@ -302,7 +301,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           fall_through_o = 1'b1;
-          state_d = FastPwrStateActive;
+          state_d = FastPwrStateRomCheck;
         end else begin
           state_d = FastPwrStateNvmIdleChk;
         end
@@ -316,11 +315,12 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           abort_o = 1'b1;
-          state_d = FastPwrStateActive;
+          state_d = FastPwrStateRomCheck;
         end
       end
 
       FastPwrStateLowPowerPrep: begin
+        // reset cause is set only if main power domain will be turned off
         reset_cause_d = LowPwrEntry;
 
         // reset non-always-on domains if requested

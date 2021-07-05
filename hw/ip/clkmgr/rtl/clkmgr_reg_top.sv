@@ -104,18 +104,16 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic clk_enables_we;
   logic clk_enables_clk_fixed_peri_en_qs;
   logic clk_enables_clk_fixed_peri_en_wd;
-  logic clk_enables_clk_fixed_peri_en_we;
   logic clk_enables_clk_usb_48mhz_peri_en_qs;
   logic clk_enables_clk_usb_48mhz_peri_en_wd;
-  logic clk_enables_clk_usb_48mhz_peri_en_we;
+  logic clk_hints_we;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
-  logic clk_hints_clk_main_aes_hint_we;
   logic clk_hints_clk_main_hmac_hint_qs;
   logic clk_hints_clk_main_hmac_hint_wd;
-  logic clk_hints_clk_main_hmac_hint_we;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
 
@@ -132,7 +130,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_fixed_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_fixed_peri_en_wd),
 
     // from internal hardware
@@ -158,7 +156,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_enables_clk_usb_48mhz_peri_en_we),
+    .we     (clk_enables_we),
     .wd     (clk_enables_clk_usb_48mhz_peri_en_wd),
 
     // from internal hardware
@@ -186,7 +184,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_aes_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_aes_hint_wd),
 
     // from internal hardware
@@ -212,7 +210,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clk_hints_clk_main_hmac_hint_we),
+    .we     (clk_hints_we),
     .wd     (clk_hints_clk_main_hmac_hint_wd),
 
     // from internal hardware
@@ -301,17 +299,15 @@ module clkmgr_reg_top (
                (addr_hit[1] & (|(CLKMGR_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be)))));
   end
+  assign clk_enables_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign clk_enables_clk_fixed_peri_en_we = addr_hit[0] & reg_we & !reg_error;
   assign clk_enables_clk_fixed_peri_en_wd = reg_wdata[0];
 
-  assign clk_enables_clk_usb_48mhz_peri_en_we = addr_hit[0] & reg_we & !reg_error;
   assign clk_enables_clk_usb_48mhz_peri_en_wd = reg_wdata[1];
+  assign clk_hints_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign clk_hints_clk_main_aes_hint_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
-  assign clk_hints_clk_main_hmac_hint_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
 
   // Read data return

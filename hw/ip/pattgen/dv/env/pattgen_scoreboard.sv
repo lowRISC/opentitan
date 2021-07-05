@@ -56,7 +56,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
@@ -133,7 +133,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
-        "intr_enable": begin
+        "intr_enable", "alert_test": begin
           // no special handle is needed
         end
         "intr_state": begin
@@ -177,7 +177,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
         end
         "ctrl", "size", "intr_test", "intr_enable",
         "prediv_ch0", "data_ch0_0", "data_ch0_1",
-        "prediv_ch1", "data_ch1_0", "data_ch1_1": begin
+        "prediv_ch1", "data_ch1_0", "data_ch1_1", "alert_test": begin
           // no special handle is needed
         end
         default: begin

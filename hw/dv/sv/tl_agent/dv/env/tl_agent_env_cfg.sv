@@ -18,6 +18,10 @@ class tl_agent_env_cfg extends dv_base_env_cfg;
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    // no need to call super.initialize, set is_initialized to bypass the check of calling
+    // super.initialize
+    is_initialized = 1'b1;
+
     ral_model_names = {}; // no csr in tl_agent
     host_agent_cfg = tl_agent_cfg::type_id::create("host_agent_cfg");
     host_agent_cfg.max_outstanding_req = 1 << SourceWidth;

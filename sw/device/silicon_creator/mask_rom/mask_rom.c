@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
@@ -15,16 +16,56 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/shutdown.h"
+#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
 #include "sw/device/silicon_creator/mask_rom/romextimage.h"
-#include "sw/device/silicon_creator/mask_rom/sig_verify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void mask_rom_exception_handler(void) { wait_for_interrupt(); }
-void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
+static inline rom_error_t mask_rom_irq_error(void) {
+  uint32_t mcause;
+  CSR_READ(CSR_REG_MCAUSE, &mcause);
+  // Shuffle the mcause bits into the uppermost byte of the word and report
+  // the cause as kErrorInterrupt.
+  // Based on the ibex verilog, it appears that the most significant bit
+  // indicates whether the cause is an exception (0) or external interrupt (1),
+  // and the 5 least significant bits indicate which exception/interrupt.
+  //
+  // Preserve the MSB and shift the 7 LSBs into the upper byte.
+  // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
+  // as zero and those would be the next bits used should the number of
+  // interrupt causes increase).
+  mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
+  return kErrorInterrupt + mcause;
+}
 
-void mask_rom_boot(void) {
+void mask_rom_interrupt_handler(void) {
+  shutdown_finalize(mask_rom_irq_error());
+}
+
+// We only need a single handler for all mask ROM interrupts, but we want to
+// keep distinct symbols to make writing tests easier.  In the mask ROM,
+// alias all interrupt handler symbols to the single handler.
+void mask_rom_exception_handler(void)
+    __attribute__((alias("mask_rom_interrupt_handler")));
+
+void mask_rom_nmi_handler(void)
+    __attribute__((alias("mask_rom_interrupt_handler")));
+
+rom_error_t mask_rom_boot(void) {
+  // Initialize the shutdown policy according to lifecycle state.
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  shutdown_init(lc_state);
+
+  // Initiaize shadow copy of the ePMP register configuration.
+  epmp_state_t epmp;
+  mask_rom_epmp_state_init(&epmp);
+
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
 
@@ -36,17 +77,14 @@ void mask_rom_boot(void) {
   });
 
   // FIXME: what (if anything) should we print at startup?
-  base_printf("MaskROM\r\n");
+  base_printf("OpenTitan: \"version-tag\"\r\n");
+  base_printf("lc_state: %s\r\n", lifecycle_state_name[lc_state]);
 
   // boot_reason = read_boot_reason(); // Boot Policy Module
 
   // Clean Device State Part 2.
   // See "Cleaning Device State" Below.
   // clean_device_state_part_2(boot_reason); // Chip-Specific Startup Module
-
-  // Enable Memory Protection
-  // - PMP Initial Region (if not done in power on)
-  // enable_memory_protection();  // Lockdown Module
 
   // Chip-specific startup functionality (NOTE: we expect this portion of
   // initialization to be done in assembly before C runtime init.  Delete
@@ -71,12 +109,6 @@ void mask_rom_boot(void) {
   // for ( current_rom_ext_manifest in rom_ext_manifests_to_try(boot_policy) ) {
   // // Boot Policy Module
   while (true) {
-    // TODO: Should we load the entropy_reseed_interval from OTP?
-    const uint16_t reseed_interval = 0x100;
-    if (keymgr_init(reseed_interval) != kErrorOk) {
-      break;
-    }
-
     // Check ROM_EXT Manifest (2.c.ii)
     // **Open Q:** Integration with Secure Boot Hardware
     // - Header Format (ROM_EXT Manifest Module)
@@ -91,17 +123,13 @@ void mask_rom_boot(void) {
 
     const manifest_t *manifest;
     manifest_signed_region_t signed_region;
-    if (romextimage_manifest_get(kFlashSlotA, &manifest) != kErrorOk) {
-      break;
-    }
-    if (manifest_signed_region_get(manifest, &signed_region) != kErrorOk) {
-      break;
-    }
-    if (sigverify_rom_ext_signature_verify(
-            signed_region.start, signed_region.length, &manifest->signature,
-            manifest->modulus.data[0]) != kErrorOk) {
-      break;
-    }
+    const sigverify_rsa_key_t *key;
+    RETURN_IF_ERROR(romextimage_manifest_get(kFlashSlotA, &manifest));
+    RETURN_IF_ERROR(manifest_signed_region_get(manifest, &signed_region));
+    RETURN_IF_ERROR(sigverify_rsa_key_get(
+        sigverify_rsa_key_id_get(&manifest->modulus), &key));
+    RETURN_IF_ERROR(sigverify_rsa_verify(
+        signed_region.start, signed_region.length, &manifest->signature, key));
 
     //  // Manifest Failure (check Boot Policy)
     //  // **Open Q:** Does this need different logic to the check after
@@ -131,14 +159,9 @@ void mask_rom_boot(void) {
     // CreatorRootKey (2.c.iv)
     // - This is only allowed to be done if we have verified the signature on
     //   the current ROM_EXT.
-    // TODO(#5955): Switch to manifest in C struct format update this code to
-    // use the sw binding and max key version fields from the manifest.
-    uint32_t binding_value[8] = {0};
-    uint32_t max_key_version = 0x1;
-    if (keymgr_state_advance_to_creator(binding_value, max_key_version) !=
-        kErrorOk) {
-      break;
-    }
+    RETURN_IF_ERROR(keymgr_check_state(kKeymgrStateReset));
+    keymgr_set_next_stage_inputs(&manifest->binding_value,
+                                 manifest->max_key_version);
 
     // Lock down Peripherals based on descriptors in ROM_EXT manifest.
     // - This does not cover key-related lockdown, which is done in
@@ -150,22 +173,26 @@ void mask_rom_boot(void) {
     // **Open Q:** Do we need to prevent access to Mask ROM after final jump?
     // pmp_unlock_rom_ext(); // Hardened Jump Module.
 
-    if (keymgr_state_creator_check() != kErrorOk) {
-      // TODO(#6653): The keymgr lands in a disabled state with error code 0xe.
-      base_printf("ERROR keymgr: Failed to reach creator state.\n");
-    }
-
     // Transfer Execution to ROM_EXT (2.c.vi)
     // **Open Q:** Integration with Secure Boot Hardware
     // **Open Q:** Accumulated measurements to tie manifest to hardware config.
     // if (!final_jump_to_rom_ext(current_rom_ext_manifest)) { // Hardened Jump
     // Module
     if (true) {
+      // Unlock execution of ROM_EXT executable code (text) sections.
+      RETURN_IF_ERROR(epmp_state_check(&epmp));
+      epmp_region_t rom_ext_text;
+      RETURN_IF_ERROR(manifest_code_region_get(manifest, &rom_ext_text));
+      mask_rom_epmp_unlock_rom_ext_rx(&epmp, rom_ext_text);
+      RETURN_IF_ERROR(epmp_state_check(&epmp));
+
       // Jump to ROM_EXT entry point.
-      romextimage_entry_point *entry_point =
-          (romextimage_entry_point *)manifest_entry_point_address_get(manifest);
+      uintptr_t entry_point;
+      if (manifest_entry_point_get(manifest, &entry_point) != kErrorOk) {
+        break;
+      }
       base_printf("rom_ext_entry: %p\r\n", entry_point);
-      entry_point();
+      ((romextimage_entry_point *)entry_point)();
       // NOTE: never expecting a return, but if something were to go wrong
       // in the real `jump` implementation, we need to enter a failure case.
 
@@ -177,10 +204,10 @@ void mask_rom_boot(void) {
     }
   }
 
-  // Boot failed for all ROM_EXTs allowed by boot policy
-  // boot_failed(boot_policy); // Boot Policy Module
-  asm volatile("unimp");
-  while (true) {
-    wait_for_interrupt();
-  }
+  return kErrorMaskRomBootFailed;
+}
+
+void mask_rom_main(void) {
+  rom_error_t error = mask_rom_boot();
+  shutdown_finalize(error);
 }

@@ -104,172 +104,166 @@ module keymgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_qs;
   logic intr_state_wd;
-  logic intr_state_we;
+  logic intr_enable_we;
   logic intr_enable_qs;
   logic intr_enable_wd;
-  logic intr_enable_we;
-  logic intr_test_wd;
   logic intr_test_we;
+  logic intr_test_wd;
+  logic alert_test_we;
   logic alert_test_fatal_fault_err_wd;
-  logic alert_test_fatal_fault_err_we;
   logic alert_test_recov_operation_err_wd;
-  logic alert_test_recov_operation_err_we;
-  logic cfg_regwen_qs;
   logic cfg_regwen_re;
+  logic cfg_regwen_qs;
+  logic control_we;
   logic control_start_qs;
   logic control_start_wd;
-  logic control_start_we;
   logic [2:0] control_operation_qs;
   logic [2:0] control_operation_wd;
-  logic control_operation_we;
   logic [1:0] control_dest_sel_qs;
   logic [1:0] control_dest_sel_wd;
-  logic control_dest_sel_we;
+  logic sideload_clear_we;
   logic sideload_clear_qs;
   logic sideload_clear_wd;
-  logic sideload_clear_we;
+  logic reseed_interval_we;
   logic [15:0] reseed_interval_qs;
   logic [15:0] reseed_interval_wd;
-  logic reseed_interval_we;
+  logic sw_binding_regwen_re;
+  logic sw_binding_regwen_we;
   logic sw_binding_regwen_qs;
   logic sw_binding_regwen_wd;
-  logic sw_binding_regwen_we;
-  logic sw_binding_regwen_re;
+  logic sw_binding_0_we;
   logic [31:0] sw_binding_0_qs;
   logic [31:0] sw_binding_0_wd;
-  logic sw_binding_0_we;
+  logic sw_binding_1_we;
   logic [31:0] sw_binding_1_qs;
   logic [31:0] sw_binding_1_wd;
-  logic sw_binding_1_we;
+  logic sw_binding_2_we;
   logic [31:0] sw_binding_2_qs;
   logic [31:0] sw_binding_2_wd;
-  logic sw_binding_2_we;
+  logic sw_binding_3_we;
   logic [31:0] sw_binding_3_qs;
   logic [31:0] sw_binding_3_wd;
-  logic sw_binding_3_we;
+  logic sw_binding_4_we;
   logic [31:0] sw_binding_4_qs;
   logic [31:0] sw_binding_4_wd;
-  logic sw_binding_4_we;
+  logic sw_binding_5_we;
   logic [31:0] sw_binding_5_qs;
   logic [31:0] sw_binding_5_wd;
-  logic sw_binding_5_we;
+  logic sw_binding_6_we;
   logic [31:0] sw_binding_6_qs;
   logic [31:0] sw_binding_6_wd;
-  logic sw_binding_6_we;
+  logic sw_binding_7_we;
   logic [31:0] sw_binding_7_qs;
   logic [31:0] sw_binding_7_wd;
-  logic sw_binding_7_we;
+  logic salt_0_we;
   logic [31:0] salt_0_qs;
   logic [31:0] salt_0_wd;
-  logic salt_0_we;
+  logic salt_1_we;
   logic [31:0] salt_1_qs;
   logic [31:0] salt_1_wd;
-  logic salt_1_we;
+  logic salt_2_we;
   logic [31:0] salt_2_qs;
   logic [31:0] salt_2_wd;
-  logic salt_2_we;
+  logic salt_3_we;
   logic [31:0] salt_3_qs;
   logic [31:0] salt_3_wd;
-  logic salt_3_we;
+  logic salt_4_we;
   logic [31:0] salt_4_qs;
   logic [31:0] salt_4_wd;
-  logic salt_4_we;
+  logic salt_5_we;
   logic [31:0] salt_5_qs;
   logic [31:0] salt_5_wd;
-  logic salt_5_we;
+  logic salt_6_we;
   logic [31:0] salt_6_qs;
   logic [31:0] salt_6_wd;
-  logic salt_6_we;
+  logic salt_7_we;
   logic [31:0] salt_7_qs;
   logic [31:0] salt_7_wd;
-  logic salt_7_we;
+  logic key_version_we;
   logic [31:0] key_version_qs;
   logic [31:0] key_version_wd;
-  logic key_version_we;
+  logic max_creator_key_ver_regwen_we;
   logic max_creator_key_ver_regwen_qs;
   logic max_creator_key_ver_regwen_wd;
-  logic max_creator_key_ver_regwen_we;
+  logic max_creator_key_ver_we;
   logic [31:0] max_creator_key_ver_qs;
   logic [31:0] max_creator_key_ver_wd;
-  logic max_creator_key_ver_we;
+  logic max_owner_int_key_ver_regwen_we;
   logic max_owner_int_key_ver_regwen_qs;
   logic max_owner_int_key_ver_regwen_wd;
-  logic max_owner_int_key_ver_regwen_we;
+  logic max_owner_int_key_ver_we;
   logic [31:0] max_owner_int_key_ver_qs;
   logic [31:0] max_owner_int_key_ver_wd;
-  logic max_owner_int_key_ver_we;
+  logic max_owner_key_ver_regwen_we;
   logic max_owner_key_ver_regwen_qs;
   logic max_owner_key_ver_regwen_wd;
-  logic max_owner_key_ver_regwen_we;
+  logic max_owner_key_ver_we;
   logic [31:0] max_owner_key_ver_qs;
   logic [31:0] max_owner_key_ver_wd;
-  logic max_owner_key_ver_we;
+  logic sw_share0_output_0_re;
   logic [31:0] sw_share0_output_0_qs;
   logic [31:0] sw_share0_output_0_wd;
-  logic sw_share0_output_0_we;
+  logic sw_share0_output_1_re;
   logic [31:0] sw_share0_output_1_qs;
   logic [31:0] sw_share0_output_1_wd;
-  logic sw_share0_output_1_we;
+  logic sw_share0_output_2_re;
   logic [31:0] sw_share0_output_2_qs;
   logic [31:0] sw_share0_output_2_wd;
-  logic sw_share0_output_2_we;
+  logic sw_share0_output_3_re;
   logic [31:0] sw_share0_output_3_qs;
   logic [31:0] sw_share0_output_3_wd;
-  logic sw_share0_output_3_we;
+  logic sw_share0_output_4_re;
   logic [31:0] sw_share0_output_4_qs;
   logic [31:0] sw_share0_output_4_wd;
-  logic sw_share0_output_4_we;
+  logic sw_share0_output_5_re;
   logic [31:0] sw_share0_output_5_qs;
   logic [31:0] sw_share0_output_5_wd;
-  logic sw_share0_output_5_we;
+  logic sw_share0_output_6_re;
   logic [31:0] sw_share0_output_6_qs;
   logic [31:0] sw_share0_output_6_wd;
-  logic sw_share0_output_6_we;
+  logic sw_share0_output_7_re;
   logic [31:0] sw_share0_output_7_qs;
   logic [31:0] sw_share0_output_7_wd;
-  logic sw_share0_output_7_we;
+  logic sw_share1_output_0_re;
   logic [31:0] sw_share1_output_0_qs;
   logic [31:0] sw_share1_output_0_wd;
-  logic sw_share1_output_0_we;
+  logic sw_share1_output_1_re;
   logic [31:0] sw_share1_output_1_qs;
   logic [31:0] sw_share1_output_1_wd;
-  logic sw_share1_output_1_we;
+  logic sw_share1_output_2_re;
   logic [31:0] sw_share1_output_2_qs;
   logic [31:0] sw_share1_output_2_wd;
-  logic sw_share1_output_2_we;
+  logic sw_share1_output_3_re;
   logic [31:0] sw_share1_output_3_qs;
   logic [31:0] sw_share1_output_3_wd;
-  logic sw_share1_output_3_we;
+  logic sw_share1_output_4_re;
   logic [31:0] sw_share1_output_4_qs;
   logic [31:0] sw_share1_output_4_wd;
-  logic sw_share1_output_4_we;
+  logic sw_share1_output_5_re;
   logic [31:0] sw_share1_output_5_qs;
   logic [31:0] sw_share1_output_5_wd;
-  logic sw_share1_output_5_we;
+  logic sw_share1_output_6_re;
   logic [31:0] sw_share1_output_6_qs;
   logic [31:0] sw_share1_output_6_wd;
-  logic sw_share1_output_6_we;
+  logic sw_share1_output_7_re;
   logic [31:0] sw_share1_output_7_qs;
   logic [31:0] sw_share1_output_7_wd;
-  logic sw_share1_output_7_we;
   logic [2:0] working_state_qs;
+  logic op_status_we;
   logic [1:0] op_status_qs;
   logic [1:0] op_status_wd;
-  logic op_status_we;
+  logic err_code_we;
   logic err_code_invalid_op_qs;
   logic err_code_invalid_op_wd;
-  logic err_code_invalid_op_we;
   logic err_code_invalid_cmd_qs;
   logic err_code_invalid_cmd_wd;
-  logic err_code_invalid_cmd_we;
   logic err_code_invalid_kmac_input_qs;
   logic err_code_invalid_kmac_input_wd;
-  logic err_code_invalid_kmac_input_we;
   logic err_code_invalid_kmac_data_qs;
   logic err_code_invalid_kmac_data_wd;
-  logic err_code_invalid_kmac_data_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -349,7 +343,7 @@ module keymgr_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_fault_err (
     .re     (1'b0),
-    .we     (alert_test_fatal_fault_err_we),
+    .we     (alert_test_we),
     .wd     (alert_test_fatal_fault_err_wd),
     .d      ('0),
     .qre    (),
@@ -364,7 +358,7 @@ module keymgr_reg_top (
     .DW    (1)
   ) u_alert_test_recov_operation_err (
     .re     (1'b0),
-    .we     (alert_test_recov_operation_err_we),
+    .we     (alert_test_we),
     .wd     (alert_test_recov_operation_err_wd),
     .d      ('0),
     .qre    (),
@@ -402,7 +396,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_start_we & cfg_regwen_qs),
+    .we     (control_we & cfg_regwen_qs),
     .wd     (control_start_wd),
 
     // from internal hardware
@@ -428,7 +422,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_operation_we & cfg_regwen_qs),
+    .we     (control_we & cfg_regwen_qs),
     .wd     (control_operation_wd),
 
     // from internal hardware
@@ -454,7 +448,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_dest_sel_we & cfg_regwen_qs),
+    .we     (control_we & cfg_regwen_qs),
     .wd     (control_dest_sel_wd),
 
     // from internal hardware
@@ -1180,7 +1174,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_0_we),
+    .we     (sw_share0_output_0_re),
     .wd     (sw_share0_output_0_wd),
 
     // from internal hardware
@@ -1207,7 +1201,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_1_we),
+    .we     (sw_share0_output_1_re),
     .wd     (sw_share0_output_1_wd),
 
     // from internal hardware
@@ -1234,7 +1228,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_2_we),
+    .we     (sw_share0_output_2_re),
     .wd     (sw_share0_output_2_wd),
 
     // from internal hardware
@@ -1261,7 +1255,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_3_we),
+    .we     (sw_share0_output_3_re),
     .wd     (sw_share0_output_3_wd),
 
     // from internal hardware
@@ -1288,7 +1282,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_4_we),
+    .we     (sw_share0_output_4_re),
     .wd     (sw_share0_output_4_wd),
 
     // from internal hardware
@@ -1315,7 +1309,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_5_we),
+    .we     (sw_share0_output_5_re),
     .wd     (sw_share0_output_5_wd),
 
     // from internal hardware
@@ -1342,7 +1336,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_6_we),
+    .we     (sw_share0_output_6_re),
     .wd     (sw_share0_output_6_wd),
 
     // from internal hardware
@@ -1369,7 +1363,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share0_output_7_we),
+    .we     (sw_share0_output_7_re),
     .wd     (sw_share0_output_7_wd),
 
     // from internal hardware
@@ -1398,7 +1392,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_0_we),
+    .we     (sw_share1_output_0_re),
     .wd     (sw_share1_output_0_wd),
 
     // from internal hardware
@@ -1425,7 +1419,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_1_we),
+    .we     (sw_share1_output_1_re),
     .wd     (sw_share1_output_1_wd),
 
     // from internal hardware
@@ -1452,7 +1446,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_2_we),
+    .we     (sw_share1_output_2_re),
     .wd     (sw_share1_output_2_wd),
 
     // from internal hardware
@@ -1479,7 +1473,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_3_we),
+    .we     (sw_share1_output_3_re),
     .wd     (sw_share1_output_3_wd),
 
     // from internal hardware
@@ -1506,7 +1500,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_4_we),
+    .we     (sw_share1_output_4_re),
     .wd     (sw_share1_output_4_wd),
 
     // from internal hardware
@@ -1533,7 +1527,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_5_we),
+    .we     (sw_share1_output_5_re),
     .wd     (sw_share1_output_5_wd),
 
     // from internal hardware
@@ -1560,7 +1554,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_6_we),
+    .we     (sw_share1_output_6_re),
     .wd     (sw_share1_output_6_wd),
 
     // from internal hardware
@@ -1587,7 +1581,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_share1_output_7_we),
+    .we     (sw_share1_output_7_re),
     .wd     (sw_share1_output_7_wd),
 
     // from internal hardware
@@ -1669,7 +1663,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_invalid_op_we),
+    .we     (err_code_we),
     .wd     (err_code_invalid_op_wd),
 
     // from internal hardware
@@ -1695,7 +1689,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_invalid_cmd_we),
+    .we     (err_code_we),
     .wd     (err_code_invalid_cmd_wd),
 
     // from internal hardware
@@ -1721,7 +1715,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_invalid_kmac_input_we),
+    .we     (err_code_we),
     .wd     (err_code_invalid_kmac_input_wd),
 
     // from internal hardware
@@ -1747,7 +1741,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_invalid_kmac_data_we),
+    .we     (err_code_we),
     .wd     (err_code_invalid_kmac_data_wd),
 
     // from internal hardware
@@ -1878,173 +1872,166 @@ module keymgr_reg_top (
                (addr_hit[49] & (|(KEYMGR_PERMIT[49] & ~reg_be))) |
                (addr_hit[50] & (|(KEYMGR_PERMIT[50] & ~reg_be)))));
   end
-
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+
   assign intr_state_wd = reg_wdata[0];
-
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+
   assign intr_enable_wd = reg_wdata[0];
-
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
-  assign intr_test_wd = reg_wdata[0];
 
-  assign alert_test_fatal_fault_err_we = addr_hit[3] & reg_we & !reg_error;
+  assign intr_test_wd = reg_wdata[0];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_fatal_fault_err_wd = reg_wdata[0];
 
-  assign alert_test_recov_operation_err_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_operation_err_wd = reg_wdata[1];
-
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign control_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign control_start_we = addr_hit[5] & reg_we & !reg_error;
   assign control_start_wd = reg_wdata[0];
 
-  assign control_operation_we = addr_hit[5] & reg_we & !reg_error;
   assign control_operation_wd = reg_wdata[6:4];
 
-  assign control_dest_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign control_dest_sel_wd = reg_wdata[13:12];
-
   assign sideload_clear_we = addr_hit[6] & reg_we & !reg_error;
+
   assign sideload_clear_wd = reg_wdata[0];
-
   assign reseed_interval_we = addr_hit[7] & reg_we & !reg_error;
+
   assign reseed_interval_wd = reg_wdata[15:0];
-
-  assign sw_binding_regwen_we = addr_hit[8] & reg_we & !reg_error;
-  assign sw_binding_regwen_wd = reg_wdata[0];
   assign sw_binding_regwen_re = addr_hit[8] & reg_re & !reg_error;
+  assign sw_binding_regwen_we = addr_hit[8] & reg_we & !reg_error;
 
+  assign sw_binding_regwen_wd = reg_wdata[0];
   assign sw_binding_0_we = addr_hit[9] & reg_we & !reg_error;
+
   assign sw_binding_0_wd = reg_wdata[31:0];
-
   assign sw_binding_1_we = addr_hit[10] & reg_we & !reg_error;
+
   assign sw_binding_1_wd = reg_wdata[31:0];
-
   assign sw_binding_2_we = addr_hit[11] & reg_we & !reg_error;
+
   assign sw_binding_2_wd = reg_wdata[31:0];
-
   assign sw_binding_3_we = addr_hit[12] & reg_we & !reg_error;
+
   assign sw_binding_3_wd = reg_wdata[31:0];
-
   assign sw_binding_4_we = addr_hit[13] & reg_we & !reg_error;
+
   assign sw_binding_4_wd = reg_wdata[31:0];
-
   assign sw_binding_5_we = addr_hit[14] & reg_we & !reg_error;
+
   assign sw_binding_5_wd = reg_wdata[31:0];
-
   assign sw_binding_6_we = addr_hit[15] & reg_we & !reg_error;
+
   assign sw_binding_6_wd = reg_wdata[31:0];
-
   assign sw_binding_7_we = addr_hit[16] & reg_we & !reg_error;
+
   assign sw_binding_7_wd = reg_wdata[31:0];
-
   assign salt_0_we = addr_hit[17] & reg_we & !reg_error;
+
   assign salt_0_wd = reg_wdata[31:0];
-
   assign salt_1_we = addr_hit[18] & reg_we & !reg_error;
+
   assign salt_1_wd = reg_wdata[31:0];
-
   assign salt_2_we = addr_hit[19] & reg_we & !reg_error;
+
   assign salt_2_wd = reg_wdata[31:0];
-
   assign salt_3_we = addr_hit[20] & reg_we & !reg_error;
+
   assign salt_3_wd = reg_wdata[31:0];
-
   assign salt_4_we = addr_hit[21] & reg_we & !reg_error;
+
   assign salt_4_wd = reg_wdata[31:0];
-
   assign salt_5_we = addr_hit[22] & reg_we & !reg_error;
+
   assign salt_5_wd = reg_wdata[31:0];
-
   assign salt_6_we = addr_hit[23] & reg_we & !reg_error;
+
   assign salt_6_wd = reg_wdata[31:0];
-
   assign salt_7_we = addr_hit[24] & reg_we & !reg_error;
+
   assign salt_7_wd = reg_wdata[31:0];
-
   assign key_version_we = addr_hit[25] & reg_we & !reg_error;
+
   assign key_version_wd = reg_wdata[31:0];
-
   assign max_creator_key_ver_regwen_we = addr_hit[26] & reg_we & !reg_error;
+
   assign max_creator_key_ver_regwen_wd = reg_wdata[0];
-
   assign max_creator_key_ver_we = addr_hit[27] & reg_we & !reg_error;
+
   assign max_creator_key_ver_wd = reg_wdata[31:0];
-
   assign max_owner_int_key_ver_regwen_we = addr_hit[28] & reg_we & !reg_error;
+
   assign max_owner_int_key_ver_regwen_wd = reg_wdata[0];
-
   assign max_owner_int_key_ver_we = addr_hit[29] & reg_we & !reg_error;
+
   assign max_owner_int_key_ver_wd = reg_wdata[31:0];
-
   assign max_owner_key_ver_regwen_we = addr_hit[30] & reg_we & !reg_error;
+
   assign max_owner_key_ver_regwen_wd = reg_wdata[0];
-
   assign max_owner_key_ver_we = addr_hit[31] & reg_we & !reg_error;
+
   assign max_owner_key_ver_wd = reg_wdata[31:0];
+  assign sw_share0_output_0_re = addr_hit[32] & reg_re & !reg_error;
 
-  assign sw_share0_output_0_we = addr_hit[32] & reg_re & !reg_error;
   assign sw_share0_output_0_wd = '1;
+  assign sw_share0_output_1_re = addr_hit[33] & reg_re & !reg_error;
 
-  assign sw_share0_output_1_we = addr_hit[33] & reg_re & !reg_error;
   assign sw_share0_output_1_wd = '1;
+  assign sw_share0_output_2_re = addr_hit[34] & reg_re & !reg_error;
 
-  assign sw_share0_output_2_we = addr_hit[34] & reg_re & !reg_error;
   assign sw_share0_output_2_wd = '1;
+  assign sw_share0_output_3_re = addr_hit[35] & reg_re & !reg_error;
 
-  assign sw_share0_output_3_we = addr_hit[35] & reg_re & !reg_error;
   assign sw_share0_output_3_wd = '1;
+  assign sw_share0_output_4_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign sw_share0_output_4_we = addr_hit[36] & reg_re & !reg_error;
   assign sw_share0_output_4_wd = '1;
+  assign sw_share0_output_5_re = addr_hit[37] & reg_re & !reg_error;
 
-  assign sw_share0_output_5_we = addr_hit[37] & reg_re & !reg_error;
   assign sw_share0_output_5_wd = '1;
+  assign sw_share0_output_6_re = addr_hit[38] & reg_re & !reg_error;
 
-  assign sw_share0_output_6_we = addr_hit[38] & reg_re & !reg_error;
   assign sw_share0_output_6_wd = '1;
+  assign sw_share0_output_7_re = addr_hit[39] & reg_re & !reg_error;
 
-  assign sw_share0_output_7_we = addr_hit[39] & reg_re & !reg_error;
   assign sw_share0_output_7_wd = '1;
+  assign sw_share1_output_0_re = addr_hit[40] & reg_re & !reg_error;
 
-  assign sw_share1_output_0_we = addr_hit[40] & reg_re & !reg_error;
   assign sw_share1_output_0_wd = '1;
+  assign sw_share1_output_1_re = addr_hit[41] & reg_re & !reg_error;
 
-  assign sw_share1_output_1_we = addr_hit[41] & reg_re & !reg_error;
   assign sw_share1_output_1_wd = '1;
+  assign sw_share1_output_2_re = addr_hit[42] & reg_re & !reg_error;
 
-  assign sw_share1_output_2_we = addr_hit[42] & reg_re & !reg_error;
   assign sw_share1_output_2_wd = '1;
+  assign sw_share1_output_3_re = addr_hit[43] & reg_re & !reg_error;
 
-  assign sw_share1_output_3_we = addr_hit[43] & reg_re & !reg_error;
   assign sw_share1_output_3_wd = '1;
+  assign sw_share1_output_4_re = addr_hit[44] & reg_re & !reg_error;
 
-  assign sw_share1_output_4_we = addr_hit[44] & reg_re & !reg_error;
   assign sw_share1_output_4_wd = '1;
+  assign sw_share1_output_5_re = addr_hit[45] & reg_re & !reg_error;
 
-  assign sw_share1_output_5_we = addr_hit[45] & reg_re & !reg_error;
   assign sw_share1_output_5_wd = '1;
+  assign sw_share1_output_6_re = addr_hit[46] & reg_re & !reg_error;
 
-  assign sw_share1_output_6_we = addr_hit[46] & reg_re & !reg_error;
   assign sw_share1_output_6_wd = '1;
+  assign sw_share1_output_7_re = addr_hit[47] & reg_re & !reg_error;
 
-  assign sw_share1_output_7_we = addr_hit[47] & reg_re & !reg_error;
   assign sw_share1_output_7_wd = '1;
-
   assign op_status_we = addr_hit[49] & reg_we & !reg_error;
-  assign op_status_wd = reg_wdata[1:0];
 
-  assign err_code_invalid_op_we = addr_hit[50] & reg_we & !reg_error;
+  assign op_status_wd = reg_wdata[1:0];
+  assign err_code_we = addr_hit[50] & reg_we & !reg_error;
+
   assign err_code_invalid_op_wd = reg_wdata[0];
 
-  assign err_code_invalid_cmd_we = addr_hit[50] & reg_we & !reg_error;
   assign err_code_invalid_cmd_wd = reg_wdata[1];
 
-  assign err_code_invalid_kmac_input_we = addr_hit[50] & reg_we & !reg_error;
   assign err_code_invalid_kmac_input_wd = reg_wdata[2];
 
-  assign err_code_invalid_kmac_data_we = addr_hit[50] & reg_we & !reg_error;
   assign err_code_invalid_kmac_data_wd = reg_wdata[3];
 
   // Read data return

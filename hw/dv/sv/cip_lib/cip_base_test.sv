@@ -8,12 +8,5 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
 
   `uvm_component_new
 
-  virtual function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-
-    // use cip_tl_seq_item to create tl_seq_item with correct integrity values and obtain integrity
-    // related functions
-    tl_seq_item::type_id::set_type_override(cip_tl_seq_item::get_type());
-  endfunction
 endclass : cip_base_test
 

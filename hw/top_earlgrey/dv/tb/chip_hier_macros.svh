@@ -8,6 +8,7 @@
 `define ALERT_HANDLER_HIER    `CHIP_HIER.u_alert_handler
 `define CLKMGR_HIER           `CHIP_HIER.u_clkmgr_aon
 `define CPU_HIER              `CHIP_HIER.u_rv_core_ibex
+`define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
 `define EFLASH_HIER           `CHIP_HIER.u_flash_eflash.u_flash
 `define GPIO_HIER             `CHIP_HIER.u_gpio
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl

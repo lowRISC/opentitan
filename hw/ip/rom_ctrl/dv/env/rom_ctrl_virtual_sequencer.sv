@@ -8,7 +8,6 @@ class rom_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(rom_ctrl_virtual_sequencer)
 
-  tl_sequencer rom_tl_sequencer_h;
   kmac_app_sequencer kmac_sequencer_h;
 
   `uvm_component_new

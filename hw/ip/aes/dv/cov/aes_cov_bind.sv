@@ -6,7 +6,7 @@
 module aes_cov_bind;
 
   bind aes aes_cov_if u_aes_cov_if (
-    .clk_i      (clk_i)
+    .clk_i           (clk_i)
   );
 
 endmodule

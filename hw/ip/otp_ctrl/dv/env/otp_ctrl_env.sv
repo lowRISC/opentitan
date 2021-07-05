@@ -2,13 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otp_ctrl_env extends cip_base_env #(
-    .CFG_T              (otp_ctrl_env_cfg),
-    .COV_T              (otp_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T(otp_ctrl_virtual_sequencer),
-    .SCOREBOARD_T       (otp_ctrl_scoreboard)
+class otp_ctrl_env #(
+      type CFG_T = otp_ctrl_env_cfg,
+      type COV_T = otp_ctrl_env_cov,
+      type VIRTUAL_SEQUENCER_T = otp_ctrl_virtual_sequencer,
+      type SCOREBOARD_T = otp_ctrl_scoreboard
+    )
+  extends cip_base_env #(
+    .CFG_T              (CFG_T),
+    .COV_T              (COV_T),
+    .VIRTUAL_SEQUENCER_T(VIRTUAL_SEQUENCER_T),
+    .SCOREBOARD_T       (SCOREBOARD_T)
   );
-  `uvm_component_utils(otp_ctrl_env)
+  `uvm_component_param_utils(otp_ctrl_env #(CFG_T, COV_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T))
 
   `uvm_component_new
 

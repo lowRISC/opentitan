@@ -117,8 +117,7 @@ module tb;
                           .path  (`DV_STRINGIFY(`SRAM_CTRL_MEM_HIER)),
                           .depth ($size(`SRAM_CTRL_MEM_HIER)),
                           .n_bits($bits(`SRAM_CTRL_MEM_HIER)),
-                          .parity(1'b1),
-                          .ecc   (prim_secded_pkg::SecdedNone));
+                          .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

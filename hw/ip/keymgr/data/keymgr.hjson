@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "KEYMGR",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_edn_i" ]
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_edn_ni" ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -402,7 +402,7 @@
         name: "SW_BINDING",
         regwen: "SW_BINDING_REGWEN",
         desc: '''
-          Software binding input to key manager.
+          Software binding input to sealing portion of the key manager.
           This register is lockable and shared between key manager stages.
           This binding value is not considered secret, however its integrity is very important.
 
@@ -422,6 +422,32 @@
         ],
       },
     },
+
+    //{ multireg: {
+    //    cname: "KEYMGR",
+    //    name: "ATTEST_SW_BINDING",
+    //    regwen: "SW_BINDING_REGWEN",
+    //    desc: '''
+    //      Software binding input to the attestation portion of the key manager.
+    //      This register is lockable and shared between key manager stages.
+    //      This binding value is not considered secret, however its integrity is very important.
+    //
+    //      The software binding is locked by software and unlocked by hardware upon a successful advance operation.
+    //    ''',
+    //    count: "NumSwBindingReg",
+    //    swaccess: "rw",
+    //    hwaccess: "hro",
+    //    fields: [
+    //        { bits: "31:0",
+    //          name: "VAL",
+    //          desc: '''
+    //            Software binding value
+    //          ''',
+    //          resval: "0"
+    //        },
+    //    ],
+    //  },
+    //},
 
     { multireg: {
         cname: "KEYMGR",

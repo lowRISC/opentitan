@@ -12,6 +12,7 @@ module tb;
   // dep packages (rtl)
   import otbn_reg_pkg::*;
   import edn_pkg::*;
+  import otp_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -37,8 +38,8 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
-  // Mock up EDN that just instantly returns fixed data when requested
-  // TODO: Provide a proper EDN agent
+  // Mock up EDN & OTP that just instantly return fixed data when requested
+  // TODO: Provide proper EDN and OTP agents
   edn_req_t edn_rnd_req;
   edn_rsp_t edn_rnd_rsp;
 
@@ -53,8 +54,32 @@ module tb;
   assign edn_urnd_rsp.edn_fips = 1'b0;
   assign edn_urnd_rsp.edn_bus  = 32'h99999999;
 
+  otbn_otp_key_req_t otp_key_req;
+  otbn_otp_key_rsp_t otp_key_rsp;
+
+  logic otp_key_ack_q;
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      otp_key_ack_q <= 1'b0;
+    end else begin
+      otp_key_ack_q <= otp_key_req.req;
+    end
+  end
+
+  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
+
+  assign otp_key_rsp.ack = otp_key_ack_q;
+  assign otp_key_rsp.key = TestScrambleKey;
+  assign otp_key_rsp.nonce = TestScrambleNonce;
+  assign otp_key_rsp.seed_valid = 1'b0;
+
   // dut
-  otbn dut (
+  otbn # (
+    .RndCnstOtbnKey(TestScrambleKey),
+    .RndCnstOtbnNonce(TestScrambleNonce)
+  ) dut (
     .clk_i       (clk),
     .rst_ni      (rst_n),
 
@@ -74,7 +99,12 @@ module tb;
     .edn_rnd_i ( edn_rnd_rsp ),
 
     .edn_urnd_o ( edn_urnd_req ),
-    .edn_urnd_i ( edn_urnd_rsp )
+    .edn_urnd_i ( edn_urnd_rsp ),
+
+    .clk_otp_i (clk),
+    .rst_otp_ni (rst_n),
+    .otbn_otp_key_o (otp_key_req),
+    .otbn_otp_key_i (otp_key_rsp)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
@@ -94,10 +124,18 @@ module tb;
       .at_current_loop_end_insn,
       .loop_active_q,
       .loop_stack_full,
-      // As with insn_addr_i, we expand this to 32 bits. Also, current_loop_q has a type that's not
-      // exposed outside of the loop controller module so we need to extract the loop_end field
-      // here.
-      .current_loop_end (32'(current_loop_q.loop_end))
+      .current_loop_finish,
+      .next_loop_valid,
+      .loop_start_req_i,
+      .loop_start_commit_i,
+      .loop_iterations_i,
+      .otbn_stall_i,
+      // These addresses are start/end addresses for entries in the loop stack. As with insn_addr_i,
+      // we expand them to 32 bits. Also the loop stack entries have a type that's not exposed
+      // outside of the loop controller module so we need to extract the fields here.
+      .current_loop_start (32'(current_loop_q.loop_start)),
+      .current_loop_end   (32'(current_loop_q.loop_end)),
+      .next_loop_end      (32'(next_loop.loop_end))
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
@@ -121,6 +159,8 @@ module tb;
   assign edn_rnd_data_valid = dut.edn_rnd_req & dut.edn_rnd_ack;
   assign edn_urnd_data_valid = dut.edn_urnd_req & dut.edn_urnd_ack;
 
+  bit [31:0] model_insn_cnt;
+
   otbn_core_model #(
     .DmemSizeByte (otbn_reg_pkg::OTBN_DMEM_SIZE),
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE),
@@ -133,15 +173,41 @@ module tb;
     .start_i      (model_if.start),
     .done_o       (model_if.done),
     .start_addr_i (model_if.start_addr),
-    .err_o        (model_if.err),
 
     .edn_rnd_data_valid_i  (edn_rnd_data_valid),
     .edn_rnd_data_i        (dut.edn_rnd_data),
-    .edn_urnd_data_valid_i (edn_urnd_data_valid)
+    .edn_urnd_data_valid_i (edn_urnd_data_valid),
+
+    .insn_cnt_o   (model_insn_cnt),
+    .err_o        (model_if.err)
   );
 
   // Pull the final PC out of the DUT
   assign model_if.stop_pc = u_model.stop_pc_q;
+
+  otbn_insn_cnt_if insn_cnt_if (
+   .clk_i            (clk),
+   .rst_ni           (rst_n),
+
+   .insn_cnt_i       (dut.insn_cnt),
+   .insn_executing_i (dut.u_otbn_core.u_otbn_controller.insn_executing),
+   .stall_i          (dut.u_otbn_core.u_otbn_controller.stall),
+
+   .model_insn_cnt_i (model_insn_cnt)
+  );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Model/RTL consistency checks
+  //
+  // These are the sort of checks that are easier to state at the design level than in terms of UVM
+  // transactions.
+
+  // Check that the idle output from the DUT is the inverse of the model's "done" signal.
+  // Separately, the code in otbn_idle_checker.sv checks that the idle output from the DUT is also
+  // the inverse of the "done" signal that we expect. Combining the two tells us that the RTL and
+  // model agree about whether they are running or not.
+  `ASSERT(MatchingDone_A, idle == !model_if.done, clk, rst_n)
+
 
   initial begin
     // drive clk and rst_n from clk_if

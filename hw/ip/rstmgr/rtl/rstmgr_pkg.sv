@@ -49,12 +49,6 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_usb_n;
   } rstmgr_out_t;
 
-  // cpu reset requests and status
-  typedef struct packed {
-    logic rst_cpu_n;
-    logic ndmreset_req;
-  } rstmgr_cpu_t;
-
   // exported resets
   typedef struct packed {
     logic [PowerDomains-1:0] rst_ast_usbdev_sys_io_div4_n;

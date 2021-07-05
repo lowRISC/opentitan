@@ -49,7 +49,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   addr_mask_t mem_exist_addr_q[string][$];
 
   // mem_ranges without base address
-  addr_range_t     updated_mem_ranges[string][$];
+  addr_range_t updated_mem_ranges[string][$];
+
+  // unmapped addr ranges without base address
+  addr_range_t updated_unmapped_addr_ranges[string][$];
+
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
@@ -110,36 +114,26 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
-  // The concurrent_deassert_resets knob is used for stress_all_with_rand_reset sequence, which
-  // will kill the child sequence immediately when dut reset is deasserted.
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      if (!concurrent_deassert_resets) begin
-        // If DUT is connected to `edn_rst_ni`, assert resets with random delays
-        fork
-          if (cfg.has_edn) apply_edn_reset(kind);
-          super.apply_reset(kind);
-        join
-      end else if (cfg.has_edn) begin
-        fork begin // isolation_fork
-          fork
-            apply_edn_reset(kind);
-            super.apply_reset(kind);
-          join_any
-          disable fork;
-          if (cfg.clk_rst_vifs.size > 0) begin
-            foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-          end else begin
-            cfg.clk_rst_vif.drive_rst_pin(1);
-          end
-          cfg.edn_clk_rst_vif.drive_rst_pin(1);
-        end join
-      end
+      fork
+        if (cfg.has_edn) apply_edn_reset(kind);
+        super.apply_reset(kind);
+      join
     end
   endtask
 
   virtual task apply_edn_reset(string kind = "HARD");
     if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
+  endtask
+
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    if (cfg.has_edn) begin
+      cfg.edn_clk_rst_vif.drive_rst_pin(0);
+      reset_duration_ps = max2(reset_duration_ps, cfg.edn_clk_rst_vif.clk_period_ps);
+    end
+    super.apply_resets_concurrently(reset_duration_ps);
+    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
@@ -370,62 +364,56 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
-    dv_base_reg all_intr_csrs[$];
+    dv_base_reg intr_csrs[$];
 
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
       if (!uvm_re_match("intr_test*", csr_name) ||
           !uvm_re_match("intr_enable*", csr_name) ||
           !uvm_re_match("intr_state*", csr_name)) begin
-        all_intr_csrs.push_back(get_interrupt_csr(csr_name));
+        intr_csrs.push_back(get_interrupt_csr(csr_name));
       end
     end
 
-    num_times = num_times * all_intr_csrs.size;
+    num_times = num_times * intr_csrs.size();
     for (int trans = 1; trans <= num_times; trans++) begin
       bit [BUS_DW-1:0] num_used_bits;
       bit [BUS_DW-1:0] intr_enable_val[$];
       `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
 
       // Random Write to all intr related registers
-      all_intr_csrs.shuffle();
-      foreach (all_intr_csrs[i]) begin
-        uvm_reg_data_t data = $urandom;
-        `uvm_info(`gfn, $sformatf("Write intr CSR %s: 0x%0h", all_intr_csrs[i].get_name(), data),
-                  UVM_MEDIUM)
-        csr_wr(.ptr(all_intr_csrs[i]), .value(data));
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t data = $urandom();
+        `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
+        csr_wr(.ptr(intr_csrs[i]), .value(data));
       end
 
       // Read all intr related csr and check interrupt pins
-      all_intr_csrs.shuffle();
-      foreach (all_intr_csrs[i]) begin
-        dv_base_reg csr = all_intr_csrs[i];
+      intr_csrs.shuffle();
+      foreach (intr_csrs[i]) begin
+        uvm_reg_data_t exp_val = `gmv(intr_csrs[i]);
         uvm_reg_data_t act_val;
-        string csr_name = csr.get_name();
 
-        csr_rd(.ptr(csr), .value(act_val));
-        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", csr.get_full_name(), act_val),
-            UVM_MEDIUM)
-
+        csr_rd(.ptr(intr_csrs[i]), .value(act_val));
         if (cfg.under_reset) continue;
-
-        `DV_CHECK_EQ(act_val, `gmv(csr))
+        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].`gfn, act_val), UVM_MEDIUM)
+        `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR", intr_csrs[i].`gfn})
 
         // if it's intr_state, also check the interrupt pin value
-        if (!uvm_re_match("intr_state*", csr_name)) begin
-          uvm_reg_data_t exp_intr_pin = csr.get_intr_pins_exp_value();
-
-          for (int j = 0; j < csr.get_n_used_bits(); j++) begin
-            bit act_intr_pin_val = cfg.intr_vif.sample_pin(j);
-            `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j])
-          end // for
+        if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+          dv_utils_pkg::interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
+          dv_utils_pkg::interrupt_t act_intr_pin = cfg.intr_vif.sample();
+          act_intr_pin &= dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1);
+          `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
         end // if (!uvm_re_match
-      end // foreach (all_intr_csrs[i])
+      end // foreach (intr_csrs[i])
     end // for (int trans = 1; ...
   endtask
 
   // Task to clear register intr status bits
   virtual task clear_all_interrupts();
+    if (cfg.num_interrupts == 0) return;
     foreach (intr_state_csrs[i]) begin
       bit [BUS_DW-1:0] data;
       csr_rd(.ptr(intr_state_csrs[i]), .value(data));
@@ -461,10 +449,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   begin
                     // if previous alert_handler just finish, there is a max of two clock_cycle
                     // pause in between
-                    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                                      cfg.clk_rst_vif.wait_clks(1);,
-                                      cfg.clk_rst_vif.wait_clks(2);,
-                                      $sformatf("expect alert_%0d:%0s to fire", index, alert_name))
+                    wait_alert_trigger(alert_name, .max_wait_cycle(2));
 
                     // write alert_test during alert handshake will be ignored
                     if ($urandom_range(1, 10) == 10) begin
@@ -510,6 +495,17 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                        $sformatf("expect alert:%0s to stay low", cfg.list_of_alerts[i]))
         end
       end // end repeat
+    end
+  endtask
+
+  virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 2, bit wait_complete = 0);
+    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                      cfg.clk_rst_vif.wait_clks(1);,
+                      cfg.clk_rst_vif.wait_clks(max_wait_cycle);,
+                      $sformatf("expect alert:%0s to fire", alert_name))
+    if (wait_complete) begin
+      `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                   $sformatf("timeout wait for alert handshake:%0s", alert_name))
     end
   endtask
 
@@ -585,9 +581,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             begin : issue_rand_reset
               `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
+              #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
-              apply_reset("HARD", .concurrent_deassert_resets(1));
+              apply_resets_concurrently();
               ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
             end
@@ -861,13 +858,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // test partial mem read with non-blocking random read/write
   virtual task run_mem_partial_access_vseq(int num_times);
     `loop_ral_models_to_create_threads(
-        if (cfg.mem_ranges[ral_name].size > 0) begin
+        if (cfg.ral_models[ral_name].mem_ranges.size() > 0) begin
           run_mem_partial_access_vseq_sub(num_times, ral_name);
         end)
   endtask
 
   virtual task run_mem_partial_access_vseq_sub(int num_times, string ral_name);
-    addr_range_t loc_mem_range[$] = cfg.mem_ranges[ral_name];
+    addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
     uint num_accesses;
     // limit to 100k accesses if mem is very big
     uint max_accesses = 100_000;

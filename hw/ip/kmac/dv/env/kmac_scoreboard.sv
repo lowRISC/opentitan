@@ -21,8 +21,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  bit do_check_digest = 1;
+
   // Represents the number of blocks that have been filled in sha3pad
   int num_blocks_filled = 0;
+
+  // used solely for coverage sampling, indicates that keccak rounds are currently running
+  bit in_keccak_rounds = 0;
 
   // Whenever the keccak rounds are running, the `complete` signal is raised at the end
   // for a single cycle to signal to sha3 control logic that the keccak engine is completed.
@@ -111,6 +116,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit intr_fifo_empty;
   bit intr_kmac_err;
 
+  // Error tracking
+  kmac_pkg::err_t kmac_err = '{valid: 1'b0,
+                               code: kmac_pkg::ErrNone,
+                               info: '0};
+  sha3_pkg::err_t sha3_err = '{valid: 1'b0,
+                               code: sha3_pkg::ErrNone,
+                               info: '0};
+  // Need to track the FSM in `kmac_app` and the mux select value,
+  // these are used in App-related error reporting
+  kmac_app_st_e   app_st = StIdle;
+  bit             app_fsm_active = 0;
+  app_mux_sel_e   app_mux_sel = SelNone;
+
+  // Need to track the FSM in `kmac_errchk` for error reporting
+  kmac_err_st_e err_st = ErrStIdle;
+
   // Variables to track the internal write/read pointers.
   //
   // One major difference between these and standard fifo pointers is that these
@@ -121,9 +142,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // key length enum
   key_len_e key_len;
-
-  // error reporting
-  bit kmac_err;
 
   keymgr_pkg::hw_key_req_t sideload_key;
 
@@ -185,6 +203,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       detect_kmac_app_start();
+      process_kmac_app_fsm();
+      process_kmac_err_fsm();
       process_edn();
       process_prefix_and_keys();
       process_msgfifo_write();
@@ -192,6 +212,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       process_sha3_idle();
       process_sha3_absorb();
       process_sha3_squeeze();
+      if (cfg.en_cov) sample_sha3_status();
       process_initial_digest();
       process_manual_digest_squeeze();
       process_intr_kmac_done();
@@ -303,6 +324,41 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
               app_mode = AppRom;
             end
+
+            // sample sideload-related coverage
+            if (cfg.en_cov) begin
+              // Note that all arguments to the covergroup sample() function are the same,
+              // this is due to the nature of the arguments that this function takes:
+              //
+              // - `en_sideload`: this bit indicates whether sideloading mode is active
+              // - `in_kmac`    : this bit indicates whether we are operating in KMAC mode
+              // - `app_keymgr` : this bit indicates whether we are using the Keymgr-specific App
+              //                  interface
+              //
+              // Checking whether the current application mode is the AppKeymgr mode gives us
+              // sufficient information for all three of these arguments due to the nature of this
+              // particular interface.
+              cov.sideload_cg.sample(app_mode == AppKeymgr,
+                                     app_mode == AppKeymgr,
+                                     app_mode == AppKeymgr);
+            end
+
+            wait(!in_kmac_app &&
+                 (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
+                  `KMAC_APP_VALID_TRANS(AppLc) ||
+                  `KMAC_APP_VALID_TRANS(AppRom)));
+
+            in_kmac_app = 1;
+            `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
+
+            // we need to choose the correct application interface
+            if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
+              app_mode = AppKeymgr;
+            end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
+              app_mode = AppLc;
+            end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
+              app_mode = AppRom;
+            end
             @(posedge sha3_idle);
           end
           ,
@@ -311,6 +367,144 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (cfg.under_reset) begin
         @(negedge cfg.under_reset);
       end
+      wait(!cfg.under_reset);
+    end
+  endtask
+
+  // This task models the internal FSM of kmac_app module,
+  // required for error handling SW output.
+  virtual task process_kmac_app_fsm();
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            app_mux_sel = SelNone;
+            case (app_st)
+              StIdle: begin
+                if (!in_kmac_app &&
+                    (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.req_data_if.valid ||
+                     cfg.m_kmac_app_agent_cfg[AppLc].vif.req_data_if.valid ||
+                     cfg.m_kmac_app_agent_cfg[AppRom].vif.req_data_if.valid)) begin
+                  app_st = StAppCfg;
+                  app_fsm_active = 1;
+                end else if (kmac_cmd == CmdStart) begin
+                  app_st = StSw;
+                end
+              end
+              StAppCfg: begin
+                if (app_mode == AppKeymgr && !cfg.sideload_vif.sideload_key.valid) begin
+                  app_st = StKeyMgrErrKeyNotValid;
+
+                  kmac_err.valid = 1;
+                  kmac_err.code = kmac_pkg::ErrKeyNotValid;
+                  kmac_err.info = '0;
+
+                  in_kmac_app = 0;
+
+                  predict_err(.is_kmac_err(1));
+                end else begin
+                  app_st = StAppMsg;
+                end
+              end
+              StAppMsg: begin
+                app_mux_sel = SelApp;
+                if (kmac_app_last) begin
+                  if (app_mode == AppKeymgr) begin
+                    app_st = StAppOutLen;
+                  end else begin
+                    app_st = StAppProcess;
+                  end
+                end
+              end
+              StAppOutLen: begin
+                app_mux_sel = SelOutLen;
+                app_st = StAppProcess;
+              end
+              StAppProcess: begin
+                app_st = StAppWait;
+              end
+              StAppWait: begin
+                if (keccak_complete_cycle) begin
+                  app_st = StIdle;
+                  app_fsm_active = 0;
+                end
+              end
+              StSw: begin
+                app_mux_sel = SelSw;
+                if (kmac_cmd == CmdDone) begin
+                  app_st = StIdle;
+                  app_fsm_active = 0;
+                end
+              end
+              StKeyMgrErrKeyNotValid: begin
+                // infinitely loop in this state until a reset is issued
+              end
+              default: begin
+                app_st = StIdle;
+                app_fsm_active = 0;
+              end
+            endcase
+            cfg.clk_rst_vif.wait_clks(1);
+            #0;
+          end
+          ,
+          wait(cfg.under_reset);
+      )
+    end
+  endtask
+
+  // This task simulates the error handling FSM in the KMAC,
+  // as we need state information for error reporting.
+  virtual task process_kmac_err_fsm();
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          case (err_st)
+            ErrStIdle: begin
+              if (!app_fsm_active && kmac_cmd == CmdStart) begin
+                err_st = ErrStMsgFeed;
+                `uvm_info(`gfn, "moving to ErrStMsgFeed", UVM_HIGH)
+              end
+            end
+            ErrStMsgFeed: begin
+              if (kmac_cmd == CmdProcess) begin
+                err_st = ErrStProcessing;
+                `uvm_info(`gfn, "moving to ErrStProcessing", UVM_HIGH)
+              end
+            end
+            ErrStProcessing: begin
+              if (msg_digest_done) begin
+                err_st = ErrStAbsorbed;
+                `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
+              end
+            end
+            ErrStAbsorbed: begin
+              if (req_manual_squeeze) begin
+                err_st = ErrStSqueezing;
+                `uvm_info(`gfn, "moving to ErrStSqueezing", UVM_HIGH)
+              end else if (kmac_cmd == CmdDone) begin
+                err_st = ErrStIdle;
+                `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
+              end
+            end
+            ErrStSqueezing: begin
+              if (msg_digest_done) begin
+                err_st = ErrStAbsorbed;
+                `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
+              end
+            end
+            default: begin
+              err_st = ErrStIdle;
+              `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
+            end
+          endcase
+          cfg.clk_rst_vif.wait_clks(1);
+          #0;
+          ,
+          wait(cfg.under_reset);
+      )
     end
   endtask
 
@@ -333,6 +527,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         UVM_HIGH)
               {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} = kmac_app_block_item.h_data;
               kmac_app_block_strb_size = $countones(kmac_app_block_strb);
+
+              // sample coverage
+              if (cfg.en_cov) begin
+                cov.app_cg_wrappers[app_mode].sample(0,
+                                                    kmac_app_block_strb,
+                                                    0,
+                                                    kmac_app_last,
+                                                    in_keccak_rounds);
+              end
+
               got_data_from_kmac_app = 1;
               while (kmac_app_block_strb > 0) begin
                 if (kmac_app_block_strb[0]) begin
@@ -382,6 +586,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                         kmac_app_rsp.sprint()),
                               UVM_HIGH)
 
+                    // sample coverage
+                    if (cfg.en_cov) begin
+                      cov.app_cg_wrappers[app_mode].sample(
+                        kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
+                        '0,
+                        kmac_app_rsp.rsp_error,
+                        1,
+                        0
+                      );
+                    end
+
                     // safety check that things are working properly and
                     // no random KMAC_APP operations are seen
                     `DV_CHECK_FATAL(in_kmac_app == 1,
@@ -393,7 +608,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
                     kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
-                    check_digest();
+                    if (do_check_digest) check_digest();
 
                     in_kmac_app = 0;
                     `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
@@ -514,6 +729,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // This is a simple task that just polls for any changes in the SHA3 status bits and samples them
+  virtual task sample_sha3_status();
+    forever begin
+      @(negedge cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            @(sha3_idle or sha3_absorb or sha3_squeeze);
+            #0;
+            cov.sha3_status_cg.sample(sha3_idle, sha3_absorb, sha3_squeeze);
+          end
+          ,
+          @(posedge cfg.under_reset);
+      )
+    end
+  endtask
+
   // This task handles asserting the `kmac_done` interrupt bit
   virtual task process_intr_kmac_done();
     @(negedge cfg.under_reset);
@@ -522,8 +753,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       @(negedge sha3_idle);
       `DV_SPINWAIT_EXIT(
           wait(sha3_squeeze);
-          // interrupt goes high 2 cycles after internal status is updated
-          cfg.clk_rst_vif.wait_clks(2);
+          // Done interrupt goes high 1 cycle after reaching sha3_squeeze state
+          cfg.clk_rst_vif.wait_clks(1);
+          #0;
           // only assert kmac_done intr when not in KMAC_APP mode
           if (!in_kmac_app) intr_kmac_done = 1;
           `uvm_info(`gfn, "raised intr_kmac_done", UVM_HIGH)
@@ -686,6 +918,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // processing is enabled).
     bit full_entropy_expansion = 0;
 
+    in_keccak_rounds = 1;
+
     // insert zero delay to ensure all entropy-related updates have settled
     //
     // this also helps catch an edge case where EDN returns valid entropy
@@ -789,6 +1023,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     keccak_complete_cycle = 1;
     cfg.clk_rst_vif.wait_clks(1);
     keccak_complete_cycle = 0;
+
+    in_keccak_rounds = 0;
 
     `uvm_info(`gfn, "finished waiting for keccak", UVM_HIGH)
   endtask
@@ -1569,6 +1805,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               fifo_empty = (fifo_depth == 0);
               fifo_full  = fifo_depth == KMAC_FIFO_DEPTH;
 
+              // sample coverage on the fifo status
+              if (cfg.en_cov) begin
+                cov.msgfifo_level_cg.sample(fifo_empty, fifo_full, fifo_depth,
+                                            hash_mode, kmac_en);
+              end
+
               `uvm_info(`gfn, $sformatf("fifo_depth: %0d", fifo_depth), UVM_HIGH)
               `uvm_info(`gfn, $sformatf("fifo_empty: %0d", fifo_empty), UVM_HIGH)
               `uvm_info(`gfn, $sformatf("fifo_full: %0d", fifo_full), UVM_HIGH)
@@ -1626,7 +1868,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     bit data_phase_write  = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       `downcast(check_locked_reg, csr)
@@ -1667,6 +1909,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     case (csr_name)
       // add individual case item for each csr
       "intr_state": begin
+        `uvm_info(`gfn, $sformatf("intr_kmac_done: %0d", intr_kmac_done), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("intr_fifo_empty: %0d", intr_fifo_empty), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("intr_kmac_err: %0d", intr_kmac_err), UVM_HIGH)
+
         if (data_phase_write) begin
           // clear internal state on a write
           if (item.a_data[KmacDone])      intr_kmac_done = 0;
@@ -1723,9 +1969,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "cfg": begin
         if (addr_phase_write) begin
           // don't continue if the KMAC is currently operating
-          //
-          // TODO this is an error case that needs to be handled
-          if (!(kmac_cmd inside {CmdNone, CmdDone})) begin
+          if (!sha3_idle) begin
             return;
           end
 
@@ -1739,6 +1983,36 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
 
+          // sample sideload-related coverage
+          if (cfg.en_cov) begin
+            cov.sideload_cg.sample(item.a_data[KmacSideload], kmac_en, 0);
+          end
+
+          // Entropy mode configuration error
+          if (cfg.enable_masking && !(entropy_mode inside {EntropyModeSw, EntropyModeEdn})) begin
+            kmac_err.valid  = 1;
+            kmac_err.code   = kmac_pkg::ErrIncorrectEntropyMode;
+            kmac_err.info   = 24'(entropy_mode);
+
+            predict_err(.is_kmac_err(1));
+          end
+
+          // Mode/Strength configuration error
+          if ((hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake} &&
+                !(strength inside {sha3_pkg::L128, sha3_pkg::L256})) ||
+               (hash_mode == sha3_pkg::Sha3 &&
+                strength == sha3_pkg::L128)) begin
+            kmac_err.valid  = 1;
+            kmac_err.code   = kmac_pkg::ErrUnexpectedModeStrength;
+            kmac_err.info   = {8'h2, 10'h0, 2'(hash_mode), 1'b0, 3'(strength)};
+
+            predict_err(.is_kmac_err(1));
+
+            // If the mode/strength are mis-configured, the IP will finish running a hash with the
+            // incorrect configuration, producing a garbage digest that should not be checked.
+            do_check_digest = 1'b0;
+          end
+
           if (entropy_mode == EntropyModeEdn &&
               item.a_data[KmacEntropyReady] &&
               first_op_after_rst) begin
@@ -1751,8 +2025,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             in_edn_fetch = 1;
             `uvm_info(`gfn, "raised in_edn_fetch after reset", UVM_HIGH)
           end
-
-          // TODO - sample coverage
         end
       end
       "cmd": begin
@@ -1760,55 +2032,128 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         //
         // TODO - handle error cases
         if (addr_phase_write) begin
-          case (kmac_cmd_e'(item.a_data))
-            CmdStart: begin
-              // msgfifo will now be written
-              kmac_cmd = CmdStart;
+          if (app_fsm_active) begin
+            // Do not assign `kmac_data` here to avoid potentially corrupting scoreboard state
+            if (kmac_cmd_e'(item.a_data) != CmdNone) begin
+              kmac_err.valid  = 1;
+              kmac_err.code   = kmac_pkg::ErrSwIssuedCmdInAppActive;
+              kmac_err.info   = 24'(item.a_data);
+
+              predict_err(.is_kmac_err(1));
             end
-            CmdProcess: begin
-              // kmac will now compute the digest
-              kmac_cmd = CmdProcess;
+          end else begin
+            case (kmac_cmd_e'(item.a_data))
+              CmdStart: begin
+                if (kmac_cmd == CmdNone) begin
+                  // the first 6B of the prefix (function name),
+                  // need to check that it is "KMAC" when `kmac_en == 1`
+                  bit [47:0] function_name_6B;
+                  bit [TL_DW-1:0] prefix_val;
 
-              // Raise this bit after a small delay to handle an edge case where
-              // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
-              // is latched by internal scoreboard logic
-              #1 req_cmd_process_dly = 1;
-              `uvm_info(`gfn, "raised req_cmd_process_dly", UVM_HIGH)
-            end
-            CmdManualRun: begin
-              // kmac will now squeeze more output data
-              kmac_cmd = CmdManualRun;
-              req_manual_squeeze = 1;
-              `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
-            end
-            CmdDone: begin
-              kmac_cmd = CmdDone;
+                  // msgfifo will now be written
+                  kmac_cmd = CmdStart;
 
-              // Calculate the digest using DPI and check for correctness
-              check_digest();
+                  function_name_6B[31:0]  = `gmv(ral.prefix_0);
+                  prefix_val = `gmv(ral.prefix_1);
+                  function_name_6B[47:32] = prefix_val[15:0];
 
-              // Flush all scoreboard state to prepare for the next hash operation
-              clear_state();
+                  if (kmac_en && function_name_6B != kmac_pkg::EncodedStringKMAC) begin
+                    kmac_err.valid  = 1;
+                    kmac_err.code   = kmac_pkg::ErrIncorrectFunctionName;
+                    kmac_err.info   = {8'h1, 16'h0};
 
-              // IDLE should go high one cycle after issuing Done cmd
-              cfg.clk_rst_vif.wait_clks(1);
-              sha3_idle = 1;
+                    // If incorrect function name is given, KMAC will finish the current hash
+                    // operation and produce an incorrect digest, do not check this.
+                    predict_err(.is_kmac_err(1));
 
-              // if using EDN, KMAC will refresh entropy after finishing a hash operation
-              if (entropy_mode == EntropyModeEdn) begin
-                cfg.clk_rst_vif.wait_clks(1);
-                in_edn_fetch = cfg.enable_masking;
-                refresh_entropy = cfg.enable_masking;
-                `uvm_info(`gfn, "refreshing entropy from EDN", UVM_HIGH)
+                    do_check_digest = 0;
+                  end
+                end else begin // SW sent wrong command
+
+                  kmac_err.valid = 1;
+                  kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+
+                  predict_err(.is_kmac_err(1));
+                end
               end
-            end
-            CmdNone: begin
-              // RTL internal value, doesn't actually do anything
-            end
-            default: begin
-              `uvm_fatal(`gfn, $sformatf("%0d is an illegal CMD value", item.a_data))
-            end
-          endcase
+              CmdProcess: begin
+                if (kmac_cmd == CmdStart) begin
+                  // kmac will now compute the digest
+                  kmac_cmd = CmdProcess;
+
+                  // Raise this bit after a small delay to handle an edge case where
+                  // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
+                  // is latched by internal scoreboard logic
+                  #1 req_cmd_process_dly = 1;
+                  `uvm_info(`gfn, "raised req_cmd_process_dly", UVM_HIGH)
+                end else begin // SW sent wrong command
+
+                  kmac_err.valid = 1;
+                  kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+
+                  predict_err(.is_kmac_err(1));
+                end
+              end
+              CmdManualRun: begin
+                if (kmac_cmd inside {CmdProcess, CmdManualRun}) begin
+                  // kmac will now squeeze more output data
+                  kmac_cmd = CmdManualRun;
+                  req_manual_squeeze = 1;
+                  `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
+                end else begin // SW sent wrong command
+
+                  kmac_err.valid = 1;
+                  kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+
+                  predict_err(.is_kmac_err(1));
+                end
+              end
+              CmdDone: begin
+                if (kmac_cmd inside {CmdProcess, CmdManualRun}) begin
+                  kmac_cmd = CmdDone;
+
+                  // sample coverage of message length
+                  if (cfg.en_cov) begin
+                    cov.msg_len_cg.sample(msg.size());
+                  end
+
+                  // Calculate the digest using DPI and check for correctness
+                  if (do_check_digest) check_digest();
+
+                  // Flush all scoreboard state to prepare for the next hash operation
+                  clear_state();
+
+                  // IDLE should go high one cycle after issuing Done cmd
+                  cfg.clk_rst_vif.wait_clks(1);
+                  sha3_idle = 1;
+
+                  // if using EDN, KMAC will refresh entropy after finishing a hash operation
+                  if (entropy_mode == EntropyModeEdn) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    in_edn_fetch = cfg.enable_masking;
+                    refresh_entropy = cfg.enable_masking;
+                    `uvm_info(`gfn, "refreshing entropy from EDN", UVM_HIGH)
+                  end
+                end else begin // SW sent wrong command
+
+                  kmac_err.valid = 1;
+                  kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+
+                  predict_err(.is_kmac_err(1));
+                end
+              end
+              CmdNone: begin
+                // RTL internal value, doesn't actually do anything
+              end
+              default: begin
+                `uvm_fatal(`gfn, $sformatf("%0d is an illegal CMD value", item.a_data))
+              end
+            endcase
+          end
         end else begin
           // this bit will be set to 0 during the data phase of the write,
           // providing better detection of when exactly a manual squeeze command
@@ -1897,7 +2242,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // digest comparison.
     if (msgfifo_access) begin
       if (addr_phase_write) begin
-        if (kmac_cmd != CmdStart) begin
+        if (in_kmac_app) begin
+          kmac_err.valid  = 1;
+          kmac_err.code   = kmac_pkg::ErrSwPushedMsgFifo;
+          kmac_err.info   = {8'h0, 8'(app_st), 8'(app_mux_sel)};
+          predict_err(.is_kmac_err(1));
+        end else if (kmac_cmd != CmdStart) begin
           // TODO
           //
           // If we get here we are writing to the msgfifo in an invalid state.
@@ -1911,6 +2261,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("item.a_data: 0x%0x", item.a_data), UVM_HIGH)
           `uvm_info(`gfn, $sformatf("item.a_mask: 0b%0b", item.a_mask), UVM_HIGH)
           `uvm_info(`gfn, $sformatf("full_data: %0p", full_data), UVM_HIGH)
+
+          // sample coverage on the write mask
+          if (cfg.en_cov) begin
+            cov.msgfifo_write_mask_cg.sample(item.a_mask);
+          end
 
           // All writes in big-endian order will be full-word,
           // so we can generalize this to a for-loop that reverses the byte order of each word.
@@ -1946,6 +2301,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (data_phase_read) begin
         state_mask = item.a_mask;
         digest_word = item.d_data;
+
+        // sample coverage on state read mask
+        if (cfg.en_cov) begin
+          cov.state_read_mask_cg.sample(state_mask, share1_access);
+        end
 
         `uvm_info(`gfn, $sformatf("state read mask: 0b%0b", state_mask), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("digest_word: 0x%0x", digest_word), UVM_HIGH)
@@ -2002,12 +2362,25 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_tl_access
 
+  virtual function predict_err(bit is_sha3_err = 0, bit is_kmac_err = 0);
+    // set interrupt
+    if (!intr_kmac_err) intr_kmac_err = 1;
+    `uvm_info(`gfn, "raised intr_kmac_err", UVM_HIGH)
+    if (is_sha3_err) `uvm_info(`gfn, $sformatf("sha3_err: %0p", sha3_err), UVM_HIGH)
+    if (is_kmac_err) `uvm_info(`gfn, $sformatf("kmac_err: %0p", kmac_err), UVM_HIGH)
+
+    // predict error CSR
+    if (is_sha3_err) begin
+      void'(ral.err_code.predict(.value(TL_DW'(sha3_err)), .kind(UVM_PREDICT_DIRECT)));
+    end else if (is_kmac_err) begin
+      void'(ral.err_code.predict(.value(TL_DW'(kmac_err)), .kind(UVM_PREDICT_DIRECT)));
+    end
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
 
     clear_state();
-
-    kmac_cmd = CmdNone;
 
     first_op_after_rst = 1;
 
@@ -2028,6 +2401,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     if (first_op_after_rst) first_op_after_rst = 0;
 
+    kmac_cmd = CmdNone;
+
+    do_check_digest = 1;
+
     msg.delete();
     kmac_app_msg.delete();
 
@@ -2047,6 +2424,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     in_edn_fetch    = 0;
     refresh_entropy = 0;
+
+    kmac_err = '{valid: 1'b0,
+                 code: kmac_pkg::ErrNone,
+                 info: '0};
+    sha3_err = '{valid: 1'b0,
+                 code: sha3_pkg::ErrNone,
+                 info: '0};
+
+    app_st = StIdle;
+    err_st = ErrStIdle;
 
     keys          = '0;
     keymgr_keys   = '0;
@@ -2126,6 +2513,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ_FATAL(digest_share0.size(), output_len_bytes,
           $sformatf("Calculated output length doesn't match actual output length!"))
     end
+
+    if (cfg.en_cov) begin
+      // sample configuration coverage, as only now do we know which KMAC variant is used
+      // (xof/non-xof)
+      cov.sample_cfg(kmac_en, xof_en, strength, hash_mode, key_len,
+                     `gmv(ral.cfg.msg_endianness), `gmv(ral.cfg.state_endianness),
+                     `gmv(ral.cfg.sideload), entropy_mode, entropy_fast_process);
+
+      // sample coverage on the digest length
+      if (cfg.en_cov) begin
+        cov.output_digest_len_cg.sample(output_len_bytes);
+      end
+    end
+
 
     `uvm_info(`gfn, $sformatf("output_len_bytes: %0d", output_len_bytes), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("xof_en: %0d", xof_en), UVM_HIGH)
@@ -2374,6 +2775,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end else begin
       prefix_bytes = {<< 32 {prefix}};
       prefix_bytes = {<< byte {prefix_bytes}};
+    end
+
+    // sample coverage
+    if (cfg.en_cov) begin
+      foreach (prefix_bytes[i]) begin
+        cov.prefix_range_cg.sample(byte'(prefix_bytes[i]));
+      end
     end
 
     `uvm_info(`gfn, $sformatf("prefix: %0p", prefix), UVM_HIGH)

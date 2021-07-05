@@ -16,7 +16,7 @@ package pwrmgr_pkg;
   // variables referenced only by pwrmgr
   localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
-  //// The following structs should eventually be relocted to other modules
+  //// The following structs should eventually be relocated to other modules.
   //typedef enum logic [1:0] {
   //  DiffValid = 2'b10,
   //  DiffInvalid = 2'b01
@@ -58,7 +58,7 @@ package pwrmgr_pkg;
     main_pok: 1'b0
   };
 
-  // reasons for pwrmgr reset reset
+  // reasons for pwrmgr reset
   typedef enum logic [1:0] {
     ResetNone = 0,     // there is no reset
     LowPwrEntry = 1,   // reset is caused by low power entry

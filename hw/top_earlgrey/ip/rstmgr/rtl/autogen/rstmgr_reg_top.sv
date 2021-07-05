@@ -104,95 +104,90 @@ module rstmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_we;
+  logic alert_test_wd;
+  logic reset_info_we;
   logic reset_info_por_qs;
   logic reset_info_por_wd;
-  logic reset_info_por_we;
   logic reset_info_low_power_exit_qs;
   logic reset_info_low_power_exit_wd;
-  logic reset_info_low_power_exit_we;
   logic reset_info_ndm_reset_qs;
   logic reset_info_ndm_reset_wd;
-  logic reset_info_ndm_reset_we;
   logic [2:0] reset_info_hw_req_qs;
   logic [2:0] reset_info_hw_req_wd;
-  logic reset_info_hw_req_we;
+  logic alert_regwen_we;
   logic alert_regwen_qs;
   logic alert_regwen_wd;
-  logic alert_regwen_we;
+  logic alert_info_ctrl_we;
   logic alert_info_ctrl_en_qs;
   logic alert_info_ctrl_en_wd;
-  logic alert_info_ctrl_en_we;
   logic [3:0] alert_info_ctrl_index_qs;
   logic [3:0] alert_info_ctrl_index_wd;
-  logic alert_info_ctrl_index_we;
-  logic [3:0] alert_info_attr_qs;
   logic alert_info_attr_re;
-  logic [31:0] alert_info_qs;
+  logic [3:0] alert_info_attr_qs;
   logic alert_info_re;
+  logic [31:0] alert_info_qs;
+  logic cpu_regwen_we;
   logic cpu_regwen_qs;
   logic cpu_regwen_wd;
-  logic cpu_regwen_we;
+  logic cpu_info_ctrl_we;
   logic cpu_info_ctrl_en_qs;
   logic cpu_info_ctrl_en_wd;
-  logic cpu_info_ctrl_en_we;
   logic [3:0] cpu_info_ctrl_index_qs;
   logic [3:0] cpu_info_ctrl_index_wd;
-  logic cpu_info_ctrl_index_we;
-  logic [3:0] cpu_info_attr_qs;
   logic cpu_info_attr_re;
-  logic [31:0] cpu_info_qs;
+  logic [3:0] cpu_info_attr_qs;
   logic cpu_info_re;
+  logic [31:0] cpu_info_qs;
+  logic sw_rst_regen_we;
   logic sw_rst_regen_en_0_qs;
   logic sw_rst_regen_en_0_wd;
-  logic sw_rst_regen_en_0_we;
   logic sw_rst_regen_en_1_qs;
   logic sw_rst_regen_en_1_wd;
-  logic sw_rst_regen_en_1_we;
   logic sw_rst_regen_en_2_qs;
   logic sw_rst_regen_en_2_wd;
-  logic sw_rst_regen_en_2_we;
   logic sw_rst_regen_en_3_qs;
   logic sw_rst_regen_en_3_wd;
-  logic sw_rst_regen_en_3_we;
   logic sw_rst_regen_en_4_qs;
   logic sw_rst_regen_en_4_wd;
-  logic sw_rst_regen_en_4_we;
   logic sw_rst_regen_en_5_qs;
   logic sw_rst_regen_en_5_wd;
-  logic sw_rst_regen_en_5_we;
   logic sw_rst_regen_en_6_qs;
   logic sw_rst_regen_en_6_wd;
-  logic sw_rst_regen_en_6_we;
+  logic sw_rst_ctrl_n_re;
+  logic sw_rst_ctrl_n_we;
   logic sw_rst_ctrl_n_val_0_qs;
   logic sw_rst_ctrl_n_val_0_wd;
-  logic sw_rst_ctrl_n_val_0_we;
-  logic sw_rst_ctrl_n_val_0_re;
   logic sw_rst_ctrl_n_val_1_qs;
   logic sw_rst_ctrl_n_val_1_wd;
-  logic sw_rst_ctrl_n_val_1_we;
-  logic sw_rst_ctrl_n_val_1_re;
   logic sw_rst_ctrl_n_val_2_qs;
   logic sw_rst_ctrl_n_val_2_wd;
-  logic sw_rst_ctrl_n_val_2_we;
-  logic sw_rst_ctrl_n_val_2_re;
   logic sw_rst_ctrl_n_val_3_qs;
   logic sw_rst_ctrl_n_val_3_wd;
-  logic sw_rst_ctrl_n_val_3_we;
-  logic sw_rst_ctrl_n_val_3_re;
   logic sw_rst_ctrl_n_val_4_qs;
   logic sw_rst_ctrl_n_val_4_wd;
-  logic sw_rst_ctrl_n_val_4_we;
-  logic sw_rst_ctrl_n_val_4_re;
   logic sw_rst_ctrl_n_val_5_qs;
   logic sw_rst_ctrl_n_val_5_wd;
-  logic sw_rst_ctrl_n_val_5_we;
-  logic sw_rst_ctrl_n_val_5_re;
   logic sw_rst_ctrl_n_val_6_qs;
   logic sw_rst_ctrl_n_val_6_wd;
-  logic sw_rst_ctrl_n_val_6_we;
-  logic sw_rst_ctrl_n_val_6_re;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
+    .qs     ()
+  );
+
+
   // R[reset_info]: V(False)
 
   //   F[por]: 0:0
@@ -205,7 +200,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_por_we),
+    .we     (reset_info_we),
     .wd     (reset_info_por_wd),
 
     // from internal hardware
@@ -231,7 +226,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_low_power_exit_we),
+    .we     (reset_info_we),
     .wd     (reset_info_low_power_exit_wd),
 
     // from internal hardware
@@ -257,7 +252,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_ndm_reset_we),
+    .we     (reset_info_we),
     .wd     (reset_info_ndm_reset_wd),
 
     // from internal hardware
@@ -283,7 +278,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_info_hw_req_we),
+    .we     (reset_info_we),
     .wd     (reset_info_hw_req_wd),
 
     // from internal hardware
@@ -338,7 +333,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_info_ctrl_en_we & alert_regwen_qs),
+    .we     (alert_info_ctrl_we & alert_regwen_qs),
     .wd     (alert_info_ctrl_en_wd),
 
     // from internal hardware
@@ -364,7 +359,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_info_ctrl_index_we & alert_regwen_qs),
+    .we     (alert_info_ctrl_we & alert_regwen_qs),
     .wd     (alert_info_ctrl_index_wd),
 
     // from internal hardware
@@ -451,7 +446,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cpu_info_ctrl_en_we & cpu_regwen_qs),
+    .we     (cpu_info_ctrl_we & cpu_regwen_qs),
     .wd     (cpu_info_ctrl_en_wd),
 
     // from internal hardware
@@ -477,7 +472,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (cpu_info_ctrl_index_we & cpu_regwen_qs),
+    .we     (cpu_info_ctrl_we & cpu_regwen_qs),
     .wd     (cpu_info_ctrl_index_wd),
 
     // from internal hardware
@@ -539,7 +534,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_0_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_0_wd),
 
     // from internal hardware
@@ -565,7 +560,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_1_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_1_wd),
 
     // from internal hardware
@@ -591,7 +586,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_2_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_2_wd),
 
     // from internal hardware
@@ -617,7 +612,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_3_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_3_wd),
 
     // from internal hardware
@@ -643,7 +638,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_4_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_4_wd),
 
     // from internal hardware
@@ -669,7 +664,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_5_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_5_wd),
 
     // from internal hardware
@@ -695,7 +690,7 @@ module rstmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sw_rst_regen_en_6_we),
+    .we     (sw_rst_regen_we),
     .wd     (sw_rst_regen_en_6_wd),
 
     // from internal hardware
@@ -720,8 +715,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_0 (
-    .re     (sw_rst_ctrl_n_val_0_re),
-    .we     (sw_rst_ctrl_n_val_0_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_0_wd),
     .d      (hw2reg.sw_rst_ctrl_n[0].d),
     .qre    (),
@@ -735,8 +730,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_1 (
-    .re     (sw_rst_ctrl_n_val_1_re),
-    .we     (sw_rst_ctrl_n_val_1_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_1_wd),
     .d      (hw2reg.sw_rst_ctrl_n[1].d),
     .qre    (),
@@ -750,8 +745,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_2 (
-    .re     (sw_rst_ctrl_n_val_2_re),
-    .we     (sw_rst_ctrl_n_val_2_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_2_wd),
     .d      (hw2reg.sw_rst_ctrl_n[2].d),
     .qre    (),
@@ -765,8 +760,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_3 (
-    .re     (sw_rst_ctrl_n_val_3_re),
-    .we     (sw_rst_ctrl_n_val_3_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_3_wd),
     .d      (hw2reg.sw_rst_ctrl_n[3].d),
     .qre    (),
@@ -780,8 +775,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_4 (
-    .re     (sw_rst_ctrl_n_val_4_re),
-    .we     (sw_rst_ctrl_n_val_4_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_4_wd),
     .d      (hw2reg.sw_rst_ctrl_n[4].d),
     .qre    (),
@@ -795,8 +790,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_5 (
-    .re     (sw_rst_ctrl_n_val_5_re),
-    .we     (sw_rst_ctrl_n_val_5_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_5_wd),
     .d      (hw2reg.sw_rst_ctrl_n[5].d),
     .qre    (),
@@ -810,8 +805,8 @@ module rstmgr_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_6 (
-    .re     (sw_rst_ctrl_n_val_6_re),
-    .we     (sw_rst_ctrl_n_val_6_we),
+    .re     (sw_rst_ctrl_n_re),
+    .we     (sw_rst_ctrl_n_we),
     .wd     (sw_rst_ctrl_n_val_6_wd),
     .d      (hw2reg.sw_rst_ctrl_n[6].d),
     .qre    (),
@@ -824,20 +819,21 @@ module rstmgr_reg_top (
 
 
 
-  logic [10:0] addr_hit;
+  logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
-    addr_hit[ 1] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
-    addr_hit[ 2] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
-    addr_hit[ 3] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
-    addr_hit[ 4] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
-    addr_hit[ 5] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
-    addr_hit[ 6] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
-    addr_hit[ 7] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
-    addr_hit[ 8] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
-    addr_hit[ 9] = (reg_addr == RSTMGR_SW_RST_REGEN_OFFSET);
-    addr_hit[10] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
+    addr_hit[ 0] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
+    addr_hit[ 2] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
+    addr_hit[ 4] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
+    addr_hit[ 5] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
+    addr_hit[ 6] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
+    addr_hit[ 7] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
+    addr_hit[ 8] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
+    addr_hit[ 9] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
+    addr_hit[10] = (reg_addr == RSTMGR_SW_RST_REGEN_OFFSET);
+    addr_hit[11] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -855,142 +851,123 @@ module rstmgr_reg_top (
                (addr_hit[ 7] & (|(RSTMGR_PERMIT[ 7] & ~reg_be))) |
                (addr_hit[ 8] & (|(RSTMGR_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(RSTMGR_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(RSTMGR_PERMIT[10] & ~reg_be)))));
+               (addr_hit[10] & (|(RSTMGR_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(RSTMGR_PERMIT[11] & ~reg_be)))));
   end
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign reset_info_por_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+  assign reset_info_we = addr_hit[1] & reg_we & !reg_error;
+
   assign reset_info_por_wd = reg_wdata[0];
 
-  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_low_power_exit_wd = reg_wdata[1];
 
-  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_hw_req_wd = reg_wdata[5:3];
+  assign alert_regwen_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign alert_regwen_we = addr_hit[1] & reg_we & !reg_error;
   assign alert_regwen_wd = reg_wdata[0];
+  assign alert_info_ctrl_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_info_ctrl_en_we = addr_hit[2] & reg_we & !reg_error;
   assign alert_info_ctrl_en_wd = reg_wdata[0];
 
-  assign alert_info_ctrl_index_we = addr_hit[2] & reg_we & !reg_error;
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
+  assign alert_info_attr_re = addr_hit[4] & reg_re & !reg_error;
+  assign alert_info_re = addr_hit[5] & reg_re & !reg_error;
+  assign cpu_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign alert_info_attr_re = addr_hit[3] & reg_re & !reg_error;
-
-  assign alert_info_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign cpu_regwen_we = addr_hit[5] & reg_we & !reg_error;
   assign cpu_regwen_wd = reg_wdata[0];
+  assign cpu_info_ctrl_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign cpu_info_ctrl_en_we = addr_hit[6] & reg_we & !reg_error;
   assign cpu_info_ctrl_en_wd = reg_wdata[0];
 
-  assign cpu_info_ctrl_index_we = addr_hit[6] & reg_we & !reg_error;
   assign cpu_info_ctrl_index_wd = reg_wdata[7:4];
+  assign cpu_info_attr_re = addr_hit[8] & reg_re & !reg_error;
+  assign cpu_info_re = addr_hit[9] & reg_re & !reg_error;
+  assign sw_rst_regen_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign cpu_info_attr_re = addr_hit[7] & reg_re & !reg_error;
-
-  assign cpu_info_re = addr_hit[8] & reg_re & !reg_error;
-
-  assign sw_rst_regen_en_0_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_0_wd = reg_wdata[0];
 
-  assign sw_rst_regen_en_1_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_1_wd = reg_wdata[1];
 
-  assign sw_rst_regen_en_2_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_2_wd = reg_wdata[2];
 
-  assign sw_rst_regen_en_3_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_3_wd = reg_wdata[3];
 
-  assign sw_rst_regen_en_4_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_4_wd = reg_wdata[4];
 
-  assign sw_rst_regen_en_5_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_5_wd = reg_wdata[5];
 
-  assign sw_rst_regen_en_6_we = addr_hit[9] & reg_we & !reg_error;
   assign sw_rst_regen_en_6_wd = reg_wdata[6];
+  assign sw_rst_ctrl_n_re = addr_hit[11] & reg_re & !reg_error;
+  assign sw_rst_ctrl_n_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign sw_rst_ctrl_n_val_0_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_val_0_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_1_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_1_wd = reg_wdata[1];
-  assign sw_rst_ctrl_n_val_1_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_2_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_2_wd = reg_wdata[2];
-  assign sw_rst_ctrl_n_val_2_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_3_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_3_wd = reg_wdata[3];
-  assign sw_rst_ctrl_n_val_3_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_4_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_4_wd = reg_wdata[4];
-  assign sw_rst_ctrl_n_val_4_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_5_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_5_wd = reg_wdata[5];
-  assign sw_rst_ctrl_n_val_5_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_6_we = addr_hit[10] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_6_wd = reg_wdata[6];
-  assign sw_rst_ctrl_n_val_6_re = addr_hit[10] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[1]: begin
         reg_rdata_next[0] = reset_info_por_qs;
         reg_rdata_next[1] = reset_info_low_power_exit_qs;
         reg_rdata_next[2] = reset_info_ndm_reset_qs;
         reg_rdata_next[5:3] = reset_info_hw_req_qs;
       end
 
-      addr_hit[1]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = alert_regwen_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = alert_info_ctrl_en_qs;
         reg_rdata_next[7:4] = alert_info_ctrl_index_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[4]: begin
         reg_rdata_next[3:0] = alert_info_attr_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = alert_info_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = cpu_regwen_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = cpu_info_ctrl_en_qs;
         reg_rdata_next[7:4] = cpu_info_ctrl_index_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[3:0] = cpu_info_attr_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = cpu_info_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = sw_rst_regen_en_0_qs;
         reg_rdata_next[1] = sw_rst_regen_en_1_qs;
         reg_rdata_next[2] = sw_rst_regen_en_2_qs;
@@ -1000,7 +977,7 @@ module rstmgr_reg_top (
         reg_rdata_next[6] = sw_rst_regen_en_6_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_val_0_qs;
         reg_rdata_next[1] = sw_rst_ctrl_n_val_1_qs;
         reg_rdata_next[2] = sw_rst_ctrl_n_val_2_qs;

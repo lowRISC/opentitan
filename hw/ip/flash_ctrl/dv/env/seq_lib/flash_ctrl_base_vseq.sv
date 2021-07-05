@@ -23,18 +23,26 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    uvm_reg_data_t data;
-    bit init_busy;
-    super.apply_reset(kind, concurrent_deassert_resets);
-    if (kind == "HARD") begin
-      cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
-    end
-    cfg.flash_mem_bkdr_init(FlashPartInfo1, FlashMemInitSet);
-
+  virtual task reset_flash();
+    // Set all flash partitions to 1s.
+    flash_dv_part_e part = part.first();
+    do begin
+      cfg.flash_mem_bkdr_init(part, FlashMemInitSet);
+      part = part.next();
+    end while (part != part.first());
     // Wait for flash_ctrl to finish initializing on every reset
     // We probably need a parameter to skip this for certain tests
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+  endtask : reset_flash
+
+  virtual task apply_reset(string kind = "HARD");
+    uvm_reg_data_t data;
+    bit init_busy;
+    super.apply_reset(kind);
+    if (kind == "HARD") begin
+      cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
+    end
+    reset_flash();
 
   endtask // apply_reset
 

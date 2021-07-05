@@ -22,3 +22,7 @@ waive -rules {TWO_STATE_TYPE} -location {kmac.sv} \
 waive -rules {TAG_OVERLAP} -location {kmac_app.sv} \
     -regexp {Case tag expression '2'b1.* overlaps with previous tag} \
     -comment "priority casez makes the condition check explicitly"
+
+waive -rules {INTEGER} -location {kmac_entropy.sv} \
+    -regexp {'i' of type int used as a non-constant value} \
+    -comment "int i is compared with the storage_idx"

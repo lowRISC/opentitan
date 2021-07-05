@@ -10,7 +10,7 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
   }
   `uvm_object_new
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     // The CSR tests (handled by this class) need to wait until the rom_ctrl block has finished
     // running KMAC before they can start issuing reads and writes. Otherwise, they might write to a
     // KMAC register while KMAC is in operation. This would have no effect and a subsequent read
@@ -22,7 +22,7 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     // will go low. When the operation is finished, it will go high again. Wait until then.
     int unsigned rc_phase = 0;
 
-    super.apply_reset(kind, concurrent_deassert_resets);
+    super.apply_reset(kind);
 
     `uvm_info(`gfn, "waiting for rom_ctrl after reset", UVM_MEDIUM)
     while (rc_phase < 2) begin

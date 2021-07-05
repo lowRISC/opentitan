@@ -14,8 +14,11 @@ package dv_utils_pkg;
 `endif
 
   // common parameters used across all benches
-  parameter int NUM_MAX_INTERRUPTS  = 32;
-  parameter int NUM_MAX_ALERTS      = 32;
+  parameter int NUM_MAX_INTERRUPTS = 32;
+  typedef logic [NUM_MAX_INTERRUPTS-1:0] interrupt_t;
+
+  parameter int NUM_MAX_ALERTS = 32;
+  typedef logic [NUM_MAX_ALERTS-1:0] alert_t;
 
   // types & variables
   typedef bit [31:0] uint;
@@ -92,6 +95,16 @@ package dv_utils_pkg;
   // return the bigger value of 2 inputs
   function automatic int max2(int a, int b);
     return (a > b) ? a : b;
+  endfunction
+
+  // return the biggest value within the given queue of integers.
+  function automatic int max(const ref int int_q[$]);
+    `DV_CHECK_GT_FATAL(int_q.size(), 0, "max function cannot accept an empty queue of integers!",
+                       msg_id)
+    // Assign the first value from the queue in case of negative integers.
+    max = int_q[0];
+    foreach (int_q[i]) max = max2(max, int_q[i]);
+    return max;
   endfunction
 
   // get absolute value of the input. Usage: absolute(val) or absolute(a - b)
@@ -189,7 +202,7 @@ package dv_utils_pkg;
 
   // Periodically check for the existence of a magic file (dv.stop). Exit if it exists. This
   // provides a mechanism to gracefully kill a simulation without direct access to the process.
-  task automatic poll_for_stop(uint interval_ns = 1000, string filename = "dv.stop");
+  task automatic poll_for_stop(uint interval_ns = 10_000, string filename = "dv.stop");
     fork
       while (1) begin
         #(interval_ns * 1ns);

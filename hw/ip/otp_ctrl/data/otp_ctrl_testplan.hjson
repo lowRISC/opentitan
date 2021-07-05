@@ -211,6 +211,21 @@
       milestone: V2
       tests: ["otp_ctrl_stress_all"]
     }
+    {
+      name: otp_ctrl_low_freq_read
+      desc: '''
+            This test checks if OTP's read operation can operate successfully in a low clock
+            frequency before the clock is calibrated.
+
+            **Stimulus and Checks**:
+            - Configure OTP_CTRL's clock to 6MHz low frequency.
+            - Backdoor write OTP memory.
+            - Use DAI access to read each memory address and compare if the value is correct.
+            - If DAI address is in a SW partition, read and check again via TLUL interface.
+            '''
+      milestone: V3
+      tests: ["otp_ctrl_low_freq_read"]
+    }
   ]
 
   covergroups: [

@@ -34,6 +34,8 @@
               - If the hint disables it but the unit is busy, the clock remains
                 active.
               - If the hint disables it and the unit is idle, the clock stops.
+            - For transactional units the CSR `clk_hints_status` is checked
+              to correspond to `clk_hints` once the units are idle.
             '''
       milestone: V1
       tests: ["clkmgr_smoke"]
@@ -61,12 +63,19 @@
       name: trans_enables
       desc: '''
             Transactional unit clocks are disabled if they are not busy and
-            their `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
+            their CSR `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
             and `scanmode_i` is not `lc_ctrl_pkg::On`.
-            This test randomize `ip_clk_en`, the initial setting of `idle_i`
-            and `clk_hints`, and flips any bit in `clk_hints`. If the
-            corresponding unit is not idle it waits some cycles and clears its
-            `idle_i` bit.
+            This test randomizes `ip_clk_en`, the initial setting of `idle_i`
+            and the desired value of `clk_hints`. Each round performs this
+            sequence:
+            - Writes the desired value to CSR `clk_hints` and checks that the
+              CSR `clk_hints_status` reflects CSR `clk_hints` except for the
+              units not-idle.
+            - Marks all units as idle, and checks that `csr_hints_status`
+              matches `clk_hints`.
+            - Writes `clk_hints` to all ones and checks that `csr_hints_status`
+              is all ones.
+            - Writes `clk_hints` with its reset value.
 
             **Checks**:
             - SVA assertions for transactional unit clocks described in
@@ -80,40 +89,114 @@
       desc: '''
             Tests the functionality of enabling external clocks.
 
-            - External clocks can be enabled writing `lc_ctrl_pkg::On` to CSR
-              `extclk_sel`.
-            - Writes to CSR `extclk_sel` are ignored unless the value of CSR
-              `extclk_sel_regwen` is 1.
-            - Regardless of the `extclk_sel` contents, external clocks won't
-              be enabled unless `lc_dtl_en_i == lc_ctrl_pkg::On`.
-            - External clocks can also be enabled if the input
-             `lc_clk_byp_req_i == lc_ctrl_pkg::On`.
+            - External clock is enabled if the `lc_clk_byp_req_i` input from
+              `lc_ctrl` is `lc_ctrl_pkg::On`.
+            - External clock is also be enabled when CSR `extclk_sel` is set to
+              `lc_ctrl_pkg::On` and the `lc_dtl_en_i` input from `lc_ctrl` is
+              `lc_ctrl_pkg::On`.
+            - Notice writes to the `extclk_sel` register are ignored unless the
+              CSR `extclk_sel_regwen` is 1.
             - A successful switch to external clocks will cause the clkmgr
-              to undo a divide by 2 for io_div4 and io_div2 clocks unless in
-              scan mode `(scanmode_i == lc_ctrl_pkg::On)`.
+              to undo a divide by 2 for io_div4 and io_div2 clocks except when
+              `(scanmode_i == lc_ctrl_pkg::On)`.
 
             **Stimulus**:
             - CSR writes to `extclk_sel` and `extclk_sel_regwen`.
             - Setting `lc_dft_en_i`, `lc_clk_byp_req_i`, and the handshake to
               ast via `ast_clk_byp_req_o` and `ast_clk_byp_ack_i`.
+            - Setting `scanmode_i`.
 
             **Checks**:
-            - SVA assertions:
-              - `lc_clk_byp_req_i == lc_ctrl_pkg::On` causes
-                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
-              - `extclk_sel == lc_ctrl_pkg::On` and
-                `lc_dft_en_i == lc_ctrl_pkg::On` causes
-                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
-              - `ast_clk_byp_ack_i == lc_ctrl_pkg::On` causes the divided
-                clocks to ramp up unless `scanmode_i == lc_ctrl_pkg::On`.
+            Clock divider checks: since `scanmode_i` is asynchronous, the checks
+            are performed in behavioral code in the scoreboard; SVA assertions
+            will be added, conditioned on scanmode being off.
+            - When the external clock is selected (and not defeated by
+              `scanmode_i` for scoreboard checks):
+              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
+                 output.
+              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
+                 output at half its frequency.
+            - When the external clock is not selected or division is defeated:
+              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
+                output at half its frequency.
+              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
+                 output at a quarter of its frequency.
+            LC / AST handshake:
+            - When the external clock functionality is triggered the
+              `ast_clk_byp_req_o` output pin is set to `lc_ctrl_pkg::On`.
+            - When `ast_clk_byp_ack_i` is set to `lc_ctrl_pkg::On` in response
+              to a corresponding request:
+              - The clock dividers are stepped down, unless defeated by
+                 `scanmode_i` being `lc_ctrl_pkg::On`.
+             - If the initial request was due to the assertion of the
+               `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
+               `lc_ctrl_pkg::On`.
+            '''
+      milestone: V2
+      tests: ["clkmgr_extclk"]
+    }
+    {
+      name: jitter
+      desc: '''
+            This tests the jitter functionality.
+
+            The jitter functionality is implemented by the AST block,
+            but controlled by the `jitter` CSR in this block. This CSR
+            directly drives the `jitter_en_o` output pin.
+
+            **Stimulus**:
+            - CSR write to `jitter`.
+
+            **Check**:
+            - The `jitter_en_o` output pin reflects the `jitter` CSR.
             '''
       milestone: V2
       tests: []
     }
   ]
-  // The covergroups are arrays, which are yet to be supported by the tools.
   covergroups: [
-    // peri_cg_wrap cover the dependencies of each peripheral clock.
-    // trans_cg_wrap  cover the dependencies of each transactional unit clock.
+    {
+      name: peri_cg
+      desc: '''
+            Collects coverage for each peripheral clock.
+
+            The peripheral clocks depend on a bit in the clk_enables CSR,
+            the ip_clk_en input from pwrmgr, and the scanmode input.
+            This collects the cross of them for each peripheral.
+
+            FIXME This is collected in an array, one instance for each clock,
+            but the dvsim coverage flow doesn't yet support arrays.
+            '''
+    }
+    {
+      name: trans_cg
+      desc: '''
+            Collects coverage for each transactional unit clock.
+
+            The transactional unit clocks depend on a bit in the clk_hints CSR,
+            the ip_clk_en input from pwrmgr, the respective idle input bit from
+            the unit, and the scanmode input.
+            This collects the cross of them for each transactional unit.
+
+            FIXME This is collected in an array, one instance for each clock,
+            but the dvsim coverage flow doesn't yet support arrays.
+            '''
+    }
+    {
+      name: extclk_cg
+      desc: '''
+            Collects coverage for the external clock selection.
+
+            The external clock selection depends on the `extclk_sel` CSR,
+            and the `lc_dft_en_i`, `lc_clk_byp_req_i`, and `scanmode_i`
+            input pins. This covergroup collects their cross.
+            '''
+    }
+    {
+      name: jitter_cg
+      desc: '''
+            Collects coverage of the `jitter` CSR.
+            '''
+    }
   ]
 }

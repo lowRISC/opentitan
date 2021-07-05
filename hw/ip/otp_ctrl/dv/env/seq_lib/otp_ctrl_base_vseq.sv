@@ -47,8 +47,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Cfg errors are cleared after reset
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
-    super.apply_reset(kind, concurrent_deassert_resets);
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     cfg.ecc_err = OtpNoEccErr;
   endtask
 
@@ -80,12 +80,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
-  // 1). Some registers won't set to default value until otp_init is done
-  // 2). Clear memory for next sequence to run. This can avoid ECC injection error and
-  //     write_blank error
+  // because some registers won't set to default value until otp_init is done.
   virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-    clear_otp_memory();
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
@@ -167,7 +164,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
     if (backdoor_wr) begin
-      cfg.backdoor_write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+      cfg.mem_bkdr_util_h.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
     end
   endtask : dai_rd
 
@@ -250,14 +247,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
                                                            otp_ecc_err_e   ecc_err);
     bit [TL_DW-1:0] val;
-    prim_secded_pkg::secded_22_16_t out;
     addr = {addr[TL_DW-1:2], 2'b00};
-    val = {cfg.mem_bkdr_util_h.read16(addr+2), cfg.mem_bkdr_util_h.read16(addr)};
+    val = cfg.mem_bkdr_util_h.read32(addr);
     if (ecc_err == OtpNoEccErr || addr >= (LifeCycleOffset + LifeCycleSize)) return val;
 
     // Backdoor read and write back with error bits
-    // TODO: debug why write16 and write32 won't work.
-    cfg.mem_bkdr_util_h.write8(addr, val, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
+    cfg.mem_bkdr_util_h.inject_errors(addr, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
     `uvm_info(`gfn, $sformatf("original val %0h, addr %0h, err_type %0s",
                               val, addr, ecc_err.name), UVM_HIGH)
     return val;
@@ -287,7 +282,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
 
     if (ecc_err != OtpNoEccErr) begin
-      cfg.backdoor_write32(addr, backdoor_rd_val);
+      cfg.mem_bkdr_util_h.write32(addr, backdoor_rd_val);
       cfg.ecc_chk_err = '{default: OtpNoEccErr};
     end
   endtask

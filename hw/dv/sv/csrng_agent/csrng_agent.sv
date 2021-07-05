@@ -64,6 +64,8 @@ class csrng_agent extends dv_base_agent #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
+    m_cmd_push_agent.monitor.analysis_port.connect(monitor.csrng_cmd_fifo.analysis_export);
+
     if (cfg.is_active) begin
       if (cfg.if_mode == dv_utils_pkg::Device) begin
         monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);

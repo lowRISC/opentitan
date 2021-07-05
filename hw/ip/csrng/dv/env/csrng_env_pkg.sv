@@ -14,18 +14,20 @@ package csrng_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import csrng_ral_pkg::*;
+  import aes_model_dpi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint     NUM_HW_APPS = 1;
+  parameter uint     NUM_HW_APPS      = 1;
   parameter string   LIST_OF_ALERTS[] = {"fatal_alert"};
-  parameter uint     NUM_ALERTS = 1;
-  parameter uint     KEY_LEN    = 256;
-  parameter uint     BLOCK_LEN  = 128;
-  parameter uint     CTR_LEN    = 32;
+  parameter uint     NUM_ALERTS       = 1;
+  parameter uint     KEY_LEN          = 256;
+  parameter uint     BLOCK_LEN        = 128;
+  parameter uint     CTR_LEN          = 32;
+  parameter uint     RSD_CTR_LEN      = 32;
 
   parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
                                                        32'h0,

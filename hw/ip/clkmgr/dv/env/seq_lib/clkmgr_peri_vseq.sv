@@ -18,7 +18,7 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       logic [NUM_PERI-1:0] flipped_enables;
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));      
+      cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
 
       csr_wr(.ptr(ral.clk_enables), .value(initial_enables));
 

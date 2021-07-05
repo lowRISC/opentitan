@@ -108,6 +108,10 @@ class Scheduler:
         # per-target.
         self.item_to_status = {}
 
+        # Create the launcher instance for all items.
+        for item in self.items:
+            item.create_launcher()
+
         # The chosen launcher class. This allows us to access launcher
         # variant-specific settings such as max parallel jobs & poll rate.
         self.launcher_cls = launcher_cls

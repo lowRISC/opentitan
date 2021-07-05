@@ -16,21 +16,26 @@ num_grps = len(grps)
 {
   name: "CLKMGR",
   scan: "true",
-  clock_primary: "clk_i",
-  other_clock_list: [],
-  reset_primary: "rst_ni",
-  other_reset_list: [
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
 % for src in srcs:
     % if src['aon'] == 'no':
-    "rst_${src['name']}_ni"
+    {reset: "rst_${src['name']}_ni"},
     % endif
 % endfor
 % for src in div_srcs:
-    "rst_${src['name']}_ni"
+    {reset: "rst_${src['name']}_ni"},
 % endfor
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
   ],
   regwidth: "32",
   param_list: [
@@ -211,12 +216,17 @@ num_grps = len(grps)
 
     { name: "CLK_HINTS",
       desc: '''
-        Clock hint for software gateable clocks.
-        These clocks are not fully controlled by software.
+        Clock hint for software gateable transactional clocks during active mode.
+        During low power mode, all clocks are gated off regardless of the software hint.
 
-        For disable, software only provides a hint, and hardware determines the final clock state based on the
-        hint and whether the block in question is idle.
+        Transactional clocks are not fully controlled by software.  Instead software provides only a disable hint.
 
+        When software provides a disable hint, the clock manager checks to see if the associated hardware block is idle.
+        If the hardware block is idle, then the clock is disabled.
+        If the hardware block is not idle, the clock is kept on.
+
+        For the enable case, the software hint is immediately honored and the clock turned on.  Hardware does not provide any
+        feedback in this case.
       ''',
       swaccess: "rw",
       hwaccess: "hro",

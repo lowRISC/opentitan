@@ -176,6 +176,12 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
   return MatchPair();
 }
 
+void OtbnTraceChecker::Flush() {
+  rtl_pending_ = false;
+  rtl_stall_ = false;
+  iss_pending_ = false;
+}
+
 bool OtbnTraceChecker::Finish() {
   assert(!(rtl_pending_ && iss_pending_));
   done_ = true;

@@ -10,7 +10,6 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
     files:
-      - aon_timer_core_if.sv
       - aon_timer_env_pkg.sv
       - aon_timer_env_cfg.sv: {is_include_file: true}
       - aon_timer_env_cov.sv: {is_include_file: true}

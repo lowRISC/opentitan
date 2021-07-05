@@ -5,12 +5,17 @@ CAPI=2:
 name: "lowrisc:dv:csrng_env:0.1"
 description: "CSRNG DV UVM environment"
 filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:aes:0.6
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:push_pull_agent
       - lowrisc:dv:csrng_agent
+      - lowrisc:dv:csr_utils
+      - lowrisc:dv:aes_model_dpi
     files:
       - csrng_env_pkg.sv
       - csrng_env_cfg.sv: {is_include_file: true}

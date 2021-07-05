@@ -25,6 +25,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
+ `DV_ALERT_IF_CONNECT
+
   // dut
   rv_timer dut (
     .clk_i                 (clk        ),
@@ -32,6 +34,9 @@ module tb;
 
     .tl_i                  (tl_if.h2d  ),
     .tl_o                  (tl_if.d2h  ),
+
+    .alert_rx_i            (alert_rx   ),
+    .alert_tx_o            (alert_tx   ),
 
     .intr_timer_expired_0_0_o(intr_timer_expired[0][0] )
   );

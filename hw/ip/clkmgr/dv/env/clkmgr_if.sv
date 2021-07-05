@@ -52,31 +52,28 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   } clk_hints_t;
 
   // The CSR values from the testbench side.
-  clk_enables_t clk_enables;
-  clk_hints_t   clk_hints;
-  clk_hints_t   clk_hints_status;
-  logic         extclk_sel_regwen;
-  logic         extclk_sel;
-  logic         jitter_enable;
+  clk_enables_t        clk_enables;
+  clk_hints_t          clk_hints;
+  clk_hints_t          clk_hints_status;
+  lc_ctrl_pkg::lc_tx_t extclk_sel;
+  logic                jitter_enable;
 
-  task automatic wait_clks(int cycles);
-    repeat (cycles) @(posedge clk);
-  endtask
+  // The expected and actual divided io clocks.
+  logic exp_clk_io_div2;
+  logic actual_clk_io_div2;
+  logic exp_clk_io_div4;
+  logic actual_clk_io_div4;
 
-  function automatic void update_extclk_sel_regwen(logic sel_regwen);
-    extclk_sel_regwen = sel_regwen;
+  function automatic void update_extclk_sel(lc_ctrl_pkg::lc_tx_t value);
+    extclk_sel = value;
   endfunction
 
-  function automatic void update_extclk_sel(logic sel);
-    extclk_sel = sel;
+  function automatic void update_clk_enables(clk_enables_t value);
+    clk_enables = value;
   endfunction
 
-  function automatic void update_clk_enables(clk_enables_t ens);
-    clk_enables = ens;
-  endfunction
-
-  function automatic void update_clk_hints(clk_hints_t hints);
-    clk_hints = hints;
+  function automatic void update_clk_hints(clk_hints_t value);
+    clk_hints = value;
   endfunction
 
   function automatic void update_idle(bit [NUM_TRANS-1:0] value);
@@ -87,18 +84,43 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     pwr_i.ip_clk_en = value;
   endfunction
 
-  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t scm);
-    scanmode_i = scm;
+  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t value);
+    scanmode_i = value;
+  endfunction
+
+  function automatic void update_lc_dft_en(lc_ctrl_pkg::lc_tx_t value);
+    lc_dft_en_i = value;
+  endfunction
+
+  function automatic void update_lc_clk_byp_req(lc_ctrl_pkg::lc_tx_t value);
+    lc_clk_byp_req = value;
+  endfunction
+
+  function automatic void update_ast_clk_byp_ack(lc_ctrl_pkg::lc_tx_t value);
+    ast_clk_byp_ack = value;
   endfunction
 
   function automatic logic get_clk_status();
     return pwr_o.clk_status;
   endfunction
 
-  task automatic init(logic [NUM_TRANS-1:0] idle, logic ip_clk_en, lc_ctrl_pkg::lc_tx_t scanmode);
-    lc_clk_byp_req = lc_ctrl_pkg::Off;
-    ast_clk_byp_ack = lc_ctrl_pkg::Off;
-    lc_dft_en_i = lc_ctrl_pkg::Off;
+  function automatic void update_exp_clk_io_divs(logic exp_div2_value,
+                                                 logic actual_div2_value,
+                                                 logic exp_div4_value,
+                                                 logic actual_div4_value);
+    exp_clk_io_div2 = exp_div2_value;
+    actual_clk_io_div2 = actual_div2_value;
+    exp_clk_io_div4 = exp_div4_value;
+    actual_clk_io_div4 = actual_div4_value;
+  endfunction
+
+  task automatic init(logic [NUM_TRANS-1:0] idle, logic ip_clk_en, lc_ctrl_pkg::lc_tx_t scanmode,
+                      lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
+                      lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
+                      lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack = lc_ctrl_pkg::Off);
+    update_ast_clk_byp_ack(ast_clk_byp_ack);
+    update_lc_clk_byp_req(lc_clk_byp_req);
+    update_lc_dft_en(lc_dft_en);
     update_idle(idle);
     update_ip_clk_en(ip_clk_en);
     update_scanmode(scanmode);
@@ -166,7 +188,6 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   endclocking
 
   // Pipelining and clocking block for transactional unit clocks.
-
   logic [PIPELINE_DEPTH-1:0][NUM_TRANS-1:0] clk_hints_ffs;
   logic [PIPELINE_DEPTH-1:0]                trans_clk_en_ffs;
   always @(posedge clocks_o.clk_main_powerup) begin
@@ -181,4 +202,29 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     input idle_i;
   endclocking
 
+  clocking extclk_cb @(posedge clk);
+    input extclk_sel;
+    input lc_dft_en_i;
+    input ast_clk_byp_req;
+    input lc_clk_byp_req;
+  endclocking
+
+  // Pipelining and clocking block for external clock bypass. The divisor control is
+  // triggered by an ast ack, which goes through synchronizers.
+  logic step_down_ff;
+  always @(posedge clk) begin
+    if (rst_n) begin
+      step_down_ff <= ast_clk_byp_ack == lc_ctrl_pkg::On;
+    end
+  end
+  clocking step_down_cb @(posedge clk);
+    input step_down = step_down_ff;
+  endclocking
+
+  clocking div_clks_cb @(posedge clocks_o.clk_io_powerup);
+    input exp_clk_io_div2;
+    input actual_clk_io_div2;
+    input exp_clk_io_div4;
+    input actual_clk_io_div4;
+  endclocking
 endinterface

@@ -38,6 +38,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   spi_if  spi_if(.rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   spi_device dut (
     .clk_i          (clk       ),
@@ -45,6 +47,9 @@ module tb;
 
     .tl_i           (tl_if.h2d ),
     .tl_o           (tl_if.d2h ),
+
+    .alert_rx_i     (alert_rx  ),
+    .alert_tx_o     (alert_tx  ),
 
     .cio_sck_i      (sck       ),
     .cio_csb_i      (csb       ),

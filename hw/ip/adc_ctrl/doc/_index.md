@@ -41,6 +41,16 @@ The block diagram shows a conceptual view of the ADC controller state machine an
 
 {{< incGenFromIpDesc "../data/adc_ctrl.hjson" "hwcfg" >}}
 
+### Signals
+
+In addition to the interrupts and bus signals, the tables below lists additional IOs.
+
+Signal                  | Direction | Description
+------------------------|-----------|---------------
+`adc_o`                 | `output`  | Output controls to the actual `Ast adc` module.  Contains signals such as power down control and adc channel select.
+`adc_i`                 | `input`   | Input data from `Ast adc` module. Contains adc data output as well as data valid indication.
+
+
 ## Design Details
 
 ## Sampling state machine
@@ -51,12 +61,12 @@ The state machine that takes ADC samples follows a very simple pattern:
 
 2. *Wait for ADC turn on*: The controller waits for the number of clock cycles programmed in {{< regref "adc_pd_ctl.pwrup_time" >}} which should be set to match the ADC power up delay.
 
-3. *Take sample Channel 0*: The ADC is requested to sample channel 0. 
-When the ADC signals complete the value is stored in {{< regref "adc_chn_val[0].adc_chn_value" >}}. 
+3. *Take sample Channel 0*: The ADC is requested to sample channel 0.
+When the ADC signals complete the value is stored in {{< regref "adc_chn_val[0].adc_chn_value" >}}.
 Note that the time taken in this step depends on the properties of the ADC.
 
-4. *Take sample Channel 1*: The ADC is requested to sample channel 1. 
-When the ADC signals complete the value is stored in {{< regref "adc_chn_val[1].adc_chn_value" >}}. 
+4. *Take sample Channel 1*: The ADC is requested to sample channel 1.
+When the ADC signals complete the value is stored in {{< regref "adc_chn_val[1].adc_chn_value" >}}.
 Note that the time taken in this step depends on the properties of the ADC.
 
 5. *Evaluate Filters*: The filters are evaluated and debounce logic applied (see [next section](#filters-and-debounce).
@@ -91,9 +101,9 @@ The filter that hit is recorded in the  {{< regref "adc_wakeup_status" >}} regis
 
 ## Filters and debounce
 
-There are two reserved bits in ADC filter control registers for future use. 
-In the current implementation, ADC has 10-bit granularity. 
-Each step is 2.148mV. 
+There are two reserved bits in ADC filter control registers for future use.
+In the current implementation, ADC has 10-bit granularity.
+Each step is 2.148mV.
 It covers 0-2.2V.
 
 The ADC controller implements eight pairs of filters that feed the debounce logic.
@@ -178,6 +188,10 @@ If the ADC wakeup is not required then the controller and ADC should both be dis
 
 ## Use for USB-C debug accessory detection.
 
+Please see the following diagram for the regions of interest in debug cable detection.
+![Debug Cable Regions](debug_cable_regions.svg "image_tooltip")
+
+The ADC can be used to detect debug cable connection / disconnection in the non-overlapping regions.
 As an example use case of the two channel filters they can be used for detection of a USB-C debug accessory.
 The ADC must meet some minimum specifications:
 * Full scale range is 0.0V to 2.2V
@@ -187,15 +201,15 @@ The ADC must meet some minimum specifications:
 * Absolute maximum error +/- 30 mV in the rest of the 0.0 - 2.2 V range
 
 The following assumes:
-* The slow clock runs at 200kHz or 5 &Mu;s.
-* The ADC requires 30 &Mu;s to power on.
-* The ADC takes a single sample in 44 clocks (220 &Mu;s)
+* The slow clock runs at 200kHz or 5 us.
+* The ADC requires 30 us to power on.
+* The ADC takes a single sample in 44 clocks (220 us)
 
 The controller should be initialized with the properties of the ADC and scan times.
-* The ADC power up delay must be set in {{< regref "adc_pd_ctl.pwrup_time" >}} to `6` (30 &Mu;s).
+* The ADC power up delay must be set in {{< regref "adc_pd_ctl.pwrup_time" >}} to `6` (30 us).
 * The time to delay between samples in a slow scan should be set in {{< regref "adc_pd_ctl.wakeup_time" >}} to `1600` (8ms).
 * The number of samples to cause transition from slow to fast scan should be set in {{< regref "adc_lp_sample_ctl" >}} to `4` (causing slow scan to be 4*8ms = 32ms of debounce time).
-* The number of samples for debounce should be set in {{< regref "adc_sample_ctl" >}} to `155` (causing the total debounce time to be 32ms (slow scan) + 220&Mu;s * 2 * 155 = 100ms, at the low end of the USB-C spec window).
+* The number of samples for debounce should be set in {{< regref "adc_sample_ctl" >}} to `155` (causing the total debounce time to be 32ms (slow scan) + 220us * 2 * 155 = 100ms, at the low end of the USB-C spec window).
 
 * For the 10-bit ADC granularity, the filter registers {{< regref "adc_chnX_filter_ctlN" >}} should be programmed to:
 

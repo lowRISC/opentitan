@@ -41,6 +41,7 @@ class kmac_app_vseq extends kmac_sideload_vseq;
       hash_mode == sha3_pkg::CShake;
       if (app_mode == AppKeymgr) {
         kmac_en == 1;
+        en_sideload == 1;
       } else {
         kmac_en == 0;
       }
@@ -52,5 +53,10 @@ class kmac_app_vseq extends kmac_sideload_vseq;
       }
     }
   }
+
+  virtual task pre_start();
+    en_sideload_c.constraint_mode(0);
+    super.pre_start();
+  endtask
 
 endclass

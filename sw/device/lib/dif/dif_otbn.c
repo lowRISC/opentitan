@@ -248,6 +248,16 @@ dif_otbn_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
   return kDifOtbnOk;
 }
 
+dif_otbn_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn,
+                                        uint32_t *insn_cnt) {
+  if (otbn == NULL || insn_cnt == NULL) {
+    return kDifOtbnBadArg;
+  }
+
+  *insn_cnt = mmio_region_read32(otbn->base_addr, OTBN_INSN_CNT_REG_OFFSET);
+  return kDifOtbnOk;
+}
+
 dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
                                       uint32_t offset_bytes, const void *src,
                                       size_t len_bytes) {

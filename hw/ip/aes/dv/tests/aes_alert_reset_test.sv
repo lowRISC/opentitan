@@ -19,7 +19,7 @@ class aes_alert_reset_test extends aes_base_test;
     cfg.flip_rst_split_pct       = 60;
     cfg.num_messages_min         = 3;
     cfg.num_messages_max         = 6;
-    cfg.unbalanced               = 1;
+    cfg.unbalanced               = 0;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;

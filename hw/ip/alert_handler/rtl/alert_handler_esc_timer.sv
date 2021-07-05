@@ -23,7 +23,8 @@ module alert_handler_esc_timer import alert_pkg::*; (
   input                        rst_ni,
   input                        en_i,           // enables timeout/escalation
   input                        clr_i,          // aborts escalation
-  input                        accum_trig_i,   // this will trigger escalation
+  input                        accu_trig_i,    // this will trigger escalation
+  input                        accu_fail_i,    // this will move the FSM into a terminal error state
   input                        timeout_en_i,   // enables timeout
   input        [EscCntDw-1:0]  timeout_cyc_i,  // interrupt timeout. 0 = disabled
   input        [N_ESC_SEV-1:0] esc_en_i,       // escalation signal enables
@@ -39,23 +40,60 @@ module alert_handler_esc_timer import alert_pkg::*; (
   output cstate_e              esc_state_o
 );
 
-  /////////////
-  // Counter //
-  /////////////
+  ////////////////////
+  // Tandem Counter //
+  ////////////////////
 
   logic cnt_en, cnt_clr, cnt_ge;
-  logic [EscCntDw-1:0] cnt_d, cnt_q;
+  logic [1:0][EscCntDw-1:0] cnt_q;
 
-  // escalation counter, used for all phases and the timeout
-  assign cnt_d = cnt_q + 1'b1;
+  // We employ two redundant counters to guard against FI attacks.
+  // If any of the two is glitched and the two counter states do not agree,
+  // the FSM below is moved into a terminal error state and escalation actions
+  // are permanently asserted.
+  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
 
-  // current counter output
-  assign esc_cnt_o   = cnt_q;
+    logic cnt_en_buf, cnt_clr_buf;
+
+    // These size_only buffers are instantiated in order to prevent
+    // optimization / merging of the two counters.
+    prim_buf u_prim_buf_clr (
+      .in_i(cnt_clr),
+      .out_o(cnt_clr_buf)
+    );
+
+    prim_buf u_prim_buf_en (
+      .in_i(cnt_en),
+      .out_o(cnt_en_buf)
+    );
+
+    // escalation counter, used for all phases and the timeout
+    logic [EscCntDw-1:0] cnt_d;
+    assign cnt_d = (cnt_clr_buf && cnt_en_buf) ? EscCntDw'(1'b1) :
+                   (cnt_clr_buf)               ? '0              :
+                   (cnt_en_buf)                ? cnt_q[k] + 1'b1 : cnt_q[k];
+
+    prim_flop #(
+      .Width(EscCntDw)
+    ) u_prim_flop (
+      .clk_i,
+      .rst_ni,
+      .d_i(cnt_d),
+      .q_o(cnt_q[k])
+    );
+  end
 
   // threshold test, the thresholds are muxed further below
   // depending on the current state
   logic [EscCntDw-1:0] thresh;
-  assign cnt_ge    = (cnt_q >= thresh);
+  assign cnt_ge    = (cnt_q[0] >= thresh);
+
+  // current counter output
+  assign esc_cnt_o   = cnt_q[0];
+
+  // consistency check
+  logic cnt_check_fail;
+  assign cnt_check_fail = cnt_q[0] != cnt_q[1];
 
   //////////////
   // Main FSM //
@@ -119,7 +157,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         cnt_clr = 1'b1;
         esc_state_o = Idle;
 
-        if (accum_trig_i && en_i && !clr_i) begin
+        if (accu_trig_i && en_i && !clr_i) begin
           state_d    = Phase0St;
           cnt_en     = 1'b1;
           esc_trig_o = 1'b1;
@@ -139,7 +177,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       TimeoutSt: begin
         esc_state_o = Timeout;
 
-        if ((accum_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
+        if ((accu_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
           state_d    = Phase0St;
           cnt_en     = 1'b1;
           cnt_clr    = 1'b1;
@@ -240,6 +278,12 @@ module alert_handler_esc_timer import alert_pkg::*; (
         esc_state_o = FsmError;
       end
     endcase
+
+    // if any of the duplicate counter pairs has an inconsistent state
+    // we move into the terminal FSM error state.
+    if (accu_fail_i || cnt_check_fail) begin
+      state_d = FsmErrorSt;
+    end
   end
 
   logic [N_ESC_SEV-1:0][N_PHASES-1:0] esc_map_oh;
@@ -250,9 +294,9 @@ module alert_handler_esc_timer import alert_pkg::*; (
     assign esc_sig_req_o[k] = |(esc_map_oh[k] & phase_oh) | fsm_error;
   end
 
-  ///////////////
-  // Registers //
-  ///////////////
+  ///////////////////
+  // FSM Registers //
+  ///////////////////
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -268,54 +312,114 @@ module alert_handler_esc_timer import alert_pkg::*; (
     .q_o ( state_raw_q )
   );
 
-  // switch interrupt / escalation mode
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      cnt_q   <= '0;
-    end else begin
-      if (cnt_en && cnt_clr) begin
-        cnt_q <= EscCntDw'(1'b1);
-      end else if (cnt_clr) begin
-        cnt_q <= '0;
-      end else if (cnt_en) begin
-        cnt_q <= cnt_d;
-      end
-    end
-  end
-
   ////////////////
   // Assertions //
   ////////////////
 
   // a clear should always bring us back to idle
-  `ASSERT(CheckClr, clr_i && !(state_q inside {IdleSt, TimeoutSt}) |=>
+  `ASSERT(CheckClr_A,
+      !accu_fail_i &&
+      clr_i &&
+      !(state_q inside {IdleSt, TimeoutSt, FsmErrorSt})
+      |=>
       state_q == IdleSt)
   // if currently in idle and not enabled, must remain here
-  `ASSERT(CheckEn,  state_q == IdleSt && !en_i |=>
+  `ASSERT(CheckEn_A,
+      !accu_fail_i &&
+      state_q == IdleSt &&
+      !en_i
+      |=>
       state_q == IdleSt)
   // Check if accumulation trigger correctly captured
-  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == IdleSt && en_i && !clr_i |=>
+  `ASSERT(CheckAccumTrig0_A,
+      !accu_fail_i &&
+      accu_trig_i &&
+      state_q == IdleSt &&
+      en_i &&
+      !clr_i
+      |=>
       state_q == Phase0St)
-  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == TimeoutSt && en_i && !clr_i |=>
+  `ASSERT(CheckAccumTrig1_A,
+      !accu_fail_i &&
+      accu_trig_i &&
+      state_q == TimeoutSt &&
+      en_i &&
+      !clr_i
+      |=>
       state_q == Phase0St)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, state_q == IdleSt && timeout_en_i && en_i && timeout_cyc_i != 0 &&
-      !accum_trig_i |=> state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt1, state_q == TimeoutSt && timeout_en_i && cnt_q < timeout_cyc_i &&
-      !accum_trig_i |=> state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt2, state_q == TimeoutSt && !timeout_en_i && !accum_trig_i |=>
+  `ASSERT(CheckTimeout0_A,
+      !accu_fail_i &&
+      state_q == IdleSt &&
+      timeout_en_i &&
+      en_i &&
+      timeout_cyc_i != 0 &&
+      !accu_trig_i
+      |=>
+      state_q == TimeoutSt)
+  `ASSERT(CheckTimeoutSt1_A,
+      !accu_fail_i &&
+      state_q == TimeoutSt &&
+      timeout_en_i &&
+      cnt_q[0] < timeout_cyc_i &&
+      !accu_trig_i
+      |=>
+      state_q == TimeoutSt)
+  `ASSERT(CheckTimeoutSt2_A,
+      !accu_fail_i &&
+      state_q == TimeoutSt &&
+      !timeout_en_i &&
+      !accu_trig_i
+      |=>
       state_q == IdleSt)
   // Check if timeout correctly triggers escalation
-  `ASSERT(CheckTimeoutStTrig, state_q == TimeoutSt && timeout_en_i &&
-      cnt_q == timeout_cyc_i |=> state_q == Phase0St)
+  `ASSERT(CheckTimeoutStTrig_A,
+      !accu_fail_i &&
+      state_q == TimeoutSt &&
+      timeout_en_i &&
+      cnt_q[0] == timeout_cyc_i
+      |=>
+      state_q == Phase0St)
   // Check whether escalation phases are correctly switched
-  `ASSERT(CheckPhase0, state_q == Phase0St && !clr_i && cnt_q >= phase_cyc_i[0] |=>
+  `ASSERT(CheckPhase0_A,
+      !accu_fail_i &&
+      state_q == Phase0St &&
+      !clr_i &&
+      cnt_q[0] >= phase_cyc_i[0]
+      |=>
       state_q == Phase1St)
-  `ASSERT(CheckPhase1, state_q == Phase1St && !clr_i && cnt_q >= phase_cyc_i[1] |=>
+  `ASSERT(CheckPhase1_A,
+      !accu_fail_i &&
+      state_q == Phase1St &&
+      !clr_i &&
+      cnt_q[0] >= phase_cyc_i[1]
+      |=>
       state_q == Phase2St)
-  `ASSERT(CheckPhase2, state_q == Phase2St && !clr_i && cnt_q >= phase_cyc_i[2] |=>
+  `ASSERT(CheckPhase2_A,
+      !accu_fail_i &&
+      state_q == Phase2St &&
+      !clr_i &&
+      cnt_q[0] >= phase_cyc_i[2]
+      |=>
       state_q == Phase3St)
-  `ASSERT(CheckPhase3, state_q == Phase3St && !clr_i && cnt_q >= phase_cyc_i[3] |=>
+  `ASSERT(CheckPhase3_A,
+      !accu_fail_i &&
+      state_q == Phase3St &&
+      !clr_i &&
+      cnt_q[0] >= phase_cyc_i[3]
+      |=>
       state_q == TerminalSt)
+  `ASSERT(AccuFailToFsmError_A,
+      accu_fail_i
+      |=>
+      state_q == FsmErrorSt)
+  `ASSERT(ErrorStIsTerminal_A,
+      state_q == FsmErrorSt
+      |=>
+      state_q == FsmErrorSt)
+  `ASSERT(ErrorStAllEscAsserted_A,
+      state_q == FsmErrorSt
+      |->
+      esc_sig_req_o == '1)
 
 endmodule : alert_handler_esc_timer

@@ -29,7 +29,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message_init();
     `uvm_info(`gfn, $sformatf("\n TL delay: [%d:%d] \n zero delay %d",
               cfg.m_tl_agent_cfg.d_ready_delay_min,cfg.m_tl_agent_cfg.d_ready_delay_max,
-              cfg.zero_delays  ), UVM_HIGH)
+              cfg.zero_delays  ), UVM_MEDIUM)
   endtask
 
   virtual task dut_shutdown();
@@ -91,10 +91,8 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task set_operation(bit operation);
-    if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-    end
   endtask // set_operation
 
 
@@ -190,10 +188,10 @@ class aes_base_vseq extends cip_base_vseq #(
 
     `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA FROM DUT %h ", cypher_txt), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_MEDIUM)
   endtask
 
 
@@ -296,6 +294,7 @@ class aes_base_vseq extends cip_base_vseq #(
         interleave_queue.shuffle();
     end
 
+    txt = {txt, $sformatf("\n\t IS blocking %b", is_blocking) };
 
     foreach (interleave_queue[i]) begin
       txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
@@ -364,8 +363,7 @@ class aes_base_vseq extends cip_base_vseq #(
     rst_set  = 0;
     cfg_item = aes_item_queue.pop_back();
 
-    // TODO when dut is updated to flag output overwritten
-    // the manual operation should be included in the unbalanced =1 also
+
     if (new_msg) setup_dut(cfg_item);
     if (unbalanced == 0 || manual_operation) begin
        data_item = new();
@@ -382,23 +380,27 @@ class aes_base_vseq extends cip_base_vseq #(
       end
     end else begin
 
-      data_item = new();
       while (((aes_item_queue.size() > 0) || (read_queue.size() > 0)) && !rst_set) begin
         // get the status to make sure we can provide data - but don't wait for output //
+        if (aes_item_queue.size() > 0 ) data_item = new();
         status_fsm(cfg_item, data_item, new_msg, manual_operation, 0, status, rst_set);
-        read = $urandom_range(0, 100)  <= read_prob;
-        write = $urandom_range(0, 100) <= write_prob;
 
-        if (status.input_ready && (aes_item_queue.size() > 0)) begin
-          `uvm_info(`gfn, $sformatf("\n send_queue_size %d", aes_item_queue.size()), UVM_MEDIUM)
+        read  = ($urandom_range(0, 100) <= read_prob);
+        write = ($urandom_range(0, 100) <= write_prob);
+
+        if ( (($countones(cfg_item.mode) != 1) || cfg_item.mode == AES_NONE)
+            && (aes_item_queue.size() > 0)) begin
+          // just write the data - don't expect and output
+          data_item = aes_item_queue.pop_back();
+          config_and_transmit(cfg_item, data_item, new_msg, manual_operation, 0, rst_set);
+        end else if (status.input_ready && (aes_item_queue.size() > 0) && write) begin
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg, manual_operation, 0, rst_set);
           `downcast(clone_item, data_item.clone());
           read_queue.push_back(clone_item);
-          new_msg = 0;
         end
-        if (status.output_valid) begin
-          `uvm_info(`gfn, $sformatf("\n read_queue_size %d", read_queue.size()), UVM_MEDIUM)
+        new_msg = 0;
+        if (status.output_valid && read) begin
           if (read_queue.size() > 0)  begin
             read_item = read_queue.pop_front();
             read_data(read_item.data_out, cfg_item.do_b2b);
@@ -432,14 +434,13 @@ class aes_base_vseq extends cip_base_vseq #(
       ref  bit     rst_set           // reset was forced - restart message
       );
 
+    bit                   is_blocking = ~cfg_item.do_b2b;
     status_t              status;
-    bit                   is_blocking = cfg_item.do_b2b;
-
     rst_set = 0;
     if (new_msg) begin
       write_data_key_iv(cfg_item, data_item.data_in);
     end else begin
-      add_data(data_item.data_in, is_blocking);
+      add_data(data_item.data_in, cfg_item.do_b2b);
     end
     if (manual_operation) trigger();
     if (read_output) begin
@@ -483,13 +484,13 @@ class aes_base_vseq extends cip_base_vseq #(
 
     // enable get status when provided with an empty Item.
     if (data_item.mode === 'X) begin
-      csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
+      csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     end
 
-    while(!done && (data_item.mode != AES_NONE) && !global_reset) begin
+    while(!done && (cfg_item.mode != AES_NONE) && !global_reset) begin
       //read the status register to see that we have triggered the operation
       wait(!cfg.under_reset)
-      csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
+      csr_rd(.ptr(ral.status), .value(status), .blocking(1));
       txt = {txt, "\n ----|reading STATUS", status2string(status)};
       // check status and act accordingly //
       if (status.alert_fatal_fault) begin
@@ -499,7 +500,7 @@ class aes_base_vseq extends cip_base_vseq #(
                     $sformatf("\n\t ----| Saw expected Fatal alert - trying to recover \n\t ----| %s",
                               status2string(status)), UVM_MEDIUM)
           try_recover(cfg_item, data_item, manual_operation);
-          csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
+          csr_rd(.ptr(ral.status), .value(status), .blocking(1));
           if ( !status.alert_fatal_fault) begin
             `uvm_fatal(`gfn, $sformatf("\n\t WAS able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
@@ -563,6 +564,7 @@ class aes_base_vseq extends cip_base_vseq #(
               `uvm_fatal(`gfn, $sformatf("AES REPORTED NOT IDLE - NOT READY - NOT STALLING for 100 consecutive reads"))
             end
           end
+          if (!read_output) done = 1;
           // else DUT is in operation wait for new output
           txt = {txt, $sformatf("\n\t ----| status state 3 ")};
 
@@ -582,7 +584,7 @@ class aes_base_vseq extends cip_base_vseq #(
       rst_set = 1;
     end
     `uvm_info(`gfn, $sformatf("\n\t %s",txt), UVM_MEDIUM)
-  endtask // transmit_fsm
+  endtask
 
 
   virtual task try_recover(
@@ -596,7 +598,7 @@ class aes_base_vseq extends cip_base_vseq #(
     status_t              status;         // the current AES status
     bit                   is_blocking = ~cfg_item.do_b2b;
 
-    csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(is_blocking));
+    csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(1));
     ral.ctrl_shadowed.operation.set(cfg_item.operation);
     ral.ctrl_shadowed.mode.set(cfg_item.mode);
     ral.ctrl_shadowed.key_len.set(cfg_item.key_len);
@@ -605,7 +607,7 @@ class aes_base_vseq extends cip_base_vseq #(
     // the clear options into a single bit)
     clear_regs(2'b11);
     // check for fatal
-    csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
+    csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     if (!status.alert_fatal_fault) begin
       // wait for idle
       if (!status.idle)  csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
@@ -617,7 +619,7 @@ class aes_base_vseq extends cip_base_vseq #(
     end
     write_key(cfg_item.key, is_blocking);
     write_iv(cfg_item.iv, is_blocking);
-    add_data(data_item.data_in, is_blocking);
+    add_data(data_item.data_in, cfg_item.do_b2b);
     if (manual_operation) trigger();
   endtask // try_recover
 
@@ -630,8 +632,8 @@ class aes_base_vseq extends cip_base_vseq #(
     // variables
     aes_message_item my_message;
     bit  rst_set = 0;
-    int  dbg_cnt = 0;
     while (message_queue.size() > 0 ) begin
+      `uvm_info(`gfn, $sformatf("Starting New Message - messages left %d",message_queue.size() ), UVM_MEDIUM)
       my_message = new();
       my_message = message_queue.pop_back();
       generate_aes_item_queue(my_message);
@@ -643,7 +645,6 @@ class aes_base_vseq extends cip_base_vseq #(
         // everything still works
         cfg.num_messages = 2;
         generate_message_queue();
-        dbg_cnt = 0;
         // if process was halted from the outside //
         if (global_reset) begin
           global_reset = 0;

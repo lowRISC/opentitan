@@ -104,96 +104,86 @@ module trial1_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic rwtype0_we;
   logic [31:0] rwtype0_qs;
   logic [31:0] rwtype0_wd;
-  logic rwtype0_we;
+  logic rwtype1_we;
   logic rwtype1_field0_qs;
   logic rwtype1_field0_wd;
-  logic rwtype1_field0_we;
   logic rwtype1_field1_qs;
   logic rwtype1_field1_wd;
-  logic rwtype1_field1_we;
   logic rwtype1_field4_qs;
   logic rwtype1_field4_wd;
-  logic rwtype1_field4_we;
   logic [7:0] rwtype1_field15_8_qs;
   logic [7:0] rwtype1_field15_8_wd;
-  logic rwtype1_field15_8_we;
+  logic rwtype2_we;
   logic [31:0] rwtype2_qs;
   logic [31:0] rwtype2_wd;
-  logic rwtype2_we;
+  logic rwtype3_we;
   logic [15:0] rwtype3_field0_qs;
   logic [15:0] rwtype3_field0_wd;
-  logic rwtype3_field0_we;
   logic [15:0] rwtype3_field1_qs;
   logic [15:0] rwtype3_field1_wd;
-  logic rwtype3_field1_we;
+  logic rwtype4_we;
   logic [15:0] rwtype4_field0_qs;
   logic [15:0] rwtype4_field0_wd;
-  logic rwtype4_field0_we;
   logic [15:0] rwtype4_field1_qs;
   logic [15:0] rwtype4_field1_wd;
-  logic rwtype4_field1_we;
   logic [31:0] rotype0_qs;
+  logic w1ctype0_we;
   logic [31:0] w1ctype0_qs;
   logic [31:0] w1ctype0_wd;
-  logic w1ctype0_we;
+  logic w1ctype1_we;
   logic [15:0] w1ctype1_field0_qs;
   logic [15:0] w1ctype1_field0_wd;
-  logic w1ctype1_field0_we;
   logic [15:0] w1ctype1_field1_qs;
   logic [15:0] w1ctype1_field1_wd;
-  logic w1ctype1_field1_we;
+  logic w1ctype2_we;
   logic [31:0] w1ctype2_qs;
   logic [31:0] w1ctype2_wd;
-  logic w1ctype2_we;
+  logic w1stype2_we;
   logic [31:0] w1stype2_qs;
   logic [31:0] w1stype2_wd;
-  logic w1stype2_we;
+  logic w0ctype2_we;
   logic [31:0] w0ctype2_qs;
   logic [31:0] w0ctype2_wd;
-  logic w0ctype2_we;
-  logic [31:0] r0w1ctype2_wd;
   logic r0w1ctype2_we;
+  logic [31:0] r0w1ctype2_wd;
+  logic rctype0_re;
   logic [31:0] rctype0_qs;
   logic [31:0] rctype0_wd;
-  logic rctype0_we;
-  logic [31:0] wotype0_wd;
   logic wotype0_we;
+  logic [31:0] wotype0_wd;
+  logic mixtype0_re;
+  logic mixtype0_we;
   logic [3:0] mixtype0_field0_qs;
   logic [3:0] mixtype0_field0_wd;
-  logic mixtype0_field0_we;
   logic [3:0] mixtype0_field1_qs;
   logic [3:0] mixtype0_field1_wd;
-  logic mixtype0_field1_we;
   logic [3:0] mixtype0_field2_qs;
   logic [3:0] mixtype0_field3_qs;
   logic [3:0] mixtype0_field4_qs;
   logic [3:0] mixtype0_field4_wd;
-  logic mixtype0_field4_we;
   logic [3:0] mixtype0_field5_qs;
   logic [3:0] mixtype0_field5_wd;
-  logic mixtype0_field5_we;
   logic [3:0] mixtype0_field6_qs;
   logic [3:0] mixtype0_field6_wd;
-  logic mixtype0_field6_we;
   logic [3:0] mixtype0_field7_wd;
-  logic mixtype0_field7_we;
+  logic rwtype5_we;
   logic [31:0] rwtype5_qs;
   logic [31:0] rwtype5_wd;
-  logic rwtype5_we;
+  logic rwtype6_re;
+  logic rwtype6_we;
   logic [31:0] rwtype6_qs;
   logic [31:0] rwtype6_wd;
-  logic rwtype6_we;
-  logic rwtype6_re;
-  logic [31:0] rotype1_qs;
   logic rotype1_re;
+  logic [31:0] rotype1_qs;
   logic [7:0] rotype2_field0_qs;
   logic [7:0] rotype2_field1_qs;
   logic [11:0] rotype2_field2_qs;
+  logic rwtype7_we;
   logic [31:0] rwtype7_qs;
   logic [31:0] rwtype7_wd;
-  logic rwtype7_we;
 
   // Register instances
   // R[rwtype0]: V(False)
@@ -235,7 +225,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype1_field0_we),
+    .we     (rwtype1_we),
     .wd     (rwtype1_field0_wd),
 
     // from internal hardware
@@ -261,7 +251,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype1_field1_we),
+    .we     (rwtype1_we),
     .wd     (rwtype1_field1_wd),
 
     // from internal hardware
@@ -287,7 +277,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype1_field4_we),
+    .we     (rwtype1_we),
     .wd     (rwtype1_field4_wd),
 
     // from internal hardware
@@ -313,7 +303,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype1_field15_8_we),
+    .we     (rwtype1_we),
     .wd     (rwtype1_field15_8_wd),
 
     // from internal hardware
@@ -368,7 +358,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype3_field0_we),
+    .we     (rwtype3_we),
     .wd     (rwtype3_field0_wd),
 
     // from internal hardware
@@ -394,7 +384,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype3_field1_we),
+    .we     (rwtype3_we),
     .wd     (rwtype3_field1_wd),
 
     // from internal hardware
@@ -422,7 +412,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype4_field0_we),
+    .we     (rwtype4_we),
     .wd     (rwtype4_field0_wd),
 
     // from internal hardware
@@ -448,7 +438,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rwtype4_field1_we),
+    .we     (rwtype4_we),
     .wd     (rwtype4_field1_wd),
 
     // from internal hardware
@@ -530,7 +520,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (w1ctype1_field0_we),
+    .we     (w1ctype1_we),
     .wd     (w1ctype1_field0_wd),
 
     // from internal hardware
@@ -556,7 +546,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (w1ctype1_field1_we),
+    .we     (w1ctype1_we),
     .wd     (w1ctype1_field1_wd),
 
     // from internal hardware
@@ -691,7 +681,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rctype0_we),
+    .we     (rctype0_re),
     .wd     (rctype0_wd),
 
     // from internal hardware
@@ -746,7 +736,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field0_we),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field0_wd),
 
     // from internal hardware
@@ -772,7 +762,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field1_we),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field1_wd),
 
     // from internal hardware
@@ -850,7 +840,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field4_we),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field4_wd),
 
     // from internal hardware
@@ -876,7 +866,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field5_we),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field5_wd),
 
     // from internal hardware
@@ -902,7 +892,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field6_we),
+    .we     (mixtype0_re),
     .wd     (mixtype0_field6_wd),
 
     // from internal hardware
@@ -928,7 +918,7 @@ module trial1_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_field7_we),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field7_wd),
 
     // from internal hardware
@@ -1100,92 +1090,81 @@ module trial1_reg_top (
                (addr_hit[18] & (|(TRIAL1_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(TRIAL1_PERMIT[19] & ~reg_be)))));
   end
-
   assign rwtype0_we = addr_hit[0] & reg_we & !reg_error;
-  assign rwtype0_wd = reg_wdata[31:0];
 
-  assign rwtype1_field0_we = addr_hit[1] & reg_we & !reg_error;
+  assign rwtype0_wd = reg_wdata[31:0];
+  assign rwtype1_we = addr_hit[1] & reg_we & !reg_error;
+
   assign rwtype1_field0_wd = reg_wdata[0];
 
-  assign rwtype1_field1_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field1_wd = reg_wdata[1];
 
-  assign rwtype1_field4_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field4_wd = reg_wdata[4];
 
-  assign rwtype1_field15_8_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field15_8_wd = reg_wdata[15:8];
-
   assign rwtype2_we = addr_hit[2] & reg_we & !reg_error;
-  assign rwtype2_wd = reg_wdata[31:0];
 
-  assign rwtype3_field0_we = addr_hit[3] & reg_we & !reg_error;
+  assign rwtype2_wd = reg_wdata[31:0];
+  assign rwtype3_we = addr_hit[3] & reg_we & !reg_error;
+
   assign rwtype3_field0_wd = reg_wdata[15:0];
 
-  assign rwtype3_field1_we = addr_hit[3] & reg_we & !reg_error;
   assign rwtype3_field1_wd = reg_wdata[31:16];
+  assign rwtype4_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign rwtype4_field0_we = addr_hit[4] & reg_we & !reg_error;
   assign rwtype4_field0_wd = reg_wdata[15:0];
 
-  assign rwtype4_field1_we = addr_hit[4] & reg_we & !reg_error;
   assign rwtype4_field1_wd = reg_wdata[31:16];
-
   assign w1ctype0_we = addr_hit[6] & reg_we & !reg_error;
-  assign w1ctype0_wd = reg_wdata[31:0];
 
-  assign w1ctype1_field0_we = addr_hit[7] & reg_we & !reg_error;
+  assign w1ctype0_wd = reg_wdata[31:0];
+  assign w1ctype1_we = addr_hit[7] & reg_we & !reg_error;
+
   assign w1ctype1_field0_wd = reg_wdata[15:0];
 
-  assign w1ctype1_field1_we = addr_hit[7] & reg_we & !reg_error;
   assign w1ctype1_field1_wd = reg_wdata[31:16];
-
   assign w1ctype2_we = addr_hit[8] & reg_we & !reg_error;
+
   assign w1ctype2_wd = reg_wdata[31:0];
-
   assign w1stype2_we = addr_hit[9] & reg_we & !reg_error;
+
   assign w1stype2_wd = reg_wdata[31:0];
-
   assign w0ctype2_we = addr_hit[10] & reg_we & !reg_error;
+
   assign w0ctype2_wd = reg_wdata[31:0];
-
   assign r0w1ctype2_we = addr_hit[11] & reg_we & !reg_error;
+
   assign r0w1ctype2_wd = reg_wdata[31:0];
+  assign rctype0_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign rctype0_we = addr_hit[12] & reg_re & !reg_error;
   assign rctype0_wd = '1;
-
   assign wotype0_we = addr_hit[13] & reg_we & !reg_error;
-  assign wotype0_wd = reg_wdata[31:0];
 
-  assign mixtype0_field0_we = addr_hit[14] & reg_we & !reg_error;
+  assign wotype0_wd = reg_wdata[31:0];
+  assign mixtype0_re = addr_hit[14] & reg_re & !reg_error;
+  assign mixtype0_we = addr_hit[14] & reg_we & !reg_error;
+
   assign mixtype0_field0_wd = reg_wdata[3:0];
 
-  assign mixtype0_field1_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field1_wd = reg_wdata[7:4];
 
-  assign mixtype0_field4_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field4_wd = reg_wdata[19:16];
 
-  assign mixtype0_field5_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field5_wd = reg_wdata[23:20];
 
-  assign mixtype0_field6_we = addr_hit[14] & reg_re & !reg_error;
   assign mixtype0_field6_wd = '1;
 
-  assign mixtype0_field7_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field7_wd = reg_wdata[31:28];
-
   assign rwtype5_we = addr_hit[15] & reg_we & !reg_error;
+
   assign rwtype5_wd = reg_wdata[31:0];
-
-  assign rwtype6_we = addr_hit[16] & reg_we & !reg_error;
-  assign rwtype6_wd = reg_wdata[31:0];
   assign rwtype6_re = addr_hit[16] & reg_re & !reg_error;
+  assign rwtype6_we = addr_hit[16] & reg_we & !reg_error;
 
+  assign rwtype6_wd = reg_wdata[31:0];
   assign rotype1_re = addr_hit[17] & reg_re & !reg_error;
-
   assign rwtype7_we = addr_hit[19] & reg_we & !reg_error;
+
   assign rwtype7_wd = reg_wdata[31:0];
 
   // Read data return

@@ -4,15 +4,10 @@
 //
 {
   name: "aon_timer",
-  clock_primary: "clk_i",
-  reset_primary: "rst_ni",
-  other_clock_list: [
-    "clk_aon_i"
-  ],
-  other_reset_list:
-  [
-    "rst_aon_ni"
-  ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -23,6 +18,13 @@
     { name: "wdog_timer_bark",
       desc: "Raised if the watchdog timer has hit the bark threshold"
     },
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
   ],
   wakeup_list: [
     { name: "aon_timer_wkup_req",
@@ -72,9 +74,7 @@
     { name: "WKUP_CTRL",
       desc: "Wakeup Timer Control register",
       swaccess: "rw",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hro",
       fields: [
         { bits: "0",
           name: "enable",
@@ -85,41 +85,30 @@
           desc: "Pre-scaler value for wakeup timer count",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "WKUP_THOLD",
       desc: "Wakeup Timer Threshold Register",
       swaccess: "rw",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hro",
       fields: [
         { bits: "31:0",
           name: "threshold",
           desc: "The count at which a wakeup interrupt should be generated",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "WKUP_COUNT",
       desc: "Wakeup Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
       fields: [
         { bits: "31:0",
           name: "count",
           desc: "The current wakeup counter value",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
     },
     { name: "WDOG_REGWEN",
       desc: "Watchdog Timer Write Enable Register",
@@ -136,9 +125,7 @@
     { name: "WDOG_CTRL",
       desc: "Watchdog Timer Control register",
       swaccess: "rw",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hro",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "0",
@@ -150,16 +137,11 @@
           desc: "When set to 1, the watchdog timer will not count during sleep",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "WDOG_BARK_THOLD",
       desc: "Watchdog Timer Bark Threshold Register",
       swaccess: "rw",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hro",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -167,16 +149,11 @@
           desc: "The count at which a watchdog bark interrupt should be generated",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "WDOG_BITE_THOLD",
       desc: "Watchdog Timer Bite Threshold Register",
       swaccess: "rw",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hro",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -184,25 +161,19 @@
           desc: "The count at which a watchdog bite reset should be generated",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "WDOG_COUNT",
       desc: "Watchdog Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
       fields: [
         { bits: "31:0",
           name: "count",
           desc: "The current watchdog counter value",
         }
       ],
-      tags: [// register implemented in clk_aon domain and does not update according to
-             // normal timing
-        "excl:CsrAllTests:CsrExclWriteCheck"],
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
     },
     { name: "INTR_STATE",
       desc: "Interrupt State Register",
@@ -242,8 +213,6 @@
       desc: "Wakeup request status",
       swaccess: "rw0c",
       hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
       fields: [
         { bits: "0",
           name: "cause",

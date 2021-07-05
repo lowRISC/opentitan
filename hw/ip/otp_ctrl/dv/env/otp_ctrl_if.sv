@@ -13,8 +13,10 @@
 `define LC_PART_OTP_CMD_PATH \
     tb.dut.gen_partitions[6].gen_lifecycle.u_part_buf.otp_cmd_o
 
-`define PRIM_GENERIC_OTP_CMD_I_PATH \
-    tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+`ifndef PRIM_GENERIC_OTP_CMD_I_PATH
+  `define PRIM_GENERIC_OTP_CMD_I_PATH \
+      tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+`endif
 
 interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_env_pkg::*;
@@ -34,6 +36,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   lc_ctrl_pkg::lc_tx_t lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i, scanmode_i;
   otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
+
+  // Unused in prim_generic_otp memory.
+  logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_test_ctrl_i;
 
   // Connect with lc_prog push_pull interface.
   logic lc_prog_req, lc_prog_err;
@@ -94,6 +99,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     scan_en_i                  = $urandom();
     scan_rst_ni                = $urandom();
     scanmode_i                 = $urandom();
+    otp_test_ctrl_i            = 0;
   endtask
 
   task automatic drive_pwr_otp_init(logic val);

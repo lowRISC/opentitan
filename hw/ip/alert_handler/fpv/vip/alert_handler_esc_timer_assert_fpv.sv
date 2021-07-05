@@ -12,7 +12,8 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   input  rst_ni,
   input  en_i,
   input  clr_i,
-  input  accum_trig_i,
+  input  accu_trig_i,
+  input  accu_fail_i,
   input  timeout_en_i,
   input [EscCntDw-1:0] timeout_cyc_i,
   input [N_ESC_SEV-1:0] esc_en_i,
@@ -20,7 +21,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   input [N_PHASES-1:0][EscCntDw-1:0] phase_cyc_i,
   input logic esc_trig_o,
   input logic[EscCntDw-1:0] esc_cnt_o,
-  input logic[N_ESC_SEV-1:0] esc_sig_en_o,
+  input logic[N_ESC_SEV-1:0] esc_sig_req_o,
   input cstate_e esc_state_o
 );
 
@@ -61,35 +62,46 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // if the class is not enabled and we are in IDLE state,
   // neither of the two escalation mechanisms shall fire
   `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
-  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i |-> !esc_sig_en_o)
-  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] |-> !esc_sig_en_o[esc_sel])
+  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i |-> !esc_sig_req_o)
+  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && esc_state_o != FsmError |->
+      !esc_sig_req_o[esc_sel])
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
   // assume accumulation trigger is not asserted during this sequence
-  `ASSERT(TimeoutEscTrig_A, ##1 en_i && $rose(timeout_en_i) && (timeout_cyc_i > 0) ##1
-      timeout_en_i [*MAX_TIMEOUT_CYCLES] |=> esc_has_triggered_q,
-      clk_i, !rst_ni || accum_trig_i || clr_i)
+  `ASSERT(TimeoutEscTrig_A, esc_state_o == Idle ##1 en_i && $rose(timeout_en_i) &&
+      (timeout_cyc_i > 0) ##1 timeout_en_i [*MAX_TIMEOUT_CYCLES] |=> esc_has_triggered_q,
+      clk_i, !rst_ni || accu_trig_i || clr_i || accu_fail_i)
 
   // check whether an accum trig leads to escalation if enabled
-  `ASSERT(AccumEscTrig_A, ##1 en_i && accum_trig_i && esc_state_o inside {Idle, Timeout} |=>
-      esc_has_triggered_q)
+  `ASSERT(AccumEscTrig_A, ##1 en_i && accu_trig_i && esc_state_o inside {Idle, Timeout} |=>
+      esc_has_triggered_q, clk_i, !rst_ni || clr_i || accu_fail_i)
 
   // check escalation cnt and state out
-  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == esc_state_o)
-  `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q == esc_cnt_o)
+  parameter logic [alert_handler_esc_timer.StateWidth-1:0] state_encodings [0:7] = '{
+    alert_handler_esc_timer.IdleSt,
+    alert_handler_esc_timer.TimeoutSt,
+    alert_handler_esc_timer.FsmErrorSt,
+    alert_handler_esc_timer.TerminalSt,
+    alert_handler_esc_timer.Phase0St,
+    alert_handler_esc_timer.Phase1St,
+    alert_handler_esc_timer.Phase2St,
+    alert_handler_esc_timer.Phase3St
+  };
+  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == state_encodings[esc_state_o])
+  `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q[0] == esc_cnt_o)
 
   // check clr input
   // we cannot use clr to exit from the timeout state
-  `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout}) |=>
+  `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout, FsmError}) && !accu_fail_i |=>
       esc_state_o == Idle)
 
   // check escalation map
   `ASSERT(PhaseEscMap_A, esc_state_o == phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
-      esc_en_i[esc_sel] |-> esc_sig_en_o[esc_sel])
+      esc_en_i[esc_sel] |-> esc_sig_req_o[esc_sel])
 
   // check terminal state is reached eventually if triggered and not cleared
   `ASSERT(TerminalState_A, esc_trig_o |-> strong(##[1:$] esc_state_o == Terminal),
-      clk_i, !rst_ni || clr_i)
+      clk_i, !rst_ni || clr_i || accu_fail_i)
 
   /////////////////////////
   // Backward Assertions //
@@ -97,16 +109,18 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // escalation can only be triggered when in Idle or Timeout state. Trigger mechanisms are either
   // the accumulation trigger or a timeout trigger
-  `ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accum_trig_i ||
-      esc_state_o  == Timeout && esc_cnt_o >= timeout_cyc_i)
+  `ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accu_trig_i ||
+      esc_state_o == Timeout && esc_cnt_o >= timeout_cyc_i)
   `ASSERT(NoEscTrigBkwd_A, !esc_trig_o |-> !(esc_state_o inside {Idle, Timeout}) ||
-      (!en_i || !accum_trig_i || !timeout_en_i))
+      !en_i || !accu_trig_i || !timeout_en_i || clr_i)
 
-  // escalation signals can only be asserted in the escalation phase states
-  `ASSERT(EscBkwd_A, esc_sig_en_o[esc_sel] |-> esc_en_i[esc_sel] &&
-      esc_has_triggered_q)
-  `ASSERT(NoEscBkwd_A, !esc_sig_en_o[esc_sel] |-> !esc_en_i[esc_sel] ||
-      esc_state_o != phases[esc_map_i[esc_sel]], clk_i, !rst_ni || clr_i)
+  // escalation signals can only be asserted in the escalation phase states, or
+  // if we are in the terminal FsmError state
+  `ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
+      esc_has_triggered_q || esc_state_o == FsmError)
+  `ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
+      esc_state_o != phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
+      clk_i, !rst_ni || clr_i)
 
   //////////////////////
   // Helper Processes //

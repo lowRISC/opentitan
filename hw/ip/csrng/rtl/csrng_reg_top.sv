@@ -104,73 +104,61 @@ module csrng_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_cs_cmd_req_done_qs;
   logic intr_state_cs_cmd_req_done_wd;
-  logic intr_state_cs_cmd_req_done_we;
   logic intr_state_cs_entropy_req_qs;
   logic intr_state_cs_entropy_req_wd;
-  logic intr_state_cs_entropy_req_we;
   logic intr_state_cs_hw_inst_exc_qs;
   logic intr_state_cs_hw_inst_exc_wd;
-  logic intr_state_cs_hw_inst_exc_we;
   logic intr_state_cs_fatal_err_qs;
   logic intr_state_cs_fatal_err_wd;
-  logic intr_state_cs_fatal_err_we;
+  logic intr_enable_we;
   logic intr_enable_cs_cmd_req_done_qs;
   logic intr_enable_cs_cmd_req_done_wd;
-  logic intr_enable_cs_cmd_req_done_we;
   logic intr_enable_cs_entropy_req_qs;
   logic intr_enable_cs_entropy_req_wd;
-  logic intr_enable_cs_entropy_req_we;
   logic intr_enable_cs_hw_inst_exc_qs;
   logic intr_enable_cs_hw_inst_exc_wd;
-  logic intr_enable_cs_hw_inst_exc_we;
   logic intr_enable_cs_fatal_err_qs;
   logic intr_enable_cs_fatal_err_wd;
-  logic intr_enable_cs_fatal_err_we;
+  logic intr_test_we;
   logic intr_test_cs_cmd_req_done_wd;
-  logic intr_test_cs_cmd_req_done_we;
   logic intr_test_cs_entropy_req_wd;
-  logic intr_test_cs_entropy_req_we;
   logic intr_test_cs_hw_inst_exc_wd;
-  logic intr_test_cs_hw_inst_exc_we;
   logic intr_test_cs_fatal_err_wd;
-  logic intr_test_cs_fatal_err_we;
-  logic alert_test_wd;
   logic alert_test_we;
-  logic regwen_qs;
+  logic alert_test_wd;
   logic regwen_re;
+  logic regwen_qs;
+  logic ctrl_we;
   logic ctrl_enable_qs;
   logic ctrl_enable_wd;
-  logic ctrl_enable_we;
   logic ctrl_aes_cipher_disable_qs;
   logic ctrl_aes_cipher_disable_wd;
-  logic ctrl_aes_cipher_disable_we;
   logic [3:0] ctrl_fifo_depth_sts_sel_qs;
   logic [3:0] ctrl_fifo_depth_sts_sel_wd;
-  logic ctrl_fifo_depth_sts_sel_we;
   logic [23:0] sum_sts_qs;
-  logic [31:0] cmd_req_wd;
   logic cmd_req_we;
+  logic [31:0] cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
   logic sw_cmd_sts_cmd_sts_qs;
+  logic genbits_vld_re;
   logic genbits_vld_genbits_vld_qs;
-  logic genbits_vld_genbits_vld_re;
   logic genbits_vld_genbits_fips_qs;
-  logic genbits_vld_genbits_fips_re;
-  logic [31:0] genbits_qs;
   logic genbits_re;
-  logic halt_main_sm_wd;
+  logic [31:0] genbits_qs;
   logic halt_main_sm_we;
+  logic halt_main_sm_wd;
   logic main_sm_sts_qs;
+  logic int_state_num_we;
   logic [3:0] int_state_num_qs;
   logic [3:0] int_state_num_wd;
-  logic int_state_num_we;
-  logic [31:0] int_state_val_qs;
   logic int_state_val_re;
+  logic [31:0] int_state_val_qs;
+  logic hw_exc_sts_we;
   logic [14:0] hw_exc_sts_qs;
   logic [14:0] hw_exc_sts_wd;
-  logic hw_exc_sts_we;
   logic err_code_sfifo_cmd_err_qs;
   logic err_code_sfifo_genbits_err_qs;
   logic err_code_sfifo_cmdreq_err_qs;
@@ -196,11 +184,11 @@ module csrng_reg_top (
   logic err_code_fifo_write_err_qs;
   logic err_code_fifo_read_err_qs;
   logic err_code_fifo_state_err_qs;
+  logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
-  logic err_code_test_we;
-  logic [1:0] sel_tracking_sm_wd;
   logic sel_tracking_sm_we;
+  logic [1:0] sel_tracking_sm_wd;
   logic [31:0] tracking_sm_obs_qs;
 
   // Register instances
@@ -216,7 +204,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_cs_cmd_req_done_we),
+    .we     (intr_state_we),
     .wd     (intr_state_cs_cmd_req_done_wd),
 
     // from internal hardware
@@ -242,7 +230,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_cs_entropy_req_we),
+    .we     (intr_state_we),
     .wd     (intr_state_cs_entropy_req_wd),
 
     // from internal hardware
@@ -268,7 +256,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_cs_hw_inst_exc_we),
+    .we     (intr_state_we),
     .wd     (intr_state_cs_hw_inst_exc_wd),
 
     // from internal hardware
@@ -294,7 +282,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_cs_fatal_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_cs_fatal_err_wd),
 
     // from internal hardware
@@ -322,7 +310,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_cs_cmd_req_done_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_cs_cmd_req_done_wd),
 
     // from internal hardware
@@ -348,7 +336,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_cs_entropy_req_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_cs_entropy_req_wd),
 
     // from internal hardware
@@ -374,7 +362,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_cs_hw_inst_exc_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_cs_hw_inst_exc_wd),
 
     // from internal hardware
@@ -400,7 +388,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_cs_fatal_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_cs_fatal_err_wd),
 
     // from internal hardware
@@ -423,7 +411,7 @@ module csrng_reg_top (
     .DW    (1)
   ) u_intr_test_cs_cmd_req_done (
     .re     (1'b0),
-    .we     (intr_test_cs_cmd_req_done_we),
+    .we     (intr_test_we),
     .wd     (intr_test_cs_cmd_req_done_wd),
     .d      ('0),
     .qre    (),
@@ -438,7 +426,7 @@ module csrng_reg_top (
     .DW    (1)
   ) u_intr_test_cs_entropy_req (
     .re     (1'b0),
-    .we     (intr_test_cs_entropy_req_we),
+    .we     (intr_test_we),
     .wd     (intr_test_cs_entropy_req_wd),
     .d      ('0),
     .qre    (),
@@ -453,7 +441,7 @@ module csrng_reg_top (
     .DW    (1)
   ) u_intr_test_cs_hw_inst_exc (
     .re     (1'b0),
-    .we     (intr_test_cs_hw_inst_exc_we),
+    .we     (intr_test_we),
     .wd     (intr_test_cs_hw_inst_exc_wd),
     .d      ('0),
     .qre    (),
@@ -468,7 +456,7 @@ module csrng_reg_top (
     .DW    (1)
   ) u_intr_test_cs_fatal_err (
     .re     (1'b0),
-    .we     (intr_test_cs_fatal_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_cs_fatal_err_wd),
     .d      ('0),
     .qre    (),
@@ -522,7 +510,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_enable_we),
+    .we     (ctrl_we),
     .wd     (ctrl_enable_wd),
 
     // from internal hardware
@@ -548,7 +536,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_aes_cipher_disable_we),
+    .we     (ctrl_we),
     .wd     (ctrl_aes_cipher_disable_wd),
 
     // from internal hardware
@@ -574,7 +562,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_fifo_depth_sts_sel_we),
+    .we     (ctrl_we),
     .wd     (ctrl_fifo_depth_sts_sel_wd),
 
     // from internal hardware
@@ -704,7 +692,7 @@ module csrng_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_genbits_vld_genbits_vld (
-    .re     (genbits_vld_genbits_vld_re),
+    .re     (genbits_vld_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.genbits_vld.genbits_vld.d),
@@ -719,7 +707,7 @@ module csrng_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_genbits_vld_genbits_fips (
-    .re     (genbits_vld_genbits_fips_re),
+    .re     (genbits_vld_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.genbits_vld.genbits_fips.d),
@@ -1656,81 +1644,64 @@ module csrng_reg_top (
                (addr_hit[18] & (|(CSRNG_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(CSRNG_PERMIT[19] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_cs_cmd_req_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_state_cs_entropy_req_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_state_cs_hw_inst_exc_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_state_cs_fatal_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_fatal_err_wd = reg_wdata[3];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_cs_cmd_req_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_enable_cs_entropy_req_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_enable_cs_hw_inst_exc_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_enable_cs_fatal_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_fatal_err_wd = reg_wdata[3];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_cs_cmd_req_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_test_cs_entropy_req_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_test_cs_hw_inst_exc_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_test_cs_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_fatal_err_wd = reg_wdata[3];
-
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
   assign alert_test_wd = reg_wdata[0];
-
   assign regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign ctrl_enable_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_enable_wd = reg_wdata[0];
 
-  assign ctrl_aes_cipher_disable_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_aes_cipher_disable_wd = reg_wdata[1];
 
-  assign ctrl_fifo_depth_sts_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_fifo_depth_sts_sel_wd = reg_wdata[19:16];
-
   assign cmd_req_we = addr_hit[7] & reg_we & !reg_error;
+
   assign cmd_req_wd = reg_wdata[31:0];
-
-  assign genbits_vld_genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
-
-  assign genbits_vld_genbits_fips_re = addr_hit[9] & reg_re & !reg_error;
-
+  assign genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
   assign genbits_re = addr_hit[10] & reg_re & !reg_error;
-
   assign halt_main_sm_we = addr_hit[11] & reg_we & !reg_error;
+
   assign halt_main_sm_wd = reg_wdata[0];
-
   assign int_state_num_we = addr_hit[13] & reg_we & !reg_error;
+
   assign int_state_num_wd = reg_wdata[3:0];
-
   assign int_state_val_re = addr_hit[14] & reg_re & !reg_error;
-
   assign hw_exc_sts_we = addr_hit[15] & reg_we & !reg_error;
+
   assign hw_exc_sts_wd = reg_wdata[14:0];
-
   assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
-  assign err_code_test_wd = reg_wdata[4:0];
 
+  assign err_code_test_wd = reg_wdata[4:0];
   assign sel_tracking_sm_we = addr_hit[18] & reg_we & !reg_error;
+
   assign sel_tracking_sm_wd = reg_wdata[1:0];
 
   // Read data return

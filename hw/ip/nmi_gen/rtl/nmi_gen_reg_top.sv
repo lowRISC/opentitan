@@ -104,30 +104,24 @@ module nmi_gen_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_esc0_qs;
   logic intr_state_esc0_wd;
-  logic intr_state_esc0_we;
   logic intr_state_esc1_qs;
   logic intr_state_esc1_wd;
-  logic intr_state_esc1_we;
   logic intr_state_esc2_qs;
   logic intr_state_esc2_wd;
-  logic intr_state_esc2_we;
+  logic intr_enable_we;
   logic intr_enable_esc0_qs;
   logic intr_enable_esc0_wd;
-  logic intr_enable_esc0_we;
   logic intr_enable_esc1_qs;
   logic intr_enable_esc1_wd;
-  logic intr_enable_esc1_we;
   logic intr_enable_esc2_qs;
   logic intr_enable_esc2_wd;
-  logic intr_enable_esc2_we;
+  logic intr_test_we;
   logic intr_test_esc0_wd;
-  logic intr_test_esc0_we;
   logic intr_test_esc1_wd;
-  logic intr_test_esc1_we;
   logic intr_test_esc2_wd;
-  logic intr_test_esc2_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -142,7 +136,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_esc0_we),
+    .we     (intr_state_we),
     .wd     (intr_state_esc0_wd),
 
     // from internal hardware
@@ -168,7 +162,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_esc1_we),
+    .we     (intr_state_we),
     .wd     (intr_state_esc1_wd),
 
     // from internal hardware
@@ -194,7 +188,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_esc2_we),
+    .we     (intr_state_we),
     .wd     (intr_state_esc2_wd),
 
     // from internal hardware
@@ -222,7 +216,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_esc0_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_esc0_wd),
 
     // from internal hardware
@@ -248,7 +242,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_esc1_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_esc1_wd),
 
     // from internal hardware
@@ -274,7 +268,7 @@ module nmi_gen_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_esc2_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_esc2_wd),
 
     // from internal hardware
@@ -297,7 +291,7 @@ module nmi_gen_reg_top (
     .DW    (1)
   ) u_intr_test_esc0 (
     .re     (1'b0),
-    .we     (intr_test_esc0_we),
+    .we     (intr_test_we),
     .wd     (intr_test_esc0_wd),
     .d      ('0),
     .qre    (),
@@ -312,7 +306,7 @@ module nmi_gen_reg_top (
     .DW    (1)
   ) u_intr_test_esc1 (
     .re     (1'b0),
-    .we     (intr_test_esc1_we),
+    .we     (intr_test_we),
     .wd     (intr_test_esc1_wd),
     .d      ('0),
     .qre    (),
@@ -327,7 +321,7 @@ module nmi_gen_reg_top (
     .DW    (1)
   ) u_intr_test_esc2 (
     .re     (1'b0),
-    .we     (intr_test_esc2_we),
+    .we     (intr_test_we),
     .wd     (intr_test_esc2_wd),
     .d      ('0),
     .qre    (),
@@ -356,32 +350,26 @@ module nmi_gen_reg_top (
                (addr_hit[1] & (|(NMI_GEN_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(NMI_GEN_PERMIT[2] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_esc0_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc0_wd = reg_wdata[0];
 
-  assign intr_state_esc1_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc1_wd = reg_wdata[1];
 
-  assign intr_state_esc2_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc2_wd = reg_wdata[2];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_esc0_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc0_wd = reg_wdata[0];
 
-  assign intr_enable_esc1_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc1_wd = reg_wdata[1];
 
-  assign intr_enable_esc2_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc2_wd = reg_wdata[2];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_esc0_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc0_wd = reg_wdata[0];
 
-  assign intr_test_esc1_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc1_wd = reg_wdata[1];
 
-  assign intr_test_esc2_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc2_wd = reg_wdata[2];
 
   // Read data return

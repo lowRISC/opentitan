@@ -45,9 +45,9 @@ SECTIONS {
    * The flash header. This will eventually contain other stuff, like a
    * signature, but for now it's just the entry point at offset zero.
    */
-  .flash_header ORIGIN(eflash) : ALIGN(4) {
+  .flash_header ORIGIN(eflash_virtual) : ALIGN(4) {
     KEEP(*(.flash_header))
-  } > eflash
+  } > eflash_virtual
 
   /**
    * C runtime (CRT) section, containing program initialization code.
@@ -57,7 +57,7 @@ SECTIONS {
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > eflash_virtual
 
   /**
    * Ibex interrupt vectors. See 'ibex_interrupt_vectors.S' for more
@@ -65,7 +65,7 @@ SECTIONS {
    */
   .vectors : {
     *(.vectors)
-  } > eflash
+  } > eflash_virtual
 
   /**
    * For LLVM profiling. This contains a pointer to the runtime initialization
@@ -79,7 +79,7 @@ SECTIONS {
       *(.init_array.*)
       . = ALIGN(4);
       _init_array_end = .;
-  } > eflash
+  } > eflash_virtual
 
   /**
    * Standard text section, containing program code.
@@ -87,7 +87,7 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > eflash
+  } > eflash_virtual
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -105,7 +105,7 @@ SECTIONS {
     KEEP(*(__llvm_covfun))
     KEEP(*(__llvm_covmap))
     KEEP(*(__llvm_prf_names))
-  } > eflash
+  } > eflash_virtual
 
   /**
    * "Intitial data" section, the initial values of the mutable data section
@@ -113,7 +113,7 @@ SECTIONS {
    */
   .idata : ALIGN(4) {
     _data_init_start = .;
-  } > eflash
+  } > eflash_virtual
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be

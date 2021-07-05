@@ -35,7 +35,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 
 Notice the following interfaces should be connected once the RTL adds support for them:
 
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
@@ -65,9 +64,10 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 
 ### Stimulus strategy
 This module is rather simple: the stimulus is just the external pins and the CSR updates.
-There are a couple stages for synchronization of the CSR updates, but scanmode is used asynchronously.
+There are a couple stages for synchronization of the CSR updates for clock gating controls, but scanmode is used asynchronously.
 These go to the clock gating latches.
-The tests randomize the inputs and issues CSR updates affecting the specific functions being tested.
+The external pins controlling the external clock selection need no synchronization.
+The tests randomize the inputs and issue CSR updates affecting the specific functions being tested.
 
 #### Test sequences
 All test sequences reside in `hw/ip/clkmgr/dv/env/seq_lib`.
@@ -86,7 +86,16 @@ The sequence runs a number of iterations, each randomizing all the above.
 The sequence `clkmgr_trans_vseq` randomizes the stimuli that drive the four transactional unit clocks.
 These are also mutually independent so they are tested in parallel.
 They depend on the `clk_hints` CSR, which has a separate bit for each, `ip_clk_en` and `scanmode_i` as in the peripheral clocks.
-They also depend on the `idle_i` input, which also has a separate bit for each unit, is clear when the unit is currently busy, and prevents its clock to be turned off until it becomes idle.
+They also depend on the `idle_i` input, which also has a separate bit for each unit.
+Any unit's `idle_i` bit is clear when the unit is currently busy, and prevents its clock to be turned off until it becomes idle.
+
+The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
+The selection is controlled by the `extclk_sel` CSR being `lc_ctrl_pkg::On`, provided the `lc_dft_en_i` input is also set to `lc_ctrl_pkg::On`.
+Alternatively, the external clock is also selected if the `lc_ctrl_byp_req_i` is `lc_ctrl_pkg::On`.
+When the external clock is selected the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down, unless `scanmode_i` is set to `lc_ctrl_pkg::On`.
+
+The sequence `clkmgr_jitter_vseq` sets the `jitter` CSR that drives the `jitter_en_o` output to the AST block.
+The sequence writes the CSR and checks that the `jitter_en_o` output tracks it.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.

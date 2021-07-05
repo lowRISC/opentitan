@@ -25,6 +25,10 @@ class csrng_base_test extends cip_base_test #(
 
   virtual function void configure_env();
     cfg.efuse_sw_app_enable_pct = 100;
+    cfg.chk_int_state_pct       = 100;
+    cfg.aes_cipher_disable_pct  = 0;
+    cfg.cmd_length_0_pct        = 0;
+    cfg.cmd_flags_0_pct         = 0;
   endfunction
 
 endclass : csrng_base_test

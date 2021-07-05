@@ -13,7 +13,13 @@ This document also defines a non-cryptographic **Device Identifier** to
 facilitate silicon tracking during manufacturing flows. The Device Identifier is
 also mixed into the Creator Identity.
 
+Further, this scheme is compatible with the [Open DICE profile](https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md).
+
+Overall identity flow:
 <img src="identities_and_root_keys_fig1.svg" alt="Fig1" style="width: 1000px;"/>
+
+DICE compatible identity flow:
+<img src="identities_and_root_keys_DICE_fig1b.svg" alt="Fig1b" style="width: 1000px;"/>
 
 ## Terminology
 

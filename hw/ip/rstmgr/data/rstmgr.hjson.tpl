@@ -10,14 +10,21 @@
 #
 {
   name: "RSTMGR",
-  clock_primary: "clk_i",
-  other_clock_list: [
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
 % for clk in clks:
-    "clk_${clk}_i"
+    {clock: "clk_${clk}_i"}
 % endfor
-  ],
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
   ],
   regwidth: "32",
   scan: "true",
@@ -69,11 +76,15 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
-    { struct:  "rstmgr_cpu",
+    { struct:  "logic",
       type:    "uni",
-      name:    "cpu",
+      name:    "rst_cpu_n",
       act:     "rcv",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ndmreset_req",
+      act:     "rcv",
     },
 
     { struct:  "alert_crashdump",

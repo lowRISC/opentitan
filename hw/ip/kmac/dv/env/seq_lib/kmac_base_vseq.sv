@@ -74,9 +74,6 @@ class kmac_base_vseq extends cip_base_vseq #(
   // entropy ready
   rand bit entropy_ready;
 
-  // error process
-  rand bit err_processed;
-
   // output length in bytes.
   rand int unsigned output_len;
 
@@ -108,6 +105,15 @@ class kmac_base_vseq extends cip_base_vseq #(
   // data mask used when accessing TLUL windows (msgfifo, state)
   rand bit [TL_DBW-1:0] data_mask;
 
+  // Error control fields
+  rand bit en_kmac_err;
+  rand kmac_pkg::err_code_e kmac_err_type;
+  // When creating errors by issue the wrong SW command, we need to have access
+  // to what operational state to send an erroneous command in,
+  // as well as the proper random incorrect command to send.
+  rand sha3_pkg::sha3_st_e err_sw_cmd_seq_st;
+  rand kmac_pkg::kmac_cmd_e err_sw_cmd_seq_cmd;
+
   // array to store `right_encode(output_len)`
   bit [7:0] output_len_enc[];
 
@@ -138,12 +144,17 @@ class kmac_base_vseq extends cip_base_vseq #(
   }
 
   constraint strength_c {
-    // only 128/256 bit strengths are supported for the XOFs
-    (hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake}) ->
-      (strength inside {sha3_pkg::L128, sha3_pkg::L256});
+    solve kmac_err_type before hash_mode;
+    solve kmac_err_type before strength;
 
-    // SHA3-128 is not supported
-    (hash_mode == sha3_pkg::Sha3) -> (strength != sha3_pkg::L128);
+    if (kmac_err_type != kmac_pkg::ErrUnexpectedModeStrength) {
+      // only 128/256 bit strengths are supported for the XOFs
+      (hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake}) ->
+        (strength inside {sha3_pkg::L128, sha3_pkg::L256});
+
+      // SHA3-128 is not supported
+      (hash_mode == sha3_pkg::Sha3) -> (strength != sha3_pkg::L128);
+    }
   }
 
   constraint key_len_c {
@@ -151,7 +162,11 @@ class kmac_base_vseq extends cip_base_vseq #(
   }
 
   constraint entropy_mode_c {
-    entropy_mode == static_entropy_mode;
+    if (kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) {
+      !(entropy_mode inside {EntropyModeSw, EntropyModeEdn});
+    } else {
+      entropy_mode == static_entropy_mode;
+    }
   }
 
   // Set the block size based on the random security strength.
@@ -166,6 +181,22 @@ class kmac_base_vseq extends cip_base_vseq #(
     (strength == sha3_pkg::L256) -> (keccak_block_size == 136);
     (strength == sha3_pkg::L384) -> (keccak_block_size == 104);
     (strength == sha3_pkg::L512) -> (keccak_block_size == 72);
+  }
+
+  // Create an appropriate incorrect command based on what state to send an error in
+  constraint err_sw_cmd_seq_c {
+    solve err_sw_cmd_seq_st before err_sw_cmd_seq_cmd;
+    if (en_kmac_err && kmac_err_type == kmac_pkg::ErrSwCmdSequence) {
+      if (err_sw_cmd_seq_st == sha3_pkg::StIdle) {
+        err_sw_cmd_seq_cmd inside {CmdProcess, CmdManualRun, CmdDone};
+      } else if (err_sw_cmd_seq_st == sha3_pkg::StAbsorb) {
+        err_sw_cmd_seq_cmd inside {CmdStart, CmdManualRun, CmdDone};
+      } else if (err_sw_cmd_seq_st == sha3_pkg::StSqueeze) {
+        err_sw_cmd_seq_cmd inside {CmdStart, CmdProcess};
+      } else if (err_sw_cmd_seq_st inside {sha3_pkg::StManualRun, sha3_pkg::StFlush}) {
+        err_sw_cmd_seq_cmd != CmdNone;
+      }
+    }
   }
 
   // constrain the range of addresses we can access msg_fifo through
@@ -248,7 +279,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg.entropy_mode.set(entropy_mode);
     ral.cfg.entropy_fast_process.set(entropy_fast_process);
     ral.cfg.entropy_ready.set(entropy_ready);
-    ral.cfg.err_processed.set(err_processed);
     csr_update(.csr(ral.cfg));
 
     // setup KEY_LEN csr
@@ -266,6 +296,46 @@ class kmac_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.intr_state), .value(data));
 
     csr_rd(.ptr(ral.status), .value(data));
+  endtask
+
+  virtual task check_err(clear_err = 1'b1);
+    bit [TL_DW-1:0] err_data;
+    // wait for several cycles to allow interrupt to propagate
+    cfg.clk_rst_vif.wait_clks(10);
+    csr_utils_pkg::wait_no_outstanding_access();
+    `uvm_info(`gfn, "Starting to check error", UVM_HIGH)
+    if (enable_intr[KmacErr]) begin
+      bit [TL_DW-1:0] intr_pins;
+      // interrupt will take 2 cycles to propagate to the output pins
+      cfg.clk_rst_vif.wait_clks(2);
+      intr_pins = cfg.intr_vif.sample();
+      `uvm_info(`gfn, "checking kmac_err interrupt", UVM_HIGH)
+      `DV_CHECK(intr_pins[KmacErr] == 1, "intr_pins[KmacErr] is not set!")
+    end
+    `uvm_info(`gfn, "checking intr_state csr", UVM_HIGH)
+    csr_rd(.ptr(ral.intr_state), .value(err_data));
+    csr_wr(.ptr(ral.intr_state), .value(err_data));
+
+    csr_rd(.ptr(ral.err_code), .value(err_data));
+
+    // only clear the error if error is actually set,
+    // otherwise we effectively reset the design
+    if (cfg.enable_masking && clear_err &&
+        kmac_err_type inside {kmac_pkg::ErrIncorrectEntropyMode,
+                              kmac_pkg::ErrWaitTimerExpired}) begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
+      ral.cfg.err_processed.set(1);
+      if (kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) begin
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(entropy_mode)
+        ral.cfg.entropy_mode.set(entropy_mode);
+      end
+      csr_update(.csr(ral.cfg));
+
+      // Need to pulse `entropy_ready` once we signal that SW has finished processing
+      // the entropy-related errors, otherwise FSM will be infinitely looping in Reset state
+      csr_wr(.ptr(ral.cfg.entropy_ready), .value(1'b1));
+    end
+    `uvm_info(`gfn, "Finished checking error", UVM_HIGH)
   endtask
 
   virtual function string convert2string();
@@ -290,8 +360,7 @@ class kmac_base_vseq extends cip_base_vseq #(
             $sformatf("custom_str: %0s\n", str_utils_pkg::bytes_to_str(custom_str_arr)),
             $sformatf("entropy_mode: %0s\n", entropy_mode.name()),
             $sformatf("entropy_fast_process: %0b\n", entropy_fast_process),
-            $sformatf("entropy_ready: %0b\n", entropy_ready),
-            $sformatf("err_processed: %0b", err_processed)};
+            $sformatf("entropy_ready: %0b\n", entropy_ready)};
   endfunction
 
   // This function implements the bulk of integer encoding specified by NIST.SP.800-185
@@ -723,6 +792,14 @@ class kmac_base_vseq extends cip_base_vseq #(
       remaining_output_len -= cur_chunk_size;
 
       if (remaining_output_len > 0) begin
+        // send an incorrect SW command, this will be dropped internally,
+        // so need to send the correct command afterwards.
+        if (kmac_err_type == kmac_pkg::ErrSwCmdSequence &&
+            err_sw_cmd_seq_st == sha3_pkg::StSqueeze) begin
+          issue_cmd(err_sw_cmd_seq_cmd);
+          check_err();
+        end
+
         squeeze_digest();
       end
 

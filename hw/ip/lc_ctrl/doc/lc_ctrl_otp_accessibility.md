@@ -36,7 +36,7 @@
 </tr>
 <tr>
 <td>RMA_UNLOCK_TOKEN</td>
-<td rowspan="3" colspan="2" style="text-align:center;vertical-align:middle">SECRET0_DIGEST == 0 && CREATOR_SEED_SW_RW_EN == ON</td>
+<td rowspan="3" colspan="2" style="text-align:center;vertical-align:middle">SECRET2_DIGEST == 0 && CREATOR_SEED_SW_RW_EN == ON</td>
 <td rowspan="3" style="text-align:center;vertical-align:middle">SEED_HW_RD_EN == ON</td>
 <td></td>
 </tr>

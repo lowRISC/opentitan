@@ -58,8 +58,14 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_reg2hw_transition_target_reg_t;
 
   typedef struct packed {
-    logic [7:0]  q;
-    logic        qe;
+    struct packed {
+      logic [7:0]  q;
+      logic        qe;
+    } val;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ext_clock;
   } lc_ctrl_reg2hw_otp_test_ctrl_reg_t;
 
   typedef struct packed {
@@ -112,7 +118,12 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_hw2reg_transition_target_reg_t;
 
   typedef struct packed {
-    logic [7:0]  d;
+    struct packed {
+      logic [7:0]  d;
+    } val;
+    struct packed {
+      logic        d;
+    } ext_clock;
   } lc_ctrl_hw2reg_otp_test_ctrl_reg_t;
 
   typedef struct packed {
@@ -133,22 +144,22 @@ package lc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [162:157]
-    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [156:148]
-    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [147:146]
-    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [145:14]
-    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [13:9]
-    lc_ctrl_reg2hw_otp_test_ctrl_reg_t otp_test_ctrl; // [8:0]
+    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [164:159]
+    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [158:150]
+    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [149:148]
+    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [147:16]
+    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [15:11]
+    lc_ctrl_reg2hw_otp_test_ctrl_reg_t otp_test_ctrl; // [10:0]
   } lc_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [425:416]
-    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [415:408]
-    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [407:407]
-    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [406:279]
-    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [278:275]
-    lc_ctrl_hw2reg_otp_test_ctrl_reg_t otp_test_ctrl; // [274:267]
+    lc_ctrl_hw2reg_status_reg_t status; // [426:417]
+    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [416:409]
+    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [408:408]
+    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [407:280]
+    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [279:276]
+    lc_ctrl_hw2reg_otp_test_ctrl_reg_t otp_test_ctrl; // [275:267]
     lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [266:263]
     lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [262:258]
     lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [257:256]
@@ -194,7 +205,7 @@ package lc_ctrl_reg_pkg;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_2_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_3_RESVAL = 32'h 0;
   parameter logic [3:0] LC_CTRL_TRANSITION_TARGET_RESVAL = 4'h 0;
-  parameter logic [7:0] LC_CTRL_OTP_TEST_CTRL_RESVAL = 8'h 0;
+  parameter logic [16:0] LC_CTRL_OTP_TEST_CTRL_RESVAL = 17'h 0;
   parameter logic [3:0] LC_CTRL_LC_STATE_RESVAL = 4'h 0;
   parameter logic [4:0] LC_CTRL_LC_TRANSITION_CNT_RESVAL = 5'h 0;
   parameter logic [1:0] LC_CTRL_LC_ID_STATE_RESVAL = 2'h 0;
@@ -245,7 +256,7 @@ package lc_ctrl_reg_pkg;
     4'b 1111, // index[ 7] LC_CTRL_TRANSITION_TOKEN_2
     4'b 1111, // index[ 8] LC_CTRL_TRANSITION_TOKEN_3
     4'b 0001, // index[ 9] LC_CTRL_TRANSITION_TARGET
-    4'b 0001, // index[10] LC_CTRL_OTP_TEST_CTRL
+    4'b 0111, // index[10] LC_CTRL_OTP_TEST_CTRL
     4'b 0001, // index[11] LC_CTRL_LC_STATE
     4'b 0001, // index[12] LC_CTRL_LC_TRANSITION_CNT
     4'b 0001, // index[13] LC_CTRL_LC_ID_STATE

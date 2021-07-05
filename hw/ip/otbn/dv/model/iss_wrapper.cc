@@ -333,6 +333,14 @@ void ISSWrapper::start(uint32_t addr) {
   std::ostringstream oss;
   oss << "start " << addr << "\n";
   run_command(oss.str(), nullptr);
+
+  // "Reset" our mirror of INSN_CNT. This gets zeroed on this cycle in the
+  // Python model, but the text-based interface doesn't expose the change (and
+  // doing so would require some complicated rejigging). We'll get valid
+  // numbers as soon as an instruction executes, but zeroing here avoids having
+  // an old number for the stall cycles at the start of the second and
+  // subsequent runs.
+  insn_cnt_ = 0;
 }
 
 void ISSWrapper::edn_rnd_data(uint32_t edn_rnd_data[8]) {
@@ -371,6 +379,11 @@ int ISSWrapper::step(bool gen_trace) {
   }
 
   return mismatch ? -1 : (done ? 1 : 0);
+}
+
+void ISSWrapper::reset(bool gen_trace) {
+  if (gen_trace)
+    OtbnTraceChecker::get().Flush();
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,

@@ -25,7 +25,7 @@ tl_device_t xbar_devices[$] = '{
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
 % for host in xbar.hosts:
-    '{"${host.name}", ${loop.index}, '{
+    '{"${host.esc_name()}", ${loop.index}, '{
   % for device in xbar.get_devices_from_host(host):
         "${device.esc_name()}"${'}}' if loop.last else ','}
   % endfor

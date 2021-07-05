@@ -17,18 +17,23 @@
 {
   name: "CLKMGR",
   scan: "true",
-  clock_primary: "clk_i",
-  other_clock_list: [],
-  reset_primary: "rst_ni",
-  other_reset_list: [
-    "rst_main_ni"
-    "rst_io_ni"
-    "rst_usb_ni"
-    "rst_io_div2_ni"
-    "rst_io_div4_ni"
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_main_ni"},
+    {reset: "rst_io_ni"},
+    {reset: "rst_usb_ni"},
+    {reset: "rst_io_div2_ni"},
+    {reset: "rst_io_div4_ni"},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
   ],
   regwidth: "32",
   param_list: [
@@ -135,7 +140,7 @@
       name:    "idle",
       act:     "rcv",
       package: "",
-      width:   "4"
+      width:   "5"
     },
   ],
 
@@ -248,12 +253,17 @@
 
     { name: "CLK_HINTS",
       desc: '''
-        Clock hint for software gateable clocks.
-        These clocks are not fully controlled by software.
+        Clock hint for software gateable transactional clocks during active mode.
+        During low power mode, all clocks are gated off regardless of the software hint.
 
-        For disable, software only provides a hint, and hardware determines the final clock state based on the
-        hint and whether the block in question is idle.
+        Transactional clocks are not fully controlled by software.  Instead software provides only a disable hint.
 
+        When software provides a disable hint, the clock manager checks to see if the associated hardware block is idle.
+        If the hardware block is idle, then the clock is disabled.
+        If the hardware block is not idle, the clock is kept on.
+
+        For the enable case, the software hint is immediately honored and the clock turned on.  Hardware does not provide any
+        feedback in this case.
       ''',
       swaccess: "rw",
       hwaccess: "hro",
@@ -292,6 +302,15 @@
           desc: '''
             0 CLK_MAIN_OTBN can be disabled.
             1 CLK_MAIN_OTBN is enabled.
+          '''
+        }
+        {
+          bits: "4",
+          name: "CLK_IO_DIV4_OTBN_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_DIV4_OTBN can be disabled.
+            1 CLK_IO_DIV4_OTBN is enabled.
           '''
         }
       ]
@@ -343,6 +362,15 @@
           desc: '''
             0 CLK_MAIN_OTBN is disabled.
             1 CLK_MAIN_OTBN is enabled.
+          '''
+        }
+        {
+          bits: "4",
+          name: "CLK_IO_DIV4_OTBN_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_DIV4_OTBN is disabled.
+            1 CLK_IO_DIV4_OTBN is enabled.
           '''
         }
       ]

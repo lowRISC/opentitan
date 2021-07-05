@@ -98,6 +98,9 @@ module otp_ctrl
   // Regfile //
   /////////////
 
+  // We have one CSR node and one functional TL-UL window.
+  logic [1:0] intg_error;
+
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
   tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
@@ -109,12 +112,12 @@ module otp_ctrl
     .rst_ni,
     .tl_i,
     .tl_o,
-    .tl_win_o  ( tl_win_h2d ),
-    .tl_win_i  ( tl_win_d2h ),
-    .reg2hw    ( reg2hw     ),
-    .hw2reg    ( hw2reg     ),
-    .intg_err_o(            ),
-    .devmode_i ( 1'b1       )
+    .tl_win_o  ( tl_win_h2d    ),
+    .tl_win_i  ( tl_win_d2h    ),
+    .reg2hw    ( reg2hw        ),
+    .hw2reg    ( hw2reg        ),
+    .intg_err_o( intg_error[0] ),
+    .devmode_i ( 1'b1          )
   );
 
   ///////////////////////////////////////
@@ -199,7 +202,7 @@ module otp_ctrl
     .addr_o      (  tlul_addr         ),
     .wdata_o     (                    ), // unused
     .wmask_o     (                    ), // unused
-    .intg_error_o(                    ),
+    .intg_error_o(  intg_error[1]     ),
     .rdata_i     (  tlul_rdata        ),
     .rvalid_i    (  tlul_rvalid       ),
     .rerror_i    (  tlul_rerror       ),
@@ -358,6 +361,7 @@ module otp_ctrl
   logic otp_operation_done, otp_error;
   logic fatal_macro_error_d, fatal_macro_error_q;
   logic fatal_check_error_d, fatal_check_error_q;
+  logic fatal_bus_integ_error_d, fatal_bus_integ_error_q;
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
@@ -366,6 +370,7 @@ module otp_ctrl
     // alert events via the alert senders. These regs can only be cleared via a system reset.
     fatal_macro_error_d = fatal_macro_error_q;
     fatal_check_error_d = fatal_check_error_q;
+    fatal_bus_integ_error_d = fatal_bus_integ_error_q | (|intg_error);
     // These are the per-partition buffered escalation inputs
     lc_escalate_en = lc_escalate_en_synced;
     // Aggregate all the errors from the partitions and the DAI/LCI
@@ -398,6 +403,7 @@ module otp_ctrl
                           lfsr_fsm_err,
                           scrmbl_fsm_err,
                           key_deriv_fsm_err,
+                          fatal_bus_integ_error_q,
                           dai_idle,
                           chk_pending};
 
@@ -417,13 +423,15 @@ module otp_ctrl
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_alert_regs
     if (!rst_ni) begin
-      fatal_macro_error_q  <= '0;
-      fatal_check_error_q  <= '0;
-      interrupt_triggers_q <= '0;
+      fatal_macro_error_q     <= '0;
+      fatal_check_error_q     <= '0;
+      fatal_bus_integ_error_q <= '0;
+      interrupt_triggers_q    <= '0;
     end else begin
-      fatal_macro_error_q  <= fatal_macro_error_d;
-      fatal_check_error_q  <= fatal_check_error_d;
-      interrupt_triggers_q <= interrupt_triggers_d;
+      fatal_macro_error_q     <= fatal_macro_error_d;
+      fatal_check_error_q     <= fatal_check_error_d;
+      fatal_bus_integ_error_q <= fatal_bus_integ_error_d;
+      interrupt_triggers_q    <= interrupt_triggers_d;
     end
   end
 
@@ -465,11 +473,14 @@ module otp_ctrl
   logic [NumAlerts-1:0] alert_test;
 
   assign alerts = {
+    fatal_bus_integ_error_q,
     fatal_check_error_q,
     fatal_macro_error_q
   };
 
   assign alert_test = {
+    reg2hw.alert_test.fatal_bus_integ_error.q &
+    reg2hw.alert_test.fatal_bus_integ_error.qe,
     reg2hw.alert_test.fatal_check_error.q &
     reg2hw.alert_test.fatal_check_error.qe,
     reg2hw.alert_test.fatal_macro_error.q &
@@ -1070,13 +1081,7 @@ module otp_ctrl
         .integ_chk_ack_o   ( integ_chk_ack[k]                ),
         .cnsty_chk_req_i   ( cnsty_chk_req[k]                ),
         .cnsty_chk_ack_o   ( cnsty_chk_ack[k]                ),
-        // This is the only partition that does not support external escalation.
-        // The reason for this is that the "life cycle scrap" escalation action is 1) implemented
-        // directly inside the life cycle controller, and 2) this action may follow a different
-        // escalation protocol timing than the "wipe secrets" action activated via escalate_en_i.
-        // Note that glitch errors within this partition still lead to immediate invalidation
-        // of the life cycle vector.
-        .escalate_en_i     ( lc_ctrl_pkg::Off                ),
+        .escalate_en_i     ( lc_escalate_en[k]               ),
         // This is only supported by the life cycle partition. We need to prevent this partition
         // from escalating once the life cycle state in memory is being updated (and hence not
         // consistent with the values in the buffer regs anymore).
@@ -1125,10 +1130,6 @@ module otp_ctrl
       assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
                                          part_scrmbl_req_ready[k],
                                          part_scrmbl_rsp_valid[k]};
-
-      logic unused_escalate_en_sig;
-      assign unused_escalate_en_sig = ^lc_escalate_en[k];
-
     end else begin : gen_invalid
       // This is invalid and should break elaboration
       assert_static_in_generate_invalid assert_static_in_generate_invalid();

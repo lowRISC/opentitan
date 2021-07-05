@@ -31,7 +31,7 @@
     corei:
     [
       rom_ctrl.rom
-      debug_mem
+      rv_dm.rom
       ram_main
       eflash
     ]
@@ -39,7 +39,8 @@
     [
       rom_ctrl.rom
       rom_ctrl.regs
-      debug_mem
+      rv_dm.rom
+      rv_dm.regs
       ram_main
       eflash
       peri
@@ -56,11 +57,13 @@
       keymgr
       kmac
       sram_ctrl_main
+      rv_core_ibex_peri
     ]
-    dm_sba:
+    rv_dm.sba:
     [
       rom_ctrl.rom
       rom_ctrl.regs
+      rv_dm.regs
       ram_main
       eflash
       peri
@@ -77,6 +80,7 @@
       keymgr
       kmac
       sram_ctrl_main
+      rv_core_ibex_peri
     ]
   }
   nodes:
@@ -104,14 +108,50 @@
       pipeline_byp: "true"
     }
     {
-      name: dm_sba
+      name: rv_dm.sba
       type: host
       clock: clk_main_i
       reset: rst_main_ni
       pipeline_byp: "false"
       xbar: false
       stub: false
+      inst_type: ""
+      pipeline: "true"
+    }
+    {
+      name: rv_dm.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
       inst_type: rv_dm
+      addr_range:
+      [
+        {
+          base_addr: 0x41200000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: rv_dm.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: rv_dm
+      addr_range:
+      [
+        {
+          base_addr: 0x10000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -149,24 +189,6 @@
       xbar: false
       stub: false
       pipeline_byp: "true"
-    }
-    {
-      name: debug_mem
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline_byp: "false"
-      inst_type: rv_dm
-      addr_range:
-      [
-        {
-          base_addr: 0x1A110000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
     }
     {
       name: ram_main
@@ -389,6 +411,7 @@
       clock: clk_main_i
       reset: rst_main_ni
       inst_type: rv_plic
+      pipeline_byp: "false"
       addr_range:
       [
         {
@@ -396,7 +419,6 @@
           size_byte: 0x1000
         }
       ]
-      pipeline_byp: "false"
       xbar: false
       stub: false
       pipeline: "true"
@@ -430,6 +452,24 @@
       [
         {
           base_addr: 0x41130000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: rv_core_ibex_peri
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: rv_core_ibex_peri
+      addr_range:
+      [
+        {
+          base_addr: 0x411f0000
           size_byte: 0x1000
         }
       ]

@@ -311,6 +311,26 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for regs device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_BASE_ADDR = 32'h41200000;
+
+  /**
+   * Peripheral size in bytes for regs device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for rom device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_BASE_ADDR = 32'h10000;
+
+  /**
+   * Peripheral size in bytes for rom device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for rv_plic in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h41010000;
@@ -441,6 +461,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h4000;
 
   /**
+   * Peripheral base address for rv_core_ibex_peri in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR = 32'h411F0000;
+
+  /**
+   * Peripheral size in bytes for rv_core_ibex_peri in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES = 32'h1000;
+
+  /**
    * Memory base address for ram_main in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RAM_MAIN_BASE_ADDR = 32'h10000000;
@@ -538,7 +568,8 @@ package top_earlgrey_pkg;
     MioInSysrstCtrlAonKey1In = 52,
     MioInSysrstCtrlAonKey2In = 53,
     MioInSysrstCtrlAonPwrbIn = 54,
-    MioInCount = 55
+    MioInSysrstCtrlAonLidOpen = 55,
+    MioInCount = 56
   } mio_in_e;
 
   typedef enum {
@@ -614,7 +645,8 @@ package top_earlgrey_pkg;
     MioOutSysrstCtrlAonKey0Out = 69,
     MioOutSysrstCtrlAonKey1Out = 70,
     MioOutSysrstCtrlAonKey2Out = 71,
-    MioOutCount = 72
+    MioOutSysrstCtrlAonZ3Wakeup = 72,
+    MioOutCount = 73
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.

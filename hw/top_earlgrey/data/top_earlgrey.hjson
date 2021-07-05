@@ -208,19 +208,43 @@
           name:    "ram_cfg",
           act:     "rcv",
           package: "prim_ram_1p_pkg"
-        }
-      ],
-    }
-    { name: "rv_dm",
-      type: "rv_dm",
-      inter_signal_list: [
-        { struct:  "jtag",
-          type:    "req_rsp",
-          name:    "jtag",
-          act:     "rsp",
-          package: "jtag_pkg",
         },
-      ]
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "fatal_intg_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "fatal_core_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "alert_event",
+          type:    "uni",
+          name:    "recov_core_event",
+          act:     "req",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "region_cfg",
+          type:    "uni",
+          name:    "ibus_region_cfg",
+          act:     "rcv",
+          package: "rv_core_ibex_peri_pkg",
+        },
+
+        { struct:  "region_cfg",
+          type:    "uni",
+          name:    "dbus_region_cfg",
+          act:     "rcv",
+          package: "rv_core_ibex_peri_pkg",
+        },
+      ],
     }
   ]
 
@@ -510,6 +534,14 @@
       base_addrs: {core: "0x41000000", prim: "0x41008000"}
       attr: "templated",
     },
+    { name: "rv_dm",
+      type: "rv_dm",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
+      reset_connections: {rst_ni: "lc"},
+      // Note that this module also contains a bus host.
+      base_addrs: {rom: "0x00010000", regs: "0x41200000"}
+    },
     { name: "rv_plic",
       type: "rv_plic",
       clock_srcs: {clk_i: "main"},
@@ -585,9 +617,9 @@
     },
     { name: "otbn",
       type: "otbn",
-      clock_srcs: {clk_i: "main", clk_edn_i: "main"},
+      clock_srcs: {clk_i: "main", clk_edn_i: "main", clk_otp_i: "io_div4"},
       clock_group: "trans",
-      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
+      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys", rst_otp_ni: "lc_io_div4"},
       base_addr: "0x411D0000",
     },
     { name: "rom_ctrl",
@@ -596,7 +628,14 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
-    }
+    },
+    { name: "rv_core_ibex_peri",
+      type: "rv_core_ibex_peri",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x411F0000",
+    },
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -766,7 +805,6 @@
           act: "rcv"
           name: "flash_test_voltage_h"
         },
-
         { struct: "ast_dif",
           package: "ast_pkg",
           type: "uni"
@@ -845,12 +883,12 @@
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
-                                   'lc_ctrl.esc_wipe_secrets_rx',
-                                   'lc_ctrl.esc_scrap_state_rx'
+                                   'lc_ctrl.esc_scrap_state0_rx',
+                                   'lc_ctrl.esc_scrap_state1_rx'
                                    'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
-                                   'lc_ctrl.esc_wipe_secrets_tx',
-                                   'lc_ctrl.esc_scrap_state_tx',
+                                   'lc_ctrl.esc_scrap_state0_tx',
+                                   'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
@@ -897,6 +935,9 @@
                                  'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd'],
       'edn1.edn'              : ['otbn.edn_rnd'],
 
+      // OTBN OTP scramble key
+      'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
+
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key']
@@ -932,14 +973,16 @@
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'sram_ctrl_ret_aon.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
-                                      'csrng.lc_hw_debug_en'],
+                                      'csrng.lc_hw_debug_en',
+                                      'rv_dm.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',
-                                      'aon_timer_aon.lc_escalate_en'],
+                                      'aon_timer_aon.lc_escalate_en',
+                                      'flash_ctrl.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
@@ -954,18 +997,34 @@
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
 
+
+      // rv core ibex peripheral connections
+      'rv_core_ibex.fatal_intg_event' : ['rv_core_ibex_peri.fatal_intg_event'],
+      'rv_core_ibex.fatal_core_event' : ['rv_core_ibex_peri.fatal_core_event'],
+      'rv_core_ibex.recov_core_event' : ['rv_core_ibex_peri.recov_core_event'],
+      'rv_core_ibex_peri.ibus_region_cfg' : ['rv_core_ibex.ibus_region_cfg'],
+      'rv_core_ibex_peri.dbus_region_cfg' : ['rv_core_ibex.dbus_region_cfg'],
+
+      // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
+
+      // Debug module reset request to reset manager
+      'rv_dm.ndmreset_req' : ['rstmgr_aon.ndmreset_req']
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks',
-        'pwrmgr_aon.fetch_en',
+        'rstmgr_aon.resets', 'rstmgr_aon.rst_cpu_n',
+        'pwrmgr_aon.pwr_cpu', 'pwrmgr_aon.fetch_en',
+        'clkmgr_aon.clocks',
+
+        // Debug request from debug module to CPU
+        'rv_dm.debug_req',
 
         // Xbars
-        'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem',
+        'main.tl_corei', 'main.tl_cored',
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
         'pinmux_aon.dft_jtag',
@@ -1019,8 +1078,6 @@
         'usbdev.usb_ref_pulse'         : '',
     },
   },
-
-  debug_mem_base_addr: "0x1A110000",
 
   // Crossbars: having a top level crossbar
   // This version assumes all crossbars are instantiated at the top.
@@ -1237,6 +1294,8 @@
       { instance: "sysrst_ctrl_aon", port: 'key1_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'key2_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'pwrb_out',     connection: 'direct', pad: 'IOR9'         , desc: ''},
+      { instance: "sysrst_ctrl_aon", port: 'lid_open',     connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sysrst_ctrl_aon", port: 'z3_wakeup',    connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     num_wkup_detect: 8

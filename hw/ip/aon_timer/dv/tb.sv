@@ -44,6 +44,8 @@ module tb;
   // An input to the DUT that shows whether we are in sleep mode
   pins_if #(1) sleep_if (sleep);
 
+ `DV_ALERT_IF_CONNECT
+
   aon_timer dut (
     .clk_i                     (clk),
     .rst_ni                    (rst_n),
@@ -51,6 +53,8 @@ module tb;
     .rst_aon_ni                (rst_aon_n),
     .tl_i                      (tl_if.h2d),
     .tl_o                      (tl_if.d2h),
+    .alert_rx_i                (alert_rx),
+    .alert_tx_o                (alert_tx),
     .lc_escalate_en_i          (lc_escalate_en),
     .intr_wkup_timer_expired_o (wkup_expired),
     .intr_wdog_timer_bark_o    (wdog_bark),
@@ -58,8 +62,6 @@ module tb;
     .aon_timer_rst_req_o       (rst_req),
     .sleep_mode_i              (sleep)
   );
-
-  bind aon_timer_core aon_timer_core_if core_if (.*);
 
   initial begin
     // Configure interfaces
@@ -79,8 +81,6 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", fast_intr_if);
     uvm_config_db#(virtual pins_if #(2))::set(null, "*.env", "aon_intr_vif", aon_intr_if);
     uvm_config_db#(virtual pins_if #(1))::set(null, "*.env", "sleep_vif", sleep_if);
-
-    uvm_config_db#(virtual aon_timer_core_if)::set(null, "*.env", "core_vif", dut.u_core.core_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

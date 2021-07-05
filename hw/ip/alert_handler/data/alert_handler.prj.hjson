@@ -13,5 +13,5 @@
     design_stage:       "D1",
     verification_stage: "V1",
     dif_stage:          "S0",
-    notes:              "will be verified at top level; formal and DV at block level",
+    notes:              "Use both FPV and DV to perform block level verification.",
 }

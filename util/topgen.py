@@ -150,7 +150,8 @@ def generate_alert_handler(top, out_path):
         for alert in top['alert']:
             for k in range(alert['width']):
                 async_on = str(alert['async']) + async_on
-        async_on = ("%d'b" % n_alerts) + async_on
+        # convert to hexstring to shorten line length
+        async_on = ("%d'h" % n_alerts) + hex(int(async_on,2))[2:]
 
     log.info("alert handler parameterization:")
     log.info("NAlerts   = %d" % n_alerts)
@@ -483,6 +484,10 @@ def generate_clkmgr(top, cfg_path, out_path):
     hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
                  for clk, src in hints.items()}
 
+    # The names of blocks that use one or more sw hint clocks (clkmgr has an
+    # "idle" feedback signal from each), in ascending order.
+    hint_blocks = sorted(set([v['name'] for v in hint_clks.values()]))
+
     # Define a canonical ordering for rg_srcs
     rg_srcs = sorted(rg_srcs_set)
 
@@ -498,7 +503,8 @@ def generate_clkmgr(top, cfg_path, out_path):
                                  rg_clks=rg_clks,
                                  sw_clks=sw_clks,
                                  export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks)
+                                 hint_clks=hint_clks,
+                                 hint_blocks=hint_blocks)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
 

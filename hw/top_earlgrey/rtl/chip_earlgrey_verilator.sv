@@ -81,15 +81,16 @@ module chip_earlgrey_verilator (
   assign cio_uart_tx_en_d2p = mio_oe[33];
 
   // dummy ast connections
+  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
   ast_pkg::ast_alert_req_t ast_base_alerts;
   ast_pkg::ast_status_t ast_base_status;
 
   assign ast_base_pwr.slow_clk_val = 1'b1;
-  assign ast_base_pwr.core_clk_val = 1'b1;
-  assign ast_base_pwr.io_clk_val   = 1'b1;
-  assign ast_base_pwr.usb_clk_val  = 1'b1;
-  assign ast_base_pwr.main_pok     = 1'b1;
+  assign ast_base_pwr.core_clk_val = base_ast_pwr.core_clk_en;
+  assign ast_base_pwr.io_clk_val   = base_ast_pwr.io_clk_en;
+  assign ast_base_pwr.usb_clk_val  = base_ast_pwr.usb_clk_en;
+  assign ast_base_pwr.main_pok     = base_ast_pwr.main_pd_n;
 
   ast_pkg::ast_dif_t silent_alert = '{
                                        p: 1'b0,
@@ -153,6 +154,7 @@ module chip_earlgrey_verilator (
   top_earlgrey #(
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
+    .KmacEnMasking(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       (rst_ni            ),
@@ -162,7 +164,7 @@ module chip_earlgrey_verilator (
     .clk_aon_i                    (clk_aon           ),
     .clks_ast_o                   (                  ),
     .rsts_ast_o                   (                  ),
-    .pwrmgr_ast_req_o             (                  ),
+    .pwrmgr_ast_req_o             ( base_ast_pwr     ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
     .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts  ),
     .sensor_ctrl_ast_alert_rsp_o  (                  ),

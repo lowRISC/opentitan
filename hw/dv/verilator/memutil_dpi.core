@@ -9,11 +9,14 @@ filesets:
   files_cpp:
     depend:
       - lowrisc:dv:secded_enc
+      - lowrisc:dv:scramble_model
     files:
       - cpp/dpi_memutil.cc
       - cpp/dpi_memutil.h: { is_include_file: true }
       - cpp/ecc32_mem_area.cc
       - cpp/ecc32_mem_area.h: { is_include_file: true }
+      - cpp/scrambled_ecc32_mem_area.cc
+      - cpp/scrambled_ecc32_mem_area.h: { is_include_file: true }
       - cpp/mem_area.cc
       - cpp/mem_area.h: { is_include_file: true }
       - cpp/ranged_map.h: { is_include_file: true }

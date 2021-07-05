@@ -93,3 +93,12 @@ SVScoped::Error::Error(const std::string &scope_name)
   oss << "No such SystemVerilog scope: `" << scope_name << "'.";
   msg_ = oss.str();
 }
+
+std::string SVScoped::join_sv_scopes(const std::string &a,
+                                     const std::string &b) {
+  assert(a.size() && b.size());
+  // If a = ".." and b = "foo.bar", we want "..foo.bar". Otherwise, a
+  // = "..foo" and b = "bar.baz", so we want "..foo.bar.baz"
+  // (inserting a "." between the two)
+  return (a.back() == '.') ? a + b : a + "." + b;
+}

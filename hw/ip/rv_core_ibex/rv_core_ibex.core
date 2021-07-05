@@ -9,13 +9,17 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:prim:all
+      - lowrisc:prim:esc
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
+      - lowrisc:ip:alert_handler_reg
+      - lowrisc:ip:rv_core_ibex_peri
     files:
       - rtl/rv_core_ibex.sv
+      - rtl/rv_core_addr_trans.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

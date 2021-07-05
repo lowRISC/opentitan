@@ -273,12 +273,6 @@ module top_${top["name"]} #(
   assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top['resets'])};
 % endfor
 
-  // Non-debug module reset == reset for everything except for the debug module
-  logic ndmreset_req;
-
-  // debug request from rv_dm to core
-  logic debug_req;
-
   // processor core
   rv_core_ibex #(
     .PMPEnable                (1),
@@ -297,8 +291,8 @@ module top_${top["name"]} #(
     .BranchPredictor          (0),
     .DbgTriggerEn             (1),
     .SecureIbex               (SecureIbex),
-    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress[31:0]),
-    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress[31:0]),
+    .DmHaltAddr               (ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]),
+    .DmExceptionAddr          (ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]),
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
@@ -306,6 +300,8 @@ module top_${top["name"]} #(
     .rst_ni               (${cpu_rst}[rstmgr_pkg::Domain0Sel]),
     .clk_esc_i            (${esc_clk}),
     .rst_esc_ni           (${esc_rst}[rstmgr_pkg::Domain0Sel]),
+    // reset feedback to the clock manager
+    .rst_cpu_n_o          (rstmgr_aon_rst_cpu_n),
     .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
@@ -323,51 +319,24 @@ module top_${top["name"]} #(
     .esc_tx_i             (alert_handler_esc_tx[0]),
     .esc_rx_o             (alert_handler_esc_rx[0]),
     // debug interface
-    .debug_req_i          (debug_req),
+    .debug_req_i          (rv_dm_debug_req),
     // crash dump interface
     .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
-
+    // alert hooksup
+    .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
+    .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
+    .recov_core_event_o   (rv_core_ibex_recov_core_event),
+    // address translation configuration
+    .ibus_region_cfg_i    (rv_core_ibex_peri_ibus_region_cfg),
+    .dbus_region_cfg_i    (rv_core_ibex_peri_dbus_region_cfg),
     // dft bypass
     .scan_rst_ni,
     .scanmode_i
   );
-
-  // Debug Module (RISC-V Debug Spec 0.13)
-  //
-
-  rv_dm #(
-    .NrHarts     (1),
-    .IdcodeValue (JTAG_IDCODE)
-  ) u_dm_top (
-    .clk_i         (${cpu_clk}),
-    .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
-    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
-    .scanmode_i,
-    .scan_rst_ni,
-    .ndmreset_o    (ndmreset_req),
-    .dmactive_o    (),
-    .debug_req_o   (debug_req),
-    .unavailable_i (1'b0),
-
-    // bus device with debug memory (for execution-based debug)
-    .tl_d_i        (main_tl_debug_mem_req),
-    .tl_d_o        (main_tl_debug_mem_rsp),
-
-    // bus host (for system bus accesses, SBA)
-    .tl_h_o        (main_tl_dm_sba_req),
-    .tl_h_i        (main_tl_dm_sba_rsp),
-
-    //JTAG
-    .jtag_req_i    (pinmux_aon_rv_jtag_req),
-    .jtag_rsp_o    (pinmux_aon_rv_jtag_rsp)
-  );
-
-  assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
-  assign rstmgr_aon_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]}[rstmgr_pkg::Domain0Sel];
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -505,7 +474,7 @@ mem_name = lib.Name(mem_name[1:])
     .ErrOnWrite(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
+    .EnableDataIntgGen(0)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),

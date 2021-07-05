@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "lc_ctrl",
-  clock_primary: "clk_i",
-  other_clock_list: [
-    "clk_kmac_i"
-  ],
-  reset_primary: "rst_ni",
-  other_reset_list: [
-    "rst_kmac_ni"
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_kmac_i", reset: "rst_kmac_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -30,7 +26,7 @@
       desc: "This alert triggers if an error in the life cycle state or life cycle controller FSM is detected.",
     }
     { name: "fatal_bus_integ_error",
-      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the LC_CTRL unit."
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
     }
   ],
 
@@ -112,25 +108,25 @@
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc_wipe_secrets_tx"
+      name:    "esc_scrap_state0_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc_wipe_secrets_rx"
+      name:    "esc_scrap_state0_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc_scrap_state_tx"
+      name:    "esc_scrap_state1_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc_scrap_state_rx"
+      name:    "esc_scrap_state1_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
@@ -386,7 +382,7 @@
           name: "BUS_INTEG_ERROR"
           desc: '''
                 This bit is set to 1 if a fatal bus integrity fault is detected.
-                This error triggers a fatal_bus_fault alert.
+                This error triggers a fatal_bus_integ_error alert.
                 '''
         }
         { bits: "9"
@@ -592,6 +588,13 @@
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
+        { bits: "16",
+          name: "EXT_CLOCK",
+          desc: '''
+          Switch to an externally supplied clock when initiating a life cycle state transition.
+          The clock mux will remain switched until the next system reset.
+          ''',
+        }
         { bits: "CsrOtpTestCtrlWidth-1:0",
           name: "VAL",
           desc: '''

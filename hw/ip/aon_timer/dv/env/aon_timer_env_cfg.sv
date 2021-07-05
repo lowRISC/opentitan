@@ -8,7 +8,6 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
   virtual pins_if #(1)      lc_escalate_en_vif;
   virtual pins_if #(2)      aon_intr_vif;
   virtual pins_if #(1)      sleep_vif;
-  virtual aon_timer_core_if core_vif;
 
   // ext component cfgs
 
@@ -23,6 +22,7 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
   endfunction : new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
     // set num_interrupts & num_alerts

@@ -8,7 +8,9 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class pwrmgr_env_cov extends cip_base_env_cov #(.CFG_T(pwrmgr_env_cfg));
+class pwrmgr_env_cov extends cip_base_env_cov #(
+  .CFG_T(pwrmgr_env_cfg)
+);
   `uvm_component_utils(pwrmgr_env_cov)
 
   // the base class provides the following handles for use:

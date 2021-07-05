@@ -35,6 +35,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
     has_edn = 1;
+    tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
 
     // create push_pull agent config obj
@@ -70,16 +71,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
 
     // only support 1 outstanding TL items in tlul_adapter
     m_tl_agent_cfg.max_outstanding_req = 1;
-  endfunction
-
-  // OTP memory width is 16 bits while OTP word is 32 bits.
-  virtual function void backdoor_write32(bit [TL_DW-1:0] addr, bit [31:0] val);
-    mem_bkdr_util_h.write16(addr,     val[15:0]);
-    mem_bkdr_util_h.write16(addr + 2, val[31:16]);
-  endfunction
-
-  virtual function bit[31:0] backdoor_read32(bit [TL_DW-1:0] addr);
-    return {mem_bkdr_util_h.read16(addr + 2), mem_bkdr_util_h.read16(addr)};
   endfunction
 
 endclass

@@ -8,6 +8,7 @@ filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:esc
     files:
       - vip/prim_esc_rxtx_assert_fpv.sv
       - tb/prim_esc_rxtx_bind_fpv.sv

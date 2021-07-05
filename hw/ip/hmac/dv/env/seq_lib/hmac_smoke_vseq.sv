@@ -7,7 +7,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans inside {[1:100]};
+    num_trans inside {[1:50]};
   }
 
   rand bit        hmac_en;

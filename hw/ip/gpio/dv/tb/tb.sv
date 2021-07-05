@@ -10,6 +10,7 @@ module tb;
   import tl_agent_pkg::*;
   import gpio_env_pkg::*;
   import gpio_test_pkg::*;
+  import gpio_reg_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -23,6 +24,8 @@ module tb;
   wire [NUM_GPIOS-1:0] gpio_oe;
   wire [NUM_GPIOS-1:0] gpio_intr;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+
+  `DV_ALERT_IF_CONNECT
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -45,11 +48,15 @@ module tb;
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
 
+    .intr_gpio_o(gpio_intr),
+
+    .alert_rx_i(alert_rx),
+    .alert_tx_o(alert_tx),
+
     .cio_gpio_i   (gpio_i),
     .cio_gpio_o   (gpio_o),
-    .cio_gpio_en_o(gpio_oe),
+    .cio_gpio_en_o(gpio_oe)
 
-    .intr_gpio_o(gpio_intr)
   );
 
   assign interrupts[NUM_GPIOS-1:0] = gpio_intr;

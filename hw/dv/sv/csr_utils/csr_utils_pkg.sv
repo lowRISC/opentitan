@@ -60,28 +60,6 @@ package csr_utils_pkg;
     under_reset = 0;
   endfunction
 
-  // Get all valid csr addrs - useful to check if incoming addr falls in the csr range.
-  function automatic void get_csr_addrs(input uvm_reg_block ral, ref uvm_reg_addr_t csr_addrs[$]);
-    uvm_reg csrs[$];
-    ral.get_registers(csrs);
-    foreach (csrs[i]) begin
-      csr_addrs.push_back(csrs[i].get_address());
-    end
-  endfunction
-
-  // Get all valid mem addr ranges - useful to check if incoming addr falls in the mem range.
-  function automatic void get_mem_addr_ranges(uvm_reg_block ral, ref addr_range_t mem_ranges[$]);
-    uvm_mem mems[$];
-    ral.get_memories(mems);
-    foreach (mems[i]) begin
-      addr_range_t mem_range;
-      mem_range.start_addr = mems[i].get_address();
-      mem_range.end_addr   = mem_range.start_addr +
-                             mems[i].get_size() * mems[i].get_n_bytes() - 1;
-      mem_ranges.push_back(mem_range);
-    end
-  endfunction
-
   // get mem object from address
   function automatic uvm_mem get_mem_by_addr(uvm_reg_block ral, uvm_reg_addr_t addr);
     uvm_mem mem;

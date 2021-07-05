@@ -31,11 +31,12 @@ clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
 tl_if corei_tl_if(clk_main, rst_n);
 tl_if cored_tl_if(clk_main, rst_n);
-tl_if dm_sba_tl_if(clk_main, rst_n);
+tl_if rv_dm__sba_tl_if(clk_main, rst_n);
 
+tl_if rv_dm__regs_tl_if(clk_main, rst_n);
+tl_if rv_dm__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
-tl_if debug_mem_tl_if(clk_main, rst_n);
 tl_if ram_main_tl_if(clk_main, rst_n);
 tl_if eflash_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
@@ -50,6 +51,7 @@ tl_if edn1_tl_if(clk_main, rst_n);
 tl_if rv_plic_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
 tl_if keymgr_tl_if(clk_main, rst_n);
+tl_if rv_core_ibex_peri_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_main_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
@@ -107,10 +109,11 @@ initial begin
 
     `DRIVE_CHIP_TL_HOST_IF(corei, rv_core_ibex, tl_i)
     `DRIVE_CHIP_TL_HOST_IF(cored, rv_core_ibex, tl_d)
-    `DRIVE_CHIP_TL_HOST_IF(dm_sba, dm_top, tl_h)
+    `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__rom, rv_dm, rom_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(debug_mem, dm_top, tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(ram_main, tl_adapter_ram_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(eflash, tl_adapter_eflash, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
@@ -125,6 +128,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(keymgr, keymgr, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex_peri, rv_core_ibex_peri, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main, sram_ctrl_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)

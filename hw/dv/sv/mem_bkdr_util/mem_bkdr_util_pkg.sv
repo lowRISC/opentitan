@@ -10,11 +10,20 @@ package mem_bkdr_util_pkg;
   import sram_scrambler_pkg::*;
   import uvm_pkg::*;
 
-  typedef enum {
-    MemParityNone,
-    MemParityOdd,
-    MemParityEven
-  } mem_parity_e;
+  // Represents the various forms of error detection / correction supported.
+  typedef enum int {
+    ErrDetectionNone = prim_secded_pkg::SecdedNone,
+    Ecc_22_16        = prim_secded_pkg::Secded_22_16,
+    Ecc_28_22        = prim_secded_pkg::Secded_28_22,
+    Ecc_39_32        = prim_secded_pkg::Secded_39_32,
+    Ecc_64_57        = prim_secded_pkg::Secded_64_57,
+    Ecc_72_64        = prim_secded_pkg::Secded_72_64,
+    EccHamming_22_16 = prim_secded_pkg::SecdedHamming_22_16,
+    EccHamming_39_32 = prim_secded_pkg::SecdedHamming_39_32,
+    EccHamming_72_64 = prim_secded_pkg::SecdedHamming_72_64,
+    ParityEven,
+    ParityOdd
+  } err_detection_e;
 
   // macro includes
   `include "uvm_macros.svh"

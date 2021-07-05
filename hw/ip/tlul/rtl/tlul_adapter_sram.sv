@@ -61,6 +61,47 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   localparam int WoffsetWidth = (SramByte == top_pkg::TL_DBW) ? 1 :
                                 DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
 
+  // integrity check
+  logic intg_error;
+
+  if (CmdIntgCheck) begin : gen_cmd_intg_check
+    tlul_cmd_intg_chk u_cmd_intg_chk (
+      .tl_i(tl_i),
+      .err_o (intg_error)
+    );
+  end else begin : gen_no_cmd_intg_check
+    assign intg_error = '0;
+  end
+
+  // permanently latch integrity error until reset
+  logic intg_error_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_error_q <= '0;
+    end else if (intg_error) begin
+      intg_error_q <= 1'b1;
+    end
+  end
+
+  // integrity error output is permanent and should be used for alert generation
+  // or other downstream effects
+  assign intg_error_o = intg_error | intg_error_q;
+
+  // byte handling for integrity
+  tl_h2d_t tl_i_int;
+  tl_d2h_t tl_o_int;
+  tlul_sram_byte #(
+    .EnableIntg(ByteAccess & CmdIntgCheck & !ErrOnWrite)
+  ) u_sram_byte (
+    .clk_i,
+    .rst_ni,
+    .tl_i,
+    .tl_o,
+    .tl_sram_o(tl_i_int),
+    .tl_sram_i(tl_o_int),
+    .error_i(intg_error)
+  );
+
   typedef struct packed {
     logic [top_pkg::TL_DBW-1:0] mask ; // Byte mask within the TL-UL word
     logic [WoffsetWidth-1:0]    woffset ; // Offset of the TL-UL word within the SRAM word
@@ -106,7 +147,6 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   rsp_t rspfifo_wdata,  rspfifo_rdata;
 
   logic error_internal; // Internal protocol error checker
-  logic intg_error;
   logic wr_attr_error;
   logic instr_error;
   logic wr_vld_error;
@@ -114,8 +154,8 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   logic tlul_error;     // Error from `tlul_err` module
 
   logic a_ack, d_ack, sram_ack;
-  assign a_ack    = tl_i.a_valid & tl_o.a_ready ;
-  assign d_ack    = tl_o.d_valid & tl_i.d_ready ;
+  assign a_ack    = tl_i_int.a_valid & tl_o_int.a_ready ;
+  assign d_ack    = tl_o_int.d_valid & tl_i_int.d_ready ;
   assign sram_ack = req_o        & gnt_i ;
 
   // Valid handling
@@ -175,7 +215,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     .EnableDataIntgGen(EnableDataIntgGen)
   ) u_rsp_gen (
     .tl_i(tl_out),
-    .tl_o
+    .tl_o(tl_o_int)
   );
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
@@ -185,17 +225,17 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   //    Generate request only when no internal error occurs. If error occurs, the request should be
   //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
-  assign req_o      = tl_i.a_valid & reqfifo_wready & ~error_internal;
-  assign req_type_o = tl_i.a_user.tl_type;
-  assign we_o       = tl_i.a_valid & (tl_i.a_opcode inside {PutFullData, PutPartialData});
-  assign addr_o     = (tl_i.a_valid) ? tl_i.a_address[DataBitWidth+:SramAw] : '0;
+  assign req_o      = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
+  assign req_type_o = tl_i_int.a_user.tl_type;
+  assign we_o       = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
+  assign addr_o     = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
 
   // Support SRAMs wider than the TL-UL word width by mapping the parts of the
   // TL-UL address which are more fine-granular than the SRAM width to the
   // SRAM write mask.
   logic [WoffsetWidth-1:0] woffset;
   if (top_pkg::TL_DW != SramDw) begin : gen_wordwidthadapt
-    assign woffset = tl_i.a_address[DataBitWidth-1:prim_util_pkg::vbits(top_pkg::TL_DBW)];
+    assign woffset = tl_i_int.a_address[DataBitWidth-1:prim_util_pkg::vbits(top_pkg::TL_DBW)];
   end else begin : gen_no_wordwidthadapt
     assign woffset = '0;
   end
@@ -221,10 +261,10 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     wmask_int = '0;
     wdata_int = '0;
 
-    if (tl_i.a_valid) begin
+    if (tl_i_int.a_valid) begin
       for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-        wmask_int[woffset][8*i +: 8] = {8{tl_i.a_mask[i]}};
-        wdata_int[woffset][8*i +: 8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
+        wmask_int[woffset][8*i +: 8] = {8{tl_i_int.a_mask[i]}};
+        wdata_int[woffset][8*i +: 8] = (tl_i_int.a_mask[i] && we_o) ? tl_i_int.a_data[8*i+:8] : '0;
       end
     end
   end
@@ -238,9 +278,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     wmask_intg  = '0;
     wdata_intg  = '0;
 
-    if (tl_i.a_valid) begin
+    if (tl_i_int.a_valid) begin
       wmask_intg[woffset] = '1;
-      wdata_intg[woffset] = tl_i.a_user.data_intg;
+      wdata_intg[woffset] = tl_i_int.a_user.data_intg;
     end
   end
 
@@ -265,54 +305,31 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   // wr_attr_error: Check if the request size,mask are permitted.
   //    Basic check of size, mask, addr align is done in tlul_err module.
   //    Here it checks any partial write if ByteAccess isn't allowed.
-  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData)
-                         ? ((ByteAccess == 0) ? (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0)
-                         : 1'b0;
+  assign wr_attr_error = (tl_i_int.a_opcode == PutFullData || tl_i_int.a_opcode == PutPartialData)
+                         ? ((ByteAccess == 0) ?
+                           (tl_i_int.a_mask != '1 || tl_i_int.a_size != 2'h2) : 1'b0)
+                           : 1'b0;
 
   // An instruction type transaction is only valid if en_ifetch is enabled
-  assign instr_error = tl_i.a_user.tl_type == InstrType &
+  assign instr_error = tl_i_int.a_user.tl_type == InstrType &
                        en_ifetch_i != InstrEn;
 
   if (ErrOnWrite == 1) begin : gen_no_writes
-    assign wr_vld_error = tl_i.a_opcode != Get;
+    assign wr_vld_error = tl_i_int.a_opcode != Get;
   end else begin : gen_writes_allowed
     assign wr_vld_error = 1'b0;
   end
 
   if (ErrOnRead == 1) begin: gen_no_reads
-    assign rd_vld_error = tl_i.a_opcode == Get;
+    assign rd_vld_error = tl_i_int.a_opcode == Get;
   end else begin : gen_reads_allowed
     assign rd_vld_error = 1'b0;
   end
 
-  if (CmdIntgCheck) begin : gen_cmd_intg_check
-    tlul_cmd_intg_chk u_cmd_intg_chk (
-      .tl_i,
-      .err_o (intg_error)
-    );
-  end else begin : gen_no_cmd_intg_check
-    assign intg_error = '0;
-  end
-
-
-  // permanently latch integrity error until reset
-  logic intg_error_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      intg_error_q <= '0;
-    end else if (intg_error) begin
-      intg_error_q <= 1'b1;
-    end
-  end
-
-  // integrity error output is permanent and should be used for alert generation
-  // or other downstream effects
-  assign intg_error_o = intg_error | intg_error_q;
-
   tlul_err u_err (
     .clk_i,
     .rst_ni,
-    .tl_i,
+    .tl_i(tl_i_int),
     .err_o (tlul_error)
   );
 
@@ -323,16 +340,16 @@ module tlul_adapter_sram import tlul_pkg::*; #(
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{
-    op:     (tl_i.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
+    op:     (tl_i_int.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
     error:  error_internal,
-    size:   tl_i.a_size,
-    source: tl_i.a_source
+    size:   tl_i_int.a_size,
+    source: tl_i_int.a_source
   }; // Store the request only. Doesn't have to store data
   assign reqfifo_rready = d_ack ;
 
   // push together with ReqFIFO, pop upon returning read
   assign sramreqfifo_wdata = '{
-    mask    : tl_i.a_mask,
+    mask    : tl_i_int.a_mask,
     woffset : woffset
   };
   assign sramreqfifo_wvalid = sram_ack & ~we_o;

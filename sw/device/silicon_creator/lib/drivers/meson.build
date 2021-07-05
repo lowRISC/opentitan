@@ -2,6 +2,21 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Mask ROM lifecycle driver
+sw_silicon_creator_lib_driver_lifecycle = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_lifecycle',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      'lifecycle.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_bitfield,
+    ],
+  ),
+)
+
 # Mask ROM hmac driver
 sw_silicon_creator_lib_driver_hmac = declare_dependency(
   link_with: static_library(
@@ -80,6 +95,30 @@ test('sw_silicon_creator_lib_driver_keymgr_unittest', executable(
     ),
   suite: 'mask_rom',
 )
+
+sw_silicon_creator_lib_driver_keymgr_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_keymgr_functest',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'keymgr_functest.c',
+    ],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_kmac,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_driver_keymgr,
+      sw_silicon_creator_lib_driver_lifecycle,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_keymgr_functest': {
+    'library': sw_silicon_creator_lib_driver_keymgr_functest,
+  }
+}
 
 # Mask ROM uart driver
 sw_silicon_creator_lib_driver_uart = declare_dependency(
@@ -246,3 +285,35 @@ mask_rom_tests += {
     'library': sw_silicon_creator_lib_driver_alert_functest,
   }
 }
+
+# Mask ROM pinmux driver
+sw_silicon_creator_lib_driver_pinmux = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_pinmux',
+    sources: [
+      hw_top_earlgrey_pinmux_reg_h,
+      'pinmux.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
+    'sw_silicon_creator_lib_driver_pinmux_unittest',
+    sources: [
+      'pinmux_unittest.cc',
+      hw_top_earlgrey_pinmux_reg_h,
+      'pinmux.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)

@@ -78,29 +78,34 @@ All test sequences reside in `hw/ip/pwm/dv/env/seq_lib`.
 The `pwm_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `pwm_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
+
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* initialize_pwm: wait for out of reset then program `REGEN` register
+* program_pwm_cfg_regs: program the `CFG.CLK_DIV` and `CFG.DC_RESN` for all channels
+* program_pwm_mode_regs: program the operation modes (Standard/Blinking/Heartbeat) for all channels 
+* start_pwm_channels: program `CFG.CNTR_EN`, `PWM_EN`, `INVERT` registers for all channels
+* run_pwm_channels: wait for a certain number of pulses generated in activate channels then stop all channels
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* TODO:
 
 ### Self-checking strategy
 #### Scoreboard
 The `pwm_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+* item_fifo[NUM_PWM_CHANNELS]: the FIFO w.r.t channels receives the dut items sent by the pwm_monitor
+* exp_item_q[PWM_NUM_CHANNELS]: the queues  w.r.t channels are used to store the expected/referenced items 
+which are constructed from tl address and data channels  
+
+Once the expected items and dut items are found in the exp_item_q and item_fifo respectively, 
+they are pop out for comparison   
 
 #### Assertions
 * TLUL assertions: The `tb/pwm_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
+* TODO:
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.

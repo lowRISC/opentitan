@@ -23,6 +23,7 @@ module tb;
   wire intr_rd_full;
   wire intr_rd_lvl;
   wire intr_op_done;
+  wire intr_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -60,6 +61,7 @@ module tb;
     .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On),
     .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
     .lc_nvm_debug_en_i          (lc_ctrl_pkg::Off),
+    .lc_escalate_en_i           (lc_ctrl_pkg::Off),
     .pwrmgr_o                   (pwrmgr_pkg::PWR_FLASH_DEFAULT),
     .rma_req_i                  (lc_ctrl_pkg::Off),
     .rma_seed_i                 ('0),
@@ -70,6 +72,7 @@ module tb;
     .intr_rd_full_o     (intr_rd_full   ),
     .intr_rd_lvl_o      (intr_rd_lvl    ),
     .intr_op_done_o     (intr_op_done   ),
+    .intr_err_o         (intr_err       ),
     .alert_rx_i         (alert_rx       ),
     .alert_tx_o         (alert_tx       )
   );
@@ -137,8 +140,7 @@ module tb;
                               .path  (`FLASH_DATA_MEM_HIER_STR(i)),
                               .depth ($size(`FLASH_DATA_MEM_HIER(i))),
                               .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
-                              .parity(1'b0),
-                              .ecc   (prim_secded_pkg::SecdedNone));
+                              .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
         uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                            m_mem_bkdr_util);
         part = part.next();
@@ -151,8 +153,7 @@ module tb;
                                 .path  (`FLASH_INFO_MEM_HIER_STR(i, j)),
                                 .depth ($size(`FLASH_INFO_MEM_HIER(i, j))),
                                 .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
-                                .parity(1'b0),
-                                .ecc   (prim_secded_pkg::SecdedNone));
+                                .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
           uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                              m_mem_bkdr_util);
           part = part.next();
@@ -171,6 +172,7 @@ module tb;
   assign interrupts[FlashCtrlIntrRdFull]    = intr_rd_full;
   assign interrupts[FlashCtrlIntrRdLvl]     = intr_rd_lvl;
   assign interrupts[FlashCtrlIntrOpDone]    = intr_op_done;
+  assign interrupts[FlashCtrlIntrErr]       = intr_err;
 
   initial begin
     // drive clk and rst_n from clk_if
@@ -181,6 +183,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_eflash_tl_agent*", "vif", eflash_tl_if);
+    // Define flash_ctrl path as string to pass to flash_ctrl_env for ral hdl_path.
+    uvm_config_db#(string)::set(null, "*.env", "hdl_path_root", "tb.dut.u_flash_ctrl");
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

@@ -11,7 +11,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   `uvm_component_param_utils(cip_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T))
 
   tl_agent                                           m_tl_agents[string];
-  tl_reg_adapter#(cip_tl_seq_item)                   m_tl_reg_adapters[string];
+  tl_reg_adapter #(tl_seq_item)                      m_tl_reg_adapters[string];
   alert_esc_agent                                    m_alert_agent[string];
   push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent;
 
@@ -19,6 +19,10 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // use cip_tl_seq_item to create tl_seq_item with correct integrity values and obtain integrity
+    // related functions
+    if (cfg.en_tl_intg_gen) tl_seq_item::type_id::set_type_override(cip_tl_seq_item::get_type());
 
     // Retrieve the virtual interfaces from uvm_config_db.
     if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
@@ -33,7 +37,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     // Create & configure the TL agent.
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       m_tl_agents[i] = tl_agent::type_id::create({"m_tl_agent_", i}, this);
-      m_tl_reg_adapters[i] = tl_reg_adapter#(cip_tl_seq_item)::type_id::create(
+      m_tl_reg_adapters[i] = tl_reg_adapter#(tl_seq_item)::type_id::create(
                              {"m_tl_reg_adapter_", i});
       m_tl_reg_adapters[i].cfg = cfg.m_tl_agent_cfgs[i];
       uvm_config_db#(tl_agent_cfg)::set(this, $sformatf("m_tl_agent_%s*", i), "cfg",

@@ -5,7 +5,23 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 
 #include "sw/device/lib/base/memory.h"
+
 #include "lc_ctrl_regs.h"  // Generated.
+
+enum {
+  /**
+   * To claim the hardware mutex, SW can write 0xa5 to register
+   * `CLAIM_TRANSITION_IF`. See
+   * https://docs.opentitan.org/hw/ip/lc_ctrl/doc/index.html#Reg_claim_transition_if
+   * for details.
+   */
+  kLcCtrlMutexAcquire = 0xa5,
+  /**
+   * To release the hardware mutex, SW can write 0 to register
+   * `CLAIM_TRANSITION_IF`.
+   */
+  kLcCtrlMutexRelease = 0,
+};
 
 dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
                                       dif_lc_ctrl_t *lc) {
@@ -191,6 +207,18 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
   return kDifLcCtrlOk;
 }
 
+dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
+    const dif_lc_ctrl_t *lc, dif_lc_ctrl_device_id_t *device_id) {
+  if (lc == NULL) {
+    return kDifLcCtrlBadArg;
+  }
+
+  mmio_region_memcpy_from_mmio32(
+      lc->params.base_addr, LC_CTRL_DEVICE_ID_0_REG_OFFSET, device_id->data,
+      ARRAYSIZE(device_id->data) * sizeof(uint32_t));
+  return kDifLcCtrlOk;
+}
+
 dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
                                              dif_lc_ctrl_alert_t alert) {
   if (lc == NULL) {
@@ -225,12 +253,13 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
   }
 
   mmio_region_write32(lc->params.base_addr,
-                      LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 1);
+                      LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
+                      kLcCtrlMutexAcquire);
   uint32_t reg = mmio_region_read32(lc->params.base_addr,
                                     LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET);
   // If the register is zero, that means we failed to take the mutex for
   // whatever reason.
-  if (reg == 0) {
+  if (reg == kLcCtrlMutexRelease) {
     return kDifLcCtrlMutexAlreadyTaken;
   } else {
     return kDifLcCtrlMutexOk;
@@ -244,13 +273,14 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
 
   uint32_t reg = mmio_region_read32(lc->params.base_addr,
                                     LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET);
-  if (reg == 0) {
+  if (reg == kLcCtrlMutexRelease) {
     // We're not holding the mutex, which is a programmer error.
     return kDifLcCtrlMutexError;
   }
 
   mmio_region_write32(lc->params.base_addr,
-                      LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0);
+                      LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
+                      kLcCtrlMutexRelease);
   return kDifLcCtrlMutexOk;
 }
 

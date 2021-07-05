@@ -285,68 +285,64 @@ module tb;
     initial begin
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
-      m_mem_bkdr_util[FlashBank0Data] = new(.name  ("mem_bkdr_util[FlashBank0Data]"),
-                                            .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
-                                            .depth ($size(`FLASH0_DATA_MEM_HIER)),
-                                            .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
-                                            .parity(1'b0),
-                                            .ecc   (prim_secded_pkg::SecdedNone));
+      m_mem_bkdr_util[FlashBank0Data] = new(
+          .name  ("mem_bkdr_util[FlashBank0Data]"),
+          .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
+          .depth ($size(`FLASH0_DATA_MEM_HIER)),
+          .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
-      m_mem_bkdr_util[FlashBank0Info] = new(.name  ("mem_bkdr_util[FlashBank0Info]"),
-                                            .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
-                                            .depth ($size(`FLASH0_INFO_MEM_HIER)),
-                                            .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
-                                            .parity(1'b0),
-                                            .ecc   (prim_secded_pkg::SecdedNone));
+      m_mem_bkdr_util[FlashBank0Info] = new(
+          .name  ("mem_bkdr_util[FlashBank0Info]"),
+          .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
+          .depth ($size(`FLASH0_INFO_MEM_HIER)),
+          .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
-      m_mem_bkdr_util[FlashBank1Data] = new(.name  ("mem_bkdr_util[FlashBank1Data]"),
-                                            .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
-                                            .depth ($size(`FLASH1_DATA_MEM_HIER)),
-                                            .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
-                                            .parity(1'b0),
-                                            .ecc   (prim_secded_pkg::SecdedNone));
+      m_mem_bkdr_util[FlashBank1Data] = new(
+          .name  ("mem_bkdr_util[FlashBank1Data]"),
+          .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
+          .depth ($size(`FLASH1_DATA_MEM_HIER)),
+          .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH0_DATA_MEM_HIER)
 
-      m_mem_bkdr_util[FlashBank1Info] = new(.name  ("mem_bkdr_util[FlashBank1Info]"),
-                                            .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
-                                            .depth ($size(`FLASH1_INFO_MEM_HIER)),
-                                            .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
-                                            .parity(1'b0),
-                                            .ecc   (prim_secded_pkg::SecdedNone));
+      m_mem_bkdr_util[FlashBank1Info] = new(
+          .name  ("mem_bkdr_util[FlashBank1Info]"),
+          .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
+          .depth ($size(`FLASH1_INFO_MEM_HIER)),
+          .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
       m_mem_bkdr_util[Otp] = new(.name  ("mem_bkdr_util[Otp]"),
                                  .path  (`DV_STRINGIFY(`OTP_MEM_HIER)),
                                  .depth ($size(`OTP_MEM_HIER)),
                                  .n_bits($bits(`OTP_MEM_HIER)),
-                                 .parity(1'b0),
-                                 .ecc   (prim_secded_pkg::SecdedHamming_22_16));
+                                 .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
 
       m_mem_bkdr_util[RamMain] = new(.name  ("mem_bkdr_util[RamMain]"),
                                      .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
                                      .depth ($size(`RAM_MAIN_MEM_HIER)),
                                      .n_bits($bits(`RAM_MAIN_MEM_HIER)),
-                                     .parity(1'b1),
-                                     .ecc   (prim_secded_pkg::SecdedNone));
+                                     .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain], `RAM_MAIN_MEM_HIER)
 
       m_mem_bkdr_util[RamRet] = new(.name  ("mem_bkdr_util[RamRet]"),
                                     .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
                                     .depth ($size(`RAM_RET_MEM_HIER)),
                                     .n_bits($bits(`RAM_RET_MEM_HIER)),
-                                    .parity(1'b0),
-                                    .ecc   (prim_secded_pkg::SecdedNone));
+                                    .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet], `RAM_RET_MEM_HIER)
 
       m_mem_bkdr_util[Rom] = new(.name  ("mem_bkdr_util[Rom]"),
                                  .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
                                  .depth ($size(`ROM_MEM_HIER)),
                                  .n_bits($bits(`ROM_MEM_HIER)),
-                                 .parity(1'b0),
-                                 .ecc   (prim_secded_pkg::Secded_39_32));
+                                 .err_detection_scheme(mem_bkdr_util_pkg::Ecc_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 
       for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
@@ -364,12 +360,18 @@ module tb;
     void'($value$plusargs("stub_cpu=%0b", stub_cpu));
     if (stub_cpu) begin
       force `CPU_HIER.clk_i = 1'b0;
-      force `CPU_HIER.tl_d_o = cpu_d_tl_if.h2d;
+      // tl type is used to calculate ECC and we use DataType for cpu data interface
+      force cpu_d_tl_if.h2d.a_user.tl_type = tlul_pkg::DataType;
+      force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
+      force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
     end else begin
+      // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
+      // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+      // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
       force cpu_d_tl_if.h2d = `CPU_HIER.tl_d_o;
+      force cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
     end
   end
-  assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
   // otp test_access memory is only accessible after otp_init and lc_dft_en = 1.
   // TODO: remove them once the otp/pwr otp/lc connections are completed.

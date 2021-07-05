@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 { name: "i2c"
-  clock_primary: "clk_i"
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -62,7 +62,21 @@
     { name: "host_timeout"
       desc: "raised if the host stops sending the clock during an ongoing transaction."
     }
-  ]
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  param_list: [
+    { name: "FifoDepth",
+      desc: "Depth of FMT, RX, TX, and ACQ FIFOs",
+      type: "int",
+      default: "64",
+    }
+  ],
 
   // REGISTER definition
   regwidth: "32"
@@ -285,19 +299,19 @@
       hwaccess: "hwo"
       hwext: "true"
       fields: [
-        { bits: "5:0"
+        { bits: "6:0"
           name: "FMTLVL"
           desc: "Current fill level of FMT fifo"
         }
-        { bits: "21:16"
+        { bits: "22:16"
           name: "RXLVL"
           desc: "Current fill level of RX fifo"
         }
-        { bits: "13:8"
+        { bits: "14:8"
           name: "TXLVL"
           desc: "Current fill level of TX fifo"
         }
-        { bits: "29:24"
+        { bits: "30:24"
           name: "ACQLVL"
           desc: "Current fill level of ACQ fifo"
         }

@@ -41,6 +41,7 @@
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{proj_root}/hw/top_earlgrey/dv/chip_dif_tests.hjson",
+                "{proj_root}/hw/top_earlgrey/dv/chip_mask_rom_tests.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -189,6 +190,12 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_sw_lc_ctrl_otp_hw_cfg
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/lc_ctrl_otp_hw_cfg_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_sw_pwrmgr_usbdev_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
@@ -201,6 +208,7 @@
       sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
+
     {
       name: chip_sw_coremark
       uvm_test_seq: chip_sw_base_vseq

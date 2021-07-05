@@ -341,12 +341,7 @@ class IrqCompleteTest : public PlicTest {
 };
 
 TEST_F(IrqCompleteTest, NullArgs) {
-  dif_plic_irq_id_t data;
-  EXPECT_EQ(dif_plic_irq_complete(nullptr, kTarget0, &data), kDifPlicBadArg);
-
-  EXPECT_EQ(dif_plic_irq_complete(&plic_, kTarget0, nullptr), kDifPlicBadArg);
-
-  EXPECT_EQ(dif_plic_irq_complete(nullptr, kTarget0, nullptr), kDifPlicBadArg);
+  EXPECT_EQ(dif_plic_irq_complete(nullptr, kTarget0, 0), kDifPlicBadArg);
 }
 
 TEST_F(IrqCompleteTest, Target0Success) {
@@ -357,8 +352,7 @@ TEST_F(IrqCompleteTest, Target0Success) {
 
   // Complete all of the IRQs.
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-    dif_plic_irq_id_t data = i;
-    EXPECT_EQ(dif_plic_irq_complete(&plic_, kTarget0, &data), kDifPlicOk);
+    EXPECT_EQ(dif_plic_irq_complete(&plic_, kTarget0, i), kDifPlicOk);
   }
 }
 

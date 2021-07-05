@@ -43,7 +43,7 @@ package tlul_pkg;
   parameter int D2HRspMaxWidth  = 57;
   parameter int D2HRspIntgWidth = 7;
   parameter int D2HRspFullWidth = D2HRspMaxWidth + D2HRspIntgWidth;
-  parameter int DataMaxWidth    = 57;
+  parameter int DataMaxWidth    = 32;
   parameter int DataIntgWidth   = 7;
   parameter int DataFullWidth   = DataMaxWidth + DataIntgWidth;
 

@@ -246,7 +246,10 @@ As described in the I2C specification, a target device can pause a transaction b
 A target device stretches the clock automatically when a host device reads from the target and the target's TX FIFO is empty.
 Also, a target device stretches the clock automatically when a host device writes to the target and the target's ACQ FIFO is full.
 The present implementation also supports few additional modes in which a target device can stretch the clock after completing a transaction if it needs more time, e.g., to store the acquired data byte in flash memory, etc.
-If {{< regref STRETCH_CTRL.ENABLEADDR >}} is asserted, a target stretches the clock after acquiring an address and making certain that the transaction is intended for it and not for another device on the bus.
+If {{< regref STRETCH_CTRL.EN_ADDR_TX >}} or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} is asserted, a target stretches the clock after acquiring an address and making certain that the transmit (read by a host) or acquire (write by a host) transaction, respectively, is intended for it and not for another device on the bus.
+To stop stretching the clock and resume normal operation, set {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}} bit, respectively.
+In the case when {{< regref STRETCH_CTRL.EN_ADDR_TX >}} and {{< regref STRETCH_CTRL.STOP_TX >}} are both asserted for a transmit transaction or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} and {{< regref STRETCH_CTRL.STOP_ACQ >}} are both asserted for an acquire transaction, a target device acknowledges the address and thereby accepts the transaction intended for it without stretching the clock.
+After this, {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}}, respectively, is reset so the target device will stretch the clock after acquiring the address of the next transaction intended for it.
 
 {{<wavejson>}}
 {signal: [
@@ -262,42 +265,9 @@ If {{< regref STRETCH_CTRL.ENABLEADDR >}} is asserted, a target stretches the cl
  head: {text: 'Clock stretching after matching an address (cycle 10), normal operation is resumed and address is acknowledged (cycle 15)', tick: 1}
 }
 {{</wavejson>}}
+In this diagram, "stretch_en_addr" stands for {{< regref STRETCH_CTRL.EN_ADDR_TX >}} or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} whereas "stretch_stop" stands for, respectively, {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}}.
 
-If {{< regref STRETCH_CTRL.ENABLETX >}} is asserted, a target stretches the clock after an ongoing byte transmit operation (host is reading) completes and a host acknowledges the receipt.
-
-{{<wavejson>}}
-{signal: [
-  {name: 'clock', wave: 'p..................'},
-  {name: 'stretch_en_tx', wave: '1..................'},
-  {name: 'stretch_stop', wave: '0.............1....'},
-  {name: 'host_ack', wave: '0......1...........'},
-  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0.'},
-  {name: 'SCL target driver', wave: 'z.......0......z...'},
-  {name: 'SCL bus', wave: '0u.0..u.0......u.0.'},
-],
- head: {text: 'Clock stretching after receiving an acknowledgement from host (cycle 8), normal operation is resumed (cycle 15)', tick: 1}
-}
-{{</wavejson>}}
-
-If {{< regref STRETCH_CTRL.ENABLEACQ >}} is asserted, a target stretches the clock after an ongoing byte acquire operation (host is writing) completes.
-The target device stops stretching the clock and resumes normal operation when {{< regref STRETCH_CTRL.STOP >}} is asserted.
-
-{{<wavejson>}}
-{signal: [
-  {name: 'clock', wave: 'p..................'},
-  {name: 'stretch_en_acq', wave: '1..................'},
-  {name: 'stretch_stop', wave: '0.............1....'},
-  {name: 'bit_ack', wave: '0........1.........'},
-  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0.'},
-  {name: 'SCL target driver', wave: 'z.........0....z...'},
-  {name: 'SCL bus', wave: '0u.0..u.0......u.0.'},
-],
- head: {text: 'Clock stretching after acquiring a byte (cycle 10), normal operation is resumed and byte is acknowledged (cycle 15)', tick: 1}
-}
-{{</wavejson>}}
-
-In all three cases described above, a target begins to stretch the clock when SCL is held low by a host.
-For instance, if acknowledgement from a host arrives when SCL is held high and {{< regref STRETCH_CTRL.ENABLETX >}} is asserted, a target waits for the host to pull SCL low before stretching the clock.
+In all cases described above, a target begins to stretch the clock when SCL is held low by a host.
 
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.

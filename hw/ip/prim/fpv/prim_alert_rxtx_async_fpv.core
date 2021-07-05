@@ -8,6 +8,7 @@ filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:alert
     files:
       - vip/prim_alert_rxtx_async_assert_fpv.sv
       - tb/prim_alert_rxtx_async_fpv.sv

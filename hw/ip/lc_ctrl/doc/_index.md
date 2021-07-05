@@ -124,12 +124,11 @@ This general policy places a time-bound on how quickly life cycle states can cha
 
 The life cycle controller contains two escalation paths that are connected to [escalation severities 1 and 2 of the alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md#escalation-signaling" >}}).
 
-The first escalation path is used to trigger escalation mechanisms such as secret wiping devices in OpenTitan.
-Upon assertion, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action.
-
-The second escalation path is used to **TEMPORARILY** alter the life cycle state.
+The two escalation paths are redundant, and both trigger the same mechanism.
+Upon assertion of any of the two escalation actions, the life cycle state is **TEMPORARILY** altered.
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
-This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle, with the exception of the ESCALATE_EN signal which will also be asserted in this case.
+This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle.
+In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the [alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md" >}}) for more details.
 
@@ -219,9 +218,10 @@ The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
 
-The CLK_BYP_REQ signal switches the main system clock to an external clock signal in RAW and TEST_LOCKED states when initiating a life cycle transition.
-This is needed since the internal clock source may not be fully calibrated yet in those states, and the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
+If the life cycle state is in RAW, TEST* or RMA, and if {{< regref OTP_TEST_CTRL.EXT_CLOCK >}} is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
+This functionality is needed in certain life cycle states where the internal clock source may not be fully calibrated yet, since the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
 The CLK_BYP_REQ signal is only asserted when a transition command is issued.
+This function is not available in production life cycle states.
 
 
 ### Life Cycle Access Control Signals
@@ -369,10 +369,10 @@ Signal                       | Direction        | Type                          
 -----------------------------|------------------|--------------------------------------|---------------
 `jtag_i`                     | `input`          | `jtag_pkg::jtag_req_t`               | JTAG input signals for life cycle TAP.
 `jtag_o`                     | `output`         | `jtag_pkg::jtag_rsp_t`               | JTAG output signals for life cycle TAP.
-`esc_wipe_secrets_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Triggers assertion of the `lc_escalate_en_o` signal.
-`esc_wipe_secrets_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
-`esc_scrap_state_tx_i`       | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
-`esc_scrap_state_rx_o`       | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
+`esc_scrap_state0_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state0_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
+`esc_scrap_state1_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state1_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
 `pwr_lc_i`                   | `input`          | `pwrmgr::pwr_lc_req_t`               | Initialization request coming from power manager.
 `pwr_lc_o`                   | `output`         | `pwrmgr::pwr_lc_rsp_t`               | Initialization response and programming idle state going to power manager.
 `lc_otp_program_o`           | `output`         | `otp_ctrl_pkg::lc_otp_program_req_t` | Life cycle state transition request.
@@ -609,7 +609,7 @@ This resets the mux to select no one and also holds the request interface in res
 #### Vendor-specific Test Control Register
 
 Certain OTP macros require special configuration bits to be set during the test phases.
-Hence, the life cycle CSRs include register {{< regref "OTP_TEST_CTRL" >}}, which is reserved for vendor-specific test control bits.
+Hence, the life cycle CSRs include register {{< regref OTP_TEST_CTRL.VAL >}}, which is reserved for vendor-specific test control bits.
 Its value is only forwarded to the OTP macro in RAW, TEST_* and RMA life cycle states.
 In all other life cycle states, a value of 0 will be sent to the OTP macro.
 
@@ -646,11 +646,17 @@ Hence the following programming sequence applies to both SW running on the devic
 
 3. Claim exclusive access to the transition interface by writing 0xA5 to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 0xA5, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 
-4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. For conditional transitions, the corresponding token has to be written to {{< regref "TRANSITION_TOKEN_0" >}}. For all unconditional transitions, the token registers have to be set to zero. An optional, but recommended step is to read back and verify the values written to these registers before proceeding with step 5.
+4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. For conditional transitions, the corresponding token has to be written to {{< regref "TRANSITION_TOKEN_0" >}}. For all unconditional transitions, the token registers have to be set to zero.
 
-5. Write 1 to the {{< regref "TRANSITION_CMD.START" >}} register to initiate the life cycle transition.
+5. If required, enable the external clock and other vendor-specific OTP settings in the {{< regref "OTP_TEST_CTRL" >}} register.
+Note that these settings only take effect in RAW, TEST* and RMA life cycle states.
+They are ignored in the PROD* and DEV states.
 
-6. Poll the {{< regref "STATUS" >}} register and wait until either {{< regref "STATUS.TRANSITION_SUCCESSFUL" >}} or any of the error bits is asserted.
+6. An optional, but recommended step is to read back and verify the values written in steps 4. and 5. before proceeding with step 6.
+
+7. Write 1 to the {{< regref "TRANSITION_CMD.START" >}} register to initiate the life cycle transition.
+
+8. Poll the {{< regref "STATUS" >}} register and wait until either {{< regref "STATUS.TRANSITION_SUCCESSFUL" >}} or any of the error bits is asserted.
 
 Note that any life cycle state transition - no matter whether successful or not - increments the LC_TRANSITION_CNT and moves the life cycle state into the temporary POST_TRANSITION state.
 Hence, step 6. cannot be carried out in case device SW is used to implement the programming sequence above, since the processor is disabled in the POST_TRANSITION life cycle state.

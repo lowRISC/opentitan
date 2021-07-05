@@ -5,7 +5,7 @@ CAPI=2:
 name: "lowrisc:fpv:alert_handler_ping_timer_fpv:0.1"
 description: "ALERT_HANDLER FPV target"
 filesets:
-  files_fpv:
+  files_formal:
     depend:
       - lowrisc:prim:all
       # note: this is an example config which may differ
@@ -18,10 +18,14 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
     filesets:
-      - files_fpv
-    toplevel: alert_handler_ping_timer_fpv
+      - files_formal
+    toplevel:
+      - alert_handler_ping_timer_fpv
+
+  formal:
+    <<: *default_target

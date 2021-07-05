@@ -27,15 +27,17 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
     num_trans == 1;
   }
 
-  // TODO: 10_000 iterations takes roughly 150s CPU time during simulation.
-  //       If this is too much, modify the constraint.
   constraint num_ops_c {
-    num_ops dist {
-      [1    : 999 ] :/ 1,
-      [1000 : 4999] :/ 3,
-      [5000 : 9999] :/ 5,
-      10_000        :/ 1
-    };
+    if (cfg.smoke_test) {
+      num_ops == 100;
+    } else {
+      num_ops dist {
+        [1    : 999 ] :/ 1,
+        [1000 : 4999] :/ 3,
+        [5000 : 9999] :/ 5,
+        10_000        :/ 1
+      };
+    }
   }
 
   // This can be much smaller than `num_ops`, as we only perform some memory accesses

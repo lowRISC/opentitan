@@ -883,11 +883,7 @@ TEST_F(IrqTest, DisableAll) {
 }
 
 TEST_F(IrqTest, RestoreAllBadArgs) {
-  dif_pwrmgr_irq_snapshot_t snapshot;
-
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(nullptr, &snapshot), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(&pwrmgr_, nullptr), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(nullptr, nullptr), kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_irq_restore_all(nullptr, 0), kDifPwrmgrBadArg);
 }
 
 TEST_F(IrqTest, RestoreAll) {
@@ -895,7 +891,7 @@ TEST_F(IrqTest, RestoreAll) {
 
   EXPECT_WRITE32(PWRMGR_INTR_ENABLE_REG_OFFSET, snapshot);
 
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(&pwrmgr_, &snapshot), kDifPwrmgrOk);
+  EXPECT_EQ(dif_pwrmgr_irq_restore_all(&pwrmgr_, snapshot), kDifPwrmgrOk);
 }
 
 }  // namespace

@@ -26,6 +26,7 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    list_of_alerts = usbdev_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
     // create usb20 agent config obj
     m_usb20_agent_cfg = usb20_agent_cfg::type_id::create("m_usb20_agent_cfg");

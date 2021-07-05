@@ -23,8 +23,6 @@ module lc_ctrl_signal_decode
   input  lc_state_e      lc_state_i,
   input  lc_id_state_e   lc_id_state_i,
   input  fsm_state_e     fsm_state_i,
-  // Escalation enable from escalation receiver.
-  input                  esc_wipe_secrets_i,
   // Local life cycle signal
   output lc_tx_t         lc_test_or_rma_o,
   // Life cycle broadcast outputs.
@@ -69,12 +67,6 @@ module lc_ctrl_signal_decode
     lc_escalate_en           = Off;
     // Set to invalid diversification value by default.
     lc_keymgr_div_d          = RndCnstLcKeymgrDivInvalid;
-    // The escalation life cycle signal is always decoded, no matter
-    // which state we currently are in.
-    // Note that this can be overridden by scrap states further below.
-    if (esc_wipe_secrets_i) begin
-      lc_escalate_en = On;
-    end
 
     unique case (fsm_state_i)
       ///////////////////////////////////////////////////////////////////
@@ -312,8 +304,6 @@ module lc_ctrl_signal_decode
       lc_dft_en_o == Off &&
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
-  `ASSERT(EscalationAlwaysDecoded_A,
-      esc_wipe_secrets_i |=> lc_escalate_en_o == On)
 
   `ASSERT(FsmInScrap_A,
       !(fsm_state_i inside {ResetSt,

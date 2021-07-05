@@ -7,7 +7,6 @@
 
 module prim_alert_rxtx_async_fpv
   import prim_alert_pkg::*;
-  import prim_esc_pkg::*;
 (
   input        clk_i,
   input        rst_ni,

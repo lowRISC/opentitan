@@ -26,7 +26,7 @@ class aes_clear_test extends aes_base_test;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
 
-    cfg.message_len_min          = 1;
+    cfg.message_len_min          = 17;
     cfg.message_len_max          = 317;
     cfg.manual_operation_pct     = 30;
     cfg.use_key_mask             = 0;

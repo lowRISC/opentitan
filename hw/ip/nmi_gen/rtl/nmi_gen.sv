@@ -103,7 +103,10 @@ module nmi_gen
   // Connect escalation signal receivers //
   /////////////////////////////////////////
   for (genvar k = 0; k < N_ESC_SEV; k++) begin : gen_esc_sev
-    prim_esc_receiver i_prim_esc_receiver (
+    prim_esc_receiver #(
+      .N_ESC_SEV   (N_ESC_SEV),
+      .PING_CNT_DW (16)
+    ) i_prim_esc_receiver (
       .clk_i,
       .rst_ni,
       .esc_en_o ( esc_en[k]   ),

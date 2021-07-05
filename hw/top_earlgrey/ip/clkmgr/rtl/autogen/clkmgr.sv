@@ -14,7 +14,13 @@
 
 
 
-  module clkmgr import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; (
+  module clkmgr
+    import clkmgr_pkg::*;
+    import clkmgr_reg_pkg::*;
+    import lc_ctrl_pkg::lc_tx_t;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   // Primary module control clocks and resets
   // This drives the register interface
   input clk_i,
@@ -39,6 +45,10 @@
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   // pwrmgr interface
   input pwrmgr_pkg::pwr_clk_req_t pwr_i,
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
@@ -47,7 +57,7 @@
   input lc_tx_t scanmode_i,
 
   // idle hints
-  input [3:0] idle_i,
+  input [4:0] idle_i,
 
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
@@ -71,6 +81,7 @@
   // Register Interface
   ////////////////////////////////////////////////////
 
+  logic [NumAlerts-1:0] alert_test, alerts;
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
@@ -81,10 +92,34 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(alerts[0]),
     .devmode_i(1'b1)
   );
 
+  ////////////////////////////////////////////////////
+  // Alerts
+  ////////////////////////////////////////////////////
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -534,6 +569,8 @@
   logic clk_main_kmac_en;
   logic clk_main_otbn_hint;
   logic clk_main_otbn_en;
+  logic clk_io_div4_otbn_hint;
+  logic clk_io_div4_otbn_en;
 
   assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[Aes];
 
@@ -659,6 +696,37 @@
     .clk_o(clocks_o.clk_main_otbn)
   );
 
+  assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[Otbn];
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_clk_io_div4_otbn_hint_sync (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i(reg2hw.clk_hints.clk_io_div4_otbn_hint.q),
+    .q_o(clk_io_div4_otbn_hint)
+  );
+
+  lc_tx_t clk_io_div4_otbn_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_div4_otbn_scanmode_sync  (
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_io_div4_otbn_scanmode)
+  );
+
+  prim_clock_gating #(
+    .NoFpgaGate(1'b1)
+  ) u_clk_io_div4_otbn_cg (
+    .clk_i(clk_io_div4_root),
+    .en_i(clk_io_div4_otbn_en & clk_io_div4_en),
+    .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clocks_o.clk_io_div4_otbn)
+  );
+
 
   // state readback
   assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
@@ -669,6 +737,8 @@
   assign hw2reg.clk_hints_status.clk_main_kmac_val.d = clk_main_kmac_en;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
+  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
 
   assign jitter_en_o = reg2hw.jitter_enable.q;
 
@@ -692,6 +762,7 @@
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
   `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)

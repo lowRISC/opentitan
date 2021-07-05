@@ -131,21 +131,25 @@ The configuration file format is given below.
 
 ### Clocking
 
-Each peripheral must define at least one clock: the primary clock.
-This is defined as `clock_primary` in the configuration file, and must be equal to one of the known clock names.
-This primary clock is defined as the one used to clock any device interfaces, indicating to the top level if asynchronous handling of the bus interface is needed.
+Each peripheral specifies how it is clocked and reset.
+This is done with the `clocking` element, whose value is a nonempty list of dictionaries.
+Each dictionary (called a *clocking item*) defines a clock and reset signal.
+The clock signal is the field called `clock`.
+The reset signal is the field called `reset`.
 
-Optionally the peripheral can request other clocks that it needs for internal use.
-These would create asynchronous clock domains within the IP that are handled by the design.
-They are defined under `other_clock_list` in the configuration file.
+One of the clocking items is called the *primary clock*.
+If there is just one item, that is the primary clock.
+If there are several, exactly one of the items' dictionaries should also have a boolean field called `primary` set to true.
+This primary clock used to clock any device interfaces, indicating to the top level if asynchronous handling of the bus interface is needed.
 
-### Reset
-
-At this time, no additional information is required to indicate the reset scheme for the peripheral IP.
-It is assumed that each clock comes with its related reset pins targeted for that clock domain.
 Resets within the design are **asynchronous active low** (see below).
 Special care will be required for security sensitive storage elements.
 Further instructions on the handling of these storage elements will come at a later date.
+
+For most blocks, each clocking item has one clock and one reset signal.
+However, there are a few blocks where this might not be true (blocks that generate clocks or resets).
+To allow these blocks to be described, the `clock` and `reset` fields of an item are optional.
+However, the primary clock must have both.
 
 #### Details and rationale for asynchronous active low reset strategy
 
@@ -264,8 +268,11 @@ In this example, the IP name is `uart`, though the other configuration fields ar
 ```hjson
   {
     name: "uart",
-    clock_primary: "clk_fixed",      // optional; default "clk"
-    other_clock_list: [ "clk", "clk_lowpower" ], // optional; default []
+    clocking: [
+      {clock: "clk_fixed", reset: "rst_fixed_n", primary: true},
+      {clock: "clk", reset: "rst_n"},
+      {clock: "clk_lowpower", reset: "rst_lowpower_n"}
+    ],
     bus_interfaces: [
       { protocol: "tlul", direction: "device", name: "regs" }
     ],

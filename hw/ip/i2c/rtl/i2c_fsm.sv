@@ -18,7 +18,7 @@ module i2c_fsm (
 
   input        fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input        fmt_fifo_wvalid_i, // indicates data is being put into fmt_fifo
-  input [5:0]  fmt_fifo_depth_i,  // fmt_fifo_depth
+  input [6:0]  fmt_fifo_depth_i,  // fmt_fifo_depth
   output logic fmt_fifo_rready_o, // populates fmt_fifo
   input [7:0]  fmt_byte_i,        // byte in fmt_fifo to be sent to target
   input        fmt_flag_start_before_i, // issue start before sending byte
@@ -32,7 +32,7 @@ module i2c_fsm (
 
   input        tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
   input        tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
-  input [5:0]  tx_fifo_depth_i,  // tx_fifo_depth
+  input [6:0]  tx_fifo_depth_i,  // tx_fifo_depth
   output logic tx_fifo_rready_o, // populates tx_fifo
   input [7:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
@@ -631,7 +631,7 @@ module i2c_fsm (
       // TransmitAck: target waits for host to ACK transmission
       TransmitAck : begin
         target_idle_o = 1'b0;
-        if (tx_fifo_depth_i == 6'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
+        if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
         if (host_ack && (start_det || stop_det)) event_ack_stop_o = 1'b1;
       end
       // PopTxFifo: populate tx_fifo
@@ -999,7 +999,7 @@ module i2c_fsm (
           state_d = ClockStop;
           load_tcount = 1'b1;
           tcount_sel = tClockStop;
-        end else if (fmt_fifo_depth_i == 6'd1 && !fmt_fifo_wvalid_i) begin
+        end else if (fmt_fifo_depth_i == 7'd1 && !fmt_fifo_wvalid_i) begin
           state_d = Idle;
           load_tcount = 1'b1;
           tcount_sel = tNoDelay;
@@ -1122,7 +1122,7 @@ module i2c_fsm (
       PopTxFifo : begin
         if (!target_enable_i) begin
           state_d = Idle;
-        end else if (tx_fifo_depth_i == 6'd1 && !tx_fifo_wvalid_i) begin
+        end else if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i) begin
           state_d = StretchTxEmpty;
         end else begin
           state_d = TransmitWait;

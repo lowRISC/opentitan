@@ -10,7 +10,8 @@ import copy
 import logging as log
 import random
 
-from lib.common import check_bool, check_int, ecc_encode, random_or_hexvalue
+from lib.common import (check_bool, check_int, ecc_encode,
+                        permute_bits, random_or_hexvalue)
 from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
@@ -74,12 +75,13 @@ def _present_64bit_digest(data_blocks, iv, const):
     return state
 
 
-def _to_hexfile_with_ecc(data, annotation, config):
+def _to_hexfile_with_ecc(data, annotation, config, data_perm):
     '''Compute ECC and convert into memory hexfile'''
 
     log.info('Convert to HEX file.')
 
     data_width = config['secded']['data_width']
+    ecc_width = config['secded']['ecc_width']
     assert data_width % 8 == 0, \
         'OTP data width must be a multiple of 8'
     assert data_width <= 64, \
@@ -88,8 +90,8 @@ def _to_hexfile_with_ecc(data, annotation, config):
     num_words = len(data) * 8 // data_width
     bytes_per_word = data_width // 8
     # Byte aligned total width after adding ECC bits
-    bytes_per_word_ecc = (
-        (data_width + config['secded']['ecc_width'] + 7) // 8)
+    bytes_per_word_ecc = (data_width + ecc_width + 7) // 8
+    bit_padding = bytes_per_word_ecc * 8 - data_width - ecc_width
     bin_format_str = '0' + str(data_width) + 'b'
     hex_format_str = '0' + str(bytes_per_word_ecc * 2) + 'x'
     memory_words = '// OTP memory hexfile with {} x {}bit layout\n'.format(
@@ -115,6 +117,9 @@ def _to_hexfile_with_ecc(data, annotation, config):
         # ECC encode
         word_bin = format(word, bin_format_str)
         word_bin = ecc_encode(config, word_bin)
+        # Pad to word boundary and permute data if needed
+        word_bin = ('0' * bit_padding) + word_bin
+        word_bin = permute_bits(word_bin, data_perm)
         word_hex = format(int(word_bin, 2), hex_format_str)
         memory_words += word_hex + annotation_str + '\n'
 
@@ -136,7 +141,7 @@ class OtpMemImg(OtpMemMap):
     # LC state object
     lc_state = []
 
-    def __init__(self, lc_state_config, otp_mmap_config, img_config):
+    def __init__(self, lc_state_config, otp_mmap_config, img_config, data_perm):
 
         # Initialize memory map
         super().__init__(otp_mmap_config)
@@ -189,6 +194,8 @@ class OtpMemImg(OtpMemMap):
 
         log.info('')
         log.info('Parsing OTP image successfully completed.')
+
+        self.validate_data_perm(data_perm)
 
     def merge_part_data(self, part):
         '''This validates and merges the partition data into the memory map dict'''
@@ -413,6 +420,33 @@ class OtpMemImg(OtpMemMap):
         # in the memory hex file.
         return data, annotation
 
+    def validate_data_perm(self, data_perm):
+        '''Validate data permutation option'''
+
+        # Byte aligned total width after adding ECC bits
+        secded_cfg = self.lc_state.config['secded']
+        raw_bitlen = secded_cfg['data_width'] + secded_cfg['ecc_width']
+        total_bitlen = ((raw_bitlen + 7) // 8) * 8
+
+        # If the permutation is undefined, use the default mapping.
+        self.data_perm = list(range(total_bitlen)) if not data_perm else data_perm
+
+        # Check for bijectivity
+        if len(self.data_perm) != total_bitlen:
+            raise RuntimeError('Data permutation "{}" is not bijective, since'
+                               'it does not have the same length as the data.'
+                               .format(data_perm))
+        for k in self.data_perm:
+            if k >= total_bitlen:
+                raise RuntimeError('Data permutation "{}" is not bijective,'
+                                   'since the index {} is out of bounds.'
+                                   .format(data_perm, k))
+
+        if len(set(self.data_perm)) != total_bitlen:
+            raise RuntimeError('Data permutation "{}" is not bijective,'
+                               'since it contains duplicated indices.'
+                               .format(data_perm))
+
     def streamout_hexfile(self):
         '''Streamout of memory image in hex file format'''
 
@@ -438,4 +472,7 @@ class OtpMemImg(OtpMemMap):
         assert len(annotation) <= otp_size, 'Annotation size mismatch'
         assert len(data) == len(annotation), 'Data/Annotation size mismatch'
 
-        return _to_hexfile_with_ecc(data, annotation, self.lc_state.config)
+        return _to_hexfile_with_ecc(data,
+                                    annotation,
+                                    self.lc_state.config,
+                                    self.data_perm)

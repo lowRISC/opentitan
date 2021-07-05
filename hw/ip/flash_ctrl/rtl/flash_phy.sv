@@ -41,15 +41,21 @@ module flash_phy import flash_ctrl_pkg::*; (
   localparam int FlashMacroOustanding = 1;
   localparam int SeqFifoDepth = FlashMacroOustanding * NumBanks;
 
-  // flash_phy forwards incoming host transactions to the appropriate bank but is not aware of
-  // any controller / host arbitration within the bank.  This means it is possible for
-  // flash_phy to forward one transaction to bank N and another to bank N+1 only for bank N+1
-  // to finish its transaction first (if for example a controller operation were ongoing in bank
-  // N).
-  // This implies that even though transactions are received in-order, they can complete out of
+  // flash_phy forwards incoming host transactions to the appropriate bank.  However, depending
+  // on the transaction type, the completion times may differ (for example, a transaction
+  // requiring de-scramble will take significantly longer than one that hits in the read buffers).
+  // This implies that it is possible for flash_phy to forward one transaction to bank N and another
+  // to bank N+1 only for bank N+1 to finish its transaction first.
+  //
+  // This suggests that even though transactions are received in-order, they can complete out of
   // order.  Thus it is the responsibility of the flash_phy to sequence the responses correctly.
-  // For banks that have finished ahead of time, it is also important to hold its output until
-  // consumed.
+  // For banks that have finished ahead of time, it is also important to hold their output until
+  // consumption by the host.
+  //
+  // The sequence fifo below holds the correct response order, while each flash_phy_core is
+  // paired with a small passthrough response FIFO to hold the data if necessary.
+  // If one bank finishes "ahead" of schedule, the response FIFO will hold the response, and no new
+  // transactions will be issued to that bank until the response is consumed by the host.
 
   // host to flash_phy interface
   logic [BankW-1:0]     host_bank_sel;
@@ -158,6 +164,17 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.ecc_multi_err = ecc_multi_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
+  lc_ctrl_pkg::lc_tx_t [NumBanks-1:0] flash_disable;
+  prim_lc_sync #(
+    .NumCopies(NumBanks),
+    .AsyncOn(0)
+  ) u_flash_disable_sync (
+    .clk_i('0),
+    .rst_ni('0),
+    .lc_en_i(flash_ctrl_i.flash_disable),
+    .lc_en_o(flash_disable)
+  );
+
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_cores
 
     // pop if the response came from the appropriate fifo
@@ -227,6 +244,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
+      .flash_disable_i(flash_disable[bank]),
       .prim_flash_req_o(prim_flash_req[bank]),
       .prim_flash_rsp_i(prim_flash_rsp[bank]),
       .ecc_single_err_o(ecc_single_err[bank]),

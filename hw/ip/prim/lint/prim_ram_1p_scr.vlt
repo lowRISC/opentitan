@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// prim_ram_1p_scr
+// waive warnings on comparing 'addr_cnt_q' with 32 bit parameters
+lint_off -rule WIDTH -file "*/rtl/prim_ram_1p_scr.sv" -match "Operator * expects 32 bits on the LHS, but LHS's VARREF 'addr_cnt_q' generates * bits."

@@ -14,8 +14,8 @@ module usbdev_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [1],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [1],
+  output tlul_pkg::tl_h2d_t tl_win_o,
+  input  tlul_pkg::tl_d2h_t tl_win_i,
 
   // To HW
   output usbdev_reg_pkg::usbdev_reg2hw_t reg2hw, // Write
@@ -89,8 +89,8 @@ module usbdev_reg_top (
   assign tl_reg_h2d = tl_socket_h2d[1];
   assign tl_socket_d2h[1] = tl_reg_d2h;
 
-  assign tl_win_o[0] = tl_socket_h2d[0];
-  assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i;
 
   // Create Socket_1n
   tlul_socket_1n #(
@@ -152,602 +152,417 @@ module usbdev_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
   logic intr_state_pkt_received_qs;
   logic intr_state_pkt_received_wd;
-  logic intr_state_pkt_received_we;
   logic intr_state_pkt_sent_qs;
   logic intr_state_pkt_sent_wd;
-  logic intr_state_pkt_sent_we;
   logic intr_state_disconnected_qs;
   logic intr_state_disconnected_wd;
-  logic intr_state_disconnected_we;
   logic intr_state_host_lost_qs;
   logic intr_state_host_lost_wd;
-  logic intr_state_host_lost_we;
   logic intr_state_link_reset_qs;
   logic intr_state_link_reset_wd;
-  logic intr_state_link_reset_we;
   logic intr_state_link_suspend_qs;
   logic intr_state_link_suspend_wd;
-  logic intr_state_link_suspend_we;
   logic intr_state_link_resume_qs;
   logic intr_state_link_resume_wd;
-  logic intr_state_link_resume_we;
   logic intr_state_av_empty_qs;
   logic intr_state_av_empty_wd;
-  logic intr_state_av_empty_we;
   logic intr_state_rx_full_qs;
   logic intr_state_rx_full_wd;
-  logic intr_state_rx_full_we;
   logic intr_state_av_overflow_qs;
   logic intr_state_av_overflow_wd;
-  logic intr_state_av_overflow_we;
   logic intr_state_link_in_err_qs;
   logic intr_state_link_in_err_wd;
-  logic intr_state_link_in_err_we;
   logic intr_state_rx_crc_err_qs;
   logic intr_state_rx_crc_err_wd;
-  logic intr_state_rx_crc_err_we;
   logic intr_state_rx_pid_err_qs;
   logic intr_state_rx_pid_err_wd;
-  logic intr_state_rx_pid_err_we;
   logic intr_state_rx_bitstuff_err_qs;
   logic intr_state_rx_bitstuff_err_wd;
-  logic intr_state_rx_bitstuff_err_we;
   logic intr_state_frame_qs;
   logic intr_state_frame_wd;
-  logic intr_state_frame_we;
   logic intr_state_connected_qs;
   logic intr_state_connected_wd;
-  logic intr_state_connected_we;
   logic intr_state_link_out_err_qs;
   logic intr_state_link_out_err_wd;
-  logic intr_state_link_out_err_we;
+  logic intr_enable_we;
   logic intr_enable_pkt_received_qs;
   logic intr_enable_pkt_received_wd;
-  logic intr_enable_pkt_received_we;
   logic intr_enable_pkt_sent_qs;
   logic intr_enable_pkt_sent_wd;
-  logic intr_enable_pkt_sent_we;
   logic intr_enable_disconnected_qs;
   logic intr_enable_disconnected_wd;
-  logic intr_enable_disconnected_we;
   logic intr_enable_host_lost_qs;
   logic intr_enable_host_lost_wd;
-  logic intr_enable_host_lost_we;
   logic intr_enable_link_reset_qs;
   logic intr_enable_link_reset_wd;
-  logic intr_enable_link_reset_we;
   logic intr_enable_link_suspend_qs;
   logic intr_enable_link_suspend_wd;
-  logic intr_enable_link_suspend_we;
   logic intr_enable_link_resume_qs;
   logic intr_enable_link_resume_wd;
-  logic intr_enable_link_resume_we;
   logic intr_enable_av_empty_qs;
   logic intr_enable_av_empty_wd;
-  logic intr_enable_av_empty_we;
   logic intr_enable_rx_full_qs;
   logic intr_enable_rx_full_wd;
-  logic intr_enable_rx_full_we;
   logic intr_enable_av_overflow_qs;
   logic intr_enable_av_overflow_wd;
-  logic intr_enable_av_overflow_we;
   logic intr_enable_link_in_err_qs;
   logic intr_enable_link_in_err_wd;
-  logic intr_enable_link_in_err_we;
   logic intr_enable_rx_crc_err_qs;
   logic intr_enable_rx_crc_err_wd;
-  logic intr_enable_rx_crc_err_we;
   logic intr_enable_rx_pid_err_qs;
   logic intr_enable_rx_pid_err_wd;
-  logic intr_enable_rx_pid_err_we;
   logic intr_enable_rx_bitstuff_err_qs;
   logic intr_enable_rx_bitstuff_err_wd;
-  logic intr_enable_rx_bitstuff_err_we;
   logic intr_enable_frame_qs;
   logic intr_enable_frame_wd;
-  logic intr_enable_frame_we;
   logic intr_enable_connected_qs;
   logic intr_enable_connected_wd;
-  logic intr_enable_connected_we;
   logic intr_enable_link_out_err_qs;
   logic intr_enable_link_out_err_wd;
-  logic intr_enable_link_out_err_we;
+  logic intr_test_we;
   logic intr_test_pkt_received_wd;
-  logic intr_test_pkt_received_we;
   logic intr_test_pkt_sent_wd;
-  logic intr_test_pkt_sent_we;
   logic intr_test_disconnected_wd;
-  logic intr_test_disconnected_we;
   logic intr_test_host_lost_wd;
-  logic intr_test_host_lost_we;
   logic intr_test_link_reset_wd;
-  logic intr_test_link_reset_we;
   logic intr_test_link_suspend_wd;
-  logic intr_test_link_suspend_we;
   logic intr_test_link_resume_wd;
-  logic intr_test_link_resume_we;
   logic intr_test_av_empty_wd;
-  logic intr_test_av_empty_we;
   logic intr_test_rx_full_wd;
-  logic intr_test_rx_full_we;
   logic intr_test_av_overflow_wd;
-  logic intr_test_av_overflow_we;
   logic intr_test_link_in_err_wd;
-  logic intr_test_link_in_err_we;
   logic intr_test_rx_crc_err_wd;
-  logic intr_test_rx_crc_err_we;
   logic intr_test_rx_pid_err_wd;
-  logic intr_test_rx_pid_err_we;
   logic intr_test_rx_bitstuff_err_wd;
-  logic intr_test_rx_bitstuff_err_we;
   logic intr_test_frame_wd;
-  logic intr_test_frame_we;
   logic intr_test_connected_wd;
-  logic intr_test_connected_we;
   logic intr_test_link_out_err_wd;
-  logic intr_test_link_out_err_we;
+  logic alert_test_we;
+  logic alert_test_wd;
+  logic usbctrl_we;
   logic usbctrl_enable_qs;
   logic usbctrl_enable_wd;
-  logic usbctrl_enable_we;
   logic [6:0] usbctrl_device_address_qs;
   logic [6:0] usbctrl_device_address_wd;
-  logic usbctrl_device_address_we;
+  logic usbstat_re;
   logic [10:0] usbstat_frame_qs;
-  logic usbstat_frame_re;
   logic usbstat_host_lost_qs;
-  logic usbstat_host_lost_re;
   logic [2:0] usbstat_link_state_qs;
-  logic usbstat_link_state_re;
   logic usbstat_sense_qs;
-  logic usbstat_sense_re;
   logic [2:0] usbstat_av_depth_qs;
-  logic usbstat_av_depth_re;
   logic usbstat_av_full_qs;
-  logic usbstat_av_full_re;
   logic [2:0] usbstat_rx_depth_qs;
-  logic usbstat_rx_depth_re;
   logic usbstat_rx_empty_qs;
-  logic usbstat_rx_empty_re;
-  logic [4:0] avbuffer_wd;
   logic avbuffer_we;
+  logic [4:0] avbuffer_wd;
+  logic rxfifo_re;
   logic [4:0] rxfifo_buffer_qs;
-  logic rxfifo_buffer_re;
   logic [6:0] rxfifo_size_qs;
-  logic rxfifo_size_re;
   logic rxfifo_setup_qs;
-  logic rxfifo_setup_re;
   logic [3:0] rxfifo_ep_qs;
-  logic rxfifo_ep_re;
+  logic rxenable_setup_we;
   logic rxenable_setup_setup_0_qs;
   logic rxenable_setup_setup_0_wd;
-  logic rxenable_setup_setup_0_we;
   logic rxenable_setup_setup_1_qs;
   logic rxenable_setup_setup_1_wd;
-  logic rxenable_setup_setup_1_we;
   logic rxenable_setup_setup_2_qs;
   logic rxenable_setup_setup_2_wd;
-  logic rxenable_setup_setup_2_we;
   logic rxenable_setup_setup_3_qs;
   logic rxenable_setup_setup_3_wd;
-  logic rxenable_setup_setup_3_we;
   logic rxenable_setup_setup_4_qs;
   logic rxenable_setup_setup_4_wd;
-  logic rxenable_setup_setup_4_we;
   logic rxenable_setup_setup_5_qs;
   logic rxenable_setup_setup_5_wd;
-  logic rxenable_setup_setup_5_we;
   logic rxenable_setup_setup_6_qs;
   logic rxenable_setup_setup_6_wd;
-  logic rxenable_setup_setup_6_we;
   logic rxenable_setup_setup_7_qs;
   logic rxenable_setup_setup_7_wd;
-  logic rxenable_setup_setup_7_we;
   logic rxenable_setup_setup_8_qs;
   logic rxenable_setup_setup_8_wd;
-  logic rxenable_setup_setup_8_we;
   logic rxenable_setup_setup_9_qs;
   logic rxenable_setup_setup_9_wd;
-  logic rxenable_setup_setup_9_we;
   logic rxenable_setup_setup_10_qs;
   logic rxenable_setup_setup_10_wd;
-  logic rxenable_setup_setup_10_we;
   logic rxenable_setup_setup_11_qs;
   logic rxenable_setup_setup_11_wd;
-  logic rxenable_setup_setup_11_we;
+  logic rxenable_out_we;
   logic rxenable_out_out_0_qs;
   logic rxenable_out_out_0_wd;
-  logic rxenable_out_out_0_we;
   logic rxenable_out_out_1_qs;
   logic rxenable_out_out_1_wd;
-  logic rxenable_out_out_1_we;
   logic rxenable_out_out_2_qs;
   logic rxenable_out_out_2_wd;
-  logic rxenable_out_out_2_we;
   logic rxenable_out_out_3_qs;
   logic rxenable_out_out_3_wd;
-  logic rxenable_out_out_3_we;
   logic rxenable_out_out_4_qs;
   logic rxenable_out_out_4_wd;
-  logic rxenable_out_out_4_we;
   logic rxenable_out_out_5_qs;
   logic rxenable_out_out_5_wd;
-  logic rxenable_out_out_5_we;
   logic rxenable_out_out_6_qs;
   logic rxenable_out_out_6_wd;
-  logic rxenable_out_out_6_we;
   logic rxenable_out_out_7_qs;
   logic rxenable_out_out_7_wd;
-  logic rxenable_out_out_7_we;
   logic rxenable_out_out_8_qs;
   logic rxenable_out_out_8_wd;
-  logic rxenable_out_out_8_we;
   logic rxenable_out_out_9_qs;
   logic rxenable_out_out_9_wd;
-  logic rxenable_out_out_9_we;
   logic rxenable_out_out_10_qs;
   logic rxenable_out_out_10_wd;
-  logic rxenable_out_out_10_we;
   logic rxenable_out_out_11_qs;
   logic rxenable_out_out_11_wd;
-  logic rxenable_out_out_11_we;
+  logic in_sent_we;
   logic in_sent_sent_0_qs;
   logic in_sent_sent_0_wd;
-  logic in_sent_sent_0_we;
   logic in_sent_sent_1_qs;
   logic in_sent_sent_1_wd;
-  logic in_sent_sent_1_we;
   logic in_sent_sent_2_qs;
   logic in_sent_sent_2_wd;
-  logic in_sent_sent_2_we;
   logic in_sent_sent_3_qs;
   logic in_sent_sent_3_wd;
-  logic in_sent_sent_3_we;
   logic in_sent_sent_4_qs;
   logic in_sent_sent_4_wd;
-  logic in_sent_sent_4_we;
   logic in_sent_sent_5_qs;
   logic in_sent_sent_5_wd;
-  logic in_sent_sent_5_we;
   logic in_sent_sent_6_qs;
   logic in_sent_sent_6_wd;
-  logic in_sent_sent_6_we;
   logic in_sent_sent_7_qs;
   logic in_sent_sent_7_wd;
-  logic in_sent_sent_7_we;
   logic in_sent_sent_8_qs;
   logic in_sent_sent_8_wd;
-  logic in_sent_sent_8_we;
   logic in_sent_sent_9_qs;
   logic in_sent_sent_9_wd;
-  logic in_sent_sent_9_we;
   logic in_sent_sent_10_qs;
   logic in_sent_sent_10_wd;
-  logic in_sent_sent_10_we;
   logic in_sent_sent_11_qs;
   logic in_sent_sent_11_wd;
-  logic in_sent_sent_11_we;
+  logic stall_we;
   logic stall_stall_0_qs;
   logic stall_stall_0_wd;
-  logic stall_stall_0_we;
   logic stall_stall_1_qs;
   logic stall_stall_1_wd;
-  logic stall_stall_1_we;
   logic stall_stall_2_qs;
   logic stall_stall_2_wd;
-  logic stall_stall_2_we;
   logic stall_stall_3_qs;
   logic stall_stall_3_wd;
-  logic stall_stall_3_we;
   logic stall_stall_4_qs;
   logic stall_stall_4_wd;
-  logic stall_stall_4_we;
   logic stall_stall_5_qs;
   logic stall_stall_5_wd;
-  logic stall_stall_5_we;
   logic stall_stall_6_qs;
   logic stall_stall_6_wd;
-  logic stall_stall_6_we;
   logic stall_stall_7_qs;
   logic stall_stall_7_wd;
-  logic stall_stall_7_we;
   logic stall_stall_8_qs;
   logic stall_stall_8_wd;
-  logic stall_stall_8_we;
   logic stall_stall_9_qs;
   logic stall_stall_9_wd;
-  logic stall_stall_9_we;
   logic stall_stall_10_qs;
   logic stall_stall_10_wd;
-  logic stall_stall_10_we;
   logic stall_stall_11_qs;
   logic stall_stall_11_wd;
-  logic stall_stall_11_we;
+  logic configin_0_we;
   logic [4:0] configin_0_buffer_0_qs;
   logic [4:0] configin_0_buffer_0_wd;
-  logic configin_0_buffer_0_we;
   logic [6:0] configin_0_size_0_qs;
   logic [6:0] configin_0_size_0_wd;
-  logic configin_0_size_0_we;
   logic configin_0_pend_0_qs;
   logic configin_0_pend_0_wd;
-  logic configin_0_pend_0_we;
   logic configin_0_rdy_0_qs;
   logic configin_0_rdy_0_wd;
-  logic configin_0_rdy_0_we;
+  logic configin_1_we;
   logic [4:0] configin_1_buffer_1_qs;
   logic [4:0] configin_1_buffer_1_wd;
-  logic configin_1_buffer_1_we;
   logic [6:0] configin_1_size_1_qs;
   logic [6:0] configin_1_size_1_wd;
-  logic configin_1_size_1_we;
   logic configin_1_pend_1_qs;
   logic configin_1_pend_1_wd;
-  logic configin_1_pend_1_we;
   logic configin_1_rdy_1_qs;
   logic configin_1_rdy_1_wd;
-  logic configin_1_rdy_1_we;
+  logic configin_2_we;
   logic [4:0] configin_2_buffer_2_qs;
   logic [4:0] configin_2_buffer_2_wd;
-  logic configin_2_buffer_2_we;
   logic [6:0] configin_2_size_2_qs;
   logic [6:0] configin_2_size_2_wd;
-  logic configin_2_size_2_we;
   logic configin_2_pend_2_qs;
   logic configin_2_pend_2_wd;
-  logic configin_2_pend_2_we;
   logic configin_2_rdy_2_qs;
   logic configin_2_rdy_2_wd;
-  logic configin_2_rdy_2_we;
+  logic configin_3_we;
   logic [4:0] configin_3_buffer_3_qs;
   logic [4:0] configin_3_buffer_3_wd;
-  logic configin_3_buffer_3_we;
   logic [6:0] configin_3_size_3_qs;
   logic [6:0] configin_3_size_3_wd;
-  logic configin_3_size_3_we;
   logic configin_3_pend_3_qs;
   logic configin_3_pend_3_wd;
-  logic configin_3_pend_3_we;
   logic configin_3_rdy_3_qs;
   logic configin_3_rdy_3_wd;
-  logic configin_3_rdy_3_we;
+  logic configin_4_we;
   logic [4:0] configin_4_buffer_4_qs;
   logic [4:0] configin_4_buffer_4_wd;
-  logic configin_4_buffer_4_we;
   logic [6:0] configin_4_size_4_qs;
   logic [6:0] configin_4_size_4_wd;
-  logic configin_4_size_4_we;
   logic configin_4_pend_4_qs;
   logic configin_4_pend_4_wd;
-  logic configin_4_pend_4_we;
   logic configin_4_rdy_4_qs;
   logic configin_4_rdy_4_wd;
-  logic configin_4_rdy_4_we;
+  logic configin_5_we;
   logic [4:0] configin_5_buffer_5_qs;
   logic [4:0] configin_5_buffer_5_wd;
-  logic configin_5_buffer_5_we;
   logic [6:0] configin_5_size_5_qs;
   logic [6:0] configin_5_size_5_wd;
-  logic configin_5_size_5_we;
   logic configin_5_pend_5_qs;
   logic configin_5_pend_5_wd;
-  logic configin_5_pend_5_we;
   logic configin_5_rdy_5_qs;
   logic configin_5_rdy_5_wd;
-  logic configin_5_rdy_5_we;
+  logic configin_6_we;
   logic [4:0] configin_6_buffer_6_qs;
   logic [4:0] configin_6_buffer_6_wd;
-  logic configin_6_buffer_6_we;
   logic [6:0] configin_6_size_6_qs;
   logic [6:0] configin_6_size_6_wd;
-  logic configin_6_size_6_we;
   logic configin_6_pend_6_qs;
   logic configin_6_pend_6_wd;
-  logic configin_6_pend_6_we;
   logic configin_6_rdy_6_qs;
   logic configin_6_rdy_6_wd;
-  logic configin_6_rdy_6_we;
+  logic configin_7_we;
   logic [4:0] configin_7_buffer_7_qs;
   logic [4:0] configin_7_buffer_7_wd;
-  logic configin_7_buffer_7_we;
   logic [6:0] configin_7_size_7_qs;
   logic [6:0] configin_7_size_7_wd;
-  logic configin_7_size_7_we;
   logic configin_7_pend_7_qs;
   logic configin_7_pend_7_wd;
-  logic configin_7_pend_7_we;
   logic configin_7_rdy_7_qs;
   logic configin_7_rdy_7_wd;
-  logic configin_7_rdy_7_we;
+  logic configin_8_we;
   logic [4:0] configin_8_buffer_8_qs;
   logic [4:0] configin_8_buffer_8_wd;
-  logic configin_8_buffer_8_we;
   logic [6:0] configin_8_size_8_qs;
   logic [6:0] configin_8_size_8_wd;
-  logic configin_8_size_8_we;
   logic configin_8_pend_8_qs;
   logic configin_8_pend_8_wd;
-  logic configin_8_pend_8_we;
   logic configin_8_rdy_8_qs;
   logic configin_8_rdy_8_wd;
-  logic configin_8_rdy_8_we;
+  logic configin_9_we;
   logic [4:0] configin_9_buffer_9_qs;
   logic [4:0] configin_9_buffer_9_wd;
-  logic configin_9_buffer_9_we;
   logic [6:0] configin_9_size_9_qs;
   logic [6:0] configin_9_size_9_wd;
-  logic configin_9_size_9_we;
   logic configin_9_pend_9_qs;
   logic configin_9_pend_9_wd;
-  logic configin_9_pend_9_we;
   logic configin_9_rdy_9_qs;
   logic configin_9_rdy_9_wd;
-  logic configin_9_rdy_9_we;
+  logic configin_10_we;
   logic [4:0] configin_10_buffer_10_qs;
   logic [4:0] configin_10_buffer_10_wd;
-  logic configin_10_buffer_10_we;
   logic [6:0] configin_10_size_10_qs;
   logic [6:0] configin_10_size_10_wd;
-  logic configin_10_size_10_we;
   logic configin_10_pend_10_qs;
   logic configin_10_pend_10_wd;
-  logic configin_10_pend_10_we;
   logic configin_10_rdy_10_qs;
   logic configin_10_rdy_10_wd;
-  logic configin_10_rdy_10_we;
+  logic configin_11_we;
   logic [4:0] configin_11_buffer_11_qs;
   logic [4:0] configin_11_buffer_11_wd;
-  logic configin_11_buffer_11_we;
   logic [6:0] configin_11_size_11_qs;
   logic [6:0] configin_11_size_11_wd;
-  logic configin_11_size_11_we;
   logic configin_11_pend_11_qs;
   logic configin_11_pend_11_wd;
-  logic configin_11_pend_11_we;
   logic configin_11_rdy_11_qs;
   logic configin_11_rdy_11_wd;
-  logic configin_11_rdy_11_we;
+  logic iso_we;
   logic iso_iso_0_qs;
   logic iso_iso_0_wd;
-  logic iso_iso_0_we;
   logic iso_iso_1_qs;
   logic iso_iso_1_wd;
-  logic iso_iso_1_we;
   logic iso_iso_2_qs;
   logic iso_iso_2_wd;
-  logic iso_iso_2_we;
   logic iso_iso_3_qs;
   logic iso_iso_3_wd;
-  logic iso_iso_3_we;
   logic iso_iso_4_qs;
   logic iso_iso_4_wd;
-  logic iso_iso_4_we;
   logic iso_iso_5_qs;
   logic iso_iso_5_wd;
-  logic iso_iso_5_we;
   logic iso_iso_6_qs;
   logic iso_iso_6_wd;
-  logic iso_iso_6_we;
   logic iso_iso_7_qs;
   logic iso_iso_7_wd;
-  logic iso_iso_7_we;
   logic iso_iso_8_qs;
   logic iso_iso_8_wd;
-  logic iso_iso_8_we;
   logic iso_iso_9_qs;
   logic iso_iso_9_wd;
-  logic iso_iso_9_we;
   logic iso_iso_10_qs;
   logic iso_iso_10_wd;
-  logic iso_iso_10_we;
   logic iso_iso_11_qs;
   logic iso_iso_11_wd;
-  logic iso_iso_11_we;
+  logic data_toggle_clear_we;
   logic data_toggle_clear_clear_0_wd;
-  logic data_toggle_clear_clear_0_we;
   logic data_toggle_clear_clear_1_wd;
-  logic data_toggle_clear_clear_1_we;
   logic data_toggle_clear_clear_2_wd;
-  logic data_toggle_clear_clear_2_we;
   logic data_toggle_clear_clear_3_wd;
-  logic data_toggle_clear_clear_3_we;
   logic data_toggle_clear_clear_4_wd;
-  logic data_toggle_clear_clear_4_we;
   logic data_toggle_clear_clear_5_wd;
-  logic data_toggle_clear_clear_5_we;
   logic data_toggle_clear_clear_6_wd;
-  logic data_toggle_clear_clear_6_we;
   logic data_toggle_clear_clear_7_wd;
-  logic data_toggle_clear_clear_7_we;
   logic data_toggle_clear_clear_8_wd;
-  logic data_toggle_clear_clear_8_we;
   logic data_toggle_clear_clear_9_wd;
-  logic data_toggle_clear_clear_9_we;
   logic data_toggle_clear_clear_10_wd;
-  logic data_toggle_clear_clear_10_we;
   logic data_toggle_clear_clear_11_wd;
-  logic data_toggle_clear_clear_11_we;
+  logic phy_pins_sense_re;
   logic phy_pins_sense_rx_dp_i_qs;
-  logic phy_pins_sense_rx_dp_i_re;
   logic phy_pins_sense_rx_dn_i_qs;
-  logic phy_pins_sense_rx_dn_i_re;
   logic phy_pins_sense_rx_d_i_qs;
-  logic phy_pins_sense_rx_d_i_re;
   logic phy_pins_sense_tx_dp_o_qs;
-  logic phy_pins_sense_tx_dp_o_re;
   logic phy_pins_sense_tx_dn_o_qs;
-  logic phy_pins_sense_tx_dn_o_re;
   logic phy_pins_sense_tx_d_o_qs;
-  logic phy_pins_sense_tx_d_o_re;
   logic phy_pins_sense_tx_se0_o_qs;
-  logic phy_pins_sense_tx_se0_o_re;
   logic phy_pins_sense_tx_oe_o_qs;
-  logic phy_pins_sense_tx_oe_o_re;
   logic phy_pins_sense_suspend_o_qs;
-  logic phy_pins_sense_suspend_o_re;
   logic phy_pins_sense_pwr_sense_qs;
-  logic phy_pins_sense_pwr_sense_re;
+  logic phy_pins_drive_we;
   logic phy_pins_drive_dp_o_qs;
   logic phy_pins_drive_dp_o_wd;
-  logic phy_pins_drive_dp_o_we;
   logic phy_pins_drive_dn_o_qs;
   logic phy_pins_drive_dn_o_wd;
-  logic phy_pins_drive_dn_o_we;
   logic phy_pins_drive_d_o_qs;
   logic phy_pins_drive_d_o_wd;
-  logic phy_pins_drive_d_o_we;
   logic phy_pins_drive_se0_o_qs;
   logic phy_pins_drive_se0_o_wd;
-  logic phy_pins_drive_se0_o_we;
   logic phy_pins_drive_oe_o_qs;
   logic phy_pins_drive_oe_o_wd;
-  logic phy_pins_drive_oe_o_we;
   logic phy_pins_drive_tx_mode_se_o_qs;
   logic phy_pins_drive_tx_mode_se_o_wd;
-  logic phy_pins_drive_tx_mode_se_o_we;
   logic phy_pins_drive_dp_pullup_en_o_qs;
   logic phy_pins_drive_dp_pullup_en_o_wd;
-  logic phy_pins_drive_dp_pullup_en_o_we;
   logic phy_pins_drive_dn_pullup_en_o_qs;
   logic phy_pins_drive_dn_pullup_en_o_wd;
-  logic phy_pins_drive_dn_pullup_en_o_we;
   logic phy_pins_drive_suspend_o_qs;
   logic phy_pins_drive_suspend_o_wd;
-  logic phy_pins_drive_suspend_o_we;
   logic phy_pins_drive_en_qs;
   logic phy_pins_drive_en_wd;
-  logic phy_pins_drive_en_we;
+  logic phy_config_we;
   logic phy_config_rx_differential_mode_qs;
   logic phy_config_rx_differential_mode_wd;
-  logic phy_config_rx_differential_mode_we;
   logic phy_config_tx_differential_mode_qs;
   logic phy_config_tx_differential_mode_wd;
-  logic phy_config_tx_differential_mode_we;
   logic phy_config_eop_single_bit_qs;
   logic phy_config_eop_single_bit_wd;
-  logic phy_config_eop_single_bit_we;
   logic phy_config_override_pwr_sense_en_qs;
   logic phy_config_override_pwr_sense_en_wd;
-  logic phy_config_override_pwr_sense_en_we;
   logic phy_config_override_pwr_sense_val_qs;
   logic phy_config_override_pwr_sense_val_wd;
-  logic phy_config_override_pwr_sense_val_we;
   logic phy_config_pinflip_qs;
   logic phy_config_pinflip_wd;
-  logic phy_config_pinflip_we;
   logic phy_config_usb_ref_disable_qs;
   logic phy_config_usb_ref_disable_wd;
-  logic phy_config_usb_ref_disable_we;
   logic phy_config_tx_osc_test_mode_qs;
   logic phy_config_tx_osc_test_mode_wd;
-  logic phy_config_tx_osc_test_mode_we;
+  logic wake_config_we;
   logic wake_config_wake_en_qs;
   logic wake_config_wake_en_wd;
-  logic wake_config_wake_en_we;
   logic wake_config_wake_ack_qs;
   logic wake_config_wake_ack_wd;
-  logic wake_config_wake_ack_we;
   logic [2:0] wake_debug_qs;
 
   // Register instances
@@ -763,7 +578,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_pkt_received_we),
+    .we     (intr_state_we),
     .wd     (intr_state_pkt_received_wd),
 
     // from internal hardware
@@ -789,7 +604,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_pkt_sent_we),
+    .we     (intr_state_we),
     .wd     (intr_state_pkt_sent_wd),
 
     // from internal hardware
@@ -815,7 +630,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_disconnected_we),
+    .we     (intr_state_we),
     .wd     (intr_state_disconnected_wd),
 
     // from internal hardware
@@ -841,7 +656,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_host_lost_we),
+    .we     (intr_state_we),
     .wd     (intr_state_host_lost_wd),
 
     // from internal hardware
@@ -867,7 +682,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_link_reset_we),
+    .we     (intr_state_we),
     .wd     (intr_state_link_reset_wd),
 
     // from internal hardware
@@ -893,7 +708,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_link_suspend_we),
+    .we     (intr_state_we),
     .wd     (intr_state_link_suspend_wd),
 
     // from internal hardware
@@ -919,7 +734,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_link_resume_we),
+    .we     (intr_state_we),
     .wd     (intr_state_link_resume_wd),
 
     // from internal hardware
@@ -945,7 +760,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_av_empty_we),
+    .we     (intr_state_we),
     .wd     (intr_state_av_empty_wd),
 
     // from internal hardware
@@ -971,7 +786,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_full_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_full_wd),
 
     // from internal hardware
@@ -997,7 +812,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_av_overflow_we),
+    .we     (intr_state_we),
     .wd     (intr_state_av_overflow_wd),
 
     // from internal hardware
@@ -1023,7 +838,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_link_in_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_link_in_err_wd),
 
     // from internal hardware
@@ -1049,7 +864,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_crc_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_crc_err_wd),
 
     // from internal hardware
@@ -1075,7 +890,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_pid_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_pid_err_wd),
 
     // from internal hardware
@@ -1101,7 +916,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_rx_bitstuff_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_rx_bitstuff_err_wd),
 
     // from internal hardware
@@ -1127,7 +942,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_frame_we),
+    .we     (intr_state_we),
     .wd     (intr_state_frame_wd),
 
     // from internal hardware
@@ -1153,7 +968,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_connected_we),
+    .we     (intr_state_we),
     .wd     (intr_state_connected_wd),
 
     // from internal hardware
@@ -1179,7 +994,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_link_out_err_we),
+    .we     (intr_state_we),
     .wd     (intr_state_link_out_err_wd),
 
     // from internal hardware
@@ -1207,7 +1022,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_pkt_received_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_pkt_received_wd),
 
     // from internal hardware
@@ -1233,7 +1048,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_pkt_sent_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_pkt_sent_wd),
 
     // from internal hardware
@@ -1259,7 +1074,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_disconnected_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_disconnected_wd),
 
     // from internal hardware
@@ -1285,7 +1100,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_host_lost_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_host_lost_wd),
 
     // from internal hardware
@@ -1311,7 +1126,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_link_reset_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_link_reset_wd),
 
     // from internal hardware
@@ -1337,7 +1152,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_link_suspend_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_link_suspend_wd),
 
     // from internal hardware
@@ -1363,7 +1178,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_link_resume_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_link_resume_wd),
 
     // from internal hardware
@@ -1389,7 +1204,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_av_empty_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_av_empty_wd),
 
     // from internal hardware
@@ -1415,7 +1230,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_full_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_full_wd),
 
     // from internal hardware
@@ -1441,7 +1256,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_av_overflow_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_av_overflow_wd),
 
     // from internal hardware
@@ -1467,7 +1282,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_link_in_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_link_in_err_wd),
 
     // from internal hardware
@@ -1493,7 +1308,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_crc_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_crc_err_wd),
 
     // from internal hardware
@@ -1519,7 +1334,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_pid_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_pid_err_wd),
 
     // from internal hardware
@@ -1545,7 +1360,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_rx_bitstuff_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_rx_bitstuff_err_wd),
 
     // from internal hardware
@@ -1571,7 +1386,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_frame_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_frame_wd),
 
     // from internal hardware
@@ -1597,7 +1412,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_connected_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_connected_wd),
 
     // from internal hardware
@@ -1623,7 +1438,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_enable_link_out_err_we),
+    .we     (intr_enable_we),
     .wd     (intr_enable_link_out_err_wd),
 
     // from internal hardware
@@ -1646,7 +1461,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_pkt_received (
     .re     (1'b0),
-    .we     (intr_test_pkt_received_we),
+    .we     (intr_test_we),
     .wd     (intr_test_pkt_received_wd),
     .d      ('0),
     .qre    (),
@@ -1661,7 +1476,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_pkt_sent (
     .re     (1'b0),
-    .we     (intr_test_pkt_sent_we),
+    .we     (intr_test_we),
     .wd     (intr_test_pkt_sent_wd),
     .d      ('0),
     .qre    (),
@@ -1676,7 +1491,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_disconnected (
     .re     (1'b0),
-    .we     (intr_test_disconnected_we),
+    .we     (intr_test_we),
     .wd     (intr_test_disconnected_wd),
     .d      ('0),
     .qre    (),
@@ -1691,7 +1506,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_host_lost (
     .re     (1'b0),
-    .we     (intr_test_host_lost_we),
+    .we     (intr_test_we),
     .wd     (intr_test_host_lost_wd),
     .d      ('0),
     .qre    (),
@@ -1706,7 +1521,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_link_reset (
     .re     (1'b0),
-    .we     (intr_test_link_reset_we),
+    .we     (intr_test_we),
     .wd     (intr_test_link_reset_wd),
     .d      ('0),
     .qre    (),
@@ -1721,7 +1536,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_link_suspend (
     .re     (1'b0),
-    .we     (intr_test_link_suspend_we),
+    .we     (intr_test_we),
     .wd     (intr_test_link_suspend_wd),
     .d      ('0),
     .qre    (),
@@ -1736,7 +1551,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_link_resume (
     .re     (1'b0),
-    .we     (intr_test_link_resume_we),
+    .we     (intr_test_we),
     .wd     (intr_test_link_resume_wd),
     .d      ('0),
     .qre    (),
@@ -1751,7 +1566,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_av_empty (
     .re     (1'b0),
-    .we     (intr_test_av_empty_we),
+    .we     (intr_test_we),
     .wd     (intr_test_av_empty_wd),
     .d      ('0),
     .qre    (),
@@ -1766,7 +1581,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_rx_full (
     .re     (1'b0),
-    .we     (intr_test_rx_full_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_full_wd),
     .d      ('0),
     .qre    (),
@@ -1781,7 +1596,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_av_overflow (
     .re     (1'b0),
-    .we     (intr_test_av_overflow_we),
+    .we     (intr_test_we),
     .wd     (intr_test_av_overflow_wd),
     .d      ('0),
     .qre    (),
@@ -1796,7 +1611,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_link_in_err (
     .re     (1'b0),
-    .we     (intr_test_link_in_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_link_in_err_wd),
     .d      ('0),
     .qre    (),
@@ -1811,7 +1626,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_rx_crc_err (
     .re     (1'b0),
-    .we     (intr_test_rx_crc_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_crc_err_wd),
     .d      ('0),
     .qre    (),
@@ -1826,7 +1641,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_rx_pid_err (
     .re     (1'b0),
-    .we     (intr_test_rx_pid_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_pid_err_wd),
     .d      ('0),
     .qre    (),
@@ -1841,7 +1656,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_rx_bitstuff_err (
     .re     (1'b0),
-    .we     (intr_test_rx_bitstuff_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_rx_bitstuff_err_wd),
     .d      ('0),
     .qre    (),
@@ -1856,7 +1671,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_frame (
     .re     (1'b0),
-    .we     (intr_test_frame_we),
+    .we     (intr_test_we),
     .wd     (intr_test_frame_wd),
     .d      ('0),
     .qre    (),
@@ -1871,7 +1686,7 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_connected (
     .re     (1'b0),
-    .we     (intr_test_connected_we),
+    .we     (intr_test_we),
     .wd     (intr_test_connected_wd),
     .d      ('0),
     .qre    (),
@@ -1886,12 +1701,28 @@ module usbdev_reg_top (
     .DW    (1)
   ) u_intr_test_link_out_err (
     .re     (1'b0),
-    .we     (intr_test_link_out_err_we),
+    .we     (intr_test_we),
     .wd     (intr_test_link_out_err_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.link_out_err.qe),
     .q      (reg2hw.intr_test.link_out_err.q),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -1908,7 +1739,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usbctrl_enable_we),
+    .we     (usbctrl_we),
     .wd     (usbctrl_enable_wd),
 
     // from internal hardware
@@ -1934,7 +1765,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usbctrl_device_address_we),
+    .we     (usbctrl_we),
     .wd     (usbctrl_device_address_wd),
 
     // from internal hardware
@@ -1956,7 +1787,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (11)
   ) u_usbstat_frame (
-    .re     (usbstat_frame_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.frame.d),
@@ -1971,7 +1802,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_host_lost (
-    .re     (usbstat_host_lost_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.host_lost.d),
@@ -1986,7 +1817,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_usbstat_link_state (
-    .re     (usbstat_link_state_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.link_state.d),
@@ -2001,7 +1832,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_sense (
-    .re     (usbstat_sense_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.sense.d),
@@ -2016,7 +1847,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_usbstat_av_depth (
-    .re     (usbstat_av_depth_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.av_depth.d),
@@ -2031,7 +1862,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_av_full (
-    .re     (usbstat_av_full_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.av_full.d),
@@ -2046,7 +1877,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (3)
   ) u_usbstat_rx_depth (
-    .re     (usbstat_rx_depth_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.rx_depth.d),
@@ -2061,7 +1892,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_rx_empty (
-    .re     (usbstat_rx_empty_re),
+    .re     (usbstat_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.usbstat.rx_empty.d),
@@ -2105,7 +1936,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (5)
   ) u_rxfifo_buffer (
-    .re     (rxfifo_buffer_re),
+    .re     (rxfifo_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.rxfifo.buffer.d),
@@ -2120,7 +1951,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (7)
   ) u_rxfifo_size (
-    .re     (rxfifo_size_re),
+    .re     (rxfifo_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.rxfifo.size.d),
@@ -2135,7 +1966,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_rxfifo_setup (
-    .re     (rxfifo_setup_re),
+    .re     (rxfifo_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.rxfifo.setup.d),
@@ -2150,7 +1981,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (4)
   ) u_rxfifo_ep (
-    .re     (rxfifo_ep_re),
+    .re     (rxfifo_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.rxfifo.ep.d),
@@ -2175,7 +2006,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_0_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_0_wd),
 
     // from internal hardware
@@ -2201,7 +2032,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_1_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_1_wd),
 
     // from internal hardware
@@ -2227,7 +2058,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_2_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_2_wd),
 
     // from internal hardware
@@ -2253,7 +2084,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_3_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_3_wd),
 
     // from internal hardware
@@ -2279,7 +2110,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_4_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_4_wd),
 
     // from internal hardware
@@ -2305,7 +2136,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_5_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_5_wd),
 
     // from internal hardware
@@ -2331,7 +2162,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_6_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_6_wd),
 
     // from internal hardware
@@ -2357,7 +2188,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_7_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_7_wd),
 
     // from internal hardware
@@ -2383,7 +2214,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_8_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_8_wd),
 
     // from internal hardware
@@ -2409,7 +2240,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_9_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_9_wd),
 
     // from internal hardware
@@ -2435,7 +2266,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_10_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_10_wd),
 
     // from internal hardware
@@ -2461,7 +2292,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_setup_setup_11_we),
+    .we     (rxenable_setup_we),
     .wd     (rxenable_setup_setup_11_wd),
 
     // from internal hardware
@@ -2492,7 +2323,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_0_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_0_wd),
 
     // from internal hardware
@@ -2518,7 +2349,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_1_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_1_wd),
 
     // from internal hardware
@@ -2544,7 +2375,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_2_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_2_wd),
 
     // from internal hardware
@@ -2570,7 +2401,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_3_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_3_wd),
 
     // from internal hardware
@@ -2596,7 +2427,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_4_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_4_wd),
 
     // from internal hardware
@@ -2622,7 +2453,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_5_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_5_wd),
 
     // from internal hardware
@@ -2648,7 +2479,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_6_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_6_wd),
 
     // from internal hardware
@@ -2674,7 +2505,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_7_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_7_wd),
 
     // from internal hardware
@@ -2700,7 +2531,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_8_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_8_wd),
 
     // from internal hardware
@@ -2726,7 +2557,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_9_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_9_wd),
 
     // from internal hardware
@@ -2752,7 +2583,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_10_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_10_wd),
 
     // from internal hardware
@@ -2778,7 +2609,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rxenable_out_out_11_we),
+    .we     (rxenable_out_we),
     .wd     (rxenable_out_out_11_wd),
 
     // from internal hardware
@@ -2809,7 +2640,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_0_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_0_wd),
 
     // from internal hardware
@@ -2835,7 +2666,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_1_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_1_wd),
 
     // from internal hardware
@@ -2861,7 +2692,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_2_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_2_wd),
 
     // from internal hardware
@@ -2887,7 +2718,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_3_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_3_wd),
 
     // from internal hardware
@@ -2913,7 +2744,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_4_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_4_wd),
 
     // from internal hardware
@@ -2939,7 +2770,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_5_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_5_wd),
 
     // from internal hardware
@@ -2965,7 +2796,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_6_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_6_wd),
 
     // from internal hardware
@@ -2991,7 +2822,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_7_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_7_wd),
 
     // from internal hardware
@@ -3017,7 +2848,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_8_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_8_wd),
 
     // from internal hardware
@@ -3043,7 +2874,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_9_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_9_wd),
 
     // from internal hardware
@@ -3069,7 +2900,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_10_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_10_wd),
 
     // from internal hardware
@@ -3095,7 +2926,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (in_sent_sent_11_we),
+    .we     (in_sent_we),
     .wd     (in_sent_sent_11_wd),
 
     // from internal hardware
@@ -3126,7 +2957,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_0_we),
+    .we     (stall_we),
     .wd     (stall_stall_0_wd),
 
     // from internal hardware
@@ -3152,7 +2983,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_1_we),
+    .we     (stall_we),
     .wd     (stall_stall_1_wd),
 
     // from internal hardware
@@ -3178,7 +3009,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_2_we),
+    .we     (stall_we),
     .wd     (stall_stall_2_wd),
 
     // from internal hardware
@@ -3204,7 +3035,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_3_we),
+    .we     (stall_we),
     .wd     (stall_stall_3_wd),
 
     // from internal hardware
@@ -3230,7 +3061,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_4_we),
+    .we     (stall_we),
     .wd     (stall_stall_4_wd),
 
     // from internal hardware
@@ -3256,7 +3087,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_5_we),
+    .we     (stall_we),
     .wd     (stall_stall_5_wd),
 
     // from internal hardware
@@ -3282,7 +3113,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_6_we),
+    .we     (stall_we),
     .wd     (stall_stall_6_wd),
 
     // from internal hardware
@@ -3308,7 +3139,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_7_we),
+    .we     (stall_we),
     .wd     (stall_stall_7_wd),
 
     // from internal hardware
@@ -3334,7 +3165,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_8_we),
+    .we     (stall_we),
     .wd     (stall_stall_8_wd),
 
     // from internal hardware
@@ -3360,7 +3191,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_9_we),
+    .we     (stall_we),
     .wd     (stall_stall_9_wd),
 
     // from internal hardware
@@ -3386,7 +3217,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_10_we),
+    .we     (stall_we),
     .wd     (stall_stall_10_wd),
 
     // from internal hardware
@@ -3412,7 +3243,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (stall_stall_11_we),
+    .we     (stall_we),
     .wd     (stall_stall_11_wd),
 
     // from internal hardware
@@ -3443,7 +3274,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_0_buffer_0_we),
+    .we     (configin_0_we),
     .wd     (configin_0_buffer_0_wd),
 
     // from internal hardware
@@ -3469,7 +3300,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_0_size_0_we),
+    .we     (configin_0_we),
     .wd     (configin_0_size_0_wd),
 
     // from internal hardware
@@ -3495,7 +3326,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_0_pend_0_we),
+    .we     (configin_0_we),
     .wd     (configin_0_pend_0_wd),
 
     // from internal hardware
@@ -3521,7 +3352,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_0_rdy_0_we),
+    .we     (configin_0_we),
     .wd     (configin_0_rdy_0_wd),
 
     // from internal hardware
@@ -3550,7 +3381,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_1_buffer_1_we),
+    .we     (configin_1_we),
     .wd     (configin_1_buffer_1_wd),
 
     // from internal hardware
@@ -3576,7 +3407,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_1_size_1_we),
+    .we     (configin_1_we),
     .wd     (configin_1_size_1_wd),
 
     // from internal hardware
@@ -3602,7 +3433,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_1_pend_1_we),
+    .we     (configin_1_we),
     .wd     (configin_1_pend_1_wd),
 
     // from internal hardware
@@ -3628,7 +3459,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_1_rdy_1_we),
+    .we     (configin_1_we),
     .wd     (configin_1_rdy_1_wd),
 
     // from internal hardware
@@ -3657,7 +3488,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_2_buffer_2_we),
+    .we     (configin_2_we),
     .wd     (configin_2_buffer_2_wd),
 
     // from internal hardware
@@ -3683,7 +3514,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_2_size_2_we),
+    .we     (configin_2_we),
     .wd     (configin_2_size_2_wd),
 
     // from internal hardware
@@ -3709,7 +3540,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_2_pend_2_we),
+    .we     (configin_2_we),
     .wd     (configin_2_pend_2_wd),
 
     // from internal hardware
@@ -3735,7 +3566,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_2_rdy_2_we),
+    .we     (configin_2_we),
     .wd     (configin_2_rdy_2_wd),
 
     // from internal hardware
@@ -3764,7 +3595,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_3_buffer_3_we),
+    .we     (configin_3_we),
     .wd     (configin_3_buffer_3_wd),
 
     // from internal hardware
@@ -3790,7 +3621,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_3_size_3_we),
+    .we     (configin_3_we),
     .wd     (configin_3_size_3_wd),
 
     // from internal hardware
@@ -3816,7 +3647,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_3_pend_3_we),
+    .we     (configin_3_we),
     .wd     (configin_3_pend_3_wd),
 
     // from internal hardware
@@ -3842,7 +3673,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_3_rdy_3_we),
+    .we     (configin_3_we),
     .wd     (configin_3_rdy_3_wd),
 
     // from internal hardware
@@ -3871,7 +3702,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_4_buffer_4_we),
+    .we     (configin_4_we),
     .wd     (configin_4_buffer_4_wd),
 
     // from internal hardware
@@ -3897,7 +3728,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_4_size_4_we),
+    .we     (configin_4_we),
     .wd     (configin_4_size_4_wd),
 
     // from internal hardware
@@ -3923,7 +3754,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_4_pend_4_we),
+    .we     (configin_4_we),
     .wd     (configin_4_pend_4_wd),
 
     // from internal hardware
@@ -3949,7 +3780,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_4_rdy_4_we),
+    .we     (configin_4_we),
     .wd     (configin_4_rdy_4_wd),
 
     // from internal hardware
@@ -3978,7 +3809,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_5_buffer_5_we),
+    .we     (configin_5_we),
     .wd     (configin_5_buffer_5_wd),
 
     // from internal hardware
@@ -4004,7 +3835,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_5_size_5_we),
+    .we     (configin_5_we),
     .wd     (configin_5_size_5_wd),
 
     // from internal hardware
@@ -4030,7 +3861,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_5_pend_5_we),
+    .we     (configin_5_we),
     .wd     (configin_5_pend_5_wd),
 
     // from internal hardware
@@ -4056,7 +3887,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_5_rdy_5_we),
+    .we     (configin_5_we),
     .wd     (configin_5_rdy_5_wd),
 
     // from internal hardware
@@ -4085,7 +3916,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_6_buffer_6_we),
+    .we     (configin_6_we),
     .wd     (configin_6_buffer_6_wd),
 
     // from internal hardware
@@ -4111,7 +3942,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_6_size_6_we),
+    .we     (configin_6_we),
     .wd     (configin_6_size_6_wd),
 
     // from internal hardware
@@ -4137,7 +3968,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_6_pend_6_we),
+    .we     (configin_6_we),
     .wd     (configin_6_pend_6_wd),
 
     // from internal hardware
@@ -4163,7 +3994,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_6_rdy_6_we),
+    .we     (configin_6_we),
     .wd     (configin_6_rdy_6_wd),
 
     // from internal hardware
@@ -4192,7 +4023,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_7_buffer_7_we),
+    .we     (configin_7_we),
     .wd     (configin_7_buffer_7_wd),
 
     // from internal hardware
@@ -4218,7 +4049,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_7_size_7_we),
+    .we     (configin_7_we),
     .wd     (configin_7_size_7_wd),
 
     // from internal hardware
@@ -4244,7 +4075,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_7_pend_7_we),
+    .we     (configin_7_we),
     .wd     (configin_7_pend_7_wd),
 
     // from internal hardware
@@ -4270,7 +4101,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_7_rdy_7_we),
+    .we     (configin_7_we),
     .wd     (configin_7_rdy_7_wd),
 
     // from internal hardware
@@ -4299,7 +4130,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_8_buffer_8_we),
+    .we     (configin_8_we),
     .wd     (configin_8_buffer_8_wd),
 
     // from internal hardware
@@ -4325,7 +4156,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_8_size_8_we),
+    .we     (configin_8_we),
     .wd     (configin_8_size_8_wd),
 
     // from internal hardware
@@ -4351,7 +4182,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_8_pend_8_we),
+    .we     (configin_8_we),
     .wd     (configin_8_pend_8_wd),
 
     // from internal hardware
@@ -4377,7 +4208,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_8_rdy_8_we),
+    .we     (configin_8_we),
     .wd     (configin_8_rdy_8_wd),
 
     // from internal hardware
@@ -4406,7 +4237,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_9_buffer_9_we),
+    .we     (configin_9_we),
     .wd     (configin_9_buffer_9_wd),
 
     // from internal hardware
@@ -4432,7 +4263,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_9_size_9_we),
+    .we     (configin_9_we),
     .wd     (configin_9_size_9_wd),
 
     // from internal hardware
@@ -4458,7 +4289,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_9_pend_9_we),
+    .we     (configin_9_we),
     .wd     (configin_9_pend_9_wd),
 
     // from internal hardware
@@ -4484,7 +4315,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_9_rdy_9_we),
+    .we     (configin_9_we),
     .wd     (configin_9_rdy_9_wd),
 
     // from internal hardware
@@ -4513,7 +4344,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_10_buffer_10_we),
+    .we     (configin_10_we),
     .wd     (configin_10_buffer_10_wd),
 
     // from internal hardware
@@ -4539,7 +4370,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_10_size_10_we),
+    .we     (configin_10_we),
     .wd     (configin_10_size_10_wd),
 
     // from internal hardware
@@ -4565,7 +4396,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_10_pend_10_we),
+    .we     (configin_10_we),
     .wd     (configin_10_pend_10_wd),
 
     // from internal hardware
@@ -4591,7 +4422,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_10_rdy_10_we),
+    .we     (configin_10_we),
     .wd     (configin_10_rdy_10_wd),
 
     // from internal hardware
@@ -4620,7 +4451,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_11_buffer_11_we),
+    .we     (configin_11_we),
     .wd     (configin_11_buffer_11_wd),
 
     // from internal hardware
@@ -4646,7 +4477,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_11_size_11_we),
+    .we     (configin_11_we),
     .wd     (configin_11_size_11_wd),
 
     // from internal hardware
@@ -4672,7 +4503,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_11_pend_11_we),
+    .we     (configin_11_we),
     .wd     (configin_11_pend_11_wd),
 
     // from internal hardware
@@ -4698,7 +4529,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (configin_11_rdy_11_we),
+    .we     (configin_11_we),
     .wd     (configin_11_rdy_11_wd),
 
     // from internal hardware
@@ -4729,7 +4560,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_0_we),
+    .we     (iso_we),
     .wd     (iso_iso_0_wd),
 
     // from internal hardware
@@ -4755,7 +4586,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_1_we),
+    .we     (iso_we),
     .wd     (iso_iso_1_wd),
 
     // from internal hardware
@@ -4781,7 +4612,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_2_we),
+    .we     (iso_we),
     .wd     (iso_iso_2_wd),
 
     // from internal hardware
@@ -4807,7 +4638,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_3_we),
+    .we     (iso_we),
     .wd     (iso_iso_3_wd),
 
     // from internal hardware
@@ -4833,7 +4664,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_4_we),
+    .we     (iso_we),
     .wd     (iso_iso_4_wd),
 
     // from internal hardware
@@ -4859,7 +4690,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_5_we),
+    .we     (iso_we),
     .wd     (iso_iso_5_wd),
 
     // from internal hardware
@@ -4885,7 +4716,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_6_we),
+    .we     (iso_we),
     .wd     (iso_iso_6_wd),
 
     // from internal hardware
@@ -4911,7 +4742,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_7_we),
+    .we     (iso_we),
     .wd     (iso_iso_7_wd),
 
     // from internal hardware
@@ -4937,7 +4768,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_8_we),
+    .we     (iso_we),
     .wd     (iso_iso_8_wd),
 
     // from internal hardware
@@ -4963,7 +4794,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_9_we),
+    .we     (iso_we),
     .wd     (iso_iso_9_wd),
 
     // from internal hardware
@@ -4989,7 +4820,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_10_we),
+    .we     (iso_we),
     .wd     (iso_iso_10_wd),
 
     // from internal hardware
@@ -5015,7 +4846,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (iso_iso_11_we),
+    .we     (iso_we),
     .wd     (iso_iso_11_wd),
 
     // from internal hardware
@@ -5046,7 +4877,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_0_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_0_wd),
 
     // from internal hardware
@@ -5072,7 +4903,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_1_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_1_wd),
 
     // from internal hardware
@@ -5098,7 +4929,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_2_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_2_wd),
 
     // from internal hardware
@@ -5124,7 +4955,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_3_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_3_wd),
 
     // from internal hardware
@@ -5150,7 +4981,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_4_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_4_wd),
 
     // from internal hardware
@@ -5176,7 +5007,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_5_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_5_wd),
 
     // from internal hardware
@@ -5202,7 +5033,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_6_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_6_wd),
 
     // from internal hardware
@@ -5228,7 +5059,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_7_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_7_wd),
 
     // from internal hardware
@@ -5254,7 +5085,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_8_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_8_wd),
 
     // from internal hardware
@@ -5280,7 +5111,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_9_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_9_wd),
 
     // from internal hardware
@@ -5306,7 +5137,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_10_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_10_wd),
 
     // from internal hardware
@@ -5332,7 +5163,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (data_toggle_clear_clear_11_we),
+    .we     (data_toggle_clear_we),
     .wd     (data_toggle_clear_clear_11_wd),
 
     // from internal hardware
@@ -5355,7 +5186,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_rx_dp_i (
-    .re     (phy_pins_sense_rx_dp_i_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.rx_dp_i.d),
@@ -5370,7 +5201,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_rx_dn_i (
-    .re     (phy_pins_sense_rx_dn_i_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.rx_dn_i.d),
@@ -5385,7 +5216,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_rx_d_i (
-    .re     (phy_pins_sense_rx_d_i_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.rx_d_i.d),
@@ -5400,7 +5231,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_tx_dp_o (
-    .re     (phy_pins_sense_tx_dp_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.tx_dp_o.d),
@@ -5415,7 +5246,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_tx_dn_o (
-    .re     (phy_pins_sense_tx_dn_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.tx_dn_o.d),
@@ -5430,7 +5261,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_tx_d_o (
-    .re     (phy_pins_sense_tx_d_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.tx_d_o.d),
@@ -5445,7 +5276,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_tx_se0_o (
-    .re     (phy_pins_sense_tx_se0_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.tx_se0_o.d),
@@ -5460,7 +5291,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_tx_oe_o (
-    .re     (phy_pins_sense_tx_oe_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.tx_oe_o.d),
@@ -5475,7 +5306,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_suspend_o (
-    .re     (phy_pins_sense_suspend_o_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.suspend_o.d),
@@ -5490,7 +5321,7 @@ module usbdev_reg_top (
   prim_subreg_ext #(
     .DW    (1)
   ) u_phy_pins_sense_pwr_sense (
-    .re     (phy_pins_sense_pwr_sense_re),
+    .re     (phy_pins_sense_re),
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.phy_pins_sense.pwr_sense.d),
@@ -5513,7 +5344,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_dp_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_dp_o_wd),
 
     // from internal hardware
@@ -5539,7 +5370,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_dn_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_dn_o_wd),
 
     // from internal hardware
@@ -5565,7 +5396,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_d_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_d_o_wd),
 
     // from internal hardware
@@ -5591,7 +5422,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_se0_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_se0_o_wd),
 
     // from internal hardware
@@ -5617,7 +5448,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_oe_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_oe_o_wd),
 
     // from internal hardware
@@ -5643,7 +5474,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_tx_mode_se_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_tx_mode_se_o_wd),
 
     // from internal hardware
@@ -5669,7 +5500,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_dp_pullup_en_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_dp_pullup_en_o_wd),
 
     // from internal hardware
@@ -5695,7 +5526,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_dn_pullup_en_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_dn_pullup_en_o_wd),
 
     // from internal hardware
@@ -5721,7 +5552,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_suspend_o_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_suspend_o_wd),
 
     // from internal hardware
@@ -5747,7 +5578,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_pins_drive_en_we),
+    .we     (phy_pins_drive_we),
     .wd     (phy_pins_drive_en_wd),
 
     // from internal hardware
@@ -5775,7 +5606,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_rx_differential_mode_we),
+    .we     (phy_config_we),
     .wd     (phy_config_rx_differential_mode_wd),
 
     // from internal hardware
@@ -5801,7 +5632,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_tx_differential_mode_we),
+    .we     (phy_config_we),
     .wd     (phy_config_tx_differential_mode_wd),
 
     // from internal hardware
@@ -5827,7 +5658,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_eop_single_bit_we),
+    .we     (phy_config_we),
     .wd     (phy_config_eop_single_bit_wd),
 
     // from internal hardware
@@ -5853,7 +5684,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_override_pwr_sense_en_we),
+    .we     (phy_config_we),
     .wd     (phy_config_override_pwr_sense_en_wd),
 
     // from internal hardware
@@ -5879,7 +5710,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_override_pwr_sense_val_we),
+    .we     (phy_config_we),
     .wd     (phy_config_override_pwr_sense_val_wd),
 
     // from internal hardware
@@ -5905,7 +5736,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_pinflip_we),
+    .we     (phy_config_we),
     .wd     (phy_config_pinflip_wd),
 
     // from internal hardware
@@ -5931,7 +5762,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_usb_ref_disable_we),
+    .we     (phy_config_we),
     .wd     (phy_config_usb_ref_disable_wd),
 
     // from internal hardware
@@ -5957,7 +5788,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (phy_config_tx_osc_test_mode_we),
+    .we     (phy_config_we),
     .wd     (phy_config_tx_osc_test_mode_wd),
 
     // from internal hardware
@@ -5985,7 +5816,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wake_config_wake_en_we),
+    .we     (wake_config_we),
     .wd     (wake_config_wake_en_wd),
 
     // from internal hardware
@@ -6011,7 +5842,7 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wake_config_wake_ack_we),
+    .we     (wake_config_we),
     .wd     (wake_config_wake_ack_wd),
 
     // from internal hardware
@@ -6056,39 +5887,40 @@ module usbdev_reg_top (
 
 
 
-  logic [29:0] addr_hit;
+  logic [30:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == USBDEV_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == USBDEV_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == USBDEV_USBCTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == USBDEV_USBSTAT_OFFSET);
-    addr_hit[ 5] = (reg_addr == USBDEV_AVBUFFER_OFFSET);
-    addr_hit[ 6] = (reg_addr == USBDEV_RXFIFO_OFFSET);
-    addr_hit[ 7] = (reg_addr == USBDEV_RXENABLE_SETUP_OFFSET);
-    addr_hit[ 8] = (reg_addr == USBDEV_RXENABLE_OUT_OFFSET);
-    addr_hit[ 9] = (reg_addr == USBDEV_IN_SENT_OFFSET);
-    addr_hit[10] = (reg_addr == USBDEV_STALL_OFFSET);
-    addr_hit[11] = (reg_addr == USBDEV_CONFIGIN_0_OFFSET);
-    addr_hit[12] = (reg_addr == USBDEV_CONFIGIN_1_OFFSET);
-    addr_hit[13] = (reg_addr == USBDEV_CONFIGIN_2_OFFSET);
-    addr_hit[14] = (reg_addr == USBDEV_CONFIGIN_3_OFFSET);
-    addr_hit[15] = (reg_addr == USBDEV_CONFIGIN_4_OFFSET);
-    addr_hit[16] = (reg_addr == USBDEV_CONFIGIN_5_OFFSET);
-    addr_hit[17] = (reg_addr == USBDEV_CONFIGIN_6_OFFSET);
-    addr_hit[18] = (reg_addr == USBDEV_CONFIGIN_7_OFFSET);
-    addr_hit[19] = (reg_addr == USBDEV_CONFIGIN_8_OFFSET);
-    addr_hit[20] = (reg_addr == USBDEV_CONFIGIN_9_OFFSET);
-    addr_hit[21] = (reg_addr == USBDEV_CONFIGIN_10_OFFSET);
-    addr_hit[22] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
-    addr_hit[23] = (reg_addr == USBDEV_ISO_OFFSET);
-    addr_hit[24] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
-    addr_hit[25] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
-    addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
-    addr_hit[27] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
-    addr_hit[28] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
-    addr_hit[29] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
+    addr_hit[ 3] = (reg_addr == USBDEV_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == USBDEV_USBCTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == USBDEV_USBSTAT_OFFSET);
+    addr_hit[ 6] = (reg_addr == USBDEV_AVBUFFER_OFFSET);
+    addr_hit[ 7] = (reg_addr == USBDEV_RXFIFO_OFFSET);
+    addr_hit[ 8] = (reg_addr == USBDEV_RXENABLE_SETUP_OFFSET);
+    addr_hit[ 9] = (reg_addr == USBDEV_RXENABLE_OUT_OFFSET);
+    addr_hit[10] = (reg_addr == USBDEV_IN_SENT_OFFSET);
+    addr_hit[11] = (reg_addr == USBDEV_STALL_OFFSET);
+    addr_hit[12] = (reg_addr == USBDEV_CONFIGIN_0_OFFSET);
+    addr_hit[13] = (reg_addr == USBDEV_CONFIGIN_1_OFFSET);
+    addr_hit[14] = (reg_addr == USBDEV_CONFIGIN_2_OFFSET);
+    addr_hit[15] = (reg_addr == USBDEV_CONFIGIN_3_OFFSET);
+    addr_hit[16] = (reg_addr == USBDEV_CONFIGIN_4_OFFSET);
+    addr_hit[17] = (reg_addr == USBDEV_CONFIGIN_5_OFFSET);
+    addr_hit[18] = (reg_addr == USBDEV_CONFIGIN_6_OFFSET);
+    addr_hit[19] = (reg_addr == USBDEV_CONFIGIN_7_OFFSET);
+    addr_hit[20] = (reg_addr == USBDEV_CONFIGIN_8_OFFSET);
+    addr_hit[21] = (reg_addr == USBDEV_CONFIGIN_9_OFFSET);
+    addr_hit[22] = (reg_addr == USBDEV_CONFIGIN_10_OFFSET);
+    addr_hit[23] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
+    addr_hit[24] = (reg_addr == USBDEV_ISO_OFFSET);
+    addr_hit[25] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
+    addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
+    addr_hit[27] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
+    addr_hit[28] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
+    addr_hit[29] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
+    addr_hit[30] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -6125,633 +5957,428 @@ module usbdev_reg_top (
                (addr_hit[26] & (|(USBDEV_PERMIT[26] & ~reg_be))) |
                (addr_hit[27] & (|(USBDEV_PERMIT[27] & ~reg_be))) |
                (addr_hit[28] & (|(USBDEV_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(USBDEV_PERMIT[29] & ~reg_be)))));
+               (addr_hit[29] & (|(USBDEV_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(USBDEV_PERMIT[30] & ~reg_be)))));
   end
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_pkt_received_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_pkt_received_wd = reg_wdata[0];
 
-  assign intr_state_pkt_sent_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_state_disconnected_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_disconnected_wd = reg_wdata[2];
 
-  assign intr_state_host_lost_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_host_lost_wd = reg_wdata[3];
 
-  assign intr_state_link_reset_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_reset_wd = reg_wdata[4];
 
-  assign intr_state_link_suspend_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_suspend_wd = reg_wdata[5];
 
-  assign intr_state_link_resume_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_resume_wd = reg_wdata[6];
 
-  assign intr_state_av_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_av_empty_wd = reg_wdata[7];
 
-  assign intr_state_rx_full_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_full_wd = reg_wdata[8];
 
-  assign intr_state_av_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_av_overflow_wd = reg_wdata[9];
 
-  assign intr_state_link_in_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_in_err_wd = reg_wdata[10];
 
-  assign intr_state_rx_crc_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_state_rx_pid_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_state_rx_bitstuff_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_state_frame_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_frame_wd = reg_wdata[14];
 
-  assign intr_state_connected_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_connected_wd = reg_wdata[15];
 
-  assign intr_state_link_out_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_out_err_wd = reg_wdata[16];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_pkt_received_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_pkt_received_wd = reg_wdata[0];
 
-  assign intr_enable_pkt_sent_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_enable_disconnected_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_disconnected_wd = reg_wdata[2];
 
-  assign intr_enable_host_lost_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_host_lost_wd = reg_wdata[3];
 
-  assign intr_enable_link_reset_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_reset_wd = reg_wdata[4];
 
-  assign intr_enable_link_suspend_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_suspend_wd = reg_wdata[5];
 
-  assign intr_enable_link_resume_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_resume_wd = reg_wdata[6];
 
-  assign intr_enable_av_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_av_empty_wd = reg_wdata[7];
 
-  assign intr_enable_rx_full_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_full_wd = reg_wdata[8];
 
-  assign intr_enable_av_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_av_overflow_wd = reg_wdata[9];
 
-  assign intr_enable_link_in_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_in_err_wd = reg_wdata[10];
 
-  assign intr_enable_rx_crc_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_enable_rx_pid_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_enable_rx_bitstuff_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_enable_frame_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_frame_wd = reg_wdata[14];
 
-  assign intr_enable_connected_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_connected_wd = reg_wdata[15];
 
-  assign intr_enable_link_out_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_out_err_wd = reg_wdata[16];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_pkt_received_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_pkt_received_wd = reg_wdata[0];
 
-  assign intr_test_pkt_sent_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_test_disconnected_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_disconnected_wd = reg_wdata[2];
 
-  assign intr_test_host_lost_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_host_lost_wd = reg_wdata[3];
 
-  assign intr_test_link_reset_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_reset_wd = reg_wdata[4];
 
-  assign intr_test_link_suspend_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_suspend_wd = reg_wdata[5];
 
-  assign intr_test_link_resume_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_resume_wd = reg_wdata[6];
 
-  assign intr_test_av_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_av_empty_wd = reg_wdata[7];
 
-  assign intr_test_rx_full_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_full_wd = reg_wdata[8];
 
-  assign intr_test_av_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_av_overflow_wd = reg_wdata[9];
 
-  assign intr_test_link_in_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_in_err_wd = reg_wdata[10];
 
-  assign intr_test_rx_crc_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_test_rx_pid_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_test_rx_bitstuff_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_test_frame_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_frame_wd = reg_wdata[14];
 
-  assign intr_test_connected_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_connected_wd = reg_wdata[15];
 
-  assign intr_test_link_out_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_out_err_wd = reg_wdata[16];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign usbctrl_enable_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_wd = reg_wdata[0];
+  assign usbctrl_we = addr_hit[4] & reg_we & !reg_error;
+
   assign usbctrl_enable_wd = reg_wdata[0];
 
-  assign usbctrl_device_address_we = addr_hit[3] & reg_we & !reg_error;
   assign usbctrl_device_address_wd = reg_wdata[22:16];
+  assign usbstat_re = addr_hit[5] & reg_re & !reg_error;
+  assign avbuffer_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign usbstat_frame_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_host_lost_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_link_state_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_sense_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_av_depth_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_av_full_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_rx_depth_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign usbstat_rx_empty_re = addr_hit[4] & reg_re & !reg_error;
-
-  assign avbuffer_we = addr_hit[5] & reg_we & !reg_error;
   assign avbuffer_wd = reg_wdata[4:0];
+  assign rxfifo_re = addr_hit[7] & reg_re & !reg_error;
+  assign rxenable_setup_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign rxfifo_buffer_re = addr_hit[6] & reg_re & !reg_error;
-
-  assign rxfifo_size_re = addr_hit[6] & reg_re & !reg_error;
-
-  assign rxfifo_setup_re = addr_hit[6] & reg_re & !reg_error;
-
-  assign rxfifo_ep_re = addr_hit[6] & reg_re & !reg_error;
-
-  assign rxenable_setup_setup_0_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_0_wd = reg_wdata[0];
 
-  assign rxenable_setup_setup_1_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_1_wd = reg_wdata[1];
 
-  assign rxenable_setup_setup_2_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_2_wd = reg_wdata[2];
 
-  assign rxenable_setup_setup_3_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_3_wd = reg_wdata[3];
 
-  assign rxenable_setup_setup_4_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_4_wd = reg_wdata[4];
 
-  assign rxenable_setup_setup_5_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_5_wd = reg_wdata[5];
 
-  assign rxenable_setup_setup_6_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_6_wd = reg_wdata[6];
 
-  assign rxenable_setup_setup_7_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_7_wd = reg_wdata[7];
 
-  assign rxenable_setup_setup_8_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_8_wd = reg_wdata[8];
 
-  assign rxenable_setup_setup_9_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_9_wd = reg_wdata[9];
 
-  assign rxenable_setup_setup_10_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_10_wd = reg_wdata[10];
 
-  assign rxenable_setup_setup_11_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_11_wd = reg_wdata[11];
+  assign rxenable_out_we = addr_hit[9] & reg_we & !reg_error;
 
-  assign rxenable_out_out_0_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_0_wd = reg_wdata[0];
 
-  assign rxenable_out_out_1_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_1_wd = reg_wdata[1];
 
-  assign rxenable_out_out_2_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_2_wd = reg_wdata[2];
 
-  assign rxenable_out_out_3_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_3_wd = reg_wdata[3];
 
-  assign rxenable_out_out_4_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_4_wd = reg_wdata[4];
 
-  assign rxenable_out_out_5_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_5_wd = reg_wdata[5];
 
-  assign rxenable_out_out_6_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_6_wd = reg_wdata[6];
 
-  assign rxenable_out_out_7_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_7_wd = reg_wdata[7];
 
-  assign rxenable_out_out_8_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_8_wd = reg_wdata[8];
 
-  assign rxenable_out_out_9_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_9_wd = reg_wdata[9];
 
-  assign rxenable_out_out_10_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_10_wd = reg_wdata[10];
 
-  assign rxenable_out_out_11_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_11_wd = reg_wdata[11];
+  assign in_sent_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign in_sent_sent_0_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_0_wd = reg_wdata[0];
 
-  assign in_sent_sent_1_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_1_wd = reg_wdata[1];
 
-  assign in_sent_sent_2_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_2_wd = reg_wdata[2];
 
-  assign in_sent_sent_3_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_3_wd = reg_wdata[3];
 
-  assign in_sent_sent_4_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_4_wd = reg_wdata[4];
 
-  assign in_sent_sent_5_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_5_wd = reg_wdata[5];
 
-  assign in_sent_sent_6_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_6_wd = reg_wdata[6];
 
-  assign in_sent_sent_7_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_7_wd = reg_wdata[7];
 
-  assign in_sent_sent_8_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_8_wd = reg_wdata[8];
 
-  assign in_sent_sent_9_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_9_wd = reg_wdata[9];
 
-  assign in_sent_sent_10_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_10_wd = reg_wdata[10];
 
-  assign in_sent_sent_11_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_11_wd = reg_wdata[11];
+  assign stall_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign stall_stall_0_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_0_wd = reg_wdata[0];
 
-  assign stall_stall_1_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_1_wd = reg_wdata[1];
 
-  assign stall_stall_2_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_2_wd = reg_wdata[2];
 
-  assign stall_stall_3_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_3_wd = reg_wdata[3];
 
-  assign stall_stall_4_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_4_wd = reg_wdata[4];
 
-  assign stall_stall_5_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_5_wd = reg_wdata[5];
 
-  assign stall_stall_6_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_6_wd = reg_wdata[6];
 
-  assign stall_stall_7_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_7_wd = reg_wdata[7];
 
-  assign stall_stall_8_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_8_wd = reg_wdata[8];
 
-  assign stall_stall_9_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_9_wd = reg_wdata[9];
 
-  assign stall_stall_10_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_10_wd = reg_wdata[10];
 
-  assign stall_stall_11_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_11_wd = reg_wdata[11];
+  assign configin_0_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign configin_0_buffer_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_buffer_0_wd = reg_wdata[4:0];
 
-  assign configin_0_size_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_size_0_wd = reg_wdata[14:8];
 
-  assign configin_0_pend_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_pend_0_wd = reg_wdata[30];
 
-  assign configin_0_rdy_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_rdy_0_wd = reg_wdata[31];
+  assign configin_1_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign configin_1_buffer_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_buffer_1_wd = reg_wdata[4:0];
 
-  assign configin_1_size_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_size_1_wd = reg_wdata[14:8];
 
-  assign configin_1_pend_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_pend_1_wd = reg_wdata[30];
 
-  assign configin_1_rdy_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_rdy_1_wd = reg_wdata[31];
+  assign configin_2_we = addr_hit[14] & reg_we & !reg_error;
 
-  assign configin_2_buffer_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_buffer_2_wd = reg_wdata[4:0];
 
-  assign configin_2_size_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_size_2_wd = reg_wdata[14:8];
 
-  assign configin_2_pend_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_pend_2_wd = reg_wdata[30];
 
-  assign configin_2_rdy_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_rdy_2_wd = reg_wdata[31];
+  assign configin_3_we = addr_hit[15] & reg_we & !reg_error;
 
-  assign configin_3_buffer_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_buffer_3_wd = reg_wdata[4:0];
 
-  assign configin_3_size_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_size_3_wd = reg_wdata[14:8];
 
-  assign configin_3_pend_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_pend_3_wd = reg_wdata[30];
 
-  assign configin_3_rdy_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_rdy_3_wd = reg_wdata[31];
+  assign configin_4_we = addr_hit[16] & reg_we & !reg_error;
 
-  assign configin_4_buffer_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_buffer_4_wd = reg_wdata[4:0];
 
-  assign configin_4_size_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_size_4_wd = reg_wdata[14:8];
 
-  assign configin_4_pend_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_pend_4_wd = reg_wdata[30];
 
-  assign configin_4_rdy_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_rdy_4_wd = reg_wdata[31];
+  assign configin_5_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign configin_5_buffer_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_buffer_5_wd = reg_wdata[4:0];
 
-  assign configin_5_size_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_size_5_wd = reg_wdata[14:8];
 
-  assign configin_5_pend_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_pend_5_wd = reg_wdata[30];
 
-  assign configin_5_rdy_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_rdy_5_wd = reg_wdata[31];
+  assign configin_6_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign configin_6_buffer_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_buffer_6_wd = reg_wdata[4:0];
 
-  assign configin_6_size_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_size_6_wd = reg_wdata[14:8];
 
-  assign configin_6_pend_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_pend_6_wd = reg_wdata[30];
 
-  assign configin_6_rdy_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_rdy_6_wd = reg_wdata[31];
+  assign configin_7_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign configin_7_buffer_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_buffer_7_wd = reg_wdata[4:0];
 
-  assign configin_7_size_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_size_7_wd = reg_wdata[14:8];
 
-  assign configin_7_pend_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_pend_7_wd = reg_wdata[30];
 
-  assign configin_7_rdy_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_rdy_7_wd = reg_wdata[31];
+  assign configin_8_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign configin_8_buffer_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_buffer_8_wd = reg_wdata[4:0];
 
-  assign configin_8_size_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_size_8_wd = reg_wdata[14:8];
 
-  assign configin_8_pend_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_pend_8_wd = reg_wdata[30];
 
-  assign configin_8_rdy_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_rdy_8_wd = reg_wdata[31];
+  assign configin_9_we = addr_hit[21] & reg_we & !reg_error;
 
-  assign configin_9_buffer_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_buffer_9_wd = reg_wdata[4:0];
 
-  assign configin_9_size_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_size_9_wd = reg_wdata[14:8];
 
-  assign configin_9_pend_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_pend_9_wd = reg_wdata[30];
 
-  assign configin_9_rdy_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_rdy_9_wd = reg_wdata[31];
+  assign configin_10_we = addr_hit[22] & reg_we & !reg_error;
 
-  assign configin_10_buffer_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_buffer_10_wd = reg_wdata[4:0];
 
-  assign configin_10_size_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_size_10_wd = reg_wdata[14:8];
 
-  assign configin_10_pend_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_pend_10_wd = reg_wdata[30];
 
-  assign configin_10_rdy_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_rdy_10_wd = reg_wdata[31];
+  assign configin_11_we = addr_hit[23] & reg_we & !reg_error;
 
-  assign configin_11_buffer_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_buffer_11_wd = reg_wdata[4:0];
 
-  assign configin_11_size_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_size_11_wd = reg_wdata[14:8];
 
-  assign configin_11_pend_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_pend_11_wd = reg_wdata[30];
 
-  assign configin_11_rdy_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_rdy_11_wd = reg_wdata[31];
+  assign iso_we = addr_hit[24] & reg_we & !reg_error;
 
-  assign iso_iso_0_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_0_wd = reg_wdata[0];
 
-  assign iso_iso_1_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_1_wd = reg_wdata[1];
 
-  assign iso_iso_2_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_2_wd = reg_wdata[2];
 
-  assign iso_iso_3_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_3_wd = reg_wdata[3];
 
-  assign iso_iso_4_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_4_wd = reg_wdata[4];
 
-  assign iso_iso_5_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_5_wd = reg_wdata[5];
 
-  assign iso_iso_6_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_6_wd = reg_wdata[6];
 
-  assign iso_iso_7_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_7_wd = reg_wdata[7];
 
-  assign iso_iso_8_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_8_wd = reg_wdata[8];
 
-  assign iso_iso_9_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_9_wd = reg_wdata[9];
 
-  assign iso_iso_10_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_10_wd = reg_wdata[10];
 
-  assign iso_iso_11_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_11_wd = reg_wdata[11];
+  assign data_toggle_clear_we = addr_hit[25] & reg_we & !reg_error;
 
-  assign data_toggle_clear_clear_0_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_0_wd = reg_wdata[0];
 
-  assign data_toggle_clear_clear_1_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_1_wd = reg_wdata[1];
 
-  assign data_toggle_clear_clear_2_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_2_wd = reg_wdata[2];
 
-  assign data_toggle_clear_clear_3_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_3_wd = reg_wdata[3];
 
-  assign data_toggle_clear_clear_4_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_4_wd = reg_wdata[4];
 
-  assign data_toggle_clear_clear_5_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_5_wd = reg_wdata[5];
 
-  assign data_toggle_clear_clear_6_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_6_wd = reg_wdata[6];
 
-  assign data_toggle_clear_clear_7_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_7_wd = reg_wdata[7];
 
-  assign data_toggle_clear_clear_8_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_8_wd = reg_wdata[8];
 
-  assign data_toggle_clear_clear_9_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_9_wd = reg_wdata[9];
 
-  assign data_toggle_clear_clear_10_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_10_wd = reg_wdata[10];
 
-  assign data_toggle_clear_clear_11_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_11_wd = reg_wdata[11];
+  assign phy_pins_sense_re = addr_hit[26] & reg_re & !reg_error;
+  assign phy_pins_drive_we = addr_hit[27] & reg_we & !reg_error;
 
-  assign phy_pins_sense_rx_dp_i_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_rx_dn_i_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_rx_d_i_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_tx_dp_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_tx_dn_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_tx_d_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_tx_se0_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_tx_oe_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_suspend_o_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_sense_pwr_sense_re = addr_hit[25] & reg_re & !reg_error;
-
-  assign phy_pins_drive_dp_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dp_o_wd = reg_wdata[0];
 
-  assign phy_pins_drive_dn_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dn_o_wd = reg_wdata[1];
 
-  assign phy_pins_drive_d_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_d_o_wd = reg_wdata[2];
 
-  assign phy_pins_drive_se0_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_se0_o_wd = reg_wdata[3];
 
-  assign phy_pins_drive_oe_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_oe_o_wd = reg_wdata[4];
 
-  assign phy_pins_drive_tx_mode_se_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_tx_mode_se_o_wd = reg_wdata[5];
 
-  assign phy_pins_drive_dp_pullup_en_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dp_pullup_en_o_wd = reg_wdata[6];
 
-  assign phy_pins_drive_dn_pullup_en_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dn_pullup_en_o_wd = reg_wdata[7];
 
-  assign phy_pins_drive_suspend_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_suspend_o_wd = reg_wdata[8];
 
-  assign phy_pins_drive_en_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_en_wd = reg_wdata[16];
+  assign phy_config_we = addr_hit[28] & reg_we & !reg_error;
 
-  assign phy_config_rx_differential_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
-  assign phy_config_tx_differential_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_tx_differential_mode_wd = reg_wdata[1];
 
-  assign phy_config_eop_single_bit_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
-  assign phy_config_override_pwr_sense_en_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_override_pwr_sense_en_wd = reg_wdata[3];
 
-  assign phy_config_override_pwr_sense_val_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_override_pwr_sense_val_wd = reg_wdata[4];
 
-  assign phy_config_pinflip_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_pinflip_wd = reg_wdata[5];
 
-  assign phy_config_usb_ref_disable_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
-  assign phy_config_tx_osc_test_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
+  assign wake_config_we = addr_hit[29] & reg_we & !reg_error;
 
-  assign wake_config_wake_en_we = addr_hit[28] & reg_we & !reg_error;
   assign wake_config_wake_en_wd = reg_wdata[0];
 
-  assign wake_config_wake_ack_we = addr_hit[28] & reg_we & !reg_error;
   assign wake_config_wake_ack_wd = reg_wdata[1];
 
   // Read data return
@@ -6819,11 +6446,15 @@ module usbdev_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = usbctrl_enable_qs;
         reg_rdata_next[22:16] = usbctrl_device_address_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[10:0] = usbstat_frame_qs;
         reg_rdata_next[11] = usbstat_host_lost_qs;
         reg_rdata_next[14:12] = usbstat_link_state_qs;
@@ -6834,18 +6465,18 @@ module usbdev_reg_top (
         reg_rdata_next[31] = usbstat_rx_empty_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[4:0] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[4:0] = rxfifo_buffer_qs;
         reg_rdata_next[14:8] = rxfifo_size_qs;
         reg_rdata_next[19] = rxfifo_setup_qs;
         reg_rdata_next[23:20] = rxfifo_ep_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = rxenable_setup_setup_0_qs;
         reg_rdata_next[1] = rxenable_setup_setup_1_qs;
         reg_rdata_next[2] = rxenable_setup_setup_2_qs;
@@ -6860,7 +6491,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = rxenable_setup_setup_11_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = rxenable_out_out_0_qs;
         reg_rdata_next[1] = rxenable_out_out_1_qs;
         reg_rdata_next[2] = rxenable_out_out_2_qs;
@@ -6875,7 +6506,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = rxenable_out_out_11_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = in_sent_sent_0_qs;
         reg_rdata_next[1] = in_sent_sent_1_qs;
         reg_rdata_next[2] = in_sent_sent_2_qs;
@@ -6890,7 +6521,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = in_sent_sent_11_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = stall_stall_0_qs;
         reg_rdata_next[1] = stall_stall_1_qs;
         reg_rdata_next[2] = stall_stall_2_qs;
@@ -6905,91 +6536,91 @@ module usbdev_reg_top (
         reg_rdata_next[11] = stall_stall_11_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[4:0] = configin_0_buffer_0_qs;
         reg_rdata_next[14:8] = configin_0_size_0_qs;
         reg_rdata_next[30] = configin_0_pend_0_qs;
         reg_rdata_next[31] = configin_0_rdy_0_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[4:0] = configin_1_buffer_1_qs;
         reg_rdata_next[14:8] = configin_1_size_1_qs;
         reg_rdata_next[30] = configin_1_pend_1_qs;
         reg_rdata_next[31] = configin_1_rdy_1_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[4:0] = configin_2_buffer_2_qs;
         reg_rdata_next[14:8] = configin_2_size_2_qs;
         reg_rdata_next[30] = configin_2_pend_2_qs;
         reg_rdata_next[31] = configin_2_rdy_2_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[4:0] = configin_3_buffer_3_qs;
         reg_rdata_next[14:8] = configin_3_size_3_qs;
         reg_rdata_next[30] = configin_3_pend_3_qs;
         reg_rdata_next[31] = configin_3_rdy_3_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[4:0] = configin_4_buffer_4_qs;
         reg_rdata_next[14:8] = configin_4_size_4_qs;
         reg_rdata_next[30] = configin_4_pend_4_qs;
         reg_rdata_next[31] = configin_4_rdy_4_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[4:0] = configin_5_buffer_5_qs;
         reg_rdata_next[14:8] = configin_5_size_5_qs;
         reg_rdata_next[30] = configin_5_pend_5_qs;
         reg_rdata_next[31] = configin_5_rdy_5_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[4:0] = configin_6_buffer_6_qs;
         reg_rdata_next[14:8] = configin_6_size_6_qs;
         reg_rdata_next[30] = configin_6_pend_6_qs;
         reg_rdata_next[31] = configin_6_rdy_6_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[4:0] = configin_7_buffer_7_qs;
         reg_rdata_next[14:8] = configin_7_size_7_qs;
         reg_rdata_next[30] = configin_7_pend_7_qs;
         reg_rdata_next[31] = configin_7_rdy_7_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[4:0] = configin_8_buffer_8_qs;
         reg_rdata_next[14:8] = configin_8_size_8_qs;
         reg_rdata_next[30] = configin_8_pend_8_qs;
         reg_rdata_next[31] = configin_8_rdy_8_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[4:0] = configin_9_buffer_9_qs;
         reg_rdata_next[14:8] = configin_9_size_9_qs;
         reg_rdata_next[30] = configin_9_pend_9_qs;
         reg_rdata_next[31] = configin_9_rdy_9_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[4:0] = configin_10_buffer_10_qs;
         reg_rdata_next[14:8] = configin_10_size_10_qs;
         reg_rdata_next[30] = configin_10_pend_10_qs;
         reg_rdata_next[31] = configin_10_rdy_10_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[4:0] = configin_11_buffer_11_qs;
         reg_rdata_next[14:8] = configin_11_size_11_qs;
         reg_rdata_next[30] = configin_11_pend_11_qs;
         reg_rdata_next[31] = configin_11_rdy_11_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = iso_iso_0_qs;
         reg_rdata_next[1] = iso_iso_1_qs;
         reg_rdata_next[2] = iso_iso_2_qs;
@@ -7004,7 +6635,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = iso_iso_11_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -7019,7 +6650,7 @@ module usbdev_reg_top (
         reg_rdata_next[11] = '0;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[0] = phy_pins_sense_rx_dp_i_qs;
         reg_rdata_next[1] = phy_pins_sense_rx_dn_i_qs;
         reg_rdata_next[2] = phy_pins_sense_rx_d_i_qs;
@@ -7032,7 +6663,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_sense_pwr_sense_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[0] = phy_pins_drive_dp_o_qs;
         reg_rdata_next[1] = phy_pins_drive_dn_o_qs;
         reg_rdata_next[2] = phy_pins_drive_d_o_qs;
@@ -7045,7 +6676,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_drive_en_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
         reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
@@ -7056,12 +6687,12 @@ module usbdev_reg_top (
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[0] = wake_config_wake_en_qs;
         reg_rdata_next[1] = wake_config_wake_ack_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[2:0] = wake_debug_qs;
       end
 

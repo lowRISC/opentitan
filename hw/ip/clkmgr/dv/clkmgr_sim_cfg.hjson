@@ -57,6 +57,10 @@
       uvm_test_seq: clkmgr_smoke_vseq
     }
     {
+      name: clkmgr_extclk
+      uvm_test_seq: clkmgr_extclk_vseq
+    }
+    {
       name: clkmgr_peri
       uvm_test_seq: clkmgr_peri_vseq
     }

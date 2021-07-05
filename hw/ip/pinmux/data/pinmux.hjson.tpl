@@ -16,20 +16,23 @@
 ##  - attr_dw:             Width of wakeup counters
 {
   name: "PINMUX",
-  clock_primary: "clk_i",
-  reset_primary: "rst_ni",
-  other_clock_list: [
-    "clk_aon_i",
-  ],
-  other_reset_list:
-  [
-    "rst_aon_ni"
-  ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
   regwidth: "32",
   scan: "true",
+
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
 
   wakeup_list: [
     { name: "aon_wkup_req",

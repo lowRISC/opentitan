@@ -32,10 +32,6 @@ class aon_timer_env extends cip_base_env #(
         get(this, "", "sleep_vif", cfg.sleep_vif)) begin
       `uvm_fatal(`gfn, "failed to get sleep_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual aon_timer_core_if)::
-        get(this, "", "core_vif", cfg.core_vif)) begin
-      `uvm_fatal(`gfn, "failed to get core_vif from uvm_config_db")
-    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

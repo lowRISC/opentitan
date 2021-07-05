@@ -4,7 +4,9 @@
 //
 // Description: I2C core module
 
-module  i2c_core (
+module  i2c_core #(
+  parameter int                    FifoDepth = 64
+) (
   input                            clk_i,
   input                            rst_ni,
 
@@ -150,6 +152,8 @@ module  i2c_core (
   logic [7:0]  unused_rx_fifo_rdata_q;
   logic [7:0]  unused_acq_fifo_adata_q;
   logic [1:0]  unused_acq_fifo_signal_q;
+  logic        unused_alert_test_qe;
+  logic        unused_alert_test_q;
 
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
@@ -240,10 +244,10 @@ module  i2c_core (
 
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
-      2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 6'd1);
-      2'h1:    fmt_watermark_d = (fmt_fifo_depth <= 6'd4);
-      2'h2:    fmt_watermark_d = (fmt_fifo_depth <= 6'd8);
-      default: fmt_watermark_d = (fmt_fifo_depth <= 6'd16);
+      2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 7'd1);
+      2'h1:    fmt_watermark_d = (fmt_fifo_depth <= 7'd4);
+      2'h2:    fmt_watermark_d = (fmt_fifo_depth <= 7'd8);
+      default: fmt_watermark_d = (fmt_fifo_depth <= 7'd16);
     endcase
   end
 
@@ -251,11 +255,11 @@ module  i2c_core (
 
   always_comb begin
     unique case(i2c_fifo_rxilvl)
-      3'h0:    rx_watermark_d = (rx_fifo_depth >= 6'd1);
-      3'h1:    rx_watermark_d = (rx_fifo_depth >= 6'd4);
-      3'h2:    rx_watermark_d = (rx_fifo_depth >= 6'd8);
-      3'h3:    rx_watermark_d = (rx_fifo_depth >= 6'd16);
-      3'h4:    rx_watermark_d = (rx_fifo_depth >= 6'd30);
+      3'h0:    rx_watermark_d = (rx_fifo_depth >= 7'd1);
+      3'h1:    rx_watermark_d = (rx_fifo_depth >= 7'd4);
+      3'h2:    rx_watermark_d = (rx_fifo_depth >= 7'd8);
+      3'h3:    rx_watermark_d = (rx_fifo_depth >= 7'd16);
+      3'h4:    rx_watermark_d = (rx_fifo_depth >= 7'd30);
       default: rx_watermark_d = 1'b0;
     endcase
   end
@@ -295,11 +299,13 @@ module  i2c_core (
   assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;
   assign unused_acq_fifo_adata_q = reg2hw.acqdata.abyte.q;
   assign unused_acq_fifo_signal_q = reg2hw.acqdata.signal.q;
+  assign unused_alert_test_qe = reg2hw.alert_test.qe;
+  assign unused_alert_test_q = reg2hw.alert_test.q;
 
   prim_fifo_sync #(
     .Width   (13),
     .Pass    (1'b1),
-    .Depth   (64)
+    .Depth   (FifoDepth)
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni,
@@ -319,7 +325,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (64)
+    .Depth   (FifoDepth)
   ) u_i2c_rxfifo (
     .clk_i,
     .rst_ni,
@@ -344,7 +350,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width(8),
     .Pass(1'b1),
-    .Depth(64)
+    .Depth(FifoDepth)
   ) u_i2c_txfifo (
     .clk_i,
     .rst_ni,
@@ -364,7 +370,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width(10),
     .Pass(1'b0),
-    .Depth(64)
+    .Depth(FifoDepth)
   ) u_i2c_acqfifo (
     .clk_i,
     .rst_ni,

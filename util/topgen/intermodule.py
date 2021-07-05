@@ -224,11 +224,18 @@ def autoconnect_xbar(topcfg: OrderedDict,
             assert len(matches) == 1
             sig_name = matches[0]['name']
 
-        add_intermodule_connection(obj=topcfg,
-                                   req_m=port_base,
-                                   req_s=sig_name,
-                                   rsp_m=xbar["name"],
-                                   rsp_s="tl_" + esc_name)
+        if is_host:
+            add_intermodule_connection(obj=topcfg,
+                                       req_m=xbar["name"],
+                                       req_s="tl_" + esc_name,
+                                       rsp_m=port_base,
+                                       rsp_s=sig_name)
+        else:
+            add_intermodule_connection(obj=topcfg,
+                                       req_m=port_base,
+                                       req_s=sig_name,
+                                       rsp_m=xbar["name"],
+                                       rsp_s="tl_" + esc_name)
 
 
 def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):

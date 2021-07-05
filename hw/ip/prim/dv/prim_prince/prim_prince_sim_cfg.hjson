@@ -18,7 +18,11 @@
   fusesoc_core: lowrisc:dv:prim_prince_sim:0.1
 
   // Import additional common sim cfg files.
-  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Config files to get the correct flags for crypto_dpi_prince
+                "{proj_root}/hw/ip/prim/dv/prim_prince/crypto_dpi_prince/crypto_dpi_prince_sim_opts.hjson"]
+
+  en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

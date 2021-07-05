@@ -80,23 +80,24 @@ module alert_handler
   logic [N_ESC_SEV-1:0] esc_ping_req;
   logic [N_ESC_SEV-1:0] esc_ping_ok;
 
-  logic entropy;
+  logic edn_req, edn_ack;
+  logic [LfsrWidth-1:0] edn_data;
 
-  // This module pings for entropy excessively at the moment,
-  // but this will be addressed later using a refresh rate
   prim_edn_req #(
-    .OutWidth(1)
+    .OutWidth(LfsrWidth)
   ) u_edn_req (
+    // Alert handler side
     .clk_i,
     .rst_ni,
-    .req_i(1'b0),
-    .ack_o(),
-    .data_o(entropy),
-    .fips_o(),
+    .req_i       ( edn_req  ),
+    .ack_o       ( edn_ack  ),
+    .data_o      ( edn_data ),
+    .fips_o      (          ),
+    // EDN side
     .clk_edn_i,
     .rst_edn_ni,
-    .edn_o(edn_o),
-    .edn_i(edn_i)
+    .edn_o       ( edn_o    ),
+    .edn_i       ( edn_i    )
   );
 
   alert_handler_ping_timer #(
@@ -105,21 +106,21 @@ module alert_handler
   ) u_ping_timer (
     .clk_i,
     .rst_ni,
-    .entropy_i(entropy),
-    // we enable ping testing as soon as the config
-    // regs have been locked
-    .en_i               ( reg2hw_wrap.ping_enable      ),
-    .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en    ),
-    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
-    // this determines the range of the randomly generated
-    // wait period between ping. maximum mask width is PING_CNT_DW.
-    .wait_cyc_mask_i    ( PING_CNT_DW'(24'hFFFFFF)     ),
-    .alert_ping_req_o   ( alert_ping_req               ),
-    .esc_ping_req_o     ( esc_ping_req                 ),
-    .alert_ping_ok_i    ( alert_ping_ok                ),
-    .esc_ping_ok_i      ( esc_ping_ok                  ),
-    .alert_ping_fail_o  ( loc_alert_trig[0]            ),
-    .esc_ping_fail_o    ( loc_alert_trig[1]            )
+    .edn_req_o          ( edn_req                        ),
+    .edn_ack_i          ( edn_ack                        ),
+    .edn_data_i         ( edn_data                       ),
+    .en_i               ( reg2hw_wrap.ping_enable        ),
+    .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en      ),
+    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc   ),
+    // set this to the maximum width in the design.
+    // can be overridden in DV and FPV to shorten the wait periods.
+    .wait_cyc_mask_i    ( {PING_CNT_DW{1'b1}}            ),
+    .alert_ping_req_o   ( alert_ping_req                 ),
+    .esc_ping_req_o     ( esc_ping_req                   ),
+    .alert_ping_ok_i    ( alert_ping_ok                  ),
+    .esc_ping_ok_i      ( esc_ping_ok                    ),
+    .alert_ping_fail_o  ( loc_alert_trig[0]              ),
+    .esc_ping_fail_o    ( loc_alert_trig[1]              )
   );
 
   /////////////////////
@@ -167,38 +168,40 @@ module alert_handler
   // Escalation Handling of Classes //
   ////////////////////////////////////
 
-  logic [N_CLASSES-1:0] class_accum_trig;
   logic [N_CLASSES-1:0][N_ESC_SEV-1:0] class_esc_sig_req;
 
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classes
+    logic class_accu_fail, class_accu_trig;
     alert_handler_accu u_accu (
       .clk_i,
       .rst_ni,
-      .class_en_i   ( reg2hw_wrap.class_en[k]           ),
-      .clr_i        ( reg2hw_wrap.class_clr[k]          ),
-      .class_trig_i ( hw2reg_wrap.class_trig[k]         ),
-      .thresh_i     ( reg2hw_wrap.class_accum_thresh[k] ),
-      .accu_cnt_o   ( hw2reg_wrap.class_accum_cnt[k]    ),
-      .accu_trig_o  ( class_accum_trig[k]               )
+      .class_en_i    ( reg2hw_wrap.class_en[k]           ),
+      .clr_i         ( reg2hw_wrap.class_clr[k]          ),
+      .class_trig_i  ( hw2reg_wrap.class_trig[k]         ),
+      .thresh_i      ( reg2hw_wrap.class_accum_thresh[k] ),
+      .accu_cnt_o    ( hw2reg_wrap.class_accum_cnt[k]    ),
+      .accu_trig_o   ( class_accu_trig                   ),
+      .accu_fail_o   ( class_accu_fail                   )
     );
 
     alert_handler_esc_timer u_esc_timer (
       .clk_i,
       .rst_ni,
-      .en_i             ( reg2hw_wrap.class_en[k]          ),
+      .en_i              ( reg2hw_wrap.class_en[k]          ),
       // this clear does not apply to interrupts
-      .clr_i            ( reg2hw_wrap.class_clr[k]         ),
+      .clr_i             ( reg2hw_wrap.class_clr[k]         ),
       // an interrupt enables the timeout
-      .timeout_en_i     ( irq[k]                           ),
-      .accum_trig_i     ( class_accum_trig[k]              ),
-      .timeout_cyc_i    ( reg2hw_wrap.class_timeout_cyc[k] ),
-      .esc_en_i         ( reg2hw_wrap.class_esc_en[k]      ),
-      .esc_map_i        ( reg2hw_wrap.class_esc_map[k]     ),
-      .phase_cyc_i      ( reg2hw_wrap.class_phase_cyc[k]   ),
-      .esc_trig_o       ( hw2reg_wrap.class_esc_trig[k]    ),
-      .esc_cnt_o        ( hw2reg_wrap.class_esc_cnt[k]     ),
-      .esc_state_o      ( hw2reg_wrap.class_esc_state[k]   ),
-      .esc_sig_req_o    ( class_esc_sig_req[k]             )
+      .timeout_en_i      ( irq[k]                           ),
+      .accu_trig_i       ( class_accu_trig                  ),
+      .accu_fail_i       ( class_accu_fail                  ),
+      .timeout_cyc_i     ( reg2hw_wrap.class_timeout_cyc[k] ),
+      .esc_en_i          ( reg2hw_wrap.class_esc_en[k]      ),
+      .esc_map_i         ( reg2hw_wrap.class_esc_map[k]     ),
+      .phase_cyc_i       ( reg2hw_wrap.class_phase_cyc[k]   ),
+      .esc_trig_o        ( hw2reg_wrap.class_esc_trig[k]    ),
+      .esc_cnt_o         ( hw2reg_wrap.class_esc_cnt[k]     ),
+      .esc_state_o       ( hw2reg_wrap.class_esc_state[k]   ),
+      .esc_sig_req_o     ( class_esc_sig_req[k]             )
     );
   end
 

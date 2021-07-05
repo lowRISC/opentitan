@@ -16,10 +16,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
   name: "ALERT_HANDLER",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_edn_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_edn_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -42,25 +42,28 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     }
     // Normal parameters
     { name: "NAlerts",
-      desc: "Number of peripheral inputs",
+      desc: "Number of alert channels.",
       type: "int",
       default: "${n_alerts}",
       local: "true"
     },
     { name: "EscCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the escalation timer.",
       type: "int",
       default: "${esc_cnt_dw}",
       local: "true"
     },
     { name: "AccuCntDw",
-      desc: "Number of peripheral outputs",
+      desc: "Width of the accumulation counter.",
       type: "int",
       default: "${accu_cnt_dw}",
       local: "true"
     },
     { name: "AsyncOn",
-      desc: "Number of peripheral outputs",
+      desc: '''
+            Each bit of this parameter corresponds to an escalation channel and
+            defines whether the protocol is synchronous (0) or asynchronous (1).
+            '''
       type: "logic [NAlerts-1:0]",
       default: "${async_on}",
       local: "true"
@@ -92,7 +95,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "PING_CNT_DW",
       desc: "Width of ping counter",
       type: "int",
-      default: "24",
+      default: "16",
       local: "true"
     },
     { name: "PHASE_DW",
@@ -105,6 +108,42 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       desc: "Width of class ID",
       type: "int",
       default: "${int(math.ceil(math.log2(n_classes)))}",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ALERT_PINGFAIL",
+      desc: "Local alert ID for alert ping failure.",
+      type: "int",
+      default: "0",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_PINGFAIL",
+      desc: "Local alert ID for escalation ping failure.",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ALERT_INTEGFAIL",
+      desc: "Local alert ID for alert integrity failure.",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_ESC_INTEGFAIL",
+      desc: "Local alert ID for escalation integrity failure.",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_BUS_INTEGFAIL",
+      desc: "Local alert ID for bus integrity failure.",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_LAST",
+      desc: "Last local alert ID.",
+      type: "int",
+      default: "4",
       local: "true"
     },
   ],
@@ -528,7 +567,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "${accu_cnt_dw - 1}:0" }
+        { bits: "AccuCntDw-1:0" }
       ],
       tags: [// The value of this register is determined by how many alerts have been triggered
              // Cannot be auto-predicted so it is excluded from read check
@@ -542,7 +581,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${accu_cnt_dw - 1}:0",
+        { bits: "AccuCntDw-1:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
           register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
@@ -558,7 +597,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0",
+        { bits: "EscCntDw-1:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
@@ -577,7 +616,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hro",
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0" ,
+        { bits: "EscCntDw-1:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
           modified if !!CLASS${chars[i]}_REGWEN is false.'''
         }
@@ -592,7 +631,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "${esc_cnt_dw - 1}:0",
+        { bits: "EscCntDw-1:0",
           desc: '''Returns the current timeout or escalation count (depending on !!CLASS${chars[i]}_STATE).
           This register can not be directly cleared. However, SW can indirectly clear as follows.
 

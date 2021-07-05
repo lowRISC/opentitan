@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 { name: "rv_timer",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -15,6 +15,13 @@
     { name: "timer_expired_0_0",
       desc: "raised if the timer 0_0 expired (mtimecmp >= mtime)"
     },
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected inside the RV_TIMER unit.
+      '''
+    }
   ],
   param_list: [
     { name: "N_HARTS",

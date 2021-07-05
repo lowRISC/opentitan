@@ -105,186 +105,186 @@ module ast_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic [7:0] revid_qs;
+  logic rega_0_we;
   logic [31:0] rega_0_qs;
   logic [31:0] rega_0_wd;
-  logic rega_0_we;
+  logic rega_1_we;
   logic [31:0] rega_1_qs;
   logic [31:0] rega_1_wd;
-  logic rega_1_we;
+  logic rega_2_we;
   logic [31:0] rega_2_qs;
   logic [31:0] rega_2_wd;
-  logic rega_2_we;
+  logic rega_3_we;
   logic [31:0] rega_3_qs;
   logic [31:0] rega_3_wd;
-  logic rega_3_we;
+  logic rega_4_we;
   logic [31:0] rega_4_qs;
   logic [31:0] rega_4_wd;
-  logic rega_4_we;
+  logic rega_5_we;
   logic [31:0] rega_5_qs;
   logic [31:0] rega_5_wd;
-  logic rega_5_we;
+  logic rega_6_we;
   logic [31:0] rega_6_qs;
   logic [31:0] rega_6_wd;
-  logic rega_6_we;
+  logic rega_7_we;
   logic [31:0] rega_7_qs;
   logic [31:0] rega_7_wd;
-  logic rega_7_we;
+  logic rega_8_we;
   logic [31:0] rega_8_qs;
   logic [31:0] rega_8_wd;
-  logic rega_8_we;
+  logic rega_9_we;
   logic [31:0] rega_9_qs;
   logic [31:0] rega_9_wd;
-  logic rega_9_we;
+  logic rega_10_we;
   logic [31:0] rega_10_qs;
   logic [31:0] rega_10_wd;
-  logic rega_10_we;
+  logic rega_11_we;
   logic [31:0] rega_11_qs;
   logic [31:0] rega_11_wd;
-  logic rega_11_we;
+  logic rega_12_we;
   logic [31:0] rega_12_qs;
   logic [31:0] rega_12_wd;
-  logic rega_12_we;
+  logic rega_13_we;
   logic [31:0] rega_13_qs;
   logic [31:0] rega_13_wd;
-  logic rega_13_we;
+  logic rega_14_we;
   logic [31:0] rega_14_qs;
   logic [31:0] rega_14_wd;
-  logic rega_14_we;
+  logic rega_15_we;
   logic [31:0] rega_15_qs;
   logic [31:0] rega_15_wd;
-  logic rega_15_we;
+  logic rega_16_we;
   logic [31:0] rega_16_qs;
   logic [31:0] rega_16_wd;
-  logic rega_16_we;
+  logic rega_17_we;
   logic [31:0] rega_17_qs;
   logic [31:0] rega_17_wd;
-  logic rega_17_we;
+  logic rega_18_we;
   logic [31:0] rega_18_qs;
   logic [31:0] rega_18_wd;
-  logic rega_18_we;
+  logic rega_19_we;
   logic [31:0] rega_19_qs;
   logic [31:0] rega_19_wd;
-  logic rega_19_we;
+  logic rega_20_we;
   logic [31:0] rega_20_qs;
   logic [31:0] rega_20_wd;
-  logic rega_20_we;
+  logic rega_21_we;
   logic [31:0] rega_21_qs;
   logic [31:0] rega_21_wd;
-  logic rega_21_we;
+  logic rega_22_we;
   logic [31:0] rega_22_qs;
   logic [31:0] rega_22_wd;
-  logic rega_22_we;
+  logic rega_23_we;
   logic [31:0] rega_23_qs;
   logic [31:0] rega_23_wd;
-  logic rega_23_we;
+  logic rega_24_we;
   logic [31:0] rega_24_qs;
   logic [31:0] rega_24_wd;
-  logic rega_24_we;
+  logic rega_25_we;
   logic [31:0] rega_25_qs;
   logic [31:0] rega_25_wd;
-  logic rega_25_we;
+  logic rega_26_we;
   logic [31:0] rega_26_qs;
   logic [31:0] rega_26_wd;
-  logic rega_26_we;
+  logic rega_27_we;
   logic [31:0] rega_27_qs;
   logic [31:0] rega_27_wd;
-  logic rega_27_we;
+  logic rega_28_we;
   logic [31:0] rega_28_qs;
   logic [31:0] rega_28_wd;
-  logic rega_28_we;
+  logic rega_29_we;
   logic [31:0] rega_29_qs;
   logic [31:0] rega_29_wd;
-  logic rega_29_we;
+  logic rega_30_we;
   logic [31:0] rega_30_qs;
   logic [31:0] rega_30_wd;
-  logic rega_30_we;
+  logic rega_31_we;
   logic [31:0] rega_31_qs;
   logic [31:0] rega_31_wd;
-  logic rega_31_we;
+  logic rega_32_we;
   logic [31:0] rega_32_qs;
   logic [31:0] rega_32_wd;
-  logic rega_32_we;
+  logic rega_33_we;
   logic [31:0] rega_33_qs;
   logic [31:0] rega_33_wd;
-  logic rega_33_we;
+  logic rega_34_we;
   logic [31:0] rega_34_qs;
   logic [31:0] rega_34_wd;
-  logic rega_34_we;
+  logic rega_35_we;
   logic [31:0] rega_35_qs;
   logic [31:0] rega_35_wd;
-  logic rega_35_we;
+  logic rega_36_we;
   logic [31:0] rega_36_qs;
   logic [31:0] rega_36_wd;
-  logic rega_36_we;
+  logic rega_37_we;
   logic [31:0] rega_37_qs;
   logic [31:0] rega_37_wd;
-  logic rega_37_we;
+  logic rega_38_we;
   logic [31:0] rega_38_qs;
   logic [31:0] rega_38_wd;
-  logic rega_38_we;
+  logic rega_39_we;
   logic [31:0] rega_39_qs;
   logic [31:0] rega_39_wd;
-  logic rega_39_we;
+  logic rega_40_we;
   logic [31:0] rega_40_qs;
   logic [31:0] rega_40_wd;
-  logic rega_40_we;
+  logic rega_41_we;
   logic [31:0] rega_41_qs;
   logic [31:0] rega_41_wd;
-  logic rega_41_we;
+  logic rega_42_we;
   logic [31:0] rega_42_qs;
   logic [31:0] rega_42_wd;
-  logic rega_42_we;
+  logic rega_43_we;
   logic [31:0] rega_43_qs;
   logic [31:0] rega_43_wd;
-  logic rega_43_we;
+  logic rega_44_we;
   logic [31:0] rega_44_qs;
   logic [31:0] rega_44_wd;
-  logic rega_44_we;
+  logic rega_45_we;
   logic [31:0] rega_45_qs;
   logic [31:0] rega_45_wd;
-  logic rega_45_we;
+  logic rega_46_we;
   logic [31:0] rega_46_qs;
   logic [31:0] rega_46_wd;
-  logic rega_46_we;
+  logic rega_47_we;
   logic [31:0] rega_47_qs;
   logic [31:0] rega_47_wd;
-  logic rega_47_we;
+  logic rega_48_we;
   logic [31:0] rega_48_qs;
   logic [31:0] rega_48_wd;
-  logic rega_48_we;
+  logic rega_49_we;
   logic [31:0] rega_49_qs;
   logic [31:0] rega_49_wd;
-  logic rega_49_we;
+  logic regb_0_we;
   logic [31:0] regb_0_qs;
   logic [31:0] regb_0_wd;
-  logic regb_0_we;
+  logic regb_1_we;
   logic [31:0] regb_1_qs;
   logic [31:0] regb_1_wd;
-  logic regb_1_we;
+  logic regb_2_we;
   logic [31:0] regb_2_qs;
   logic [31:0] regb_2_wd;
-  logic regb_2_we;
+  logic regb_3_we;
   logic [31:0] regb_3_qs;
   logic [31:0] regb_3_wd;
-  logic regb_3_we;
+  logic regb_4_we;
   logic [31:0] regb_4_qs;
   logic [31:0] regb_4_wd;
-  logic regb_4_we;
+  logic regb_5_we;
   logic [31:0] regb_5_qs;
   logic [31:0] regb_5_wd;
-  logic regb_5_we;
+  logic regb_6_we;
   logic [31:0] regb_6_qs;
   logic [31:0] regb_6_wd;
-  logic regb_6_we;
+  logic regb_7_we;
   logic [31:0] regb_7_qs;
   logic [31:0] regb_7_wd;
-  logic regb_7_we;
+  logic regb_8_we;
   logic [31:0] regb_8_qs;
   logic [31:0] regb_8_wd;
-  logic regb_8_we;
+  logic regb_9_we;
   logic [31:0] regb_9_qs;
   logic [31:0] regb_9_wd;
-  logic regb_9_we;
 
   // Register instances
   // R[revid]: V(False)
@@ -2073,185 +2073,185 @@ module ast_reg_top (
                (addr_hit[59] & (|(AST_PERMIT[59] & ~reg_be))) |
                (addr_hit[60] & (|(AST_PERMIT[60] & ~reg_be)))));
   end
-
   assign rega_0_we = addr_hit[1] & reg_we & !reg_error;
+
   assign rega_0_wd = reg_wdata[31:0];
-
   assign rega_1_we = addr_hit[2] & reg_we & !reg_error;
+
   assign rega_1_wd = reg_wdata[31:0];
-
   assign rega_2_we = addr_hit[3] & reg_we & !reg_error;
+
   assign rega_2_wd = reg_wdata[31:0];
-
   assign rega_3_we = addr_hit[4] & reg_we & !reg_error;
+
   assign rega_3_wd = reg_wdata[31:0];
-
   assign rega_4_we = addr_hit[5] & reg_we & !reg_error;
+
   assign rega_4_wd = reg_wdata[31:0];
-
   assign rega_5_we = addr_hit[6] & reg_we & !reg_error;
+
   assign rega_5_wd = reg_wdata[31:0];
-
   assign rega_6_we = addr_hit[7] & reg_we & !reg_error;
+
   assign rega_6_wd = reg_wdata[31:0];
-
   assign rega_7_we = addr_hit[8] & reg_we & !reg_error;
+
   assign rega_7_wd = reg_wdata[31:0];
-
   assign rega_8_we = addr_hit[9] & reg_we & !reg_error;
+
   assign rega_8_wd = reg_wdata[31:0];
-
   assign rega_9_we = addr_hit[10] & reg_we & !reg_error;
+
   assign rega_9_wd = reg_wdata[31:0];
-
   assign rega_10_we = addr_hit[11] & reg_we & !reg_error;
+
   assign rega_10_wd = reg_wdata[31:0];
-
   assign rega_11_we = addr_hit[12] & reg_we & !reg_error;
+
   assign rega_11_wd = reg_wdata[31:0];
-
   assign rega_12_we = addr_hit[13] & reg_we & !reg_error;
+
   assign rega_12_wd = reg_wdata[31:0];
-
   assign rega_13_we = addr_hit[14] & reg_we & !reg_error;
+
   assign rega_13_wd = reg_wdata[31:0];
-
   assign rega_14_we = addr_hit[15] & reg_we & !reg_error;
+
   assign rega_14_wd = reg_wdata[31:0];
-
   assign rega_15_we = addr_hit[16] & reg_we & !reg_error;
+
   assign rega_15_wd = reg_wdata[31:0];
-
   assign rega_16_we = addr_hit[17] & reg_we & !reg_error;
+
   assign rega_16_wd = reg_wdata[31:0];
-
   assign rega_17_we = addr_hit[18] & reg_we & !reg_error;
+
   assign rega_17_wd = reg_wdata[31:0];
-
   assign rega_18_we = addr_hit[19] & reg_we & !reg_error;
+
   assign rega_18_wd = reg_wdata[31:0];
-
   assign rega_19_we = addr_hit[20] & reg_we & !reg_error;
+
   assign rega_19_wd = reg_wdata[31:0];
-
   assign rega_20_we = addr_hit[21] & reg_we & !reg_error;
+
   assign rega_20_wd = reg_wdata[31:0];
-
   assign rega_21_we = addr_hit[22] & reg_we & !reg_error;
+
   assign rega_21_wd = reg_wdata[31:0];
-
   assign rega_22_we = addr_hit[23] & reg_we & !reg_error;
+
   assign rega_22_wd = reg_wdata[31:0];
-
   assign rega_23_we = addr_hit[24] & reg_we & !reg_error;
+
   assign rega_23_wd = reg_wdata[31:0];
-
   assign rega_24_we = addr_hit[25] & reg_we & !reg_error;
+
   assign rega_24_wd = reg_wdata[31:0];
-
   assign rega_25_we = addr_hit[26] & reg_we & !reg_error;
+
   assign rega_25_wd = reg_wdata[31:0];
-
   assign rega_26_we = addr_hit[27] & reg_we & !reg_error;
+
   assign rega_26_wd = reg_wdata[31:0];
-
   assign rega_27_we = addr_hit[28] & reg_we & !reg_error;
+
   assign rega_27_wd = reg_wdata[31:0];
-
   assign rega_28_we = addr_hit[29] & reg_we & !reg_error;
+
   assign rega_28_wd = reg_wdata[31:0];
-
   assign rega_29_we = addr_hit[30] & reg_we & !reg_error;
+
   assign rega_29_wd = reg_wdata[31:0];
-
   assign rega_30_we = addr_hit[31] & reg_we & !reg_error;
+
   assign rega_30_wd = reg_wdata[31:0];
-
   assign rega_31_we = addr_hit[32] & reg_we & !reg_error;
+
   assign rega_31_wd = reg_wdata[31:0];
-
   assign rega_32_we = addr_hit[33] & reg_we & !reg_error;
+
   assign rega_32_wd = reg_wdata[31:0];
-
   assign rega_33_we = addr_hit[34] & reg_we & !reg_error;
+
   assign rega_33_wd = reg_wdata[31:0];
-
   assign rega_34_we = addr_hit[35] & reg_we & !reg_error;
+
   assign rega_34_wd = reg_wdata[31:0];
-
   assign rega_35_we = addr_hit[36] & reg_we & !reg_error;
+
   assign rega_35_wd = reg_wdata[31:0];
-
   assign rega_36_we = addr_hit[37] & reg_we & !reg_error;
+
   assign rega_36_wd = reg_wdata[31:0];
-
   assign rega_37_we = addr_hit[38] & reg_we & !reg_error;
+
   assign rega_37_wd = reg_wdata[31:0];
-
   assign rega_38_we = addr_hit[39] & reg_we & !reg_error;
+
   assign rega_38_wd = reg_wdata[31:0];
-
   assign rega_39_we = addr_hit[40] & reg_we & !reg_error;
+
   assign rega_39_wd = reg_wdata[31:0];
-
   assign rega_40_we = addr_hit[41] & reg_we & !reg_error;
+
   assign rega_40_wd = reg_wdata[31:0];
-
   assign rega_41_we = addr_hit[42] & reg_we & !reg_error;
+
   assign rega_41_wd = reg_wdata[31:0];
-
   assign rega_42_we = addr_hit[43] & reg_we & !reg_error;
+
   assign rega_42_wd = reg_wdata[31:0];
-
   assign rega_43_we = addr_hit[44] & reg_we & !reg_error;
+
   assign rega_43_wd = reg_wdata[31:0];
-
   assign rega_44_we = addr_hit[45] & reg_we & !reg_error;
+
   assign rega_44_wd = reg_wdata[31:0];
-
   assign rega_45_we = addr_hit[46] & reg_we & !reg_error;
+
   assign rega_45_wd = reg_wdata[31:0];
-
   assign rega_46_we = addr_hit[47] & reg_we & !reg_error;
+
   assign rega_46_wd = reg_wdata[31:0];
-
   assign rega_47_we = addr_hit[48] & reg_we & !reg_error;
+
   assign rega_47_wd = reg_wdata[31:0];
-
   assign rega_48_we = addr_hit[49] & reg_we & !reg_error;
+
   assign rega_48_wd = reg_wdata[31:0];
-
   assign rega_49_we = addr_hit[50] & reg_we & !reg_error;
+
   assign rega_49_wd = reg_wdata[31:0];
-
   assign regb_0_we = addr_hit[51] & reg_we & !reg_error;
+
   assign regb_0_wd = reg_wdata[31:0];
-
   assign regb_1_we = addr_hit[52] & reg_we & !reg_error;
+
   assign regb_1_wd = reg_wdata[31:0];
-
   assign regb_2_we = addr_hit[53] & reg_we & !reg_error;
+
   assign regb_2_wd = reg_wdata[31:0];
-
   assign regb_3_we = addr_hit[54] & reg_we & !reg_error;
+
   assign regb_3_wd = reg_wdata[31:0];
-
   assign regb_4_we = addr_hit[55] & reg_we & !reg_error;
+
   assign regb_4_wd = reg_wdata[31:0];
-
   assign regb_5_we = addr_hit[56] & reg_we & !reg_error;
+
   assign regb_5_wd = reg_wdata[31:0];
-
   assign regb_6_we = addr_hit[57] & reg_we & !reg_error;
+
   assign regb_6_wd = reg_wdata[31:0];
-
   assign regb_7_we = addr_hit[58] & reg_we & !reg_error;
+
   assign regb_7_wd = reg_wdata[31:0];
-
   assign regb_8_we = addr_hit[59] & reg_we & !reg_error;
-  assign regb_8_wd = reg_wdata[31:0];
 
+  assign regb_8_wd = reg_wdata[31:0];
   assign regb_9_we = addr_hit[60] & reg_we & !reg_error;
+
   assign regb_9_wd = reg_wdata[31:0];
 
   // Read data return

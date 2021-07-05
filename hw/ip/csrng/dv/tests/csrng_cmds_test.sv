@@ -11,7 +11,6 @@ class csrng_cmds_test extends csrng_base_test;
     super.configure_env();
 
     // TODO: Modify cfg_knob randomization
-    cfg.aes_cipher_disable_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

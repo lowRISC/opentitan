@@ -15,7 +15,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input [Shares-1:0][RandWidth-1:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
-  input load_key_i,
   input data_en_i,
   input data_valid_i,
   input hw_key_req_t key_i,
@@ -149,7 +148,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   );
 
   // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
-  assign kmac_key_o = load_key_i ? key_i : kmac_sideload_key;
+  assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
 
   // when clearing, request prng
   assign prng_en_o = clr;
@@ -160,6 +159,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   /////////////////////////////////////
 
   // When updating a sideload key, the secret key state must always be used as the source
-  `ASSERT(KmacKeySource_a, data_valid_i |-> load_key_i)
+  `ASSERT(KmacKeySource_a, data_valid_i |-> key_i.valid)
 
 endmodule // keymgr_sideload_key_ctrl

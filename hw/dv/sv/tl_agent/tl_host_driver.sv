@@ -237,7 +237,9 @@ class tl_host_driver extends tl_base_driver;
     cfg.vif.h2d_int.a_address <= '{default:'x};
     cfg.vif.h2d_int.a_mask <= '{default:'x};
     cfg.vif.h2d_int.a_data <= '{default:'x};
-    cfg.vif.h2d_int.a_user <= '{default:'x};
+    // The assignment to tl_type must have a cast since the LRM doesn't allow enum assignment of
+    // values not belonging to the enumeration set.
+    cfg.vif.h2d_int.a_user <= '{tl_type:tlul_pkg::tl_type_e'('x), default:'x};
     cfg.vif.h2d_int.a_valid <= 1'b0;
   endfunction : invalidate_a_channel
 

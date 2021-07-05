@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from .. import config, silicon_creator_config, utils
+from .. import config, silicon_creator_config, roms_config, utils
 
 log = logging.getLogger(__name__)
 
@@ -179,6 +179,43 @@ class VerilatorSimEarlgrey:
             return None
 
 
+@pytest.fixture(params=roms_config.TEST_ROMS_SELFCHECKING,
+                ids=lambda param: param['name'])
+def rom_selfchecking(request, bin_dir):
+    """ A self-checking ROM image for Verilator simulation
+
+    Returns:
+        A set (image_path, verilator_extra_args)
+    """
+
+    rom_config = request.param
+
+    if 'name' not in rom_config:
+        raise RuntimeError("Key 'name' not found in TEST_ROMS_SELFCHECKING")
+
+    if 'targets' in rom_config and 'sim_verilator' not in rom_config['targets']:
+        pytest.skip("Test %s skipped on Verilator." % rom_config['name'])
+
+    if 'binary_name' in rom_config:
+        binary_name = rom_config['binary_name']
+    else:
+        binary_name = rom_config['name']
+
+    if 'verilator_extra_args' in rom_config:
+        verilator_extra_args = rom_config['verilator_extra_args']
+    else:
+        verilator_extra_args = []
+
+    # Allow tests to optionally specify their subdir within the project.
+    test_dir = rom_config.get('test_dir', 'sw/device/tests')
+
+    test_filename = binary_name + '_sim_verilator.scr.40.vmem'
+    bin_path = bin_dir / test_dir / test_filename
+    assert bin_path.is_file()
+
+    return (bin_path, verilator_extra_args)
+
+
 @pytest.fixture(params=config.TEST_APPS_SELFCHECKING,
                 ids=lambda param: param['name'])
 def app_selfchecking(request, bin_dir):
@@ -275,6 +312,29 @@ def assert_selfchecking_test_passes(sim):
     result_msg = result_match.group(1)
     log.info("Test ended with {}".format(result_msg))
     assert result_msg == 'PASSED'
+
+
+def test_roms_selfchecking(tmp_path, bin_dir, rom_selfchecking):
+    """
+    Run a self-checking ROM image on a Earl Grey Verilator simulation
+
+    The ROM is initialized with the default boot ROM, the flash is initialized
+    to zero.
+
+    Self-checking ROMs are expected to return PASS or FAIL in the end.
+    """
+
+    sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
+    rom_vmem_path = rom_selfchecking[0]
+    otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
+
+    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
+
+    sim.run(flash_elf=None, extra_sim_args=rom_selfchecking[1])
+
+    assert_selfchecking_test_passes(sim)
+
+    sim.terminate()
 
 
 def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):

@@ -10,9 +10,10 @@ import hjson  # type: ignore
 
 from .alert import Alert
 from .bus_interfaces import BusInterfaces
+from .clocking import Clocking
 from .inter_signal import InterSignal
 from .lib import (check_keys, check_name, check_int, check_bool,
-                  check_list, check_optional_str, check_name_list)
+                  check_list, check_optional_str)
 from .params import ReggenParams, LocalParam
 from .reg_block import RegBlock
 from .signal import Signal
@@ -20,7 +21,7 @@ from .signal import Signal
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
-    'clock_primary': ['s', "name of the primary clock"],
+    'clocking': ['l', "clocking for the device"],
     'bus_interfaces': ['l', "bus interfaces for the device"],
     'registers': [
         'l',
@@ -53,11 +54,8 @@ OPTIONAL_FIELDS = {
         "Defaults to true if no interrupt_list is present. "
         "Otherwise this defaults to false. "
     ],
-    'other_clock_list': ['l', "list of other chip clocks needed"],
-    'other_reset_list': ['l', "list of other resets"],
     'param_list': ['lp', "list of parameters of the IP"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
-    'reset_primary': ['s', "primary reset used by the module"],
     'reset_request_list': ['l', 'list of signals requesting reset'],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
     'scan_reset': ['pb', 'Indicates the module have `scan_rst_ni`'],
@@ -86,8 +84,7 @@ class IpBlock:
                  inter_signals: List[InterSignal],
                  bus_interfaces: BusInterfaces,
                  hier_path: Optional[str],
-                 clock_signals: List[str],
-                 reset_signals: List[str],
+                 clocking: Clocking,
                  xputs: Tuple[Sequence[Signal],
                               Sequence[Signal],
                               Sequence[Signal]],
@@ -97,8 +94,6 @@ class IpBlock:
                  scan_reset: bool,
                  scan_en: bool):
         assert reg_blocks
-        assert clock_signals
-        assert reset_signals
 
         # Check that register blocks are in bijection with device interfaces
         reg_block_names = reg_blocks.keys()
@@ -120,8 +115,7 @@ class IpBlock:
         self.inter_signals = inter_signals
         self.bus_interfaces = bus_interfaces
         self.hier_path = hier_path
-        self.clock_signals = clock_signals
-        self.reset_signals = reset_signals
+        self.clocking = clocking
         self.xputs = xputs
         self.wakeups = wakeups
         self.reset_requests = reset_requests
@@ -227,17 +221,8 @@ class IpBlock:
         hier_path = check_optional_str(rd.get('hier_path', None),
                                        'hier_path field of ' + what)
 
-        clock_primary = check_name(rd['clock_primary'],
-                                   'clock_primary field of ' + what)
-        other_clock_list = check_name_list(rd.get('other_clock_list', []),
-                                           'other_clock_list field of ' + what)
-        clock_signals = [clock_primary] + other_clock_list
-
-        reset_primary = check_name(rd.get('reset_primary', 'rst_ni'),
-                                   'reset_primary field of ' + what)
-        other_reset_list = check_name_list(rd.get('other_reset_list', []),
-                                           'other_reset_list field of ' + what)
-        reset_signals = [reset_primary] + other_reset_list
+        clocking = Clocking.from_raw(rd['clocking'],
+                                     'clocking field of ' + what)
 
         xputs = (
             Signal.from_raw_list('available_inout_list for block ' + name,
@@ -277,7 +262,7 @@ class IpBlock:
         return IpBlock(name, regwidth, params, reg_blocks,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
-                       hier_path, clock_signals, reset_signals, xputs,
+                       hier_path, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en)
 
     @staticmethod
@@ -320,13 +305,7 @@ class IpBlock:
         if self.hier_path is not None:
             ret['hier_path'] = self.hier_path
 
-        ret['clock_primary'] = self.clock_signals[0]
-        if len(self.clock_signals) > 1:
-            ret['other_clock_list'] = self.clock_signals[1:]
-
-        ret['reset_primary'] = self.reset_signals[0]
-        if len(self.reset_signals) > 1:
-            ret['other_reset_list'] = self.reset_signals[1:]
+        ret['clocking'] = self.clocking.items
 
         inouts, inputs, outputs = self.xputs
         if inouts:

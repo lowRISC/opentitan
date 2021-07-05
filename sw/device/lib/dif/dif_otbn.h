@@ -12,6 +12,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include "sw/device/lib/base/mmio.h"
 
 #ifdef __cplusplus
@@ -254,6 +255,21 @@ dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy);
  */
 dif_otbn_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
                                         dif_otbn_err_bits_t *err_bits);
+
+/**
+ * Gets the number of executed OTBN instructions.
+ *
+ * Gets the number of instructions executed so far in the current OTBN run if
+ * there is one. Otherwise, gets the number executed in total in the previous
+ * OTBN run.
+ *
+ * @param otbn OTBN instance
+ * @param[out] insn_cnt The number of instructions executed by OTBN.
+ * @return `kDifOtbnBadArg` if `otbn` or `insn_cnt` is `NULL`,
+ *         `kDifOtbnOk` otherwise.
+ */
+dif_otbn_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn,
+                                        uint32_t *insn_cnt);
 
 /**
  * Write an OTBN application into its instruction memory (IMEM)

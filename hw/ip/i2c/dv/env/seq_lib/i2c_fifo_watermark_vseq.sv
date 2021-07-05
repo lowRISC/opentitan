@@ -11,15 +11,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
-
   // fast read data from rd_fifo after crossing watermark level to quickly finish simulation
   constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
-
-  // write transaction length is more than fmt_fifo depth to cross fmtilvl
-  constraint num_wr_bytes_c {
-    solve num_data_ovf before num_wr_bytes;
-    num_wr_bytes == I2C_FMT_FIFO_DEPTH + num_data_ovf;
-  }
+  // set write transaction size to fmt_fifo depth is enough to cross the highest fmtilvl value
+  constraint num_wr_bytes_c { num_wr_bytes == I2C_FMT_FIFO_DEPTH; }
   // read transaction length is equal to rx_fifo depth to cross rxilvl
   constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
 
@@ -29,7 +24,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    // config rx_watermark test (fmt_watermark test is auto configured)
+    // config rx_watermark test (fmt_watermark test is configured by default)
     cfg.seq_cfg.en_rx_watermark = 1'b1;
     print_seq_cfg_vars("pre-start");
   endtask : pre_start
@@ -75,7 +70,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
             host_send_trans(1, ReadOnly);
             check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
-            // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
+            // for fmtilvl > 4, rx_watermark is disabled (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
             if (!cfg.under_reset) begin
               if ( rxilvl <= 4) begin

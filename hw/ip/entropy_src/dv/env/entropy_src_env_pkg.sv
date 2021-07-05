@@ -32,7 +32,7 @@ package entropy_src_env_pkg;
                                                  32'hb5a7efd9,
                                                  32'h124836cb};
   parameter string                LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
-  parameter uint                  NUM_ALERTS = 2;
+  parameter uint                  NUM_ALERTS       = 2;
 
   // types
   typedef enum int {
@@ -43,10 +43,10 @@ package entropy_src_env_pkg;
   } entropy_src_intr_e;
 
   typedef enum int {
-    Disable    = 0,
-    PTRNG_Mode = 1,
-    LFSR_Mode  = 2
-  } enable_e;
+    Disabled  = 0,
+    PtrngMode = 1,
+    LfsrMode  = 2
+  } mode_e;
 
   // package sources
   `include "entropy_src_env_cfg.sv"

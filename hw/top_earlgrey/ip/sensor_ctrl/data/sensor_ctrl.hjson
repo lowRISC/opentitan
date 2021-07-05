@@ -9,7 +9,7 @@
 #
 {
   name: "SENSOR_CTRL",
-  clock_primary: "clk_i",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -23,7 +23,7 @@
   param_list: [
     { name:    "NumAlerts",
       type:    "int",
-      default: "11",
+      default: "13",
       desc:    "Number of alerts",
       local:   "true"
     },
@@ -67,6 +67,12 @@
       desc: "Triggered through AST",
     },
     { name: "recov_ot3",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot4",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot5",
       desc: "Triggered through AST",
     },
   ]

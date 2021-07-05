@@ -177,7 +177,6 @@ module keymgr
   keymgr_stage_e stage_sel;
   keymgr_gen_out_e key_sel;
   logic adv_en, id_en, gen_en;
-  logic load_key;
   logic wipe_key;
   hw_key_req_t kmac_key;
   logic op_done;
@@ -214,7 +213,6 @@ module keymgr
     .root_key_i(otp_key_i),
     .hw_sel_o(key_sel),
     .stage_sel_o(stage_sel),
-    .load_key_o(load_key),
     .wipe_key_o(wipe_key),
     .adv_en_o(adv_en),
     .id_en_o(id_en),
@@ -438,7 +436,6 @@ module keymgr
     .wipe_key_i(wipe_key),
     .dest_sel_i(cipher_sel),
     .key_sel_i(key_sel),
-    .load_key_i(load_key),
     .data_en_i(data_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),

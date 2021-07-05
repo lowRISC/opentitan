@@ -6,14 +6,11 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
+use std::convert::TryFrom;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::mem::size_of;
 use std::path::PathBuf;
-use std::convert::TryFrom;
-
-use rom_ext_image::image::Image;
-use rom_ext_image::manifest;
 
 use mundane::hash::Sha256;
 use mundane::public::rsa::RsaPkcs1v15;
@@ -26,6 +23,17 @@ use anyhow::ensure;
 use anyhow::Context;
 use anyhow::Result;
 
+use zerocopy::AsBytes;
+
+use rom_ext_image::image::Image;
+use rom_ext_image::image::ManifestBuffer;
+use rom_ext_image::manifest;
+use rom_ext_image::manifest::Manifest;
+
+use object::read::elf::ElfFile32;
+use object::read::ObjectSection;
+use object::Object;
+
 // Type aliases for convenience.
 type ImageSignature =
     mundane::public::rsa::RsaSignature<B3072, RsaPkcs1v15, Sha256>;
@@ -33,27 +41,30 @@ type PrivateKey = mundane::public::rsa::RsaPrivKey<B3072>;
 
 // TODO: Remove this struct when this functionality is integrated into `opentitantool`.
 struct Args {
-    input: PathBuf,
+    input_image: PathBuf,
     priv_key: PathBuf,
-    output: PathBuf,
+    elf_file: PathBuf,
+    output_image: PathBuf,
 }
 
 impl Args {
     pub fn new(args: env::ArgsOs) -> Result<Args> {
         let args = args.skip(1).collect::<Vec<_>>();
         match args.as_slice() {
-            [input, priv_key, output] => Ok(Args {
-                    input: PathBuf::from(input),
+            [input_image, priv_key, elf_file, output_image] => Ok(Args {
+                    input_image: PathBuf::from(input_image),
                     priv_key: PathBuf::from(priv_key),
-                    output: PathBuf::from(output),
+                    elf_file: PathBuf::from(elf_file),
+                    output_image: PathBuf::from(output_image),
                 }),
-            args => bail!("Expected exactly 3 positional arguments: input, private key, and output, got: {}.", args.len()),
+            args => bail!("Expected exactly 4 positional arguments: input image, private key, elf file, and output image, got: {}.", args.len()),
         }
     }
 }
 
+// FIXME: Keeping for now, can be removed if not used in opentitantool.
 /// Parses an unsigned big-endian hex string into a little-endian byte vector.
-fn parse_hex_str(hex_str: &str) -> Result<Vec<u8>> {
+fn _parse_hex_str(hex_str: &str) -> Result<Vec<u8>> {
     ensure!(
         hex_str.starts_with("0x")
             && hex_str.len() > 2
@@ -73,82 +84,72 @@ fn parse_hex_str(hex_str: &str) -> Result<Vec<u8>> {
 // TODO: This function must use a public key.
 fn update_image_manifest(
     image: &mut Image,
-    key: impl AsRef<Path>,
+    key: &PrivateKey,
+    elf: &ElfFile32,
 ) -> Result<()> {
-    let key = fs::read(&key).with_context(|| {
-        format!("Failed to read the key from `{}`.", key.as_ref().display())
-    })?;
-    let key =
-        PrivateKey::parse_from_der(&key).context("Failed to parse the key.")?;
-
-    image.set_manifest_field(
-        &manifest::ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT,
-        key.public_exponent_be().iter().rev().cloned(),
-    )?;
-    image.set_manifest_field(
-        &manifest::ROM_EXT_SIGNATURE_KEY_MODULUS,
-        key.public_modulus_be().iter().rev().cloned(),
-    )?;
-    image.set_manifest_field(
-        &manifest::ROM_EXT_MANIFEST_IDENTIFIER,
-        parse_hex_str("0x4552544f")?,
+    let manifest_addr = u32::try_from(
+        elf.section_by_name(".manifest")
+            .context("Could not find the `.manifest` section.")?
+            .address(),
     )?;
 
-    image.set_manifest_field(
-        &manifest::ROM_EXT_IMAGE_VERSION,
-        // TODO: Use into_iter once it's stabilized (for all usages in this file).
-        std::array::IntoIter::new(0_u32.to_le_bytes()),
-    )?;
+    *image.manifest = Manifest {
+        identifier: 0x4552544f,
+        image_length: u32::try_from(image.bytes().len())?,
+        entry_point: {
+            let addr = u32::try_from(elf.entry())?;
+            addr.checked_sub(manifest_addr).context("Overflow")?
+        },
+        code_start: {
+            let addr = u32::try_from(
+                elf.section_by_name(".vectors")
+                    .context("Could not find the `.vectors` section.")?
+                    .address(),
+            )?;
+            addr.checked_sub(manifest_addr).context("Overflow")?
+        },
+        code_end: {
+            let text = elf
+                .section_by_name(".text")
+                .context("Could not find the `.text` section.")?;
+            let addr = u32::try_from(
+                text.address()
+                    .checked_add(text.size())
+                    .context("Overflow")?,
+            )?;
+            addr.checked_sub(manifest_addr).context("Overflow")?
+        },
+        ..Default::default()
+    };
 
-    // TODO: Do we need these fields?
-    let extensions = [
-        (
-            &manifest::ROM_EXT_EXTENSION0_OFFSET,
-            &manifest::ROM_EXT_EXTENSION0_CHECKSUM,
-        ),
-        (
-            &manifest::ROM_EXT_EXTENSION1_OFFSET,
-            &manifest::ROM_EXT_EXTENSION1_CHECKSUM,
-        ),
-        (
-            &manifest::ROM_EXT_EXTENSION2_OFFSET,
-            &manifest::ROM_EXT_EXTENSION2_CHECKSUM,
-        ),
-        (
-            &manifest::ROM_EXT_EXTENSION3_OFFSET,
-            &manifest::ROM_EXT_EXTENSION3_CHECKSUM,
-        ),
-    ];
-    for fields in &extensions {
-        image.set_manifest_field(
-            fields.0,
-            std::array::IntoIter::new(0_u32.to_le_bytes()),
-        )?;
-        image.set_manifest_field(
-            fields.1,
-            std::array::IntoIter::new(0_u32.to_le_bytes()),
-        )?;
+    // Code region must be 32-bit aligned due to PMP constraints.
+    fn is_word_aligned(addr: u32) -> bool {
+        return addr % 4 == 0;
     }
-    image.set_manifest_field(
-        &manifest::ROM_EXT_USAGE_CONSTRAINTS,
-        std::array::IntoIter::new(
-            [0; manifest::ROM_EXT_USAGE_CONSTRAINTS.size_bytes],
-        ),
-    )?;
-    image.set_manifest_field(
-        &manifest::ROM_EXT_PERIPHERAL_LOCKDOWN_INFO,
-        std::array::IntoIter::new(
-            [0; manifest::ROM_EXT_PERIPHERAL_LOCKDOWN_INFO.size_bytes],
-        ),
-    )?;
-    image.set_manifest_field(
-        &manifest::ROM_EXT_IMAGE_TIMESTAMP,
-        std::array::IntoIter::new(0_u64.to_le_bytes()),
-    )?;
-    image.set_manifest_field(
-        &manifest::ROM_EXT_IMAGE_LENGTH,
-        std::array::IntoIter::new(u32::try_from(image.len())?.to_le_bytes()),
-    )?;
+    ensure!(
+        is_word_aligned(image.manifest.code_start),
+        "Unaligned code start."
+    );
+    ensure!(
+        is_word_aligned(image.manifest.code_end),
+        "Unaligned code end."
+    );
+
+    let exponent_be = key.public_exponent_be();
+    let dest = image.manifest.exponent.as_bytes_mut().iter_mut();
+    let src = exponent_be.iter().rev().copied();
+    ensure!(dest.len() >= src.len(), "Unexpected exponent length.");
+    for (d, s) in Iterator::zip(dest, src) {
+        *d = s;
+    }
+
+    let modulus_be = key.public_modulus_be();
+    let dest = image.manifest.modulus.as_bytes_mut().iter_mut();
+    let src = modulus_be.iter().rev().copied();
+    ensure!(dest.len() == src.len(), "Unexpected modulus length.");
+    for (d, s) in Iterator::zip(dest, src) {
+        *d = s;
+    }
 
     Ok(())
 }
@@ -156,44 +157,59 @@ fn update_image_manifest(
 /// Calculates the signature for the signed portion of an image.
 fn calculate_image_signature(
     image: &Image,
-    key: impl AsRef<Path>,
+    private_key: &PrivateKey,
 ) -> Result<ImageSignature> {
-    let key = fs::read(&key).with_context(|| {
-        format!("Failed to read key from `{}`.", key.as_ref().display())
-    })?;
-    let key =
-        PrivateKey::parse_from_der(&key).context("Failed to parse the key.")?;
-    let sig = ImageSignature::sign(&key, image.signed_bytes())
-        .context("Failed to sign the image.")?;
-    Ok(sig)
+    ImageSignature::sign(&private_key, &image.signed_bytes())
+        .context("Failed to calculate image signature.")
 }
 
 /// Updates the signature of an image.
 fn update_image_signature(
     image: &mut Image,
-    signature: ImageSignature,
+    sig: ImageSignature,
 ) -> Result<()> {
-    image.set_manifest_field(
-        &manifest::ROM_EXT_IMAGE_SIGNATURE,
-        signature.bytes().iter().rev().cloned(),
-    )?;
+    let dest = image.manifest.signature.as_bytes_mut().iter_mut();
+    let src = sig.bytes().iter().rev().copied();
+    ensure!(dest.len() == src.len(), "Unexpected signature length.");
+    for (d, s) in Iterator::zip(dest, src) {
+        *d = s;
+    }
     Ok(())
 }
 
 fn main() -> Result<()> {
+    // TODO(#6915): Convert this to a unit test after we start running rust tests during our
+    // builds.
+    manifest::check_manifest_layout();
     let args = Args::new(env::args_os())?;
-    let mut image = Image::from(fs::read(&args.input).with_context(|| {
-        format!("Failed to read the image from {}", args.input.display())
-    })?);
 
-    // TODO for a future refactor into opentitantool: These functions probably should belong to a
-    // Signer struct and should move into the image crate.
-    // TODO: This must use the public key.
-    update_image_manifest(&mut image, &args.priv_key)?;
-    let sig = calculate_image_signature(&image, &args.priv_key)?;
+    // We use a separate buffer for manifest because it must have the same alignment as `Manifest`
+    // to be able to use `LayoutVerified::new()` and the approach we use to ensure this requires
+    // its size to be known at compile time.
+    let payload = &fs::read(&args.input_image).with_context(|| {
+        format!("Failed to read {}", args.input_image.display())
+    })?[size_of::<Manifest>()..];
+    let mut manifest_buffer = ManifestBuffer::new();
+    let mut image = Image::new(&mut manifest_buffer, payload)?;
+
+    let key = fs::read(&args.priv_key).with_context(|| {
+        format!("Failed to read the key from `{}`.", args.priv_key.display())
+    })?;
+    let key =
+        PrivateKey::parse_from_der(&key).context("Failed to parse the key.")?;
+
+    let elf = fs::read(&args.elf_file)?;
+    let elf = ElfFile32::parse(elf.as_slice())?;
+
+    update_image_manifest(&mut image, &key, &elf)?;
+    let sig = calculate_image_signature(&image, &key)?;
     update_image_signature(&mut image, sig)?;
-    fs::write(&args.output, image).with_context(|| {
-        format!("Failed to write the image to {}", args.output.display())
+
+    fs::write(&args.output_image, image.bytes()).with_context(|| {
+        format!(
+            "Failed to write the image to {}",
+            args.output_image.display()
+        )
     })?;
     Ok(())
 }

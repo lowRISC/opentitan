@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "usbdev",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_aon_i", "clk_usb_48mhz_i" ]
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_aon_ni", "rst_usb_48mhz_ni" ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"},
+    {clock: "clk_usb_48mhz_i", reset: "rst_usb_48mhz_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -179,6 +180,13 @@
             '''
     }
   ]
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "usbctrl",

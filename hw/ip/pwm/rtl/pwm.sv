@@ -4,8 +4,10 @@
 
 `include "prim_assert.sv"
 
-module pwm #(
-  parameter int NOutputs = 6
+module pwm
+  import pwm_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -16,6 +18,9 @@ module pwm #(
   input                       tlul_pkg::tl_h2d_t tl_i,
   output                      tlul_pkg::tl_d2h_t tl_o,
 
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   output logic [NOutputs-1:0] cio_pwm_o,
   output logic [NOutputs-1:0] cio_pwm_en_o
 );
@@ -23,6 +28,7 @@ module pwm #(
   // TODO: Deal with Regen in this block, on TLUL clock domain
   logic                     unused_regen;
   pwm_reg_pkg::pwm_reg2hw_t reg2hw;
+  logic [NumAlerts-1:0] alert_test, alerts;
 
   assign unused_regen = reg2hw.regen.q;
 
@@ -32,9 +38,30 @@ module pwm #(
     .tl_i,
     .tl_o,
     .reg2hw,
-    .intg_err_o (),
+    .intg_err_o(alerts[0]),
     .devmode_i  (1'b1)
   );
+
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1'b1)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   assign cio_pwm_en_o = {NOutputs{1'b1}};
 
@@ -47,6 +74,8 @@ module pwm #(
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   `ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
   `ASSERT_KNOWN(CioPWMEnKnownO_A, cio_pwm_en_o)

@@ -57,6 +57,17 @@ static void check_otbn_err_bits(otbn_t *otbn_ctx,
 }
 
 /**
+ * Gets the OTBN instruction count, checks that it matches expectations.
+ */
+static void check_otbn_insn_cnt(otbn_t *otbn_ctx, uint32_t expected_insn_cnt) {
+  uint32_t insn_cnt;
+  CHECK(dif_otbn_get_insn_cnt(&otbn_ctx->dif, &insn_cnt) == kDifOtbnOk);
+  CHECK(insn_cnt == expected_insn_cnt,
+        "Expected to execute %d instructions, but got %d.", expected_insn_cnt,
+        insn_cnt);
+}
+
+/**
  * Run a 384-bit Barrett Multiplication on OTBN and check its result.
  *
  * This test is not aiming to exhaustively test the Barrett multiplication
@@ -124,6 +135,8 @@ static void test_barrett384(otbn_t *otbn_ctx) {
           "Unexpected result c at byte %d: 0x%x (actual) != 0x%x (expected)", i,
           c[i], c_expected[i]);
   }
+
+  check_otbn_insn_cnt(otbn_ctx, 161);
 }
 
 /**
@@ -143,6 +156,8 @@ static void test_err_test(otbn_t *otbn_ctx) {
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnExecutionFailed);
 
   check_otbn_err_bits(otbn_ctx, kDifOtbnErrBitsBadDataAddr);
+
+  check_otbn_insn_cnt(otbn_ctx, 1);
 }
 
 bool test_main() {

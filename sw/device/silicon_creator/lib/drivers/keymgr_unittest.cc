@@ -16,12 +16,10 @@
 
 namespace keymgr_unittest {
 namespace {
-using ::testing::ElementsAreArray;
-using ::testing::Test;
 
 struct SwBindingCfg {
   uint32_t max_key_ver;
-  uint32_t sw_binding_value[8];
+  keymgr_binding_value_t binding_value;
 };
 
 class KeymgrTest : public mask_rom_test::MaskRomTest {
@@ -39,7 +37,7 @@ class KeymgrTest : public mask_rom_test::MaskRomTest {
   uint32_t base_ = TOP_EARLGREY_KEYMGR_BASE_ADDR;
   SwBindingCfg cfg_ = {
       .max_key_ver = 0xA5A5A5A5,
-      .sw_binding_value = {0, 1, 2, 3, 4, 6, 7, 8},
+      .binding_value = {0, 1, 2, 3, 4, 6, 7, 8},
   };
   mask_rom_test::MockAbsMmio mmio_;
 };
@@ -50,55 +48,36 @@ TEST_F(KeymgrTest, Initialize) {
                     /*err_code=*/0u);
 
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_RESEED_INTERVAL_REG_OFFSET, 0u);
-
-  EXPECT_ABS_WRITE32(
-      mmio_, base_ + KEYMGR_CONTROL_REG_OFFSET,
-      {
-          {KEYMGR_CONTROL_START_BIT, true},
-          {KEYMGR_CONTROL_DEST_SEL_OFFSET, KEYMGR_CONTROL_DEST_SEL_VALUE_NONE},
-          {KEYMGR_CONTROL_OPERATION_OFFSET,
-           KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE},
-      });
-
   EXPECT_EQ(keymgr_init(0u), kErrorOk);
 }
 
-TEST_F(KeymgrTest, StateAdvanceToCreator) {
-  // Simulate an WIP OP status to exercise the polling check, followed by the
-  // DONE_SUCCESS expectation.
-  EXPECT_ABS_READ32(
-      mmio_, base_ + KEYMGR_OP_STATUS_REG_OFFSET,
-      {{KEYMGR_OP_STATUS_STATUS_OFFSET, KEYMGR_OP_STATUS_STATUS_VALUE_WIP}});
-  EXPECT_ABS_WRITE32(
-      mmio_, base_ + KEYMGR_OP_STATUS_REG_OFFSET,
-      {{KEYMGR_OP_STATUS_STATUS_OFFSET, KEYMGR_OP_STATUS_STATUS_VALUE_WIP}});
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS,
-                    KEYMGR_WORKING_STATE_STATE_VALUE_INIT,
-                    /*err_code=*/0u);
-
+TEST_F(KeymgrTest, SetNextStageInputs) {
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_0_REG_OFFSET,
-                     cfg_.sw_binding_value[0]);
+                     cfg_.binding_value.data[0]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_1_REG_OFFSET,
-                     cfg_.sw_binding_value[1]);
+                     cfg_.binding_value.data[1]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_2_REG_OFFSET,
-                     cfg_.sw_binding_value[2]);
+                     cfg_.binding_value.data[2]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_3_REG_OFFSET,
-                     cfg_.sw_binding_value[3]);
+                     cfg_.binding_value.data[3]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_4_REG_OFFSET,
-                     cfg_.sw_binding_value[4]);
+                     cfg_.binding_value.data[4]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_5_REG_OFFSET,
-                     cfg_.sw_binding_value[5]);
+                     cfg_.binding_value.data[5]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_6_REG_OFFSET,
-                     cfg_.sw_binding_value[6]);
+                     cfg_.binding_value.data[6]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_7_REG_OFFSET,
-                     cfg_.sw_binding_value[7]);
+                     cfg_.binding_value.data[7]);
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
   EXPECT_ABS_WRITE32(mmio_, base_ + KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET,
                      cfg_.max_key_ver);
   EXPECT_ABS_WRITE32(mmio_,
                      base_ + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
+  keymgr_set_next_stage_inputs(&cfg_.binding_value, cfg_.max_key_ver);
+}
 
+TEST_F(KeymgrTest, AdvanceState) {
   EXPECT_ABS_WRITE32(
       mmio_, base_ + KEYMGR_CONTROL_REG_OFFSET,
       {
@@ -107,49 +86,36 @@ TEST_F(KeymgrTest, StateAdvanceToCreator) {
           {KEYMGR_CONTROL_OPERATION_OFFSET,
            KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE},
       });
-
-  EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
-      kErrorOk);
+  keymgr_advance_state();
 }
 
-TEST_F(KeymgrTest, StateAdvanceToCreatorInvalid) {
-  // Any state different than INIT is expected to fail.
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS,
-                    KEYMGR_WORKING_STATE_STATE_VALUE_RESET,
-                    /*err_code=*/0u);
-  EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
-      kErrorKeymgrInternal);
-
-  // Any non-idle status is expected to fail.
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR,
-                    KEYMGR_WORKING_STATE_STATE_VALUE_INIT,
-                    /*err_code=*/0u);
-  EXPECT_EQ(
-      keymgr_state_advance_to_creator(cfg_.sw_binding_value, cfg_.max_key_ver),
-      kErrorKeymgrInternal);
-}
-
-TEST_F(KeymgrTest, StateCreatorCheck) {
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS,
+TEST_F(KeymgrTest, CheckState) {
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY,
                     /*err_code=*/0u);
-  EXPECT_EQ(keymgr_state_creator_check(), kErrorOk);
+  EXPECT_EQ(keymgr_check_state(kKeymgrStateCreatorRootKey), kErrorOk);
 }
 
-TEST_F(KeymgrTest, StateCreatorCheckInvalidResponse) {
-  // Any state different than CREATOR_ROOT is expected to fail.
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS,
+TEST_F(KeymgrTest, CheckStateInvalidResponse) {
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_WORKING_STATE_STATE_VALUE_INVALID,
                     /*err_code=*/0u);
-  EXPECT_EQ(keymgr_state_creator_check(), kErrorKeymgrInternal);
+  EXPECT_EQ(keymgr_check_state(kKeymgrStateCreatorRootKey),
+            kErrorKeymgrInternal);
 
   // Any non-idle status is expected to fail.
   ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR,
                     KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY,
                     /*err_code=*/0u);
-  EXPECT_EQ(keymgr_state_creator_check(), kErrorKeymgrInternal);
+  EXPECT_EQ(keymgr_check_state(kKeymgrStateCreatorRootKey),
+            kErrorKeymgrInternal);
+
+  // Any non-zero error code is expected to fail.
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY,
+                    /*err_code=*/1u);
+  EXPECT_EQ(keymgr_check_state(kKeymgrStateCreatorRootKey),
+            kErrorKeymgrInternal);
 }
 
 }  // namespace

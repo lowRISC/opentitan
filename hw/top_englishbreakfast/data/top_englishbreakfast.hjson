@@ -200,17 +200,6 @@
         },
       ],
     }
-    { name: "rv_dm",
-      type: "rv_dm",
-      inter_signal_list: [
-        { struct:  "jtag",
-          type:    "req_rsp",
-          name:    "jtag",
-          act:     "rsp",
-          package: "jtag_pkg",
-        },
-      ]
-    }
   ]
 
   // `module` defines the peripherals.
@@ -368,6 +357,14 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       base_addrs: {core: "0x41000000", prim: "0x41008000"}
       attr: "templated",
+    },
+    { name: "rv_dm",
+      type: "rv_dm",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      // Note that this module also contains a bus host.
+      base_addrs: {rom: "0x00010000", regs: "0x41200000"}
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -647,12 +644,12 @@
     'connect': {
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
-                                   'lc_ctrl.esc_wipe_secrets_rx',
-                                   'lc_ctrl.esc_scrap_state_rx'
+                                   'lc_ctrl.esc_scrap_state0_rx',
+                                   'lc_ctrl.esc_scrap_state1_rx'
                                    'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
-                                   'lc_ctrl.esc_wipe_secrets_tx',
-                                   'lc_ctrl.esc_scrap_state_tx',
+                                   'lc_ctrl.esc_scrap_state0_tx',
+                                   'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
@@ -699,12 +696,14 @@
       'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'sram_ctrl_ret_aon.lc_hw_debug_en',
-                                      'pinmux_aon.lc_hw_debug_en'],
+                                      'pinmux_aon.lc_hw_debug_en',
+                                      'rv_dm.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : [],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en'],
+                                      'sram_ctrl_ret_aon.lc_escalate_en',
+                                      'flash_ctrl.lc_escalate_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
 
@@ -717,16 +716,24 @@
 
       // TODO: Put passthrough here?
       //'spi_device.passthrough': ['spi_host0.passthrough']
+
+      // Debug module reset request to reset manager
+      'rv_dm.ndmreset_req' : ['rstmgr_aon.ndmreset_req']
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks',
-        'pwrmgr_aon.fetch_en',
+        'rstmgr_aon.resets', 'rstmgr_aon.rst_cpu_n',
+        'pwrmgr_aon.pwr_cpu', 'pwrmgr_aon.fetch_en',
+        'clkmgr_aon.clocks',
+
+        // Debug request from debug module to CPU
+        'rv_dm.debug_req',
+
         // Xbars
-        'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'
+        'main.tl_corei', 'main.tl_cored'
     ],
 
     // ext is to create port in the top.
@@ -763,8 +770,6 @@
         'usbdev.usb_ref_pulse'         : '',
     },
   },
-
-  debug_mem_base_addr: "0x1A110000",
 
   // Crossbars: having a top level crossbar
   // This version assumes all crossbars are instantiated at the top.

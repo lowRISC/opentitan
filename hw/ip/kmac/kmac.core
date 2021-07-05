@@ -24,6 +24,7 @@ filesets:
       - rtl/kmac_staterd.sv
       - rtl/kmac_app.sv
       - rtl/kmac_entropy.sv
+      - rtl/kmac_errchk.sv
       - rtl/kmac_reg_pkg.sv
       - rtl/kmac_reg_top.sv
       - rtl/kmac.sv

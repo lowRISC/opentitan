@@ -10,18 +10,39 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(clkmgr_base_vseq)
 
+  typedef enum {LcTxTSelOn, LcTxTSelOff, LcTxTSelOther} lc_tx_t_sel_e;
+
+  // This simplifies the constraint blocks.
+  function lc_tx_t get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_tx_t other);
+    case (sel)
+      LcTxTSelOn: return On;
+      LcTxTSelOff: return Off;
+      LcTxTSelOther: return other;
+    endcase
+  endfunction
+
   rand bit ip_clk_en;
   rand bit [NUM_TRANS-1:0] idle;
 
-  // This selects scanmode according to scanmode_sel, which is randomized with weights.
-  rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1:0] scanmode;
-  typedef enum {SC_ON, SC_OFF, SC_OTHER}     scanmode_sel_e;
-  rand scanmode_sel_e                        scanmode_sel;
-  constraint scanmode_values {
-    (scanmode_sel == SC_ON)    -> scanmode == lc_ctrl_pkg::On;
-    (scanmode_sel == SC_OFF)   -> scanmode == lc_ctrl_pkg::Off;
-    (scanmode_sel == SC_OTHER) -> !(scanmode inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off});
-    scanmode_sel dist {SC_ON := 4, SC_OFF := 2, SC_OTHER := 2};
+  // scanmode is set according to sel_scanmode, which is randomized with weights.
+  lc_tx_t            scanmode;
+  rand lc_tx_t       scanmode_other;
+  rand lc_tx_t_sel_e sel_scanmode;
+  int                scanmode_on_weight = 8;
+
+  constraint scanmode_c {
+    sel_scanmode dist {LcTxTSelOn := scanmode_on_weight, LcTxTSelOff := 4, LcTxTSelOther := 4};
+    !(scanmode_other inside {On, Off});
+  }
+
+  // extclk_sel is set according to sel_extclk_sel, which is randomized with weights.
+  lc_tx_t            extclk_sel;
+  rand lc_tx_t       extclk_sel_other;
+  rand lc_tx_t_sel_e sel_extclk_sel;
+
+  constraint extclk_sel_c {
+    sel_extclk_sel dist {LcTxTSelOn := 4, LcTxTSelOff := 2, LcTxTSelOther := 2};
+    !(extclk_sel_other inside {On, Off});
   }
 
   // various knobs to enable certain routines
@@ -29,11 +50,22 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  function void post_randomize();
+    super.post_randomize();
+    scanmode = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
+    extclk_sel = get_lc_tx_t_from_sel(sel_extclk_sel, extclk_sel_other);
+  endfunction  
+
+  virtual function void set_scanmode_on_low_weight();
+    scanmode_on_weight = 2;
+  endfunction
+
   task pre_start();
     // These are independent: do them in parallel since pre_start consumes time.
     fork
       begin
-        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
+        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode),
+                            .lc_dft_en(Off));
       end
       if (do_clkmgr_init) clkmgr_init();
       super.pre_start();
@@ -56,9 +88,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
   endtask
 
-  virtual task apply_reset(string kind = "HARD", bit concurrent_deassert_resets = 0);
+  virtual task apply_reset(string kind = "HARD");
     fork
-      super.apply_reset(kind, concurrent_deassert_resets);
+      super.apply_reset(kind);
       if (kind == "HARD") fork
         cfg.main_clk_rst_vif.apply_reset();
         cfg.io_clk_rst_vif.apply_reset();
@@ -68,6 +100,24 @@ class clkmgr_base_vseq extends cip_base_vseq #(
         start_aon_clk();
       join
     join
+  endtask
+
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    int clk_periods_q[$] = {reset_duration_ps,
+                            cfg.main_clk_rst_vif.clk_period_ps,
+                            cfg.io_clk_rst_vif.clk_period_ps,
+                            cfg.usb_clk_rst_vif.clk_period_ps};
+    reset_duration_ps = max(clk_periods_q);
+
+    cfg.main_clk_rst_vif.drive_rst_pin(0);
+    cfg.io_clk_rst_vif.drive_rst_pin(0);
+    cfg.usb_clk_rst_vif.drive_rst_pin(0);
+
+    super.apply_resets_concurrently(reset_duration_ps);
+
+    cfg.main_clk_rst_vif.drive_rst_pin(1);
+    cfg.io_clk_rst_vif.drive_rst_pin(1);
+    cfg.usb_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // setup basic clkmgr features
@@ -84,7 +134,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   function void update_csrs_with_reset_values();
     cfg.clkmgr_vif.update_clk_enables(ral.clk_enables.get_reset());
     cfg.clkmgr_vif.update_clk_hints(ral.clk_hints.get_reset());
-    cfg.clkmgr_vif.update_extclk_sel_regwen(ral.extclk_sel_regwen.get_reset());
     cfg.clkmgr_vif.update_extclk_sel(ral.extclk_sel.get_reset());
   endfunction
 

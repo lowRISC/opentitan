@@ -85,7 +85,6 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
 %   for r in rb.flat_regs:
 <%
       reg_name = r.name.lower()
-      reg_right = r.dv_rights()
       reg_offset = "{}'h{:x}".format(reg_width, r.offset)
       reg_tags = r.tags
       reg_shadowed = r.shadowed
@@ -97,8 +96,7 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
       ${reg_name}.configure(.blk_parent(this));
       ${reg_name}.build(csr_excl);
       default_map.add_reg(.rg(${reg_name}),
-                          .offset(${reg_offset}),
-                          .rights("${reg_right}"));
+                          .offset(${reg_offset}));
 %     if reg_shadowed:
       ${reg_name}.set_is_shadowed();
 %     endif
@@ -303,10 +301,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 <%def name="_create_reg_field(dv_base_prefix, reg_width, reg_block_path, shadowed, hwext, reg_field_name, field)">\
 <%
   field_size = field.bits.width()
-  if field.swaccess.key == "r0w1c":
-    field_access = "W1C"
-  else:
-    field_access = field.swaccess.value[1].name
+  field_access = field.swaccess.dv_rights()
 
   if not field.hwaccess.allows_write():
     field_volatile = 0

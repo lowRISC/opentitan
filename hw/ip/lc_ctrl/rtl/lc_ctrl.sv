@@ -42,10 +42,10 @@ module lc_ctrl
   // Escalation inputs (severity 1 and 2).
   // These need not be synchronized since the alert handler is
   // in the same clock domain as the LC controller.
-  input  prim_esc_pkg::esc_rx_t                      esc_wipe_secrets_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_wipe_secrets_rx_o,
-  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_scrap_state_rx_o,
+  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state0_tx_i,
+  output prim_esc_pkg::esc_tx_t                      esc_scrap_state0_rx_o,
+  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state1_tx_i,
+  output prim_esc_pkg::esc_tx_t                      esc_scrap_state1_rx_o,
   // Power manager interface (inputs are synced to lifecycle clock domain).
   input  pwrmgr_pkg::pwr_lc_req_t                    pwr_lc_i,
   output pwrmgr_pkg::pwr_lc_rsp_t                    pwr_lc_o,
@@ -259,6 +259,7 @@ module lc_ctrl
   logic lc_idle_d;
 
   // OTP Vendor control bits
+  logic use_ext_clock_d, use_ext_clock_q;
   logic [CsrOtpTestCtrlWidth-1:0] otp_test_ctrl_d, otp_test_ctrl_q;
 
   always_comb begin : p_csr_assign_outputs
@@ -287,7 +288,8 @@ module lc_ctrl
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
       hw2reg.transition_regwen = lc_idle_d;
-      hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
+      hw2reg.otp_test_ctrl.val = otp_test_ctrl_q;
+      hw2reg.otp_test_ctrl.ext_clock = use_ext_clock_q;
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
@@ -295,7 +297,8 @@ module lc_ctrl
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
       tap_hw2reg.transition_regwen = lc_idle_d;
-      tap_hw2reg.otp_test_ctrl     = otp_test_ctrl_q;
+      tap_hw2reg.otp_test_ctrl.val = otp_test_ctrl_q;
+      tap_hw2reg.otp_test_ctrl.ext_clock = use_ext_clock_q;
     end
   end
 
@@ -306,6 +309,7 @@ module lc_ctrl
     transition_target_d       = transition_target_q;
     transition_cmd            = 1'b0;
     otp_test_ctrl_d           = otp_test_ctrl_q;
+    use_ext_clock_d           = use_ext_clock_q;
 
     // SW mutex claim.
     if (tap_claim_transition_if_q != 8'hA5 &&
@@ -334,8 +338,11 @@ module lc_ctrl
           transition_target_d = dec_lc_state_e'(tap_reg2hw.transition_target.q);
         end
 
-        if (tap_reg2hw.otp_test_ctrl.qe) begin
-          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.q;
+        if (tap_reg2hw.otp_test_ctrl.ext_clock.qe) begin
+          use_ext_clock_d     = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+        end
+        if (tap_reg2hw.otp_test_ctrl.val.qe) begin
+          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
         end
       end else if (sw_claim_transition_if_q == 8'hA5) begin
         transition_cmd = reg2hw.transition_cmd.q &
@@ -351,8 +358,11 @@ module lc_ctrl
           transition_target_d = dec_lc_state_e'(reg2hw.transition_target.q);
         end
 
-        if (reg2hw.otp_test_ctrl.qe) begin
-          otp_test_ctrl_d = reg2hw.otp_test_ctrl.q;
+        if (reg2hw.otp_test_ctrl.ext_clock.qe) begin
+          use_ext_clock_d = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+        end
+        if (reg2hw.otp_test_ctrl.val.qe) begin
+          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
         end
       end
     end
@@ -374,6 +384,7 @@ module lc_ctrl
       otp_part_error_q          <= 1'b0;
       fatal_bus_integ_error_q   <= 1'b0;
       otp_test_ctrl_q           <= '0;
+      use_ext_clock_q           <= '0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d         | trans_success_q;
@@ -391,6 +402,7 @@ module lc_ctrl
       transition_token_q        <= transition_token_d;
       transition_target_q       <= transition_target_d;
       otp_test_ctrl_q           <= otp_test_ctrl_d;
+      use_ext_clock_q           <= use_ext_clock_d;
     end
   end
 
@@ -453,26 +465,41 @@ module lc_ctrl
   // Escalation Receivers //
   //////////////////////////
 
-  // This escalation action triggers the
-  // lc_escalate_en life cycle control signal.
-  logic esc_wipe_secrets;
-  prim_esc_receiver u_prim_esc_receiver1 (
+  // We still have two escalation receivers here for historical reasons.
+  // The two actions "wipe secrets" and "scrap lifecycle state" have been
+  // combined in order to simplify both DV and the design, as otherwise
+  // this separation of very intertwined actions would have caused too many
+  // unnecessary corner cases. The escalation receivers are now redundant and
+  // trigger both actions at once.
+
+  // This escalation action moves the life cycle
+  // state into a temporary "SCRAP" state named "ESCALATE",
+  // and asserts the lc_escalate_en life cycle control signal.
+  logic esc_scrap_state0;
+  logic esc_scrap_state1;
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_prim_esc_receiver0 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_wipe_secrets),
-    .esc_rx_o (esc_wipe_secrets_rx_o),
-    .esc_tx_i (esc_wipe_secrets_tx_i)
+    .esc_en_o (esc_scrap_state0),
+    .esc_rx_o (esc_scrap_state0_rx_o),
+    .esc_tx_i (esc_scrap_state0_tx_i)
   );
 
   // This escalation action moves the life cycle
   // state into a temporary "SCRAP" state named "ESCALATE".
   logic esc_scrap_state;
-  prim_esc_receiver u_prim_esc_receiver2 (
+  prim_esc_receiver #(
+    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
+    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+  ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_scrap_state),
-    .esc_rx_o (esc_scrap_state_rx_o),
-    .esc_tx_i (esc_scrap_state_tx_i)
+    .esc_en_o (esc_scrap_state1),
+    .esc_rx_o (esc_scrap_state1_rx_o),
+    .esc_tx_i (esc_scrap_state1_tx_i)
   );
 
   ////////////////////////////
@@ -540,12 +567,13 @@ module lc_ctrl
     .init_req_i             ( lc_init                         ),
     .init_done_o            ( lc_done_d                       ),
     .idle_o                 ( lc_idle_d                       ),
-    .esc_scrap_state_i      ( esc_scrap_state                 ),
-    .esc_wipe_secrets_i     ( esc_wipe_secrets                ),
+    .esc_scrap_state0_i     ( esc_scrap_state0                ),
+    .esc_scrap_state1_i     ( esc_scrap_state1                ),
     .lc_state_valid_i       ( otp_lc_data_i.valid             ),
     .lc_state_i             ( otp_lc_data_i.state             ),
     .lc_id_state_i          ( otp_lc_data_i.id_state          ),
     .lc_cnt_i               ( otp_lc_data_i.count             ),
+    .use_ext_clock_i        ( use_ext_clock_q                 ),
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token   ),
     .rma_token_i            ( otp_lc_data_i.rma_token         ),

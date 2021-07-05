@@ -267,30 +267,7 @@ class RegBlock:
                                  'write-enable, but there is no such register.'
                                  .format(wenname))
 
-            # If the REGWEN bit is SW controlled, check that the register
-            # defaults to enabled. If this bit is read-only by SW and hence
-            # hardware controlled, we do not enforce this requirement.
-            if wen_reg.swaccess.key != "ro" and not wen_reg.resval:
-                raise ValueError('One or more registers use {} as a '
-                                 'write-enable. Since it is SW-controlled '
-                                 'it should have a nonzero reset value.'
-                                 .format(wenname))
-
-            if wen_reg.swaccess.key == "rw0c":
-                # The register is software managed: all good!
-                continue
-
-            if wen_reg.swaccess.key == "ro" and wen_reg.hwaccess.key == "hwo":
-                # The register is hardware managed: that's fine too.
-                continue
-
-            raise ValueError('One or more registers use {} as a write-enable. '
-                             'However, it has invalid access permissions '
-                             '({} / {}). It should either have swaccess=RW0C '
-                             'or have swaccess=RO and hwaccess=HWO.'
-                             .format(wenname,
-                                     wen_reg.swaccess.key,
-                                     wen_reg.hwaccess.key))
+            wen_reg.check_valid_regwen()
 
     def get_n_bits(self, bittype: List[str] = ["q"]) -> int:
         '''Returns number of bits in registers in this block.
@@ -357,8 +334,6 @@ class RegBlock:
         reg = Register(self.offset,
                        reg_name,
                        reg_desc,
-                       swaccess_obj,
-                       hwaccess_obj,
                        hwext=is_testreg,
                        hwqe=is_testreg,
                        hwre=False,

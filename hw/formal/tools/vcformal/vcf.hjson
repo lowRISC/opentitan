@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd: "{job_prefix} vcf"
+  build_opts: ["-batch -f {formal_root}/tools/{tool}/{sub_flow}.tcl -output_log_file fpv.log"]
+
+  exports: [
+    {COMMON_MSG_TCL_PATH: "{formal_root}/tools/{tool}/vcf_message_config.tcl"}
+    {COMMON_RPT_TCL_PATH: "{formal_root}/tools/{tool}/vcf_dvsim_report.tcl"}
+  ]
+}

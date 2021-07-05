@@ -22,11 +22,12 @@ class mem_bkdr_util extends uvm_object;
   // The width of the memory.
   protected uint32_t width;
 
-  // Indicates whether the memory implements parity protection per byte.
-  protected bit parity;
+  // Indicates the error detection scheme implemented for this memory.
+  protected err_detection_e err_detection_scheme = ErrDetectionNone;
 
-  // Indicates whether the memory implements ECC protection.
-  protected prim_secded_pkg::prim_secded_e ecc = prim_secded_pkg::SecdedNone;
+  // Convenience macro to check if ECC / parity is enabled.
+  `define HAS_ECC (!(err_detection_scheme inside {ErrDetectionNone, ParityEven, ParityOdd}))
+  `define HAS_PARITY (err_detection_scheme inside {ParityEven, ParityOdd})
 
   // TODO: Indicates whether the memory implements scrambling.
 
@@ -55,57 +56,49 @@ class mem_bkdr_util extends uvm_object;
   event readmemh_event;
   event writememh_event;
 
-  // A pair of integers.
-  typedef struct {
-    int x;
-    int y;
-  } int_pair_t;
-
   // Initialize the class instance.
   function new(string name = "", string path, int unsigned depth,
-               longint unsigned n_bits, bit parity, prim_secded_pkg::prim_secded_e ecc);
+               longint unsigned n_bits, err_detection_e err_detection_scheme);
 
     bit res;
     super.new(name);
-    `DV_CHECK_FATAL(!(parity && (ecc != SecdedNone)), "Cannot enable both parity & ecc.")
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
     res = uvm_hdl_check_path(path);
     `DV_CHECK_EQ_FATAL(res, 1, $sformatf("Hierarchical path %0s appears to be invalid.", path))
 
-    this.path   = path;
-    this.depth  = depth;
-    this.width  = n_bits / depth;
-    this.parity = parity;
-    this.ecc    = ecc;
-    data_width  = (ecc == prim_secded_pkg::SecdedNone) ? width :
-                                                         prim_secded_pkg::get_ecc_data_width(ecc);
-    byte_width      = parity ? 9 : 8;
-    bytes_per_word  = data_width / byte_width;
+    this.path  = path;
+    this.depth = depth;
+    this.width = n_bits / depth;
+    this.err_detection_scheme = err_detection_scheme;
+
+    data_width = `HAS_ECC ? prim_secded_pkg::get_ecc_data_width(
+        prim_secded_pkg::prim_secded_e'(err_detection_scheme)) : width;
+    byte_width = `HAS_PARITY ? 9 : 8;
+    bytes_per_word = data_width / byte_width;
     `DV_CHECK_LE_FATAL(bytes_per_word, 16, "data width > 16 bytes is not supported")
-    size_bytes      = depth * bytes_per_word;
-    addr_lsb        = $clog2(bytes_per_word);
-    addr_width      = $clog2(depth);
+    size_bytes = depth * bytes_per_word;
+    addr_lsb   = $clog2(bytes_per_word);
+    addr_width = $clog2(depth);
     byte_addr_width = addr_width + addr_lsb;
-    max_errors      = width;
+    max_errors = width;
     if (name == "") set_name({path, "::mem_bkdr_util"});
     `uvm_info(`gfn, this.convert2string(), UVM_MEDIUM)
   endfunction
 
   virtual function string convert2string();
     return {"\n",
-            $sformatf("path             = %0s\n", path),
-            $sformatf("depth            = %0d\n", depth),
-            $sformatf("width            = %0d\n", width),
-            $sformatf("parity           = %0b\n", parity),
-            $sformatf("ecc              = %0s\n", ecc.name),
-            $sformatf("data_width       = %0d\n", data_width),
-            $sformatf("byte_width       = %0d\n", byte_width),
-            $sformatf("bytes_per_word   = %0d\n", bytes_per_word),
-            $sformatf("size_bytes       = 0x%0h\n", size_bytes),
-            $sformatf("addr_lsb         = %0d\n", addr_lsb),
-            $sformatf("addr_width       = %0d\n", addr_width),
-            $sformatf("byte_addr_width  = %0d\n", byte_addr_width),
-            $sformatf("max_errors       = %0d\n", max_errors)};
+            $sformatf("path = %0s\n", path),
+            $sformatf("depth = %0d\n", depth),
+            $sformatf("width = %0d\n", width),
+            $sformatf("err_detection_scheme = %0s\n", err_detection_scheme.name),
+            $sformatf("data_width = %0d\n", data_width),
+            $sformatf("byte_width = %0d\n", byte_width),
+            $sformatf("bytes_per_word = %0d\n", bytes_per_word),
+            $sformatf("size_bytes = 0x%0h\n", size_bytes),
+            $sformatf("addr_lsb = %0d\n", addr_lsb),
+            $sformatf("addr_width = %0d\n", addr_width),
+            $sformatf("byte_addr_width = %0d\n", byte_addr_width),
+            $sformatf("max_errors = %0d\n", max_errors)};
   endfunction
 
   function string get_path();
@@ -120,12 +113,8 @@ class mem_bkdr_util extends uvm_object;
     return width;
   endfunction
 
-  function bit get_parity();
-    return parity;
-  endfunction
-
-  function prim_secded_pkg::prim_secded_e get_ecc();
-    return ecc;
+  function err_detection_e get_err_detection_scheme();
+    return err_detection_scheme;
   endfunction
 
   function uint32_t get_data_width();
@@ -192,6 +181,10 @@ class mem_bkdr_util extends uvm_object;
     return data;
   endfunction
 
+  // Convenience macro to check the addr for each flavor of read and write functions.
+  `define _ACCESS_CHECKS(_ADDR, _DW) \
+    `DV_CHECK_EQ_FATAL(_ADDR % (_DW / 8), 0, $sformatf("addr 0x%0h not ``_DW``-bit aligned", _ADDR))
+
   // Read a single byte at specified address.
   //
   // The data returned does not include the parity bits.
@@ -202,26 +195,22 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   virtual function logic [15:0] read16(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[0], 0, $sformatf("addr 0x%0h not 16-bit aligned", addr))
-    `DV_CHECK_GE_FATAL(data_width, 16, $sformatf("data_width %0d is < 16!", data_width))
+    `_ACCESS_CHECKS(addr, 16)
     return {read8(addr + 1), read8(addr)};
   endfunction
 
   virtual function logic [31:0] read32(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 32, $sformatf("data_width %0d is < 32!", data_width))
+    `_ACCESS_CHECKS(addr, 32)
     return {read16(addr + 2), read16(addr)};
   endfunction
 
   virtual function logic [63:0] read64(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 64, $sformatf("data_width %0d is < 64!", data_width))
+    `_ACCESS_CHECKS(addr, 64)
     return {read32(addr + 4), read32(addr)};
   endfunction
 
   virtual function logic [127:0] read128(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    `DV_CHECK_EQ_FATAL(addr[3:0], '0, $sformatf("addr 0x%0h not 128-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 128, $sformatf("data_width %0d is < 128!", data_width))
+    `_ACCESS_CHECKS(addr, 128)
     return {read64(addr + 8), read64(addr)};
   endfunction
 
@@ -243,107 +232,82 @@ class mem_bkdr_util extends uvm_object;
   // Write a single byte at specified address.
   //
   // Does a read-modify-write on the whole word. It updates the byte at the given address and
-  // computes the parity and ECC bits as applicable. Before writing the word back, it injects
-  // 'inject_num_errors' errors if set to a positive value.
-  virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data,
-                               uint32_t inject_num_errors = 0);
+  // computes the parity and ECC bits as applicable.
+  virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data);
     uvm_hdl_data_t rw_data;
     uint32_t word_idx;
     uint32_t byte_idx;
 
-    `DV_CHECK_LE_FATAL(inject_num_errors, max_errors)
     if (!check_addr_valid(addr)) return;
 
     rw_data  = read(addr);
     word_idx = addr >> addr_lsb;
     byte_idx = addr - (word_idx << addr_lsb);
 
-    if (parity) begin
-      bit [8:0] lane = {~(^data), data};
-      if (inject_num_errors) begin
-        lane ^= (1 << $urandom_range(0, byte_width - 1));
-      end
-      rw_data[byte_idx * 9 +: 9] = lane;
+    if (`HAS_PARITY) begin
+      bit parity = (err_detection_scheme == ParityOdd) ? ~(^data) : (^data);
+      rw_data[byte_idx * 9 +: 9] = {parity, data};
       write(addr, rw_data);
       return;
     end
 
     rw_data[byte_idx * 8 +: 8] = data;
-    case (ecc)
-      prim_secded_pkg::SecdedNone: ;
-      prim_secded_pkg::Secded_22_16: begin
+    case (err_detection_scheme)
+      ErrDetectionNone: ;
+      Ecc_22_16: begin
         rw_data = prim_secded_pkg::prim_secded_22_16_enc(rw_data[15:0]);
       end
-      prim_secded_pkg::SecdedHamming_22_16: begin
+      EccHamming_22_16: begin
         rw_data = prim_secded_pkg::prim_secded_hamming_22_16_enc(rw_data[15:0]);
       end
-      prim_secded_pkg::Secded_39_32: begin
+      Ecc_39_32: begin
         rw_data = prim_secded_pkg::prim_secded_39_32_enc(rw_data[31:0]);
       end
-      prim_secded_pkg::SecdedHamming_39_32: begin
+      EccHamming_39_32: begin
         rw_data = prim_secded_pkg::prim_secded_hamming_39_32_enc(rw_data[31:0]);
       end
-      prim_secded_pkg::Secded_72_64: begin
+      Ecc_72_64: begin
         rw_data = prim_secded_pkg::prim_secded_72_64_enc(rw_data[63:0]);
       end
-      prim_secded_pkg::SecdedHamming_72_64: begin
+      EccHamming_72_64: begin
         rw_data = prim_secded_pkg::prim_secded_hamming_72_64_enc(rw_data[63:0]);
       end
       default: begin
-        `uvm_error(`gfn, $sformatf("ECC scheme %0s is unsupported.", ecc))
+        `uvm_error(`gfn, $sformatf("ECC scheme %0s is unsupported.", err_detection_scheme))
       end
     endcase
-    if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
     write(addr, rw_data);
   endfunction
 
-  virtual function void write16(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [15:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
-    `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 16, $sformatf("data_width %0d is < 16!", data_width))
+  virtual function void write16(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [15:0] data);
+    `_ACCESS_CHECKS(addr, 16)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write8(addr, data[7:0], inject_num_errors_split.x);
-    write8(addr + 1, data[15:8], inject_num_errors_split.y);
+    write8(addr, data[7:0]);
+    write8(addr + 1, data[15:8]);
   endfunction
 
-  virtual function void write32(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [31:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
-    `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 32, $sformatf("data_width %0d is < 32!", data_width))
+  virtual function void write32(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [31:0] data);
+    `_ACCESS_CHECKS(addr, 32)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write16(addr, data[15:0], inject_num_errors_split.x);
-    write16(addr + 2, data[31:16], inject_num_errors_split.y);
+    write16(addr, data[15:0]);
+    write16(addr + 2, data[31:16]);
   endfunction
 
-  virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data,
-                                uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
-    `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 64, $sformatf("data_width %0d is < 64!", data_width))
+  virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);
+    `_ACCESS_CHECKS(addr, 64)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write32(addr, data[31:0], inject_num_errors_split.x);
-    write32(addr + 4, data[63:32], inject_num_errors_split.y);
+    write32(addr, data[31:0]);
+    write32(addr + 4, data[63:32]);
   endfunction
 
-  virtual function void write128(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [127:0] data,
-                                 uint32_t inject_num_errors = 0);
-    int_pair_t inject_num_errors_split;
-    `DV_CHECK_EQ_FATAL(addr[3:0], '0, $sformatf("addr 0x%0h not 128-bit aligned", addr), path)
-    `DV_CHECK_GE_FATAL(data_width, 128, $sformatf("data_width %0d is < 128!", data_width))
+  virtual function void write128(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [127:0] data);
+    `_ACCESS_CHECKS(addr, 128)
     if (!check_addr_valid(addr)) return;
-    // Split the number of errors into different sub-byte write.
-    inject_num_errors_split = rand_split(inject_num_errors);
-    write64(addr, data[63:0], inject_num_errors_split.x);
-    write64(addr + 4, data[127:63], inject_num_errors_split.y);
+    write64(addr, data[63:0]);
+    write64(addr + 4, data[127:63]);
   endfunction
+
+  `undef _ACCESS_CHECKS
 
   /////////////////////////////////////////////////////////
   // Wrapper functions for memory reads with ECC enabled //
@@ -357,11 +321,11 @@ class mem_bkdr_util extends uvm_object;
     uvm_hdl_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
-    case (ecc)
-      prim_secded_pkg::Secded_22_16: begin
+    case (err_detection_scheme)
+      Ecc_22_16: begin
         return prim_secded_pkg::prim_secded_22_16_dec(data);
       end
-      prim_secded_pkg::SecdedHamming_22_16: begin
+      EccHamming_22_16: begin
         return prim_secded_pkg::prim_secded_hamming_22_16_dec(data);
       end
       default: return 'x;
@@ -373,11 +337,11 @@ class mem_bkdr_util extends uvm_object;
     uvm_hdl_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
-    case (ecc)
-      prim_secded_pkg::Secded_39_32: begin
+    case (err_detection_scheme)
+      Ecc_39_32: begin
         return prim_secded_pkg::prim_secded_39_32_dec(data);
       end
-      prim_secded_pkg::SecdedHamming_39_32: begin
+      EccHamming_39_32: begin
         return prim_secded_pkg::prim_secded_hamming_39_32_dec(data);
       end
       default: return 'x;
@@ -389,11 +353,11 @@ class mem_bkdr_util extends uvm_object;
     uvm_hdl_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
-    case (ecc)
-      prim_secded_pkg::Secded_72_64: begin
+    case (err_detection_scheme)
+      Ecc_72_64: begin
         return prim_secded_pkg::prim_secded_72_64_dec(data);
       end
-      prim_secded_pkg::SecdedHamming_72_64: begin
+      EccHamming_72_64: begin
         return prim_secded_pkg::prim_secded_hamming_72_64_dec(data);
       end
       default: return 'x;
@@ -861,19 +825,24 @@ class mem_bkdr_util extends uvm_object;
     end
   endfunction
 
-  // A helper function that splits a given number randomly into a pair.
-  virtual function int_pair_t rand_split(uint32_t num);
-    rand_split.x = $urandom_range(0, num);
-    rand_split.y = num - rand_split.x;
-  endfunction
-
-  virtual function uvm_hdl_data_t inject_errors(uvm_hdl_data_t data, uint32_t inject_num_errors);
-    uvm_hdl_data_t err_mask;
+  // Inject ECC or parity errors to the memory word at the given address.
+  virtual function void inject_errors(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                      uint32_t inject_num_errors);
+    uvm_hdl_data_t rw_data, err_mask;
+    if (!check_addr_valid(addr)) return;
+    `DV_CHECK_LE_FATAL(inject_num_errors, max_errors)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask,
                                        $countones(err_mask) == inject_num_errors;
                                        (err_mask >> width) == '0;)
-    return data ^ err_mask;
+    rw_data = read(addr);
+    write(addr, rw_data ^ err_mask);
+    `uvm_info(`gfn, $sformatf(
+              "Addr: %0h, original data: %0h, error_mask: %0h, backdoor inject data: %0h",
+              addr, rw_data, err_mask, rw_data ^ err_mask), UVM_HIGH)
   endfunction
+
+  `undef HAS_ECC
+  `undef HAS_PARITY
 
 endclass
 

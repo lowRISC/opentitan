@@ -20,6 +20,9 @@ package uart_env_pkg;
 
   // local types
   parameter uint UART_FIFO_DEPTH = 32;
+  // alerts
+  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   typedef enum int {
     TxWatermark = 0,

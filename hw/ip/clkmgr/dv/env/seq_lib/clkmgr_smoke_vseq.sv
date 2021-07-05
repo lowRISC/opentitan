@@ -10,7 +10,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint enable_ip_clk_en { ip_clk_en == 1'b1; }
   constraint all_busy { idle == '0; }
-  constraint scanmode_off { scanmode_sel == SC_OFF; }
+  constraint scanmode_off { sel_scanmode == LcTxTSelOff; }
 
   task body();
     update_csrs_with_reset_values();
@@ -20,7 +20,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   endtask : body
 
   // Flips all clk_enables bits from the reset value with all enabled. All is
-  // checked via assertions in clkmgr_if.sv.
+  // checked via assertions in clkmgr_if.sv and behavioral code in the scoreboard.
   task test_peri_clocks();
     // Flip all bits of clk_enables.
     logic [NUM_PERI-1:0] value = ral.clk_enables.get();
@@ -53,7 +53,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     cfg.clkmgr_vif.update_idle(idle);
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
-    `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", value), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Starting hints at 0x%0x, idle at 0x%x", value, idle), UVM_MEDIUM)
     do begin
       trans_descriptor_t descriptor = trans_descriptors[int'(trans)];
       `uvm_info(`gfn, $sformatf("Clearing %s hint bit", descriptor.unit.name), UVM_MEDIUM)
@@ -63,7 +63,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
                    $sformatf("%s hint value cannot drop while busy", descriptor.unit.name()))
 
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
-      cfg.clkmgr_vif.wait_clks(1);
+      cfg.clk_rst_vif.wait_clks(1);
       idle[trans] = 1'b1;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.

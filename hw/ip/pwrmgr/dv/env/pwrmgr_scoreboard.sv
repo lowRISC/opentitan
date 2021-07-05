@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwrmgr_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(pwrmgr_env_cfg),
-    .RAL_T(pwrmgr_reg_block),
-    .COV_T(pwrmgr_env_cov)
-  );
+  .CFG_T(pwrmgr_env_cfg),
+  .RAL_T(pwrmgr_reg_block),
+  .COV_T(pwrmgr_env_cov)
+);
   `uvm_component_utils(pwrmgr_scoreboard)
 
   // local variables
@@ -32,22 +32,21 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    uvm_reg        csr;
+    bit            do_read_check = 1'b1;
+    bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit            addr_phase_read = (!write && channel == AddrChannel);
+    bit            addr_phase_write = (write && channel == AddrChannel);
+    bit            data_phase_read = (!write && channel == DataChannel);
+    bit            data_phase_write = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
+    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -127,8 +126,8 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     if (data_phase_read) begin
       `uvm_info(`gfn, $sformatf("Reading 0x%x from %s", item.d_data, csr.get_full_name()), UVM_LOW)
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
+                     "reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end

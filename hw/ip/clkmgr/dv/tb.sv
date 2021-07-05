@@ -44,6 +44,8 @@ module tb;
     aon_clk_rst_if.set_active();
   end
 
+ `DV_ALERT_IF_CONNECT
+
   // dut
   clkmgr dut (
     .clk_i                (clk        ),
@@ -63,6 +65,9 @@ module tb;
 
     .tl_i                 (tl_if.h2d ),
     .tl_o                 (tl_if.d2h ),
+
+    .alert_rx_i           (alert_rx ),
+    .alert_tx_o           (alert_tx ),
 
     .pwr_i                (clkmgr_if.pwr_i       ),
     .pwr_o                (clkmgr_if.pwr_o       ),

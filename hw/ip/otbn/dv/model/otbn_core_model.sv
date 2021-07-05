@@ -52,7 +52,7 @@ module otbn_core_model
                                                           string design_scope,
                                                           int unsigned imem_words,
                                                           int unsigned dmem_words);
-  import "DPI-C" function void otbn_model_destroy(chandle handle);
+  import "DPI-C" function void otbn_model_destroy(chandle model);
   import "DPI-C" context function
     int unsigned otbn_model_step(chandle          model,
                                  logic            start,
@@ -64,6 +64,7 @@ module otbn_core_model
                                  inout bit [31:0] insn_cnt,
                                  inout bit [31:0] err_bits,
                                  inout bit [31:0] stop_pc);
+  import "DPI-C" function void otbn_model_reset(chandle model);
 
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
@@ -116,7 +117,9 @@ module otbn_core_model
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      // Clear status (stop running, and forget any errors and final PC)
+      if (status != 0) begin
+        otbn_model_reset(model_handle);
+      end
       status <= 0;
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;

@@ -175,9 +175,7 @@ def elaborate_instance(instance, block: IpBlock):
 # TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {
     "corei": "rv_core_ibex",
-    "cored": "rv_core_ibex",
-    "dm_sba": "rv_dm",
-    "debug_mem": "rv_dm"
+    "cored": "rv_core_ibex"
 }
 
 
@@ -316,36 +314,7 @@ def xbar_adddevice(top: Dict[str, object],
         # case 2: predefined_modules (debug_mem, rv_plic)
         # TODO: Find configurable solution not from predefined but from object?
         if device in predefined_modules:
-            if device == "debug_mem":
-                if node is None:
-                    # Add new debug_mem
-                    xbar["nodes"].append({
-                        "name": "debug_mem",
-                        "type": "device",
-                        "clock": xbar['clock'],
-                        "reset": xbar['reset'],
-                        "inst_type": predefined_modules["debug_mem"],
-                        "addr_range": [OrderedDict([
-                            ("base_addr", top["debug_mem_base_addr"]),
-                            ("size_byte", "0x1000"),
-                        ])],
-                        "xbar": False,
-                        "stub": False,
-                        "pipeline": "true",
-                        "pipeline_byp": "true"
-                    })  # yapf: disable
-                else:
-                    # Update if exists
-                    node["inst_type"] = predefined_modules["debug_mem"]
-                    node["addr_range"] = [
-                        OrderedDict([("base_addr", top["debug_mem_base_addr"]),
-                                     ("size_byte", "0x1000")])
-                    ]
-                    node["xbar"] = False
-                    node["stub"] = False
-                    process_pipeline_var(node)
-            else:
-                log.error("device %s shouldn't be host type" % device)
+            log.error("device %s shouldn't be host type" % device)
 
             return
 
@@ -761,14 +730,6 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
-    # Find the alert handler and extract the name of its clock
-    alert_clock = None
-    for instance in top['module']:
-        if instance['type'].lower() == 'alert_handler':
-            alert_clock = instance['clock_srcs']['clk_i']
-            break
-    assert alert_clock is not None
-
     for m in top["alert_module"]:
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -780,10 +741,12 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
         block = name_to_block[ip['type']]
 
         log.info("Adding alert from module %s" % ip["name"])
-        has_async_alerts = ip['clock_srcs']['clk_i'] != alert_clock
+        # Note: we assume that all alerts are asynchronous in order to make the
+        # design homogeneous and more amenable to DV automation and synthesis
+        # constraint scripting.
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
-            alert_dict['async'] = '1' if has_async_alerts else '0'
+            alert_dict['async'] = '1'
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
             top["alert"].append(qual_sig)

@@ -86,7 +86,7 @@ void handler_irq_external(void) {
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
-  CHECK(dif_plic_irq_complete(&plic0, kPlicTarget, &interrupt_id) == kDifPlicOk,
+  CHECK(dif_plic_irq_complete(&plic0, kPlicTarget, interrupt_id) == kDifPlicOk,
         "Unable to complete the IRQ request!");
 }
 

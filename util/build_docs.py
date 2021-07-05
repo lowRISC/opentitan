@@ -77,6 +77,7 @@ config = {
         "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson",
         "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson",
         "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson",
+        "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
         "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
         "hw/ip/rv_timer/data/rv_timer.hjson",
         "hw/ip/spi_host/data/spi_host.hjson",
@@ -92,6 +93,7 @@ config = {
     "dashboard_definitions": {
         "comportable": [
             "hw/ip",
+            "hw/top_earlgrey/ip/sensor_ctrl"
         ],
     },
 

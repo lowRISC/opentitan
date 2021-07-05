@@ -275,3 +275,9 @@ class Field:
         if self.enum is not None:
             rd['enum'] = self.enum
         return rd
+
+    def sw_readable(self) -> bool:
+        return self.swaccess.key not in ['wo', 'r0w1c']
+
+    def sw_writable(self) -> bool:
+        return self.swaccess.key != 'ro'

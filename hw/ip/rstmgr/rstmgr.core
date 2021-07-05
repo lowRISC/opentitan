@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:esc
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:lc_sync
       - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"

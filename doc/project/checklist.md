@@ -112,7 +112,7 @@ CDC run set up. No must fix errors, waiver file created.
 
 ### FPGA_TIMING
 
-FPGA synthesis timing meet (Fmax-10%) target or better
+Block is synthesized as part of continuous integration checks and meets timing there.
 
 ### CDC_SYNCMACRO
 
@@ -491,8 +491,7 @@ For a transition from S0 to S1, the following items are expected be completed.
 
 ### DIF_USED_IN_TREE
 
-All existing in-tree code which uses the device, uses the device via the DIF.
-There is no remaining driver code that directly uses the device outside of DIF code.
+All existing non-production code in the tree which uses the device does so via the DIF or a production driver.
 
 ### DIF_TEST_UNIT
 
@@ -542,10 +541,6 @@ DIF follows the DIF-specific guidelines in [`sw/device/lib/dif/README.md`]({{< r
 
 Chip-level DV testing for the IP using DIFs has been started.
 
-### DIF_USED_TOCK
-
-DIF has initial interface for use from Tock.
-
 ## S3
 
 For a transition from S2 to S3, the following items are expected be completed.
@@ -575,7 +570,3 @@ Unit tests cover (at least):
 ### DIF_TODO_COMPLETE
 
 Ensure all DIF TODOs are complete.
-
-### DIF_REVIEW_TOCK_STABLE
-
-Fully re-review Tock interface, with a view to the interface not changing in future.

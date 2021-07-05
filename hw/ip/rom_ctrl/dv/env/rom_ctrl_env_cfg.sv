@@ -5,7 +5,6 @@
 class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block));
 
   // ext component cfgs
-  rand tl_agent_cfg m_rom_tl_cfg;
   kmac_app_agent_cfg m_kmac_agent_cfg;
 
   // Memory backdoor util instance for ROM.
@@ -21,6 +20,10 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
+    tl_intg_alert_name = "fatal";
+
+    ral_model_names.push_back("rom_ctrl_rom_reg_block");
+
     super.initialize(csr_base_addr);
     num_interrupts = 0;
 
@@ -28,9 +31,8 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
 
-    m_rom_tl_cfg = tl_agent_cfg::type_id::create("m_rom_tl_cfg");
-    m_rom_tl_cfg.if_mode = dv_utils_pkg::Host;
-
+    // Tell the CIP base code what bit gets set if we see a TL fault.
+    tl_intg_alert_field = "fatal_alert_cause.integrity_error";
   endfunction
 
 endclass

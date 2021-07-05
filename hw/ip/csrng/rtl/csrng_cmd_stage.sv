@@ -261,7 +261,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           cmd_gen_1st_req = 1'b1;
           cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
-          if (sfifo_cmd_rdata[30:12] == 20'h00001) begin
+          if (sfifo_cmd_rdata[30:12] == GenBitsCntrWidth'(1)) begin
             cmd_gen_cnt_last = 1'b1;
           end
           if (cmd_len == '0) begin

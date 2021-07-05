@@ -34,6 +34,8 @@ module tb;
   tl_if tl_if(.clk, .rst_n);
   uart_if uart_if();
 
+ `DV_ALERT_IF_CONNECT
+
   // dut
   uart dut (
     .clk_i                (clk        ),
@@ -41,6 +43,9 @@ module tb;
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),
+
+    .alert_rx_i           (alert_rx   ),
+    .alert_tx_o           (alert_tx   ),
 
     .cio_rx_i             (uart_rx    ),
     .cio_tx_o             (uart_tx    ),
@@ -81,6 +86,6 @@ module tb;
   end
 
   // we expect the output enable to be always 1
-  `ASSERT(UartTxEnTiedTo1_A, uart_tx_en, !rst_n, clk)
+  `ASSERT(UartTxEnTiedTo1_A, uart_tx_en, clk, !rst_n)
 
 endmodule

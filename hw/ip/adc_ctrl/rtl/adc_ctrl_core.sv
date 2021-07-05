@@ -40,12 +40,12 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   logic cfg_adc_enable;
   logic cfg_oneshot_mode;
   logic cfg_lp_mode;
-  logic load_pwrup_time, load_wakeup_time;
+  logic load_adc_ctl;
   logic load_lp_sample_cnt, load_np_sample_cnt;
-  logic [3:0] cfg_pwrup_time, cfg_pwrup_time_d;
-  logic [23:0] cfg_wakeup_time, cfg_wakeup_time_d;
-  logic [7:0] cfg_lp_sample_cnt, cfg_lp_sample_cnt_d;
-  logic [15:0] cfg_np_sample_cnt, cfg_np_sample_cnt_d;
+  logic [3:0] cfg_pwrup_time;
+  logic [23:0] cfg_wakeup_time;
+  logic [7:0] cfg_lp_sample_cnt;
+  logic [15:0] cfg_np_sample_cnt;
   logic cfg_fsm_rst;
 
   //There are eight filters
@@ -54,10 +54,6 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   logic [9:0] cfg_chn0_max_v [NumAdcFilter];
   logic [9:0] cfg_chn1_min_v [NumAdcFilter];
   logic [9:0] cfg_chn1_max_v [NumAdcFilter];
-  logic [9:0] cfg_chn0_min_v_d [NumAdcFilter];
-  logic [9:0] cfg_chn0_max_v_d [NumAdcFilter];
-  logic [9:0] cfg_chn1_min_v_d [NumAdcFilter];
-  logic [9:0] cfg_chn1_max_v_d [NumAdcFilter];
   logic [NumAdcFilter-1:0] cfg_chn0_cond;
   logic [NumAdcFilter-1:0] cfg_chn1_cond;
   logic [NumAdcFilter-1:0] load_chn0_min_v;
@@ -74,9 +70,6 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   logic chn0_val_we, chn1_val_we;//write enable for the latest ADC sample
   logic [9:0] chn0_val, chn1_val;
   logic cfg_chn0_rvalid, cfg_chn1_rvalid;
-  logic [9:0] cfg_chn0_val, cfg_chn1_val;
-  logic cfg_chn0_rvalid_intr, cfg_chn1_rvalid_intr;
-  logic [9:0] cfg_chn0_val_intr, cfg_chn1_val_intr;
 
   logic [NumAdcFilter-1:0] chn0_match, chn1_match, adc_ctrl_match;
   logic [NumAdcFilter-1:0] adc_ctrl_match_pulse;
@@ -124,111 +117,62 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .d_i(adc_pd_ctl_i.lp_mode.q),
     .q_o(cfg_lp_mode)
   );
-  prim_fifo_async #(
-    .Width(4),
-    .Depth(4)
-  ) i_cfg_pwrup_time (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_pd_ctl_i.pwrup_time.qe),
-    .wready_o  (),
-    .wdata_i   (adc_pd_ctl_i.pwrup_time.q),
-    .wdepth_o  (),
 
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_pwrup_time),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_pwrup_time_d),
-    .rdepth_o  ()
+  // all qe's for a register are the same
+  logic adc_pd_ctl_qe;
+  assign adc_pd_ctl_qe = adc_pd_ctl_i.pwrup_time.qe |
+                         adc_pd_ctl_i.wakeup_time.qe;
+
+  prim_pulse_sync i_cfg_adc_pd_ctl (
+    .clk_src_i   (clk_i),
+    .rst_src_ni  (rst_ni),
+    .src_pulse_i (adc_pd_ctl_qe),
+    .clk_dst_i   (clk_aon_i),
+    .rst_dst_ni  (rst_slow_ni),
+    .dst_pulse_o (load_adc_ctl)
   );
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_pwrup_time_reg
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin
     if (!rst_slow_ni) begin
-      cfg_pwrup_time    <= '0;
-    end else if (load_pwrup_time) begin
-      cfg_pwrup_time    <= cfg_pwrup_time_d;
+      cfg_pwrup_time  <= '0;
+      cfg_wakeup_time <= '0;
+    end else if (load_adc_ctl) begin
+      cfg_pwrup_time  <= adc_pd_ctl_i.pwrup_time.q;
+      cfg_wakeup_time <= adc_pd_ctl_i.wakeup_time.q;
     end
   end
 
-  prim_fifo_async #(
-    .Width(24),
-    .Depth(4)
-  ) i_cfg_wakeup_time (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_pd_ctl_i.wakeup_time.qe),
-    .wready_o  (),
-    .wdata_i   (adc_pd_ctl_i.wakeup_time.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_wakeup_time),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_wakeup_time_d),
-    .rdepth_o  ()
-  );
-
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_wakeup_time_reg
-    if (!rst_slow_ni) begin
-      cfg_wakeup_time    <= '0;
-    end else if (load_wakeup_time) begin
-      cfg_wakeup_time    <= cfg_wakeup_time_d;
-    end
-  end
-
-  prim_fifo_async #(
-    .Width(8),
-    .Depth(4)
-  ) i_cfg_lp_sample_cnt (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_lp_sample_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (adc_lp_sample_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_lp_sample_cnt),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_lp_sample_cnt_d),
-    .rdepth_o  ()
+  prim_pulse_sync i_cfg_lp_sample_cnt (
+    .clk_src_i   (clk_i),
+    .rst_src_ni  (rst_ni),
+    .src_pulse_i (adc_lp_sample_ctl_i.qe),
+    .clk_dst_i   (clk_aon_i),
+    .rst_dst_ni  (rst_slow_ni),
+    .dst_pulse_o (load_lp_sample_cnt)
   );
 
   always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_lp_sample_cnt_reg
     if (!rst_slow_ni) begin
-      cfg_lp_sample_cnt    <= '0;
+      cfg_lp_sample_cnt <= '0;
     end else if (load_lp_sample_cnt) begin
-      cfg_lp_sample_cnt    <= cfg_lp_sample_cnt_d;
+      cfg_lp_sample_cnt <= adc_lp_sample_ctl_i.q;
     end
   end
 
-  prim_fifo_async #(
-    .Width(16),
-    .Depth(4)
-  ) i_cfg_np_sample_cnt (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_sample_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (adc_sample_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_np_sample_cnt),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_np_sample_cnt_d),
-    .rdepth_o  ()
+  prim_pulse_sync i_cfg_np_sample_cnt (
+    .clk_src_i   (clk_i),
+    .rst_src_ni  (rst_ni),
+    .src_pulse_i (adc_sample_ctl_i.qe),
+    .clk_dst_i   (clk_aon_i),
+    .rst_dst_ni  (rst_slow_ni),
+    .dst_pulse_o (load_np_sample_cnt)
   );
 
   always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_np_sample_cnt_reg
     if (!rst_slow_ni) begin
-      cfg_np_sample_cnt    <= '0;
+      cfg_np_sample_cnt <= '0;
     end else if (load_np_sample_cnt) begin
-      cfg_np_sample_cnt    <= cfg_np_sample_cnt_d;
+      cfg_np_sample_cnt <= adc_sample_ctl_i.q;
     end
   end
 
@@ -261,115 +205,73 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .q_o(cfg_chn1_cond[k])
     );
 
-    prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-    ) i_cfg_chn0_min_v (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_chn0_filter_ctl_i[k].min_v.qe),
-    .wready_o  (),
-    .wdata_i   (adc_chn0_filter_ctl_i[k].min_v.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_chn0_min_v[k]),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn0_min_v_d[k]),
-    .rdepth_o  ()
+    prim_pulse_sync i_cfg_chn0_min_v (
+      .clk_src_i   (clk_i),
+      .rst_src_ni  (rst_ni),
+      .src_pulse_i (adc_chn0_filter_ctl_i[k].min_v.qe),
+      .clk_dst_i   (clk_aon_i),
+      .rst_dst_ni  (rst_slow_ni),
+      .dst_pulse_o (load_chn0_min_v[k])
     );
 
     always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_chn0_min_v_reg
       if (!rst_slow_ni) begin
         cfg_chn0_min_v[k]    <= '0;
       end else if (load_chn0_min_v[k]) begin
-        cfg_chn0_min_v[k]    <= cfg_chn0_min_v_d[k];
+        cfg_chn0_min_v[k]    <= adc_chn0_filter_ctl_i[k].min_v.q;
       end
     end
 
-
-    prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-    ) i_cfg_chn1_min_v (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_chn1_filter_ctl_i[k].min_v.qe),
-    .wready_o  (),
-    .wdata_i   (adc_chn1_filter_ctl_i[k].min_v.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_chn1_min_v[k]),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn1_min_v_d[k]),
-    .rdepth_o  ()
+    prim_pulse_sync i_cfg_chn1_min_v (
+      .clk_src_i   (clk_i),
+      .rst_src_ni  (rst_ni),
+      .src_pulse_i (adc_chn1_filter_ctl_i[k].min_v.qe),
+      .clk_dst_i   (clk_aon_i),
+      .rst_dst_ni  (rst_slow_ni),
+      .dst_pulse_o (load_chn1_min_v[k])
     );
 
     always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_chn1_min_v_reg
       if (!rst_slow_ni) begin
         cfg_chn1_min_v[k]    <= '0;
       end else if (load_chn1_min_v[k]) begin
-        cfg_chn1_min_v[k]    <= cfg_chn1_min_v_d[k];
+        cfg_chn1_min_v[k]    <= adc_chn1_filter_ctl_i[k].min_v.q;
       end
     end
 
-    prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-    ) i_cfg_chn0_max_v (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_chn0_filter_ctl_i[k].max_v.qe),
-    .wready_o  (),
-    .wdata_i   (adc_chn0_filter_ctl_i[k].max_v.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_chn0_max_v[k]),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn0_max_v_d[k]),
-    .rdepth_o  ()
+    prim_pulse_sync i_cfg_chn0_max_v (
+      .clk_src_i   (clk_i),
+      .rst_src_ni  (rst_ni),
+      .src_pulse_i (adc_chn0_filter_ctl_i[k].max_v.qe),
+      .clk_dst_i   (clk_aon_i),
+      .rst_dst_ni  (rst_slow_ni),
+      .dst_pulse_o (load_chn0_max_v[k])
     );
 
     always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_chn0_max_v_reg
       if (!rst_slow_ni) begin
         cfg_chn0_max_v[k]    <= '0;
       end else if (load_chn0_max_v[k]) begin
-        cfg_chn0_max_v[k]    <= cfg_chn0_max_v_d[k];
+        cfg_chn0_max_v[k]    <= adc_chn0_filter_ctl_i[k].max_v.q;
       end
     end
 
-    prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-    ) i_cfg_chn1_max_v (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (adc_chn1_filter_ctl_i[k].max_v.qe),
-    .wready_o  (),
-    .wdata_i   (adc_chn1_filter_ctl_i[k].max_v.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
-    .rvalid_o  (load_chn1_max_v[k]),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn1_max_v_d[k]),
-    .rdepth_o  ()
+    prim_pulse_sync i_cfg_chn1_max_v (
+      .clk_src_i   (clk_i),
+      .rst_src_ni  (rst_ni),
+      .src_pulse_i (adc_chn1_filter_ctl_i[k].max_v.qe),
+      .clk_dst_i   (clk_aon_i),
+      .rst_dst_ni  (rst_slow_ni),
+      .dst_pulse_o (load_chn1_max_v[k])
     );
 
     always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_chn1_max_v_reg
       if (!rst_slow_ni) begin
         cfg_chn1_max_v[k]    <= '0;
       end else if (load_chn1_max_v[k]) begin
-        cfg_chn1_max_v[k]    <= cfg_chn1_max_v_d[k];
+        cfg_chn1_max_v[k]    <= adc_chn1_filter_ctl_i[k].max_v.q;
       end
     end
-
   end
 
   prim_flop_2sync # (
@@ -544,93 +446,38 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .dst_pulse_o (cfg_adc_ctrl_done)
   );
 
-  prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-  ) i_cfg_chn0_val (
-    .clk_wr_i  (clk_aon_i),
-    .rst_wr_ni (rst_slow_ni),
-    .wvalid_i  (chn0_val_we),
-    .wready_o  (),
-    .wdata_i   (chn0_val),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_i),
-    .rst_rd_ni (rst_ni),
-    .rvalid_o  (cfg_chn0_rvalid),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn0_val),
-    .rdepth_o  ()
+  prim_pulse_sync i_cfg_chn0_val (
+    .clk_src_i   (clk_aon_i),
+    .clk_dst_i   (clk_i),
+    .rst_src_ni  (rst_slow_ni),
+    .rst_dst_ni  (rst_ni),
+    .src_pulse_i (chn0_val_we),
+    .dst_pulse_o (cfg_chn0_rvalid)
   );
 
-  prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-  ) i_cfg_chn1_val (
-    .clk_wr_i  (clk_aon_i),
-    .rst_wr_ni (rst_slow_ni),
-    .wvalid_i  (chn1_val_we),
-    .wready_o  (),
-    .wdata_i   (chn1_val),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_i),
-    .rst_rd_ni (rst_ni),
-    .rvalid_o  (cfg_chn1_rvalid),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_chn1_val),
-    .rdepth_o  ()
+  prim_pulse_sync i_cfg_chn1_val (
+    .clk_src_i   (clk_aon_i),
+    .clk_dst_i   (clk_i),
+    .rst_src_ni  (rst_slow_ni),
+    .rst_dst_ni  (rst_ni),
+    .src_pulse_i (chn1_val_we),
+    .dst_pulse_o (cfg_chn1_rvalid)
   );
 
-  prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-  ) i_cfg_chn0_val_intr (
-    .clk_wr_i  (clk_aon_i),
-    .rst_wr_ni (rst_slow_ni),
-    .wvalid_i  (chn0_val_we),
-    .wready_o  (),
-    .wdata_i   (chn0_val),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_i),
-    .rst_rd_ni (rst_ni),
-    .rvalid_o  (cfg_chn0_rvalid_intr),
-    .rready_i  (cfg_chn_val_intr_we),
-    .rdata_o   (cfg_chn0_val_intr),
-    .rdepth_o  ()
-  );
-
-  prim_fifo_async #(
-    .Width(10),
-    .Depth(4)
-  ) i_cfg_chn1_val_intr (
-    .clk_wr_i  (clk_aon_i),
-    .rst_wr_ni (rst_slow_ni),
-    .wvalid_i  (chn1_val_we),
-    .wready_o  (),
-    .wdata_i   (chn1_val),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_i),
-    .rst_rd_ni (rst_ni),
-    .rvalid_o  (cfg_chn1_rvalid_intr),
-    .rready_i  (cfg_chn_val_intr_we),
-    .rdata_o   (cfg_chn1_val_intr),
-    .rdepth_o  ()
-  );
   //To write into adc_chn_val register
   assign adc_chn_val_o[0].adc_chn_value.de = cfg_chn0_rvalid;
-  assign adc_chn_val_o[0].adc_chn_value.d = cfg_chn0_val;
+  assign adc_chn_val_o[0].adc_chn_value.d = chn0_val;
   assign adc_chn_val_o[1].adc_chn_value.de = cfg_chn1_rvalid;
-  assign adc_chn_val_o[1].adc_chn_value.d = cfg_chn1_val;
+  assign adc_chn_val_o[1].adc_chn_value.d = chn1_val;
 
+  // this signal indicates to the core clock domain one shot mode or adc mode has completed
+  // it is therefore now safe to capture the value coming from the fsm
   assign cfg_chn_val_intr_we = cfg_oneshot_done || cfg_adc_ctrl_done;
 
-  assign adc_chn_val_o[0].adc_chn_value_intr.de = cfg_chn0_rvalid_intr;
-  assign adc_chn_val_o[0].adc_chn_value_intr.d = cfg_chn0_val_intr;
-  assign adc_chn_val_o[1].adc_chn_value_intr.de = cfg_chn1_rvalid_intr;
-  assign adc_chn_val_o[1].adc_chn_value_intr.d = cfg_chn1_val_intr;
+  assign adc_chn_val_o[0].adc_chn_value_intr.de = cfg_chn_val_intr_we;
+  assign adc_chn_val_o[0].adc_chn_value_intr.d = chn0_val;
+  assign adc_chn_val_o[1].adc_chn_value_intr.de = cfg_chn_val_intr_we;
+  assign adc_chn_val_o[1].adc_chn_value_intr.d = chn1_val;
 
   //Connect the ports for future extension
   assign adc_chn_val_o[0].adc_chn_value_ext.de = 1'b0;

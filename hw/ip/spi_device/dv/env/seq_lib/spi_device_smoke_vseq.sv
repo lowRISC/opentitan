@@ -9,7 +9,7 @@ class spi_device_smoke_vseq extends spi_device_base_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans inside {[1:6]};
+    num_trans == 2;
   }
 
   virtual task body();
@@ -22,7 +22,7 @@ class spi_device_smoke_vseq extends spi_device_base_vseq;
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       spi_device_init();
-      repeat ($urandom_range(1, 200)) begin
+      repeat ($urandom_range(2, 10)) begin
         bit [31:0] host_data_exp_q[$];
         `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
         `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)

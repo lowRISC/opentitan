@@ -12,10 +12,10 @@
 %>
 
 { name: "FLASH_CTRL",
-  clock_primary: "clk_i",
-  other_clock_list: [ "clk_otp_i" ],
-  reset_primary: "rst_ni",
-  other_reset_list: [ "rst_otp_ni" ],
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_otp_i", reset: "rst_otp_ni"}
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "prim" }
@@ -101,7 +101,14 @@
       name:    "lc_seed_hw_rd_en"
       act:     "rcv"
       package: "lc_ctrl_pkg"
-    }
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
 
     { struct:  "lc_tx"
       type:    "uni"
@@ -259,6 +266,25 @@
   regwidth: "32",
   registers: {
     core: [
+      { name: "FLASH_DISABLE",
+        desc: "Disable flash functionality",
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+               Disables flash functionality completely.
+               This is a shortcut mechanism used by the software to completely
+               kill flash in case of emergency.
+              '''
+            resval: "0"
+            tags: [// Dont touch disable, it has several side effects on the system
+                   "excl:CsrAllTests:CsrExclWrite"],
+          },
+        ]
+      },
+
       { name: "INIT",
         desc: "Controller init register",
         swaccess: "rw1s",

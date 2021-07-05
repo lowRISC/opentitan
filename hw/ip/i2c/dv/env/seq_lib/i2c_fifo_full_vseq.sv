@@ -66,9 +66,17 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
     csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
     csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
     if (!cfg.under_reset) begin
-      if (fmt_full)  `DV_CHECK_EQ(fmt_lvl, I2C_FMT_FIFO_DEPTH);
+      if (fmt_full)  begin
+        `DV_CHECK_EQ(fmt_lvl, I2C_FMT_FIFO_DEPTH);
+      end else begin
+        `DV_CHECK_LT(fmt_lvl, I2C_FMT_FIFO_DEPTH);
+      end
+      if (rx_full)   begin
+        `DV_CHECK_EQ(rx_lvl, I2C_RX_FIFO_DEPTH);
+      end else begin
+        `DV_CHECK_LT(rx_lvl, I2C_RX_FIFO_DEPTH);
+      end
       if (fmt_empty) `DV_CHECK_EQ(fmt_lvl, 0);
-      if (rx_full)   `DV_CHECK_EQ(rx_lvl, I2C_RX_FIFO_DEPTH);
       if (rx_empty)  `DV_CHECK_EQ(rx_lvl, 0);
     end
   endtask : process_fifo_full_status

@@ -11,6 +11,7 @@ This document specifies the functionality of the OpenTitan key manager.
 - One-way key and identity (working) state hidden from software.
 - Version controlled identity and key generation.
 - Key generation for both software consumption and hardware sideload.
+- Support for DICE open profile
 
 
 ## Description
@@ -249,6 +250,35 @@ See the tables below for an enumeration.
 *  During `Initialized`, `CreatorRootKey`, `OwnerIntermediateKey` and `OwnerRootKey` states, a fault error causes the relevant key / outputs to be updated; however an operational error does not.
 *  During `Invalid` and `Disabled` states, the relevant key / outputs are updated regardless of the error.
 *  Only the relevant collateral is updated -> ie, advance / disable command leads to working key update, and generate command leads to software or sideload key update.
+
+## DICE Support
+
+The key manager supports [DICE open profile](https://pigweed.googlesource.com/open-dice/+/HEAD/docs/specification.md#Open-Profile-for-DICE).
+Specifically, the open profile has two compound device identifiers.
+* Attestation CDI
+* Sealing CDI
+
+The attestation CDI is used to attest hardware and software configuration and is thus expected to change between updates.
+The sealing CDI on the other hand, is used to attest the authority of the hardware and softawre configuration.
+The sealing version is thus expected to remain stable across software updates.
+
+To support these features, the key manager maintains two versions of the working state and associated internal key.
+There is one version for attestation and one version for sealing.
+
+The main difference between the two CDIs is the different usage of `SW_BINDING`.
+For the Sealing CDI, the {{< regref "SEALING_SW_BINDING" >}} is used, all other inputs are the same.
+For the Attestation CDI, the {{< regref "ATTEST_SW_BINDING" >}} is used, all other inputs are the same.
+
+When invoking an advance operation, both versions are advanced, one after the other.
+There are thus two kmac transactions.
+The first trasnaction uses the Sealing CDI internal key, {{< regref "SEALING_SW_BINDING" >}} and other common inputs.
+The second transaction uses the Attestation CDI internal key, {{< regref "ATTEST_SW_BINDING" >}} and other common inputs.
+
+When invoking a generate operation, the software must specify which CDI to use as the source key.
+This is done through {{< regref "CONTROL.CDI_SEL" >}}.
+Unlike the advance operation, there is only 1 transaction since we pick a specific CDI to operate.
+
+When disabling, both versions are disabled together.
 
 
 ## Block Diagram
