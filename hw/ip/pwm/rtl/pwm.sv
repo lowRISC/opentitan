@@ -30,15 +30,19 @@ module pwm
   pwm_reg_pkg::pwm_reg2hw_t reg2hw;
   logic [NumAlerts-1:0] alert_test, alerts;
 
+  // TLUL structs
+  tlul_pkg::tl_h2d_t         tl_pwm_h2d;
+  tlul_pkg::tl_d2h_t         tl_pwm_d2h;
+
   assign unused_regen = reg2hw.regen.q;
 
   pwm_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .reg2hw,
-    .intg_err_o(alerts[0]),
+    .clk_i      (clk_core_i),
+    .rst_ni     (rst_core_ni),
+    .tl_i       (tl_pwm_h2d),
+    .tl_o       (tl_pwm_d2h),
+    .reg2hw     (reg2hw),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
 
@@ -64,6 +68,22 @@ module pwm
   end
 
   assign cio_pwm_en_o = {NOutputs{1'b1}};
+
+  // Sync TLUL signals into core clk domain
+
+  tlul_fifo_async #(
+      .ReqDepth (1), // There will only ever be 1 req outstanding from the core
+      .RspDepth (1)
+  ) u_tlul_fifo (
+      .clk_h_i    (clk_i),
+      .rst_h_ni   (rst_core_ni), // keep pointers consistent by using single reset
+      .clk_d_i    (clk_core_i),
+      .rst_d_ni   (rst_core_ni),
+      .tl_h_i     (tl_i),
+      .tl_h_o     (tl_o),
+      .tl_d_o     (tl_pwm_h2d),
+      .tl_d_i     (tl_pwm_d2h)
+  );
 
   pwm_core #(.NOutputs(NOutputs)) u_pwm_core (
     .clk_core_i,
