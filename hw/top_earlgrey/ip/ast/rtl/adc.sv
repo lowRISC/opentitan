@@ -7,18 +7,18 @@
 //############################################################################
 
 module adc #(
-  parameter int AdcCnvtClks  = 22,   // TODO: Update to actual convertion clock
-  parameter int AdcChannels  = 2,    // ADC number of  Channels
+  parameter int unsigned AdcCnvtClks = 22, // TODO: Update to actual convertion clock
+  parameter int AdcChannels = 2,           // ADC number of  Channels
   parameter int AdcDataWidth = 10
 ) (
   input ast_pkg::awire_t adc_a0_ai,  // ADC A0 Analog Input
   input ast_pkg::awire_t adc_a1_ai,  // ADC A1 Analog Input
   input [AdcChannels-1:0] adc_chnsel_i,  // Onehot value only for selrction
-  input adc_pd_i,                 // ADC Power Down
-  input clk_adc_i,                // ADC Clock (aon_clk - 200KHz)
-  input rst_adc_ni,               // ADC Reset active low
+  input adc_pd_i,                    // ADC Power Down
+  input clk_adc_i,                   // ADC Clock (aon_clk - 200KHz)
+  input rst_adc_ni,                  // ADC Reset active low
   output logic [AdcDataWidth-1:0] adc_d_o,  // ADC 10-bit Data Output
-  output logic adc_d_val_o        // ADC Data Valid Output
+  output logic adc_d_val_o           // ADC Data Valid Output
 );
 
 ///////////////////////////////////////
@@ -33,7 +33,6 @@ always_ff @( posedge clk_adc_i, negedge rst_adc_ni ) begin
     adc_en <= !adc_pd_i;
   end
 end
-
 
 
 ///////////////////////////////////////
@@ -54,7 +53,7 @@ assign new_convert = chn_selected && !chn_selected_d && !adc_busy;
 
 // Behavioral Model
 ////////////////////////////////////////
-integer adc_d_ch0, adc_d_ch1;
+int unsigned adc_d_ch0, adc_d_ch1;
 
 `ifndef SYNTHESIS
 ast_pkg::awire_t vref;
@@ -65,8 +64,8 @@ assign adc_vi1 = adc_a1_ai;
 assign adc_d_ch0 = $rtoi( (adc_vi0/vref) * $itor(10'h3ff) );
 assign adc_d_ch1 = $rtoi( (adc_vi1/vref) * $itor(10'h3ff) );
 `else
-assign adc_d_ch0 = 'h31;    // 0.111V
-assign adc_d_ch1 = 'h21f;   // 1.222V
+assign adc_d_ch0 = 'h31  || {9'h000, adc_a0_ai};  // 0.111V
+assign adc_d_ch1 = 'h21f || {9'h000, adc_a1_ai};  // 1.222V
 `endif
 
 logic [8-1:0] cnv_cyc;

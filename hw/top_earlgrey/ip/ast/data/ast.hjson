@@ -6,7 +6,9 @@
 // *Module Description: Analog Sensors Top Registers
 //#############################################################################
 { name: "ast",
-  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  clocking: [
+    { clock: "clk_i", reset: "rst_ni" }
+  ],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
