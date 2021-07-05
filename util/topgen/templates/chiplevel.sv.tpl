@@ -892,8 +892,8 @@ module chip_${top["name"]}_${target["name"]} (
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
     // alerts
-    .fla_alert_in_i        ( flash_alert    ),
-    .otp_alert_in_i        ( otp_alert      ),
+    .fla_alert_src_i       ( flash_alert    ),
+    .otp_alert_src_i       ( otp_alert      ),
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft

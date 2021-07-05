@@ -11,10 +11,10 @@
 
 package ast_bhv_pkg;
 
-`ifndef SYNTHESIS
   /////////////////////////////////
   // Delay Parameters from Spec
   /////////////////////////////////
+`ifndef SYNTHESIS
   // POKs
   parameter time VCC_POK_RDLY    = 3us;
   parameter time VCC_POK_FDLY    = 500ns;
@@ -22,8 +22,8 @@ package ast_bhv_pkg;
   parameter time VCAON_POK_FDLY  = 500ns;
   parameter time VCMAIN_POK_RDLY = 3us;
   parameter time VCMAIN_POK_FDLY = 500ns;
-  parameter time VIO_POK_RDLY   = 3us;
-  parameter time VIO_POK_FDLY   = 500ns;
+  parameter time VIO_POK_RDLY    = 3us;
+  parameter time VIO_POK_FDLY    = 500ns;
   // Main Regulator
   parameter time MPVCC_RDLY      = 5us;
   parameter time MPVCC_FDLY      = 100ns;
@@ -38,9 +38,9 @@ package ast_bhv_pkg;
   parameter time IO_EN_RDLY      = 5us;
   parameter time AON_EN_RDLY     = 5us;
   parameter time RNG_EN_RDLY     = 5us;
-`endif
+`endif  // of SYNTHESIS
   // ADC
-  parameter int AdcCnvtClks      = 22;
+  parameter int unsigned AdcCnvtClks = 22;
 
 endpackage  // of ast_bhv_pkg
 `endif // of __AST_BHV_PKG_SV
