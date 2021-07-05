@@ -18,12 +18,7 @@
 
             Stimulus:
               - Enable spi_host ip
-              - Clear/enable interrupt (if needed)
-              - Program configuration registers (CONTROL) to reset spi_fsm, reset/set watermark for the fifos
-              - Program the CONFIGOPTS register to config spi_host channel
-                operating in different modes (single, dual, or quad)
-              - Randomize the content of COMMAND register
-              - Program/retrive data in TXDATA/RXDATA register w.r.t transmitted/received transactions
+              - Write data in standard mode - and read it back
 
             Checking:
               - Ensure transactions are transmitted/received correctly
@@ -32,7 +27,7 @@
       tests: ["spi_host_smoke"]
     }
     {
-      name: perf
+      name: performance
       desc: '''
             Send/receive transactions at max bandwidth
 
@@ -45,7 +40,7 @@
               - Ensure transactions are transmitted/received correctly
             '''
       milestone: V2
-      tests: ["spi_host_perf"]
+      tests: []
     }
     {
       name: error_event_intr
@@ -54,7 +49,7 @@
             (except TX OVERFLOW error interrupt is verified in separate test)
 
             Stimulus:
-              - Program ERROR_ENABLE/EVENT_ENABLE register to enable 
+              - Program ERROR_ENABLE/EVENT_ENABLE register to enable
                 corresponding error/event interrupt assertion
               - Program transaction with proper constraints to assert error/event interrupts
 
@@ -66,32 +61,56 @@
                 once the event interrupt pin is asserted
             '''
       milestone: V2
-      tests: ["spi_host_error_event_intr"]
+      tests: []
     }
     {
-      name: tx_overflow_error
+      name: clock_rate
       desc: '''
-            Test TX OVERFLOW error is asserted by the spi_host
-
             Stimulus:
-              - Program ERROR_ENABLE register to enable the TXOVERFLOW interrupt
-              - Program transaction with proper constraints to assert the TXOVERFLOW interrupts
+              - select different settings for:
+              * CONFIGOPTS_0.CSNIDLE_0
+              * CONFIGOPTS_0.CSNLEAD_0
+              * CONFIGOPTS_0.CSNTRAIL_0
 
             Checking:
-              - Ensure excess tx data is dropped
-              - Ensure the matching between the value of OVERFLOW bit in the ERROR_STATUS
-                and the ERROR_ENABLE register the once error interrupt pin is asserted
+              - verify that merging of commands work correctly
+              - verify that the DUT can handle different sck -> cs_n timings
             '''
       milestone: V2
-      tests: ["spi_host_tx_overflow_error"]
+      tests: []
     }
     {
-      name: component_reset
+      name: speed
       desc: '''
-            Test components (spi_fsm, rx_fifo, tx_fifo) are randomly reset
+            Stimulus:
+              - randomly select the DUT to run single/dual/quad mode
+
+            Checking:
+              - verify that all speeds are supported
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_select_timing
+      desc: '''
+            Stimulus:
+              - Randomly select a setting for the 16bit clock divider
+
+            Checking:
+              - Check that the DUT operates correctly under different SPI clock speeds
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: sw_reset
+      desc: '''
+            verify software reset behavior
 
             Stimulus:
-              - Reset the components of spi_host randomly after a random number of data shows up on fifos
+              - Reset the spi_host randomly
+                after a random number of data shows up on fifos
 
             Checking:
               - Ensure that reads to RXDATA register yield 0s after the rx_fifo is reset
@@ -99,35 +118,83 @@
                 after the tx_fifo or spi_fsm is reset
             '''
       milestone: V2
-      tests: ["spi_host_component_reset"]
+      tests: []
     }
     {
-      name: clock_domain
+      name: passthrough_mode
       desc: '''
-            TBD - Verify the function of clock-crossing domain for spi_host
+            - Verify the function of spi_host in passthrough_mode
 
             Stimulus:
               - TBD
-
             Checking:
               - TBD
       '''
       milestone: V2
-      tests: ["spi_host_clock_domain"]
+      tests: []
     }
     {
-      name: special_modes
+      name: cpol_cpha
       desc: '''
-            TBD - Verify the function of spi_host in special_modes (passthrough and manual_ctrl_cs)
-
             Stimulus:
-              - TBD
+              - Randomly chip select for different polarity / phase
 
             Checking:
-              - TBD
-      '''
+              - Check that the DUT operates correctly under different cs_n settings
+            '''
       milestone: V2
-      tests: ["spi_host_special_modes"]
+      tests: []
+    }
+    {
+      name: full_cycle
+      desc: '''
+            Stimulus:
+              - randomly select FULLCYC to be set
+
+            Checking:
+              - Check that the data can be read one full cycle after the data was asserted
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: endian
+      desc: '''
+            Stimulus:
+              - set the compile time parameter to configure the DUT in both modes.
+              if possible this should be randomized for all test to verify support in both modes
+
+            Checking:
+              - Check all features are supported correctly in both little and big endian mode
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: duplex
+      desc: '''
+            Stimulus:
+              - in standard mode set the DUT to run full duplex
+
+            Checking:
+              - verify that the DUT support both half and full duplex in standard mode.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tx_rx_only
+      desc: '''
+            Stimulus:
+              - in standard mode enable tx only and have the env send garbage back
+              - in standard mode enable rx only and have the env ignore the incoming data
+
+            Checking:
+              - verify that the DUT ignores rx line when in tx only mode
+              - verify that the DUT does not drain the tx fifo in rx only mode
+            '''
+      milestone: V2
+      tests: []
     }
     {
       name: stress_all
@@ -144,7 +211,119 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: ["spi_host_stress_all"]
+      tests: []
+    }
+  ]
+  covergroups: [
+    {
+      name: tx_fifo_overflow_cg
+      desc: '''
+            Collect coverage to verify that an attempt was made to overflow the TX FIFO
+            by attempting to write to a full FIFO
+            '''
+    }
+    {
+      name: rx_fifo_underflow_cg
+      desc: '''
+            Collect coverage to verify that an attempt was made to underflow the RX FIFO
+            by attempting to read from an empty FIFO
+            '''
+    }
+    {
+      name: long_commands_cg
+      desc: '''
+            Collect coverage to verify that both a read and write command longer than 4 bytes
+            was seen
+            '''
+    }
+    {
+      name:config_opts_cg
+      desc: '''
+            Collect coverage on the config opts register, some important crosses:
+
+            -  CPOL and CPHA, check all 4 combinations are tested
+            -  CSNLEAD, CSNTRAIL and CSNIDLE
+            '''
+    }
+    {
+      name: cdc_cg
+      desc: '''
+            Collect coverage on the relationship between the core_clk and the spi_sck to verify that
+            both scenarios with both a slow spi_sck, a very fast spi_sck (2x core_clk)
+            and where the two clocks are very close has been tested
+            '''
+    }
+    {
+      name: unaligned_data_cg
+      desc: '''
+            Collect coverage the alignment of writes to the data window
+            to verify that all possible alignments was seen
+            '''
+    }
+    {
+      name: duplex_cg
+      desc: '''
+            Collect coverage that we verified both duplex and half duplex
+            '''
+    }
+    {
+      name: interrupts_cg
+      desc: '''
+            Collect coverage that all types of interrupt was seen
+            '''
+    }
+    {
+      name: alert_cg
+      desc: '''
+            Collect coverage to verify all alerts are triggered correctly
+            '''
+    }
+    {
+      name: control_cg
+      desc: '''
+            Collect coverage on the control register to make sure all options are excercised
+            - Tx and RX water mark should have a bin for min value, max value
+              and one for everything in between
+            '''
+    }
+    {
+      name: status_cg
+      desc: '''
+            Collect coverage on the status register to make sure all scenarios are checked
+            '''
+    }
+    {
+      name: csid_cg
+      desc: '''
+            Collect coverage that different IDs are used.
+            '''
+    }
+    {
+      name: command_cg
+      desc: '''
+            Collect coverage that different commant settings, important cross:
+
+            - Direction and SPEED
+            - CSAAT and SPEED
+            '''
+    }
+    {
+      name: error_en_cg
+      desc: '''
+            Collect coverage that all possible errors was enabled
+            '''
+    }
+    {
+      name: error_status_cg
+      desc: '''
+            Collect coverage that all possible errors was seen
+            '''
+    }
+    {
+      name: event_en_cg
+      desc: '''
+            Collect coverage that all events was enabled and seen
+            '''
     }
   ]
 }
