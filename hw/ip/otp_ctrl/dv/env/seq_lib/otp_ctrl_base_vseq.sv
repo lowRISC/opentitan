@@ -30,6 +30,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit default_req_blocking = 1;
   bit lc_prog_blocking     = 1;
 
+  uint32_t op_done_spinwait_timeout_ns = 20_000_000;
+
   // Collect current lc_state and lc_cnt. This is used to create next lc_state and lc_cnt without
   // error.
   lc_ctrl_state_pkg::lc_state_e lc_state;
@@ -295,6 +297,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         begin
           csr_spinwait(.ptr(ral.status.dai_idle),
                        .exp_data(1),
+                       .timeout_ns(op_done_spinwait_timeout_ns),
                        .spinwait_delay_ns($urandom_range(0, 5)));
         end
         begin
