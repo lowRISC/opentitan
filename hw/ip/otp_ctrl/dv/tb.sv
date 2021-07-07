@@ -140,18 +140,32 @@ module tb;
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  // Instantitate the memory backdoor util instance.
-  `define OTP_CTRL_MEM_HIER \
-      tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+  // Instantitate the memory backdoor util instance only for OS implementation
+  // Proprietary IP will instantiate their own backdoor util
+
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic
+    `define MEM_MODULE_PATH \
+        tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv
+
+    `define MEM_ARRAY_PATH \
+        `MEM_MODULE_PATH.u_mem.gen_generic.u_impl_generic.mem
+
+    initial begin : mem_bkdr_util_gen
+      mem_bkdr_util m_mem_bkdr_util;
+      m_mem_bkdr_util = new(.name("mem_bkdr_util"),
+                            .path(`DV_STRINGIFY(`MEM_ARRAY_PATH)),
+                            .depth($size(`MEM_ARRAY_PATH)),
+                            .n_bits($bits(`MEM_ARRAY_PATH)),
+                            .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
+
+      uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
+    end : mem_bkdr_util_gen
+
+    `undef MEM_ARRAY_PATH
+    `undef MEM_MODULE_PATH
+  end : gen_impl_generic
 
   initial begin
-    mem_bkdr_util m_mem_bkdr_util;
-    m_mem_bkdr_util = new(.name  ("mem_bkdr_util"),
-                          .path  (`DV_STRINGIFY(`OTP_CTRL_MEM_HIER)),
-                          .depth ($size(`OTP_CTRL_MEM_HIER)),
-                          .n_bits($bits(`OTP_CTRL_MEM_HIER)),
-                          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
-
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
     // 2 values.
     // If it's not Off, it should be On.
@@ -194,12 +208,10 @@ module tb;
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
 
     uvm_config_db#(virtual otp_ctrl_if)::set(null, "*.env", "otp_ctrl_vif", otp_ctrl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
 
-  `undef OTP_CTRL_MEM_HIER
 endmodule
