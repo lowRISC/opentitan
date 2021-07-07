@@ -39,7 +39,15 @@ module lc_ctrl_state_transition
     trans_cnt_oflw_error_o = 1'b0;
     trans_invalid_error_o = 1'b0;
 
-    if (fsm_state_i inside {CntIncrSt, CntProgSt}) begin
+    if (fsm_state_i inside {CntIncrSt,
+                            CntProgSt,
+                            // Since OTP programming is incremental, we have to keep the next
+                            // counter state assigned when performing the actual state transition
+                            // in the second programming pass to prevent OTP programming errors.
+                            TransCheckSt,
+                            TokenCheck0St,
+                            TokenCheck1St,
+                            TransProgSt}) begin
       // In this state, the life cycle counter is incremented.
       // Throw an error if the counter is already maxed out.
       unique case (lc_cnt_i)
@@ -69,7 +77,10 @@ module lc_ctrl_state_transition
       end
     end
 
-    if (fsm_state_i inside {TransCheckSt, TokenCheck0St, TokenCheck1St, TransProgSt}) begin
+    if (fsm_state_i inside {TransCheckSt,
+                            TokenCheck0St,
+                            TokenCheck1St,
+                            TransProgSt}) begin
       // Check that the decoded transition indexes are valid
       // before indexing the state transition matrix.
       if (dec_lc_state_i <= DecLcStScrap ||
