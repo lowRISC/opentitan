@@ -195,9 +195,6 @@ dif_kmac_result_t dif_kmac_configure(dif_kmac_t *kmac,
   // Write entropy period register.
   uint32_t entropy_period_reg = 0;
   entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_ENTROPY_TIMER_FIELD,
-      config.entropy_reseed_interval);
-  entropy_period_reg = bitfield_field32_write(
       entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD,
       config.entropy_wait_timer);
   mmio_region_write32(kmac->params.base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,

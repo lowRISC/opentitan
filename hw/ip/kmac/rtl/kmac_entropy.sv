@@ -23,7 +23,6 @@ module kmac_entropy
   input                         rand_consumed_i,
 
   // Status
-  input in_progress_i,
   input in_keyblock_i,
 
   // Configurations
@@ -41,10 +40,20 @@ module kmac_entropy
   input        seed_update_i,
   input [63:0] seed_data_i,
 
+  //// SW may initiate manual EDN seed refresh
+  input entropy_refresh_req_i,
+
   //// Timer limit value
   //// If value is 0, timer is disabled
-  input [EntropyTimerW-1:0] entropy_timer_limit_i,
-  input [EdnWaitTimerW-1:0] wait_timer_limit_i,
+  input [TimerPrescalerW-1:0] wait_timer_prescaler_i,
+  input [EdnWaitTimerW-1:0]   wait_timer_limit_i,
+
+  // Status out
+  //// Hash Ops counter. Count how many hashing ops (KMAC) have run
+  //// after the clear request from SW
+  output logic [kmac_reg_pkg::HashCntW-1:0] hash_cnt_o,
+  input                                     hash_cnt_clr_i,
+  input        [kmac_reg_pkg::HashCntW-1:0] hash_threshold_i,
 
   // Error output
   output err_t err_o,
@@ -159,25 +168,17 @@ module kmac_entropy
   /////////////
 
   // Timers
-  // "Entropy Timer": While in operation, if this entropy timer is enabled, FSM
-  //   fetches new entropy from LFSR when the timer is expired.
-  //
   // "Wait Timer": This timer is in active when FSM sends entropy request to EDN
   //   If EDN does not return the entropy data until the timer expired, FSM
   //   moves to error state and report the error to the system.
 
-  typedef enum logic [1:0] {
-    NoTimer      = 2'h 0,
-    EntropyTimer = 2'h 1,
-    EdnWaitTimer = 2'h 2
-  } timer_sel_e;
-  timer_sel_e timer_sel;
-
-  localparam int unsigned TimerW = (EntropyTimerW > EdnWaitTimerW)
-                                 ? EntropyTimerW : EdnWaitTimerW;
-  logic timer_enable, timer_update, timer_expired;
+  localparam int unsigned TimerW = EdnWaitTimerW;
+  logic timer_enable, timer_update, timer_expired, timer_pulse;
   logic [TimerW-1:0] timer_limit;
   logic [TimerW-1:0] timer_value;
+
+  localparam int unsigned PrescalerW = TimerPrescalerW;
+  logic [PrescalerW-1:0] prescaler_cnt;
 
   // LFSR
   //// SW configures to use EDN or SEED register as a LFSR seed
@@ -190,13 +191,6 @@ module kmac_entropy
   logic storage_update;
   logic storage_idx_clear;
   logic storage_filled;
-
-  // in_progress: check if in_progress de-asserted. It means hashing operation
-  // is completed. Entropy logic refreshes seed and prepare new entropy.
-  // de-asserting in_progress sets in_progress_deasserted, then when FSM moves
-  // to StRandEdn, it clears the de-assertion. This is to not miss the
-  // deassertion event.
-  logic in_progress_deasserted, in_progress_clear, in_progress_d;
 
   // Entropy valid signal
   // FSM set and clear the valid signal, rand_consume signal clear the valid
@@ -216,20 +210,12 @@ module kmac_entropy
       timer_value <= timer_limit;
     end else if (timer_expired) begin
       timer_value <= '0; // keep the value
-    end else if (timer_enable && |timer_value) begin // if non-zero timer v
+    end else if (timer_enable && timer_pulse && |timer_value) begin // if non-zero timer v
       timer_value <= timer_value - 1'b 1;
     end
   end
 
-  // select timer
-  always_comb begin
-    timer_limit = '0;
-    unique case (timer_sel)
-      EntropyTimer: timer_limit = TimerW'(entropy_timer_limit_i);
-      EdnWaitTimer: timer_limit = TimerW'(wait_timer_limit_i);
-      default: timer_limit = '0; // NoTimer
-    endcase
-  end
+  assign timer_limit = TimerW'(wait_timer_limit_i);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -240,8 +226,52 @@ module kmac_entropy
       timer_expired <= 1'b 1;
     end
   end
+
+  // Prescaler
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      prescaler_cnt <= '0;
+    end else if (timer_update) begin
+      prescaler_cnt <= wait_timer_prescaler_i;
+    end else if (timer_enable && prescaler_cnt == '0) begin
+      prescaler_cnt <= wait_timer_prescaler_i;
+    end else if (timer_enable) begin
+      prescaler_cnt <= prescaler_cnt - 1'b 1;
+    end
+  end
+
+  assign timer_pulse = (timer_enable && prescaler_cnt == '0);
   // Timers -------------------------------------------------------------------
 
+  // Hash Counter
+  logic threshold_hit;
+  logic threshold_hit_q, threshold_hit_clr; // latched hit
+
+  logic hash_progress_d, hash_progress_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) hash_progress_q <= 1'b 0;
+    else         hash_progress_q <= hash_progress_d;
+  end
+
+  assign hash_progress_d = in_keyblock_i;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      hash_cnt_o <= '0;
+    end else if (hash_cnt_clr_i || threshold_hit || entropy_refresh_req_i) begin
+      hash_cnt_o <= '0;
+    end else if (hash_progress_q && !hash_progress_d) begin
+      hash_cnt_o <= hash_cnt_o + 1'b 1;
+    end
+  end
+
+  assign threshold_hit = |hash_threshold_i && (hash_threshold_i <= hash_cnt_o);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)                threshold_hit_q <= 1'b 0;
+    else if (threshold_hit_clr) threshold_hit_q <= 1'b 0;
+    else if (threshold_hit)     threshold_hit_q <= 1'b 1;
+  end
 
   // LFSR =====================================================================
   //// FSM controls the seed enable signal `lfsr_seed_en`.
@@ -325,26 +355,6 @@ module kmac_entropy
 
   // Storage expands to StateW ------------------------------------------------
 
-  // In Process Logic =========================================================
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      in_progress_d <= 1'b 0;
-    end else begin
-      in_progress_d <= in_progress_i;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      in_progress_deasserted <= 1'b 0;
-    end else if (in_progress_d && !in_progress_i && (mode_i == EntropyModeEdn)) begin
-      in_progress_deasserted <= 1'b 1;
-    end else if (in_progress_clear) begin
-      in_progress_deasserted <= 1'b 0;
-    end
-  end
-  // In Process Logic ---------------------------------------------------------
-
   ///////////////////
   // State Machine //
   ///////////////////
@@ -371,7 +381,8 @@ module kmac_entropy
     // Default Timer values
     timer_enable = 1'b 0;
     timer_update = 1'b 0;
-    timer_sel    = NoTimer;
+
+    threshold_hit_clr = 1'b 0;
 
     // EDN request
     entropy_req_o = 1'b 0;
@@ -399,8 +410,6 @@ module kmac_entropy
     storage_idx_clear = 1'b 0;
     storage_update    = 1'b 0;
 
-    in_progress_clear = 1'b 0;
-
     // Error
     err_o = '{valid: 1'b 0, code: ErrNone, info: '0};
 
@@ -421,7 +430,6 @@ module kmac_entropy
               st_d = StRandEdn;
 
               // Timer reset
-              timer_sel = EdnWaitTimer;
               timer_update = 1'b 1;
             end
 
@@ -456,25 +464,14 @@ module kmac_entropy
           storage_idx_clear = 1'b 1;
 
           rand_valid_clear = 1'b 1;
-        end else if (mode_i == EntropyModeEdn) begin
-          if (in_keyblock_i && timer_expired && |entropy_timer_limit_i) begin
-            // Timer count is non-zero and timer expired
-            st_d = StRandEdn;
+        end else if (entropy_refresh_req_i || threshold_hit_q) begin
+          st_d = StRandEdn;
 
-            timer_update = 1'b 1;
-            timer_sel    = EdnWaitTimer;
+          // Timer reset
+          timer_update = 1'b 1;
 
-          end else if (in_progress_deasserted) begin
-            // hashing operation is completed, refresh the entropy and stop
-            st_d = StRandEdn;
-
-            in_progress_clear = 1'b 1;
-
-            timer_update = 1'b 1;
-            timer_sel    = EdnWaitTimer;
-          end else begin
-            st_d = StRandReady;
-          end
+          // Clear the threshold as it refreshes the hash
+          threshold_hit_clr = 1'b 1;
         end else begin
           st_d = StRandReady;
         end
@@ -539,11 +536,6 @@ module kmac_entropy
 
           rand_valid_set = 1'b 1;
 
-          // Based on the timer value, either reset the timer or just move
-          if (mode_i == EntropyModeEdn && |entropy_timer_limit_i) begin
-            timer_sel = EntropyTimer;
-            timer_update = 1'b 1;
-          end
         end else begin
           st_d = StRandExpand;
 

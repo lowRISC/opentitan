@@ -67,6 +67,12 @@
       desc:    "Number of words for Encoded NsPrefix."
       local:   "true"
     }
+    { name:    "HashCntW"
+      type:    "int unsigned"
+      default: "10"
+      desc:    "Width of the hash counter in the entropy"
+      local:   "true"
+    }
   ]
   inter_signal_list: [
     { struct:  "hw_key_req"
@@ -357,6 +363,17 @@
             } // e: done
           ] // enum
         } // f: cmd
+        { bits: "8"
+          name: "entropy_req"
+          desc: '''SW triggered Entropy Request
+
+          If writes 1 to this field
+          '''
+        } // f: entropy_req
+        { bits: "9"
+          name: "hash_cnt_clr"
+          desc: "If writes 1, it clears the hash (KMAC) counter in the entropy module"
+        }
       ]
     } // R: CMD
     { name: "STATUS"
@@ -402,22 +419,20 @@
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
-        { bits: "15:0"
-          name: "entropy_timer"
-          desc: '''Entropy period in clock cycles This register determines
-          the refresh period. The value is the number of clock cycles. In
-          every entropy period, the entropy generation logic in KMAC requests
-          new entropy to EDN and feed the value into LFSR seed.
+        { bits: "9:0"
+          name: "prescaler"
+          desc: '''EDN Wait timer prescaler.
 
-          If 0, the entropy generation logic does not refresh its seed. The
-          software manually updates the seed by writing into "ENTROPY_SEED"
-          registers. '''
+          EDN Wait timer has 16 bit value. The timer value is increased when the timer pulse is generated. Timer pulse is raises when the number of the clock cycles hit this prescaler value.
+
+          The exact period of the timer pulse is unknown as the KMAC input clock may contain jitters.
+          '''
         }
         { bits: "31:16"
           name: "wait_timer"
           desc: '''EDN request wait timer.
 
-          The entropy module in KMAC waits up to this field in clock cycles
+          The entropy module in KMAC waits up to this field in the timer pulse
           after it sends request to EDN module. If the timer expires, the
           entropy module moves to an error state and notifies to the system.
 
@@ -430,6 +445,34 @@
         }
       ]
     } // R: ENTROPY_PERIOD
+    {
+      name: "ENTROPY_REFRESH"
+      desc: '''Entropy Refresh Threshold and Counter
+
+      KMAC entropy can be refreshed after the given threshold KMAC operations
+      run. If the KMAC hash counter hits (GTE) the configured threshold, the
+      entropy module in the KMAC IP requests new seed to EDN and reset the KMAC
+      hash counter.
+
+      If the threshold is 0, the refresh by the counter does not work. And the
+      counter is only reset by the CMD.hash_cnt_clr CSR bit.
+      '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "HashCntW-1:0"
+          name: "threshold"
+          desc: "Hash Threshold"
+        }
+        { bits: "HashCntW+15:16"
+          name: "hash_cnt"
+          desc: "Hash (KMAC) counter"
+          swaccess: "ro"
+          hwaccess: "hwo"
+        }
+      ]
+    } // R: ENTROPY_REFRESH
     { name: "ENTROPY_SEED_LOWER"
       desc: '''Entropy Seed [31:0].
 

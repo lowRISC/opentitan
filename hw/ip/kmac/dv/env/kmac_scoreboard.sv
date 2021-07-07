@@ -2166,13 +2166,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   //cfg.clk_rst_vif.wait_clks(1);
                   //sha3_idle = 1;
 
-                  // if using EDN, KMAC will refresh entropy after finishing a hash operation
-                  if (entropy_mode == EntropyModeEdn) begin
-                    cfg.clk_rst_vif.wait_clks(1);
-                    in_edn_fetch = cfg.enable_masking;
-                    refresh_entropy = cfg.enable_masking;
-                    `uvm_info(`gfn, "refreshing entropy from EDN", UVM_HIGH)
-                  end
                 end else begin // SW sent wrong command
 
                   kmac_err.valid = 1;

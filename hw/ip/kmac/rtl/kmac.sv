@@ -112,7 +112,7 @@ module kmac
   logic sha3_block_processed;
 
   // EStatus for entropy
-  logic entropy_in_progress, entropy_in_keyblock;
+  logic entropy_in_keyblock;
 
   // KeyMgr interface logic generates event_absorbed from sha3_absorbed.
   // It is active only if SW initiates the hashing engine.
@@ -224,11 +224,16 @@ module kmac
   kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd;
 
   // Entropy configurations
-  logic [15:0] entropy_timer_limit;
+  logic [9:0]  wait_timer_prescaler;
   logic [15:0] wait_timer_limit;
   logic        entropy_seed_update;
   logic        unused_entropy_seed_upper_qe;
   logic [63:0] entropy_seed_data;
+  logic        entropy_refresh_req;
+
+  logic [HashCntW-1:0] entropy_hash_threshold;
+  logic [HashCntW-1:0] entropy_hash_cnt;
+  logic                entropy_hash_clr;
 
   logic entropy_ready;
   entropy_mode_e entropy_mode;
@@ -261,7 +266,7 @@ module kmac
 
   // Command signals
   // TODO: Make the entire logic to use enum rather than signal
-  assign sw_cmd = (reg2hw.cmd.qe) ? kmac_cmd_e'(reg2hw.cmd.q) : CmdNone;
+  assign sw_cmd = (reg2hw.cmd.cmd.qe) ? kmac_cmd_e'(reg2hw.cmd.cmd.q) : CmdNone;
   `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
     sha3_start = 1'b 0;
@@ -354,14 +359,23 @@ module kmac
   assign sw_key_len = key_len_e'(reg2hw.key_len.q);
 
   // Entropy configurations
-  assign entropy_timer_limit = reg2hw.entropy_period.entropy_timer.q;
-  assign wait_timer_limit    = reg2hw.entropy_period.wait_timer.q;
+  assign wait_timer_prescaler = reg2hw.entropy_period.prescaler.q;
+  assign wait_timer_limit     = reg2hw.entropy_period.wait_timer.q;
 
   // Seed updated when the software writes Entropy Seed [31:0]
   assign unused_entropy_seed_upper_qe = reg2hw.entropy_seed_upper.qe;
   assign entropy_seed_update = reg2hw.entropy_seed_lower.qe ;
   assign entropy_seed_data = { reg2hw.entropy_seed_lower.q,
                                reg2hw.entropy_seed_upper.q};
+  assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
+                            && reg2hw.cmd.entropy_req.qe;
+
+  assign entropy_hash_threshold = reg2hw.entropy_refresh.threshold.q;
+  assign hw2reg.entropy_refresh.hash_cnt.de = 1'b 1;
+  assign hw2reg.entropy_refresh.hash_cnt.d  = entropy_hash_cnt;
+
+  assign entropy_hash_clr = reg2hw.cmd.hash_cnt_clr.qe
+                         && reg2hw.cmd.hash_cnt_clr.q;
 
   // Entropy config
   assign entropy_ready = reg2hw.cfg.entropy_ready.q;
@@ -508,7 +522,6 @@ module kmac
     // Default value
     kmac_st_d = KmacIdle;
 
-    entropy_in_progress = 1'b 0;
     entropy_in_keyblock = 1'b 0;
 
     unique case (kmac_st)
@@ -527,17 +540,15 @@ module kmac
       end
 
       KmacPrefix: begin
-        entropy_in_progress =1'b 1;
         // Wait until SHA3 processes one block
         if (sha3_block_processed) begin
-          kmac_st_d = (reg2hw.cfg.kmac_en.q) ? KmacKeyBlock : KmacMsgFeed ;
+          kmac_st_d = (app_kmac_en) ? KmacKeyBlock : KmacMsgFeed ;
         end else begin
           kmac_st_d = KmacPrefix;
         end
       end
 
       KmacKeyBlock: begin
-        entropy_in_progress = 1'b 1;
         entropy_in_keyblock = 1'b 1;
         if (sha3_block_processed) begin
           kmac_st_d = KmacMsgFeed;
@@ -547,7 +558,6 @@ module kmac
       end
 
       KmacMsgFeed: begin
-        entropy_in_progress = 1'b 1;
         // If absorbed, move to Digest
         if (sha3_absorbed && sha3_done) begin
           // absorbed and done can be asserted at a cycle if Applications have
@@ -562,7 +572,6 @@ module kmac
       end
 
       KmacDigest: begin
-        entropy_in_progress = 1'b 1;
         // SW can manually run it, wait till done
         if (sha3_done) begin
           kmac_st_d = KmacIdle;
@@ -901,8 +910,6 @@ module kmac
       .rand_consumed_i (sha3_rand_consumed),
 
       // Status from internal logic
-      //// SHA3 engine run indicator
-      .in_progress_i (entropy_in_progress),
       //// KMAC secret block handling indicator
       .in_keyblock_i (entropy_in_keyblock),
 
@@ -912,15 +919,21 @@ module kmac
       .fast_process_i  (entropy_fast_process),
 
       //// Entropy refresh period in clk cycles
-      .entropy_timer_limit_i (entropy_timer_limit),
-      .wait_timer_limit_i    (wait_timer_limit),
+      .wait_timer_prescaler_i (wait_timer_prescaler),
+      .wait_timer_limit_i     (wait_timer_limit),
 
       //// SW update of seed
-      .seed_update_i (entropy_seed_update),
-      .seed_data_i   (entropy_seed_data),
+      .seed_update_i         (entropy_seed_update),
+      .seed_data_i           (entropy_seed_data),
+      .entropy_refresh_req_i (entropy_refresh_req),
+
+      // Status
+      .hash_cnt_o       (entropy_hash_cnt),
+      .hash_cnt_clr_i   (entropy_hash_clr),
+      .hash_threshold_i (entropy_hash_threshold),
 
       // Error
-      .err_o (entropy_err),
+      .err_o           (entropy_err),
       .err_processed_i (err_processed)
     );
   end else begin : gen_empty_entropy
@@ -943,14 +956,20 @@ module kmac
     logic unused_seed_update;
     logic [63:0] unused_seed_data;
     logic [31:0] unused_refresh_period;
+    logic unused_entropy_refresh_req;
     assign unused_seed_data = entropy_seed_data;
     assign unused_seed_update = entropy_seed_update;
-    assign unused_refresh_period = {wait_timer_limit, entropy_timer_limit};
+    assign unused_refresh_period = ^{wait_timer_limit, wait_timer_prescaler};
+    assign unused_entropy_refresh_req = entropy_refresh_req;
+
+    logic unused_entropy_hash;
+    assign unused_entropy_hash = ^{entropy_hash_clr, entropy_hash_threshold};
+    assign entropy_hash_cnt = '0;
 
     assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
     logic [1:0] unused_entropy_status;
-    assign unused_entropy_status = {entropy_in_keyblock, entropy_in_progress};
+    assign unused_entropy_status = entropy_in_keyblock;
   end
 
   // Register top
@@ -1009,5 +1028,5 @@ module kmac
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
 
   // Command input should be onehot0
-  `ASSUME(CmdOneHot0_M, reg2hw.cmd.qe |-> $onehot0(reg2hw.cmd.q))
+  `ASSUME(CmdOneHot0_M, reg2hw.cmd.cmd.qe |-> $onehot0(reg2hw.cmd.cmd.q))
 endmodule

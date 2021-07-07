@@ -80,8 +80,8 @@ package kmac_pkg;
   } kmac_cmd_e;
 
   // Timer
-  parameter int unsigned EntropyTimerW = 16;
-  parameter int unsigned EdnWaitTimerW = 16;
+  parameter int unsigned TimerPrescalerW = 10;
+  parameter int unsigned EdnWaitTimerW   = 16;
 
   // Entropy Mode Selection : Should be matched to register package Enum value
   typedef enum logic [1:0] {
