@@ -417,6 +417,10 @@ Additionally, instructions and data stored in the instruction and data memory, r
 
 Refer to the [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}) section for details of how the data integrity protections are implemented.
 
+## Instruction Counter
+ 
+In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from {{< regref "INSN_CNT">}} and verify whether it matches the expectation.
+
 # Theory of Operations
 
 ## Block Diagram
