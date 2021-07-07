@@ -33,6 +33,13 @@ module prim_subreg_shadow #(
   output logic err_storage
 );
 
+  // Since the shadow and staging registers work with the 1's complement value,
+  // we need to invert the polarity of the SW access if it is either "W1S" or "W0C".
+  // W1C is forbidden since the W0S complement is not implemented.
+  `ASSERT_INIT(CheckSwAccessIsLegal_A, SWACCESS inside {"RW", "RO", "WO", "W1S", "W0C", "RC"})
+  parameter bit [3*8-1:0] INVERTED_SWACCESS = (SWACCESS == "W1S") ? "W0C" :
+                                              (SWACCESS == "W0C") ? "W1S" : SWACCESS;
+
   // Subreg control signals
   logic          phase_clear;
   logic          phase_q;
@@ -86,9 +93,9 @@ module prim_subreg_shadow #(
   assign staged_we = we & ~phase_q;
   assign staged_de = de & ~phase_q;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
-    .RESVAL   ( ~RESVAL  )
+    .DW       ( DW                ),
+    .SWACCESS ( INVERTED_SWACCESS ),
+    .RESVAL   ( ~RESVAL           )
   ) staged_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
@@ -109,9 +116,9 @@ module prim_subreg_shadow #(
   assign shadow_we = we & phase_q & ~err_update;
   assign shadow_de = de & phase_q & ~err_update;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
-    .RESVAL   ( ~RESVAL  )
+    .DW       ( DW                ),
+    .SWACCESS ( INVERTED_SWACCESS ),
+    .RESVAL   ( ~RESVAL           )
   ) shadow_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
