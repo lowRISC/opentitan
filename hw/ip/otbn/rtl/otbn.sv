@@ -206,41 +206,23 @@ module otbn
     .otbn_imem_scramble_new_req_i (1'b0)
   );
 
-  prim_ram_1p_scr #(
+  prim_ram_1p_adv #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (39),
-    .EnableParity    (0),
-    .DiffWidth       (39)
+    .DataBitsPerMask (39)
   ) u_imem (
     .clk_i,
-    .rst_ni      (rst_n),
+    .rst_ni   (rst_n),
 
-    .key_valid_i (otbn_imem_scramble_valid),
-    .key_i       (otbn_imem_scramble_key),
-    .nonce_i     (otbn_imem_scramble_nonce),
-
-    .init_seed_i ('0),
-    .init_req_i  (1'b0),
-    .init_ack_o  (),
-
-    .req_i       (imem_req),
-    // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
-    // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
-    // the behaviour we want, read error instead?
-    .gnt_o       (),
-    .write_i     (imem_write),
-    .addr_i      (imem_index),
-    .wdata_i     (imem_wdata),
-    .wmask_i     (imem_wmask),
-    .intg_error_i(1'b0),
-
-    .rdata_o     (imem_rdata),
-    .rvalid_o    (imem_rvalid),
-    .raddr_o     (),
-    .rerror_o    (),
-    .intg_error_o(),
-    .cfg_i       (ram_cfg_i)
+    .req_i    (imem_req),
+    .write_i  (imem_write),
+    .addr_i   (imem_index),
+    .wdata_i  (imem_wdata),
+    .wmask_i  (imem_wmask),
+    .rdata_o  (imem_rdata),
+    .rvalid_o (imem_rvalid),
+    .rerror_o (),
+    .cfg_i    (ram_cfg_i)
   );
 
   // Separate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't

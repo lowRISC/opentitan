@@ -73,9 +73,11 @@ module otbn_core
   logic                     insn_fetch_req_valid;
 
   // Fetch response (the current instruction before it is decoded)
+  logic                     insn_fetch_resp_valid_scr;
   logic                     insn_fetch_resp_valid;
   logic [ImemAddrWidth-1:0] insn_fetch_resp_addr;
   logic [31:0]              insn_fetch_resp_data;
+  logic [31:0]              insn_fetch_resp_data_scr;
   logic                     insn_fetch_err;
 
   // The currently executed instruction.
