@@ -777,7 +777,8 @@ module kmac
 
     .app_active_o(app_active),
 
-    .error_i  (sha3_err.valid),
+    .error_i         (sha3_err.valid),
+    .err_processed_i (err_processed),
 
     // Command interface
     .sw_cmd_i (sw_cmd),

@@ -35,12 +35,12 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Done        |
+Documentation | [NEW_FEATURES][]        | In Progress |
 Documentation | [BLOCK_DIAGRAM][]       | Done        |
 Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [FEATURE_COMPLETE][]    | In Progress |
 RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |

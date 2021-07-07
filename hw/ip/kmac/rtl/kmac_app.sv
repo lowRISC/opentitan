@@ -99,6 +99,9 @@ module kmac_app
   // is reported to the ERR_CODE so that SW can look into.
   input error_i,
 
+  // SW sets err_processed bit in CTRL then the logic goes to Idle
+  input err_processed_i,
+
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
   output kmac_pkg::err_t error_o
 );
@@ -143,9 +146,34 @@ module kmac_app
     24'h FFFFFF  // Key512
   };
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 10 \
+  //      -s 155490773 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||| (16.67%)
+  //  4: |||||||||||||||||||| (30.56%)
+  //  5: |||||||||||||||| (25.00%)
+  //  6: ||||||||| (13.89%)
+  //  7: ||||||||| (13.89%)
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 9
+  //
+  localparam int StateWidth = 10;
+
   // States
-  typedef enum logic [3:0] {
-    StIdle = 4'b 0000,
+  typedef enum logic [StateWidth-1:0] {
+    StIdle = 10'b1011011010,
 
     // Application operation.
     //
@@ -162,38 +190,40 @@ module kmac_app
 
     // In StAppCfg state, it latches the cfg from AppCfg parameter to determine
     // the kmac_mode, sha3_mode, keccak strength.
-    StAppCfg = 4'b 1110,
+    StAppCfg = 10'b0001010000,
 
-    StAppMsg = 4'b 0101,
+    StAppMsg = 10'b0001011111,
 
     // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
     // Assume the length is 256 bit, the data will be 48'h 02_0100
-    StAppOutLen = 4'b 0110,
-    StAppProcess = 4'b 1010,
-    StAppWait = 4'b 0111,
+    StAppOutLen  = 10'b1011001111,
+    StAppProcess = 10'b1000100110,
+    StAppWait    = 10'b0010010110,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
     // requests from KeyMgr will be discarded.
-    StSw = 4'b 0100,
+    StSw = 10'b0111111111,
 
     // Error KeyNotValid
     // When KeyMgr operates, the secret key is not ready yet.
-    StKeyMgrErrKeyNotValid = 4'b 1111
-  } keyctrl_st_e;
+    StKeyMgrErrKeyNotValid = 10'b1001110100,
+
+    StError = 10'b1101011101
+  } st_e;
 
   /////////////
   // Signals //
   /////////////
 
-  keyctrl_st_e st, st_d;
+  st_e st, st_d;
 
   // app_rsp_t signals
   // The state machine controls mux selection, which controls the ready signal
   // the other responses are controled in separate logic. So define the signals
   // here and merge them to the response.
-  logic app_data_ready;
-  logic app_digest_done;
+  logic app_data_ready, fsm_data_ready;
+  logic app_digest_done, fsm_digest_done_q, fsm_digest_done_d;
   logic [AppDigestW-1:0] app_digest [2];
 
   // One more slot for value NumAppIntf. It is the value when no app intf is
@@ -228,11 +258,12 @@ module kmac_app
     for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
       if (i == app_id) begin
         app_o[i] = '{
-          ready:         app_data_ready,
-          done:          app_digest_done,
+          ready:         app_data_ready | fsm_data_ready,
+          done:          app_digest_done | fsm_digest_done_q,
           digest_share0: app_digest[0],
           digest_share1: app_digest[1],
-          error:         error_i
+          // if fsm asserts done, should be an error case.
+          error:         error_i | fsm_digest_done_q
         };
       end else begin
         app_o[i] = '{
@@ -294,15 +325,27 @@ module kmac_app
   assign app_id_d = AppIdxW'(arb_idx);
   assign arb_ready = set_appid;
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) fsm_digest_done_q <= 1'b 0;
+    else         fsm_digest_done_q <= fsm_digest_done_d;
+  end
+
   /////////
   // FSM //
   /////////
 
   // State register
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) st <= StIdle;
-    else         st <= st_d;
-  end
+  logic [StateWidth-1:0] st_raw;
+  assign st = st_e'(st_raw);
+  prim_flop #(
+    .Width      (StateWidth),
+    .ResetValue (StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( st_d   ),
+    .q_o ( st_raw )
+  );
 
   // Next State & output logic
   always_comb begin
@@ -322,6 +365,10 @@ module kmac_app
 
     // Error
     fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
+    // If error happens, FSM asserts data ready but discard incoming msg
+    fsm_data_ready = 1'b 0;
+    fsm_digest_done_d = 1'b 0;
 
     unique case (st)
       StIdle: begin
@@ -344,9 +391,9 @@ module kmac_app
         if ((AppCfg[app_id].Mode == AppKMAC) && !keymgr_key_i.valid) begin
           st_d = StKeyMgrErrKeyNotValid;
 
-          fsm_err.valid = 1'b 1;
-          fsm_err.code = ErrKeyNotValid;
-          fsm_err.info = '0;
+          // As mux_sel is not set to SelApp, app_data_ready is still 0.
+          // This logic won't accept the requests from the selected App.
+
         end else begin
           // As Cfg is stable now, it sends cmd
           st_d = StAppMsg;
@@ -412,7 +459,34 @@ module kmac_app
       end
 
       StKeyMgrErrKeyNotValid: begin
-        st_d = StKeyMgrErrKeyNotValid;
+        st_d = StError;
+
+        // As mux_sel is not set to SelApp, app_data_ready is still 0.
+        // This logic won't accept the requests from the selected App.
+        fsm_err.valid = 1'b 1;
+        fsm_err.code = ErrKeyNotValid;
+        fsm_err.info = 24'(app_id);
+      end
+
+      StError: begin
+        // In this state, the state machine flush out the request
+        // TODO: Check err_processed then move to StIdle
+        st_d = StError;
+
+        fsm_data_ready = 1'b 1;
+
+        if (err_processed_i) begin
+          st_d = StIdle;
+
+          // clear internal variables
+          clr_appid = 1'b 1;
+        end
+
+        if (app_i[app_id].valid && app_i[app_id].last) begin
+          // Send garbage digest to the app interface to complete transaction
+          fsm_digest_done_d = 1'b 1;
+        end
+
       end
 
       default: begin
