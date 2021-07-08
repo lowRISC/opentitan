@@ -17,31 +17,31 @@
   <tr>
     <td style="text-align:left">RAW</td>
     <td rowspan = "9" colspan="4" style="text-align:center;vertical-align:middle"> See <a href="../../../../doc/security/specs/device_life_cycle/#manufacturing-states">life cycle definition table</a> </td>
-    <td colspan="1" style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
    <td style="text-align:left">TEST_LOCKED</td>
-   <td colspan="1" style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+   <td style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">TEST_UNLOCKED</td>
-    <td colspan="2" style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td>Y*</td>
+    <td colspan="2" style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">DEV</td>
-    <td>Y</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td>Y*</td>
+    <td>Y</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">PROD</td>
-    <td>Y</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td>Y*</td>
+    <td>Y</td><td style="background:#dadce0"></td><td>Y*</td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">PROD_END</td>
-    <td>Y</td><td colspan="2" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td>Y</td><td colspan="2" style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">RMA</td>
-    <td>Y</td><td colspan="2" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td>Y</td><td colspan="2" style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left">SCRAP</td>
@@ -53,7 +53,7 @@
   </tr>
   <tr>
     <td style="text-align:left;color:red">POST_TRANSITION</td>
-    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td>Y</td>
+    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td style="background:#dadce0"></td>
   </tr>
   <tr>
     <td style="text-align:left;color:red">ESCALATION</td>

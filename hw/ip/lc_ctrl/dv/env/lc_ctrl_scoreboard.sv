@@ -145,9 +145,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       "lc_transition_cnt", "lc_state": do_read_check = 1;
       "status": begin
         if (data_phase_read) begin
-          // when lc successfully req a transition, all outputs are turned off, except for the
-          // lc_escalate_en_o signal, which is asserted when in scrap state.
-          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+          // when lc successfully req a transition, all outputs are turned off.
           if (item.d_data[ral.status.transition_successful.get_lsb_pos()]) check_lc_outputs(exp);
         end
       end
