@@ -152,6 +152,8 @@ module entropy_src_main_sm #(
       StartupHTStart: begin
         if (!enable_i || sfifo_esfinal_full_i) begin
           state_d = Idle;
+        end else if (bypass_mode_i) begin
+          state_d = BootHTRunning;
         end else begin
           sha3_start_o = 1'b1;
           state_d = StartupPhase1;
