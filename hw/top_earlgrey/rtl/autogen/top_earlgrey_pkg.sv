@@ -151,14 +151,24 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for otp_ctrl in top earlgrey.
+   * Peripheral base address for core device on otp_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_BASE_ADDR = 32'h40130000;
+  parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR = 32'h40130000;
 
   /**
-   * Peripheral size in bytes for otp_ctrl in top earlgrey.
+   * Peripheral size in bytes for core device on otp_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_SIZE_BYTES = 32'h4000;
+  parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES = 32'h2000;
+
+  /**
+   * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR = 32'h40132000;
+
+  /**
+   * Peripheral size in bytes for prim device on otp_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for lc_ctrl in top earlgrey.

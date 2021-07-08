@@ -135,7 +135,13 @@
       reset:     "rst_peri_ni",
       pipeline:  "false",
     },
-    { name:      "otp_ctrl",
+    { name:      "otp_ctrl.core",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "otp_ctrl.prim",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -191,11 +197,13 @@
     },
   ],
   connections: {
-    main:  ["uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
-            "gpio", "spi_device", "spi_host0", "spi_host1", "rv_timer", "usbdev",
-            "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
-            "otp_ctrl", "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "ast",
-            "sram_ctrl_ret_aon", "aon_timer_aon", "adc_ctrl_aon", "sysrst_ctrl_aon",
-	    "pwm_aon"],
+    main:  [
+      "uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
+      "gpio", "spi_device", "spi_host0", "spi_host1", "rv_timer", "usbdev",
+      "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
+      "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl", "sensor_ctrl_aon",
+      "alert_handler", "ast", "sram_ctrl_ret_aon", "aon_timer_aon", "adc_ctrl_aon",
+      "sysrst_ctrl_aon", "pwm_aon"
+    ],
   },
 }

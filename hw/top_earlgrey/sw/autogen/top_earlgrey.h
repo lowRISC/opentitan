@@ -278,22 +278,40 @@ extern "C" {
 #define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for otp_ctrl in top earlgrey.
+ * Peripheral base address for core device on otp_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x40130000u
+#define TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR 0x40130000u
 
 /**
- * Peripheral size for otp_ctrl in top earlgrey.
+ * Peripheral size for core device on otp_ctrl in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
+#define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x2000u
+
+/**
+ * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0x40132000u
+
+/**
+ * Peripheral size for prim device on otp_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for lc_ctrl in top earlgrey.

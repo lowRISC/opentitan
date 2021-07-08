@@ -56,7 +56,8 @@ endclass
 
 class otp_ctrl_csr_rd_after_alert_cg_wrap;
   // This covergroup samples CSRs being checked (via CSR read) after fatal alert is issued.
-  covergroup csr_rd_after_alert_cg(otp_ctrl_reg_block ral) with function sample(bit[TL_DW-1:0] csr_offset);
+  covergroup csr_rd_after_alert_cg(otp_ctrl_core_reg_block ral) with function sample(bit[TL_DW-1:0]
+                                                                                     csr_offset);
     read_csr_after_alert_issued: coverpoint csr_offset {
       bins unbuffered_digests  = {ral.creator_sw_cfg_digest_0.get_offset(),
                                   ral.creator_sw_cfg_digest_1.get_offset(),
@@ -77,7 +78,7 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
     }
   endgroup
 
-  function new(otp_ctrl_reg_block ral);
+  function new(otp_ctrl_core_reg_block ral);
     csr_rd_after_alert_cg = new(ral);
   endfunction
 

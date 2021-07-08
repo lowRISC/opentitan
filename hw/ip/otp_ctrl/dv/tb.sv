@@ -72,9 +72,12 @@ module tb;
     .rst_edn_ni                 (edn_rst_n  ),
     .edn_o                      (edn_if.req ),
     .edn_i                      ({edn_if.ack, edn_if.d_data}),
-
-    .tl_i                       (tl_if.h2d  ),
-    .tl_o                       (tl_if.d2h  ),
+    // bus interfaces
+    .core_tl_i                  (tl_if.h2d  ),
+    .core_tl_o                  (tl_if.d2h  ),
+    // TODO: add second TL interface
+    .prim_tl_i                  ('0         ),
+    .prim_tl_o                  ('0         ),
     // interrupt
     .intr_otp_operation_done_o  (intr_otp_operation_done),
     .intr_otp_error_o           (intr_otp_error),

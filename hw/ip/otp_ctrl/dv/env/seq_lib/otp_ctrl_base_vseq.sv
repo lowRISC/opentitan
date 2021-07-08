@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class otp_ctrl_base_vseq extends cip_base_vseq #(
-    .RAL_T               (otp_ctrl_reg_block),
+    .RAL_T               (otp_ctrl_core_reg_block),
     .CFG_T               (otp_ctrl_env_cfg),
     .COV_T               (otp_ctrl_env_cov),
     .VIRTUAL_SEQUENCER_T (otp_ctrl_virtual_sequencer)

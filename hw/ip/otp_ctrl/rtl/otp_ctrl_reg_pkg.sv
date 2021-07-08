@@ -102,11 +102,12 @@ package otp_ctrl_reg_pkg;
   parameter int NumAlerts = 3;
 
   // Address widths within the block
-  parameter int BlockAw = 14;
+  parameter int CoreAw = 13;
+  parameter int PrimAw = 1;
 
-  ////////////////////////////
-  // Typedefs for registers //
-  ////////////////////////////
+  ///////////////////////////////////////////////
+  // Typedefs for registers for core interface //
+  ///////////////////////////////////////////////
 
   typedef struct packed {
     struct packed {
@@ -304,7 +305,7 @@ package otp_ctrl_reg_pkg;
     logic [31:0] d;
   } otp_ctrl_hw2reg_secret2_digest_mreg_t;
 
-  // Register -> HW type
+  // Register -> HW type for core interface
   typedef struct packed {
     otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [196:195]
     otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [194:193]
@@ -319,9 +320,9 @@ package otp_ctrl_reg_pkg;
     otp_ctrl_reg2hw_consistency_check_period_reg_t consistency_check_period; // [33:2]
     otp_ctrl_reg2hw_creator_sw_cfg_read_lock_reg_t creator_sw_cfg_read_lock; // [1:1]
     otp_ctrl_reg2hw_owner_sw_cfg_read_lock_reg_t owner_sw_cfg_read_lock; // [0:0]
-  } otp_ctrl_reg2hw_t;
+  } otp_ctrl_core_reg2hw_t;
 
-  // HW -> register type
+  // HW -> register type for core interface
   typedef struct packed {
     otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [495:492]
     otp_ctrl_hw2reg_status_reg_t status; // [491:476]
@@ -334,44 +335,44 @@ package otp_ctrl_reg_pkg;
     otp_ctrl_hw2reg_secret0_digest_mreg_t [1:0] secret0_digest; // [191:128]
     otp_ctrl_hw2reg_secret1_digest_mreg_t [1:0] secret1_digest; // [127:64]
     otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [63:0]
-  } otp_ctrl_hw2reg_t;
+  } otp_ctrl_core_hw2reg_t;
 
-  // Register offsets
-  parameter logic [BlockAw-1:0] OTP_CTRL_INTR_STATE_OFFSET = 14'h 0;
-  parameter logic [BlockAw-1:0] OTP_CTRL_INTR_ENABLE_OFFSET = 14'h 4;
-  parameter logic [BlockAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 14'h 8;
-  parameter logic [BlockAw-1:0] OTP_CTRL_ALERT_TEST_OFFSET = 14'h c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_STATUS_OFFSET = 14'h 10;
-  parameter logic [BlockAw-1:0] OTP_CTRL_ERR_CODE_OFFSET = 14'h 14;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 14'h 18;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 14'h 1c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 14'h 20;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 14'h 24;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 14'h 28;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 14'h 2c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 14'h 30;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 14'h 34;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 14'h 38;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 14'h 3c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 14'h 40;
-  parameter logic [BlockAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 14'h 44;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 14'h 48;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 14'h 4c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 14'h 50;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 14'h 54;
-  parameter logic [BlockAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 14'h 58;
-  parameter logic [BlockAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 14'h 5c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 14'h 60;
-  parameter logic [BlockAw-1:0] OTP_CTRL_HW_CFG_DIGEST_0_OFFSET = 14'h 64;
-  parameter logic [BlockAw-1:0] OTP_CTRL_HW_CFG_DIGEST_1_OFFSET = 14'h 68;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 14'h 6c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 14'h 70;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 14'h 74;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 14'h 78;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 14'h 7c;
-  parameter logic [BlockAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 14'h 80;
+  // Register offsets for core interface
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_STATE_OFFSET = 13'h 0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_ENABLE_OFFSET = 13'h 4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 13'h 8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ALERT_TEST_OFFSET = 13'h c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_STATUS_OFFSET = 13'h 10;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_OFFSET = 13'h 14;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 13'h 18;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 13'h 1c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 13'h 20;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 13'h 24;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 13'h 28;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 13'h 2c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 13'h 30;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 13'h 34;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 13'h 38;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 13'h 3c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 13'h 40;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 13'h 44;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 13'h 48;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 13'h 4c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 13'h 50;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 13'h 54;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 13'h 58;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 13'h 5c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 13'h 60;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG_DIGEST_0_OFFSET = 13'h 64;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG_DIGEST_1_OFFSET = 13'h 68;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 13'h 6c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 13'h 70;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 13'h 74;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 13'h 78;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 13'h 7c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 13'h 80;
 
-  // Reset values for hwext registers and their fields
+  // Reset values for hwext registers and their fields for core interface
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_ERROR_RESVAL = 1'h 0;
@@ -400,13 +401,11 @@ package otp_ctrl_reg_pkg;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_RESVAL = 32'h 0;
 
-  // Window parameters
-  parameter logic [BlockAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 14'h 1000;
-  parameter int unsigned        OTP_CTRL_SW_CFG_WINDOW_SIZE   = 'h 800;
-  parameter logic [BlockAw-1:0] OTP_CTRL_TEST_ACCESS_OFFSET = 14'h 2000;
-  parameter int unsigned        OTP_CTRL_TEST_ACCESS_SIZE   = 'h 40;
+  // Window parameters for core interface
+  parameter logic [CoreAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 13'h 1000;
+  parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_SIZE   = 'h 800;
 
-  // Register index
+  // Register index for core interface
   typedef enum int {
     OTP_CTRL_INTR_STATE,
     OTP_CTRL_INTR_ENABLE,
@@ -441,10 +440,10 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_SECRET1_DIGEST_1,
     OTP_CTRL_SECRET2_DIGEST_0,
     OTP_CTRL_SECRET2_DIGEST_1
-  } otp_ctrl_id_e;
+  } otp_ctrl_core_id_e;
 
-  // Register width information to check illegal writes
-  parameter logic [3:0] OTP_CTRL_PERMIT [33] = '{
+  // Register width information to check illegal writes for core interface
+  parameter logic [3:0] OTP_CTRL_CORE_PERMIT [33] = '{
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
     4'b 0001, // index[ 1] OTP_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] OTP_CTRL_INTR_TEST
