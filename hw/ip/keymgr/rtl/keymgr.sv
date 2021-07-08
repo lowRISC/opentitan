@@ -24,6 +24,7 @@ module keymgr
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
+  parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
 ) (
   input clk_i,
@@ -39,6 +40,7 @@ module keymgr
   output hw_key_req_t aes_key_o,
   output hw_key_req_t hmac_key_o,
   output hw_key_req_t kmac_key_o,
+  output otbn_key_req_t otbn_key_o,
 
   // data interface to/from crypto modules
   output kmac_pkg::app_req_t kmac_data_o,
@@ -188,10 +190,15 @@ module keymgr
   logic kmac_cmd_err;
   logic kmac_fsm_err;
   logic kmac_op_err;
-  logic [Shares-1:0][KeyWidth-1:0] kmac_data;
+  logic [Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_data;
+  logic [Shares-1:0][KeyWidth-1:0] kmac_data_truncated;
   logic [ErrLastPos-1:0] err_code;
   logic sw_binding_unlock;
   logic [CdiWidth-1:0] cdi_sel;
+
+  for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
+    assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
+  end
 
   keymgr_ctrl u_ctrl (
     .clk_i,
@@ -226,7 +233,7 @@ module keymgr
     .kmac_fsm_err_i(kmac_fsm_err),
     .kmac_op_err_i(kmac_op_err),
     .kmac_cmd_err_i(kmac_cmd_err),
-    .kmac_data_i(kmac_data)
+    .kmac_data_i(kmac_data_truncated)
   );
 
   assign hw2reg.control.start.d  = '0;
@@ -359,9 +366,10 @@ module keymgr
   logic [KeyWidth-1:0] cipher_seed;
 
   assign cipher_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
-  assign cipher_seed = cipher_sel == Aes  ? RndCnstAesSeed :
+  assign cipher_seed = cipher_sel == Aes  ? RndCnstAesSeed  :
                        cipher_sel == Hmac ? RndCnstHmacSeed :
-                       cipher_sel == Kmac ? RndCnstKmacSeed : RndCnstNoneSeed;
+                       cipher_sel == Kmac ? RndCnstKmacSeed :
+                       cipher_sel == Otbn ? RndCnstOtbnSeed : RndCnstNoneSeed;
   assign output_key = (key_sel == HwKey) ? RndCnstHardOutputSeed : RndCnstSoftOutputSeed;
   assign gen_in = (stage_sel == Disable) ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
                                                                           reg2hw.salt,
@@ -448,9 +456,10 @@ module keymgr
     .key_i(kmac_key),
     .data_i(kmac_data),
     .prng_en_o(sideload_lfsr_en),
-    .aes_key_o(aes_key_o),
-    .hmac_key_o(hmac_key_o),
-    .kmac_key_o(kmac_key_o)
+    .aes_key_o,
+    .hmac_key_o,
+    .otbn_key_o,
+    .kmac_key_o
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns

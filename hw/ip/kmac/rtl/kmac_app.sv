@@ -111,7 +111,7 @@ module kmac_app
   /////////////////
 
   // Digest width is same to the key width `keymgr_pkg::KeyWidth`.
-  localparam int KeyMgrKeyW = $bits(keymgr_key_i.key_share0);
+  localparam int KeyMgrKeyW = $bits(keymgr_key_i.key[0]);
 
   localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
 
@@ -609,11 +609,16 @@ module kmac_app
   // Combine share keys into unpacked array for logic below to assign easily.
   logic [MaxKeyLen-1:0] keymgr_key [Share];
   if (EnMasking == 1) begin : g_masked_key
-    assign keymgr_key[0] =  {(MaxKeyLen-KeyMgrKeyW)'(0), keymgr_key_i.key_share0};
-    assign keymgr_key[1] =  {(MaxKeyLen-KeyMgrKeyW)'(0), keymgr_key_i.key_share1};
+    for (genvar i = 0; i < Share; i++) begin : gen_key_pad
+      assign keymgr_key[i] =  {(MaxKeyLen-KeyMgrKeyW)'(0), keymgr_key_i.key[i]};
+    end
   end else begin : g_unmasked_key
-    assign keymgr_key[0] = {(MaxKeyLen-KeyMgrKeyW)'(0),
-                            keymgr_key_i.key_share0 ^ keymgr_key_i.key_share1};
+    always_comb begin
+      keymgr_key[0] = '0;
+      for (int i = 0; i < Share; i++) begin
+        keymgr_key[0][KeyMgrKeyW-1:0] ^= keymgr_key_i.key[i];
+      end
+    end
   end
 
   // Sideloaded key is used when KeyMgr KDF is active or !!CFG.sideload is set
@@ -704,7 +709,7 @@ module kmac_app
   ////////////////
 
   // KeyMgr sideload key and the digest should be in the Key Length value
-  `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW == AppDigestW)
+  `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW <= AppDigestW)
   `ASSERT_INIT(AppIntfInRange_A, AppDigestW inside {128, 192, 256, 384, 512})
 
 

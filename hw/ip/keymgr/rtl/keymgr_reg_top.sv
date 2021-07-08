@@ -124,8 +124,8 @@ module keymgr_reg_top (
   logic [2:0] control_operation_wd;
   logic control_cdi_sel_qs;
   logic control_cdi_sel_wd;
-  logic [1:0] control_dest_sel_qs;
-  logic [1:0] control_dest_sel_wd;
+  logic [2:0] control_dest_sel_qs;
+  logic [2:0] control_dest_sel_wd;
   logic sideload_clear_we;
   logic sideload_clear_qs;
   logic sideload_clear_wd;
@@ -490,11 +490,11 @@ module keymgr_reg_top (
   );
 
 
-  //   F[dest_sel]: 13:12
+  //   F[dest_sel]: 14:12
   prim_subreg #(
-    .DW      (2),
+    .DW      (3),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (3'h0)
   ) u_control_dest_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2181,7 +2181,7 @@ module keymgr_reg_top (
 
   assign control_cdi_sel_wd = reg_wdata[7];
 
-  assign control_dest_sel_wd = reg_wdata[13:12];
+  assign control_dest_sel_wd = reg_wdata[14:12];
   assign sideload_clear_we = addr_hit[6] & reg_we & !reg_error;
 
   assign sideload_clear_wd = reg_wdata[0];
@@ -2375,7 +2375,7 @@ module keymgr_reg_top (
         reg_rdata_next[0] = control_start_qs;
         reg_rdata_next[6:4] = control_operation_qs;
         reg_rdata_next[7] = control_cdi_sel_qs;
-        reg_rdata_next[13:12] = control_dest_sel_qs;
+        reg_rdata_next[14:12] = control_dest_sel_qs;
       end
 
       addr_hit[6]: begin

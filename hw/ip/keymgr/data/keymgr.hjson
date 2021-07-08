@@ -49,6 +49,12 @@
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "otbn_key_req",
+      type:    "uni",
+      name:    "otbn_key",
+      act:     "req",
+      package: "keymgr_pkg",
+    },
     { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
       name:    "kmac_data",   // kmac_data_o (req), kmac_data_i (rsp)
@@ -172,6 +178,13 @@
 
     { name:      "RndCnstKmacSeed",
       desc:      "Compile-time random bits for generation seed when kmac destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOtbnSeed",
+      desc:      "Compile-time random bits for generation seed when otbn destination selected",
       type:      "keymgr_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
@@ -324,8 +337,7 @@
           ],
         },
 
-
-        { bits: "13:12",
+        { bits: "14:12",
           name: "DEST_SEL",
           desc: '''
             When the OPERATION field is programmed to generate output, this field selects
@@ -357,6 +369,16 @@
               name: "KMAC",
               desc: '''
                 KMAC selected
+                '''
+            },
+            { value: "4",
+              name: "OTBN",
+              desc: '''
+                OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
+                other operations (including OTBN software), it is 256-bits.
+
+                Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
+                When generating for software, this is not a concern.
                 '''
             },
           ]

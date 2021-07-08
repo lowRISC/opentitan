@@ -18,11 +18,12 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input data_en_i,
   input data_valid_i,
   input hw_key_req_t key_i,
-  input [Shares-1:0][KeyWidth-1:0] data_i,
+  input [Shares-1:0][kmac_pkg::AppDigestW-1:0] data_i,
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t hmac_key_o,
-  output hw_key_req_t kmac_key_o
+  output hw_key_req_t kmac_key_o,
+  output otbn_key_req_t otbn_key_o
 );
 
   // Enumeration for working state
@@ -39,6 +40,11 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   logic cnt_end;
   logic clr;
   logic keys_en;
+
+  logic [Shares-1:0][KeyWidth-1:0] data_truncated;
+  for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
+    assign data_truncated[i] = data_i[i][KeyWidth-1:0];
+  end
 
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -105,10 +111,11 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     endcase // unique case (state_q)
   end
 
-  logic aes_sel, hmac_sel, kmac_sel;
+  logic aes_sel, hmac_sel, kmac_sel, otbn_sel;
   assign aes_sel  = dest_sel_i == Aes  & key_sel_i == HwKey;
   assign hmac_sel = dest_sel_i == Hmac & key_sel_i == HwKey;
   assign kmac_sel = dest_sel_i == Kmac & key_sel_i == HwKey;
+  assign otbn_sel = dest_sel_i == Otbn & key_sel_i == HwKey;
 
   keymgr_sideload_key u_aes_key (
     .clk_i,
@@ -118,8 +125,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .set_i(data_valid_i & aes_sel),
     .clr_i(clr),
     .entropy_i(entropy_i),
-    .key_i(data_i),
-    .key_o(aes_key_o)
+    .key_i(data_truncated),
+    .valid_o(aes_key_o.valid),
+    .key_o(aes_key_o.key)
   );
 
   keymgr_sideload_key u_hmac_key (
@@ -130,8 +138,24 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .set_i(data_valid_i & hmac_sel),
     .clr_i(clr),
     .entropy_i(entropy_i),
+    .key_i(data_truncated),
+    .valid_o(hmac_key_o.valid),
+    .key_o(hmac_key_o.key)
+  );
+
+  keymgr_sideload_key #(
+    .Width(OtbnKeyWidth)
+  ) u_otbn_key (
+    .clk_i,
+    .rst_ni,
+    .en_i(keys_en),
+    .set_en_i(data_en_i),
+    .set_i(data_valid_i & otbn_sel),
+    .clr_i(clr),
+    .entropy_i(entropy_i),
     .key_i(data_i),
-    .key_o(hmac_key_o)
+    .valid_o(otbn_key_o.valid),
+    .key_o(otbn_key_o.key)
   );
 
   hw_key_req_t kmac_sideload_key;
@@ -143,8 +167,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .set_i(data_valid_i & kmac_sel),
     .clr_i(clr),
     .entropy_i(entropy_i),
-    .key_i(data_i),
-    .key_o(kmac_sideload_key)
+    .key_i(data_truncated),
+    .valid_o(kmac_sideload_key.valid),
+    .key_o(kmac_sideload_key.key)
   );
 
   // when directed by keymgr_ctrl, switch over to internal key and feed to kmac

@@ -6,7 +6,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_sideload_key import keymgr_pkg::*;(
+module keymgr_sideload_key import keymgr_pkg::*; #(
+  parameter int Width = KeyWidth
+) (
   input clk_i,
   input rst_ni,
   input en_i,
@@ -14,18 +16,18 @@ module keymgr_sideload_key import keymgr_pkg::*;(
   input set_i,
   input clr_i,
   input [Shares-1:0][RandWidth-1:0] entropy_i,
-  input [Shares-1:0][KeyWidth-1:0] key_i,
-  output hw_key_req_t key_o
+  input [Shares-1:0][Width-1:0] key_i,
+  output logic valid_o,
+  output logic [Shares-1:0][Width-1:0] key_o
 );
 
-  localparam int EntropyCopies = KeyWidth / 32;
+  localparam int EntropyCopies = Width / 32;
 
   logic valid_q;
-  logic [Shares-1:0][KeyWidth-1:0] key_q;
+  logic [Shares-1:0][Width-1:0] key_q;
 
-  assign key_o.valid = valid_q & en_i;
-  assign key_o.key_share0 = key_q[0];
-  assign key_o.key_share1 = key_q[1];
+  assign valid_o = valid_q & en_i;
+  assign key_o = key_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

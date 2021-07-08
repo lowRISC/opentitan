@@ -80,10 +80,15 @@ module rom_ctrl
 
   assign kmac_rom_rdy = kmac_data_i.ready;
   assign kmac_done = kmac_data_i.done;
-  assign kmac_digest = kmac_data_i.digest_share0 ^ kmac_data_i.digest_share1;
+  assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
 
   logic unused_kmac_error;
-  assign unused_kmac_error = &{1'b0, kmac_data_i.error};
+  assign unused_kmac_error = ^kmac_data_i.error;
+  logic unused_kmac_digest;
+  assign unused_kmac_digest = ^{
+    kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
+    kmac_data_i.digest_share1[kmac_pkg::AppDigestW-1:256]
+  };
 
   // TL interface ==============================================================
 

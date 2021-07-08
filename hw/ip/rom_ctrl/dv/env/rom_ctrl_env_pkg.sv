@@ -29,7 +29,9 @@ package rom_ctrl_env_pkg;
   parameter uint   NUM_ALERTS = 1;
 
   // The top bytes in memory hold the digest
-  parameter uint MAX_CHECK_ADDR = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (kmac_pkg::AppDigestW / 8);
+  // KMAC's max digest size is larger than what is required, so declare the size here.
+  parameter uint DIGEST_SIZE    = 256;
+  parameter uint MAX_CHECK_ADDR = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (DIGEST_SIZE / 8);
   // The data for each line in rom up to the digest is padded out to the kmac message width
   parameter uint KMAC_DATA_SIZE = MAX_CHECK_ADDR / (TL_DW / 8) * (kmac_pkg::MsgWidth / 8);
   // The rom width is rounded up to 40 for scrambling symmetry

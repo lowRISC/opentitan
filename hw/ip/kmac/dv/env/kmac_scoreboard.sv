@@ -312,8 +312,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
 
             for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
-              keymgr_keys[0][i] = sideload_key.key_share0[i*32 +: 32];
-              keymgr_keys[1][i] = sideload_key.key_share1[i*32 +: 32];
+              keymgr_keys[0][i] = sideload_key.key[0][i*32 +: 32];
+              keymgr_keys[1][i] = sideload_key.key[1][i*32 +: 32];
             end
 
             // Sequence will drop the sideloaded key after scb can process the digest

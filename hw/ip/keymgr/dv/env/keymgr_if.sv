@@ -167,7 +167,7 @@ interface keymgr_if(input clk, input rst_n);
                                          keymgr_pkg::keymgr_working_state_e state,
                                          bit good_key = 1);
 
-    kmac_key_exp <= '{1'b1, key_shares[0], key_shares[1]};
+    kmac_key_exp <= '{1'b1, key_shares};
     is_kmac_key_good = good_key;
   endfunction
 
@@ -186,17 +186,17 @@ interface keymgr_if(input clk, input rst_n);
                                               bit good_key = 1);
     case (dest)
       keymgr_pkg::Kmac: begin
-        kmac_key_exp             <= '{1'b1, key_shares[0], key_shares[1]};
+        kmac_key_exp             <= '{1'b1, key_shares};
         is_kmac_key_good         <= good_key;
         is_kmac_sideload_avail   <= 1;
         kmac_sideload_key_shares <= key_shares;
       end
       keymgr_pkg::Hmac: begin
-        hmac_key_exp     <= '{1'b1, key_shares[0], key_shares[1]};
+        hmac_key_exp     <= '{1'b1, key_shares};
         is_hmac_key_good <= good_key;
       end
       keymgr_pkg::Aes: begin
-        aes_key_exp     <= '{1'b1, key_shares[0], key_shares[1]};
+        aes_key_exp     <= '{1'b1, key_shares};
         is_aes_key_good <= good_key;
       end
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
@@ -258,7 +258,7 @@ interface keymgr_if(input clk, input rst_n);
       @(posedge clk);
       if (kmac_data_rsp.done) begin
         if (is_kmac_sideload_avail) begin
-          kmac_key_exp <= '{1'b1, kmac_sideload_key_shares[0], kmac_sideload_key_shares[1]};
+          kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
         end else begin
           kmac_key_exp.valid <= 0;
@@ -299,7 +299,7 @@ interface keymgr_if(input clk, input rst_n);
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && !is_cmd_err && !is_fsm_err) begin
       foreach (keys_a_array[i, j]) begin
-        `DV_CHECK_NE({act_key.key_share1, act_key.key_share0}, keys_a_array[i][j],
+        `DV_CHECK_NE({act_key.key[1], act_key.key[0]}, keys_a_array[i][j],
             $sformatf("%s key at state %s from %s", key_name, i, j), , msg_id)
       end
     end

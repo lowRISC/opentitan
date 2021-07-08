@@ -10,7 +10,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(rom_ctrl_scoreboard)
 
   // local variables
-  bit [kmac_pkg::AppDigestW-1:0] expected_digest;
+  bit [DIGEST_SIZE-1:0]          expected_digest;
   bit [kmac_pkg::AppDigestW-1:0] kmac_digest;
   bit                            rom_check_complete;
   bit                            digest_good;
@@ -86,19 +86,19 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
       get_expected_digest();
       update_ral_digests();
-      digest_good = (kmac_digest == expected_digest);
+      digest_good = (kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
       rom_check_complete = 1'b1;
     end
   endtask
 
   // Pull the expected digest value from the top of rom
   virtual function void get_expected_digest();
-    bit [kmac_pkg::AppDigestW-1:0]    digest;
+    bit [DIGEST_SIZE-1:0]    digest;
     bit [rom_ctrl_reg_pkg::RomAw-1:0] dig_addr;
     // Get the digest from rom
     // The digest is the top 8 words in memory (unscrambled)
     dig_addr = MAX_CHECK_ADDR;
-    for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       bit [ROM_MEM_W-1:0] mem_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
           dig_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
       digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
@@ -109,12 +109,12 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Update the RAL model with expected values for the digest registers
   virtual function void update_ral_digests();
-    for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       string digest_name = $sformatf("digest_%0d", i);
       uvm_reg csr = ral.get_reg_by_name(digest_name);
       void'(csr.predict(.value(kmac_digest[i*TL_DW+:TL_DW]), .kind(UVM_PREDICT_READ)));
     end
-    for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       string digest_name = $sformatf("exp_digest_%0d", i);
       uvm_reg csr = ral.get_reg_by_name(digest_name);
       void'(csr.predict(.value(expected_digest[i*TL_DW+:TL_DW]), .kind(UVM_PREDICT_READ)));

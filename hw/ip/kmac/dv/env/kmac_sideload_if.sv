@@ -18,8 +18,8 @@ interface kmac_sideload_if;
     keymgr_pkg::hw_key_req_t key;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(key, key.valid == key_valid;, , path)
-    key.key_share0 = (key_valid) ? share0 : 'hx;
-    key.key_share1 = (key_valid) ? share1 : 'hx;
+    key[0] = (key_valid) ? share0 : 'hx;
+    key[1] = (key_valid) ? share1 : 'hx;
 
     sideload_key = key;
   endtask

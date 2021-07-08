@@ -1077,7 +1077,6 @@ module chip_earlgrey_asic (
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
-    .KmacEnMasking(1),  // DOM AND + Masking scheme
     .KmacReuseShare(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
