@@ -81,7 +81,7 @@ package lc_ctrl_env_pkg;
     // Scrap
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // PostTrans
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // Escalate
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // Invalid

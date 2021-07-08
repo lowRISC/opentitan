@@ -174,9 +174,14 @@ module lc_ctrl_signal_decode
         end
       end
       ///////////////////////////////////////////////////////////////////
+      // Post-transition state. Behaves similarly to the virtual scrap
+      // states below, with the exception that escalate_en, since that
+      // could trigger unwanted alerts / escalations and system resets.
+      // is NOT asserted.
+      PostTransSt: ;
+      ///////////////////////////////////////////////////////////////////
       // Virtual scrap states, make sure the escalation signal is
       // also asserted in this case.
-      PostTransSt,
       EscalateSt,
       InvalidSt: begin
         lc_escalate_en = On;
@@ -316,7 +321,8 @@ module lc_ctrl_signal_decode
                             FlashRmaSt,
                             TokenHashSt,
                             TokenCheck0St,
-                            TokenCheck1St})
+                            TokenCheck1St,
+                            PostTransSt})
       |=>
       lc_escalate_en_o == On)
 
@@ -330,7 +336,8 @@ module lc_ctrl_signal_decode
                           FlashRmaSt,
                           TokenHashSt,
                           TokenCheck0St,
-                          TokenCheck1St} &&
+                          TokenCheck1St,
+                          PostTransSt} &&
       !(lc_state_i inside {LcStRaw,
                            LcStTestUnlocked0,
                            LcStTestLocked0,
