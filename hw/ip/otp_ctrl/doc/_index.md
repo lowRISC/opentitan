@@ -891,7 +891,7 @@ Note that error codes that originate in the physical OTP macro are prefixed with
 Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | Description
 -----------|----------------------|-------------|-----|-----|-------|-------|-------------
 0x0        | NoError              | -           |  x  |  x  |   x   |  x    | No error has occurred.
-0x1        | MacroError           | no          |  x  |  x  |   x   |  x    | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction.
+0x1        | MacroError           | no          |  x  |  x  |   x   |  x    | Returned if the OTP macro command did not complete successfully due to a macro malfunction.
 0x2        | MacroEccCorrError    | yes         |  x  |  -  |   x   |  x    | A correctable ECC error has occurred during a read operation in the OTP macro.
 0x3        | MacroEccUncorrError  | no          |  x  |  -  |   x   |  x    | An uncorrectable ECC error has occurred during a read operation in the OTP macro.
 0x4        | MacroWriteBlankError | yes         |  x  |  x  |   -   |  -    | This error is returned if a write operation attempted to clear an already programmed bit location.

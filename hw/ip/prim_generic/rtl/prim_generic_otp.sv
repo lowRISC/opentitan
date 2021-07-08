@@ -199,10 +199,6 @@ module prim_generic_otp
         if (valid_i) begin
           if (cmd_i == Init) begin
             state_d = InitSt;
-          end else begin
-            // Invalid commands get caught here
-            valid_d = 1'b1;
-            err_d = MacroError;
           end
         end
       end
@@ -222,11 +218,7 @@ module prim_generic_otp
           unique case (cmd_i)
             Read:  state_d = ReadSt;
             Write: state_d = WriteCheckSt;
-            default:  begin
-              // Invalid commands get caught here
-              valid_d = 1'b1;
-              err_d = MacroError;
-            end
+            default: ;
           endcase // cmd_i
         end
       end
@@ -408,5 +400,14 @@ module prim_generic_otp
       end
     end
   end
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Check that the otp_ctrl FSMs only issue legal commands to the wrapper.
+  `ASSERT(CheckCommands0_A, state_q == ResetSt && valid_i && ready_o |-> cmd_i == Init)
+  `ASSERT(CheckCommands1_A, state_q != ResetSt && valid_i && ready_o |-> cmd_i inside {Read, Write})
+
 
 endmodule : prim_generic_otp
