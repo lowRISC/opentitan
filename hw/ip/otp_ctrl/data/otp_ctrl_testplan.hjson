@@ -189,7 +189,7 @@
               terminal state
             '''
       milestone: V2
-      tests: ["otp_ctrl_macro_errs", "otp_ctrl_macro_invalid_cmd"]
+      tests: ["otp_ctrl_macro_errs"]
     }
     {
       name: test_access
