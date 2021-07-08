@@ -38,7 +38,7 @@ class chip_base_vseq extends cip_base_vseq #(
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
-    cfg.m_jtag_agent_cfg.do_trst_n();
+    cfg.m_jtag_riscv_agent_cfg.do_trst_n();
     super.apply_reset(kind);
   endtask
 

@@ -14,7 +14,7 @@ filesets:
       - lowrisc:dv:str_utils
       - lowrisc:dv:cip_lib
       - lowrisc:dv:uart_agent
-      - lowrisc:dv:jtag_agent
+      - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:sw_test_status

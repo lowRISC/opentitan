@@ -58,15 +58,15 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_test_status_vif  sw_test_status_vif;
 
   // ext component cfgs
-  rand uart_agent_cfg m_uart_agent_cfg;
-  rand jtag_agent_cfg m_jtag_agent_cfg;
-  rand spi_agent_cfg  m_spi_agent_cfg;
+  rand uart_agent_cfg       m_uart_agent_cfg;
+  rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
+  rand spi_agent_cfg        m_spi_agent_cfg;
 
   `uvm_object_utils_begin(chip_env_cfg)
-    `uvm_field_int   (stub_cpu,             UVM_DEFAULT)
-    `uvm_field_object(m_uart_agent_cfg,     UVM_DEFAULT)
-    `uvm_field_object(m_jtag_agent_cfg,     UVM_DEFAULT)
-    `uvm_field_object(m_spi_agent_cfg,      UVM_DEFAULT)
+    `uvm_field_int   (stub_cpu,               UVM_DEFAULT)
+    `uvm_field_object(m_uart_agent_cfg,       UVM_DEFAULT)
+    `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
+    `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
   `uvm_object_utils_end
 
   // TODO: Fixing core clk freq to 50MHz for now.
@@ -92,7 +92,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
 
     // create jtag agent config obj
-    m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+    m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
 
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
