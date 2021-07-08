@@ -11,7 +11,7 @@ class chip_env extends cip_base_env #(
   `uvm_component_utils(chip_env)
 
   uart_agent          m_uart_agent;
-  jtag_agent          m_jtag_agent;
+  jtag_riscv_agent    m_jtag_riscv_agent;
   spi_agent           m_spi_agent;
 
   `uvm_component_new
@@ -65,8 +65,9 @@ class chip_env extends cip_base_env #(
     m_uart_agent = uart_agent::type_id::create("m_uart_agent", this);
     uvm_config_db#(uart_agent_cfg)::set(this, "m_uart_agent*", "cfg", cfg.m_uart_agent_cfg);
 
-    m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
-    uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
+    m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
+    uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent*", "cfg",
+                   cfg.m_jtag_riscv_agent_cfg);
 
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
@@ -82,13 +83,13 @@ class chip_env extends cip_base_env #(
     if (cfg.en_scb) begin
       m_uart_agent.monitor.tx_analysis_port.connect(scoreboard.uart_tx_fifo.analysis_export);
       m_uart_agent.monitor.rx_analysis_port.connect(scoreboard.uart_rx_fifo.analysis_export);
-      m_jtag_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
+      m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
     end
     if (cfg.is_active && cfg.m_uart_agent_cfg.is_active) begin
       virtual_sequencer.uart_sequencer_h = m_uart_agent.sequencer;
     end
-    if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
-      virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+    if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
+      virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
     if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;

@@ -8,9 +8,9 @@ class chip_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(chip_virtual_sequencer)
 
-  uart_sequencer  uart_sequencer_h;
-  jtag_sequencer  jtag_sequencer_h;
-  spi_sequencer   spi_sequencer_h;
+  uart_sequencer       uart_sequencer_h;
+  jtag_riscv_sequencer jtag_sequencer_h;
+  spi_sequencer        spi_sequencer_h;
 
   // Grab packets from UART TX port for in-sequence checking.
   uvm_tlm_analysis_fifo #(uart_item) uart_tx_fifo;
