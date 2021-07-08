@@ -13,7 +13,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
-enum { kBase = TOP_EARLGREY_OTP_CTRL_BASE_ADDR };
+enum { kBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR };
 
 uint32_t otp_read32(uint32_t address) {
   return sec_mmio_read32(kBase + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address);

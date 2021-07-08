@@ -48,7 +48,7 @@ static_assert(ALERT_HANDLER_ALERT_CLASS_MULTIREG_COUNT <=
 extern uint32_t otp_read32(uint32_t address);
 #else
 inline uint32_t otp_read32(uint32_t address) {
-  return abs_mmio_read32(TOP_EARLGREY_OTP_CTRL_BASE_ADDR +
+  return abs_mmio_read32(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address);
 }
 #endif

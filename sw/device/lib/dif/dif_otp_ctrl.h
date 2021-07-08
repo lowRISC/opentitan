@@ -92,7 +92,11 @@ typedef struct dif_otp_ctrl_params {
   /**
    * The base address for the OTP hardware registers.
    */
-  mmio_region_t base_addr;
+  mmio_region_t base_addr_core;
+  /**
+   * The base address for the OTP hardware test registers.
+   */
+  mmio_region_t base_addr_prim;
 } dif_otp_ctrl_params_t;
 
 /**

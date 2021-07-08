@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-
 #include <assert.h>
 #include <stdbool.h>
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_otp_ctrl_t otp;
@@ -41,10 +41,14 @@ static void wait_for_dai(void) {
  * value can then be read out exactly through the blocking read interface.
  */
 bool test_main(void) {
-  mmio_region_t otp_reg =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_BASE_ADDR);
-  CHECK(dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr = otp_reg},
-                          &otp) == kDifOtpCtrlOk);
+  mmio_region_t otp_reg_core =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  mmio_region_t otp_reg_prim =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
+  CHECK(
+      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
+                                                .base_addr_prim = otp_reg_prim},
+                        &otp) == kDifOtpCtrlOk);
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,

@@ -218,10 +218,14 @@ static void wait_for_dai(void) {
  */
 static void lock_otp_secret_partition2(void) {
   // initialize otp
-  mmio_region_t otp_reg =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_BASE_ADDR);
-  CHECK(dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr = otp_reg},
-                          &otp) == kDifOtpCtrlOk);
+  mmio_region_t otp_reg_core =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  mmio_region_t otp_reg_prim =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
+  CHECK(
+      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
+                                                .base_addr_prim = otp_reg_prim},
+                        &otp) == kDifOtpCtrlOk);
 
   CHECK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0) ==
         kDifOtpCtrlDaiOk);

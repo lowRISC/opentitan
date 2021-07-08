@@ -63,10 +63,14 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
  */
 // TODO: needs to support other recipients besides LC_CTRL.
 bool test_main(void) {
-  mmio_region_t otp_reg =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_BASE_ADDR);
-  CHECK(dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr = otp_reg},
-                          &otp) == kDifOtpCtrlOk);
+  mmio_region_t otp_reg_core =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  mmio_region_t otp_reg_prim =
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
+  CHECK(
+      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
+                                                .base_addr_prim = otp_reg_prim},
+                        &otp) == kDifOtpCtrlOk);
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   CHECK(dif_lc_ctrl_init((dif_lc_ctrl_params_t){.base_addr = lc_reg}, &lc) ==
