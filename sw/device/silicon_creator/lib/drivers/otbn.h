@@ -143,6 +143,11 @@ rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
  */
 rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len);
 
+/**
+ * Zero out the contents of OTBN's data memory (DMEM).
+ */
+void otbn_zero_dmem(void);
+
 #ifdef __cplusplus
 }
 #endif
