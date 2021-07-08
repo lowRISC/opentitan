@@ -78,8 +78,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     data.delete();
     for (int i = 0; i < flash_op.num_words; i++) begin
       data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(addr_attrs.bank_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_read: {%s} = 0x%0h", addr_attrs.sprint(), data[i]),
-                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
+                                flash_op.partition.name(), addr_attrs.sprint(), data[i]),
+                                UVM_MEDIUM)
       addr_attrs.incr(TL_DBW);
     end
   endfunction : flash_mem_bkdr_read
@@ -122,8 +123,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
           (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
       mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write32(addr_attrs.bank_addr, loc_data);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: {%s} = 0x%0h", addr_attrs.sprint(),
-                                loc_data), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
+                                flash_op.partition.name(), addr_attrs.sprint(), loc_data),
+                                UVM_MEDIUM)
       addr_attrs.incr(TL_DBW);
     end
 
@@ -185,14 +187,16 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
       end
     endcase
-    `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: addr = 0x%0h, num_words = %0d",
-                              erase_check_addr, num_words), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: partition = %s , addr = 0x%0h, ",
+                               "num_words = %0d"}, flash_op.partition.name(), erase_check_addr,
+                               num_words), UVM_MEDIUM)
 
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
       data = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: bank: %0d, addr: 0x%0h, data: 0x%0h",
-                                addr_attrs.bank, erase_check_addr, data), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: bank: %0d, partition: %s , ",
+                                 "addr: 0x%0h, data: 0x%0h"}, addr_attrs.bank,
+                                 flash_op.partition.name(), erase_check_addr, data), UVM_MEDIUM)
       `DV_CHECK_CASE_EQ(data, '1)
       erase_check_addr += TL_DBW;
     end
