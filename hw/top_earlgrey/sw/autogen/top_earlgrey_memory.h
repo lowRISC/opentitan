@@ -162,12 +162,19 @@
  */
 #define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40110000
 /**
- * Peripheral base address for otp_ctrl in top earlgrey.
+ * Peripheral base address for core device on otp_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x40130000
+#define TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR 0x40130000
+/**
+ * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0x40132000
 /**
  * Peripheral base address for lc_ctrl in top earlgrey.
  *

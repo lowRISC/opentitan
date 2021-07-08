@@ -29,9 +29,11 @@ module otp_ctrl
   logic                                              rst_edn_ni,
   output edn_pkg::edn_req_t                          edn_o,
   input  edn_pkg::edn_rsp_t                          edn_i,
-  // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                          tl_i,
-  output tlul_pkg::tl_d2h_t                          tl_o,
+  // Bus Interface
+  input  tlul_pkg::tl_h2d_t                          core_tl_i,
+  output tlul_pkg::tl_d2h_t                          core_tl_o,
+  input  tlul_pkg::tl_h2d_t                          prim_tl_i,
+  output tlul_pkg::tl_d2h_t                          prim_tl_o,
   // Interrupt Requests
   output logic                                       intr_otp_operation_done_o,
   output logic                                       intr_otp_error_o,
@@ -101,17 +103,17 @@ module otp_ctrl
   // We have one CSR node and one functional TL-UL window.
   logic [1:0] intg_error;
 
-  tlul_pkg::tl_h2d_t tl_win_h2d[2];
-  tlul_pkg::tl_d2h_t tl_win_d2h[2];
+  tlul_pkg::tl_h2d_t tl_win_h2d;
+  tlul_pkg::tl_d2h_t tl_win_d2h;
 
-  otp_ctrl_reg_pkg::otp_ctrl_reg2hw_t reg2hw;
-  otp_ctrl_reg_pkg::otp_ctrl_hw2reg_t hw2reg;
+  otp_ctrl_reg_pkg::otp_ctrl_core_reg2hw_t reg2hw;
+  otp_ctrl_reg_pkg::otp_ctrl_core_hw2reg_t hw2reg;
 
-  otp_ctrl_reg_top u_reg (
+  otp_ctrl_core_reg_top u_reg_core (
     .clk_i,
     .rst_ni,
-    .tl_i,
-    .tl_o,
+    .tl_i      ( core_tl_i     ),
+    .tl_o      ( core_tl_o     ),
     .tl_win_o  ( tl_win_h2d    ),
     .tl_win_i  ( tl_win_d2h    ),
     .reg2hw    ( reg2hw        ),
@@ -194,8 +196,8 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .en_ifetch_i ( tlul_pkg::InstrDis ),
-    .tl_i        ( tl_win_h2d[0]      ),
-    .tl_o        ( tl_win_d2h[0]      ),
+    .tl_i        ( tl_win_h2d         ),
+    .tl_o        ( tl_win_d2h         ),
     .req_o       (  tlul_req          ),
     .gnt_i       (  tlul_gnt          ),
     .we_o        (                    ), // unused
@@ -639,14 +641,14 @@ module otp_ctrl
   prim_otp_pkg::err_e          part_otp_err;
   logic [OtpIfWidth-1:0]       part_otp_rdata;
   logic                        otp_rvalid;
-  tlul_pkg::tl_h2d_t           tl_win_h2d_gated;
-  tlul_pkg::tl_d2h_t           tl_win_d2h_gated;
+  tlul_pkg::tl_h2d_t           prim_tl_h2d_gated;
+  tlul_pkg::tl_d2h_t           prim_tl_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
-  assign tl_win_h2d_gated              = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
-                                         tl_win_h2d[$high(tl_win_h2d)] : '0;
-  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
-                                         tl_win_d2h_gated : '0;
+  assign prim_tl_h2d_gated = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
+                             prim_tl_i : '0;
+  assign prim_tl_o         = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
+                             prim_tl_d2h_gated : '0;
 
   prim_otp #(
     .Width         ( OtpWidth            ),
@@ -665,8 +667,8 @@ module otp_ctrl
     .ext_voltage_io   ( otp_ext_voltage_h_io           ),
     // Test interface
     .test_ctrl_i      ( lc_otp_program_i.otp_test_ctrl ),
-    .test_tl_i        ( tl_win_h2d_gated               ),
-    .test_tl_o        ( tl_win_d2h_gated               ),
+    .test_tl_i        ( prim_tl_h2d_gated              ),
+    .test_tl_o        ( prim_tl_d2h_gated              ),
     // Other DFT signals
     .scan_en_i,
     .scan_rst_ni,
@@ -1242,7 +1244,8 @@ module otp_ctrl
   `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
-  `ASSERT_KNOWN(TlOutKnown_A,                tl_o)
+  `ASSERT_KNOWN(CoreTlOutKnown_A,            core_tl_o)
+  `ASSERT_KNOWN(PrimTlOutKnown_A,            prim_tl_o)
   `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
   `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
   `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)

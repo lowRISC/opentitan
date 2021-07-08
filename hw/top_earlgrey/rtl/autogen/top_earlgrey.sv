@@ -690,8 +690,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       pinmux_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_ret_aon_tl_req;
   tlul_pkg::tl_d2h_t       ram_ret_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       otp_ctrl_tl_req;
-  tlul_pkg::tl_d2h_t       otp_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       otp_ctrl_core_tl_req;
+  tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
+  tlul_pkg::tl_h2d_t       otp_ctrl_prim_tl_req;
+  tlul_pkg::tl_d2h_t       otp_ctrl_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_aon_tl_req;
@@ -1603,8 +1605,10 @@ module top_earlgrey #(
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
       .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
-      .tl_i(otp_ctrl_tl_req),
-      .tl_o(otp_ctrl_tl_rsp),
+      .core_tl_i(otp_ctrl_core_tl_req),
+      .core_tl_o(otp_ctrl_core_tl_rsp),
+      .prim_tl_i(otp_ctrl_prim_tl_req),
+      .prim_tl_o(otp_ctrl_prim_tl_rsp),
       .otp_ext_voltage_h_io,
       .scanmode_i,
       .scan_rst_ni,
@@ -2932,9 +2936,13 @@ module top_earlgrey #(
     .tl_ram_ret_aon_o(ram_ret_aon_tl_req),
     .tl_ram_ret_aon_i(ram_ret_aon_tl_rsp),
 
-    // port: tl_otp_ctrl
-    .tl_otp_ctrl_o(otp_ctrl_tl_req),
-    .tl_otp_ctrl_i(otp_ctrl_tl_rsp),
+    // port: tl_otp_ctrl__core
+    .tl_otp_ctrl__core_o(otp_ctrl_core_tl_req),
+    .tl_otp_ctrl__core_i(otp_ctrl_core_tl_rsp),
+
+    // port: tl_otp_ctrl__prim
+    .tl_otp_ctrl__prim_o(otp_ctrl_prim_tl_req),
+    .tl_otp_ctrl__prim_i(otp_ctrl_prim_tl_rsp),
 
     // port: tl_lc_ctrl
     .tl_lc_ctrl_o(lc_ctrl_tl_req),

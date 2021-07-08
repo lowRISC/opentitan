@@ -17,7 +17,8 @@
   scan_reset: "true", // Enable `scan_rst_ni` port
   scan_en: "true",    // Enable `scan_en_i` port
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device", name: "core" }
+    { protocol: "tlul", direction: "device", name: "prim" }
   ],
 
   ///////////////////////////
@@ -768,675 +769,664 @@
   ] // inter_signal_list
 
   regwidth: "32",
-  registers: [
+  registers: {
+    core: [
+      ////////////////////////
+      // Ctrl / Status CSRs //
+      ////////////////////////
 
-    ////////////////////////
-    // Ctrl / Status CSRs //
-    ////////////////////////
-
-    { name: "STATUS",
-      desc: "OTP status register.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      tags: [ // OTP internal HW can modify status register
-              "excl:CsrAllTests:CsrExclCheck"],
-      fields: [
-        { bits: "0"
-          name: "CREATOR_SW_CFG_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "1"
-          name: "OWNER_SW_CFG_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "2"
-          name: "HW_CFG_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "3"
-          name: "SECRET0_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "4"
-          name: "SECRET1_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "5"
-          name: "SECRET2_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "6"
-          name: "LIFE_CYCLE_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in this partition.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "7"
-          name: "DAI_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in the DAI.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "8"
-          name: "LCI_ERROR"
-          desc: '''
-                Set to 1 if an error occurred in the LCI.
-                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                '''
-        }
-        { bits: "9"
-          name: "TIMEOUT_ERROR"
-          desc: '''
-                Set to 1 if an integrity or consistency check times out.
-                This raises an fatal_check_error alert and is an unrecoverable error condition.
-                '''
-        }
-        { bits: "10"
-          name: "LFSR_FSM_ERROR"
-          desc: '''
-                Set to 1 if the LFSR timer FSM has reached an invalid state.
-                This raises an fatal_check_error alert and is an unrecoverable error condition.
-                '''
-        }
-        { bits: "11"
-          name: "SCRAMBLING_FSM_ERROR"
-          desc: '''
-                Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                This raises an fatal_check_error alert and is an unrecoverable error condition.
-                '''
-        }
-        { bits: "12"
-          name: "KEY_DERIV_FSM_ERROR"
-          desc: '''
-                Set to 1 if the key derivation FSM has reached an invalid state.
-                This raises an fatal_check_error alert and is an unrecoverable error condition.
-                '''
-        }
-        { bits: "13"
-          name: "BUS_INTEG_ERROR"
-          desc: '''
-                This bit is set to 1 if a fatal bus integrity fault is detected.
-                This error triggers a fatal_bus_integ_error alert.
-                '''
-        }
-        { bits: "14"
-          name: "DAI_IDLE"
-          desc: "Set to 1 if the DAI is idle and ready to accept commands."
-        }
-        { bits: "15"
-          name: "CHECK_PENDING"
-          desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
-        }
-      ]
-    }
-    { multireg: {
-        name:     "ERR_CODE",
-        desc:     '''
-                  This register holds information about error conditions that occurred in the agents
-                  interacting with the OTP macro via the internal bus. The error codes should be checked
-                  if the partitions, DAI or LCI flag an error in the !!STATUS register, or when an
-                  !!INTR_STATE.otp_error has been triggered. Note that all errors trigger an otp_error
-                  interrupt, and in addition some errors may trigger either an fatal_macro_error or an
-                  fatal_check_error alert.
-                  ''',
-        count:     "NumErrorEntries",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "AGENT",
-        tags: [ // OTP internal HW can modify the error code registers
+      { name: "STATUS",
+        desc: "OTP status register.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        tags: [ // OTP internal HW can modify status register
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
-          {
-            bits: "2:0"
-            enum: [
-              { value: "0",
-                name: "NO_ERROR",
-                desc: '''
-                No error condition has occurred.
-                '''
-              },
-              { value: "1",
-                name: "MACRO_ERROR",
-                desc: '''
-                Returned if the OTP macro command was invalid or did not complete successfully
-                due to a macro malfunction.
-                This error should never occur during normal operation and is not recoverable.
-                This error triggers an fatal_macro_error alert.
-                '''
-              },
-              { value: "2",
-                name: "MACRO_ECC_CORR_ERROR",
-                desc: '''
-                A correctable ECC error has occured during an OTP read operation.
-                The corresponding controller automatically recovers from this error when
-                issuing a new command.
-                '''
-              },
-              { value: "3",
-                name: "MACRO_ECC_UNCORR_ERROR",
-                desc: '''
-                An uncorrectable ECC error has occurred during an OTP read operation.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an fatal_macro_error alert.
-                '''
-              },
-              { value: "4",
-                name: "MACRO_WRITE_BLANK_ERROR",
-                desc: '''
-                This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1.
-                The corresponding controller automatically recovers from this error when issuing a new command.
-
-                Note however that the affected OTP word may be left in an inconsistent state if this error occurs.
-                This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
-
-                It is important that SW ensures that each word is only written once, since this can render the device useless.
-                '''
-              },
-              { value: "5",
-                name: "ACCESS_ERROR",
-                desc: '''
-                This error indicates that a locked memory region has been accessed.
-                The corresponding controller automatically recovers from this error when issuing a new command.
-                '''
-              },
-              { value: "6",
-                name: "CHECK_FAIL_ERROR",
-                desc: '''
-                An ECC, integrity or consistency mismatch has been detected in the buffer registers.
-                This error should never occur during normal operation and is not recoverable.
-                This error triggers an fatal_check_error alert.
-                '''
-              },
-              { value: "7",
-                name: "FSM_STATE_ERROR",
-                desc: '''
-                The FSM of the corresponding controller has reached an invalid state, or the FSM has
-                been moved into a terminal error state due to an escalation action via lc_escalate_en_i.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present, this is a sign that the device has fallen victim to
-                an invasive attack. This error triggers an fatal_check_error alert.
-                '''
-              },
-            ]
+          { bits: "0"
+            name: "CREATOR_SW_CFG_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "1"
+            name: "OWNER_SW_CFG_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "2"
+            name: "HW_CFG_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "3"
+            name: "SECRET0_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "4"
+            name: "SECRET1_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "5"
+            name: "SECRET2_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "6"
+            name: "LIFE_CYCLE_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "7"
+            name: "DAI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the DAI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "8"
+            name: "LCI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the LCI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "9"
+            name: "TIMEOUT_ERROR"
+            desc: '''
+                  Set to 1 if an integrity or consistency check times out.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "10"
+            name: "LFSR_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the LFSR timer FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "11"
+            name: "SCRAMBLING_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "12"
+            name: "KEY_DERIV_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the key derivation FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "13"
+            name: "BUS_INTEG_ERROR"
+            desc: '''
+                  This bit is set to 1 if a fatal bus integrity fault is detected.
+                  This error triggers a fatal_bus_integ_error alert.
+                  '''
+          }
+          { bits: "14"
+            name: "DAI_IDLE"
+            desc: "Set to 1 if the DAI is idle and ready to accept commands."
+          }
+          { bits: "15"
+            name: "CHECK_PENDING"
+            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
           }
         ]
       }
-    }
-    { name: "DIRECT_ACCESS_REGWEN",
-      desc: '''
-            Register write enable for all direct access interface registers.
-            ''',
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      tags: [ // OTP internal HW will set this enable register to 0 when OTP is not under IDLE
-              // state, so could not auto-predict its value
-              "excl:CsrNonInitTests:CsrExclCheck"],
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' This bit is hardware-managed and only readable by software.
-            The DAI sets this bit temporarily to 0 during an OTP operation such that
-            the corresponding address and data registers cannot be modified while
-            the operation is pending.
-            '''
-            resval: 1,
-        },
-      ]
-    },
-    { name: "DIRECT_ACCESS_CMD",
-      desc: "Command register for direct accesses.",
-      swaccess: "r0w1c",
-      hwaccess: "hro",
-      hwqe:     "true",
-      hwext:    "true",
-      regwen:   "DIRECT_ACCESS_REGWEN",
-      tags: [ // Write to DIRECT_ACCESS_CMD randomly might cause OTP_ERRORs and illegal sequences
-              "excl:CsrNonInitTests:CsrExclWrite"],
-      fields: [
-        { bits: "0",
-          name: "RD",
-          desc: '''
-          Initiates a readout sequence that reads the location specified
-          by !!DIRECT_ACCESS_ADDRESS. The command places the data read into
-          !!DIRECT_ACCESS_RDATA_0 and !!DIRECT_ACCESS_RDATA_1 (for 64bit partitions).
-          '''
-        }
-        { bits: "1",
-          name: "WR",
-          desc: '''
-                Initiates a programming sequence that writes the data in !!DIRECT_ACCESS_WDATA_0
-                and !!DIRECT_ACCESS_WDATA_1 (for 64bit partitions) to the location specified by
-                !!DIRECT_ACCESS_ADDRESS.
-                '''
-        }
-        { bits: "2",
-          name: "DIGEST",
-          desc: '''
-                Initiates the digest calculation and locking sequence for the partition specified by
-                !!DIRECT_ACCESS_ADDRESS.
-                '''
-        }
-      ]
-    }
-    { name: "DIRECT_ACCESS_ADDRESS",
-      desc: "Address register for direct accesses.",
-      swaccess: "rw",
-      hwaccess: "hro",
-      hwqe:     "false",
-      regwen:   "DIRECT_ACCESS_REGWEN",
-      tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-              // so not able to predict this register value automatically
-              "excl:CsrNonInitTests:CsrExclCheck"],
-      fields: [
-        { bits: "OtpByteAddrWidth-1:0",
-          desc: '''
-                This is the address for the OTP word to be read or written through
-                the direct access interface. Note that the address is aligned to the access size
-                internally, hence bits 1:0 are ignored for 32bit accesses, and bits 2:0 are ignored
-                for 64bit accesses.
+      { multireg: {
+          name:     "ERR_CODE",
+          desc:     '''
+                    This register holds information about error conditions that occurred in the agents
+                    interacting with the OTP macro via the internal bus. The error codes should be checked
+                    if the partitions, DAI or LCI flag an error in the !!STATUS register, or when an
+                    !!INTR_STATE.otp_error has been triggered. Note that all errors trigger an otp_error
+                    interrupt, and in addition some errors may trigger either an fatal_macro_error or an
+                    fatal_check_error alert.
+                    ''',
+          count:     "NumErrorEntries",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "AGENT",
+          tags: [ // OTP internal HW can modify the error code registers
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            {
+              bits: "2:0"
+              enum: [
+                { value: "0",
+                  name: "NO_ERROR",
+                  desc: '''
+                  No error condition has occurred.
+                  '''
+                },
+                { value: "1",
+                  name: "MACRO_ERROR",
+                  desc: '''
+                  Returned if the OTP macro command was invalid or did not complete successfully
+                  due to a macro malfunction.
+                  This error should never occur during normal operation and is not recoverable.
+                  This error triggers an fatal_macro_error alert.
+                  '''
+                },
+                { value: "2",
+                  name: "MACRO_ECC_CORR_ERROR",
+                  desc: '''
+                  A correctable ECC error has occured during an OTP read operation.
+                  The corresponding controller automatically recovers from this error when
+                  issuing a new command.
+                  '''
+                },
+                { value: "3",
+                  name: "MACRO_ECC_UNCORR_ERROR",
+                  desc: '''
+                  An uncorrectable ECC error has occurred during an OTP read operation.
+                  This error should never occur during normal operation and is not recoverable.
+                  If this error is present this may be a sign that the device is malfunctioning.
+                  This error triggers an fatal_macro_error alert.
+                  '''
+                },
+                { value: "4",
+                  name: "MACRO_WRITE_BLANK_ERROR",
+                  desc: '''
+                  This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1.
+                  The corresponding controller automatically recovers from this error when issuing a new command.
 
-                For the digest calculation command, set this register to the partition base offset.
-                '''
+                  Note however that the affected OTP word may be left in an inconsistent state if this error occurs.
+                  This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
+
+                  It is important that SW ensures that each word is only written once, since this can render the device useless.
+                  '''
+                },
+                { value: "5",
+                  name: "ACCESS_ERROR",
+                  desc: '''
+                  This error indicates that a locked memory region has been accessed.
+                  The corresponding controller automatically recovers from this error when issuing a new command.
+                  '''
+                },
+                { value: "6",
+                  name: "CHECK_FAIL_ERROR",
+                  desc: '''
+                  An ECC, integrity or consistency mismatch has been detected in the buffer registers.
+                  This error should never occur during normal operation and is not recoverable.
+                  This error triggers an fatal_check_error alert.
+                  '''
+                },
+                { value: "7",
+                  name: "FSM_STATE_ERROR",
+                  desc: '''
+                  The FSM of the corresponding controller has reached an invalid state, or the FSM has
+                  been moved into a terminal error state due to an escalation action via lc_escalate_en_i.
+                  This error should never occur during normal operation and is not recoverable.
+                  If this error is present, this is a sign that the device has fallen victim to
+                  an invasive attack. This error triggers an fatal_check_error alert.
+                  '''
+                },
+              ]
+            }
+          ]
         }
-      ]
-    }
-    { multireg: {
-        name:     "DIRECT_ACCESS_WDATA",
-        desc:     '''Write data for direct accesses.
-                  Hardware automatically determines the access granule (32bit or 64bit) based on which
-                  partition is being written to.
-                  ''',
-        count:    "NumDaiWords", // 2 x 32bit = 64bit
+      }
+      { name: "DIRECT_ACCESS_REGWEN",
+        desc: '''
+              Register write enable for all direct access interface registers.
+              ''',
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        tags: [ // OTP internal HW will set this enable register to 0 when OTP is not under IDLE
+                // state, so could not auto-predict its value
+                "excl:CsrNonInitTests:CsrExclCheck"],
+        fields: [
+          {
+              bits:   "0",
+              desc: ''' This bit is hardware-managed and only readable by software.
+              The DAI sets this bit temporarily to 0 during an OTP operation such that
+              the corresponding address and data registers cannot be modified while
+              the operation is pending.
+              '''
+              resval: 1,
+          },
+        ]
+      },
+      { name: "DIRECT_ACCESS_CMD",
+        desc: "Command register for direct accesses.",
+        swaccess: "r0w1c",
+        hwaccess: "hro",
+        hwqe:     "true",
+        hwext:    "true",
+        regwen:   "DIRECT_ACCESS_REGWEN",
+        tags: [ // Write to DIRECT_ACCESS_CMD randomly might cause OTP_ERRORs and illegal sequences
+                "excl:CsrNonInitTests:CsrExclWrite"],
+        fields: [
+          { bits: "0",
+            name: "RD",
+            desc: '''
+            Initiates a readout sequence that reads the location specified
+            by !!DIRECT_ACCESS_ADDRESS. The command places the data read into
+            !!DIRECT_ACCESS_RDATA_0 and !!DIRECT_ACCESS_RDATA_1 (for 64bit partitions).
+            '''
+          }
+          { bits: "1",
+            name: "WR",
+            desc: '''
+                  Initiates a programming sequence that writes the data in !!DIRECT_ACCESS_WDATA_0
+                  and !!DIRECT_ACCESS_WDATA_1 (for 64bit partitions) to the location specified by
+                  !!DIRECT_ACCESS_ADDRESS.
+                  '''
+          }
+          { bits: "2",
+            name: "DIGEST",
+            desc: '''
+                  Initiates the digest calculation and locking sequence for the partition specified by
+                  !!DIRECT_ACCESS_ADDRESS.
+                  '''
+          }
+        ]
+      }
+      { name: "DIRECT_ACCESS_ADDRESS",
+        desc: "Address register for direct accesses.",
         swaccess: "rw",
         hwaccess: "hro",
         hwqe:     "false",
         regwen:   "DIRECT_ACCESS_REGWEN",
-        cname:    "WORD",
-        tags: [ // The value of this register is written from "DIRECT_ACCESS_RDATA",
-                // so could not predict this register value automatically
-                "excl:CsrAllTests:CsrExclCheck"],
+        tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+                // so not able to predict this register value automatically
+                "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
-          { bits: "31:0"
+          { bits: "OtpByteAddrWidth-1:0",
+            desc: '''
+                  This is the address for the OTP word to be read or written through
+                  the direct access interface. Note that the address is aligned to the access size
+                  internally, hence bits 1:0 are ignored for 32bit accesses, and bits 2:0 are ignored
+                  for 64bit accesses.
+
+                  For the digest calculation command, set this register to the partition base offset.
+                  '''
           }
         ]
       }
-    },
-    { multireg: {
-        name:     "DIRECT_ACCESS_RDATA",
-        desc:     '''Read data for direct accesses.
-                  Hardware automatically determines the access granule (32bit or 64bit) based on which
-                  partition is read from.
-                  ''',
-        count:    "NumDaiWords", // 2 x 32bit = 64bit
-        swaccess: "ro",
-        hwaccess: "hwo",
+      { multireg: {
+          name:     "DIRECT_ACCESS_WDATA",
+          desc:     '''Write data for direct accesses.
+                    Hardware automatically determines the access granule (32bit or 64bit) based on which
+                    partition is being written to.
+                    ''',
+          count:    "NumDaiWords", // 2 x 32bit = 64bit
+          swaccess: "rw",
+          hwaccess: "hro",
+          hwqe:     "false",
+          regwen:   "DIRECT_ACCESS_REGWEN",
+          cname:    "WORD",
+          tags: [ // The value of this register is written from "DIRECT_ACCESS_RDATA",
+                  // so could not predict this register value automatically
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "DIRECT_ACCESS_RDATA",
+          desc:     '''Read data for direct accesses.
+                    Hardware automatically determines the access granule (32bit or 64bit) based on which
+                    partition is read from.
+                    ''',
+          count:    "NumDaiWords", // 2 x 32bit = 64bit
+          swaccess: "ro",
+          hwaccess: "hwo",
+          hwext:    "true",
+          cname:    "WORD",
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+
+      //////////////////////////////////////
+      // Integrity and Consistency Checks //
+      //////////////////////////////////////
+      { name: "CHECK_TRIGGER_REGWEN",
+        desc: '''
+              Register write enable for !!CHECK_TRIGGER.
+              ''',
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits:   "0",
+            desc: '''
+            When cleared to 0, the !!CHECK_TRIGGER register cannot be written anymore.
+            Write 0 to clear this bit.
+            '''
+            resval: 1,
+          },
+        ]
+      },
+      { name: "CHECK_TRIGGER",
+        desc: "Command register for direct accesses.",
+        swaccess: "r0w1c",
+        hwaccess: "hro",
+        hwqe:     "true",
         hwext:    "true",
-        cname:    "WORD",
+        regwen:   "CHECK_TRIGGER_REGWEN",
         fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-
-    //////////////////////////////////////
-    // Integrity and Consistency Checks //
-    //////////////////////////////////////
-    { name: "CHECK_TRIGGER_REGWEN",
-      desc: '''
-            Register write enable for !!CHECK_TRIGGER.
-            ''',
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits:   "0",
-          desc: '''
-          When cleared to 0, the !!CHECK_TRIGGER register cannot be written anymore.
-          Write 0 to clear this bit.
-          '''
-          resval: 1,
-        },
-      ]
-    },
-    { name: "CHECK_TRIGGER",
-      desc: "Command register for direct accesses.",
-      swaccess: "r0w1c",
-      hwaccess: "hro",
-      hwqe:     "true",
-      hwext:    "true",
-      regwen:   "CHECK_TRIGGER_REGWEN",
-      fields: [
-        { bits: "0",
-          name: "INTEGRITY",
-          desc: '''
-          Writing 1 to this bit triggers an integrity check. SW should monitor !!STATUS.CHECK_PENDING
-          and wait until the check has been completed. If there are any errors, those will be flagged
-          in the !!STATUS and !!ERR_CODE registers, and via the interrupts and alerts.
-          '''
-        }
-        { bits: "1",
-          name: "CONSISTENCY",
-          desc: '''
-          Writing 1 to this bit triggers a consistency check. SW should monitor !!STATUS.CHECK_PENDING
-          and wait until the check has been completed. If there are any errors, those will be flagged
-          in the !!STATUS and !!ERR_CODE registers, and via interrupts and alerts.
-          '''
-        }
-      ]
-    },
-    { name: "CHECK_REGWEN",
-      desc: '''
-            Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
-            ''',
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits:   "0",
-          desc: '''
-          When cleared to 0, !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD registers cannot be written anymore.
-          Write 0 to clear this bit.
-          '''
-          resval: 1,
-        },
-      ]
-    },
-    { name: "CHECK_TIMEOUT",
-      desc: '''
-            Timeout value for the integrity and consistency checks.
-            ''',
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "CHECK_REGWEN",
-      tags: [ // Do not write to this automatically, as it may trigger fatal alert, and cause
-              // escalation. TODO: check with designer if the trigger escalation part is intended.
-              "excl:CsrAllTests:CsrExclWrite"],
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
-          check does not complete within the timeout window, an error will be flagged in the !!STATUS register,
-          an otp_error interrupt will be raised, and an fatal_check_error alert will be sent out. The timeout should
-          be set to a large value to stay on the safe side. The maximum check time can be upper bounded by the
-          number of cycles it takes to readout, scramble and digest the entire OTP array. Since this amounts to
-          roughly 25k cycles, it is recommended to set this value to at least 100'000 cycles in order to stay on the
-          safe side. A value of zero disables the timeout mechanism (default).
-          '''
-          resval: 0,
-        },
-      ]
-    },
-    { name: "INTEGRITY_CHECK_PERIOD",
-      desc: '''
-            This value specifies the maximum period that can be generated pseudo-randomly.
-            Only applies to the HW_CFG and SECRET* partitions, once they are locked.
+          { bits: "0",
+            name: "INTEGRITY",
+            desc: '''
+            Writing 1 to this bit triggers an integrity check. SW should monitor !!STATUS.CHECK_PENDING
+            and wait until the check has been completed. If there are any errors, those will be flagged
+            in the !!STATUS and !!ERR_CODE registers, and via the interrupts and alerts.
             '''
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "CHECK_REGWEN",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
-          the bit mask to be applied to the LFSR output in order to limit its range. The value of this
-          register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
-          A recommended value is 0x3_FFFF, corresponding to a maximum period of ~2.8s at 24MHz.
-          A value of zero disables the timer (default). Note that a one-off check can always be triggered via
-          !!CHECK_TRIGGER.INTEGRITY.
-          '''
-          resval: "0"
-        }
-      ]
-    }
-    { name: "CONSISTENCY_CHECK_PERIOD",
-      desc: '''
-            This value specifies the maximum period that can be generated pseudo-randomly.
-            This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions, once they are locked.
+          }
+          { bits: "1",
+            name: "CONSISTENCY",
+            desc: '''
+            Writing 1 to this bit triggers a consistency check. SW should monitor !!STATUS.CHECK_PENDING
+            and wait until the check has been completed. If there are any errors, those will be flagged
+            in the !!STATUS and !!ERR_CODE registers, and via interrupts and alerts.
             '''
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "CHECK_REGWEN",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
-          the bit mask to be applied to the LFSR output in order to limit its range. The value of this
-          register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
-          A recommended value is 0x3FF_FFFF, corresponding to a maximum period of ~716s at 24MHz.
-          A value of zero disables the timer (default). Note that a one-off check can always be triggered via
-          !!CHECK_TRIGGER.CONSISTENCY.
-          '''
-          resval: "0"
-        }
-      ]
-    }
-
-    ////////////////////////////////////
-    // Dynamic Locks of SW Parititons //
-    ////////////////////////////////////
-    { name: "CREATOR_SW_CFG_READ_LOCK",
-      desc: '''
-            Runtime read lock for the CREATOR_SW_CFG partition.
-            ''',
-      swaccess: "rw0c",
-      hwaccess: "hro",
-      regwen:   "DIRECT_ACCESS_REGWEN",
-      tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-                  // so not able to predict this register value automatically
-                  "excl:CsrNonInitTests:CsrExclCheck"],
-      fields: [
-        { bits:   "0",
-          desc: '''
-          When cleared to 0, read access to the CREATOR_SW_CFG partition is locked.
-          Write 0 to clear this bit.
-          '''
-          resval: 1,
-        },
-      ]
-    },
-    { name: "OWNER_SW_CFG_READ_LOCK",
-      desc: '''
-            Runtime read lock for the OWNER_SW_CFG partition.
-            ''',
-      swaccess: "rw0c",
-      hwaccess: "hro",
-      regwen:   "DIRECT_ACCESS_REGWEN",
-      tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-                  // so not able to predict this register value automatically
-                  "excl:CsrNonInitTests:CsrExclCheck"],
-      fields: [
-        { bits:   "0",
-          desc: '''
-          When cleared to 0, read access to the OWNER_SW_CFG partition is locked.
-          Write 0 to clear this bit.
-          '''
-          resval: 1,
-        },
-      ]
-    },
-
-    ///////////////////////
-    // Integrity Digests //
-    ///////////////////////
-    { multireg: {
-        name:     "CREATOR_SW_CFG_DIGEST",
-        desc:     '''
-                  Integrity digest for the CREATOR_SW_CFG partition.
-                  The integrity digest is 0 by default. Software must write this
-                  digest value via the direct access interface in order to lock the partition.
-                  After a reset, write access to the CREATOR_SW_CFG partition is locked and
-                  the digest becomes visible in this CSR.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
           }
         ]
-      }
-    },
-    { multireg: {
-        name:     "OWNER_SW_CFG_DIGEST",
-        desc:     '''
-                  Integrity digest for the OWNER_SW_CFG partition.
-                  The integrity digest is 0 by default. Software must write this
-                  digest value via the direct access interface in order to lock the partition.
-                  After a reset, write access to the OWNER_SW_CFG partition is locked and
-                  the digest becomes visible in this CSR.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-    { multireg: {
-        name:     "HW_CFG_DIGEST",
-        desc:     '''
-                  Integrity digest for the HW_CFG partition.
-                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
-                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-    { multireg: {
-        name:     "SECRET0_DIGEST",
-        desc:     '''
-                  Integrity digest for the SECRET0 partition.
-                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
-                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-    { multireg: {
-        name:     "SECRET1_DIGEST",
-        desc:     '''
-                  Integrity digest for the SECRET1 partition.
-                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
-                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-    { multireg: {
-        name:     "SECRET2_DIGEST",
-        desc:     '''
-                  Integrity digest for the SECRET2 partition.
-                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
-                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
-                  ''',
-        count:     "NumDigestWords",
-        swaccess:  "ro",
-        hwaccess:  "hwo",
-        hwext:     "true",
-        cname:     "WORD",
-        tags: [ // OTP internal HW will update status so can not auto-predict its value.
-                "excl:CsrAllTests:CsrExclCheck"],
-        fields: [
-          { bits: "31:0"
-          }
-        ]
-      }
-    },
-
-    ////////////////////////////////
-    // Software Config Partitions //
-    ////////////////////////////////
-    { skipto: "0x1000" }
-
-    { window: {
-        name: "SW_CFG_WINDOW"
-        items: "NumSwCfgWindowWords"
-        swaccess: "ro",
+      },
+      { name: "CHECK_REGWEN",
         desc: '''
-        Any read to this window directly maps to the corresponding offset in the creator and owner software
-        config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
-        will block until OTP readout has completed.
-        '''
-      }
-    }
-
-    //////////////////////
-    // Test Access Port //
-    //////////////////////
-    { skipto: "0x2000" }
-
-    { window: {
-        name: "TEST_ACCESS"
-        items: "NumDebugWindowWords"
+              Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
+              ''',
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits:   "0",
+            desc: '''
+            When cleared to 0, !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD registers cannot be written anymore.
+            Write 0 to clear this bit.
+            '''
+            resval: 1,
+          },
+        ]
+      },
+      { name: "CHECK_TIMEOUT",
+        desc: '''
+              Timeout value for the integrity and consistency checks.
+              ''',
         swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "CHECK_REGWEN",
+        tags: [ // Do not write to this automatically, as it may trigger fatal alert, and cause
+                // escalation. TODO: check with designer if the trigger escalation part is intended.
+                "excl:CsrAllTests:CsrExclWrite"],
+        fields: [
+          { bits: "31:0",
+            desc: '''
+            Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
+            check does not complete within the timeout window, an error will be flagged in the !!STATUS register,
+            an otp_error interrupt will be raised, and an fatal_check_error alert will be sent out. The timeout should
+            be set to a large value to stay on the safe side. The maximum check time can be upper bounded by the
+            number of cycles it takes to readout, scramble and digest the entire OTP array. Since this amounts to
+            roughly 25k cycles, it is recommended to set this value to at least 100'000 cycles in order to stay on the
+            safe side. A value of zero disables the timeout mechanism (default).
+            '''
+            resval: 0,
+          },
+        ]
+      },
+      { name: "INTEGRITY_CHECK_PERIOD",
         desc: '''
-        This maps to the register file of the proprietary OTP macro. Note that this is only
-        accessible during the TEST_UNLOCKED* life cycle states.
-        '''
+              This value specifies the maximum period that can be generated pseudo-randomly.
+              Only applies to the HW_CFG and SECRET* partitions, once they are locked.
+              '''
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "CHECK_REGWEN",
+        fields: [
+          { bits: "31:0",
+            desc: '''
+            The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
+            the bit mask to be applied to the LFSR output in order to limit its range. The value of this
+            register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
+            A recommended value is 0x3_FFFF, corresponding to a maximum period of ~2.8s at 24MHz.
+            A value of zero disables the timer (default). Note that a one-off check can always be triggered via
+            !!CHECK_TRIGGER.INTEGRITY.
+            '''
+            resval: "0"
+          }
+        ]
       }
-    }
-  ],
+      { name: "CONSISTENCY_CHECK_PERIOD",
+        desc: '''
+              This value specifies the maximum period that can be generated pseudo-randomly.
+              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions, once they are locked.
+              '''
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "CHECK_REGWEN",
+        fields: [
+          { bits: "31:0",
+            desc: '''
+            The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
+            the bit mask to be applied to the LFSR output in order to limit its range. The value of this
+            register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
+            A recommended value is 0x3FF_FFFF, corresponding to a maximum period of ~716s at 24MHz.
+            A value of zero disables the timer (default). Note that a one-off check can always be triggered via
+            !!CHECK_TRIGGER.CONSISTENCY.
+            '''
+            resval: "0"
+          }
+        ]
+      }
+
+      ////////////////////////////////////
+      // Dynamic Locks of SW Parititons //
+      ////////////////////////////////////
+      { name: "CREATOR_SW_CFG_READ_LOCK",
+        desc: '''
+              Runtime read lock for the CREATOR_SW_CFG partition.
+              ''',
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        regwen:   "DIRECT_ACCESS_REGWEN",
+        tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+                    // so not able to predict this register value automatically
+                    "excl:CsrNonInitTests:CsrExclCheck"],
+        fields: [
+          { bits:   "0",
+            desc: '''
+            When cleared to 0, read access to the CREATOR_SW_CFG partition is locked.
+            Write 0 to clear this bit.
+            '''
+            resval: 1,
+          },
+        ]
+      },
+      { name: "OWNER_SW_CFG_READ_LOCK",
+        desc: '''
+              Runtime read lock for the OWNER_SW_CFG partition.
+              ''',
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        regwen:   "DIRECT_ACCESS_REGWEN",
+        tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+                    // so not able to predict this register value automatically
+                    "excl:CsrNonInitTests:CsrExclCheck"],
+        fields: [
+          { bits:   "0",
+            desc: '''
+            When cleared to 0, read access to the OWNER_SW_CFG partition is locked.
+            Write 0 to clear this bit.
+            '''
+            resval: 1,
+          },
+        ]
+      },
+
+      ///////////////////////
+      // Integrity Digests //
+      ///////////////////////
+      { multireg: {
+          name:     "CREATOR_SW_CFG_DIGEST",
+          desc:     '''
+                    Integrity digest for the CREATOR_SW_CFG partition.
+                    The integrity digest is 0 by default. Software must write this
+                    digest value via the direct access interface in order to lock the partition.
+                    After a reset, write access to the CREATOR_SW_CFG partition is locked and
+                    the digest becomes visible in this CSR.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "OWNER_SW_CFG_DIGEST",
+          desc:     '''
+                    Integrity digest for the OWNER_SW_CFG partition.
+                    The integrity digest is 0 by default. Software must write this
+                    digest value via the direct access interface in order to lock the partition.
+                    After a reset, write access to the OWNER_SW_CFG partition is locked and
+                    the digest becomes visible in this CSR.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "HW_CFG_DIGEST",
+          desc:     '''
+                    Integrity digest for the HW_CFG partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "SECRET0_DIGEST",
+          desc:     '''
+                    Integrity digest for the SECRET0 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "SECRET1_DIGEST",
+          desc:     '''
+                    Integrity digest for the SECRET1 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "SECRET2_DIGEST",
+          desc:     '''
+                    Integrity digest for the SECRET2 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+
+      ////////////////////////////////
+      // Software Config Partitions //
+      ////////////////////////////////
+      { skipto: "0x1000" }
+
+      { window: {
+          name: "SW_CFG_WINDOW"
+          items: "NumSwCfgWindowWords"
+          swaccess: "ro",
+          desc: '''
+          Any read to this window directly maps to the corresponding offset in the creator and owner software
+          config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
+          will block until OTP readout has completed.
+          '''
+        }
+      }
+    ],
+
+    // these CSRs are defined in a separate hjson specific to the closed source OTP wrapper.
+    prim: [
+    ]
+  }
 }

@@ -46,7 +46,8 @@
       clkmgr_aon
       pinmux_aon
       ram_ret_aon
-      otp_ctrl
+      otp_ctrl.core
+      otp_ctrl.prim
       lc_ctrl
       sensor_ctrl_aon
       alert_handler
@@ -432,7 +433,7 @@
       pipeline_byp: "true"
     }
     {
-      name: otp_ctrl
+      name: otp_ctrl.core
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -442,7 +443,25 @@
       [
         {
           base_addr: 0x40130000
-          size_byte: 0x4000
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: otp_ctrl.prim
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: otp_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40132000
+          size_byte: 0x1000
         }
       ]
       xbar: false

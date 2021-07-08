@@ -67,8 +67,11 @@ tl_device_t xbar_devices[$] = '{
     '{"ram_ret_aon", '{
         '{32'h40600000, 32'h40600fff}
     }},
-    '{"otp_ctrl", '{
-        '{32'h40130000, 32'h40133fff}
+    '{"otp_ctrl__core", '{
+        '{32'h40130000, 32'h40131fff}
+    }},
+    '{"otp_ctrl__prim", '{
+        '{32'h40132000, 32'h40132fff}
     }},
     '{"lc_ctrl", '{
         '{32'h40140000, 32'h40140fff}
@@ -117,7 +120,8 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "ram_ret_aon",
-        "otp_ctrl",
+        "otp_ctrl__core",
+        "otp_ctrl__prim",
         "lc_ctrl",
         "sensor_ctrl_aon",
         "alert_handler",

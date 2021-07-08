@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
+class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block));
 
   // ext component cfgs
   rand push_pull_agent_cfg#(.DeviceDataWidth(SRAM_DATA_SIZE))

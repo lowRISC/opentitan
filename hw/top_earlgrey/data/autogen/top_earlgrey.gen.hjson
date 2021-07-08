@@ -1165,6 +1165,11 @@
         rst_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
+      base_addrs:
+      {
+        core: 0x40130000
+        prim: 0x40132000
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -1421,7 +1426,7 @@
           index: -1
         }
         {
-          name: tl
+          name: core_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -1430,14 +1435,23 @@
           inst_name: otp_ctrl
           default: ""
           end_idx: -1
-          top_signame: otp_ctrl_tl
+          top_signame: otp_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: prim_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: otp_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: otp_ctrl_prim_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x40130000
-      }
     }
     {
       name: lc_ctrl
@@ -6972,9 +6986,13 @@
       [
         peri.tl_ram_ret_aon
       ]
-      otp_ctrl.tl:
+      otp_ctrl.core_tl:
       [
-        peri.tl_otp_ctrl
+        peri.tl_otp_ctrl__core
+      ]
+      otp_ctrl.prim_tl:
+      [
+        peri.tl_otp_ctrl__prim
       ]
       lc_ctrl.tl:
       [
@@ -7890,7 +7908,8 @@
           clkmgr_aon
           pinmux_aon
           ram_ret_aon
-          otp_ctrl
+          otp_ctrl.core
+          otp_ctrl.prim
           lc_ctrl
           sensor_ctrl_aon
           alert_handler
@@ -8276,7 +8295,7 @@
           pipeline_byp: "true"
         }
         {
-          name: otp_ctrl
+          name: otp_ctrl.core
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -8286,7 +8305,25 @@
           [
             {
               base_addr: 0x40130000
-              size_byte: 0x4000
+              size_byte: 0x2000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: otp_ctrl.prim
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: otp_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40132000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -8695,7 +8732,7 @@
           index: -1
         }
         {
-          name: tl_otp_ctrl
+          name: tl_otp_ctrl__core
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -8703,7 +8740,19 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: otp_ctrl_tl
+          top_signame: otp_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: tl_otp_ctrl__prim
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: otp_ctrl_prim_tl
           index: -1
         }
         {
@@ -13519,7 +13568,7 @@
         index: -1
       }
       {
-        name: tl
+        name: core_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -13528,7 +13577,20 @@
         inst_name: otp_ctrl
         default: ""
         end_idx: -1
-        top_signame: otp_ctrl_tl
+        top_signame: otp_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: prim_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: otp_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: otp_ctrl_prim_tl
         index: -1
       }
       {
@@ -17226,7 +17288,7 @@
         index: -1
       }
       {
-        name: tl_otp_ctrl
+        name: tl_otp_ctrl__core
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17234,7 +17296,19 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: otp_ctrl_tl
+        top_signame: otp_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: tl_otp_ctrl__prim
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: otp_ctrl_prim_tl
         index: -1
       }
       {
@@ -19929,7 +20003,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: otp_ctrl_tl_req
+        signame: otp_ctrl_core_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -19940,7 +20014,29 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: otp_ctrl_tl_rsp
+        signame: otp_ctrl_core_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: otp_ctrl_prim_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: otp_ctrl_prim_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
