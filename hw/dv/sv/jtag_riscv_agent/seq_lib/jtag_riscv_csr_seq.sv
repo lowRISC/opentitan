@@ -49,7 +49,7 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
     while (1) begin
       bit [DMI_DRW-1:0] dout;
       send_csr_dr_req(DmiStatus, 0, 0, dout);
-      status = rdata[0 +: DMI_OPW];
+      status = dout[0 +: DMI_OPW];
 
       // The DmiInProgress status is sticky and has to be cleared by dmireset via DTMCS.
       if (status == DmiInProgress) begin
