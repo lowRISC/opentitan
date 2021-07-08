@@ -23,7 +23,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   input id_en_i,
   input gen_en_i,
   output logic done_o,
-  output logic [Shares-1:0][KeyWidth-1:0] data_o,
+  output logic [Shares-1:0][kmac_pkg::AppDigestW-1:0] data_o,
 
   // actual connection to kmac
   output kmac_pkg::app_req_t kmac_data_o,
@@ -67,7 +67,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   localparam int CntWidth = $clog2(MaxRounds);
   localparam int IfBytes = KmacDataIfWidth / 8;
   localparam int DecoyCopies = KmacDataIfWidth / 32;
-  localparam int DecoyOutputCopies = (KeyWidth / 32) * Shares;
+  localparam int DecoyOutputCopies = (kmac_pkg::AppDigestW / 32) * Shares;
 
   localparam int unsigned LastAdvRoundInt = AdvRounds - 1;
   localparam int unsigned LastIdRoundInt = IdRounds - 1;

@@ -20,7 +20,7 @@ module top_earlgrey #(
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
-  parameter bit KmacEnMasking = 0,
+  parameter bit KmacEnMasking = 1,
   parameter int KmacReuseShare = 0,
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   parameter bit EntropySrcStub = 0,
@@ -2284,6 +2284,7 @@ module top_earlgrey #(
     .RndCnstAesSeed(RndCnstKeymgrAesSeed),
     .RndCnstHmacSeed(RndCnstKeymgrHmacSeed),
     .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
+    .RndCnstOtbnSeed(RndCnstKeymgrOtbnSeed),
     .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
   ) u_keymgr (
 
@@ -2300,6 +2301,7 @@ module top_earlgrey #(
       .aes_key_o(),
       .hmac_key_o(),
       .kmac_key_o(keymgr_kmac_key),
+      .otbn_key_o(),
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),

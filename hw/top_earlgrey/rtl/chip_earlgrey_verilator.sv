@@ -154,7 +154,6 @@ module chip_earlgrey_verilator (
   top_earlgrey #(
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
-    .KmacEnMasking(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       (rst_ni            ),

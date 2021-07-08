@@ -176,12 +176,13 @@ module keymgr_ctrl import keymgr_pkg::*; (
   // - when there are no operations, the key state also should be exposed.
   assign key_o.valid = op_req;
   assign cdi_sel_o = advance_sel ? cdi_cnt : op_cdi_sel_i;
-  assign key_o.key_share0 = stage_sel_o == Disable ?
-                            {EntropyRounds{entropy_i[0]}} :
-                            key_state_q[cnt[cdi_sel_o]][0];
-  assign key_o.key_share1 = stage_sel_o == Disable ?
-                            {EntropyRounds{entropy_i[1]}} :
-                            key_state_q[cnt[cdi_sel_o]][1];
+
+  for (genvar i = 0; i < Shares; i++) begin : gen_key_out_assign
+    assign key_o.key[i] = stage_sel_o == Disable ?
+                          {EntropyRounds{entropy_i[i]}} :
+                          key_state_q[cnt[cdi_sel_o]][i];
+  end
+
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin

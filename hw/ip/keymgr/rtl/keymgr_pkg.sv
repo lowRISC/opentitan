@@ -10,6 +10,7 @@ package keymgr_pkg;
   parameter int KeyWidth = 256;
   parameter int CDIs = 2; // 2 different CDIs, sealing / attestation
   parameter int CdiWidth = prim_util_pkg::vbits(CDIs);
+  parameter int OtbnKeyWidth = 384;
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
   parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
@@ -49,6 +50,8 @@ package keymgr_pkg;
     256'h075CF7939313EEC797019BD0036D9500374A8FD9121CC8E78E1E3359D5F77C4E;
   parameter seed_t RndCnstKmacSeedDefault =
     256'h0A5CCCD9627BF6169B3A765D3D6D0CD89DBDCB7B6DF8D3C03746D60A0145D3ED;
+  parameter seed_t RndCnstOtbnSeedDefault =
+    256'h17B0AF865F8ACDDFC7580C2B7BC3FB33FC9BB5A4B292216C123ACF99A7861F96;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
@@ -96,7 +99,8 @@ package keymgr_pkg;
     None,
     Aes,
     Hmac,
-    Kmac
+    Kmac,
+    Otbn
   } keymgr_key_dest_e;
 
   // Enumeration for key select
@@ -152,17 +156,26 @@ package keymgr_pkg;
     KeyUpdateWipe
   } keymgr_key_update_e;
 
-  // Key connection to various modules
+  // Key connection to various symmetric modules
   typedef struct packed {
     logic valid;
-    logic [KeyWidth-1:0] key_share0;
-    logic [KeyWidth-1:0] key_share1;
+    logic [Shares-1:0][KeyWidth-1:0] key;
   } hw_key_req_t;
+
+  // Key connection to otbn
+  typedef struct packed {
+    logic valid;
+    logic [Shares-1:0][OtbnKeyWidth-1:0] key;
+  } otbn_key_req_t;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
     valid: 1'b0,
-    key_share0: KeyWidth'(32'hDEADBEEF),
-    key_share1: KeyWidth'(32'hFACEBEEF)
+    key: {Shares{KeyWidth'(32'hDEADBEEF)}}
+  };
+
+  parameter otbn_key_req_t OTBN_KEY_REQ_DEFAULT = '{
+    valid: 1'b0,
+    key: {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
   };
 
   // The following structs should be sourced from other modules

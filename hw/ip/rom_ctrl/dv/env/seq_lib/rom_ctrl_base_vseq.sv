@@ -72,12 +72,12 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task read_digest_regs();
     bit [TL_DW-1:0] rdata;
-    for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       string digest_name = $sformatf("digest_%0d", i);
       uvm_reg csr = ral.get_reg_by_name(digest_name);
       csr_rd(.ptr(csr), .value(rdata));
     end
-    for (int i = 0; i < kmac_pkg::AppDigestW / TL_DW; i++) begin
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       string digest_name = $sformatf("exp_digest_%0d", i);
       uvm_reg csr = ral.get_reg_by_name(digest_name);
       csr_rd(.ptr(csr), .value(rdata));

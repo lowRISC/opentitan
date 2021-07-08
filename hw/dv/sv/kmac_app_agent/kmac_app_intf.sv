@@ -17,8 +17,8 @@ interface kmac_app_intf (input clk, input rst_n);
   push_pull_if #(.HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH))
       req_data_if(.clk(clk), .rst_n(rst_n));
   wire rsp_done;
-  wire [KeyWidth-1:0] rsp_digest_share0;
-  wire [KeyWidth-1:0] rsp_digest_share1;
+  wire [kmac_pkg::AppDigestW-1:0] rsp_digest_share0;
+  wire [kmac_pkg::AppDigestW-1:0] rsp_digest_share1;
   wire rsp_error;
 
   // all the host pins are handled by push_pull driver, only include clk and rst here

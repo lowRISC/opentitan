@@ -931,7 +931,6 @@ module chip_${top["name"]}_${target["name"]} (
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
-    .KmacEnMasking(1),  // DOM AND + Masking scheme
     .KmacReuseShare(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
@@ -1077,6 +1076,7 @@ module chip_${top["name"]}_${target["name"]} (
 % if target["name"] == "cw310":
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .KmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
@@ -1092,6 +1092,7 @@ module chip_${top["name"]}_${target["name"]} (
 % else:
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .KmacEnMasking(0),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .SecAesSkipPRNGReseeding(1'b0),

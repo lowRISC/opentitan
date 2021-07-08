@@ -55,7 +55,7 @@ package keymgr_reg_pkg;
       logic        q;
     } cdi_sel;
     struct packed {
-      logic [1:0]  q;
+      logic [2:0]  q;
     } dest_sel;
   } keymgr_reg2hw_control_reg_t;
 
@@ -176,11 +176,11 @@ package keymgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [933:933]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [932:932]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [931:930]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [929:926]
-    keymgr_reg2hw_control_reg_t control; // [925:919]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [934:934]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [933:933]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [932:931]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [930:927]
+    keymgr_reg2hw_control_reg_t control; // [926:919]
     keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [918:918]
     keymgr_reg2hw_reseed_interval_reg_t reseed_interval; // [917:902]
     keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [901:900]
