@@ -24,14 +24,19 @@ using ::testing::ElementsAre;
 
 class OtpTest : public testing::Test, public MmioTest {
  protected:
-  dif_otp_ctrl_t otp_ = {.params = {.base_addr = dev().region()}};
+  dif_otp_ctrl_t otp_ = {.params = {.base_addr_core = dev().region(),
+                                    .base_addr_prim = dev().region()}};
 };
 
 class InitTest : public OtpTest {};
 
 TEST_F(InitTest, Success) {
   dif_otp_ctrl_params_t params = {
-      .base_addr = dev().region(),
+      // Note: the two base addresses currently alias to the same region.
+      // Hence, "core" CSR unit tests and "prim" CSR unit tests should not
+      // be mixed at the moment.
+      .base_addr_core = dev().region(),
+      .base_addr_prim = dev().region(),
   };
 
   dif_otp_ctrl_t handler;
@@ -40,7 +45,7 @@ TEST_F(InitTest, Success) {
 
 TEST_F(InitTest, NullArgs) {
   dif_otp_ctrl_params_t params = {
-      .base_addr = dev().region(),
+      .base_addr_core = dev().region(),
   };
 
   EXPECT_EQ(dif_otp_ctrl_init(params, nullptr), kDifOtpCtrlBadArg);
@@ -770,7 +775,7 @@ class TestIoTest : public OtpTest {
 TEST_F(TestIoTest, Read) {
   for (int i = 0; i < kWords; ++i) {
     auto offset = 0x10 + i * sizeof(uint32_t);
-    EXPECT_READ32(OTP_CTRL_TEST_ACCESS_REG_OFFSET + offset, i + 1);
+    EXPECT_READ32(offset, i + 1);
   }
 
   std::vector<uint32_t> buf(kWords);
@@ -782,7 +787,7 @@ TEST_F(TestIoTest, Read) {
 TEST_F(TestIoTest, Write) {
   for (int i = 0; i < kWords; ++i) {
     auto offset = 0x10 + i * sizeof(uint32_t);
-    EXPECT_WRITE32(OTP_CTRL_TEST_ACCESS_REG_OFFSET + offset, i + 1);
+    EXPECT_WRITE32(offset, i + 1);
   }
 
   std::vector<uint32_t> buf = {1, 2, 3, 4};

@@ -33,7 +33,7 @@
 
 enum {
   kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
-  kOtpBase = TOP_EARLGREY_OTP_CTRL_BASE_ADDR,
+  kOtpCoreBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
   kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
@@ -52,7 +52,7 @@ rom_error_t alert_no_escalate_test(void) {
   LOG_INFO("Configure class B alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassB, &config));
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kOtpBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1);
   uint32_t count =
       abs_mmio_read32(kAlertBase + ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET);
   return count == 1 ? kErrorOk : kErrorUnknown;

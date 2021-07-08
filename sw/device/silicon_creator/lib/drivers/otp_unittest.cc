@@ -22,7 +22,7 @@ using ::testing::ElementsAreArray;
 
 class OtpTest : public mask_rom_test::MaskRomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
   mask_rom_test::MockSecMmio mmio_;
 };
 
