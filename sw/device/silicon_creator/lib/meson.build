@@ -39,6 +39,19 @@ sw_silicon_creator_lib_manifest = declare_dependency(
   ),
 )
 
+# Otbn utilities.
+sw_silicon_creator_lib_otbn_util = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_otbn_util',
+    sources: [
+      'otbn_util.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_otbn,
+    ],
+  ),
+)
+
 # Defined separately for sigverify_keys unit tests.
 sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests = files([
   'sigverify_mod_exp_ibex.c',
@@ -59,6 +72,8 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
       sw_silicon_creator_lib_driver_otp,
       sw_silicon_creator_lib_driver_lifecycle,
       sw_lib_bitfield,
+      sw_silicon_creator_lib_otbn_util,
+      sw_silicon_creator_otbn['rsa']['rv32embed_dependency'],
     ],
   ),
 )
