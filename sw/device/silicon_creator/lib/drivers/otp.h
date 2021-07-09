@@ -37,18 +37,14 @@ OTP_WARN_UNUSED_RESULT
 uint64_t otp_read64(uint32_t address);
 
 /**
- * Perform a blocking read of `len` bytes from the memory mapped software config
- * partitions. It is required that both `address` and `address` + `len` be
- * word-aligned.
+ * Perform a blocking read of `num_words` 32-bit words from the memory mapped
+ * software config partitions.
  *
  * @param address The address to read from offset from the start of OTP memory.
- * @param data The output buffer of at least length `len`.
- * @param len The number of bytes to read from OTP.
- * @return `kErrorOtpBadAlignment` if `address` or `address` + `len` are
- * misaligned, `kErrorOk` otherwise.
+ * @param data The output buffer of at least length `num_words`.
+ * @param num_words The number of 32-bit words to read from OTP.
  */
-OTP_WARN_UNUSED_RESULT
-rom_error_t otp_read(uint32_t address, void *data, size_t len);
+void otp_read(uint32_t address, uint32_t *data, size_t num_words);
 
 #ifdef __cplusplus
 }

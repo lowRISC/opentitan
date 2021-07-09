@@ -28,18 +28,9 @@ uint64_t otp_read64(uint32_t address) {
   return value;
 }
 
-rom_error_t otp_read(uint32_t address, void *data, size_t len) {
-  // TODO Update to use alignment utility functions.
-  // https://github.com/lowRISC/opentitan/issues/6112
-  if (address % alignof(uint32_t) != 0 || len % sizeof(uint32_t) != 0) {
-    return kErrorOtpBadAlignment;
-  }
-
+void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
   uint32_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
-  for (size_t i = 0; i < len; i += sizeof(uint32_t)) {
-    uint32_t word = sec_mmio_read32(kBase + reg_offset + i);
-    memcpy(data + i, &word, sizeof(uint32_t));
+  for (size_t i = 0; i < num_words; ++i) {
+    data[i] = sec_mmio_read32(kBase + reg_offset + i * sizeof(uint32_t));
   }
-
-  return kErrorOk;
 }
