@@ -23,12 +23,12 @@
 util/*.py           @imphil @asb
 util/*gen/          @eunchan @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
-util/regtool.py     @eunchan
-util/reggen/        @eunchan
+util/regtool.py     @eunchan @Jacob-Levy
+util/reggen/        @eunchan @Jacob-Levy
 util/tlgen.py       @eunchan @msfschaffner @tjaychen
 util/tlgen/         @eunchan @msfschaffner @tjaychen
-util/topgen.py      @eunchan @msfschaffner @tjaychen
-util/topgen/        @eunchan @msfschaffner @tjaychen
+util/topgen.py      @eunchan @msfschaffner @tjaychen @Jacob-Levy
+util/topgen/        @eunchan @msfschaffner @tjaychen @Jacob-Levy
 util/build_docs.py  @moidx
 
 
@@ -47,6 +47,7 @@ util/build_docs.py  @moidx
 # /hw/ip/usb*           # TBD
 /hw/top_*/rtl           @eunchan @tjaychen
 /hw/top_*/doc/top_*     @eunchan @msfschaffner @tjaychen
+/hw/top_*/ip/ast        @Jacob-Levy
 
 
 # DV related common files
