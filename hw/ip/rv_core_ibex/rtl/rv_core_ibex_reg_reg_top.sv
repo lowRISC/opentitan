@@ -6,15 +6,15 @@
 
 `include "prim_assert.sv"
 
-module rv_core_ibex_peri_reg_top (
+module rv_core_ibex_reg_reg_top (
   input clk_i,
   input rst_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output rv_core_ibex_peri_reg_pkg::rv_core_ibex_peri_reg2hw_t reg2hw, // Write
-  input  rv_core_ibex_peri_reg_pkg::rv_core_ibex_peri_hw2reg_t hw2reg, // Read
+  output rv_core_ibex_reg_pkg::rv_core_ibex_reg_reg2hw_t reg2hw, // Write
+  input  rv_core_ibex_reg_pkg::rv_core_ibex_reg_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -23,7 +23,7 @@ module rv_core_ibex_peri_reg_top (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import rv_core_ibex_peri_reg_pkg::* ;
+  import rv_core_ibex_reg_pkg::* ;
 
   localparam int AW = 7;
   localparam int DW = 32;
@@ -913,28 +913,28 @@ module rv_core_ibex_peri_reg_top (
   logic [21:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_PERI_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_0_OFFSET);
-    addr_hit[ 2] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_REGWEN_1_OFFSET);
-    addr_hit[ 3] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_0_OFFSET);
-    addr_hit[ 4] = (reg_addr == RV_CORE_IBEX_PERI_SW_ALERT_1_OFFSET);
-    addr_hit[ 5] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REGWEN_0_OFFSET);
-    addr_hit[ 6] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REGWEN_1_OFFSET);
-    addr_hit[ 7] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_EN_0_OFFSET);
-    addr_hit[ 8] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_EN_1_OFFSET);
-    addr_hit[ 9] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_MATCHING_0_OFFSET);
-    addr_hit[10] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_ADDR_MATCHING_1_OFFSET);
-    addr_hit[11] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REMAP_ADDR_0_OFFSET);
-    addr_hit[12] = (reg_addr == RV_CORE_IBEX_PERI_IBUS_REMAP_ADDR_1_OFFSET);
-    addr_hit[13] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REGWEN_0_OFFSET);
-    addr_hit[14] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REGWEN_1_OFFSET);
-    addr_hit[15] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_EN_0_OFFSET);
-    addr_hit[16] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_EN_1_OFFSET);
-    addr_hit[17] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_MATCHING_0_OFFSET);
-    addr_hit[18] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_ADDR_MATCHING_1_OFFSET);
-    addr_hit[19] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REMAP_ADDR_0_OFFSET);
-    addr_hit[20] = (reg_addr == RV_CORE_IBEX_PERI_DBUS_REMAP_ADDR_1_OFFSET);
-    addr_hit[21] = (reg_addr == RV_CORE_IBEX_PERI_ERR_STATUS_OFFSET);
+    addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_SW_ALERT_REGWEN_0_OFFSET);
+    addr_hit[ 2] = (reg_addr == RV_CORE_IBEX_SW_ALERT_REGWEN_1_OFFSET);
+    addr_hit[ 3] = (reg_addr == RV_CORE_IBEX_SW_ALERT_0_OFFSET);
+    addr_hit[ 4] = (reg_addr == RV_CORE_IBEX_SW_ALERT_1_OFFSET);
+    addr_hit[ 5] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET);
+    addr_hit[ 6] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET);
+    addr_hit[ 7] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[10] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[11] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[12] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[13] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET);
+    addr_hit[14] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET);
+    addr_hit[15] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET);
+    addr_hit[16] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET);
+    addr_hit[17] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[18] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[19] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[20] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[21] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -942,28 +942,28 @@ module rv_core_ibex_peri_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(RV_CORE_IBEX_PERI_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(RV_CORE_IBEX_PERI_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(RV_CORE_IBEX_PERI_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(RV_CORE_IBEX_PERI_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(RV_CORE_IBEX_PERI_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(RV_CORE_IBEX_PERI_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(RV_CORE_IBEX_PERI_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(RV_CORE_IBEX_PERI_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(RV_CORE_IBEX_PERI_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(RV_CORE_IBEX_PERI_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(RV_CORE_IBEX_PERI_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(RV_CORE_IBEX_PERI_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(RV_CORE_IBEX_PERI_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(RV_CORE_IBEX_PERI_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(RV_CORE_IBEX_PERI_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(RV_CORE_IBEX_PERI_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(RV_CORE_IBEX_PERI_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(RV_CORE_IBEX_PERI_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(RV_CORE_IBEX_PERI_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(RV_CORE_IBEX_PERI_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(RV_CORE_IBEX_PERI_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(RV_CORE_IBEX_PERI_PERMIT[21] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(RV_CORE_IBEX_REG_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(RV_CORE_IBEX_REG_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(RV_CORE_IBEX_REG_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(RV_CORE_IBEX_REG_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(RV_CORE_IBEX_REG_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(RV_CORE_IBEX_REG_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(RV_CORE_IBEX_REG_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(RV_CORE_IBEX_REG_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(RV_CORE_IBEX_REG_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(RV_CORE_IBEX_REG_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(RV_CORE_IBEX_REG_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(RV_CORE_IBEX_REG_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(RV_CORE_IBEX_REG_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(RV_CORE_IBEX_REG_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(RV_CORE_IBEX_REG_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(RV_CORE_IBEX_REG_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(RV_CORE_IBEX_REG_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(RV_CORE_IBEX_REG_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(RV_CORE_IBEX_REG_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(RV_CORE_IBEX_REG_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(RV_CORE_IBEX_REG_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(RV_CORE_IBEX_REG_PERMIT[21] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
