@@ -22,132 +22,154 @@
                name: prim_arbiter_ppc_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_arbiter_ppc/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_arbiter_tree_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_tree_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_arbiter_tree/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_arbiter_fixed_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_fixed_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_arbiter_fix/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_lfsr_fpv
                fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_lfsr/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_fifo_sync_fpv
                fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_fifo_sync/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_alert_rxtx_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_alert_rxtx/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_alert_rxtx_fatal_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fatal_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_alert_rxtx_fatal/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_alert_rxtx_async_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_alert_rxtx_async/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_alert_rxtx_async_fatal_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fatal_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_alert_rxtx_fatal/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_esc_rxtx_fpv
                fusesoc_core: lowrisc:fpv:prim_esc_rxtx_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_esc_rxtx/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_packer_fpv
                fusesoc_core: lowrisc:fpv:prim_packer_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_packer/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_22_16_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_22_16_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_22_16/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_28_22_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_28_22_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_28_22/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_39_32_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_39_32_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_39_32/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_72_64_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_72_64_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_72_64/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_hamming_22_16_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_hamming_22_16_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_22_16/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_hamming_39_32_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_hamming_39_32_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_39_32/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: prim_secded_hamming_72_64_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_hamming_72_64_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_72_64/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: pinmux_fpv
                fusesoc_core: lowrisc:fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: rv_plic_fpv
                fusesoc_core: lowrisc:fpv:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_plic/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: rv_plic_generic_fpv
                fusesoc_core: lowrisc:fpv:rv_plic_generic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_plic_generic/{sub_flow}/{tool}"
                cov: true
              }
              {
                name: sha3pad_fpv
                fusesoc_core: lowrisc:fpv:sha3pad_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/kmac/sha3pad/{sub_flow}/{tool}"
                cov: true
              }
              // Below are IPs that already has a DV testbench,
@@ -157,126 +179,147 @@
                name: aes
                fusesoc_core: lowrisc:dv:aes_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aes/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: alert_handler
                fusesoc_core: lowrisc:dv:alert_handler_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/alert_handler/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: csrng
                fusesoc_core: lowrisc:dv:csrng_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: edn
                fusesoc_core: lowrisc:dv:edn_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/edn/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: entropy_src
                fusesoc_core: lowrisc:dv:entropy_src_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/entropy_src/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: flash_ctrl
                fusesoc_core: lowrisc:dv:flash_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/flash_ctrl/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: gpio
                fusesoc_core: lowrisc:dv:gpio_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/gpio/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: hmac
                fusesoc_core: lowrisc:dv:hmac_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/hmac/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: i2c
                fusesoc_core: lowrisc:dv:i2c_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/i2c/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: pattgen
                fusesoc_core: lowrisc:dv:pattgen_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pattgen/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: keymgr
                fusesoc_core: lowrisc:dv:keymgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/keymgr/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: lc_ctrl
                fusesoc_core: lowrisc:dv:lc_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/lc_ctrl/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: otp_ctrl
                fusesoc_core: lowrisc:dv:otp_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otp_ctrl/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: otbn
                fusesoc_core: lowrisc:dv:otbn_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: rv_dm
                fusesoc_core: lowrisc:dv:rv_dm_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_dm/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: rv_timer
                fusesoc_core: lowrisc:dv:rv_timer_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_timer/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: spi_device
                fusesoc_core: lowrisc:dv:spi_device_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/spi_device/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: sram_ctrl
                fusesoc_core: lowrisc:dv:sram_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/sram_ctrl/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: uart
                fusesoc_core: lowrisc:dv:uart_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/uart/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: usbdev
                fusesoc_core: lowrisc:dv:usbdev_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/usbdev/{sub_flow}/{tool}"
                cov: false
              }
              {
                name: usbuart
                fusesoc_core: lowrisc:dv:usbuart_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/usbuart/{sub_flow}/{tool}"
                cov: false
              }
             ]
