@@ -168,86 +168,9 @@
   num_cores: "1",
 
 
-  // `host` defines the host only components in the system (such as processor)
-  // This should eventually be used to cover more functionality, but for now,
-  // it is a temporary solution for top level connectivity
+  // `host` defines the host only components in the system
+  // This function is deprecated and will be removed as a separate PR.
   host: [
-    { name: "rv_core_ibex",
-      type: "rv_core_ibex",
-      inter_signal_list: [
-        { struct:  "esc_tx",
-          type:    "uni",
-          name:    "esc_nmi_tx",
-          act:     "rcv",
-          package: "prim_esc_pkg",
-        },
-
-        { struct:  "esc_rx",
-          type:    "uni",
-          name:    "esc_nmi_rx",
-          act:     "req",
-          package: "prim_esc_pkg",
-        },
-
-        { struct:  "crash_dump",
-          type:    "uni",
-          name:    "crash_dump",
-          act:     "req",
-          package: "ibex_pkg",
-        },
-
-        { struct:  "lc_tx_t",
-          type:    "uni",
-          name:    "lc_cpu_en",
-          act:     "rcv",
-          package: "lc_ctrl_pkg",
-        },
-
-        { struct:  "ram_1p_cfg_t",
-          type:    "uni",
-          name:    "ram_cfg",
-          act:     "rcv",
-          package: "prim_ram_1p_pkg"
-        },
-
-        { struct:  "alert_event",
-          type:    "uni",
-          name:    "fatal_intg_event",
-          act:     "req",
-          package: "rv_core_ibex_peri_pkg",
-        },
-
-        { struct:  "alert_event",
-          type:    "uni",
-          name:    "fatal_core_event",
-          act:     "req",
-          package: "rv_core_ibex_peri_pkg",
-        },
-
-        { struct:  "alert_event",
-          type:    "uni",
-          name:    "recov_core_event",
-          act:     "req",
-          package: "rv_core_ibex_peri_pkg",
-        },
-
-        { struct:  "region_cfg",
-          type:    "uni",
-          name:    "ibus_region_cfg",
-          act:     "rcv",
-          width:   "2",
-          package: "rv_core_ibex_peri_pkg",
-        },
-
-        { struct:  "region_cfg",
-          type:    "uni",
-          name:    "dbus_region_cfg",
-          act:     "rcv",
-          width:   "2",
-          package: "rv_core_ibex_peri_pkg",
-        },
-      ],
-    }
   ]
 
   // `module` defines the peripherals.
@@ -634,11 +557,31 @@
         }
       }
     },
-    { name: "rv_core_ibex_peri",
-      type: "rv_core_ibex_peri",
-      clock_srcs: {clk_i: "main"},
+    { name: "rv_core_ibex",
+      type: "rv_core_ibex",
+      param_decl: {PMPEnable: "1",
+                   PMPGranularity: "0",
+                   PMPNumRegions: "16",
+                   MHPMCounterNum: "10",
+                   MHPMCounterWidth: "32",
+                   RV32E: "0",
+                   RV32M: "ibex_pkg::RV32MSingleCycle",
+                   RV32B: "ibex_pkg::RV32BNone",
+                   RegFile: "ibex_pkg::RegFileFF",
+                   BranchTargetALU: "1",
+                   WritebackStage: "1",
+                   ICache: "1",
+                   ICacheECC: "1",
+                   BranchPredictor: "0",
+                   DbgTriggerEn: "1",
+                   SecureIbex: "1",
+                   DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]",
+                   DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]",
+                   PipeLine: "0"
+                  }
+      clock_srcs: {clk_i: "main", clk_esc_i: "io_div4"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys", rst_esc_ni: "lc_io_div4"},
       base_addr: "0x411F0000",
     },
   ]
@@ -887,11 +830,11 @@
       'ast.ram_2p_cfg'          : ['spi_device.ram_cfg', 'usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
+      'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
                                    'lc_ctrl.esc_scrap_state1_rx'
                                    'pwrmgr_aon.esc_rst_rx'],
-      'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
+      'alert_handler.esc_tx'    : ['rv_core_ibex.esc_tx',
                                    'lc_ctrl.esc_scrap_state0_tx',
                                    'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
@@ -921,11 +864,11 @@
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
+      'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
       'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux
@@ -1003,13 +946,20 @@
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
 
+      // rv_plic connections
+      'rv_plic.msip' : ['rv_core_ibex.irq_software'],
+      'rv_plic.irq'  : ['rv_core_ibex.irq_external'],
 
-      // rv core ibex peripheral connections
-      'rv_core_ibex.fatal_intg_event' : ['rv_core_ibex_peri.fatal_intg_event'],
-      'rv_core_ibex.fatal_core_event' : ['rv_core_ibex_peri.fatal_core_event'],
-      'rv_core_ibex.recov_core_event' : ['rv_core_ibex_peri.recov_core_event'],
-      'rv_core_ibex_peri.ibus_region_cfg' : ['rv_core_ibex.ibus_region_cfg'],
-      'rv_core_ibex_peri.dbus_region_cfg' : ['rv_core_ibex.dbus_region_cfg'],
+      // rv_dm connections
+      'rv_dm.debug_req': ['rv_core_ibex.debug_req'],
+
+      // rv_timer connections
+
+
+      // rv core ibex connections
+      'rv_core_ibex.rst_cpu_n'  : ['rstmgr_aon.rst_cpu_n'],
+      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
+      'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
 
       // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
@@ -1022,15 +972,16 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr_aon.resets', 'rstmgr_aon.rst_cpu_n',
-        'pwrmgr_aon.pwr_cpu', 'pwrmgr_aon.fetch_en',
-        'clkmgr_aon.clocks',
+        // reset and clock connections
+        'rstmgr_aon.resets', 'clkmgr_aon.clocks',
 
-        // Debug request from debug module to CPU
-        'rv_dm.debug_req',
+        // dedicated timer interrupt
+        'rv_core_ibex.irq_timer',
+
+        // hardwired connections
+        'rv_core_ibex.hart_id', 'rv_core_ibex.boot_addr',
 
         // Xbars
-        'main.tl_corei', 'main.tl_cored',
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
         'pinmux_aon.dft_jtag',

@@ -666,8 +666,6 @@ def find_otherside_modules(topcfg: OrderedDict, m,
         ('main', 'tl_ram_main'): ('tl_adapter_ram_main', 'tl'),
         ('main', 'tl_eflash'): ('tl_adapter_eflash', 'tl'),
         ('peri', 'tl_ram_ret_aon'): ('tl_adapter_ram_ret_aon', 'tl'),
-        ('main', 'tl_corei'): ('rv_core_ibex', 'tl_i'),
-        ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
         ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
         ('main', 'tl_debug_mem'): ('dm_top', 'tl_d'),
         ('peri', 'tl_ast'): ('ast', 'tl')
