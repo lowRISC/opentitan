@@ -566,8 +566,9 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41110000",
     },
-    { name: "kmac"
-      type: "kmac"
+    { name: "kmac",
+      type: "kmac",
+      param_decl: {EnMasking: "1"}
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"}

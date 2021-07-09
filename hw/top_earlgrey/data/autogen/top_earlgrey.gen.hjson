@@ -573,6 +573,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -612,6 +613,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -651,6 +653,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -690,6 +693,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -729,6 +733,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -770,6 +775,7 @@
         scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -846,6 +852,7 @@
         clk_core_i: clkmgr_aon_clocks.clk_io_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -900,6 +907,7 @@
         clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -949,6 +957,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -988,6 +997,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -1027,6 +1037,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -1066,6 +1077,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -1105,6 +1117,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -1154,6 +1167,7 @@
         clk_usb_48mhz_i: clkmgr_aon_clocks.clk_usb_peri
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -1302,6 +1316,7 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -1588,6 +1603,7 @@
         clk_kmac_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -2036,6 +2052,7 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -2155,6 +2172,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2402,6 +2420,7 @@
         clk_io_div2_i: clkmgr_aon_clocks.clk_io_div2_powerup
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2532,6 +2551,7 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2752,6 +2772,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2822,6 +2843,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2889,6 +2911,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_core_i: clkmgr_aon_clocks.clk_aon_powerup
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -2932,6 +2955,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
+      param_decl: {}
       param_list:
       [
         {
@@ -3183,6 +3207,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
         clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -3275,6 +3300,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -3316,6 +3342,7 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -3410,6 +3437,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
+      param_decl: {}
       param_list:
       [
         {
@@ -3598,6 +3626,7 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -3859,6 +3888,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -3999,6 +4029,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -4041,6 +4072,7 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -4234,6 +4266,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -4271,6 +4304,10 @@
     {
       name: kmac
       type: kmac
+      param_decl:
+      {
+        EnMasking: "1"
+      }
       clock_srcs:
       {
         clk_i: main
@@ -4411,6 +4448,7 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -4732,6 +4770,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -4869,6 +4908,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -5006,6 +5046,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -5080,6 +5121,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
@@ -5157,6 +5199,7 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -5342,6 +5385,7 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -5516,6 +5560,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
       domain: "0"
+      param_decl: {}
       param_list:
       [
         {
@@ -5646,6 +5691,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
       domain: "0"
+      param_decl: {}
       param_list: []
       inter_signal_list:
       [
