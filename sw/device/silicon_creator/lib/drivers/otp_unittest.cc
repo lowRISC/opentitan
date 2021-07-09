@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
+#include <array>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mask_rom_test.h"
@@ -15,6 +17,7 @@
 
 namespace otp_unittest {
 namespace {
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
 class OtpTest : public mask_rom_test::MaskRomTest {
@@ -45,7 +48,7 @@ TEST_F(OtpReadTest, ReadLen32) {
   EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x08090A0B);
 
   uint32_t value = 0;
-  EXPECT_EQ(otp_read(0, &value, sizeof(value)), kErrorOk);
+  otp_read(0, &value, 1);
   EXPECT_EQ(value, 0x08090A0B);
 }
 
@@ -53,9 +56,9 @@ TEST_F(OtpReadTest, ReadLen64) {
   EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x0C0D0E0F);
   EXPECT_SEC_READ32(mmio_, base_ + offset_ + 4, 0x08090A0B);
 
-  uint64_t value = 0;
-  EXPECT_EQ(otp_read(0, &value, sizeof(value)), kErrorOk);
-  EXPECT_EQ(value, 0x08090A0B0C0D0E0F);
+  std::array<uint32_t, 2> buf;
+  otp_read(0, buf.data(), 2);
+  EXPECT_THAT(buf, ElementsAre(0x0C0D0E0F, 0x08090A0B));
 }
 
 TEST_F(OtpReadTest, ReadLenN) {
@@ -63,20 +66,12 @@ TEST_F(OtpReadTest, ReadLenN) {
     EXPECT_SEC_READ32(mmio_, base_ + offset_ + val * sizeof(uint32_t), val);
   }
 
-  std::vector<uint32_t> arr(16);
-  EXPECT_EQ(otp_read(0, &arr[0], arr.size() * sizeof(uint32_t)), kErrorOk);
+  std::array<uint32_t, 16> arr;
+  otp_read(0, arr.data(), arr.size());
 
-  std::vector<uint32_t> expected(arr.size());
+  std::array<uint32_t, 16> expected;
   std::iota(expected.begin(), expected.end(), 0);
   EXPECT_THAT(arr, ElementsAreArray(expected));
-}
-
-TEST_F(OtpReadTest, ReadLenNMisaligned) {
-  std::vector<uint32_t> arr(16);
-  EXPECT_EQ(otp_read(1, &arr[0], arr.size() * sizeof(uint32_t)),
-            kErrorOtpBadAlignment);
-  EXPECT_EQ(otp_read(0, &arr[0], arr.size() * sizeof(uint32_t) - 1),
-            kErrorOtpBadAlignment);
 }
 
 }  // namespace
