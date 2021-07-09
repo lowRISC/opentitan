@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// rv_core_ibex_peri package
+// rv_core_ibex package
 //
 
-package rv_core_ibex_peri_pkg;
+package rv_core_ibex_pkg;
 
   typedef enum logic [1:0] {
     EventOn = 2'b10,
@@ -20,4 +20,4 @@ package rv_core_ibex_peri_pkg;
     logic [31:0] remap_addr;
   } region_cfg_t;
 
-endpackage // rv_core_ibex_peri_pkg
+endpackage // rv_core_ibex_pkg

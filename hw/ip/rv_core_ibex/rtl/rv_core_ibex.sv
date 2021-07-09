@@ -9,9 +9,10 @@
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
 module rv_core_ibex
-  import rv_core_ibex_peri_pkg::*;
-  import rv_core_ibex_peri_reg_pkg::*;
+  import rv_core_ibex_pkg::*;
+  import rv_core_ibex_reg_pkg::*;
 #(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -47,12 +48,12 @@ module rv_core_ibex
   input  logic [31:0] boot_addr_i,
 
   // Instruction memory interface
-  output tlul_pkg::tl_h2d_t     tl_i_o,
-  input  tlul_pkg::tl_d2h_t     tl_i_i,
+  output tlul_pkg::tl_h2d_t     corei_tl_h_o,
+  input  tlul_pkg::tl_d2h_t     corei_tl_h_i,
 
   // Data memory interface
-  output tlul_pkg::tl_h2d_t     tl_d_o,
-  input  tlul_pkg::tl_d2h_t     tl_d_i,
+  output tlul_pkg::tl_h2d_t     cored_tl_h_o,
+  input  tlul_pkg::tl_d2h_t     cored_tl_h_i,
 
   // Interrupt inputs
   input  logic        irq_software_i,
@@ -72,24 +73,28 @@ module rv_core_ibex
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
-  output logic        core_sleep_o,
+  output pwrmgr_pkg::pwr_cpu_t pwrmgr_o,
 
   // dft bypass
   input scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
-  // alert events to peripheral module
-  output alert_event_t fatal_intg_event_o,
-  output alert_event_t fatal_core_event_o,
-  output alert_event_t recov_core_event_o,
+  // peripheral interface access
+  input  tlul_pkg::tl_h2d_t reg_tl_d_i,
+  output tlul_pkg::tl_d2h_t reg_tl_d_o,
 
-  // configurations for address translation
-  input region_cfg_t [NumRegions-1:0] ibus_region_cfg_i,
-  input region_cfg_t [NumRegions-1:0] dbus_region_cfg_i
+  // interrupts and alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
+
 );
 
   import top_pkg::*;
   import tlul_pkg::*;
+
+  // Register module
+  rv_core_ibex_reg_reg2hw_t reg2hw;
+  rv_core_ibex_reg_hw2reg_t hw2reg;
 
   // if pipeline=1, do not allow pass through and always break the path
   // if pipeline is 0, passthrough the fifo completely
@@ -158,9 +163,17 @@ module rv_core_ibex
   logic ibus_intg_err, dbus_intg_err;
   logic alert_minor, alert_major;
 
-  assign fatal_intg_event_o = (ibus_intg_err | dbus_intg_err) ? EventOn : EventOff;
-  assign fatal_core_event_o = alert_major ? EventOn : EventOff;
-  assign recov_core_event_o = alert_minor ? EventOn : EventOff;
+  // alert events to peripheral module
+  logic fatal_intg_event;
+  logic fatal_core_event;
+  logic recov_core_event;
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err;
+  assign fatal_core_event = alert_major;
+  assign recov_core_event = alert_minor;
+
+  // configurations for address translation
+  region_cfg_t [NumRegions-1:0] ibus_region_cfg;
+  region_cfg_t [NumRegions-1:0] dbus_region_cfg;
 
   // Reset feedback to clkmgr
   assign rst_cpu_n_o = rst_ni;
@@ -293,7 +306,7 @@ module rv_core_ibex
     .fetch_enable_i   (lc_cpu_en[0] == lc_ctrl_pkg::On && pwrmgr_cpu_en[0] == lc_ctrl_pkg::On),
     .alert_minor_o    (alert_minor),
     .alert_major_o    (alert_major),
-    .core_sleep_o
+    .core_sleep_o     (pwrmgr_o.core_sleeping)
   );
 
   //
@@ -306,7 +319,7 @@ module rv_core_ibex
   ) u_ibus_trans (
     .clk_i,
     .rst_ni,
-    .region_cfg_i(ibus_region_cfg_i),
+    .region_cfg_i(ibus_region_cfg),
     .addr_i(instr_addr),
     .addr_o(instr_addr_trans)
   );
@@ -341,8 +354,8 @@ module rv_core_ibex
     .rst_ni,
     .tl_h_i      (tl_i_ibex2fifo),
     .tl_h_o      (tl_i_fifo2ibex),
-    .tl_d_o      (tl_i_o),
-    .tl_d_i      (tl_i_i),
+    .tl_d_o      (corei_tl_h_o),
+    .tl_d_i      (corei_tl_h_i),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
@@ -355,7 +368,7 @@ module rv_core_ibex
   ) u_dbus_trans (
     .clk_i,
     .rst_ni,
-    .region_cfg_i(dbus_region_cfg_i),
+    .region_cfg_i(dbus_region_cfg),
     .addr_i(data_addr),
     .addr_o(data_addr_trans)
   );
@@ -408,8 +421,8 @@ module rv_core_ibex
   illegal_preprocessor_branch_taken u_illegal_preprocessor_branch_taken();
 `endif
 `else
-  assign tl_d_o = tl_d_o_int;
-  assign tl_d_i_int = tl_d_i;
+  assign cored_tl_h_o = tl_d_o_int;
+  assign tl_d_i_int = cored_tl_h_i;
 `endif
 
 `ifdef RVFI
@@ -445,5 +458,93 @@ module rv_core_ibex
   );
 `endif
 
+  //////////////////////////////////
+  // Peripheral functions
+  //////////////////////////////////
+
+  logic intg_err;
+  rv_core_ibex_reg_reg_top u_reg_reg (
+    .clk_i,
+    .rst_ni,
+    .tl_i(reg_tl_d_i),
+    .tl_o(reg_tl_d_o),
+    .reg2hw,
+    .hw2reg,
+    .intg_err_o (intg_err),
+    .devmode_i  (1'b1) // connect to real devmode signal in the future
+  );
+
+  ///////////////////////
+  // Region assignments
+  ///////////////////////
+
+  for(genvar i = 0; i < NumRegions; i++) begin : gen_ibus_region_cfgs
+    assign ibus_region_cfg[i].en = reg2hw.ibus_addr_en[i];
+    assign ibus_region_cfg[i].matching_region = reg2hw.ibus_addr_matching[i];
+    assign ibus_region_cfg[i].remap_addr = reg2hw.ibus_remap_addr[i];
+  end
+
+  for(genvar i = 0; i < NumRegions; i++) begin : gen_dbus_region_cfgs
+    assign dbus_region_cfg[i].en = reg2hw.dbus_addr_en[i];
+    assign dbus_region_cfg[i].matching_region = reg2hw.dbus_addr_matching[i];
+    assign dbus_region_cfg[i].remap_addr = reg2hw.dbus_remap_addr[i];
+  end
+
+  ///////////////////////
+  // Error assignment
+  ///////////////////////
+  logic fatal_intg_err, fatal_core_err, recov_core_err;
+
+  assign fatal_intg_err = fatal_intg_event;
+  assign fatal_core_err = fatal_core_event;
+  assign recov_core_err = recov_core_event;
+
+  assign hw2reg.err_status.reg_intg_err.d = 1'b1;
+  assign hw2reg.err_status.reg_intg_err.de = intg_err;
+  assign hw2reg.err_status.fatal_intg_err.d = 1'b1;
+  assign hw2reg.err_status.fatal_intg_err.de = fatal_intg_err;
+  assign hw2reg.err_status.fatal_core_err.d = 1'b1;
+  assign hw2reg.err_status.fatal_core_err.de = fatal_core_err;
+  assign hw2reg.err_status.recov_core_err.d = 1'b1;
+  assign hw2reg.err_status.recov_core_err.de = recov_core_err;
+
+  ///////////////////////
+  // Alert generation
+  ///////////////////////
+
+  logic [NumAlerts-1:0] alert_test;
+  assign alert_test[0] = reg2hw.alert_test.fatal_sw_err.q &
+                         reg2hw.alert_test.fatal_sw_err.qe;
+  assign alert_test[1] = reg2hw.alert_test.recov_sw_err.q &
+                         reg2hw.alert_test.recov_sw_err.qe;
+  assign alert_test[2] = reg2hw.alert_test.fatal_hw_err.q &
+                         reg2hw.alert_test.fatal_hw_err.qe;
+  assign alert_test[3] = reg2hw.alert_test.recov_hw_err.q &
+                         reg2hw.alert_test.recov_hw_err.qe;
+
+  localparam bit [NumAlerts-1:0] AlertFatal = '{1, 0, 1, 0};
+
+  logic [NumAlerts-1:0] alert_events;
+
+  assign alert_events[0] = reg2hw.sw_alert[0].q != EventOff;
+  assign alert_events[1] = reg2hw.sw_alert[1].q != EventOff;
+  assign alert_events[2] = intg_err | fatal_intg_err | fatal_core_err;
+  assign alert_events[3] = recov_core_err;
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[0]),
+      .IsFatal(AlertFatal[i])
+    ) u_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i(alert_test[i]),
+      .alert_req_i(alert_events[i]),
+      .alert_ack_o(),
+      .alert_state_o(),
+      .alert_rx_i(alert_rx_i[i]),
+      .alert_tx_o(alert_tx_o[i])
+    );
+  end
 
 endmodule

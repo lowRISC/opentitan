@@ -8,7 +8,7 @@
  * https://docs.google.com/document/d/1uU2Zh46SJtoaOqZ9dCRO7oAQnhTUcWWZ7CstOa1PZiM/edit?usp=sharing
  */
 
-module rv_core_addr_trans import rv_core_ibex_peri_pkg::*; #(
+module rv_core_addr_trans import rv_core_ibex_pkg::*; #(
   parameter int AddrWidth = 32,
   parameter int NumRegions = 2
 ) (
