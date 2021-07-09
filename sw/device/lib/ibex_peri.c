@@ -7,25 +7,23 @@
 #include "sw/device/lib/base/mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_peri_regs.h"
+#include "rv_core_ibex_regs.h"
 
 void init_translation(uint32_t src_addr, uint32_t size, uint32_t dst_addr) {
   mmio_region_t ibex_base =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR);
 
   uint32_t mask = src_addr | ((size - 1) >> 1);
-  mmio_region_write32(ibex_base,
-                      RV_CORE_IBEX_PERI_IBUS_ADDR_MATCHING_0_REG_OFFSET, mask);
-  mmio_region_write32(ibex_base,
-                      RV_CORE_IBEX_PERI_DBUS_ADDR_MATCHING_0_REG_OFFSET, mask);
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
+                      mask);
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
+                      mask);
 
-  mmio_region_write32(ibex_base, RV_CORE_IBEX_PERI_IBUS_REMAP_ADDR_0_REG_OFFSET,
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
                       dst_addr);
-  mmio_region_write32(ibex_base, RV_CORE_IBEX_PERI_DBUS_REMAP_ADDR_0_REG_OFFSET,
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
                       dst_addr);
 
-  mmio_region_write32(ibex_base, RV_CORE_IBEX_PERI_IBUS_ADDR_EN_0_REG_OFFSET,
-                      1);
-  mmio_region_write32(ibex_base, RV_CORE_IBEX_PERI_DBUS_ADDR_EN_0_REG_OFFSET,
-                      1);
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET, 1);
+  mmio_region_write32(ibex_base, RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET, 1);
 }

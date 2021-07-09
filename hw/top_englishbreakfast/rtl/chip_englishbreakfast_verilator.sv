@@ -157,7 +157,7 @@ module chip_englishbreakfast_verilator (
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
-    .IbexICache(0),
+    .RvCoreIbexICache(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
@@ -319,12 +319,12 @@ module chip_englishbreakfast_verilator (
     .tl_in_i  (`RV_CORE_IBEX.tl_d_o_int),
     .tl_in_o  (),
     .tl_out_o (),
-    .tl_out_i (`RV_CORE_IBEX.tl_d_i)
+    .tl_out_i (`RV_CORE_IBEX.cored_tl_h_i)
   );
 
   // Connect the sim SRAM directly inside rv_core_ibex.
-  assign `RV_CORE_IBEX.tl_d_i_int = u_sim_sram.tl_in_o;
-  assign `RV_CORE_IBEX.tl_d_o     = u_sim_sram.tl_out_o;
+  assign `RV_CORE_IBEX.tl_d_i_int   = u_sim_sram.tl_in_o;
+  assign `RV_CORE_IBEX.cored_tl_h_o = u_sim_sram.tl_out_o;
 
   // Instantiate the SW test status interface & connect signals from sim_sram_if instance
   // instantiated inside sim_sram. Bind would have worked nicely here, but Verilator segfaults

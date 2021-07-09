@@ -1,0 +1,4 @@
+
+# These lines are too long due to templating
+waive --rule=line-length --line=91 --location=".*top_earlgrey.*"
+waive --rule=line-length --line=92 --location=".*top_earlgrey.*"

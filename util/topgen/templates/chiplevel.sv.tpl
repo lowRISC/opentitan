@@ -1087,7 +1087,7 @@ module chip_${top["name"]}_${target["name"]} (
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
-    .IbexICache(0),
+    .RvCoreIbexICache(0),
     .BootRomInitFile(BootRomInitFile),
 % else:
     .AesMasking(1'b0),
@@ -1103,9 +1103,9 @@ module chip_${top["name"]}_${target["name"]} (
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RomCtrlBootRomInitFile(BootRomInitFile),
 % endif
-    .IbexRegFile(ibex_pkg::RegFileFPGA),
-    .IbexPipeLine(1),
-    .SecureIbex(0),
+    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
+    .RvCoreIbexPipeLine(1),
+    .SecRvCoreIbexureIbex(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)

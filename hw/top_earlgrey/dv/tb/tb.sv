@@ -204,7 +204,7 @@ module tb;
     .tl_in_i  (`CPU_HIER.tl_d_o_int),
     .tl_in_o  (),
     .tl_out_o (),
-    .tl_out_i (`CPU_HIER.tl_d_i)
+    .tl_out_i (`CPU_HIER.cored_tl_h_i)
   );
 
   initial begin
@@ -212,7 +212,7 @@ module tb;
     if (!stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
       force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
-      force `CPU_HIER.tl_d_o = u_sim_sram.tl_out_o;
+      force `CPU_HIER.cored_tl_h_o = u_sim_sram.tl_out_o;
     end else begin
       force u_sim_sram.clk_i = 1'b0;
     end
@@ -359,7 +359,7 @@ module tb;
   initial begin
     void'($value$plusargs("stub_cpu=%0b", stub_cpu));
     if (stub_cpu) begin
-      force `CPU_HIER.clk_i = 1'b0;
+     force `CPU_CORE_HIER.clk_i = 1'b0;
       // tl type is used to calculate ECC and we use DataType for cpu data interface
       force cpu_d_tl_if.h2d.a_user.tl_type = tlul_pkg::DataType;
       force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
@@ -368,8 +368,8 @@ module tb;
       // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
       // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
       // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
-      force cpu_d_tl_if.h2d = `CPU_HIER.tl_d_o;
-      force cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
+      force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
+      force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
     end
   end
 

@@ -230,7 +230,7 @@ hw_ip_uart_reg_h = gen_hw_hdr.process('hw/ip/uart/data/uart.hjson')
 hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
 hw_ip_pwrmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pwrmgr/data/autogen/pwrmgr.hjson')
 hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rstmgr/data/autogen/rstmgr.hjson')
-hw_ip_ibex_reg_h = gen_hw_hdr.process('hw//ip/rv_core_ibex_peri/data/rv_core_ibex_peri.hjson')
+hw_ip_ibex_reg_h = gen_hw_hdr.process('hw//ip/rv_core_ibex/data/rv_core_ibex.hjson')
 hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pinmux/data/autogen/pinmux.hjson')
 hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rv_plic/data/autogen/rv_plic.hjson')
 

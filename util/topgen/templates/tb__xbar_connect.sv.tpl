@@ -105,7 +105,6 @@ esc_name = node['name'].replace('.', '__')
 inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
-
 %>\
     % if node["type"] == "host" and not node["xbar"]:
     `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name})

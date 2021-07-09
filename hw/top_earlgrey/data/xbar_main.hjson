@@ -9,19 +9,18 @@
   other_reset_list: [ "rst_fixed_ni" ] // Secondary clocks used by specific nodes
 
   nodes: [
-    { name:  "corei",
+    { name:  "rv_core_ibex.corei",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: "false"
 
     },
-    { name:  "cored",
+    { name:  "rv_core_ibex.cored",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: "false"
-
     },
     { name:      "rv_dm.sba",
       type:      "host",
@@ -144,7 +143,7 @@
       reset:     "rst_main_ni"
       pipeline_byp: "false"
     },
-    { name:      "rv_core_ibex_peri",
+    { name:      "rv_core_ibex.reg",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
@@ -158,19 +157,19 @@
     },
   ],
   connections: {
-    corei:  ["rom_ctrl.rom", "rv_dm.rom", "ram_main", "eflash"],
-    cored:  [
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.rom", "ram_main", "eflash"],
+    rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs",
       "ram_main", "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main",
-      "rv_core_ibex_peri"
+      "rv_core_ibex.reg"
     ],
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "ram_main",
       "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim", "aes",
       "entropy_src", "csrng", "edn0", "edn1", "hmac", "rv_plic",
-      "otbn", "keymgr", "kmac", "sram_ctrl_main", "rv_core_ibex_peri"
+      "otbn", "keymgr", "kmac", "sram_ctrl_main", "rv_core_ibex.reg"
     ],
   },
 }
