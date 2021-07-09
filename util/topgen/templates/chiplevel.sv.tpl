@@ -1092,7 +1092,7 @@ module chip_${top["name"]}_${target["name"]} (
 % else:
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
-    .KmacEnMasking(0),
+    .KmacEnMasking(1'b0),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .SecAesSkipPRNGReseeding(1'b0),
