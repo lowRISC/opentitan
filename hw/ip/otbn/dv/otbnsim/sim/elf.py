@@ -7,6 +7,7 @@
 from typing import List, Optional, Tuple
 
 from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
+from elftools.elf.constants import P_FLAGS
 
 from shared.mem_layout import get_memory_layout
 
@@ -38,7 +39,7 @@ def _flatten_segments(segments: _SegList, mem_desc: _MemDesc) -> bytes:
     chunks = []
 
     # Walk through the segments in increasing order of LMA.
-    for seg_lma, seg_data in sorted(segments, key=lambda pr: pr[0]):
+    for seg_lma, seg_data, _ in sorted(segments, key=lambda pr: pr[0]):
         assert lma <= seg_lma
         if lma < seg_lma:
             chunks.append(b'\x00' * (seg_lma - lma))
@@ -55,10 +56,9 @@ def _flatten_segments(segments: _SegList, mem_desc: _MemDesc) -> bytes:
     return b''.join(chunks)
 
 
-def _get_elf_mem_data(elf_file: ELFFile,
+def _get_elf_segments(elf_file: ELFFile,
                       imem_desc: _MemDesc,
-                      dmem_desc: _MemDesc) -> Tuple[bytes, bytes]:
-    '''Extract imem/dmem segments from elf_file'''
+                      dmem_desc: _MemDesc) -> Tuple[List, List]:
     imem_segments = []
     dmem_segments = []
 
@@ -78,11 +78,19 @@ def _get_elf_mem_data(elf_file: ELFFile,
         if seg_type != 'PT_LOAD':
             continue
 
+        seg_flags = segment['p_flags']
         seg_lma = segment['p_paddr']
         seg_top = seg_lma + segment['p_memsz']
+        seg_offset = segment['p_offset']
 
         # Does this match an expected imem or dmem address?
         if imem_lma <= seg_lma <= imem_top:
+            if seg_flags & P_FLAGS.PF_X == 0:
+                raise RuntimeError('Segment starting at LMA {:#x} is not '
+                                   'executable, even though it is in the IMEM '
+                                   'range.'
+                                   .format(seg_lma))
+
             if seg_top > imem_top:
                 raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
                                    'which intersects the IMEM range '
@@ -90,10 +98,16 @@ def _get_elf_mem_data(elf_file: ELFFile,
                                    'contained in it.'
                                    .format(seg_lma, seg_top,
                                            imem_lma, imem_top))
-            imem_segments.append((seg_lma, segment.data()))
+            imem_segments.append((seg_lma, segment.data(), seg_offset))
             continue
 
         if dmem_lma <= seg_lma <= dmem_top:
+            if seg_flags & P_FLAGS.PF_X != 0:
+                raise RuntimeError('Segment starting at LMA {:#x} is '
+                                   'executable, even though it is in the DMEM '
+                                   'range.'
+                                   .format(seg_lma))
+
             if seg_top > dmem_top:
                 raise RuntimeError('Segment has LMA range {:#x}..{:#x}, '
                                    'which intersects the DMEM range '
@@ -101,7 +115,7 @@ def _get_elf_mem_data(elf_file: ELFFile,
                                    'contained in it.'
                                    .format(seg_lma, seg_top,
                                            dmem_lma, dmem_top))
-            dmem_segments.append((seg_lma, segment.data()))
+            dmem_segments.append((seg_lma, segment.data(), seg_offset))
             continue
 
         # We shouldn't have any loadable segments that don't look like
@@ -110,6 +124,16 @@ def _get_elf_mem_data(elf_file: ELFFile,
                            "IMEM range (base {:#x}) or DMEM range "
                            "(base {:#x})."
                            .format(seg_lma, imem_lma, dmem_lma))
+
+    return (imem_segments, dmem_segments)
+
+
+def _get_elf_mem_data(elf_file: ELFFile,
+                      imem_desc: _MemDesc,
+                      dmem_desc: _MemDesc) -> Tuple[bytes, bytes]:
+    '''Extract imem/dmem segments from elf_file'''
+
+    (imem_segments, dmem_segments) = _get_elf_segments(elf_file, imem_desc, dmem_desc)
 
     imem_bytes = _flatten_segments(imem_segments, imem_desc)
     dmem_bytes = _flatten_segments(dmem_segments, dmem_desc)

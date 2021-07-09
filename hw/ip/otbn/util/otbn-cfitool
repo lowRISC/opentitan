@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+import os
+import sys
+
+# Enable the import of simulator files with "sim.SOMETHING"
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                              '../dv/otbnsim')))
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                              '../../rom_ctrl/util')))
+
+import os
+from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
+from elftools.elf.constants import P_FLAGS
+
+import struct
+import argparse
+import logging as log
+import sys
+from pathlib import Path
+from typing import List, Optional, cast
+from shutil import copy2
+
+from sim.isa import OTBNInsn
+from sim.elf import get_memory_layout, decode_bytes, _get_elf_segments, _flatten_segments
+
+from scramble_image import prince
+
+def read_instructions(elf_path: Path):
+    '''Read an instruction stream from an ELF file.
+
+    '''
+    mems = get_memory_layout()
+    imem_desc = mems['IMEM']
+    dmem_desc = mems['DMEM']
+
+    with open(elf_path, 'rb') as handle:
+        elf_file = ELFFile(handle)
+        imem_segments, _ = _get_elf_segments(elf_file, imem_desc, dmem_desc)
+
+        imem_addr_to_elf_offset_map = []
+
+        for seg_lma, seg_data, seg_offset in sorted(imem_segments, key=lambda pr: pr[0], reverse=True):
+            imem_addr_to_elf_offset_map.append((seg_lma - imem_desc[0], seg_offset, len(seg_data)))
+
+        imem_bytes = _flatten_segments(imem_segments, imem_desc)
+        imem_insns = decode_bytes(0, imem_bytes)
+
+    return (imem_insns, imem_addr_to_elf_offset_map)
+
+
+def lma_to_elf_offset(imem_addr_to_elf_offset_map, addr: int) -> int:
+    for start_addr, offset, len_bytes in imem_addr_to_elf_offset_map:
+        if addr >= start_addr:
+            assert addr < (start_addr + len_bytes)
+            return offset + (addr - start_addr)
+
+
+def writeback_instructions(in_elf_path: Path, out_elf_path: Path, imem_addr_to_elf_offset_map, imem_insns_scrambled: List[int]):
+    assert in_elf_path.exists()
+
+    # Prepare output file.
+    # TODO: temp first
+    copy2(in_elf_path, out_elf_path)
+
+    with open(out_elf_path, 'r+b') as out_elf_fp:
+        for start_addr, offset, len_bytes in imem_addr_to_elf_offset_map:
+            out_elf_fp.seek(offset)
+
+            for addr in range(start_addr, start_addr + len_bytes, 4):
+                out_elf_fp.write(struct.pack('<I', imem_insns_scrambled[addr // 4]))
+
+
+def prince_test():
+    p = 17
+    key= 1234
+    print(f"p: 0x{p:016x}")
+    c = prince(p, key, num_rounds_half=5, dec=False)
+    print(f"c: 0x{c:016x}")
+    p_new = prince(c, key, num_rounds_half=5, dec=True)
+    print(f"p_new: 0x{p_new:016x}")
+
+KEY = 0
+
+def encode_main(args: argparse.Namespace) -> int:
+    '''Entry point for the encode subcommand'''
+
+    in_elf_path = Path(args.in_elf)
+    assert in_elf_path.exists()
+
+    if not args.out_elf:
+        out_elf_path = in_elf_path.with_suffix('.cfi.elf')
+    else:
+        out_elf_path = Path(args.out_elf)
+    log.info(f"Adding CFI information to {in_elf_path.name!r}, writing result to {out_elf_path.name!r}.")
+
+    insns, imem_addr_to_elf_offset_map = read_instructions(in_elf_path)
+
+    insns_scrambled = []
+    state = 0
+    for word, insn in reversed(list(enumerate(insns))):
+        addr = word * 4
+        print(f"Scrambling instruction at address {addr:#x}: {insn.disassemble(addr)}")
+
+        insn_raw = insn.raw
+        print(f"Original instruction: {insn_raw:#x}")
+
+        assert state < (2**32)
+        assert insn_raw < (2 ** 32)
+        p = state << 32 | insn_raw
+        print(f"p full: 0x{p:016x}")
+        c = prince(p, key=KEY, num_rounds_half=5)
+        print(f"c full: 0x{c:016x}")
+
+        state = c >> 32
+        insn_scrambled = c & (2**32-1)
+        print(f"Scrambled instruction: {insn_scrambled:#x}")
+
+        insns_scrambled.insert(0, insn_scrambled)
+        print()
+
+    initial_state = state
+    print(f"Initial state: 0x{initial_state:08x}")
+
+    print()
+    print("DECODE")
+    decode_insns(insns_scrambled, initial_state)
+
+    writeback_instructions(in_elf_path, out_elf_path, imem_addr_to_elf_offset_map, insns_scrambled)
+
+    return 0
+
+
+
+def decode_insns(insns_scrambled: List, initial_state) -> List:
+
+    state = initial_state
+    insns = []
+    print(f"Initial state: 0x{initial_state:08x}")
+    for word, insn_scrambled in list(enumerate(insns_scrambled)):
+        addr = word * 4
+        print(f"Descrambling instruction at address {addr:#x}")
+
+        print(f"Scrambled instruction: {insn_scrambled:#x}")
+
+        assert state < (2**32)
+        assert insn_scrambled < (2 ** 32)
+        c = state << 32 | insn_scrambled
+        print(f"c full: 0x{c:016x}")
+        p = prince(c, key=KEY, num_rounds_half=5, dec=True)
+        print(f"p full: 0x{p:016x}")
+
+        state = p >> 32
+        insn = p & (2**32-1)
+
+        insns.append(insn)
+        print(f"Original instruction: {insn:#x}")
+        print()
+
+    assert state == 0
+
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument('--verbose', action="store_true", help="Show more logging information.")
+
+    subparsers = parser.add_subparsers(dest='cmd')
+    subparsers.required = True
+
+    encode = subparsers.add_parser('encode', help='Encode a binary with CFI information')
+
+    encode.add_argument('in_elf', type=str, metavar="IN_ELF",
+                     help='Plaintext ELF file')
+    encode.add_argument('-o', type=str, dest="out_elf", default=None,
+                     help='Encoded ELF file')
+    encode.set_defaults(func=encode_main)
+
+
+    args = parser.parse_args()
+
+    log_level = log.INFO if args.verbose else log.WARNING
+    log.basicConfig(level=log_level, format="%(message)s")
+
+    return cast(int, args.func(args))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

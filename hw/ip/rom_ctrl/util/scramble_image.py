@@ -76,6 +76,8 @@ PRINCE_ROUND_CONSTS = [
 
 PRINCE_SHIFT_ROWS_CONSTS = [0x7bde, 0xbde7, 0xde7b, 0xe7bd]
 
+PRINCE_ALPHA_CONST = PRINCE_ROUND_CONSTS[-1]
+
 _UDict = Dict[object, object]
 
 
@@ -226,7 +228,7 @@ def prince_inv_round(rc: int, key: int, data: int) -> int:
     return data
 
 
-def prince(data: int, key: int, num_rounds_half: int) -> int:
+def prince(data: int, key: int, num_rounds_half: int, dec: bool = False) -> int:
     '''Run the PRINCE cipher
 
     This uses the new keyschedule proposed by Dinur in "Cryptanalytic
@@ -244,6 +246,11 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
     k0_rot1 = ((k0 & 1) << 63) | (k0 >> 1)
     k0_prime = k0_rot1 ^ (k0 >> 63)
 
+    if dec:
+        k0 = k0_prime
+        k0_prime = key >> 64
+        k1 ^= PRINCE_ALPHA_CONST
+
     data ^= k0
     data ^= k1
     data ^= PRINCE_ROUND_CONSTS[0]
@@ -251,7 +258,11 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
     for hri in range(num_rounds_half):
         round_idx = 1 + hri
         rc = PRINCE_ROUND_CONSTS[round_idx]
-        rk = k0 if round_idx & 1 else k1
+        if round_idx % 1:
+            rk = k0
+            rk ^= PRINCE_ALPHA_CONST
+        else:
+            rk = k1
         data = prince_fwd_round(rc, rk, data)
 
     data = sbox(data, 64, PRINCE_SBOX4)
@@ -261,7 +272,11 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
     for hri in range(num_rounds_half):
         round_idx = 11 - num_rounds_half + hri
         rc = PRINCE_ROUND_CONSTS[round_idx]
-        rk = k1 if round_idx & 1 else k0
+        if round_idx % 1:
+            rk = k0
+            rk ^= PRINCE_ALPHA_CONST
+        else:
+            rk = k1
         data = prince_inv_round(rc, rk, data)
 
     data ^= PRINCE_ROUND_CONSTS[11]
