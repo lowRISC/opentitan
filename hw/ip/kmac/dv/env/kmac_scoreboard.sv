@@ -98,7 +98,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit refresh_entropy = 0;
 
   // CMD fields
-  kmac_cmd_e kmac_cmd = CmdNone;
+  kmac_cmd_e unchecked_kmac_cmd = CmdNone;
+  kmac_cmd_e checked_kmac_cmd = CmdNone;
 
   bit msg_digest_done;
 
@@ -130,7 +131,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   app_mux_sel_e   app_mux_sel = SelNone;
 
   // Need to track the FSM in `kmac_errchk` for error reporting
-  kmac_err_st_e err_st = ErrStIdle;
+  kmac_err_st_e err_st      = ErrStIdle;
+  kmac_err_st_e err_st_next = ErrStIdle;
 
   // Variables to track the internal write/read pointers.
   //
@@ -202,6 +204,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      process_checked_kmac_cmd();
       detect_kmac_app_start();
       process_kmac_app_fsm();
       process_kmac_err_fsm();
@@ -220,6 +223,34 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       process_kmac_app_rsp_fifo();
       process_sideload_key();
     join_none
+  endtask
+
+  // This task spins forever and assigns `checked_kmac_cmd` to `unchecked_kmac_cmd`
+  // with a 1 cycle delay.
+  virtual task process_checked_kmac_cmd();
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          @(unchecked_kmac_cmd);
+          `uvm_info(`gfn, "BEFORE LATCHING KMAC_CMD", UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("unchecked_kmac_cmd: %0s", unchecked_kmac_cmd.name()), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("checked_kmac_cmd: %0s", checked_kmac_cmd.name()), UVM_HIGH)
+          cfg.clk_rst_vif.wait_clks(1);
+          checked_kmac_cmd = unchecked_kmac_cmd;
+          `uvm_info(`gfn, "AFTER LATCHING KMAC_CMD", UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("unchecked_kmac_cmd: %0s", unchecked_kmac_cmd.name()), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("checked_kmac_cmd: %0s", checked_kmac_cmd.name()), UVM_HIGH)
+          // If CmdDone is written, we know that a hash has completed.
+          // So, we can set this to CmdNone one cycle later.
+          cfg.clk_rst_vif.wait_clks(1);
+          if (checked_kmac_cmd == CmdDone) begin
+            checked_kmac_cmd = CmdNone;
+          end
+          ,
+          wait(cfg.under_reset);
+      )
+    end
   endtask
 
   // This task waits until an entropy request is sent,
@@ -388,7 +419,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                      cfg.m_kmac_app_agent_cfg[AppRom].vif.req_data_if.valid)) begin
                   app_st = StAppCfg;
                   app_fsm_active = 1;
-                end else if (kmac_cmd == CmdStart) begin
+                end else if (checked_kmac_cmd == CmdStart) begin
                   app_st = StSw;
                 end
               end
@@ -432,7 +463,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
               StSw: begin
                 app_mux_sel = SelSw;
-                if (kmac_cmd == CmdDone) begin
+                if (checked_kmac_cmd == CmdDone) begin
                   app_st = StIdle;
                   app_fsm_active = 0;
                 end
@@ -463,44 +494,45 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_SPINWAIT_EXIT(
           case (err_st)
             ErrStIdle: begin
-              if (!app_fsm_active && kmac_cmd == CmdStart) begin
-                err_st = ErrStMsgFeed;
+              if (!app_fsm_active && unchecked_kmac_cmd == CmdStart) begin
+                err_st_next = ErrStMsgFeed;
                 `uvm_info(`gfn, "moving to ErrStMsgFeed", UVM_HIGH)
               end
             end
             ErrStMsgFeed: begin
-              if (kmac_cmd == CmdProcess) begin
-                err_st = ErrStProcessing;
+              if (unchecked_kmac_cmd == CmdProcess) begin
+                err_st_next = ErrStProcessing;
                 `uvm_info(`gfn, "moving to ErrStProcessing", UVM_HIGH)
               end
             end
             ErrStProcessing: begin
               if (msg_digest_done) begin
-                err_st = ErrStAbsorbed;
+                err_st_next = ErrStAbsorbed;
                 `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
               end
             end
             ErrStAbsorbed: begin
               if (req_manual_squeeze) begin
-                err_st = ErrStSqueezing;
+                err_st_next = ErrStSqueezing;
                 `uvm_info(`gfn, "moving to ErrStSqueezing", UVM_HIGH)
-              end else if (kmac_cmd == CmdDone) begin
-                err_st = ErrStIdle;
+              end else if (unchecked_kmac_cmd == CmdDone) begin
+                err_st_next = ErrStIdle;
                 `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
               end
             end
             ErrStSqueezing: begin
               if (msg_digest_done) begin
-                err_st = ErrStAbsorbed;
+                err_st_next = ErrStAbsorbed;
                 `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
               end
             end
             default: begin
-              err_st = ErrStIdle;
+              err_st_next = ErrStIdle;
               `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
             end
           endcase
           cfg.clk_rst_vif.wait_clks(1);
+          err_st = err_st_next;
           #0;
           ,
           wait(cfg.under_reset);
@@ -647,13 +679,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_SPINWAIT_EXIT(
           forever begin
             // sha3_idle drops when CmdStart command is sent or a KMAC_APP op is detected
-            @(posedge in_kmac_app or kmac_cmd == CmdStart);
+            @(posedge in_kmac_app or checked_kmac_cmd == CmdStart);
             sha3_idle = 0;
             `uvm_info(`gfn, "dropped sha3_idle", UVM_HIGH)
 
             // sha3_idle goes high when either KMAC_APP op is complete or
             // CmdDone command is sent by SW
-            @(negedge in_kmac_app or kmac_cmd == CmdDone);
+            @(negedge in_kmac_app or checked_kmac_cmd == CmdDone);
             sha3_idle = 1;
             `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
           end
@@ -672,7 +704,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           forever begin
             // sha3_absorb should go high when CmdStart is written or
             // when KMAC_APP op is started
-            @(posedge in_kmac_app or kmac_cmd == CmdStart);
+            @(posedge in_kmac_app or checked_kmac_cmd == CmdStart);
             sha3_absorb = 1;
             `uvm_info(`gfn, "raised sha3_absorb", UVM_HIGH)
 
@@ -705,7 +737,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             is_kmac_app_op = in_kmac_app;
             // don't have to wait if manually squezing, squeeze status goes high immediately
             // since immediate transition back into processing state
-            if (kmac_cmd != CmdManualRun) begin
+            if (checked_kmac_cmd != CmdManualRun) begin
               cfg.clk_rst_vif.wait_clks(1);
             end
             sha3_squeeze = 1;
@@ -718,7 +750,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `DV_SPINWAIT_EXIT(
                 @(posedge req_manual_squeeze);
                 ,
-                wait(kmac_cmd == CmdDone || (is_kmac_app_op && !in_kmac_app));
+                wait(checked_kmac_cmd == CmdDone || (is_kmac_app_op && !in_kmac_app));
             )
             sha3_squeeze = 0;
             `uvm_info(`gfn, "dropped sha3_squeeze", UVM_HIGH)
@@ -766,7 +798,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // - more digest is manually squeezed
           // - CmdDone command is written
           @(posedge cfg.under_reset or negedge in_kmac_app or
-            kmac_cmd == CmdManualRun or kmac_cmd == CmdDone);
+            checked_kmac_cmd inside {CmdManualRun, CmdDone});
       )
     end
   endtask
@@ -798,7 +830,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // We need to be able to detect if a CmdProcess is asserted in the middle of
                   // processing the prefix and keys, as this changes the timing of how msgfifo
                   // is flushed
-                  wait(kmac_cmd == CmdProcess);
+                  wait(checked_kmac_cmd == CmdProcess);
                   cmd_process_in_header = 1;
                   `uvm_info(`gfn, "seen CmdProcess during prefix and key processing", UVM_HIGH)
                 end : wait_cmd_process_header
@@ -1091,7 +1123,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // Set `cmd_process_in_header` upon detecting this case so that we carry out
           // proper timing behavior.
           #0;
-          if (kmac_cmd == CmdProcess && !cmd_process_in_header) begin
+          if (checked_kmac_cmd == CmdProcess && !cmd_process_in_header) begin
             `uvm_info(`gfn, "detected CmdProcess 1 cycle after process prefix/key", UVM_HIGH)
             // if we hit this edge case but only have a single fifo entry,
             // need to wait for 4 cycles for fifo flushing
@@ -1133,7 +1165,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       $sformatf("not enough blocks filled yet %0d/%0d",
                                 num_blocks_filled, sha3_pkg::KeccakRate[strength]),
                       UVM_HIGH)
-                  if ((!in_kmac_app && kmac_cmd == CmdProcess) || (in_kmac_app && kmac_app_last)) begin
+                  if ((!in_kmac_app && checked_kmac_cmd == CmdProcess) ||
+                      (in_kmac_app && kmac_app_last)) begin
                     `uvm_info(`gfn, "detected CmdProcess", UVM_HIGH)
 
                     `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
@@ -1147,7 +1180,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     // cannot have size 0 so we can skip this condition entirely
                     if (!in_kmac_app && msg.size() == 0) begin
                       `uvm_info(`gfn, "zero size message", UVM_HIGH)
-                      cfg.clk_rst_vif.wait_clks(2);
+                      cfg.clk_rst_vif.wait_clks(3);
                       run_final_keccak = 1;
                     end else begin
                       // If we get here it means that we don't have a full set of blocks ready for
@@ -1209,6 +1242,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               // wait 2 cycles for the flushing process
                               `uvm_info(`gfn, "waiting 2 cycles for flushing", UVM_HIGH)
                               cfg.clk_rst_vif.wait_clks(2);
+
+                              // Extra 1 cycle delay introduced due to the latching of SW command
+                              cfg.clk_rst_vif.wait_clks(1);
                               disable wait_fifo_wr_in_flush;
                             end : wait_flush_cycles
                           join
@@ -1465,7 +1501,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   fork
                     begin : wait_for_cmd_process
-                      wait(kmac_cmd == CmdProcess);
+                      wait(checked_kmac_cmd == CmdProcess);
                       sw_process_seen_in_keccak = 1;
                       `uvm_info(`gfn, "raised sw_process_seen_in_keccak", UVM_HIGH)
                       if (keccak_complete_cycle) begin
@@ -1490,7 +1526,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       do_increment = 0;
                       num_blocks_filled = 0;
                       #0;
-                      if (kmac_cmd == CmdProcess && partial_msg) begin
+                      if (checked_kmac_cmd == CmdProcess && partial_msg) begin
                         do_increment = 1;
                         cfg.clk_rst_vif.wait_n_clks(1);
                         do_increment = 0;
@@ -1595,7 +1631,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             msg_digest_done = 0;
             `uvm_info(`gfn, "dropping msg_digest_done", UVM_HIGH)
 
-            wait_keccak_rounds(.wait_for_run_latch(1'b0));
+            wait_keccak_rounds(.wait_for_run_latch(1'b1));
             msg_digest_done = 1;
             `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
           end
@@ -1696,7 +1732,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               //    bytes.
               `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
               wait((msg.size() >= ((fifo_wr_ptr + 1) * KMAC_FIFO_BYTES_PER_ENTRY)) ||
-                   (kmac_cmd == CmdProcess && msg.size % KMAC_FIFO_BYTES_PER_ENTRY > 0));
+                   (checked_kmac_cmd == CmdProcess && msg.size % KMAC_FIFO_BYTES_PER_ENTRY > 0));
 
               // If CmdProcess is written, no more message will be written to the fifo,
               // so we should only increment the write pointer if some bytes still have not been
@@ -1705,7 +1741,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // e.g. if we are only able to write 3 bytes into a "fresh" fifo entry before writing
               //      CmdProcess, we should not increment the fifo write pointer as the entry is not
               //      overflowing.
-              cmd_process_write = (kmac_cmd == CmdProcess && msg.size() > 0);
+              cmd_process_write = (checked_kmac_cmd == CmdProcess && msg.size() > 0);
               if (cmd_process_write) begin
                 do_increment = (msg.size() < fifo_wr_ptr * KMAC_FIFO_BYTES_PER_ENTRY) ? 0 : 1;
               end
@@ -2033,7 +2069,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // TODO - handle error cases
         if (addr_phase_write) begin
           if (app_fsm_active) begin
-            // Do not assign `kmac_data` here to avoid potentially corrupting scoreboard state
             if (kmac_cmd_e'(item.a_data) != CmdNone) begin
               kmac_err.valid  = 1;
               kmac_err.code   = kmac_pkg::ErrSwIssuedCmdInAppActive;
@@ -2044,14 +2079,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end else begin
             case (kmac_cmd_e'(item.a_data))
               CmdStart: begin
-                if (kmac_cmd == CmdNone) begin
+                if (checked_kmac_cmd == CmdNone) begin
                   // the first 6B of the prefix (function name),
                   // need to check that it is "KMAC" when `kmac_en == 1`
                   bit [47:0] function_name_6B;
                   bit [TL_DW-1:0] prefix_val;
 
                   // msgfifo will now be written
-                  kmac_cmd = CmdStart;
+                  unchecked_kmac_cmd = CmdStart;
 
                   function_name_6B[31:0]  = `gmv(ral.prefix_0);
                   prefix_val = `gmv(ral.prefix_1);
@@ -2078,9 +2113,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 end
               end
               CmdProcess: begin
-                if (kmac_cmd == CmdStart) begin
+                if (checked_kmac_cmd == CmdStart) begin
                   // kmac will now compute the digest
-                  kmac_cmd = CmdProcess;
+                  unchecked_kmac_cmd = CmdProcess;
 
                   // Raise this bit after a small delay to handle an edge case where
                   // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
@@ -2097,9 +2132,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 end
               end
               CmdManualRun: begin
-                if (kmac_cmd inside {CmdProcess, CmdManualRun}) begin
+                if (checked_kmac_cmd inside {CmdProcess, CmdManualRun}) begin
                   // kmac will now squeeze more output data
-                  kmac_cmd = CmdManualRun;
+                  unchecked_kmac_cmd = CmdManualRun;
+
                   req_manual_squeeze = 1;
                   `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
                 end else begin // SW sent wrong command
@@ -2112,8 +2148,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 end
               end
               CmdDone: begin
-                if (kmac_cmd inside {CmdProcess, CmdManualRun}) begin
-                  kmac_cmd = CmdDone;
+                if (checked_kmac_cmd inside {CmdProcess, CmdManualRun}) begin
+                  unchecked_kmac_cmd = CmdDone;
 
                   // sample coverage of message length
                   if (cfg.en_cov) begin
@@ -2127,8 +2163,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   clear_state();
 
                   // IDLE should go high one cycle after issuing Done cmd
-                  cfg.clk_rst_vif.wait_clks(1);
-                  sha3_idle = 1;
+                  //cfg.clk_rst_vif.wait_clks(1);
+                  //sha3_idle = 1;
 
                   // if using EDN, KMAC will refresh entropy after finishing a hash operation
                   if (entropy_mode == EntropyModeEdn) begin
@@ -2247,7 +2283,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           kmac_err.code   = kmac_pkg::ErrSwPushedMsgFifo;
           kmac_err.info   = {8'h0, 8'(app_st), 8'(app_mux_sel)};
           predict_err(.is_kmac_err(1));
-        end else if (kmac_cmd != CmdStart) begin
+        end else if (checked_kmac_cmd != CmdStart) begin
           // TODO
           //
           // If we get here we are writing to the msgfifo in an invalid state.
@@ -2336,15 +2372,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // If we read the state digest in either CmdStart or CmdDone states,
       // we should read back all zeroes.
       // Check immediately and clear the digest arrays.
-      if (kmac_cmd inside {CmdNone, CmdStart, CmdDone}) begin
+      if (checked_kmac_cmd inside {CmdNone, CmdStart, CmdDone}) begin
         foreach (digest_share0[i]) begin
           `DV_CHECK_EQ_FATAL(digest_share0[i], '0,
-              $sformatf("Share 0 should be zero in state %0s", kmac_cmd.name()))
+              $sformatf("Share 0 should be zero in state %0s", checked_kmac_cmd.name()))
           digest_share0 = {};
         end
         foreach (digest_share1[i]) begin
           `DV_CHECK_EQ_FATAL(digest_share1[i], '0,
-              $sformatf("Share 1 should be zero in state %0s", kmac_cmd.name()))
+              $sformatf("Share 1 should be zero in state %0s", checked_kmac_cmd.name()))
           digest_share1 = {};
         end
       end
@@ -2382,6 +2418,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     clear_state();
 
+    checked_kmac_cmd   = CmdNone;
+    unchecked_kmac_cmd = CmdNone;
+
     first_op_after_rst = 1;
 
     num_blocks_filled = 0;
@@ -2400,8 +2439,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, "clearing scoreboard state", UVM_HIGH)
 
     if (first_op_after_rst) first_op_after_rst = 0;
-
-    kmac_cmd = CmdNone;
 
     do_check_digest = 1;
 

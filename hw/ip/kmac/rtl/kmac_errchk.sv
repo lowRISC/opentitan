@@ -56,8 +56,9 @@ module kmac_errchk
   input        kmac_en_i,
   input [47:0] cfg_prefix_6B_i, // first 6B of PREFIX
 
-  // SW commands
-  input kmac_cmd_e sw_cmd_i,
+  // SW commands: Only valid command is sent out to the rest of the modules
+  input  kmac_cmd_e sw_cmd_i,
+  output kmac_cmd_e sw_cmd_o,
 
   // Status from KMAC_APP
   input app_active_i,
@@ -156,6 +157,13 @@ module kmac_errchk
         err_swsequence = 1'b 0;
       end
     endcase
+  end
+
+  // sw_cmd_o latch
+  // To reduce the command path delay, sw_cmd is latched here
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)              sw_cmd_o <= CmdNone;
+    else if (!err_swsequence) sw_cmd_o <= sw_cmd_i;
   end
 
   // Mode & Strength

@@ -215,11 +215,13 @@ module kmac
 
   // Command
   // sw_cmd is the command written by SW
+  // checked_sw_cmd is checked in the kmac_errchk module.
+  //   Invalid command is filtered out in the module.
   // kmac_cmd is generated in KeyMgr interface.
   // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
   // if KeyMgr drives the data, kmac_cmd is controled in the state machine
   // in KeyMgr interface logic.
-  kmac_cmd_e sw_cmd, kmac_cmd;
+  kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd;
 
   // Entropy configurations
   logic [15:0] entropy_timer_limit;
@@ -781,7 +783,7 @@ module kmac
     .err_processed_i (err_processed),
 
     // Command interface
-    .sw_cmd_i (sw_cmd),
+    .sw_cmd_i (checked_sw_cmd),
     .cmd_o    (kmac_cmd),
 
     // Error report
@@ -847,6 +849,7 @@ module kmac
 
     // SW commands
     .sw_cmd_i(sw_cmd),
+    .sw_cmd_o(checked_sw_cmd),
 
     // Status from KMAC_APP
     .app_active_i(app_active),
