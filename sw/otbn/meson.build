@@ -20,6 +20,9 @@
 #     'elf': OTBN_ELF_FILE,
 #     'rv32embed_lib': RV32_LIBRARY,
 #     'rv32embed_dependency': DEPENDENCY_ON_RV32_LIBRARY,
+#     'elf_cfi': OTBN_ELF_FILE_WITH_CFI,
+#     'rv32embed_cfi_lib': RV32_LIBRARY_WITH_CFI,
+#     'rv32embed_cfi_dependency': DEPENDENCY_ON_RV32_LIBRARY_WITH_CFI,
 # }}
 #
 # To add another OTBN application to the list of build targets, add it to
@@ -46,6 +49,7 @@ otbn_build_command = [
   prog_env,
   'OTBN_AS=@0@'.format(prog_otbn_as),
   'OTBN_LD=@0@'.format(prog_otbn_ld),
+  'OTBN_CFITOOL=@0@'.format(prog_otbn_cfitool),
   'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
   'RV32_TOOL_AS=@0@'.format(prog_as.path()),
   'RV32_TOOL_LD=@0@'.format(prog_ld.path()),
@@ -58,6 +62,7 @@ otbn_build_command = [
 otbn_build_depend_files = [
   prog_otbn_as,
   prog_otbn_ld,
+  prog_otbn_cfitool,
   prog_objcopy.path(),
   prog_as.path(),
   prog_ld.path(),
@@ -74,6 +79,8 @@ foreach sw_otbn__app_name, sw_otbn__app_sources : sw_otbn_sources
   sw_otbn__app_output_files = [
     sw_otbn__app_name + '.rv32embed.o',
     sw_otbn__app_name + '.elf',
+    sw_otbn__app_name + '.cfi.rv32embed.o',
+    sw_otbn__app_name + '.cfi.elf',
   ]
 
   # Target calling otbn_build.py
@@ -98,11 +105,27 @@ foreach sw_otbn__app_name, sw_otbn__app_sources : sw_otbn_sources
     link_with: sw_otbn__embedded_lib,
   )
 
+  # A library containing the OTBN application in a form embeddable into device
+  # (Ibex) software (the *.cfi.rv32embed.o file) with CFI.
+  sw_otbn__cfi_embedded_lib = static_library(
+    sw_otbn__app_name + '_cfi',
+    [sw_otbn__target[2]] # == sw_otbn__app_output_files[2], i.e. *.cfi.rv32embed.o
+  )
+
+  # A dependency on the application as embeddable library with CFI, to be used
+  # if device (Ibex) software wants to include an OTBN application in its binary.
+  sw_otbn__cfi_dependency = declare_dependency(
+    link_with: sw_otbn__cfi_embedded_lib,
+  )
+
   sw_otbn += {
     sw_otbn__app_name: {
       'elf': sw_otbn__target[1],
       'rv32embed_lib': sw_otbn__embedded_lib,
       'rv32embed_dependency': sw_otbn__dependency,
+      'elf_cfi': sw_otbn__target[3],
+      'rv32embed_cfi_lib': sw_otbn__cfi_embedded_lib,
+      'rv32embed_cfi_dependency': sw_otbn__cfi_dependency,
     }
   }
 

@@ -18,6 +18,7 @@ environment variables:
 
   OTBN_AS            path to otbn-as, the OTBN assembler
   OTBN_LD            path to otbn-ld, the OTBN linker
+  OTBN_CFITOOL       path to otbn-cfitool, the OTBN CFI encoder/decoder
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
   RV32_TOOL_OBJCOPY  path to RV32 objcopy
@@ -28,9 +29,11 @@ environment variables:
 outputs:
   The build process produces multiple files inside the output directory.
 
-  <src_file>.o            the compiled source files
-  <app_name>.elf          the compiled and linked application targeting OTBN
-  <app_name>.rv32embed.o  the application as embeddable object for RV32
+  <src_file>.o               the compiled source files
+  <app_name>.elf             the compiled and linked application targeting OTBN
+  <app_name>.cfi.elf         the ELF file with CFI added
+  <app_name>.rv32embed.o     the application as embeddable object for RV32
+  <app_name>.cfi.rv32embed.o the embeddable object with CFI
 
 """
 
@@ -66,7 +69,7 @@ def run_cmd(args, display_cmd=None):
     subprocess.run(str_args, check=True)
 
 
-def run_tool(tool: str, out_file: Path, args) -> None:
+def run_tool(tool: str, out_file: Path, args, pre_args=[]) -> None:
     '''Run tool to produce out_file (using an '-o' argument)
 
     This works by writing to a temporary file (in the same directory) and then
@@ -80,8 +83,8 @@ def run_tool(tool: str, out_file: Path, args) -> None:
     tmpfile = tempfile.NamedTemporaryFile(prefix=out_base, dir=out_dir,
                                           delete=False)
     try:
-        run_cmd([tool, '-o', tmpfile.name] + args,
-                cmd_to_str([tool, '-o', out_file] + args))
+        cmd = [tool] + pre_args + ['-o', tmpfile.name] + args
+        run_cmd(cmd, cmd_to_str(cmd))
 
         # If we get here, the tool ran successfully, producing the output file.
         # Use os.replace to rename appropriately.
@@ -120,8 +123,51 @@ def call_rv32_objcopy(args: List[str]):
     run_cmd([rv32_tool_objcopy] + args)
 
 
+def call_otbn_cfitool(in_elf: Path, out_elf: Path):
+    default_path = str(REPO_TOP / 'hw/ip/otbn/util/otbn-cfitool')
+    otbn_cfitool_cmd = os.environ.get('OTBN_CFITOOL', default_path)
+    assert in_elf.exists()
+    run_tool(otbn_cfitool_cmd, out_elf, [in_elf], pre_args=['encode'])
+
+
+def produced_embedded_object(app_name, elf, embedded_obj):
+    # Use objcopy to create an ELF that can be linked into a RISC-V binary
+    # (to run on Ibex). This should set flags for all sections to look like
+    # rodata (since they're not executable on Ibex, nor does it make sense
+    # for Ibex code to manipulate OTBN data sections "in place"). We name
+    # them with a .otbn prefix, so end up with e.g. .rodata.otbn.text and
+    # .rodata.otbn.data.
+    #
+    # Symbols that are exposed by the binary (including those giving the
+    # start and end of imem and dmem) will be relocated as part of the
+    # link, so they'll give addresses in the Ibex address space. So that
+    # the RISC-V binary can link multiple OTBN applications, we give them
+    # an application-specific prefix. (Note: This prefix is used in
+    # sw/device/lib/runtime/otbn.h: so needs to be kept in sync with that).
+    sym_pfx = '_otbn_app_{}_'.format(app_name)
+    args = (['-O', 'elf32-littleriscv',
+             '--prefix-sections=.rodata.otbn',
+             '--set-section-flags=*=alloc,load,readonly',
+             '--prefix-symbols', sym_pfx] +
+            [elf, embedded_obj])
+
+    call_rv32_objcopy(args)
+
+    # After objcopy has finished, we have to do a little surgery to
+    # overwrite the ELF e_type field (a 16-bit little-endian number at file
+    # offset 0x10). It will currently be 0x2 (ET_EXEC), which means a
+    # fully-linked executable file. Binutils doesn't want to link with
+    # anything of type ET_EXEC (since it usually wouldn't make any sense to
+    # do so). Hack the type to be 0x1 (ET_REL), which means an object file.
+    with open(embedded_obj, 'r+b') as emb_file:
+        emb_file.seek(0x10)
+        emb_file.write(b'\1\0')
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         '--out-dir',
         '-o',
@@ -164,45 +210,25 @@ def main() -> int:
     app_name = args.app_name or str(src_files[0].stem)
 
     try:
+        # Assemble
         for src_file, obj_file in zip(src_files, obj_files):
             call_otbn_as(src_file, obj_file)
 
+        # Link into an ELF file
         out_elf = out_dir / (app_name + '.elf')
         call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
 
-        # Use objcopy to create an ELF that can be linked into a RISC-V binary
-        # (to run on Ibex). This should set flags for all sections to look like
-        # rodata (since they're not executable on Ibex, nor does it make sense
-        # for Ibex code to manipulate OTBN data sections "in place"). We name
-        # them with a .otbn prefix, so end up with e.g. .rodata.otbn.text and
-        # .rodata.otbn.data.
-        #
-        # Symbols that are exposed by the binary (including those giving the
-        # start and end of imem and dmem) will be relocated as part of the
-        # link, so they'll give addresses in the Ibex address space. So that
-        # the RISC-V binary can link multiple OTBN applications, we give them
-        # an application-specific prefix. (Note: This prefix is used in
-        # sw/device/lib/runtime/otbn.h: so needs to be kept in sync with that).
-        sym_pfx = '_otbn_app_{}_'.format(app_name)
+        # Convert the ELF file into an embedded object
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
-        args = (['-O', 'elf32-littleriscv',
-                 '--prefix-sections=.rodata.otbn',
-                 '--set-section-flags=*=alloc,load,readonly',
-                 '--prefix-symbols', sym_pfx] +
-                [out_elf,
-                 out_embedded_obj])
+        produced_embedded_object(app_name, out_elf, out_embedded_obj)
 
-        call_rv32_objcopy(args)
+        # Encode the ELF file with CFI information
+        out_elf_cfi = out_dir / (app_name + '.cfi.elf')
+        call_otbn_cfitool(out_elf, out_elf_cfi)
 
-        # After objcopy has finished, we have to do a little surgery to
-        # overwrite the ELF e_type field (a 16-bit little-endian number at file
-        # offset 0x10). It will currently be 0x2 (ET_EXEC), which means a
-        # fully-linked executable file. Binutils doesn't want to link with
-        # anything of type ET_EXEC (since it usually wouldn't make any sense to
-        # do so). Hack the type to be 0x1 (ET_REL), which means an object file.
-        with open(out_embedded_obj, 'r+b') as emb_file:
-            emb_file.seek(0x10)
-            emb_file.write(b'\1\0')
+        # Convert the ELF file into an embedded object
+        out_embedded_obj_cfi = out_dir / (app_name + '.cfi.rv32embed.o')
+        produced_embedded_object(app_name, out_elf_cfi, out_embedded_obj_cfi)
 
     except subprocess.CalledProcessError as e:
         # Show a nicer error message if any of the called programs fail.
