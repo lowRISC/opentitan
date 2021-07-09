@@ -68,7 +68,15 @@ def elaborate_instance(instance, block: IpBlock):
         - base_addr (this is reflected in base_addrs)
 
     """
+
+    # create an empty dict if nothing is there
+    if "param_decl" not in instance:
+        instance["param_decl"] = {}
+
     mod_name = instance["name"]
+
+    # Check to see if all declared parameters exist
+    param_decl_accounting = [decl for decl in instance["param_decl"].keys()]
 
     # param_list
     new_params = []
@@ -114,10 +122,22 @@ def elaborate_instance(instance, block: IpBlock):
 
             new_param['default'] = new_default
             new_param['randwidth'] = randwidth
+        # if this exposed parameter is listed in the `param_decl` dict,
+        # override its default value.
+        elif param.name in instance["param_decl"].keys():
+            new_param['default'] = instance["param_decl"][param.name]
+            # remove the parameter from the accounting dict
+            param_decl_accounting.remove(param.name)
 
         new_params.append(new_param)
 
     instance["param_list"] = new_params
+
+    # for each module declaration, check to see that the parameter actually exists
+    # and can be set
+    for decl in param_decl_accounting:
+        log.error("{} is not a valid parameter of {} that can be "
+                  "set from top level".format(decl, block.name))
 
     # These objects get added-to in place by code in intermodule.py, so we have
     # to convert and copy them here.
