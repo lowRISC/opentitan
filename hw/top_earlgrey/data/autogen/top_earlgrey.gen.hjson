@@ -1317,6 +1317,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -1604,6 +1605,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -2040,12 +2042,6 @@
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       attr: templated
-      localparam:
-      {
-        EscCntDw: 32
-        AccuCntDw: 16
-        LfsrSeed: 0x7FFFFFFF
-      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -2053,6 +2049,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -2956,6 +2953,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -3438,6 +3436,7 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -3627,6 +3626,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -3889,6 +3889,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -4073,6 +4074,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -4325,6 +4327,7 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_kmac
       }
       domain: "0"
+      memory: {}
       param_list:
       [
         {
@@ -4449,6 +4452,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -4771,6 +4775,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -4909,6 +4914,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -5200,6 +5206,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -5386,6 +5393,7 @@
       }
       domain: "0"
       param_decl: {}
+      memory: {}
       param_list:
       [
         {
@@ -5554,6 +5562,15 @@
       {
         rom: 0x00008000
         regs: 0x411e0000
+      }
+      memory:
+      {
+        rom:
+        {
+          label: rom
+          swaccess: rx
+          size: 0x4000
+        }
       }
       clock_connections:
       {

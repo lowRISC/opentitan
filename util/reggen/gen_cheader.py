@@ -25,13 +25,15 @@ from .window import Window
 def genout(outfile: TextIO, msg: str) -> None:
     outfile.write(msg)
 
+
 def to_snake_case(s: str) -> str:
     val = []
     for i, ch in enumerate(s):
-      if i > 0 and ch.isupper():
-        val.append('_')
-      val.append(ch)
+        if i > 0 and ch.isupper():
+            val.append('_')
+        val.append(ch)
     return ''.join(val)
+
 
 def as_define(s: str) -> str:
     s = s.upper()

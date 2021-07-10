@@ -500,6 +500,16 @@ package top_earlgrey_pkg;
    */
   parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h100000;
 
+  /**
+   * Memory base address for rom in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h8000;
+
+  /**
+   * Memory size for rom in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h4000;
+
 
   // Enumeration of IO power domains.
   // Only used in ASIC target.

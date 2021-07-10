@@ -25,7 +25,13 @@ def memory_to_flags(memory):
  * translation base
  */
 MEMORY {
-  rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x4000
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, val in m["memory"].items():
+  ${val["label"]}(${val["swaccess"]}) : ORIGIN = ${m["base_addrs"][key]}, LENGTH = ${val["size"]}
+    % endfor
+  % endif
+% endfor
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor

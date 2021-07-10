@@ -884,6 +884,16 @@ extern "C" {
  */
 #define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
 
+/**
+ * Memory base address for rom in top earlgrey.
+ */
+#define TOP_EARLGREY_ROM_BASE_ADDR 0x8000u
+
+/**
+ * Memory size for rom in top earlgrey.
+ */
+#define TOP_EARLGREY_ROM_SIZE_BYTES 0x4000u
+
 
 /**
  * PLIC Interrupt Source Peripheral.

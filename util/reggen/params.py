@@ -115,6 +115,14 @@ class RandParameter(BaseParam):
         return rd
 
 
+class MemSizeParameter(BaseParam):
+    def __init__(self,
+                 name: str,
+                 desc: Optional[str],
+                 param_type: str):
+        super().__init__(name, desc, param_type)
+
+
 def _parse_parameter(where: str, raw: object) -> BaseParam:
     rd = check_keys(raw, where,
                     list(REQUIRED_FIELDS.keys()),
@@ -197,6 +205,36 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                              "netlist constant. To use {fld}, prefix the name "
                              "with RndCnst."
                              .format(where=where, name=name, fld=fld))
+
+    if name.lower().startswith('memsize'):
+        r_type = rd.get('type')
+        if r_type is None:
+            raise ValueError('At {}, parameter {} has no type field (which is '
+                             'required for memory size parameters).'
+                             .format(where, name))
+        param_type = check_str(r_type, 'type field of ' + where)
+
+        if rd.get('type') != "int":
+            raise ValueError('At {}, memory size parameter {} must be of type integer.'
+                             .format(where, name))
+
+        local = check_bool(rd.get('local', 'false'), 'local field of ' + where)
+        if local:
+            raise ValueError('At {}, the parameter {} specifies local = true, '
+                             'meaning that it is a localparam. This is '
+                             'incompatible with being a memory size parameter.'
+                             .format(where, name))
+
+        expose = check_bool(rd.get('expose', 'false'),
+                            'expose field of ' + where)
+        if expose:
+            raise ValueError('At {}, the parameter {} specifies expose = '
+                             'true, meaning that the parameter is exposed to '
+                             'the top-level. This is incompatible with '
+                             'being a memory size parameter.'
+                             .format(where, name))
+
+        return MemSizeParameter(name, desc, param_type)
 
     r_type = rd.get('type')
     if r_type is None:

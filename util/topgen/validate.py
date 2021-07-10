@@ -199,7 +199,7 @@ clock_groups_added = {}
 
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
-    'base_addr': ['s', 'strarting hex address of memory'],
+    'base_addr': ['s', 'hex start address of memory'],
     'clock_connections': ['g', 'generated, elaborated version of clock_srcs'],
     'clock_group': ['s', 'associated clock attribute group'],
     'clock_srcs': ['g', 'clock connections'],
@@ -215,6 +215,45 @@ eflash_required = {
 eflash_optional = {}
 
 eflash_added = {}
+
+module_required = {
+    'name': ['s', 'name of the instance'],
+    'type': ['s', 'comportable IP type'],
+    'clock_srcs': ['g', 'dict with clock sources'],
+    'clock_group': ['s', 'clock group'],
+    'reset_connections': ['g', 'dict with reset sources'],
+}
+
+module_optional = {
+    'domain': ['s', 'power domain, defaults to Domain0'],
+    'clock_reset_export': ['l', 'optional list with prefixes for exported '
+                                'clocks and resets at the chip level'],
+    'attr': ['s', 'optional attribute indicating whether the IP is '
+                  '"templated" or "reggen_only"'],
+    'base_addr': ['s', 'hex start address of the peripheral '
+                       '(if the IP has only a single TL-UL interface)'],
+    'base_addrs': ['d', 'hex start addresses of the peripheral '
+                        ' (if the IP has multiple TL-UL interfaces)'],
+    'memory': ['g', 'optional dict with memory region attributes'],
+    'param_decl': ['g', 'optional dict that allows to override instantiation parameters']
+}
+
+module_added = {
+    'clock_connections': ['g', 'generated clock connections']
+}
+
+memory_required = {
+    'label': ['s', 'region label for the linker script'],
+    'swaccess': ['s', 'access attributes for the linker script'],
+    'size': ['d', 'memory region size in bytes for the linker script, '
+                  'xbar and RTL parameterisations'],
+}
+
+memory_optional = {
+}
+
+memory_added = {
+}
 
 
 # Supported PAD types.
@@ -835,6 +874,40 @@ def check_power_domains(top):
     return error
 
 
+def check_modules(top, prefix):
+    error = 0
+    for m in top['module']:
+        modname = m.get("name", "unnamed module")
+        error += check_keys(m, module_required, module_optional, module_added,
+                            prefix + " " + modname)
+
+        # these fields are mutually exclusive
+        if 'base_addr' in m and 'base_addrs' in m:
+            log.error("{} {} a module cannot define both the 'base_addr' "
+                      "and 'base_addrs' keys at the same time"
+                      .format(prefix, modname))
+            error += 1
+
+        if 'base_addrs' in m and 'memory' in m:
+            for intf, value in m['memory'].items():
+                error += check_keys(value, memory_required,
+                                    memory_optional, memory_added,
+                                    prefix + " " + modname + " " + intf)
+                # make sure the memory regions correspond to the TL-UL interfaces
+                if intf not in m['base_addrs']:
+                    log.error("{} {} memory region {} does not "
+                              "correspond to any of the defined "
+                              "TL-UL interfaces".format(prefix, modname, intf))
+                    error += 1
+                # make sure the linker region access attribute is valid
+                attr = value.get('swaccess', 'unknown attribute')
+                if attr not in ['r', 'rw', 'rx', 'rwx']:
+                    log.error('{} {} swaccess attribute {} of memory region {} '
+                              'is not valid'.format(prefix, modname, attr, intf))
+                    error += 1
+    return error
+
+
 def validate_top(top, ipobjs, xbarobjs):
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
@@ -845,7 +918,10 @@ def validate_top(top, ipobjs, xbarobjs):
 
     component = top['name']
 
-    # MODULE check
+    # Check module instantiations
+    error += check_modules(top, component)
+
+    # MODULE  check
     err, ip_idxs = check_target(top, ipobjs, Target(TargetType.MODULE))
     error += err
 

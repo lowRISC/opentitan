@@ -11,7 +11,7 @@ from typing import Dict, List
 
 from topgen import c, lib
 from reggen.ip_block import IpBlock
-from reggen.params import LocalParam, Parameter, RandParameter
+from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 
 
 def _get_random_data_hex_literal(width):
@@ -74,6 +74,7 @@ def elaborate_instance(instance, block: IpBlock):
         instance["param_decl"] = {}
 
     mod_name = instance["name"]
+    cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
 
     # Check to see if all declared parameters exist
     param_decl_accounting = [decl for decl in instance["param_decl"].keys()]
@@ -89,6 +90,10 @@ def elaborate_instance(instance, block: IpBlock):
 
         param_expose = param.expose if isinstance(param, Parameter) else False
 
+        # assign an empty entry if this is not present
+        if "memory" not in instance:
+            instance["memory"] = {}
+
         # Check for security-relevant parameters that are not exposed,
         # adding a top-level name.
         if param.name.lower().startswith("sec") and not param_expose:
@@ -97,8 +102,7 @@ def elaborate_instance(instance, block: IpBlock):
                             mod_name, param.name))
 
         # Move special prefixes to the beginnining of the parameter name.
-        param_prefixes = ["Sec", "RndCnst"]
-        cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+        param_prefixes = ["Sec", "RndCnst", "MemSize"]
         name_top = cc_mod_name + param.name
         for prefix in param_prefixes:
             if param.name.lower().startswith(prefix.lower()):
@@ -122,6 +126,18 @@ def elaborate_instance(instance, block: IpBlock):
 
             new_param['default'] = new_default
             new_param['randwidth'] = randwidth
+
+        elif isinstance(param, MemSizeParameter):
+            key = param.name[7:].lower()
+            # Set the parameter to the specified memory size.
+            if key in instance["memory"]:
+                new_default = int(instance["memory"][key]["size"], 0)
+                new_param['default'] = new_default
+            else:
+                log.error("Missing memory configuration for "
+                          "memory {} in instance {}"
+                          .format(key, instance["name"]))
+
         # if this exposed parameter is listed in the `param_decl` dict,
         # override its default value.
         elif param.name in instance["param_decl"].keys():
