@@ -948,12 +948,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // chunk of partition data are fed in as keys
   // The last 64-round PRESENT calculation will use a global digest constant as key input
   function void cal_digest_val(int part_idx);
-    bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
-    bit [SCRAMBLE_DATA_SIZE-1:0]                 init_vec = RndCnstDigestIV[0];
-    bit [TL_DW-1:0]   mem_q[$];
-    int               array_size;
-    real              key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
-    bit [TL_DW*2-1:0] digest, prev_digest;
+    bit [TL_DW-1:0]              mem_q[$];
+    int                          array_size;
+    bit [SCRAMBLE_DATA_SIZE-1:0] digest;
 
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 
@@ -993,33 +990,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       mem_q = scrambled_mem_q;
     end
 
-    for (int i = 0; i < $ceil(array_size / key_factor); i++) begin
-      bit [SCRAMBLE_DATA_SIZE-1:0] input_data = (i == 0) ? init_vec : digest;
-      bit [SCRAMBLE_KEY_SIZE-1:0]  key;
-
-      // Pad 32-bit partition data into 128-bit key input
-      // Because the mem_q size is a multiple of 64-bit, so if the last round only has 64-bits key,
-      // it will repeat the last 64-bits twice
-      for (int j = 0; j < key_factor; j++) begin
-        int index = i * key_factor + j;
-        key |= ((index >= array_size ? mem_q[index-2] : mem_q[index]) << (j * TL_DW));
-      end
-
-      // Trigger 32 round of PRESENT encrypt
-      crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, SCRAMBLE_KEY_SIZE == 80,
-                                                     enc_array);
-      // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-      digest = enc_array[NUM_ROUND-1] ^ input_data;
-    end
-
-    // Last 32 round of digest is calculated with a digest constant
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(digest,
-                                                   RndCnstDigestConst[0],
-                                                   SCRAMBLE_KEY_SIZE == 80,
-                                                   enc_array);
-    // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    digest ^= enc_array[NUM_ROUND-1];
-
+    digest = otp_scrambler_pkg::cal_digest(part_idx, mem_q);
     update_digest_to_otp(part_idx, digest);
   endfunction
 

@@ -443,6 +443,9 @@ class mem_bkdr_util extends uvm_object;
               addr, rw_data, err_mask, rw_data ^ err_mask), UVM_HIGH)
   endfunction
 
+  // Wrapper function for backdoor write OTP partitions.
+  `include "mem_bkdr_util__otp.sv"
+
   // Wrapper functions for encrypted SRAM reads and writes.
   `include "mem_bkdr_util__sram.sv"
 
