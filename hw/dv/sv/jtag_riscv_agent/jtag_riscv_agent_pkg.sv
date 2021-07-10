@@ -23,6 +23,8 @@ package jtag_riscv_agent_pkg;
   parameter uint DMI_DRW   = DMI_OPW + DMI_DATAW + DMI_ADDRW;
   parameter uint DTMCS_DRW = 32;
 
+  string msg_id = "jtag_riscv_agent_pkg";
+
   // local types
   typedef enum bit [DMI_IRW-1:0] {
     JtagBypass0   = 'h0,
@@ -64,5 +66,14 @@ package jtag_riscv_agent_pkg;
   `include "jtag_riscv_sequencer.sv"
   `include "jtag_riscv_agent.sv"
   `include "jtag_riscv_seq_list.sv"
+
+  task automatic jtag_read_csr(bit [bus_params_pkg::BUS_AW-1:0]     csr_addr,
+                               jtag_riscv_sequencer                 seqr,
+                               ref bit [bus_params_pkg::BUS_DW-1:0] csr_val);
+    jtag_riscv_csr_seq jtag_csr_seq = jtag_riscv_csr_seq::type_id::create("jtag_csr_seq");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(jtag_csr_seq, addr == csr_addr; do_write == 0;, , msg_id)
+    jtag_csr_seq.start(seqr);
+    csr_val = jtag_csr_seq.data;
+  endtask
 
 endpackage: jtag_riscv_agent_pkg
