@@ -401,15 +401,30 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         # that corresponds to ifname
         rb = block.reg_blocks.get(ifname)
         if rb is None:
-            log.error('Cannot connect to non-existent {} device interface '
-                      'on {!r} (an instance of the {!r} block)'
-                      .format('default' if ifname is None else repr(ifname),
-                              inst['name'], block.name))
-            bytes_used = 0
+            raise RuntimeError(
+                'Cannot connect to non-existent {} device interface '
+                'on {!r} (an instance of the {!r} block).'
+                .format('default' if ifname is None else repr(ifname),
+                        inst['name'], block.name))
         else:
             bytes_used = 1 << rb.get_addr_width()
 
         base_addr = inst['base_addrs'][ifname]
+
+        # If an instance has a nonempty "memory" field, take the memory
+        # size configuration from there.
+        if "memory" in inst:
+            if ifname in inst["memory"]:
+                memory_size = int(inst["memory"][ifname]["size"], 0)
+                if bytes_used > memory_size:
+                    raise RuntimeError(
+                        'Memory region on {} device interface '
+                        'on {!r} (an instance of the {!r} block) '
+                        'is smaller than the corresponding register block.'
+                        .format('default' if ifname is None else repr(ifname),
+                                inst['name'], block.name))
+
+                bytes_used = memory_size
 
     # Round up to min_device_spacing if necessary
     size_byte = max(bytes_used, min_device_spacing)

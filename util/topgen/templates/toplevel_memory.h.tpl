@@ -20,15 +20,23 @@
 // Include guard for assembler
 #ifdef __ASSEMBLER__
 
+
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, val in m["memory"].items():
 /**
- * Memory base address for rom in top earlgrey.
+ * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
  */
-#define TOP_EARLGREY_ROM_BASE_ADDR 0x00008000
+#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key]}
 
 /**
- * Memory size for rom in top earlgrey.
+ * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
  */
-#define TOP_EARLGREY_ROM_SIZE_BYTES 0x4000
+#define TOP_${top["name"].upper()}_${val["label"].upper()}_SIZE_BYTES ${val["size"]}
+
+    % endfor
+  % endif
+% endfor
 
 % for m in top["memory"]:
 /**

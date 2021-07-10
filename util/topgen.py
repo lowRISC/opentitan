@@ -122,16 +122,6 @@ def generate_alert_handler(top, out_path):
 
     topname = top["name"]
 
-    # check if there are any params to be passed through reggen and placed into
-    # the generated package
-    ip_list_in_top = [x["name"].lower() for x in top["module"]]
-    ah_idx = ip_list_in_top.index("alert_handler")
-    if 'localparam' in top['module'][ah_idx]:
-        if 'EscCntDw' in top['module'][ah_idx]['localparam']:
-            esc_cnt_dw = int(top['module'][ah_idx]['localparam']['EscCntDw'])
-        if 'AccuCntDw' in top['module'][ah_idx]['localparam']:
-            accu_cnt_dw = int(top['module'][ah_idx]['localparam']['AccuCntDw'])
-
     if esc_cnt_dw < 1:
         log.error("EscCntDw must be larger than 0")
     if accu_cnt_dw < 1:
@@ -151,7 +141,7 @@ def generate_alert_handler(top, out_path):
             for k in range(alert['width']):
                 async_on = str(alert['async']) + async_on
         # convert to hexstring to shorten line length
-        async_on = ("%d'h" % n_alerts) + hex(int(async_on,2))[2:]
+        async_on = ("%d'h" % n_alerts) + hex(int(async_on, 2))[2:]
 
     log.info("alert handler parameterization:")
     log.info("NAlerts   = %d" % n_alerts)

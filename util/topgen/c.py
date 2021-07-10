@@ -147,11 +147,25 @@ class TopGenC:
         return ret
 
     def memories(self):
-        return [(m["name"],
-                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
-                              int(m["base_addr"], 0),
-                              int(m["size"], 0)))
-                for m in self.top["memory"]]
+        ret = []
+        for m in self.top["memory"]:
+            ret.append((m["name"],
+                        MemoryRegion(self._top_name +
+                                     Name.from_snake_case(m["name"]),
+                                     int(m["base_addr"], 0),
+                                     int(m["size"], 0))))
+
+        for inst in self.top['module']:
+            if "memory" in inst:
+                for if_name, val in inst["memory"].items():
+                    base, size = get_base_and_size(self._name_to_block,
+                                                   inst, if_name)
+
+                    name = self._top_name + Name.from_snake_case(val["label"])
+                    region = MemoryRegion(name, base, size)
+                    ret.append((val["label"], region))
+
+        return ret
 
     def _init_plic_targets(self):
         enum = CEnum(self._top_name + Name(["plic", "target"]))

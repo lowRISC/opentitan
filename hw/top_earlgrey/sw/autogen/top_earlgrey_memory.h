@@ -20,15 +20,17 @@
 // Include guard for assembler
 #ifdef __ASSEMBLER__
 
+
 /**
- * Memory base address for rom in top earlgrey.
+ * Memory base for rom_ctrl_rom in top earlgrey.
  */
 #define TOP_EARLGREY_ROM_BASE_ADDR 0x00008000
 
 /**
- * Memory size for rom in top earlgrey.
+ * Memory size for rom_ctrl_rom in top earlgrey.
  */
 #define TOP_EARLGREY_ROM_SIZE_BYTES 0x4000
+
 
 /**
  * Memory base address for ram_main in top earlgrey.
