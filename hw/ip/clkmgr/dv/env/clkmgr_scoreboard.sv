@@ -387,9 +387,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write && extclk_sel_regwen) begin
           cfg.clkmgr_vif.update_extclk_sel(item.a_data);
         end
-      "jitter": begin
-        // The functionality of jitter is not well specified. Assumming the
-        // values just stick.
+      "jitter_enable": begin
       end
       "clk_enables":
         if (addr_phase_write) begin
