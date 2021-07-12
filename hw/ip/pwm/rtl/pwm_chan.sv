@@ -87,7 +87,7 @@ module pwm_chan (
   assign neg_htbt = (duty_cycle_a_i > duty_cycle_b_i);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      htbt_direction <= neg_htbt;
+      htbt_direction <= '0;
     end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
       htbt_direction <= 1'b1; // duty cycle counts down
     end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
@@ -111,6 +111,8 @@ module pwm_chan (
                                 {1'b0, dc_htbt_q} + {1'b0, blink_param_y_i} + 1'b1;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      dc_htbt_q <= '0;
+    end else if (dc_htbt_q != duty_cycle_a_i) begin
       dc_htbt_q <= duty_cycle_a_i;
     end else begin
       dc_htbt_q <= ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? dc_htbt_d : dc_htbt_q;
