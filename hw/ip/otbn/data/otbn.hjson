@@ -284,7 +284,7 @@
         { bits: "31:0",
           name: "insn_cnt",
           desc: '''
-            The number of instructions executed in the current or last OTBN run. 
+            The number of instructions executed in the current or last OTBN run.
             Saturates at 2^32-1. The counter is reset to zero when a new operation
             is started. Instructions triggering an error do not count as being executed.
           '''
