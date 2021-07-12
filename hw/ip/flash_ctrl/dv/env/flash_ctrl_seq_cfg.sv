@@ -63,6 +63,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   //  Set by a higher level vseq that invokes this vseq 
   bit external_cfg;
 
+  // If pre-transaction back-door memory preperation isn't needed, set do_tran_prep_mem to 0.
+  bit do_tran_prep_mem;
+
   // When 0, the post-transaction back-door checks will be disabled.
   // Added to enable other post-transaction checks and actions.
   bit check_mem_post_tran;
@@ -129,6 +132,8 @@ sel_data_part_pc=%0d , sel_info_part_pc=%0d , sel_info1_part_pc=%0d , sel_red_pa
     poll_fifo_status_pc = 30;
 
     external_cfg = 1'b0;
+
+    do_tran_prep_mem = 1'b1;
 
     check_mem_post_tran = 1'b1;
 
