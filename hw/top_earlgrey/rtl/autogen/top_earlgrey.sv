@@ -729,7 +729,6 @@ module top_earlgrey #(
   logic unused_d0_rst_por_io_div4;
   logic unused_d0_rst_por_usb;
   logic unused_daon_rst_lc;
-  logic unused_daon_rst_lc_io_div4;
   logic unused_daon_rst_sys;
   logic unused_daon_rst_spi_device;
   logic unused_daon_rst_spi_host0;
@@ -745,7 +744,6 @@ module top_earlgrey #(
   assign unused_d0_rst_por_io_div4 = rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por_usb = rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel];
   assign unused_daon_rst_lc = rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_lc_io_div4 = rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_sys = rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_device = rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_host0 = rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
@@ -2067,8 +2065,8 @@ module top_earlgrey #(
       .tl_o(sram_ctrl_ret_aon_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_infra),
+      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
