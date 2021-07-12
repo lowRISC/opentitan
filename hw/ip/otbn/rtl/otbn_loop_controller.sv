@@ -187,6 +187,11 @@ module otbn_loop_controller
     .rst_ni,
 
     .full_o      (loop_stack_full),
+
+    // TODO: Connect this up to the start signal, so that the loop stack gets cleared at the start
+    //       of an operation.
+    .clear_i     (1'b0),
+
     .push_data_i (current_loop_q),
     .push_i      (loop_stack_push),
 
