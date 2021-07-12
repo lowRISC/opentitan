@@ -421,8 +421,8 @@
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_main_infra = clk_main_root;
   assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+  assign clocks_o.clk_main_infra = clk_main_root;
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
   assign clocks_o.clk_main_secure = clk_main_root;
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;

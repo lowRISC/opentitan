@@ -116,8 +116,8 @@
         unique: no
         clocks:
         {
-          clk_main_infra: main
           clk_io_div4_infra: io_div4
+          clk_main_infra: main
         }
       }
       {
@@ -288,6 +288,7 @@
         type: top
         domains:
         [
+          Aon
           "0"
         ]
         parent: lc_src
@@ -3404,7 +3405,7 @@
         clk_i: io_div4
         clk_otp_i: io_div4
       }
-      clock_group: peri
+      clock_group: infra
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
@@ -3413,8 +3414,8 @@
       domain: Aon
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_peri
+        clk_i: clkmgr_aon_clocks.clk_io_div4_infra
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
       param_list:
       [

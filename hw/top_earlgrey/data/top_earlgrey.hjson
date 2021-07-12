@@ -150,7 +150,7 @@
       { name: "por_io_div4", gen: true , type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "io_div4" }
       { name: "por_usb",     gen: true,  type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "usb"     }
       { name: "lc",          gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "main"    }
-      { name: "lc_io_div4",  gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "io_div4" }
+      { name: "lc_io_div4",  gen: true,  type: "top", domains: ["Aon", "0"], parent: "lc_src",  clk: "io_div4" }
       { name: "sys",         gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "main"    }
       { name: "sys_io_div4", gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "io_div4" }
       { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "aon"     }
@@ -532,7 +532,7 @@
     { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
-      clock_group: "peri",
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: "Aon",
       base_addr: "0x40500000"

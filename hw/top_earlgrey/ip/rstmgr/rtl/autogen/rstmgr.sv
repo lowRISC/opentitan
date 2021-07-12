@@ -399,9 +399,24 @@ module rstmgr
   );
 
   logic [PowerDomains-1:0] rst_lc_io_div4_n;
-  assign rst_lc_io_div4_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_lc_io_div4_n[DomainAonSel] = rst_lc_io_div4_n[DomainAonSel];
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_lc_io_div4 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_src_n[DomainAonSel]),
+    .d_i(1'b1),
+    .q_o(rst_lc_io_div4_n[DomainAonSel])
+  );
 
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_lc_io_div4_mux (
+    .clk0_i(rst_lc_io_div4_n[DomainAonSel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_lc_io_div4_n[DomainAonSel])
+  );
 
   prim_flop_2sync #(
     .Width(1),
