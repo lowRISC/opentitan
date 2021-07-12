@@ -40,6 +40,9 @@ module otbn
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  // Lifecycle interface
+  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   // Memory configuration
   input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
@@ -108,6 +111,21 @@ module otbn
   // register interface?
   assign idle_o = ~busy_q;
 
+  // Lifecycle ==================================================================
+
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_escalate_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_escalate_en_i),
+    .lc_en_o(lc_escalate_en)
+  );
+
+  // TODO: Connect lifecycle signal.
+  lc_ctrl_pkg::lc_tx_t unused_lc_escalate_en;
+  assign unused_lc_escalate_en = lc_escalate_en;
 
   // Interrupts ================================================================
 
