@@ -284,6 +284,33 @@
         }
       ]
     } // register : fatal_alert_cause
+    { name: "SEC_WIPE",
+      desc: '''
+        Trigger a secure wipe operation.
+
+        This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+        Access attempts while OTBN is busy are ignored.
+      '''
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "dmem",
+          resval: 0,
+          desc: "Write 1 to securely wipe data memory."
+        }
+        { bits: "1",
+          name: "imem",
+          resval: 0,
+          desc: "Write 1 to securely wipe instruction memory."
+        }
+        { bits: "2",
+          name: "internal",
+          resval: 0,
+          desc: "Write 1 to securely wipe internal state."
+        }
+      ]
+    } // register : sec_wipe
     { name: "INSN_CNT",
       desc: "Instruction Counter",
       hwext: "true",

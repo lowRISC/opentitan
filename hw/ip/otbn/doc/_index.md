@@ -429,6 +429,23 @@ Additionally, instructions and data stored in the instruction and data memory, r
 
 Refer to the [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}) section for details of how the data integrity protections are implemented.
 
+## Secure Wipe
+
+OTBN provides a mechanism to securely wipe all state it stores, including the instruction memory.
+
+The full secure wipe mechanism is split into three parts:
+- [Data memory secure wipe]({{<relref "#design-details-secure-wipe-dmem">}})
+- [Instruction memory secure wipe]({{<relref "#design-details-secure-wipe-imem">}})
+- [Internal state secure wipe]({{<relref "#design-details-secure-wipe-internal">}})
+
+A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
+The full secure wipe is automatically initiated as a local reaction to a fatal error.
+(TODO: Specify reaction to incoming lifecycle escalation event, and a potential lifecycle state dependency, e. g. only wipe in PROD mode.)
+A secure wipe of only the internal state is performed whenever an OTBN operation is completed and after a recoverable error.
+Finally, host software can manually trigger the full or partial secure wipe operations by writing to the {{< regref "SEC_WIPE">}} register.
+
+Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section for implementation details.
+
 ## Instruction Counter
 
 In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from {{< regref "INSN_CNT">}} and verify whether it matches the expectation.
@@ -635,8 +652,8 @@ Before being stored in SRAM, the data word with the attached Integrity Protectio
 The scrambling is reversed on a read.
 
 The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
-They are set once when OTBN block is reset, and changed whenever a secure wipe of the data memory is performed.
-(TODO: Link to it once we have specified secure wipe.)
+They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-dmem">}}) of the data memory is performed.
+
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
 A further check must be performed when the data is consumed.
@@ -651,12 +668,78 @@ Before being stored in SRAM, the instruction word with the attached Integrity Pr
 The scrambling is reversed on a read.
 
 The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
-They are set once when OTBN block is reset, and changed whenever a secure wipe of the instruction memory is performed.
-(TODO: Link to it once we have specified secure wipe.)
+They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-imem">}}) of the instruction memory is performed.
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
 A further check must be performed when the data is consumed.
 Detected integrity violations in the data memory raise a fatal `imem_error`.
+
+### Secure Wipe {#design-details-secure-wipe}
+
+The entire OTBN state, including the contents of instruction and data memories, can be securely deleted on demand from a host software.
+In addition, full or partial secure wipe is triggered automatically by the OTBN in certain situations.
+
+#### Triggering Secure Wipe
+
+In the following situations OTBN itself initiates a full secure wipe:
+* The lifecycle controller asks for it through its escalation signal.
+* A fatal alert is issued.
+  In this case, a full secure wipe is performed as a local action.
+
+The internal state secure wipe is automatically triggered when an OTBN operation completes, either successfully, or unsuccessfully due to a recoverable error.
+
+Host software can trigger a full state wipe by writing `3'b111` to {{< regref "SEC_WIPE">}}  (i.e. set all individual state wipe bits).
+
+#### Completion of Secure Wipe {#design-details-secure-wipe-completion}
+
+During the secure wipe operation the {{< regref "STATUS.busy">}} flag is set to 1, indicating that the OTBN is busy.
+Once the operation is completed, a {{< regref "INTR_STATE.done" >}} interrupt is raised and {{< regref "STATUS.busy">}} is cleared.
+This effectively means that the host software will get a single done interrupt for a secure wipe operation, independent of how many SEC_WIPE bits the software wrote.
+
+#### Data Memory (DMEM) Secure Wipe {#design-details-secure-wipe-dmem}
+
+The wiping is performed by securely replacing the memory scrambling key, making all data stored in the memory unusable.
+The key replacement is a two-step process:
+
+* Overwrite the 128b key of the memory scrambling primitive with randomness from URND.
+  This action takes a single cycle.
+* Request new scrambling parameters from OTP.
+  The request takes multiple cycles to complete.
+
+Host software can initiate a data memory secure wipe by writing 1 to the {{< regref "SEC_WIPE.dmem">}} register field.
+The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
+
+#### Instruction Memory (IMEM) Secure Wipe {#design-details-secure-wipe-imem}
+
+The wiping is performed by securely replacing the memory scrambling key, making all instructions stored in the memory unusable.
+The key replacement is a two-step process:
+
+* Overwrite the 128b key of the memory scrambling primitive with randomness from URND.
+  This action takes a single cycle.
+* Request new scrambling parameters from OTP.
+  The request takes multiple cycles to complete.
+
+Host software can initiate an instruction memory secure wipe by writing 1 to the {{< regref "SEC_WIPE.imem">}} register field.
+The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
+
+#### Internal State Secure Wipe {#design-details-secure-wipe-internal}
+
+OTBN provides a mechanism to securely wipe all internal state, excluding the instruction and data memories.
+
+The following state is wiped:
+* Register files: GPRs and WDRs
+* The accumulator register (also accessible through the ACC WSR)
+* Flags (accessible through the FG0, FG1, and FLAGS CSRs)
+* The modulus (accessible through the MOD0 to MOD7 CSRs and the MOD WSR)
+
+The wiping procedure is a two-step process:
+* Overwrite the state with randomness from URND.
+* Overwrite the state with zeros.
+
+Loop and call stack pointers are reset.
+
+Host software can initiate an internal state secure wipe by writing 1 to the {{< regref "SEC_WIPE.internal">}} register field.
+The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
 
 # Running applications on OTBN
 
