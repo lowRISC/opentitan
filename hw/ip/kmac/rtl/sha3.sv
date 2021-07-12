@@ -206,7 +206,6 @@ module sha3
           st_d = StAbsorb;
 
           keccak_process = 1'b 1;
-        // TODO: Software Cancellation here? in case of absorbed not asserted
         end else if (absorbed) begin
           st_d = StSqueeze;
         end else begin
@@ -234,7 +233,6 @@ module sha3
       end
 
       StManualRun: begin
-        // TODO: Software cancellation here?
         if (keccak_complete) begin
           st_d = StSqueeze;
         end else begin

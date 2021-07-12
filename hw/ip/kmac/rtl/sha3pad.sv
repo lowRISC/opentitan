@@ -221,11 +221,8 @@ module sha3pad
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       process_latched <= 1'b 0;
-    // TODO: Reconsider the set condition, what if process_i comes without
-    // `start_i` ?
     end else if (process_i) begin
       process_latched <= 1'b 1;
-    // TODO: Reconsider the clear indicator, done_i is good enough?
     end else if (done_i) begin
       process_latched <= 1'b0;
     end
@@ -245,7 +242,6 @@ module sha3pad
   // `end_of_block` indicates current beat is end of the block
   // It shall set when the address reaches to the end of the block. End address
   // is set by the strength_i, which is `block_addr_limit`.
-  // TODO: Decide if it needs to compare with the FSM in {StPad, StPad01} or not
   logic end_of_block;
 
   assign end_of_block = ((sent_message + 1'b1) == block_addr_limit) ? 1'b 1 : 1'b 0;
@@ -286,7 +282,6 @@ module sha3pad
       StPadIdle: begin
         if (start_i) begin
           // If cSHAKE, move to Prefix state
-          // TODO: Reset sent_message to count on next states
           if (mode_eq_cshake) begin
             st_d = StPrefix;
           end else begin
@@ -310,7 +305,6 @@ module sha3pad
         if (sent_blocksize) begin
           st_d = StPrefixWait;
 
-          // TODO: Set keccak to run, drop the keccak valid
           keccak_run_o = 1'b 1;
           fsm_keccak_valid = 1'b 0;
           clr_sentmsg = 1'b 1;
@@ -413,7 +407,6 @@ module sha3pad
           st_d = StPadFlush;
 
           fsm_keccak_valid = 1'b 0;
-          // TODO: Trigger keccak_round
           keccak_run_o = 1'b 1;
           clr_sentmsg = 1'b 1;
         end else begin
@@ -432,7 +425,6 @@ module sha3pad
           st_d = StPadIdle;
 
           absorbed_d = 1'b 1;
-          // TODO: Clear internal variables to fresh start
         end else begin
           st_d = StPadFlush;
         end
@@ -548,7 +540,6 @@ module sha3pad
     endcase
   end
 
-  // TODO: keccak_valid_o mux
   always_comb begin
     unique case (sel_mux)
       MuxFifo:    keccak_valid_o = msg_valid_i & ~hold_msg & ~en_msgbuf;
@@ -561,7 +552,6 @@ module sha3pad
     endcase
   end
 
-  // TODO: msg_ready_o mux
   always_comb begin
     unique case (sel_mux)
       MuxFifo:    msg_ready_o = en_msgbuf | (keccak_ready_i & ~hold_msg);

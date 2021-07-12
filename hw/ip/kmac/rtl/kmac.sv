@@ -90,8 +90,7 @@ module kmac
   kmac_reg2hw_t reg2hw;
   kmac_hw2reg_t hw2reg;
 
-  // devmode signals comes from LifeCycle.
-  // TODO: Implement
+  // devmode ties to 1 as KMAC should be operated at the beginning for ROM_CTRL.
   logic devmode;
   assign devmode = 1'b 1;
 
@@ -265,7 +264,6 @@ module kmac
   end
 
   // Command signals
-  // TODO: Make the entire logic to use enum rather than signal
   assign sw_cmd = (reg2hw.cmd.cmd.qe) ? kmac_cmd_e'(reg2hw.cmd.cmd.q) : CmdNone;
   `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
@@ -296,7 +294,6 @@ module kmac
       end
 
       default: begin
-        // TODO: Raise an error here
       end
     endcase
   end
@@ -310,7 +307,6 @@ module kmac
   assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == sha3_pkg::StSqueeze;
 
   // FIFO related status
-  // TODO: handle if register width of `depth` is not same to MsgFifoDepthW
   assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
   if ($bits(hw2reg.status.fifo_depth.d) != MsgFifoDepthW) begin : gen_fifo_depth_tie
     assign hw2reg.status.fifo_depth.d[$bits(hw2reg.status.fifo_depth.d)-1:MsgFifoDepthW] = '0;

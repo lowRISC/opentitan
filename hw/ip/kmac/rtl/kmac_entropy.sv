@@ -290,7 +290,6 @@ module kmac_entropy
   always_comb begin
     unique case (mode_q)
       EntropyModeNone: lfsr_seed = '0;
-      // TODO: Check EDN Bus width
       EntropyModeEdn:  lfsr_seed = entropy_data_i;
       EntropyModeSw:   lfsr_seed = seed_data_i;
       default:         lfsr_seed = '0;
@@ -327,7 +326,6 @@ module kmac_entropy
         end
       end
     end
-    // TODO: Should the consumed entropy be discarded?
   end
 
   //// Index
@@ -412,8 +410,6 @@ module kmac_entropy
 
     // lfsr_en: Let LFSR run
     // To save power, this logic enables LFSR when it needs entropy expansion.
-    // TODO: Check if random LFSR run while staying in ready state to obsfucate
-    // LFSR value?
     lfsr_en = 1'b 0;
 
     // lfsr_seed_en: Signal to update LFSR seed
@@ -512,7 +508,6 @@ module kmac_entropy
           rand_valid_clear = 1'b 1;
 
           storage_idx_clear = 1'b 1;
-          // TODO: check fips?
         end else if (rand_consumed_i) begin
           // Somehow, while waiting the EDN entropy, the KMAC or SHA3 logic
           // consumed the remained entropy. This can happen when the previous
@@ -583,7 +578,6 @@ module kmac_entropy
         if (err_processed_i) begin
           st_d = StRandReset;
 
-          // TODO: Reset as much as
         end else begin
           st_d = StRandErr;
         end

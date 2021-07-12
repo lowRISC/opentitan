@@ -470,7 +470,6 @@ module kmac_app
 
       StError: begin
         // In this state, the state machine flush out the request
-        // TODO: Check err_processed then move to StIdle
         st_d = StError;
 
         fsm_data_ready = 1'b 1;

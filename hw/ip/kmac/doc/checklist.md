@@ -35,17 +35,17 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | In Progress |
+Documentation | [NEW_FEATURES][]        | Done        |
 Documentation | [BLOCK_DIAGRAM][]       | Done        |
 Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | In Progress |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         |
 Code Quality  | [FPGA_TIMING][]         | Done        |
