@@ -24,6 +24,8 @@ module otbn_stack
 
   output logic                  full_o,      // Stack is full
 
+  input logic                   clear_i,     // Clear all data
+
   input  logic                  push_i,      // Push the data
   input  logic [StackWidth-1:0] push_data_i, // Data to push
 
@@ -63,6 +65,10 @@ module otbn_stack
 
     if (!stack_write && stack_read) begin
       stack_wr_ptr_d = stack_wr_ptr_q - 1'b1;
+    end
+
+    if (clear_i) begin
+      stack_wr_ptr_d = '0;
     end
   end
 

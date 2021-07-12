@@ -122,6 +122,10 @@ module otbn_rf_base
 
     .full_o        (stack_full),
 
+    // TODO: Connect this up to the start signal, so that the call stack gets cleared at the start
+    //       of an operation.
+    .clear_i       (1'b0),
+
     .push_i        (push_stack),
     .push_data_i   (wr_data_intg_mux_out),
 
