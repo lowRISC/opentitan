@@ -168,10 +168,11 @@ class OTBNState:
 
         self.pc = self.get_start_addr()
 
-        # Reset CSRs, WSRs and loop stack
+        # Reset CSRs, WSRs, loop stack and call stack
         self.csrs = CSRFile()
         self.wsrs = WSRFile()
         self.loop_stack = LoopStack()
+        self.gprs.start()
 
     def get_start_addr(self) -> int:
         '''Get the start address of the processor.

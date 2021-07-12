@@ -390,6 +390,8 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
+    .start_i,
+
     .wr_addr_i          (rf_base_wr_addr),
     .wr_en_i            (rf_base_wr_en),
     .wr_data_no_intg_i  (rf_base_wr_data_no_intg),
