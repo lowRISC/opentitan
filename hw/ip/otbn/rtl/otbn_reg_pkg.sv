@@ -50,6 +50,18 @@ package otbn_reg_pkg;
   } otbn_reg2hw_start_addr_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } dmem;
+    struct packed {
+      logic        q;
+    } imem;
+    struct packed {
+      logic        q;
+    } internal;
+  } otbn_reg2hw_sec_wipe_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } otbn_hw2reg_intr_state_reg_t;
@@ -118,12 +130,13 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [41:41]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [40:40]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [39:38]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [37:34]
-    otbn_reg2hw_cmd_reg_t cmd; // [33:32]
-    otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [44:44]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [43:43]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [42:41]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [40:37]
+    otbn_reg2hw_cmd_reg_t cmd; // [36:35]
+    otbn_reg2hw_start_addr_reg_t start_addr; // [34:3]
+    otbn_reg2hw_sec_wipe_reg_t sec_wipe; // [2:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
@@ -145,7 +158,8 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 18;
   parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
-  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
+  parameter logic [BlockAw-1:0] OTBN_SEC_WIPE_OFFSET = 16'h 24;
+  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -174,21 +188,23 @@ package otbn_reg_pkg;
     OTBN_ERR_BITS,
     OTBN_START_ADDR,
     OTBN_FATAL_ALERT_CAUSE,
+    OTBN_SEC_WIPE,
     OTBN_INSN_CNT
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [10] = '{
-    4'b 0001, // index[0] OTBN_INTR_STATE
-    4'b 0001, // index[1] OTBN_INTR_ENABLE
-    4'b 0001, // index[2] OTBN_INTR_TEST
-    4'b 0001, // index[3] OTBN_ALERT_TEST
-    4'b 0001, // index[4] OTBN_CMD
-    4'b 0001, // index[5] OTBN_STATUS
-    4'b 0001, // index[6] OTBN_ERR_BITS
-    4'b 1111, // index[7] OTBN_START_ADDR
-    4'b 0001, // index[8] OTBN_FATAL_ALERT_CAUSE
-    4'b 1111  // index[9] OTBN_INSN_CNT
+  parameter logic [3:0] OTBN_PERMIT [11] = '{
+    4'b 0001, // index[ 0] OTBN_INTR_STATE
+    4'b 0001, // index[ 1] OTBN_INTR_ENABLE
+    4'b 0001, // index[ 2] OTBN_INTR_TEST
+    4'b 0001, // index[ 3] OTBN_ALERT_TEST
+    4'b 0001, // index[ 4] OTBN_CMD
+    4'b 0001, // index[ 5] OTBN_STATUS
+    4'b 0001, // index[ 6] OTBN_ERR_BITS
+    4'b 1111, // index[ 7] OTBN_START_ADDR
+    4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
+    4'b 0001, // index[ 9] OTBN_SEC_WIPE
+    4'b 1111  // index[10] OTBN_INSN_CNT
   };
 
 endpackage
