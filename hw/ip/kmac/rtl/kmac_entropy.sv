@@ -198,6 +198,12 @@ module kmac_entropy
   // other tasks.
   logic rand_valid_set, rand_valid_clear;
 
+  // FSM latches the mode and stores into mode_q when the FSM is out from
+  // StReset. The following states, or internal datapath uses mode_q after that.
+  // If the SW wants to change the mode, it requires resetting the IP.
+  logic mode_latch;
+  entropy_mode_e mode_q;
+
   //////////////
   // Datapath //
   //////////////
@@ -273,11 +279,16 @@ module kmac_entropy
     else if (threshold_hit)     threshold_hit_q <= 1'b 1;
   end
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)         mode_q <= EntropyModeNone;
+    else if (mode_latch) mode_q <= mode_i;
+  end
+
   // LFSR =====================================================================
   //// FSM controls the seed enable signal `lfsr_seed_en`.
   //// Seed selection
   always_comb begin
-    unique case (mode_i)
+    unique case (mode_q)
       EntropyModeNone: lfsr_seed = '0;
       // TODO: Check EDN Bus width
       EntropyModeEdn:  lfsr_seed = entropy_data_i;
@@ -396,6 +407,9 @@ module kmac_entropy
     rand_valid_set   = 1'b 0;
     rand_valid_clear = 1'b 0;
 
+    // mode_latch to store mode_i into mode_q
+    mode_latch = 1'b 0;
+
     // lfsr_en: Let LFSR run
     // To save power, this logic enables LFSR when it needs entropy expansion.
     // TODO: Check if random LFSR run while staying in ready state to obsfucate
@@ -420,6 +434,7 @@ module kmac_entropy
           // As SW ready, discard current dummy entropy and refresh.
           rand_valid_clear = 1'b 1;
 
+          mode_latch = 1'b 1;
           // SW has configured KMAC
           unique case (mode_i)
             EntropyModeSw: begin

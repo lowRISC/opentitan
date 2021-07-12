@@ -63,9 +63,6 @@ class kmac_base_vseq extends cip_base_vseq #(
   //
   // So we use a static entropy mode value to hold the same mode through the whole test,
   // and constrain `entropy_mode` accordingly.
-  //
-  // Structure it in this way, as timer verification will allow different entropy modes to be used
-  // in different iterations.
   kmac_pkg::entropy_mode_e static_entropy_mode = EntropyModeSw;
 
   // entropy fast process mode
