@@ -93,6 +93,7 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
+    .lc_escalate_en_i (lc_ctrl_pkg::Off),
 
     .ram_cfg_i('0),
 

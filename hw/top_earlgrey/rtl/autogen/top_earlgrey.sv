@@ -2494,6 +2494,7 @@ module top_earlgrey #(
       .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
 

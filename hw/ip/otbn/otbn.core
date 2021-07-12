@@ -42,6 +42,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:lc_sync
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
       - lowrisc:ip:otbn_pkg
