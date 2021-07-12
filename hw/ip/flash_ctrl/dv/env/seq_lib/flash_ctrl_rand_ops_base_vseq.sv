@@ -255,7 +255,9 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
                                   j, num_flash_ops_per_cfg, flash_op), UVM_LOW)
 
         // Bkdr initialize the flash mem based on op.
-        flash_ctrl_prep_mem(flash_op);
+        // If you wish to do the transaction without the backdoor preperation
+        //  (when you want transaction to affect each other), set do_tran_prep_mem to 0.
+        if (cfg.seq_cfg.do_tran_prep_mem) flash_ctrl_prep_mem(flash_op);
 
         flash_ctrl_start_op(flash_op);
         `uvm_info(`gfn, $sformatf("Wait for operation to be done, then %s (check_mem_post_tran=%0d)",
