@@ -329,7 +329,7 @@
         clk: aon
       }
       {
-        name: spi_device
+        name: spi_d
         gen: true
         type: top
         domains:
@@ -337,11 +337,11 @@
           "0"
         ]
         parent: sys_src
-        clk: io_div2
+        clk: io_div4
         sw: 1
       }
       {
-        name: spi_host0
+        name: spi_h0_io
         gen: true
         type: top
         domains:
@@ -353,7 +353,7 @@
         sw: 1
       }
       {
-        name: spi_host1
+        name: spi_h0_io_div2
         gen: true
         type: top
         domains:
@@ -362,6 +362,30 @@
         ]
         parent: sys_src
         clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_h1_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_h1_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div4
         sw: 1
       }
       {
@@ -385,7 +409,7 @@
           "0"
         ]
         parent: sys_src
-        clk: io_div2
+        clk: io_div4
         sw: 1
       }
       {
@@ -397,7 +421,7 @@
           "0"
         ]
         parent: sys_src
-        clk: io_div2
+        clk: io_div4
         sw: 1
       }
       {
@@ -409,7 +433,7 @@
           "0"
         ]
         parent: sys_src
-        clk: io_div2
+        clk: io_div4
         sw: 1
       }
     ]
@@ -761,7 +785,7 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel]
+        rst_ni: rstmgr_aon_resets.rst_spi_d_n[rstmgr_pkg::Domain0Sel]
       }
       clock_connections:
       {
@@ -830,18 +854,18 @@
       type: spi_host
       clock_srcs:
       {
-        clk_i: io_div4
+        clk_i: io_div2
         clk_core_i: io
       }
       clock_group: peri
       reset_connections:
       {
-        rst_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
-        rst_core_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
+        rst_ni: rstmgr_aon_resets.rst_spi_h0_io_div2_n[rstmgr_pkg::Domain0Sel]
+        rst_core_ni: rstmgr_aon_resets.rst_spi_h0_io_n[rstmgr_pkg::Domain0Sel]
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
+        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
         clk_core_i: clkmgr_aon_clocks.clk_io_peri
       }
       domain: "0"
@@ -890,8 +914,8 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
-        rst_core_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
+        rst_ni: rstmgr_aon_resets.rst_spi_h1_io_div4_n[rstmgr_pkg::Domain0Sel]
+        rst_core_ni: rstmgr_aon_resets.rst_spi_h1_io_div2_n[rstmgr_pkg::Domain0Sel]
       }
       clock_connections:
       {
@@ -12619,9 +12643,11 @@
     sys: rstmgr_aon_resets.rst_sys_n
     sys_io_div4: rstmgr_aon_resets.rst_sys_io_div4_n
     sys_aon: rstmgr_aon_resets.rst_sys_aon_n
-    spi_device: rstmgr_aon_resets.rst_spi_device_n
-    spi_host0: rstmgr_aon_resets.rst_spi_host0_n
-    spi_host1: rstmgr_aon_resets.rst_spi_host1_n
+    spi_d: rstmgr_aon_resets.rst_spi_d_n
+    spi_h0_io: rstmgr_aon_resets.rst_spi_h0_io_n
+    spi_h0_io_div2: rstmgr_aon_resets.rst_spi_h0_io_div2_n
+    spi_h1_io_div2: rstmgr_aon_resets.rst_spi_h1_io_div2_n
+    spi_h1_io_div4: rstmgr_aon_resets.rst_spi_h1_io_div4_n
     usb: rstmgr_aon_resets.rst_usb_n
     i2c0: rstmgr_aon_resets.rst_i2c0_n
     i2c1: rstmgr_aon_resets.rst_i2c1_n

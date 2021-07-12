@@ -270,7 +270,8 @@ module top_${top["name"]} #(
   logic unused_d${v.lower()}_rst_${k};
 % endfor
 % for k, v in unused_resets.items():
-  assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top['resets'])};
+  assign unused_d${v.lower()}_rst_${k} =
+      ${lib.get_reset_path(k, v, top['resets'])};
 % endfor
 
   // processor core

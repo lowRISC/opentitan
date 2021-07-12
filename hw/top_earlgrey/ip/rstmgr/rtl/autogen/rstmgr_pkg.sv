@@ -23,13 +23,15 @@ package rstmgr_pkg;
   parameter int OffDomains = PowerDomains-1;
 
   // positions of software controllable reset bits
-  parameter int SPI_DEVICE = 0;
-  parameter int SPI_HOST0 = 1;
-  parameter int SPI_HOST1 = 2;
-  parameter int USB = 3;
-  parameter int I2C0 = 4;
-  parameter int I2C1 = 5;
-  parameter int I2C2 = 6;
+  parameter int SPI_D = 0;
+  parameter int SPI_H0_IO = 1;
+  parameter int SPI_H0_IO_DIV2 = 2;
+  parameter int SPI_H1_IO_DIV2 = 3;
+  parameter int SPI_H1_IO_DIV4 = 4;
+  parameter int USB = 5;
+  parameter int I2C0 = 6;
+  parameter int I2C1 = 7;
+  parameter int I2C2 = 8;
 
   // resets generated and broadcast
   // This should be templatized and generated
@@ -45,9 +47,11 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_sys_n;
     logic [PowerDomains-1:0] rst_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_sys_aon_n;
-    logic [PowerDomains-1:0] rst_spi_device_n;
-    logic [PowerDomains-1:0] rst_spi_host0_n;
-    logic [PowerDomains-1:0] rst_spi_host1_n;
+    logic [PowerDomains-1:0] rst_spi_d_n;
+    logic [PowerDomains-1:0] rst_spi_h0_io_n;
+    logic [PowerDomains-1:0] rst_spi_h0_io_div2_n;
+    logic [PowerDomains-1:0] rst_spi_h1_io_div2_n;
+    logic [PowerDomains-1:0] rst_spi_h1_io_div4_n;
     logic [PowerDomains-1:0] rst_usb_n;
     logic [PowerDomains-1:0] rst_i2c0_n;
     logic [PowerDomains-1:0] rst_i2c1_n;
