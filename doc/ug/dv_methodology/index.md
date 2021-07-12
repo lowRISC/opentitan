@@ -177,7 +177,7 @@ Please see the [Ibex DV documentation](https://github.com/lowRISC/opentitan/blob
 The chip level DV effort is aimed at ensuring that all of the IPs are integrated correctly into the chip.
 For IPs that are pre-verified sub-modules, we perform [integration testing](#integration-testing).
 These are simple functional tests written in C which are cross-compiled and run natively on the Ibex core.
-The software compilation flow to enable this is explained in further detail in the [getting started with SW]({{< relref "getting_started_sw.md" >}}) document.
+The software compilation flow to enable this is explained in further detail in the [Getting Started Building SW]({{< relref "getting_started_build_sw.md" >}}) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
 <!-- TODO: add link to chip DV document -->

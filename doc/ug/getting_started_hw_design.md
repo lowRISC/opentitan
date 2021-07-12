@@ -1,5 +1,5 @@
 ---
-title: "Getting Started with an OpenTitan Hardware Design"
+title: "Getting Started Designing Hardware"
 ---
 
 This document aims to clarify how to get started with a hardware design within the OpenTitan project.

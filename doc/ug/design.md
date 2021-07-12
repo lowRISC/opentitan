@@ -196,10 +196,10 @@ are checked in.
 There is an over-arching build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
 This is used by an Azure Pipelines pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
 
-## Getting Started with a Design
+## Getting Started Designing Hardware
 
 The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship, documentation, etc.
-These are discussed in the [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) document.
+These are discussed in the [Getting Started Designing Hardware]({{< relref "getting_started_hw_design.md" >}}) document.
 
 ## FPGA vs Silicon
 
