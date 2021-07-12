@@ -60,6 +60,11 @@ class CallStackReg(Reg):
         self.saw_read = False
         super().abort()
 
+    def start(self) -> None:
+        '''Executed on start of operation.'''
+        self.stack = []
+        self.saw_read = False
+
 
 class GPRs(RegFile):
     '''The narrow OTBN register file'''
@@ -100,3 +105,7 @@ class GPRs(RegFile):
         super().abort()
         self._x1.abort()
         self.err_flag = False
+
+    def start(self) -> None:
+        '''Executed on start of operation. Clears call stack.'''
+        self._x1.start()

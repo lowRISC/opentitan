@@ -36,6 +36,8 @@ module otbn_rf_base
   input  logic                     clk_i,
   input  logic                     rst_ni,
 
+  input  logic                     start_i,
+
   input  logic [4:0]               wr_addr_i,
   input  logic                     wr_en_i,
   input  logic [31:0]              wr_data_no_intg_i,
@@ -122,9 +124,7 @@ module otbn_rf_base
 
     .full_o        (stack_full),
 
-    // TODO: Connect this up to the start signal, so that the call stack gets cleared at the start
-    //       of an operation.
-    .clear_i       (1'b0),
+    .clear_i       (start_i),
 
     .push_i        (push_stack),
     .push_data_i   (wr_data_intg_mux_out),
