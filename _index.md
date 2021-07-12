@@ -7,12 +7,12 @@ OpenTitan will make the silicon RoT design and implementation more transparent, 
 OpenTitan is administered by lowRISC CIC as a collaborative [project]({{< relref "doc/project" >}}) to produce high quality, open IP for instantiation as a full-featured product.
 This repository exists to enable collaboration across partners participating in the OpenTitan project.
 
-To get started using or contributing to the OpenTitan codebase, see the
-[list of user guides]({{< relref "doc/ug" >}}).
-For details on coding styles or how to use our project-specific tooling, see the
-[reference manuals]({{< relref "doc/rm" >}}).
-[This page]({{< relref "hw" >}})
-contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
+## Getting Started
+
+To get started with OpenTitan, see the [Getting Started]({{< relref "doc/ug/getting_started" >}}) page.
+For additional resources when working with OpenTitan, see the [list of user guides]({{< relref "doc/ug" >}}).
+For details on coding styles or how to use our project-specific tooling, see the [reference manuals]({{< relref "doc/rm" >}}).
+Lastly, the [Hardware Dashboard page]({{< relref "hw" >}}) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
 For questions about how the project is organized, see the [project]({{< relref "doc/project" >}}) landing spot for more information.
 
 ## Repository Structure

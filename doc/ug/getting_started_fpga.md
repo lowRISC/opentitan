@@ -1,5 +1,5 @@
 ---
-title: "Getting started on FPGAs"
+title: "Getting Started on FPGAs"
 ---
 
 Do you want to try out OpenTitan, but don't have a couple thousand or million dollars ready for an ASIC tapeout?

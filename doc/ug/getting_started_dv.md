@@ -1,5 +1,5 @@
 ---
-title: "Getting Started with an OpenTitan Design Verification"
+title: "Getting Started with Design Verification"
 ---
 
 This document aims to enable a contributor to get started with a design verification (DV) effort within the OpenTitan project.
