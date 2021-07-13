@@ -205,11 +205,14 @@ class RegBlock:
                                          reg.name, reg.offset,
                                          self.name_to_offset[lname]))
             self._add_flat_reg(reg)
+            if mr.dv_compact is False:
+                self.type_regs.append(reg)
             self.name_to_offset[lname] = reg.offset
 
         self.multiregs.append(mr)
         self.all_regs.append(mr)
-        self.type_regs.append(mr.reg)
+        if mr.dv_compact is True:
+            self.type_regs.append(mr.reg)
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
 
