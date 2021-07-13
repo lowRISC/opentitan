@@ -154,8 +154,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               // locked.
               exp_lc_data.secrets_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
               exp_lc_data.test_tokens_valid = get_otp_digest_val(Secret0Idx) ? On : Off;
-              // TODO: should this be secret2. Issue filed: #7294.
-              exp_lc_data.rma_token_valid = get_otp_digest_val(Secret0Idx) ? On : Off;
+              exp_lc_data.rma_token_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
 
               // LC output is depend on LC partitions value.
               exp_lc_data.count = otp_lc_data[0 +: LcCountWidth];
