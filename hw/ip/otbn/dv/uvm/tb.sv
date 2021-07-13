@@ -94,6 +94,7 @@ module tb;
     .alert_tx_o(alert_tx),
 
 
+    .ram_cfg_i('0),
 
     .clk_edn_i (clk),
     .rst_edn_ni(rst_n),
