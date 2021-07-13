@@ -105,7 +105,7 @@ module pinmux_strap_sampling
 
   // During dft enabled states, we continously sample all straps unless
   // told not to do so by external dft logic
-  logic dft_sampling_en;
+  logic tap_sampling_en;
   logic dft_hold_tap_sel;
 
   prim_buf #(
@@ -114,24 +114,27 @@ module pinmux_strap_sampling
     .in_i(dft_hold_tap_sel_i),
     .out_o(dft_hold_tap_sel)
   );
-  assign dft_sampling_en = (lc_dft_en[0] == lc_ctrl_pkg::On) & ~dft_hold_tap_sel;
+  assign tap_sampling_en = (lc_dft_en[0] == lc_ctrl_pkg::On) & ~dft_hold_tap_sel;
 
   always_comb begin : p_strap_sampling
     lc_strap_sample_en = 1'b0;
     rv_strap_sample_en = 1'b0;
     dft_strap_sample_en = 1'b0;
-
     // Initial strap sampling pulse from pwrmgr,
     // qualified by life cycle signals.
+    // The DFT-mode straps are always sampled only once.
+    if (strap_en_i) begin
+      if (lc_dft_en[0] == lc_ctrl_pkg::On) begin
+        dft_strap_sample_en = 1'b1;
+      end
+    end
     // In DFT-enabled life cycle states we continously
-    // sample all straps.
-    if (strap_en_i || dft_sampling_en) begin
+    // sample the TAP straps to be able to switch back and
+    // forth between different TAPs.
+    if (strap_en_i || tap_sampling_en) begin
       lc_strap_sample_en = 1'b1;
       if (lc_hw_debug_en[0] == lc_ctrl_pkg::On) begin
         rv_strap_sample_en = 1'b1;
-      end
-      if (lc_dft_en[0] == lc_ctrl_pkg::On) begin
-        dft_strap_sample_en = 1'b1;
       end
     end
   end
