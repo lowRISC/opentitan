@@ -604,30 +604,23 @@ def connect_clocks(top, name_to_block: Dict[str, IpBlock]):
     for intf in top['exported_clks']:
         external[f'{clkmgr_name}.clocks_{intf}'] = f"clks_{intf}"
 
-    # TODO: If an endpoint has two clocks with idle signals, we don't yet have
-    #       a good solution for connecting them up properly. At the moment, we
-    #       just connect up the first idle signal. See issue #7170 for more
-    #       details.
-    eps_with_idle = set()
+    typed_clocks = clocks.typed_clocks()
 
-    # Set up intermodule connections for idle clocks. Note that these *must*
-    # match the ordering of the hint_clks list from clocks.py, since this is
-    # also used to derive an enum naming the bits of the connection.
+    # Set up intermodule connections for idle clocks. Iterating over
+    # hint_names() here ensures that we visit the clocks in the same order as
+    # the code that generates the enumeration in clkmgr_pkg.sv: important,
+    # since the order that we add entries to clkmgr_idle below gives the index
+    # of each hint in the "idle" signal bundle. These *must* match, or we'll
+    # have hard-to-debug mis-connections.
     clkmgr_idle = []
-    for sig in clocks.typed_clocks().hint_clks.values():
+    for clk_name in typed_clocks.hint_names().keys():
+        sig = typed_clocks.hint_clks[clk_name]
         ep_names = list(set(ep_name for ep_name, ep_port in sig.endpoints))
         if len(ep_names) != 1:
             raise ValueError(f'There are {len(ep_names)} end-points connected '
                              f'to the {sig.name} clock: {ep_names}. Where '
                              f'should the idle signal come from?')
         ep_name = ep_names[0]
-
-        # TODO: This is a hack that needs replacing properly: see note above
-        #       definition of eps_with_idle. (In particular, it only works at
-        #       all if the only hit appears at the end of the list of clocks)
-        if ep_name in eps_with_idle:
-            continue
-        eps_with_idle.add(ep_name)
 
         # We've got the name of the endpoint, but that's not enough: we need to
         # find the corresponding IpBlock. To do this, we have to do a (linear)

@@ -405,13 +405,8 @@ def generate_clkmgr(top, cfg_path, out_path):
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
 
-    by_type = clocks.typed_clocks()
-
-    # The names of endpoints that use one or more sw hint clocks (clkmgr has an
-    # "idle" feedback signal from each), in ascending order.
-    hint_blocks = sorted(set(ep_name
-                             for sig in by_type.hint_clks.values()
-                             for ep_name, ep_port in sig.endpoints))
+    typed_clocks = clocks.typed_clocks()
+    hint_names = typed_clocks.hint_names()
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -419,13 +414,14 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 rg_srcs=by_type.rg_srcs,
-                                 ft_clks=by_type.ft_clks,
-                                 rg_clks=by_type.rg_clks,
-                                 sw_clks=by_type.sw_clks,
-                                 hint_clks=by_type.hint_clks,
+                                 rg_srcs=typed_clocks.rg_srcs,
+                                 ft_clks=typed_clocks.ft_clks,
+                                 rg_clks=typed_clocks.rg_clks,
+                                 sw_clks=typed_clocks.sw_clks,
+                                 hint_clks=typed_clocks.hint_clks,
+                                 all_clks=typed_clocks.all_clocks(),
                                  export_clks=top['exported_clks'],
-                                 hint_blocks=hint_blocks)
+                                 hint_names=hint_names)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
 

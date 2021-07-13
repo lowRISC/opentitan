@@ -5,7 +5,7 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni", idle: "idle_o"},
-    {clock: "clk_otp_i", reset: "rst_otp_ni", idle: "idle_o"}
+    {clock: "clk_otp_i", reset: "rst_otp_ni", idle: "idle_otp_o"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -97,8 +97,15 @@
       package: "edn_pkg"
     },
 
-    // OTBN is not performing any operation and can be clock/power-gated.
+    // OTBN is not performing any operation and can be clock/power-gated. One
+    // idle for each clock domain (see assignments in "clocking" dictionary above).
     { name:    "idle",
+      type:    "uni",
+      struct:  "logic",
+      width:   "1",
+      act:     "req",
+    },
+    { name:    "idle_otp",
       type:    "uni",
       struct:  "logic",
       width:   "1",

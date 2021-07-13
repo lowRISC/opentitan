@@ -11,21 +11,13 @@ num_hints = len(hint_clks)
 package clkmgr_pkg;
 
   typedef enum int {
-% for idx, blk_name in list(enumerate(hint_blocks)):
-    ${blk_name.capitalize()} = ${idx}${"," if not loop.last else ""}
+% for idx, hint_name in list(enumerate(hint_names.values())):
+    ${hint_name} = ${idx}${"," if not loop.last else ""}
 % endfor
   } hint_names_e;
 
   typedef struct packed {
-<%
-# Merge Clock Dicts together
-all_clocks = OrderedDict()
-all_clocks.update(ft_clks)
-all_clocks.update(hint_clks)
-all_clocks.update(rg_clks)
-all_clocks.update(sw_clks)
-%>\
-% for clk in all_clocks:
+% for clk in all_clks:
     logic ${clk};
 % endfor
 

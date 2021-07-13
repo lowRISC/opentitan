@@ -572,7 +572,7 @@
   logic clk_io_div4_otbn_hint;
   logic clk_io_div4_otbn_en;
 
-  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[Aes];
+  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[HintMainAes];
 
   prim_flop_2sync #(
     .Width(1)
@@ -603,7 +603,7 @@
     .clk_o(clocks_o.clk_main_aes)
   );
 
-  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[Hmac];
+  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[HintMainHmac];
 
   prim_flop_2sync #(
     .Width(1)
@@ -634,7 +634,7 @@
     .clk_o(clocks_o.clk_main_hmac)
   );
 
-  assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[Kmac];
+  assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[HintMainKmac];
 
   prim_flop_2sync #(
     .Width(1)
@@ -665,7 +665,7 @@
     .clk_o(clocks_o.clk_main_kmac)
   );
 
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[Otbn];
+  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[HintMainOtbn];
 
   prim_flop_2sync #(
     .Width(1)
@@ -696,7 +696,7 @@
     .clk_o(clocks_o.clk_main_otbn)
   );
 
-  assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[Otbn];
+  assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[HintIoDiv4Otbn];
 
   prim_flop_2sync #(
     .Width(1)

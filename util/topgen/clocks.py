@@ -4,6 +4,8 @@
 
 from typing import Dict, List, NamedTuple, Tuple
 
+from .lib import Name
+
 
 def _yn_to_bool(yn: object) -> bool:
     yn_str = str(yn)
@@ -158,6 +160,42 @@ class TypedClocks(NamedTuple):
     # only used to derive divided clocks (we might gate the divided clocks, but
     # don't bother gating the upstream source).
     rg_srcs: List[str]
+
+    def all_clocks(self) -> Dict[str, ClockSignal]:
+        ret = {}
+        ret.update(self.ft_clks)
+        ret.update(self.hint_clks)
+        ret.update(self.rg_clks)
+        ret.update(self.sw_clks)
+        return ret
+
+    def hint_names(self) -> Dict[str, str]:
+        '''Return a dictionary with hint names for the hint clocks
+
+        These are used as enum items that name the clock hint signals. The
+        insertion ordering in this dictionary is important because it gives the
+        mapping from enum name to index.
+
+        '''
+        # A map from endpoint to the list of hint clocks that it uses.
+        ep_to_hints = {}
+        for sig in self.hint_clks.values():
+            for ep, port_name in sig.endpoints:
+                ep_to_hints.setdefault(ep, []).append(sig.name)
+
+        # A map from hint clock name to the associated enumeration name which
+        # will appear in hint_names_e in clkmgr_pkg.sv. Note that this is
+        # ordered alphabetically by endpoint: the precise ordering shouldn't
+        # matter, but it's probably nicer to keep endpoints' signals together.
+        hint_names = {}
+        for ep, clks in sorted(ep_to_hints.items()):
+            for clk in sorted(clks):
+                # Remove any "clk" prefix
+                clk_name = Name.from_snake_case(clk).remove_part('clk')
+                hint_name = Name(['hint']) + clk_name
+                hint_names[clk] = hint_name.as_camel_case()
+
+        return hint_names
 
 
 class Clocks:
