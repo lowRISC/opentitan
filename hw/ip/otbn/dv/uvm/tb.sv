@@ -80,31 +80,33 @@ module tb;
     .RndCnstOtbnKey(TestScrambleKey),
     .RndCnstOtbnNonce(TestScrambleNonce)
   ) dut (
-    .clk_i       (clk),
-    .rst_ni      (rst_n),
+    .clk_i (clk),
+    .rst_ni(rst_n),
 
-    .tl_i        (tl_if.h2d),
-    .tl_o        (tl_if.d2h),
+    .tl_i(tl_if.h2d),
+    .tl_o(tl_if.d2h),
 
-    .idle_o      (idle),
+    .idle_o(idle),
 
-    .intr_done_o (intr_done),
+    .intr_done_o(intr_done),
 
-    .alert_rx_i  (alert_rx),
-    .alert_tx_o  (alert_tx),
+    .alert_rx_i(alert_rx),
+    .alert_tx_o(alert_tx),
 
-    .clk_edn_i  (clk),
-    .rst_edn_ni (rst_n),
-    .edn_rnd_o ( edn_rnd_req ),
-    .edn_rnd_i ( edn_rnd_rsp ),
 
-    .edn_urnd_o ( edn_urnd_req ),
-    .edn_urnd_i ( edn_urnd_rsp ),
 
-    .clk_otp_i (clk),
-    .rst_otp_ni (rst_n),
-    .otbn_otp_key_o (otp_key_req),
-    .otbn_otp_key_i (otp_key_rsp)
+    .clk_edn_i (clk),
+    .rst_edn_ni(rst_n),
+    .edn_rnd_o (edn_rnd_req),
+    .edn_rnd_i (edn_rnd_rsp),
+
+    .edn_urnd_o(edn_urnd_req),
+    .edn_urnd_i(edn_urnd_rsp),
+
+    .clk_otp_i     (clk),
+    .rst_otp_ni    (rst_n),
+    .otbn_otp_key_o(otp_key_req),
+    .otbn_otp_key_i(otp_key_rsp)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
