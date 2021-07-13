@@ -521,7 +521,13 @@ def generate_pwrmgr(top, out_path):
     if n_wkups < 1:
         n_wkups = 1
         log.warning(
-            "The design has no wakeup sources. Low power not supported")
+            "The design has no wakeup sources. Low power not supported.")
+
+    if n_rstreqs < 1:
+        n_rstreqs = 1
+        log.warning(
+            "The design has no reset request sources. "
+            "Reset requests are not supported.")
 
     # Define target path
     rtl_path = out_path / 'ip/pwrmgr/rtl/autogen'

@@ -34,7 +34,6 @@ filesets:
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
-      - lowrisc:ip:nmi_gen
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev

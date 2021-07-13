@@ -67,7 +67,6 @@ config = {
         "hw/ip/keymgr/data/keymgr.hjson",
         "hw/ip/kmac/data/kmac.hjson",
         "hw/ip/lc_ctrl/data/lc_ctrl.hjson",
-        "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/otbn/data/otbn.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         "hw/ip/pattgen/data/pattgen.hjson",

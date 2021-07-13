@@ -83,7 +83,6 @@ declare -a modules=(
   "pwrmgr"
   "rstmgr"
   "clkmgr"
-  "nmi_gen"
   "rv_timer"
   "rv_plic"
   "rv_core_ibex"

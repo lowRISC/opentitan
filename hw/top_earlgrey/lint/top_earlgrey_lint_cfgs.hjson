@@ -116,11 +116,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/keymgr/lint/{tool}"
              },
-             {    name: nmi_gen
-                  fusesoc_core: lowrisc:ip:nmi_gen
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/nmi_gen/lint/{tool}"
-             },
              {    name: otbn
                   fusesoc_core: lowrisc:ip:otbn
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
