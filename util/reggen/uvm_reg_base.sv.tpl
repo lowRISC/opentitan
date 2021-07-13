@@ -6,7 +6,27 @@
   from reggen.access import HwAccess, SwRdAccess, SwWrAccess
   from reggen.multi_register import MultiRegister
   from reggen.register import Register
-%>
+  from typing import Dict
+
+  # Get a list reg and its instance name
+  # For single reg, return Dict[reg_inst:reg]
+  # For multireg, if it's dv_compact, return Dict[mr.name[idx]:mr.reg],
+  # if not, return all the mr.regs with their name
+  def get_inst_to_reg_dict(r) -> Dict:
+    inst_regs = {} # type: Dict[inst_name:Register]
+    if isinstance(r, MultiRegister):
+      if r.dv_compact:
+        inst_base = r.reg.name.lower()
+        for idx, reg in enumerate(r.regs):
+          inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
+          inst_regs[inst_name] = reg
+      else:
+        for r0 in r.regs:
+          inst_regs[r0.name] = r0
+    else:
+      inst_regs[r.name.lower()] = r
+    return inst_regs
+%>\
 ##
 ##
 ## make_ral_pkg
@@ -37,11 +57,20 @@ ${make_ral_pkg_hdr(dv_base_prefix, [])}
 ${make_ral_pkg_fwd_decls(esc_if_name, rb.type_regs, rb.windows)}
 % for r in rb.all_regs:
 <%
-    reg = r.reg if isinstance(r, MultiRegister) else r
-    assert isinstance(reg, Register)
+    if isinstance(r, MultiRegister):
+      reg = r.reg
+      if r.dv_compact:
+        reg.fields = r.regs[0].fields
+        regs = [reg]
+      else:
+        regs = r.regs
+    else:
+      regs = [r]
 %>\
+  % for reg in regs:
 
 ${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)}
+  % endfor
 % endfor
 % for window in rb.windows:
 
@@ -56,13 +85,25 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
     // registers
   % for r in rb.all_regs:
 <%
-      r0 = r.reg if isinstance(r, MultiRegister) else r
+      if isinstance(r, MultiRegister):
+        if r.dv_compact:
+          regs = [r.reg]
+          count = len(r.regs)
+        else:
+          regs = r.regs
+          count = 1
+      else:
+        regs = [r]
+        count = 1
+%>\
+    % for r0 in regs:
+<%
       reg_type = gen_dv.rcname(esc_if_name, r0)
       inst_name = r0.name.lower()
-      count = r.count if isinstance(r, MultiRegister) else 1
       inst_decl = f'{inst_name}[{count}]' if count > 1 else inst_name
 %>\
     rand ${reg_type} ${inst_decl};
+    % endfor
   % endfor
 % endif
 % if rb.windows:
@@ -103,8 +144,12 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
     % if isinstance(r, MultiRegister):
       % for idx, reg in enumerate(r.regs):
 <%
-        inst_base = r0.name.lower()
-        inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
+        if r.dv_compact:
+          inst_base = r0.name.lower()
+          inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
+        else:
+          inst_name = reg.name.lower()
+          reg_type = gen_dv.rcname(esc_if_name, reg)
 %>\
 ${instantiate_register(reg_width, reg_block_path, reg, reg_type, inst_name)}\
       % endfor
@@ -122,20 +167,9 @@ ${instantiate_register(reg_width, reg_block_path, r, reg_type, r.name.lower())}\
   % if any_regwen:
       // assign locked reg to its regwen reg
     % for r in rb.all_regs:
-      % if isinstance(r, MultiRegister):
-<%
-      r0 = r.reg if isinstance(r, MultiRegister) else r
-%>\
-        % for idx, reg in enumerate(r.regs):
-<%
-        inst_base = r0.name.lower()
-        inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
-%>\
-${apply_regwen(rb, reg, inst_name)}\
-        % endfor
-      % else:
-${apply_regwen(rb, r, r.name.lower())}\
-      % endif
+      % for inst, reg in get_inst_to_reg_dict(r).items():
+${apply_regwen(rb, reg, inst)}\
+      % endfor
     % endfor
   % endif
 % endif
@@ -441,11 +475,11 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
       ${reg_inst}.add_update_err_alert("${reg.update_err_alert}");
       ${reg_inst}.add_storage_err_alert("${reg.storage_err_alert}");
       ${reg_inst}.add_hdl_path_slice(
-        "${shadowed_reg_path}.committed_reg.q",
-        0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
+          "${shadowed_reg_path}.committed_reg.q",
+          0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
       ${reg_inst}.add_hdl_path_slice(
-        "${shadowed_reg_path}.shadow_reg.q",
-        0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
+          "${shadowed_reg_path}.shadow_reg.q",
+          0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
 % endif
 % for field in reg.fields:
 <%
@@ -460,20 +494,20 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
        not field.swaccess.allows_write())):
       // constant reg
       ${reg_inst}.add_hdl_path_slice(
-        "${reg_block_path}.${reg_field_name}_qs",
-        ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+          "${reg_block_path}.${reg_field_name}_qs",
+          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 %   else:
       ${reg_inst}.add_hdl_path_slice(
-        "${reg_block_path}.u_${reg_field_name}.q${"s" if reg.hwext else ""}",
-        ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+          "${reg_block_path}.u_${reg_field_name}.q${"s" if reg.hwext else ""}",
+          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 %   endif
 %   if shadowed and not hwext:
       ${reg_inst}.add_hdl_path_slice(
-        "${reg_block_path}.u_${reg_field_name}.committed_reg.q",
-        ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+          "${reg_block_path}.u_${reg_field_name}.committed_reg.q",
+          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
       ${reg_inst}.add_hdl_path_slice(
-        "${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
-        ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
+          "${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
+          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
 %   endif
 % endfor
 
@@ -512,17 +546,19 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 % if reg.regwen is None:
 <% return "" %>\
 % endif
-% for wen in rb.flat_regs:
-%   if reg.regwen.lower() == wen.name.lower():
-      ${reg.regwen.lower()}.add_lockable_reg_or_fld(${reg_inst});
+% for wen in rb.all_regs:
+%   for wen_inst, wen_reg in get_inst_to_reg_dict(wen).items():
+%     if reg.regwen.lower() == wen_reg.name.lower():
+      ${wen_inst}.add_lockable_reg_or_fld(${reg_inst});
 <% return "" %>\
-%   elif wen.name.lower() in reg.regwen.lower():
-%     for field in wen.get_field_list():
-%       if reg.regwen.lower() == (wen.name.lower() + "_" + field.name.lower()):
-      ${reg.regwen.lower()}.${field.name.lower()}.add_lockable_reg_or_fld(${reg_inst});
+%     elif wen_reg.name.lower() in reg.regwen.lower():
+%       for field in wen_reg.get_field_list():
+%         if reg.regwen.lower() == (wen_reg.name.lower() + "_" + field.name.lower()):
+      ${wen_inst}.${field.name.lower()}.add_lockable_reg_or_fld(${reg_inst});
 <% return "" %>\
-%       endif
-%     endfor
-%   endif
+%         endif
+%       endfor
+%     endif
+%   endfor
 % endfor
 </%def>\
