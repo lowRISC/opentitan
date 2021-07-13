@@ -444,11 +444,17 @@ module otbn_controller
     rf_base_rd_en_b_o   = 1'b0;
 
     if (insn_valid_i) begin
-      if (insn_dec_shared_i.ld_insn || insn_dec_shared_i.st_insn) begin
-        // For loads and stores the read happens in the same cycle as the request because the read
-        // is used to form the request (the address and data if executing a store).
+      if (insn_dec_shared_i.st_insn) begin
+        // For stores, both base reads happen in the same cycle as the request because they give the
+        // address and data, which make up the request.
         rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & (lsu_load_req_raw | lsu_store_req_raw);
         rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & (lsu_load_req_raw | lsu_store_req_raw);
+      end else if (insn_dec_shared_i.ld_insn) begin
+        // For loads, the A read happens in the same cycle as the request, giving the address from
+        // which to load. The B read is only used for BN.LID and should take place when the
+        // instruction is unstalled, giving the index of the register to write the result to.
+        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & (lsu_load_req_raw | lsu_store_req_raw);
+        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
       end else begin
         // For all other instructions the read happens when the instruction is unstalled.
         rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & ~stall;
