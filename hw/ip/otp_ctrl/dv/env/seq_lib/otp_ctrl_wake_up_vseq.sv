@@ -27,7 +27,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
 
     // write seq
     csr_wr(ral.direct_access_address, rand_addr);
-    csr_wr(ral.direct_access_wdata_0, '1);
+    csr_wr(ral.direct_access_wdata[0], '1);
     csr_wr(ral.direct_access_cmd, 2);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
     csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
@@ -36,7 +36,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     csr_wr(ral.direct_access_address, rand_addr);
     csr_wr(ral.direct_access_cmd, 1);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
-    csr_rd_check(.ptr(ral.direct_access_rdata_0), .compare_value('1));
+    csr_rd_check(.ptr(ral.direct_access_rdata[0]), .compare_value('1));
     csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
 
     // digest sw error seq

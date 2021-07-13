@@ -58,20 +58,20 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
   // This covergroup samples CSRs being checked (via CSR read) after fatal alert is issued.
   covergroup csr_rd_after_alert_cg(otp_ctrl_reg_block ral) with function sample(bit[TL_DW-1:0] csr_offset);
     read_csr_after_alert_issued: coverpoint csr_offset {
-      bins unbuffered_digests  = {ral.creator_sw_cfg_digest_0.get_offset(),
-                                  ral.creator_sw_cfg_digest_1.get_offset(),
-                                  ral.owner_sw_cfg_digest_0.get_offset(),
-                                  ral.owner_sw_cfg_digest_1.get_offset()};
-      bins hw_digests          = {ral.hw_cfg_digest_0.get_offset(),
-                                  ral.hw_cfg_digest_1.get_offset()};
-      bins secret_digests      = {ral.secret0_digest_0.get_offset(),
-                                  ral.secret0_digest_1.get_offset(),
-                                  ral.secret1_digest_0.get_offset(),
-                                  ral.secret1_digest_1.get_offset(),
-                                  ral.secret2_digest_0.get_offset(),
-                                  ral.secret2_digest_1.get_offset()};
-      bins direct_access_rdata = {ral.direct_access_rdata_0.get_offset(),
-                                  ral.direct_access_rdata_1.get_offset()};
+      bins unbuffered_digests  = {ral.creator_sw_cfg_digest[0].get_offset(),
+                                  ral.creator_sw_cfg_digest[1].get_offset(),
+                                  ral.owner_sw_cfg_digest[0].get_offset(),
+                                  ral.owner_sw_cfg_digest[1].get_offset()};
+      bins hw_digests          = {ral.hw_cfg_digest[0].get_offset(),
+                                  ral.hw_cfg_digest[1].get_offset()};
+      bins secret_digests      = {ral.secret0_digest[0].get_offset(),
+                                  ral.secret0_digest[1].get_offset(),
+                                  ral.secret1_digest[0].get_offset(),
+                                  ral.secret1_digest[1].get_offset(),
+                                  ral.secret2_digest[0].get_offset(),
+                                  ral.secret2_digest[1].get_offset()};
+      bins direct_access_rdata = {ral.direct_access_rdata[0].get_offset(),
+                                  ral.direct_access_rdata[1].get_offset()};
       bins status              = {ral.status.get_offset()};
       bins error_code          = {ral.err_code.get_offset()};
     }

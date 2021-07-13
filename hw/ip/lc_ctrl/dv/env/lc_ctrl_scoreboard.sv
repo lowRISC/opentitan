@@ -88,8 +88,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) item_rcv;
       otp_token_fifo.get(item_rcv);
       if (cfg.en_scb) begin
-        `DV_CHECK_EQ(item_rcv.h_data, {`gmv(ral.transition_token_3), `gmv(ral.transition_token_2),
-                                       `gmv(ral.transition_token_1), `gmv(ral.transition_token_0)})
+        `DV_CHECK_EQ(item_rcv.h_data, {`gmv(ral.transition_token[3]),
+                                       `gmv(ral.transition_token[2]),
+                                       `gmv(ral.transition_token[1]),
+                                       `gmv(ral.transition_token[0])})
       end
     end
   endtask

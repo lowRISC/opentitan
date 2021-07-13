@@ -91,11 +91,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_2.get_mirrored_value();
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en[2].get_mirrored_value();
               if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
             end else if (act_item.alert_esc_type == AlertEscPingTrans &&
                          act_item.ping_timeout) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en[0].get_mirrored_value();
               if (loc_alert_en[LocalAlertPingFail]) begin
                 process_alert_sig(index, 1, LocalAlertPingFail);
                 `uvm_info(`gfn, $sformatf("alert %0d ping timeout, timeout_cyc reg is %0d",
@@ -122,11 +122,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // escalation integrity fail
           end else if (act_item.alert_esc_type == AlertEscIntFail ||
                (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_3.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en[3].get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_1.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en[1].get_mirrored_value();
             if (loc_alert_en[LocalEscPingFail]) begin
               process_alert_sig(index, 1, LocalEscPingFail);
               `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",

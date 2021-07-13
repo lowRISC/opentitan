@@ -61,8 +61,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
       csr_wr(.ptr(loc_alert_en_reg), .value(loc_alert_en[i]));
     end
     // TODO: not use fixed postfix "_0" but randomize it.
-    csr_wr(.ptr(ral.loc_alert_class_0), .value(loc_alert_class));
-    csr_wr(.ptr(ral.alert_class_0), .value(alert_class));
+    csr_wr(.ptr(ral.loc_alert_class[0]), .value(loc_alert_class));
+    csr_wr(.ptr(ral.alert_class[0]), .value(alert_class));
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);
@@ -151,8 +151,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // checking for csr_rd is done in scb
   virtual task read_alert_cause();
     bit [TL_DW-1:0] alert_cause;
-    csr_rd(.ptr(ral.alert_cause_0), .value(alert_cause));
-    csr_rd(.ptr(ral.loc_alert_cause_0), .value(alert_cause));
+    csr_rd(.ptr(ral.alert_cause[0]), .value(alert_cause));
+    csr_rd(.ptr(ral.loc_alert_cause[0]), .value(alert_cause));
   endtask
 
   virtual task read_esc_status();

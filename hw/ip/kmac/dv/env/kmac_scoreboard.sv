@@ -2088,8 +2088,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // msgfifo will now be written
                   unchecked_kmac_cmd = CmdStart;
 
-                  function_name_6B[31:0]  = `gmv(ral.prefix_0);
-                  prefix_val = `gmv(ral.prefix_1);
+                  function_name_6B[31:0]  = `gmv(ral.prefix[0]);
+                  prefix_val = `gmv(ral.prefix[1]);
                   function_name_6B[47:32] = prefix_val[15:0];
 
                   if (kmac_en && function_name_6B != kmac_pkg::EncodedStringKMAC) begin

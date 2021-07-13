@@ -105,8 +105,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     addr = randomize_dai_addr(addr);
     `uvm_info(`gfn, $sformatf("dai write addr %0h, data %0h", addr, wdata0), UVM_HIGH)
     csr_wr(ral.direct_access_address, addr);
-    csr_wr(ral.direct_access_wdata_0, wdata0);
-    if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata_1, wdata1);
+    csr_wr(ral.direct_access_wdata[0], wdata0);
+    if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata[1], wdata1);
 
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
@@ -159,8 +159,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     wait_dai_op_done();
-    csr_rd(ral.direct_access_rdata_0, rdata0);
-    if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
+    csr_rd(ral.direct_access_rdata[0], rdata0);
+    if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata[1], rdata1);
     rd_and_clear_intrs();
 
     // If has ecc_err, backdoor write back original value
@@ -229,18 +229,18 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task rd_digests();
     bit [TL_DW-1:0] val;
-    csr_rd(.ptr(ral.creator_sw_cfg_digest_0), .value(val));
-    csr_rd(.ptr(ral.creator_sw_cfg_digest_1), .value(val));
-    csr_rd(.ptr(ral.owner_sw_cfg_digest_0),   .value(val));
-    csr_rd(.ptr(ral.owner_sw_cfg_digest_1),   .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest_0),         .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest_1),         .value(val));
-    csr_rd(.ptr(ral.secret0_digest_0),        .value(val));
-    csr_rd(.ptr(ral.secret0_digest_1),        .value(val));
-    csr_rd(.ptr(ral.secret1_digest_0),        .value(val));
-    csr_rd(.ptr(ral.secret1_digest_1),        .value(val));
-    csr_rd(.ptr(ral.secret2_digest_0),        .value(val));
-    csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest[0]), .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest[1]), .value(val));
+    csr_rd(.ptr(ral.owner_sw_cfg_digest[0]),   .value(val));
+    csr_rd(.ptr(ral.owner_sw_cfg_digest[1]),   .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest[0]),         .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest[1]),         .value(val));
+    csr_rd(.ptr(ral.secret0_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.secret0_digest[1]),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest[1]),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest[1]),        .value(val));
   endtask
 
   // This function backdoor inject error according to ecc_err.

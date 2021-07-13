@@ -386,14 +386,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-    void'(ral.digest_0.predict(exp_digest[0]));
-    void'(ral.digest_1.predict(exp_digest[1]));
-    void'(ral.digest_2.predict(exp_digest[2]));
-    void'(ral.digest_3.predict(exp_digest[3]));
-    void'(ral.digest_4.predict(exp_digest[4]));
-    void'(ral.digest_5.predict(exp_digest[5]));
-    void'(ral.digest_6.predict(exp_digest[6]));
-    void'(ral.digest_7.predict(exp_digest[7]));
+    foreach (exp_digest[i]) void'(ral.digest[i].predict(exp_digest[i]));
   endfunction
 
   virtual function void update_wr_msg_length(int size_bytes);

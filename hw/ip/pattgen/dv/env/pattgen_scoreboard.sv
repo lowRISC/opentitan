@@ -86,19 +86,19 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
           channel_cfg[0].prediv = ral.prediv_ch0.get_mirrored_value();
         end
         "data_ch0_0": begin
-          channel_cfg[0].data[31:0] = ral.data_ch0_0.get_mirrored_value();
+          channel_cfg[0].data[31:0] = ral.data_ch0[0].get_mirrored_value();
         end
         "data_ch0_1": begin
-          channel_cfg[0].data[63:32] = ral.data_ch0_1.get_mirrored_value();
+          channel_cfg[0].data[63:32] = ral.data_ch0[1].get_mirrored_value();
         end
         "prediv_ch1": begin
           channel_cfg[1].prediv = ral.prediv_ch1.get_mirrored_value();
         end
         "data_ch1_0": begin
-          channel_cfg[1].data[31:0] = ral.data_ch1_0.get_mirrored_value();
+          channel_cfg[1].data[31:0] = ral.data_ch1[0].get_mirrored_value();
         end
         "data_ch1_1": begin
-          channel_cfg[1].data[63:32] = ral.data_ch1_1.get_mirrored_value();
+          channel_cfg[1].data[63:32] = ral.data_ch1[1].get_mirrored_value();
         end
         "ctrl": begin
           reg_value = ral.ctrl.get_mirrored_value();
