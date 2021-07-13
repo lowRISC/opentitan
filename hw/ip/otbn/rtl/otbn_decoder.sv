@@ -559,7 +559,6 @@ module otbn_decoder
             rf_ren_b_base        = 1'b1;
             rf_wdata_sel_bignum  = RfWdSelLsu;
             rf_d_indirect_bignum = 1'b1;
-            ld_insn              = 1'b1;
 
             if (insn[8]) begin
               a_wlen_word_inc_bignum = 1'b1;
@@ -582,7 +581,6 @@ module otbn_decoder
             rf_ren_a_base        = 1'b1;
             rf_ren_b_base        = 1'b1;
             rf_ren_b_bignum      = 1'b1;
-            st_insn              = 1'b1;
             rf_b_indirect_bignum = 1'b1;
 
             if (insn[8]) begin
