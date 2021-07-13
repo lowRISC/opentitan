@@ -16,7 +16,17 @@
 module prim_edn_req
   import prim_alert_pkg::*;
 #(
-  parameter int OutWidth = 32
+  parameter int OutWidth = 32,
+
+  // EDN Request latency checker
+  //
+  //  Each consumer IP may have the maximum expected latency. MaxLatency
+  //  parameter describes the expected latency in terms of the consumer clock
+  //  cycles. If the edn request comes later than that, the assertion will be
+  //  fired.
+  //
+  //  The default value is 0, which disables the assertion.
+  parameter int unsigned MaxLatency = 0
 ) (
   // Design side
   input                       clk_i,
@@ -93,5 +103,42 @@ module prim_edn_req
     end
   end
   assign fips_o = fips_q;
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // EDN Max Latency Checker
+`ifndef SYNTHESIS
+  if (MaxLatency != 0) begin: g_maxlatency_assertion
+    localparam int unsigned LatencyW = $clog2(MaxLatency+1);
+    logic [LatencyW-1:0] latency_counter;
+    logic reset_counter;
+    logic enable_counter;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) latency_counter <= '0;
+      else if (reset_counter) latency_counter <= '0;
+      else if (enable_counter) latency_counter <= latency_counter + 1'b1;
+    end
+
+    assign reset_counter  = ack_o;
+    assign enable_counter = req_i;
+
+    `ASSERT(MaxLatency_A, latency_counter <= MaxLatency)
+
+    // TODO: Is it worth to check req & ack pair?
+    //         _________________________________
+    // req  __/                                 \______
+    //                                           ____
+    // ack  ____________________________________/    \_
+    //
+    //                                          | error
+
+  end // g_maxlatency_assertion
+`else // SYNTHESIS
+  logic unused_param_maxlatency;
+  assign unused_param_maxlatency = ^MaxLatency;
+`endif // SYNTHESIS
 
 endmodule : prim_edn_req
