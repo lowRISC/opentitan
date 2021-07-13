@@ -16,7 +16,7 @@ To make it to that stage, a [Hardware Signoff Checklist]({{< relref "checklist.m
 
 ## Contributing
 
-See our documentation on [Contributing to OpenTitan]({{< relref "contributing.md" >}}) for general guidance on how we work, making bug reports, dealing with security issues, and contributing code.
+See our documentation on [Contributing to OpenTitan]({{< relref "contributing.md" >}}) (and the more in-depth [Detailed Contribution Guide]({{<relref "detailed_contribution_guide/_index.md" >}})) for general guidance on how we work, making bug reports, dealing with security issues, and contributing code.
 
 ## Governance
 
