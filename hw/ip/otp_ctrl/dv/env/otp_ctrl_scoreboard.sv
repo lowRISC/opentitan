@@ -336,7 +336,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       seed_valid  = rcv_item.d_data[0];
       nonce       = rcv_item.d_data[1+:OtbnNonceWidth];
       key         = rcv_item.d_data[OtbnNonceWidth+1+:OtbnKeyWidth];
-      part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+      part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
 
       // seed is valid as long as secret1 is locked
       `DV_CHECK_EQ(seed_valid, part_locked, "otbn seed_valid mismatch")
@@ -401,7 +401,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
           seed_valid  = rcv_item.d_data[0];
           key         = rcv_item.d_data[1+:FlashKeyWidth];
-          part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+          part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
           `DV_CHECK_EQ(seed_valid, part_locked,
                       $sformatf("flash %0s seed_valid mismatch", sel_flash.name()))
 
@@ -441,7 +441,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           sram_fifos[index].get(rcv_item);
           seed_valid = rcv_item.d_data[0];
-          part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+          part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
 
           // seed is valid as long as secret1 is locked
           `DV_CHECK_EQ(seed_valid, part_locked, $sformatf("sram_%0d seed_valid mismatch", index))
@@ -672,8 +672,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
                     bit [TL_DW*2-1:0] curr_digest, prev_digest;
-                    curr_digest = {`gmv(ral.direct_access_wdata_1),
-                                   `gmv(ral.direct_access_wdata_0)};
+                    curr_digest = {`gmv(ral.direct_access_wdata[1]),
+                                   `gmv(ral.direct_access_wdata[0])};
                     prev_digest = {otp_a[otp_addr+1], otp_a[otp_addr]};
                     dai_wr_ip = 1;
                     // allow bit write
@@ -688,7 +688,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   end else begin
                     dai_wr_ip = 1;
                     if (!is_secret(dai_addr)) begin
-                      bit [TL_DW-1:0] wr_data = `gmv(ral.direct_access_wdata_0);
+                      bit [TL_DW-1:0] wr_data = `gmv(ral.direct_access_wdata[0]);
                       // allow bit write
                       if ((otp_a[otp_addr] & wr_data) == otp_a[otp_addr]) begin
                         otp_a[otp_addr] = wr_data;
@@ -699,13 +699,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     end else begin
                       bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
                                                                   otp_a[otp_addr]};
-                      bit [SCRAMBLE_DATA_SIZE-1:0] wr_data = {`gmv(ral.direct_access_wdata_1),
-                                                              `gmv(ral.direct_access_wdata_0)};
+                      bit [SCRAMBLE_DATA_SIZE-1:0] wr_data = {`gmv(ral.direct_access_wdata[1]),
+                                                              `gmv(ral.direct_access_wdata[0])};
                       wr_data = scramble_data(wr_data, part_idx);
                       secret_data = scramble_data(secret_data, part_idx);
                       if ((secret_data & wr_data) == secret_data) begin
-                        otp_a[otp_addr]     = `gmv(ral.direct_access_wdata_0);
-                        otp_a[otp_addr + 1] = `gmv(ral.direct_access_wdata_1);
+                        otp_a[otp_addr]     = `gmv(ral.direct_access_wdata[0]);
+                        otp_a[otp_addr + 1] = `gmv(ral.direct_access_wdata[1]);
                         // wait until secret scrambling is done
                         check_otp_idle(.val(0), .wait_clks(34));
                       end else begin
@@ -944,34 +944,34 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   // predict digest registers
   virtual function void predict_digest_csrs();
-    void'(ral.creator_sw_cfg_digest_0.predict(
+    void'(ral.creator_sw_cfg_digest[0].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.creator_sw_cfg_digest_1.predict(
+    void'(ral.creator_sw_cfg_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.owner_sw_cfg_digest_0.predict(
+    void'(ral.owner_sw_cfg_digest[0].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.owner_sw_cfg_digest_1.predict(
+    void'(ral.owner_sw_cfg_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.hw_cfg_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.hw_cfg_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret0_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret0_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret0_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret1_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret1_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret1_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret2_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret2_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
+    void'(ral.secret2_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
@@ -1122,9 +1122,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   virtual function void predict_rdata(bit is_64_bits, bit [TL_DW-1:0] rdata0,
                                       bit [TL_DW-1:0] rdata1 = 0);
-    void'(ral.direct_access_rdata_0.predict(.value(rdata0), .kind(UVM_PREDICT_READ)));
+    void'(ral.direct_access_rdata[0].predict(.value(rdata0), .kind(UVM_PREDICT_READ)));
     if (is_64_bits) begin
-      void'(ral.direct_access_rdata_1.predict(.value(rdata1), .kind(UVM_PREDICT_READ)));
+      void'(ral.direct_access_rdata[1].predict(.value(rdata1), .kind(UVM_PREDICT_READ)));
     end
   endfunction
 
@@ -1151,13 +1151,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit [TL_DW*2-1:0] digest;
     case (part_idx)
       CreatorSwCfgIdx: begin
-        digest = {`gmv(ral.creator_sw_cfg_digest_1), `gmv(ral.creator_sw_cfg_digest_0)};
+        digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
       end
-      OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest_1), `gmv(ral.owner_sw_cfg_digest_0)};
-      HwCfgIdx: digest = {`gmv(ral.hw_cfg_digest_1), `gmv(ral.hw_cfg_digest_0)};
-      Secret0Idx: digest = {`gmv(ral.secret0_digest_1), `gmv(ral.secret0_digest_0)};
-      Secret1Idx: digest = {`gmv(ral.secret1_digest_1), `gmv(ral.secret1_digest_0)};
-      Secret2Idx: digest = {`gmv(ral.secret2_digest_1), `gmv(ral.secret2_digest_0)};
+      OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
+      HwCfgIdx: digest = {`gmv(ral.hw_cfg_digest[1]), `gmv(ral.hw_cfg_digest[0])};
+      Secret0Idx: digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
+      Secret1Idx: digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
+      Secret2Idx: digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
     return digest;

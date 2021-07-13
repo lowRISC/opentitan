@@ -122,32 +122,14 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task write_key(bit [7:0][31:0] key [2], bit do_b2b);
     `uvm_info(`gfn, $sformatf("\n\t --- back to back transactions : %b", do_b2b), UVM_MEDIUM)
-    // Share 0 (the masked key share = key ^ mask)
-    csr_wr(.ptr(ral.key_share0_0), .value(key[0][0]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_1), .value(key[0][1]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_2), .value(key[0][2]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_3), .value(key[0][3]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_4), .value(key[0][4]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_5), .value(key[0][5]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_6), .value(key[0][6]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share0_7), .value(key[0][7]), .blocking(~do_b2b));
-    // Share 1 (the mask share)
-    csr_wr(.ptr(ral.key_share1_0), .value(key[1][0]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_1), .value(key[1][1]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_2), .value(key[1][2]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_3), .value(key[1][3]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_4), .value(key[1][4]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_5), .value(key[1][5]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_6), .value(key[1][6]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.key_share1_7), .value(key[1][7]), .blocking(~do_b2b));
+    // Share 0/1 (the masked key share = key ^ mask)
+    foreach (key[0][i]) csr_wr(.ptr(ral.key_share0[i]), .value(key[0][i]), .blocking(~do_b2b));
+    foreach (key[1][i]) csr_wr(.ptr(ral.key_share1[i]), .value(key[1][i]), .blocking(~do_b2b));
   endtask // write_key
 
 
   virtual task write_iv(bit  [3:0][31:0] iv, bit do_b2b);
-    csr_wr(.ptr(ral.iv_0), .value(iv[0]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.iv_1), .value(iv[1]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.iv_2), .value(iv[2]), .blocking(~do_b2b));
-    csr_wr(.ptr(ral.iv_3), .value(iv[3]), .blocking(~do_b2b));
+    foreach (iv[i]) csr_wr(.ptr(ral.iv[i]), .value(iv[0]), .blocking(~do_b2b));
   endtask
 
 
@@ -155,19 +137,13 @@ class aes_base_vseq extends cip_base_vseq #(
     int write_order[4] = {0,1,2,3};
 
     `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data),  UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_0: %h ", data[0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3]), UVM_HIGH)
 
     write_order.shuffle();
     foreach (write_order[i]) begin
-      case (write_order[i])
-        0: csr_wr(.ptr(ral.data_in_0), .value(data[0][31:0]), .blocking(~do_b2b));
-        1: csr_wr(.ptr(ral.data_in_1), .value(data[1][31:0]), .blocking(~do_b2b));
-        2: csr_wr(.ptr(ral.data_in_2), .value(data[2][31:0]), .blocking(~do_b2b));
-        3: csr_wr(.ptr(ral.data_in_3), .value(data[3][31:0]), .blocking(~do_b2b));
-      endcase
+      int idx = write_order[i];
+
+      `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_%0d: %h ",idx,  data[idx]), UVM_HIGH)
+      csr_wr(.ptr(ral.data_in[idx]), .value(data[idx][31:0]), .blocking(~do_b2b));
     end
   endtask
 
@@ -178,20 +154,10 @@ class aes_base_vseq extends cip_base_vseq #(
     read_order.shuffle();
 
     foreach (read_order[i]) begin
-      case (read_order[i])
-        0: csr_rd(.ptr(ral.data_out_0), .value(cypher_txt[0]), .blocking(~do_b2b));
-        1: csr_rd(.ptr(ral.data_out_1), .value(cypher_txt[1]), .blocking(~do_b2b));
-        2: csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2]), .blocking(~do_b2b));
-        3: csr_rd(.ptr(ral.data_out_3), .value(cypher_txt[3]), .blocking(~do_b2b));
-      endcase // case (read_order)
+      int idx = read_order[i];
+      csr_rd(.ptr(ral.data_out[idx]), .value(cypher_txt[idx]), .blocking(~do_b2b));
+      `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_%0d: %h ",idx,  cypher_txt[idx]), UVM_HIGH)
     end
-
-    `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA FROM DUT %h ", cypher_txt), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_MEDIUM)
   endtask
 
 
@@ -297,38 +263,27 @@ class aes_base_vseq extends cip_base_vseq #(
     txt = {txt, $sformatf("\n\t IS blocking %b", is_blocking) };
 
     foreach (interleave_queue[i]) begin
-      txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
+      string csr_name = interleave_queue[i];
+      txt = {txt, $sformatf("\n\t ----| \t %s",csr_name )};
 
-      case (interleave_queue[i])
-        "key_share0_0": csr_wr(.ptr(ral.key_share0_0), .value(item.key[0][0]), .blocking(is_blocking));
-        "key_share0_1": csr_wr(.ptr(ral.key_share0_1), .value(item.key[0][1]), .blocking(is_blocking));
-        "key_share0_2": csr_wr(.ptr(ral.key_share0_2), .value(item.key[0][2]), .blocking(is_blocking));
-        "key_share0_3": csr_wr(.ptr(ral.key_share0_3), .value(item.key[0][3]), .blocking(is_blocking));
-        "key_share0_4": csr_wr(.ptr(ral.key_share0_4), .value(item.key[0][4]), .blocking(is_blocking));
-        "key_share0_5": csr_wr(.ptr(ral.key_share0_5), .value(item.key[0][5]), .blocking(is_blocking));
-        "key_share0_6": csr_wr(.ptr(ral.key_share0_6), .value(item.key[0][6]), .blocking(is_blocking));
-        "key_share0_7": csr_wr(.ptr(ral.key_share0_7), .value(item.key[0][7]), .blocking(is_blocking));
-
-        "key_share1_0": csr_wr(.ptr(ral.key_share1_0), .value(item.key[1][0]), .blocking(is_blocking));
-        "key_share1_1": csr_wr(.ptr(ral.key_share1_1), .value(item.key[1][1]), .blocking(is_blocking));
-        "key_share1_2": csr_wr(.ptr(ral.key_share1_2), .value(item.key[1][2]), .blocking(is_blocking));
-        "key_share1_3": csr_wr(.ptr(ral.key_share1_3), .value(item.key[1][3]), .blocking(is_blocking));
-        "key_share1_4": csr_wr(.ptr(ral.key_share1_4), .value(item.key[1][4]), .blocking(is_blocking));
-        "key_share1_5": csr_wr(.ptr(ral.key_share1_5), .value(item.key[1][5]), .blocking(is_blocking));
-        "key_share1_6": csr_wr(.ptr(ral.key_share1_6), .value(item.key[1][6]), .blocking(is_blocking));
-        "key_share1_7": csr_wr(.ptr(ral.key_share1_7), .value(item.key[1][7]), .blocking(is_blocking));
-
-        "iv_0": csr_wr(.ptr(ral.iv_0), .value(item.iv[0]), .blocking(is_blocking));
-        "iv_1": csr_wr(.ptr(ral.iv_1), .value(item.iv[1]), .blocking(is_blocking));
-        "iv_2": csr_wr(.ptr(ral.iv_2), .value(item.iv[2]), .blocking(is_blocking));
-        "iv_3": csr_wr(.ptr(ral.iv_3), .value(item.iv[3]), .blocking(is_blocking));
-
-        "data_in_0": csr_wr(.ptr(ral.data_in_0), .value(data[0][31:0]), .blocking(is_blocking));
-        "data_in_1": csr_wr(.ptr(ral.data_in_1), .value(data[1][31:0]), .blocking(is_blocking));
-        "data_in_2": csr_wr(.ptr(ral.data_in_2), .value(data[2][31:0]), .blocking(is_blocking));
-        "data_in_3": csr_wr(.ptr(ral.data_in_3), .value(data[3][31:0]), .blocking(is_blocking));
-
-        "clear_reg": begin
+      case (1)
+        (!uvm_re_match("key_share0_*", csr_name)): begin
+          int idx = get_multireg_idx(csr_name);
+          csr_wr(.ptr(ral.key_share0[idx]), .value(item.key[0][idx]), .blocking(is_blocking));
+        end
+        (!uvm_re_match("key_share1_*", csr_name)): begin
+          int idx = get_multireg_idx(csr_name);
+          csr_wr(.ptr(ral.key_share1[idx]), .value(item.key[1][idx]), .blocking(is_blocking));
+        end
+        (!uvm_re_match("iv_*", csr_name)): begin
+          int idx = get_multireg_idx(csr_name);
+          csr_wr(.ptr(ral.iv[idx]), .value(item.iv[idx]), .blocking(is_blocking));
+        end
+        (!uvm_re_match("data_in_*", csr_name)): begin
+          int idx = get_multireg_idx(csr_name);
+          csr_wr(.ptr(ral.data_in[idx]), .value(data[idx]), .blocking(is_blocking));
+        end
+        (csr_name == "clear_reg"): begin
           clear_regs(item.clear_reg);
           csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
         end
@@ -339,7 +294,11 @@ class aes_base_vseq extends cip_base_vseq #(
               UVM_MEDIUM)
   endtask // write_data_key_iv
 
-
+  // the index of multi-reg is at the last char of the name
+  virtual function int get_multireg_idx(string name);
+    string s = name.getc(name.len - 1);
+    return s.atoi();
+  endfunction
 
   virtual task send_msg (
      bit manual_operation,                   // use manual operation

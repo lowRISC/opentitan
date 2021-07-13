@@ -84,16 +84,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task write_discard_key();
     bit [TL_DW-1:0] rand_key_value = $urandom();
-    randcase
-      1:  csr_wr(ral.key_0, rand_key_value);
-      1:  csr_wr(ral.key_1, rand_key_value);
-      1:  csr_wr(ral.key_2, rand_key_value);
-      1:  csr_wr(ral.key_3, rand_key_value);
-      1:  csr_wr(ral.key_4, rand_key_value);
-      1:  csr_wr(ral.key_5, rand_key_value);
-      1:  csr_wr(ral.key_6, rand_key_value);
-      1:  csr_wr(ral.key_7, rand_key_value);
-    endcase
+    int key_idx = $urandom_range(0, 7);
+    csr_wr(ral.key[key_idx], rand_key_value);
   endtask
 
   // trigger hash computation to start
@@ -120,14 +112,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
     // read digest value and output read value
   virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[8]);
-    csr_rd(.ptr(ral.digest_0), .value(digest[0]));
-    csr_rd(.ptr(ral.digest_1), .value(digest[1]));
-    csr_rd(.ptr(ral.digest_2), .value(digest[2]));
-    csr_rd(.ptr(ral.digest_3), .value(digest[3]));
-    csr_rd(.ptr(ral.digest_4), .value(digest[4]));
-    csr_rd(.ptr(ral.digest_5), .value(digest[5]));
-    csr_rd(.ptr(ral.digest_6), .value(digest[6]));
-    csr_rd(.ptr(ral.digest_7), .value(digest[7]));
+    foreach (digest[i]) csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
   endtask
 
   // write 256-bit hashed key
@@ -136,23 +121,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // since HMAC key size is always 256 bits
   virtual task wr_key(bit [TL_DW-1:0] key[]);
     // pity we cant loop here
-    ral.key_0.set(key[0]);
-    ral.key_1.set(key[1]);
-    ral.key_2.set(key[2]);
-    ral.key_3.set(key[3]);
-    ral.key_4.set(key[4]);
-    ral.key_5.set(key[5]);
-    ral.key_6.set(key[6]);
-    ral.key_7.set(key[7]);
-    csr_update(.csr(ral.key_0));
-    csr_update(.csr(ral.key_1));
-    csr_update(.csr(ral.key_2));
-    csr_update(.csr(ral.key_3));
-    csr_update(.csr(ral.key_4));
-    csr_update(.csr(ral.key_5));
-    csr_update(.csr(ral.key_6));
-    csr_update(.csr(ral.key_7));
     foreach (key[i]) begin
+      ral.key[i].set(key[7]);
+      csr_update(.csr(ral.key[i]));
       `uvm_info(`gfn, $sformatf("key[%0d] = 0x%0h", i, key[i]), UVM_HIGH)
     end
   endtask

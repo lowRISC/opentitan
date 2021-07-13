@@ -51,14 +51,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.en_0, data, region_cfg.en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.rd_en_0, data, region_cfg.read_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.prog_en_0, data, region_cfg.program_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.erase_en_0, data, region_cfg.erase_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages);
-    csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
-    csr_wr(.ptr(csr), .value(data));
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].en_0, data, region_cfg.en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en_0, data, region_cfg.read_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en_0, data,
+                                       region_cfg.program_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en_0, data,
+                                       region_cfg.erase_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].base_0, data,
+                                       region_cfg.start_page) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].size_0, data, region_cfg.num_pages);
+    csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
   endtask
 
   // Configure the protection for the "default" region (all pages that do not fall into one
