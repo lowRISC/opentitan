@@ -337,15 +337,6 @@
       base_addr: "0x40150000",
       attr: "templated",
     },
-    // dummy module to capture the alert handler escalation signals
-    // and test them by converting them into IRQs
-//    { name: "nmi_gen",
-//      type: "nmi_gen",
-//      clock_srcs: {clk_i: "io_div4"},
-//      clock_group: "timers",
-//      reset_connections: {rst_ni: "sys_io_div4"},
-//      base_addr: "0x40160000",
-//    }
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -882,7 +873,8 @@
       'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
-      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
+      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
+                                   'aon_timer_aon.sleep_mode'],
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
       'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],

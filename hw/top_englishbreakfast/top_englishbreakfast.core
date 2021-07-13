@@ -34,13 +34,13 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
-      - lowrisc:ip:nmi_gen
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:rom_ctrl
+      - lowrisc:ip:aon_timer
 
   files_verilator_waiver:
     depend:

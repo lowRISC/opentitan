@@ -244,21 +244,7 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
       base_addr: "0x40150000",
       attr: "templated",
-      localparam: {
-        EscCntDw:  32,
-        AccuCntDw: 16,
-        LfsrSeed:  "0x7FFFFFFF"
-      }
     },
-    // dummy module to capture the alert handler escalation signals
-    // and test them by converting them into IRQs
-    { name: "nmi_gen",
-      type: "nmi_gen",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40160000",
-    }
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -296,6 +282,15 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
+      attr: "templated",
+    },
+    { name: "aon_timer_aon",
+      type: "aon_timer",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
+      clock_group: "timers",
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
+      domain: "Aon",
+      base_addr: "0x40470000",
       attr: "templated",
     },
     { name: "sensor_ctrl_aon",
@@ -657,7 +652,8 @@
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
-      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en'],
+      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
+                                   'aon_timer_aon.sleep_mode'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
 
@@ -692,6 +688,7 @@
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',
+                                      'aon_timer_aon.lc_escalate_en',
                                       'flash_ctrl.lc_escalate_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
