@@ -7,6 +7,7 @@
 
 module rv_plic_assert_fpv #(parameter int NumSrc = 1,
                             parameter int NumTarget = 1,
+                            parameter int NumAlerts = 1,
                             parameter int PRIOW = $clog2(7+1)
 ) (
   input clk_i,
