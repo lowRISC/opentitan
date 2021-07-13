@@ -1179,7 +1179,7 @@ module otp_ctrl
   // The test tokens have been provisioned.
   assign test_tokens_valid = (part_digest[Secret0Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
   // The rma token has been provisioned.
-  assign rma_token_valid = (part_digest[Secret0Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+  assign rma_token_valid = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
   // The device is personalized if the root key has been provisioned and locked.
   assign secrets_valid = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
