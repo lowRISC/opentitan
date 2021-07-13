@@ -6,7 +6,7 @@
 // all reset signals should be generated from one reset signal to not make any deadlock
 //
 // Interconnect
-// corei
+// rv_core_ibex.corei
 //   -> s1n_24
 //     -> sm1_25
 //       -> rom_ctrl.rom
@@ -16,7 +16,7 @@
 //       -> ram_main
 //     -> sm1_28
 //       -> eflash
-// cored
+// rv_core_ibex.cored
 //   -> s1n_29
 //     -> sm1_25
 //       -> rom_ctrl.rom
@@ -60,7 +60,7 @@
 //     -> sm1_46
 //       -> sram_ctrl_main
 //     -> sm1_47
-//       -> rv_core_ibex_peri
+//       -> rv_core_ibex.reg
 // rv_dm.sba
 //   -> s1n_48
 //     -> sm1_25
@@ -103,7 +103,7 @@
 //     -> sm1_46
 //       -> sram_ctrl_main
 //     -> sm1_47
-//       -> rv_core_ibex_peri
+//       -> rv_core_ibex.reg
 
 module xbar_main (
   input clk_main_i,
@@ -112,10 +112,10 @@ module xbar_main (
   input rst_fixed_ni,
 
   // Host interfaces
-  input  tlul_pkg::tl_h2d_t tl_corei_i,
-  output tlul_pkg::tl_d2h_t tl_corei_o,
-  input  tlul_pkg::tl_h2d_t tl_cored_i,
-  output tlul_pkg::tl_d2h_t tl_cored_o,
+  input  tlul_pkg::tl_h2d_t tl_rv_core_ibex__corei_i,
+  output tlul_pkg::tl_d2h_t tl_rv_core_ibex__corei_o,
+  input  tlul_pkg::tl_h2d_t tl_rv_core_ibex__cored_i,
+  output tlul_pkg::tl_d2h_t tl_rv_core_ibex__cored_o,
   input  tlul_pkg::tl_h2d_t tl_rv_dm__sba_i,
   output tlul_pkg::tl_d2h_t tl_rv_dm__sba_o,
 
@@ -158,8 +158,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_otbn_i,
   output tlul_pkg::tl_h2d_t tl_keymgr_o,
   input  tlul_pkg::tl_d2h_t tl_keymgr_i,
-  output tlul_pkg::tl_h2d_t tl_rv_core_ibex_peri_o,
-  input  tlul_pkg::tl_d2h_t tl_rv_core_ibex_peri_i,
+  output tlul_pkg::tl_h2d_t tl_rv_core_ibex__reg_o,
+  input  tlul_pkg::tl_d2h_t tl_rv_core_ibex__reg_i,
   output tlul_pkg::tl_h2d_t tl_sram_ctrl_main_o,
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main_i,
 
@@ -493,8 +493,8 @@ module xbar_main (
   assign tl_sm1_47_us_h2d[1] = tl_s1n_48_ds_h2d[19];
   assign tl_s1n_48_ds_d2h[19] = tl_sm1_47_us_d2h[1];
 
-  assign tl_s1n_24_us_h2d = tl_corei_i;
-  assign tl_corei_o = tl_s1n_24_us_d2h;
+  assign tl_s1n_24_us_h2d = tl_rv_core_ibex__corei_i;
+  assign tl_rv_core_ibex__corei_o = tl_s1n_24_us_d2h;
 
   assign tl_rom_ctrl__rom_o = tl_sm1_25_ds_h2d;
   assign tl_sm1_25_ds_d2h = tl_rom_ctrl__rom_i;
@@ -508,8 +508,8 @@ module xbar_main (
   assign tl_eflash_o = tl_sm1_28_ds_h2d;
   assign tl_sm1_28_ds_d2h = tl_eflash_i;
 
-  assign tl_s1n_29_us_h2d = tl_cored_i;
-  assign tl_cored_o = tl_s1n_29_us_d2h;
+  assign tl_s1n_29_us_h2d = tl_rv_core_ibex__cored_i;
+  assign tl_rv_core_ibex__cored_o = tl_s1n_29_us_d2h;
 
   assign tl_rom_ctrl__regs_o = tl_sm1_30_ds_h2d;
   assign tl_sm1_30_ds_d2h = tl_rom_ctrl__regs_i;
@@ -562,8 +562,8 @@ module xbar_main (
   assign tl_sram_ctrl_main_o = tl_sm1_46_ds_h2d;
   assign tl_sm1_46_ds_d2h = tl_sram_ctrl_main_i;
 
-  assign tl_rv_core_ibex_peri_o = tl_sm1_47_ds_h2d;
-  assign tl_sm1_47_ds_d2h = tl_rv_core_ibex_peri_i;
+  assign tl_rv_core_ibex__reg_o = tl_sm1_47_ds_h2d;
+  assign tl_sm1_47_ds_d2h = tl_rv_core_ibex__reg_i;
 
   assign tl_s1n_48_us_h2d = tl_rv_dm__sba_i;
   assign tl_rv_dm__sba_o = tl_s1n_48_us_d2h;
@@ -673,7 +673,7 @@ end
       dev_sel_s1n_29 = 5'd19;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_CORE_IBEX_PERI)) == ADDR_SPACE_RV_CORE_IBEX_PERI) begin
+                  ~(ADDR_MASK_RV_CORE_IBEX__REG)) == ADDR_SPACE_RV_CORE_IBEX__REG) begin
       dev_sel_s1n_29 = 5'd20;
 end
   end
@@ -758,7 +758,7 @@ end
       dev_sel_s1n_48 = 5'd18;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_CORE_IBEX_PERI)) == ADDR_SPACE_RV_CORE_IBEX_PERI) begin
+                  ~(ADDR_MASK_RV_CORE_IBEX__REG)) == ADDR_SPACE_RV_CORE_IBEX__REG) begin
       dev_sel_s1n_48 = 5'd19;
 end
   end

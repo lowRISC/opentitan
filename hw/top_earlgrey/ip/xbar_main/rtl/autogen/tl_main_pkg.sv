@@ -27,7 +27,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_RV_PLIC           = 32'h 41010000;
   localparam logic [31:0] ADDR_SPACE_OTBN              = 32'h 411d0000;
   localparam logic [31:0] ADDR_SPACE_KEYMGR            = 32'h 41130000;
-  localparam logic [31:0] ADDR_SPACE_RV_CORE_IBEX_PERI = 32'h 411f0000;
+  localparam logic [31:0] ADDR_SPACE_RV_CORE_IBEX__REG = 32'h 411f0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN    = 32'h 411c0000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS       = 32'h 00000fff;
@@ -51,7 +51,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_RV_PLIC           = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_OTBN              = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_KEYMGR            = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX_PERI = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX__REG = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN    = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
@@ -77,13 +77,13 @@ package tl_main_pkg;
     TlRvPlic = 16,
     TlOtbn = 17,
     TlKeymgr = 18,
-    TlRvCoreIbexPeri = 19,
+    TlRvCoreIbexReg = 19,
     TlSramCtrlMain = 20
   } tl_device_e;
 
   typedef enum int {
-    TlCorei = 0,
-    TlCored = 1,
+    TlRvCoreIbexCorei = 0,
+    TlRvCoreIbexCored = 1,
     TlRvDmSba = 2
   } tl_host_e;
 

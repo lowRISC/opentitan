@@ -836,22 +836,22 @@ extern "C" {
 #define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x4000u
 
 /**
- * Peripheral base address for rv_core_ibex_peri in top earlgrey.
+ * Peripheral base address for reg device on rv_core_ibex in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR 0x411F0000u
+#define TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR 0x411F0000u
 
 /**
- * Peripheral size for rv_core_ibex_peri in top earlgrey.
+ * Peripheral size for reg device on rv_core_ibex in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR and
- * `TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR and
+ * `TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_REG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_RV_CORE_IBEX_REG_SIZE_BYTES 0x1000u
 
 
 /**
@@ -1192,7 +1192,7 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSramCtrlMain = 37, /**< sram_ctrl_main */
   kTopEarlgreyAlertPeripheralOtbn = 38, /**< otbn */
   kTopEarlgreyAlertPeripheralRomCtrl = 39, /**< rom_ctrl */
-  kTopEarlgreyAlertPeripheralRvCoreIbexPeri = 40, /**< rv_core_ibex_peri */
+  kTopEarlgreyAlertPeripheralRvCoreIbex = 40, /**< rv_core_ibex */
   kTopEarlgreyAlertPeripheralLast = 40, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
@@ -1268,10 +1268,10 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdOtbnFatal = 62, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 63, /**< otbn_recov */
   kTopEarlgreyAlertIdRomCtrlFatal = 64, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdRvCoreIbexPeriFatalSwErr = 65, /**< rv_core_ibex_peri_fatal_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriRecovSwErr = 66, /**< rv_core_ibex_peri_recov_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriFatalHwErr = 67, /**< rv_core_ibex_peri_fatal_hw_err */
-  kTopEarlgreyAlertIdRvCoreIbexPeriRecovHwErr = 68, /**< rv_core_ibex_peri_recov_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 65, /**< rv_core_ibex_fatal_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 66, /**< rv_core_ibex_recov_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 67, /**< rv_core_ibex_fatal_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 68, /**< rv_core_ibex_recov_hw_err */
   kTopEarlgreyAlertIdLast = 68, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 

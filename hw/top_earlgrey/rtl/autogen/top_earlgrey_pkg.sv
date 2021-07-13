@@ -461,14 +461,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h4000;
 
   /**
-   * Peripheral base address for rv_core_ibex_peri in top earlgrey.
+   * Peripheral base address for reg device on rv_core_ibex in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_PERI_BASE_ADDR = 32'h411F0000;
+  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR = 32'h411F0000;
 
   /**
-   * Peripheral size in bytes for rv_core_ibex_peri in top earlgrey.
+   * Peripheral size in bytes for reg device on rv_core_ibex in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_PERI_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_REG_SIZE_BYTES = 32'h1000;
 
   /**
    * Memory base address for ram_main in top earlgrey.
