@@ -36,7 +36,7 @@ module otbn_rf_base
   input  logic                     clk_i,
   input  logic                     rst_ni,
 
-  input  logic                     start_i,
+  input  logic                     state_reset_i,
 
   input  logic [4:0]               wr_addr_i,
   input  logic                     wr_en_i,
@@ -124,7 +124,7 @@ module otbn_rf_base
 
     .full_o        (stack_full),
 
-    .clear_i       (start_i),
+    .clear_i       (state_reset_i),
 
     .push_i        (push_stack),
     .push_data_i   (wr_data_intg_mux_out),

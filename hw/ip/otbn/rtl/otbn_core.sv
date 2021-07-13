@@ -166,7 +166,7 @@ module otbn_core
   logic                     controller_start;
   logic [ImemAddrWidth-1:0] controller_start_addr;
 
-  logic        insn_cnt_reset;
+  logic        state_reset;
   logic [31:0] insn_cnt;
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
@@ -188,8 +188,8 @@ module otbn_core
     .urnd_reseed_busy_i (urnd_reseed_busy),
     .urnd_advance_o     (urnd_advance),
 
-    .ispr_init_o      (ispr_init),
-    .insn_cnt_reset_o (insn_cnt_reset)
+    .ispr_init_o   (ispr_init),
+    .state_reset_o (state_reset)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -347,7 +347,7 @@ module otbn_core
     .rnd_prefetch_req_o (rnd_prefetch_req),
     .rnd_valid_i        (rnd_valid),
 
-    .insn_cnt_reset_i   (insn_cnt_reset),
+    .state_reset_i      (state_reset),
     .insn_cnt_o         (insn_cnt)
   );
 
@@ -390,7 +390,7 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .start_i,
+    .state_reset_i (state_reset),
 
     .wr_addr_i          (rf_base_wr_addr),
     .wr_en_i            (rf_base_wr_en),

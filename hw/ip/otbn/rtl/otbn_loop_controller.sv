@@ -10,6 +10,8 @@ module otbn_loop_controller
   input clk_i,
   input rst_ni,
 
+  input                      state_reset_i,
+
   input                      insn_valid_i,
   input [ImemAddrWidth-1:0]  insn_addr_i,
   input [ImemAddrWidth-1:0]  next_insn_addr_i,
@@ -131,8 +133,13 @@ module otbn_loop_controller
     loop_active_d  = loop_active_q;
     current_loop_d = current_loop_q;
 
-    // Do not take any state altering actions whilst OTBN is stalled.
-    if (!otbn_stall_i) begin
+    if (state_reset_i) begin
+      // Clear any current loop on start
+      loop_active_d = 1'b0;
+    end else if (!otbn_stall_i) begin
+      // If we're not starting a new operation, we only take state altering actions if OTBN is not
+      // stalled.
+
       if (loop_start_req_i && loop_start_commit_i) begin
         // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
         // loop.
@@ -188,9 +195,7 @@ module otbn_loop_controller
 
     .full_o      (loop_stack_full),
 
-    // TODO: Connect this up to the start signal, so that the loop stack gets cleared at the start
-    //       of an operation.
-    .clear_i     (1'b0),
+    .clear_i     (state_reset_i),
 
     .push_data_i (current_loop_q),
     .push_i      (loop_stack_push),

@@ -37,7 +37,7 @@ module otbn_start_stop_control
   output logic urnd_advance_o,
 
   output logic ispr_init_o,
-  output logic insn_cnt_reset_o
+  output logic state_reset_o
 );
   otbn_start_stop_state_e state_q, state_d;
 
@@ -59,12 +59,12 @@ module otbn_start_stop_control
   end
 
   always_comb begin
-    urnd_reseed_req_o  = 1'b0;
-    urnd_advance_o     = 1'b0;
-    start_addr_en      = 1'b0;
-    state_d            = state_q;
-    ispr_init_o        = 1'b0;
-    insn_cnt_reset_o   = 1'b0;
+    urnd_reseed_req_o = 1'b0;
+    urnd_advance_o    = 1'b0;
+    start_addr_en     = 1'b0;
+    state_d           = state_q;
+    ispr_init_o       = 1'b0;
+    state_reset_o     = 1'b0;
 
     unique case(state_q)
       OtbnStartStopStateHalt: begin
@@ -72,7 +72,7 @@ module otbn_start_stop_control
           start_addr_en     = 1'b1;
           urnd_reseed_req_o = 1'b1;
           ispr_init_o       = 1'b1;
-          insn_cnt_reset_o  = 1'b1;
+          state_reset_o     = 1'b1;
           state_d           = OtbnStartStopStateUrndRefresh;
         end
       end
