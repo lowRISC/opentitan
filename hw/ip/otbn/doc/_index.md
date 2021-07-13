@@ -573,9 +573,15 @@ An escalation request signaled through the `lc_escalate_en_i` signal results in 
 ### Idle
 
 OTBN exposes a single-bit `idle_o` signal, intended to be used by the clock manager to clock-gate the block when it is not in use.
-This signal is high when OTBN is not running.
+This signal is in the same clock domain as `clk_i`.
+It is high when OTBN is not running.
 The cycle after a write to {{< regref "CMD.start" >}}, the signal goes low.
 This remains low until the end of the operation (either from an {{< otbnInsnRef "ECALL" >}}) or an error, at which point it goes high again.
+
+OTBN also exposes another version of the idle signal as `idle_otp_o`.
+This works analogously, but is in the same clock domain as `clk_otp_i`.
+
+TODO: Specify interactions between `idle_o`, `idle_otp_o` and the clock manager fully.
 
 ### Data Integrity Protection {#design-details-data-integrity-protection}
 

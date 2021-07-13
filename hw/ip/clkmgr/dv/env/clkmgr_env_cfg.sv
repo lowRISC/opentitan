@@ -13,6 +13,16 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(clkmgr_reg_block));
   virtual clk_rst_if usb_clk_rst_vif;
   virtual clk_rst_if aon_clk_rst_vif;
 
+  // A map from trans clock to its source clock (giving the signal that will appear on this clock
+  // output if it's enabled).
+  src_e trans_to_src [int] = '{
+    TransAes:        MainSrc,
+    TransHmac:       MainSrc,
+    TransKmac:       MainSrc,
+    TransOtbnIoDiv4: IoDiv4Src,
+    TransOtbnMain:   MainSrc
+  };
+
   `uvm_object_utils_begin(clkmgr_env_cfg)
   `uvm_object_utils_end
 

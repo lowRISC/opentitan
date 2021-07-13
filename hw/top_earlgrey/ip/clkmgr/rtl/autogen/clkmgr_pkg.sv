@@ -13,10 +13,11 @@
 package clkmgr_pkg;
 
   typedef enum int {
-    Aes = 0,
-    Hmac = 1,
-    Kmac = 2,
-    Otbn = 3
+    HintMainAes = 0,
+    HintMainHmac = 1,
+    HintMainKmac = 2,
+    HintIoDiv4Otbn = 3,
+    HintMainOtbn = 4
   } hint_names_e;
 
   typedef struct packed {

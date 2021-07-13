@@ -340,54 +340,49 @@ clocks = cfg['clocks']
   // clock target
   ////////////////////////////////////////////////////
 
-% for k in hint_clks.keys():
-  logic ${k}_hint;
-  logic ${k}_en;
+% for clk in hint_clks.keys():
+  logic ${clk}_hint;
+  logic ${clk}_en;
 % endfor
 
-% for k, sig in hint_clks.items():
-<%
-    ## Hint clocks should be connected to exactly one endpoint
-    eps = list(set(ep_name for ep_name, ep_port in sig.endpoints))
-    assert len(eps) == 1
-%>\
-  assign ${k}_en = ${k}_hint | ~idle_i[${eps[0].capitalize()}];
+% for clk, sig in hint_clks.items():
+  assign ${clk}_en = ${clk}_hint | ~idle_i[${hint_names[clk]}];
 
   prim_flop_2sync #(
     .Width(1)
-  ) u_${k}_hint_sync (
+  ) u_${clk}_hint_sync (
     .clk_i(clk_${sig.src.name}_i),
     .rst_ni(rst_${sig.src.name}_ni),
-    .d_i(reg2hw.clk_hints.${k}_hint.q),
-    .q_o(${k}_hint)
+    .d_i(reg2hw.clk_hints.${clk}_hint.q),
+    .q_o(${clk}_hint)
   );
 
-  lc_tx_t ${k}_scanmode;
+  lc_tx_t ${clk}_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
-  ) u_${k}_scanmode_sync  (
+  ) u_${clk}_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
-    .lc_en_o(${k}_scanmode)
+    .lc_en_o(${clk}_scanmode)
   );
 
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
-  ) u_${k}_cg (
+  ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
-    .en_i(${k}_en & clk_${sig.src.name}_en),
-    .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
-    .clk_o(clocks_o.${k})
+    .en_i(${clk}_en & clk_${sig.src.name}_en),
+    .test_en_i(${clk}_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clocks_o.${clk})
   );
 
 % endfor
 
   // state readback
-% for k in hint_clks.keys():
-  assign hw2reg.clk_hints_status.${k}_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
+% for clk in hint_clks.keys():
+  assign hw2reg.clk_hints_status.${clk}_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.${clk}_val.d = ${clk}_en;
 % endfor
 
   assign jitter_en_o = reg2hw.jitter_enable.q;
