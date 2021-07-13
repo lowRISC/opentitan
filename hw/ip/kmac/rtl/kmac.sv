@@ -879,7 +879,8 @@ module kmac
 
     // EDN Request
     prim_edn_req #(
-      .OutWidth (MsgWidth)
+      .OutWidth   (MsgWidth),
+      .MaxLatency (500000)  // 5ms expected
     ) u_edn_req (
       // Design side
       .clk_i,
