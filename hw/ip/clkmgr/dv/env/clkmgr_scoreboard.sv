@@ -111,7 +111,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           monitor_div2_peri_clock();
           monitor_io_peri_clock();
           monitor_usb_peri_clock();
-
           for (int i = 0; i < NUM_TRANS; ++i) begin
             fork
               automatic int trans_index = i;
@@ -195,13 +194,32 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task monitor_trans_clock(int trans_index);
-    forever @cfg.clkmgr_vif.trans_cb begin
-      logic hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
-      logic idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
-      logic clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
-      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-      logic gating_condition = (hint || !idle) && clk_en || scan_en;
-      trans_e trans = trans_e'(trans_index);
+    trans_e trans = trans_e'(trans_index);
+    src_e src = cfg.trans_to_src[trans];
+
+    forever begin
+      logic hint, idle, clk_en, scan_en, gating_condition;
+
+      // Wait for the correct clocking block (to ensure that we sample when the output clock should
+      // be high if enabled), then read the relevant signals from that clocking block.
+      case (src)
+        MainSrc: begin
+          @(cfg.clkmgr_vif.trans_cb);
+          hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
+          idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
+          clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
+        end
+        IoDiv4Src: begin
+          @(cfg.clkmgr_vif.peri_div4_cb);
+          hint = cfg.clkmgr_vif.peri_div4_cb.clk_hint_otbn;
+          idle = cfg.clkmgr_vif.peri_div4_cb.otbn_idle;
+          clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
+        end
+      endcase
+
+      scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      gating_condition = (hint || !idle) && clk_en || scan_en;
+
       #0;
       case (trans)
         TransAes: begin
@@ -213,7 +231,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         TransKmac: begin
           check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_kmac);
         end
-        TransOtbn: begin
+        TransOtbnIoDiv4: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_otbn);
+        end
+        TransOtbnMain: begin
           check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
         end
       endcase

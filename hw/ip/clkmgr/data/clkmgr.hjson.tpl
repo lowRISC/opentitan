@@ -223,7 +223,7 @@ clocks = cfg['clocks']
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks:
+% for clk in hint_names.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_HINT",
@@ -249,7 +249,7 @@ clocks = cfg['clocks']
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-% for clk in hint_clks.keys():
+% for clk in hint_names.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_VAL",

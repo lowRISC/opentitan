@@ -32,6 +32,7 @@ module otbn
 
   // Inter-module signals
   output logic idle_o,
+  output logic idle_otp_o,
 
   // Interrupts
   output logic intr_done_o,
@@ -110,6 +111,10 @@ module otbn
   // TODO: Better define what "idle" means -- only the core, or also the
   // register interface?
   assign idle_o = ~busy_q;
+
+  // TODO: These two signals aren't technically in the same clock domain. Sort out how we do the
+  // signalling properly.
+  assign idle_otp_o = idle_o;
 
   // Lifecycle ==================================================================
 
@@ -854,6 +859,7 @@ module otbn
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(IdleOKnown_A, idle_o)
+  `ASSERT_KNOWN(IdleOtpOKnown_A, idle_otp_o)
   `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
   `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o)

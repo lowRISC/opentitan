@@ -45,7 +45,8 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   } clk_enables_t;
 
   typedef struct packed {
-    logic otbn;
+    logic otbn_main;
+    logic otbn_io_div4;
     logic kmac;
     logic hmac;
     logic aes;
@@ -136,16 +137,21 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   // Pipelines and clocking blocks for peripheral clocks.
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_div4_ffs;
+  logic [PIPELINE_DEPTH-1:0] clk_hint_otbn_div4_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
   always @(posedge clocks_o.clk_io_div4_powerup) begin
     if (rst_n) begin
       clk_enable_div4_ffs <= {clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div4_peri_en};
+      clk_hint_otbn_div4_ffs <= {clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0],
+                                 clk_hints[TransOtbnIoDiv4]};
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end
   end
   clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup);
     input ip_clk_en = ip_clk_en_div4_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_div4_ffs[PIPELINE_DEPTH-1];
+    input clk_hint_otbn = clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-1];
+    input otbn_idle = idle_i[TransOtbnIoDiv4];
   endclocking
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_div2_ffs;

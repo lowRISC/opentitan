@@ -1186,7 +1186,7 @@ module chip_${top["name"]}_${target["name"]} (
   always_comb begin : p_trigger
     mio_out = mio_out_pre;
     mio_out[MioIdxTrigger] = mio_out_pre[MioIdxTrigger] &
-                             ~top_${top["name"]}.clkmgr_aon_idle[clkmgr_pkg::Aes];
+                             ~top_${top["name"]}.clkmgr_aon_idle[clkmgr_pkg::HintMainAes];
   end
 
   //////////////////////
