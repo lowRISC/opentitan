@@ -144,6 +144,19 @@ class TypedClocks(NamedTuple):
     # don't bother gating the upstream source).
     rg_srcs: List[str]
 
+    def all_clocks(self) -> List[str]:
+        '''Return a list of all clock names
+
+        These are ordered ft, hint, rg, sw.
+
+        '''
+        ret = {}
+        ret.update(self.ft_clks)
+        ret.update(self.hint_clks)
+        ret.update(self.rg_clks)
+        ret.update(self.sw_clks)
+        return ret
+
 
 class Clocks:
     '''Clock connections for the chip'''

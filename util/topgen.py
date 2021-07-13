@@ -406,16 +406,23 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     by_type = clocks.typed_clocks()
 
-    # hint clocks dict.
-    #
-    # The clock is constructed as clk_{src_name}_{module_name}. So to get the
-    # module name we split from the right and pick the last entry
-    hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
-                 for clk, src in by_type.hint_clks.items()}
+    # A map from block name to the list of hint clocks that it uses.
+    block_to_hints = {}
+    for clk, src in by_type.hint_clks.items():
+        block = clk.rsplit('_', 1)[-1]
+        block_to_hints.setdefault(block, []).append(clk)
 
-    # The names of blocks that use one or more sw hint clocks (clkmgr has an
-    # "idle" feedback signal from each), in ascending order.
-    hint_blocks = sorted(set([v['name'] for v in hint_clks.values()]))
+    # A map from hint clock name to the associated enumeration name which will
+    # appear in hint_names_e in clkmgr_pkg.sv. Note that this is ordered
+    # alphabetically by block: the precise ordering shouldn't matter, but it's
+    # probably nicer to keep blocks' signals together.
+    hint_names = {}
+    for blk, clks in sorted(block_to_hints.items()):
+        for clk in sorted(clks):
+            # Remove any "clk" prefix
+            clk_name = lib.Name.from_snake_case(clk).remove_part('clk')
+            hint_name = lib.Name(['hint']) + clk_name
+            hint_names[clk] = hint_name.as_camel_case()
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -427,9 +434,10 @@ def generate_clkmgr(top, cfg_path, out_path):
                                  ft_clks=by_type.ft_clks,
                                  rg_clks=by_type.rg_clks,
                                  sw_clks=by_type.sw_clks,
+                                 hint_clks=by_type.hint_clks,
+                                 all_clks=by_type.all_clocks(),
                                  export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks,
-                                 hint_blocks=hint_blocks)
+                                 hint_names=hint_names)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
 
