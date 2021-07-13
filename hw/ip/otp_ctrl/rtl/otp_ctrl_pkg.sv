@@ -127,7 +127,7 @@ package otp_ctrl_pkg;
     lc_ctrl_state_pkg::lc_token_t    test_unlock_token;
     lc_ctrl_state_pkg::lc_token_t    test_exit_token;
     // This is set to "On" if the partition containing the
-    // test tokens has been locked.
+    // rma token has been locked.
     lc_ctrl_pkg::lc_tx_t             rma_token_valid;
     lc_ctrl_state_pkg::lc_token_t    rma_token;
   } otp_lc_data_t;
