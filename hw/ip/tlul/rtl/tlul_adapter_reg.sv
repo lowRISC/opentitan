@@ -27,6 +27,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   output logic [RegAw-1:0] addr_o,
   output logic [RegDw-1:0] wdata_o,
   output logic [RegBw-1:0] be_o,
+  input                    busy_i,
   input        [RegDw-1:0] rdata_i,
   input                    error_i
 );
@@ -108,8 +109,13 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     assign data_intg = '0;
   end
 
+  logic req_valid;
+  assign req_valid = tl_i.a_valid;
+
   assign tl_o = '{
-    a_ready:  ~outstanding,
+    // busy is selected based on address
+    // thus if there is no valid transaction, we should ignore busy
+    a_ready:  ~(outstanding | req_valid & busy_i),
     d_valid:  outstanding,
     d_opcode: rspop,
     d_param:  '0,

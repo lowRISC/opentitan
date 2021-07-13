@@ -202,8 +202,6 @@ class IpBlock:
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 
-        reg_blocks = RegBlock.build_blocks(init_block, rd['registers'])
-
         r_inter_signals = check_list(rd.get('inter_signal_list', []),
                                      'inter_signal_list field')
         inter_signals = [
@@ -223,6 +221,10 @@ class IpBlock:
 
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
+
+        reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
+                                           bus_interfaces,
+                                           clocking)
 
         xputs = (
             Signal.from_raw_list('available_inout_list for block ' + name,

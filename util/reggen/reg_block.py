@@ -9,6 +9,8 @@ from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from .alert import Alert
 from .access import SWAccess, HWAccess
+from .bus_interfaces import BusInterfaces
+from .clocking import Clocking
 from .field import Field
 from .signal import Signal
 from .lib import check_int, check_list, check_str_dict, check_str
@@ -25,6 +27,7 @@ class RegBlock:
         self._reg_width = reg_width
         self._params = params
 
+        self.clocks = {}  # type: Dict[Optional[str], object]
         self.offset = 0
         self.multiregs = []  # type: List[MultiRegister]
         self.registers = []  # type: List[Register]
@@ -57,9 +60,14 @@ class RegBlock:
         # A list of all write enable names
         self.wennames = []  # type: List[str]
 
+        # Boolean indication that the blcok is fully asynchronous
+        self.async_if = False
+
     @staticmethod
     def build_blocks(block: 'RegBlock',
-                     raw: object) -> Dict[Optional[str], 'RegBlock']:
+                     raw: object,
+                     bus: BusInterfaces,
+                     clocks: Clocking) -> Dict[Optional[str], 'RegBlock']:
         '''Build a dictionary of blocks for a 'registers' field in the hjson
 
         There are two different syntaxes we might see here. The simple syntax
@@ -77,6 +85,7 @@ class RegBlock:
         if isinstance(raw, list):
             # This is the simple syntax
             block.add_raw_registers(raw, 'registers field at top-level')
+            block.handle_async(None, clocks, bus)
             return {None: block}
 
         # This is the more complicated syntax
@@ -102,6 +111,7 @@ class RegBlock:
                                     'item {} of the registers '
                                     'dictionary at top-level'
                                     .format(idx + 1))
+            block.handle_async(rb_key, clocks, bus)
             block.validate()
 
             assert rb_key not in ret
@@ -152,6 +162,55 @@ class RegBlock:
                        .format(self.offset, where, entry_type))
 
         handlers[entry_type](entry_where, entry_body)
+
+    def _validate_async(self, name: Optional[str]) -> None:
+        '''Check for async definition consistency
+
+        If a reg block is marked fully asynchronous through its bus interface,
+        its register definition cannot also mark individual registers with
+        asynchronous designations.
+
+        The two asynchronous regfile schemes are mutually exclusive.
+        '''
+
+        # async_if means the entire reg block is fully under a different clock
+        async_regs = []
+
+        if self.async_if:
+            async_regs = [r for r in self.registers if r.async_clk]
+
+        if async_regs:
+            raise ValueError(f'''
+            register block {name} has incompatible async definitions.
+            The corresponding device interface is marked fully async, however
+            there are individual registers that also contain the async_clk
+            designation, this is not allowed.
+
+            Either remove all register async_clk designations, or remove
+            async designation of the bus interface.
+            ''')
+
+    def handle_async(self, name: Optional[str], clocks: Clocking, bus: BusInterfaces) -> None:
+
+        reg_clocks = {}
+        if bus.device_async[name]:
+            cname = bus.device_async[name]
+            self.async_if = True
+            reg_clocks[cname] = clocks.get_by_clock(cname)
+        else:
+
+            for r in self.registers:
+                clock = r.handle_async(clocks)
+                if clock:
+                    reg_clocks[r.async_name] = clock
+
+            for mr in self.multiregs:
+                clock = mr.handle_async(clocks)
+                if clock:
+                    reg_clocks[r.async_name] = clock
+
+        self.clocks = reg_clocks
+        self._validate_async(name)
 
     def _handle_register(self, where: str, body: object) -> None:
         reg = Register.from_raw(self._reg_width,
@@ -344,6 +403,8 @@ class RegBlock:
         reg = Register(self.offset,
                        reg_name,
                        reg_desc,
+                       async_name="",
+                       async_clk=None,
                        hwext=is_testreg,
                        hwqe=is_testreg,
                        hwre=False,
