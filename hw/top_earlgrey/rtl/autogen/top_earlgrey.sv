@@ -10,30 +10,87 @@
 //                --rnd_cnst_seed 4881560218908238235
 
 module top_earlgrey #(
+  // Manually defined parameters
+
   // Auto-inferred parameters
-  parameter  OtpCtrlMemInitFile = "",
+  // parameters for uart0
+  // parameters for uart1
+  // parameters for uart2
+  // parameters for uart3
+  // parameters for gpio
+  // parameters for spi_device
+  // parameters for spi_host0
+  // parameters for spi_host1
+  // parameters for i2c0
+  // parameters for i2c1
+  // parameters for i2c2
+  // parameters for pattgen
+  // parameters for rv_timer
+  // parameters for usbdev
+  // parameters for otp_ctrl
+  parameter OtpCtrlMemInitFile = "",
+  // parameters for lc_ctrl
+  // parameters for alert_handler
+  // parameters for pwrmgr_aon
+  // parameters for rstmgr_aon
+  // parameters for clkmgr_aon
+  // parameters for sysrst_ctrl_aon
+  // parameters for adc_ctrl_aon
+  // parameters for pwm_aon
+  // parameters for pinmux_aon
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
+  // parameters for aon_timer_aon
+  // parameters for sensor_ctrl_aon
+  // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 1,
+  // parameters for flash_ctrl
+  // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
+  // parameters for rv_plic
+  // parameters for aes
   parameter bit AesMasking = 1'b1,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
+  // parameters for hmac
+  // parameters for kmac
   parameter bit KmacEnMasking = 1,
   parameter int KmacReuseShare = 0,
+  // parameters for keymgr
+  // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
+  // parameters for entropy_src
   parameter bit EntropySrcStub = 0,
+  // parameters for edn0
+  // parameters for edn1
+  // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
+  // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
-  parameter  RomCtrlBootRomInitFile = "",
-
-  // Manually defined parameters
-  parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
-  parameter bit IbexICache = 1,
-  parameter bit IbexPipeLine = 0,
-  parameter bit SecureIbex = 1
+  // parameters for rom_ctrl
+  parameter RomCtrlBootRomInitFile = "",
+  // parameters for rv_core_ibex
+  parameter bit RvCoreIbexPMPEnable = 1,
+  parameter int unsigned RvCoreIbexPMPGranularity = 0,
+  parameter int unsigned RvCoreIbexPMPNumRegions = 16,
+  parameter int unsigned RvCoreIbexMHPMCounterNum = 10,
+  parameter int unsigned RvCoreIbexMHPMCounterWidth = 32,
+  parameter bit RvCoreIbexRV32E = 0,
+  parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
+  parameter bit RvCoreIbexBranchTargetALU = 1,
+  parameter bit RvCoreIbexWritebackStage = 1,
+  parameter bit RvCoreIbexICache = 1,
+  parameter bit RvCoreIbexICacheECC = 1,
+  parameter bit RvCoreIbexBranchPredictor = 0,
+  parameter bit RvCoreIbexDbgTriggerEn = 1,
+  parameter bit SecRvCoreIbexureIbex = 1,
+  parameter int unsigned RvCoreIbexDmHaltAddr = tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0],
+  parameter int unsigned RvCoreIbexDmExceptionAddr = tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0],
+  parameter bit RvCoreIbexPipeLine = 0
 ) (
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
@@ -285,7 +342,7 @@ module top_earlgrey #(
   // sram_ctrl_main
   // otbn
   // rom_ctrl
-  // rv_core_ibex_peri
+  // rv_core_ibex
 
 
   logic [179:0]  intr_vector;
@@ -439,16 +496,6 @@ module top_earlgrey #(
   logic intr_edn1_edn_fatal_err;
   logic intr_otbn_done;
 
-
-
-  logic [0:0] irq_plic;
-  logic [0:0] msip;
-  logic [7:0] irq_id[1];
-  logic [7:0] unused_irq_id[1];
-
-  // this avoids lint errors
-  assign unused_irq_id = irq_id;
-
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
@@ -500,9 +547,9 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
-  ibex_pkg::crash_dump_t       rv_core_ibex_crash_dump;
   logic       usbdev_usb_out_of_rst;
   logic       usbdev_usb_aon_wake_en;
   logic       usbdev_usb_aon_wake_ack;
@@ -541,16 +588,21 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
-  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_intg_event;
-  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_fatal_core_event;
-  rv_core_ibex_peri_pkg::alert_event_t       rv_core_ibex_recov_core_event;
-  rv_core_ibex_peri_pkg::region_cfg_t [1:0] rv_core_ibex_peri_ibus_region_cfg;
-  rv_core_ibex_peri_pkg::region_cfg_t [1:0] rv_core_ibex_peri_dbus_region_cfg;
+  logic       rv_plic_msip;
+  logic       rv_plic_irq;
+  logic       rv_dm_debug_req;
+  logic       rv_core_ibex_rst_cpu_n;
+  ibex_pkg::crash_dump_t       rv_core_ibex_crash_dump;
+  pwrmgr_pkg::pwr_cpu_t       rv_core_ibex_pwrmgr;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
   logic [4:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
+  tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
+  tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__cored_req;
+  tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__cored_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_dm__sba_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_dm__sba_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_regs_tl_d_req;
@@ -591,8 +643,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
   tlul_pkg::tl_h2d_t       keymgr_tl_req;
   tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
-  tlul_pkg::tl_h2d_t       rv_core_ibex_peri_tl_req;
-  tlul_pkg::tl_d2h_t       rv_core_ibex_peri_tl_rsp;
+  tlul_pkg::tl_h2d_t       rv_core_ibex_reg_tl_d_req;
+  tlul_pkg::tl_d2h_t       rv_core_ibex_reg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
@@ -652,15 +704,10 @@ module top_earlgrey #(
   tlul_pkg::tl_h2d_t       adc_ctrl_aon_tl_req;
   tlul_pkg::tl_d2h_t       adc_ctrl_aon_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
-  logic       rstmgr_aon_rst_cpu_n;
-  pwrmgr_pkg::pwr_cpu_t       pwrmgr_aon_pwr_cpu;
-  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
-  logic       rv_dm_debug_req;
-  tlul_pkg::tl_h2d_t       main_tl_corei_req;
-  tlul_pkg::tl_d2h_t       main_tl_corei_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_cored_req;
-  tlul_pkg::tl_d2h_t       main_tl_cored_rsp;
+  logic       rv_core_ibex_irq_timer;
+  logic [31:0] rv_core_ibex_hart_id;
+  logic [31:0] rv_core_ibex_boot_addr;
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
@@ -753,70 +800,12 @@ module top_earlgrey #(
   assign unused_daon_rst_i2c1 = rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_i2c2 = rstmgr_aon_resets.rst_i2c2_n[rstmgr_pkg::DomainAonSel];
 
-  // processor core
-  rv_core_ibex #(
-    .PMPEnable                (1),
-    .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
-    .PMPNumRegions            (16),
-    .MHPMCounterNum           (10),
-    .MHPMCounterWidth         (32),
-    .RV32E                    (0),
-    .RV32M                    (ibex_pkg::RV32MSingleCycle),
-    .RV32B                    (ibex_pkg::RV32BNone),
-    .RegFile                  (IbexRegFile),
-    .BranchTargetALU          (1),
-    .WritebackStage           (1),
-    .ICache                   (IbexICache),
-    .ICacheECC                (1),
-    .BranchPredictor          (0),
-    .DbgTriggerEn             (1),
-    .SecureIbex               (SecureIbex),
-    .DmHaltAddr               (ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]),
-    .DmExceptionAddr          (ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]),
-    .PipeLine                 (IbexPipeLine)
-  ) u_rv_core_ibex (
-    // clock and reset
-    .clk_i                (clkmgr_aon_clocks.clk_proc_main),
-    .rst_ni               (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .clk_esc_i            (clkmgr_aon_clocks.clk_io_div4_timers),
-    .rst_esc_ni           (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    // reset feedback to the clock manager
-    .rst_cpu_n_o          (rstmgr_aon_rst_cpu_n),
-    .ram_cfg_i            (ast_ram_1p_cfg),
-    // static pinning
-    .hart_id_i            (32'b0),
-    .boot_addr_i          (ADDR_SPACE_ROM_CTRL__ROM),
-    // TL-UL buses
-    .tl_i_o               (main_tl_corei_req),
-    .tl_i_i               (main_tl_corei_rsp),
-    .tl_d_o               (main_tl_cored_req),
-    .tl_d_i               (main_tl_cored_rsp),
-    // interrupts
-    .irq_software_i       (msip),
-    .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
-    .irq_external_i       (irq_plic),
-    // escalation input from alert handler (NMI)
-    .esc_tx_i             (alert_handler_esc_tx[0]),
-    .esc_rx_o             (alert_handler_esc_rx[0]),
-    // debug interface
-    .debug_req_i          (rv_dm_debug_req),
-    // crash dump interface
-    .crash_dump_o         (rv_core_ibex_crash_dump),
-    // CPU control signals
-    .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
-    .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
-    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
-    // alert hooksup
-    .fatal_intg_event_o   (rv_core_ibex_fatal_intg_event),
-    .fatal_core_event_o   (rv_core_ibex_fatal_core_event),
-    .recov_core_event_o   (rv_core_ibex_recov_core_event),
-    // address translation configuration
-    .ibus_region_cfg_i    (rv_core_ibex_peri_ibus_region_cfg),
-    .dbus_region_cfg_i    (rv_core_ibex_peri_dbus_region_cfg),
-    // dft bypass
-    .scan_rst_ni,
-    .scanmode_i
-  );
+  // ibex specific assignments
+  // TODO: This should be further automated in the future.
+  assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_0_0;
+  assign rv_core_ibex_hart_id = '0;
+
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -1736,7 +1725,7 @@ module top_earlgrey #(
       .pwr_flash_i(pwrmgr_aon_pwr_flash),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
-      .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
+      .pwr_cpu_i(rv_core_ibex_pwrmgr),
       .wakeups_i(pwrmgr_aon_wakeups),
       .rstreqs_i(pwrmgr_aon_rstreqs),
       .strap_o(pwrmgr_aon_strap),
@@ -1764,7 +1753,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_aon_pwr_rst_req),
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
-      .rst_cpu_n_i(rstmgr_aon_rst_cpu_n),
+      .rst_cpu_n_i(rv_core_ibex_rst_cpu_n),
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .alert_dump_i(alert_handler_crashdump),
       .cpu_dump_i(rv_core_ibex_crash_dump),
@@ -2168,13 +2157,12 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[48:48] ),
 
       // Inter-module signals
+      .irq_o(rv_plic_irq),
+      .irq_id_o(),
+      .msip_o(rv_plic_msip),
       .tl_i(rv_plic_tl_req),
       .tl_o(rv_plic_tl_rsp),
-
       .intr_src_i (intr_vector),
-      .irq_o      (irq_plic),
-      .irq_id_o   (irq_id),
-      .msip_o     (msip),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
@@ -2533,9 +2521,28 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  rv_core_ibex_peri #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:65])
-  ) u_rv_core_ibex_peri (
+  rv_core_ibex #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:65]),
+    .PMPEnable(RvCoreIbexPMPEnable),
+    .PMPGranularity(RvCoreIbexPMPGranularity),
+    .PMPNumRegions(RvCoreIbexPMPNumRegions),
+    .MHPMCounterNum(RvCoreIbexMHPMCounterNum),
+    .MHPMCounterWidth(RvCoreIbexMHPMCounterWidth),
+    .RV32E(RvCoreIbexRV32E),
+    .RV32M(RvCoreIbexRV32M),
+    .RV32B(RvCoreIbexRV32B),
+    .RegFile(RvCoreIbexRegFile),
+    .BranchTargetALU(RvCoreIbexBranchTargetALU),
+    .WritebackStage(RvCoreIbexWritebackStage),
+    .ICache(RvCoreIbexICache),
+    .ICacheECC(RvCoreIbexICacheECC),
+    .BranchPredictor(RvCoreIbexBranchPredictor),
+    .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
+    .SecureIbex(SecRvCoreIbexureIbex),
+    .DmHaltAddr(RvCoreIbexDmHaltAddr),
+    .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
+    .PipeLine(RvCoreIbexPipeLine)
+  ) u_rv_core_ibex (
       // [65]: fatal_sw_err
       // [66]: recov_sw_err
       // [67]: fatal_hw_err
@@ -2544,17 +2551,34 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[68:65] ),
 
       // Inter-module signals
-      .fatal_intg_event_i(rv_core_ibex_fatal_intg_event),
-      .fatal_core_event_i(rv_core_ibex_fatal_core_event),
-      .recov_core_event_i(rv_core_ibex_recov_core_event),
-      .ibus_region_cfg_o(rv_core_ibex_peri_ibus_region_cfg),
-      .dbus_region_cfg_o(rv_core_ibex_peri_dbus_region_cfg),
-      .tl_i(rv_core_ibex_peri_tl_req),
-      .tl_o(rv_core_ibex_peri_tl_rsp),
+      .rst_cpu_n_o(rv_core_ibex_rst_cpu_n),
+      .ram_cfg_i(ast_ram_1p_cfg),
+      .hart_id_i(rv_core_ibex_hart_id),
+      .boot_addr_i(rv_core_ibex_boot_addr),
+      .irq_software_i(rv_plic_msip),
+      .irq_timer_i(rv_core_ibex_irq_timer),
+      .irq_external_i(rv_plic_irq),
+      .esc_tx_i(alert_handler_esc_tx[0]),
+      .esc_rx_o(alert_handler_esc_rx[0]),
+      .debug_req_i(rv_dm_debug_req),
+      .crash_dump_o(rv_core_ibex_crash_dump),
+      .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
+      .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
+      .pwrmgr_o(rv_core_ibex_pwrmgr),
+      .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
+      .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
+      .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),
+      .cored_tl_h_i(main_tl_rv_core_ibex__cored_rsp),
+      .reg_tl_d_i(rv_core_ibex_reg_tl_d_req),
+      .reg_tl_d_o(rv_core_ibex_reg_tl_d_rsp),
+      .scanmode_i,
+      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .clk_esc_i (clkmgr_aon_clocks.clk_io_div4_infra),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_esc_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   // interrupt assignments
@@ -2717,13 +2741,13 @@ module top_earlgrey #(
     .rst_main_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
     .rst_fixed_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
 
-    // port: tl_corei
-    .tl_corei_i(main_tl_corei_req),
-    .tl_corei_o(main_tl_corei_rsp),
+    // port: tl_rv_core_ibex__corei
+    .tl_rv_core_ibex__corei_i(main_tl_rv_core_ibex__corei_req),
+    .tl_rv_core_ibex__corei_o(main_tl_rv_core_ibex__corei_rsp),
 
-    // port: tl_cored
-    .tl_cored_i(main_tl_cored_req),
-    .tl_cored_o(main_tl_cored_rsp),
+    // port: tl_rv_core_ibex__cored
+    .tl_rv_core_ibex__cored_i(main_tl_rv_core_ibex__cored_req),
+    .tl_rv_core_ibex__cored_o(main_tl_rv_core_ibex__cored_rsp),
 
     // port: tl_rv_dm__sba
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),
@@ -2805,9 +2829,9 @@ module top_earlgrey #(
     .tl_keymgr_o(keymgr_tl_req),
     .tl_keymgr_i(keymgr_tl_rsp),
 
-    // port: tl_rv_core_ibex_peri
-    .tl_rv_core_ibex_peri_o(rv_core_ibex_peri_tl_req),
-    .tl_rv_core_ibex_peri_i(rv_core_ibex_peri_tl_rsp),
+    // port: tl_rv_core_ibex__reg
+    .tl_rv_core_ibex__reg_o(rv_core_ibex_reg_tl_d_req),
+    .tl_rv_core_ibex__reg_i(rv_core_ibex_reg_tl_d_rsp),
 
     // port: tl_sram_ctrl_main
     .tl_sram_ctrl_main_o(sram_ctrl_main_tl_req),

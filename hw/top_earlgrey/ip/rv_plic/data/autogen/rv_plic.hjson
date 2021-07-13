@@ -55,6 +55,31 @@
     }
   ],
 
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq",
+      act:     "req",
+      package: "",
+      width:   "1"
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq_id",
+      act:     "req",
+      package: "",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "msip",
+      act:     "req",
+      package: "",
+      width:   "1"
+    },
+  ]
+
   regwidth: "32",
   registers: [
     { multireg: {

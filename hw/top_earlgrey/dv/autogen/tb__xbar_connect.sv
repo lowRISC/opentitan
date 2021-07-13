@@ -29,8 +29,8 @@ clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
 wire clk_io_div4;
 clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
-tl_if corei_tl_if(clk_main, rst_n);
-tl_if cored_tl_if(clk_main, rst_n);
+tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
+tl_if rv_core_ibex__cored_tl_if(clk_main, rst_n);
 tl_if rv_dm__sba_tl_if(clk_main, rst_n);
 
 tl_if rv_dm__regs_tl_if(clk_main, rst_n);
@@ -51,7 +51,7 @@ tl_if edn1_tl_if(clk_main, rst_n);
 tl_if rv_plic_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
 tl_if keymgr_tl_if(clk_main, rst_n);
-tl_if rv_core_ibex_peri_tl_if(clk_main, rst_n);
+tl_if rv_core_ibex__reg_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_main_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
@@ -107,8 +107,8 @@ initial begin
     force tb.dut.top_earlgrey.u_xbar_main.rst_fixed_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_peri.rst_peri_ni = rst_n;
 
-    `DRIVE_CHIP_TL_HOST_IF(corei, rv_core_ibex, tl_i)
-    `DRIVE_CHIP_TL_HOST_IF(cored, rv_core_ibex, tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
+    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h)
     `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__rom, rv_dm, rom_tl_d)
@@ -128,7 +128,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(keymgr, keymgr, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex_peri, rv_core_ibex_peri, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex__reg, rv_core_ibex, reg_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main, sram_ctrl_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)

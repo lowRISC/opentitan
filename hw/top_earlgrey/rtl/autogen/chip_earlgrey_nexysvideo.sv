@@ -741,9 +741,9 @@ module chip_earlgrey_nexysvideo #(
     .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .IbexRegFile(ibex_pkg::RegFileFPGA),
-    .IbexPipeLine(1),
-    .SecureIbex(0),
+    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
+    .RvCoreIbexPipeLine(1),
+    .SecRvCoreIbexureIbex(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)

@@ -6,17 +6,17 @@
 module xbar_main_bind;
 
   // Host interfaces
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_corei (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_core_ibex__corei (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_corei_i),
-    .d2h    (tl_corei_o)
+    .h2d    (tl_rv_core_ibex__corei_i),
+    .d2h    (tl_rv_core_ibex__corei_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cored (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_core_ibex__cored (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_cored_i),
-    .d2h    (tl_cored_o)
+    .h2d    (tl_rv_core_ibex__cored_i),
+    .d2h    (tl_rv_core_ibex__cored_o)
   );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_dm__sba (
     .clk_i  (clk_main_i),
@@ -140,11 +140,11 @@ module xbar_main_bind;
     .h2d    (tl_keymgr_o),
     .d2h    (tl_keymgr_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_core_ibex_peri (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_core_ibex__reg (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rv_core_ibex_peri_o),
-    .d2h    (tl_rv_core_ibex_peri_i)
+    .h2d    (tl_rv_core_ibex__reg_o),
+    .d2h    (tl_rv_core_ibex__reg_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_main (
     .clk_i  (clk_main_i),

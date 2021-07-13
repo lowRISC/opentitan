@@ -14,13 +14,13 @@
     // host
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_corei"
+      name:   "tl_rv_core_ibex__corei"
       act:    "rsp"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_cored"
+      name:   "tl_rv_core_ibex__cored"
       act:    "rsp"
       package: "tlul_pkg"
     }
@@ -147,7 +147,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rv_core_ibex_peri"
+      name:   "tl_rv_core_ibex__reg"
       act:    "req"
       package: "tlul_pkg"
     }

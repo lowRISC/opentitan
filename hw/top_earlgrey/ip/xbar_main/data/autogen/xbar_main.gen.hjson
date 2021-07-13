@@ -28,14 +28,14 @@
   domain: "0"
   connections:
   {
-    corei:
+    rv_core_ibex.corei:
     [
       rom_ctrl.rom
       rv_dm.rom
       ram_main
       eflash
     ]
-    cored:
+    rv_core_ibex.cored:
     [
       rom_ctrl.rom
       rom_ctrl.regs
@@ -57,7 +57,7 @@
       keymgr
       kmac
       sram_ctrl_main
-      rv_core_ibex_peri
+      rv_core_ibex.reg
     ]
     rv_dm.sba:
     [
@@ -80,31 +80,31 @@
       keymgr
       kmac
       sram_ctrl_main
-      rv_core_ibex_peri
+      rv_core_ibex.reg
     ]
   }
   nodes:
   [
     {
-      name: corei
+      name: rv_core_ibex.corei
       type: host
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
       xbar: false
       stub: false
-      inst_type: rv_core_ibex
+      inst_type: ""
       pipeline_byp: "true"
     }
     {
-      name: cored
+      name: rv_core_ibex.cored
       type: host
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
       xbar: false
       stub: false
-      inst_type: rv_core_ibex
+      inst_type: ""
       pipeline_byp: "true"
     }
     {
@@ -460,12 +460,12 @@
       pipeline: "true"
     }
     {
-      name: rv_core_ibex_peri
+      name: rv_core_ibex.reg
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       pipeline_byp: "false"
-      inst_type: rv_core_ibex_peri
+      inst_type: rv_core_ibex
       addr_range:
       [
         {
