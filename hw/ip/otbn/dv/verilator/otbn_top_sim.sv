@@ -140,7 +140,7 @@ module otbn_top_sim (
   // Pulse otbn_start for 1 cycle immediately out of reset.
   // Flop `done_o` from otbn_core to match up with model done signal.
   always @(posedge IO_CLK or negedge IO_RST_N) begin
-    if(!IO_RST_N) begin
+    if (!IO_RST_N) begin
       otbn_start      <= 1'b0;
       otbn_start_done <= 1'b0;
       otbn_done_q     <= 1'b0;
