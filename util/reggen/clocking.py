@@ -7,6 +7,7 @@
 from typing import Dict, List, Optional
 
 from .lib import check_keys, check_list, check_bool, check_optional_name
+import re
 
 
 class ClockingItem:
@@ -14,12 +15,14 @@ class ClockingItem:
                  clock: Optional[str],
                  reset: Optional[str],
                  idle: Optional[str],
-                 primary: bool):
+                 primary: bool,
+                 clock_base_name: Optional[str]):
         if primary:
             assert clock is not None
             assert reset is not None
 
         self.clock = clock
+        self.clock_base_name = clock_base_name
         self.reset = reset
         self.primary = primary
         self.idle = idle
@@ -35,6 +38,15 @@ class ClockingItem:
         primary = check_bool(rd.get('primary', only_item),
                              'primary field of ' + what)
 
+        match = re.match(r'^clk_([A-Za-z0-9_]+)_i', str(clock))
+        if not clock or clock in ['clk_i', 'scan_clk_i']:
+            clock_base_name = ""
+        elif match:
+            clock_base_name = match.group(1)
+        else:
+            raise ValueError(f'clock name must be of the form clk_*_i or clk_i. '
+                             f'{clock} is illegal.')
+
         if primary:
             if clock is None:
                 raise ValueError('No clock signal for primary '
@@ -43,7 +55,7 @@ class ClockingItem:
                 raise ValueError('No reset signal for primary '
                                  f'clocking item at {what}.')
 
-        return ClockingItem(clock, reset, idle, primary)
+        return ClockingItem(clock, reset, idle, primary, clock_base_name)
 
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
@@ -100,3 +112,15 @@ class Clocking:
 
     def reset_signals(self) -> List[str]:
         return [item.reset for item in self.items if item.reset is not None]
+
+    def get_by_clock(self, name: Optional[str]) -> ClockingItem:
+        ret = None
+        for item in self.items:
+            if name == item.clock:
+                 ret = item
+                 break
+
+        if ret is None:
+            raise ValueError(f'The requested clock {name} does not exist.')
+        else:
+            return ret

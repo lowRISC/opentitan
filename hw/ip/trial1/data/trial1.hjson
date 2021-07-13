@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "TRIAL1",
   regwidth: 32,
-  clocking: [{clock: "clk_fixed", reset: "rst_fixed_n"}],
+  clocking: [{clock: "clk_fixed_i", reset: "rst_fixed_n"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

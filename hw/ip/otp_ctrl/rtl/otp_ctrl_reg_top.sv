@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module otp_ctrl_core_reg_top (
+module otp_ctrl_reg_top (
   input clk_i,
   input rst_ni,
 
@@ -14,12 +14,12 @@ module otp_ctrl_core_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o,
-  input  tlul_pkg::tl_d2h_t tl_win_i,
+  output tlul_pkg::tl_h2d_t tl_win_o  [2],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
 
   // To HW
-  output otp_ctrl_reg_pkg::otp_ctrl_core_reg2hw_t reg2hw, // Write
-  input  otp_ctrl_reg_pkg::otp_ctrl_core_hw2reg_t hw2reg, // Read
+  output otp_ctrl_reg_pkg::otp_ctrl_reg2hw_t reg2hw, // Write
+  input  otp_ctrl_reg_pkg::otp_ctrl_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -30,7 +30,7 @@ module otp_ctrl_core_reg_top (
 
   import otp_ctrl_reg_pkg::* ;
 
-  localparam int AW = 13;
+  localparam int AW = 14;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -82,29 +82,31 @@ module otp_ctrl_core_reg_top (
     .tl_o(tl_o)
   );
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [2];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [2];
+  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
 
   logic [1:0] reg_steer;
 
   // socket_1n connection
-  assign tl_reg_h2d = tl_socket_h2d[1];
-  assign tl_socket_d2h[1] = tl_reg_d2h;
+  assign tl_reg_h2d = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_reg_d2h;
 
-  assign tl_win_o = tl_socket_h2d[0];
-  assign tl_socket_d2h[0] = tl_win_i;
+  assign tl_win_o[0] = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o[1] = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_win_i[1];
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (2),
+    .N          (3),
     .HReqPass   (1'b1),
     .HRspPass   (1'b1),
-    .DReqPass   ({2{1'b1}}),
-    .DRspPass   ({2{1'b1}}),
+    .DReqPass   ({3{1'b1}}),
+    .DRspPass   ({3{1'b1}}),
     .HReqDepth  (4'h0),
     .HRspDepth  (4'h0),
-    .DReqDepth  ({2{4'h0}}),
-    .DRspDepth  ({2{4'h0}})
+    .DReqDepth  ({3{4'h0}}),
+    .DRspDepth  ({3{4'h0}})
   ) u_socket (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -117,14 +119,17 @@ module otp_ctrl_core_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 1;       // Default set to register
+    reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
     if (tl_i.a_address[AW-1:0] >= 4096 && tl_i.a_address[AW-1:0] < 6144) begin
       reg_steer = 0;
     end
-    if (intg_err) begin
+    if (tl_i.a_address[AW-1:0] >= 8192 && tl_i.a_address[AW-1:0] < 8256) begin
       reg_steer = 1;
+    end
+    if (intg_err) begin
+      reg_steer = 2;
     end
   end
 
@@ -275,7 +280,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_operation_done (
     .clk_i   (clk_i),
@@ -301,7 +306,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_error (
     .clk_i   (clk_i),
@@ -329,7 +334,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_operation_done (
     .clk_i   (clk_i),
@@ -355,7 +360,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_error (
     .clk_i   (clk_i),
@@ -906,7 +911,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (11),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (11'h0)
   ) u_direct_access_address (
     .clk_i   (clk_i),
@@ -935,7 +940,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_0 (
     .clk_i   (clk_i),
@@ -962,7 +967,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_1 (
     .clk_i   (clk_i),
@@ -1023,7 +1028,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_trigger_regwen (
     .clk_i   (clk_i),
@@ -1082,7 +1087,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_regwen (
     .clk_i   (clk_i),
@@ -1109,7 +1114,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_check_timeout (
     .clk_i   (clk_i),
@@ -1136,7 +1141,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_integrity_check_period (
     .clk_i   (clk_i),
@@ -1163,7 +1168,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_consistency_check_period (
     .clk_i   (clk_i),
@@ -1190,7 +1195,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_creator_sw_cfg_read_lock (
     .clk_i   (clk_i),
@@ -1217,7 +1222,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_owner_sw_cfg_read_lock (
     .clk_i   (clk_i),
@@ -1489,39 +1494,39 @@ module otp_ctrl_core_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(OTP_CTRL_CORE_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(OTP_CTRL_CORE_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(OTP_CTRL_CORE_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(OTP_CTRL_CORE_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(OTP_CTRL_CORE_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(OTP_CTRL_CORE_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(OTP_CTRL_CORE_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(OTP_CTRL_CORE_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(OTP_CTRL_CORE_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(OTP_CTRL_CORE_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(OTP_CTRL_CORE_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(OTP_CTRL_CORE_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(OTP_CTRL_CORE_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(OTP_CTRL_CORE_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(OTP_CTRL_CORE_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(OTP_CTRL_CORE_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(OTP_CTRL_CORE_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(OTP_CTRL_CORE_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(OTP_CTRL_CORE_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(OTP_CTRL_CORE_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(OTP_CTRL_CORE_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(OTP_CTRL_CORE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(OTP_CTRL_CORE_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(OTP_CTRL_CORE_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(OTP_CTRL_CORE_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(OTP_CTRL_CORE_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(OTP_CTRL_CORE_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(OTP_CTRL_CORE_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(OTP_CTRL_CORE_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(OTP_CTRL_CORE_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(OTP_CTRL_CORE_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(OTP_CTRL_CORE_PERMIT[31] & ~reg_be))) |
-               (addr_hit[32] & (|(OTP_CTRL_CORE_PERMIT[32] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(OTP_CTRL_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(OTP_CTRL_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(OTP_CTRL_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(OTP_CTRL_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(OTP_CTRL_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(OTP_CTRL_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(OTP_CTRL_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(OTP_CTRL_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(OTP_CTRL_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(OTP_CTRL_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(OTP_CTRL_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(OTP_CTRL_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(OTP_CTRL_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(OTP_CTRL_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(OTP_CTRL_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(OTP_CTRL_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(OTP_CTRL_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(OTP_CTRL_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(OTP_CTRL_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(OTP_CTRL_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(OTP_CTRL_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(OTP_CTRL_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(OTP_CTRL_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(OTP_CTRL_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(OTP_CTRL_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(OTP_CTRL_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(OTP_CTRL_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(OTP_CTRL_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(OTP_CTRL_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(OTP_CTRL_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(OTP_CTRL_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(OTP_CTRL_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(OTP_CTRL_PERMIT[32] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 

@@ -9,6 +9,7 @@
   from reggen.lib import get_basename
   from reggen.register import Register
   from reggen.multi_register import MultiRegister
+  from reggen.bits import Bits
 
   num_wins = len(rb.windows)
   num_wins_width = ((num_wins+1).bit_length()) - 1
@@ -42,12 +43,28 @@
   common_data_intg_gen = 0 if rb.has_data_intg_passthru else 1
   adapt_data_intg_gen = 1 if rb.has_data_intg_passthru else 0
   assert common_data_intg_gen != adapt_data_intg_gen
+
+  # declare a fully asynchronous interface
+  reg_clk_expr = "clk_i"
+  reg_rst_expr = "rst_ni"
+  tl_h2d_expr = "tl_i"
+  tl_d2h_expr = "tl_o"
+  if rb.async_if:
+    tl_h2d_expr = "tl_async_h2d"
+    tl_d2h_expr = "tl_async_d2h"
+    for clock in rb.clocks.values():
+      reg_clk_expr = clock.clock
+      reg_rst_expr = clock.reset
 %>
 `include "prim_assert.sv"
 
 module ${mod_name} (
   input clk_i,
   input rst_ni,
+% for clock in rb.clocks.values():
+  input ${clock.clock},
+  input ${clock.reset},
+% endfor
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -94,21 +111,40 @@ module ${mod_name} (
   logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
+  logic reg_busy;
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 % endif
 
+  % if rb.async_if:
+  tlul_pkg::tl_h2d_t tl_async_h2d;
+  tlul_pkg::tl_d2h_t tl_async_d2h;
+  tlul_fifo_async #(
+    .ReqDepth(2),
+    .RspDepth(2)
+  ) u_if_sync (
+    .clk_h_i(clk_i),
+    .rst_h_ni(rst_ni),
+    .clk_d_i(${reg_clk_expr}),
+    .rst_d_ni(${reg_rst_expr}),
+    .tl_h_i(tl_i),
+    .tl_h_o(tl_o),
+    .tl_d_o(${tl_h2d_expr}),
+    .tl_d_i(${tl_d2h_expr})
+  );
+  % endif
+
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
-    .tl_i,
+    .tl_i(${tl_h2d_expr}),
     .err_o(intg_err)
   );
 
   logic intg_err_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge ${reg_clk_expr} or negedge ${reg_rst_expr}) begin
+    if (!${reg_rst_expr}) begin
       intg_err_q <= '0;
     end else if (intg_err) begin
       intg_err_q <= 1'b1;
@@ -126,17 +162,17 @@ module ${mod_name} (
     .EnableDataIntgGen(${common_data_intg_gen})
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
-    .tl_o
+    .tl_o(${tl_d2h_expr})
   );
 
 % if num_dsp == 1:
   ## Either no windows (and just registers) or no registers and only
   ## one window.
   % if num_wins == 0:
-  assign tl_reg_h2d = tl_i;
+  assign tl_reg_h2d = ${tl_h2d_expr};
   assign tl_o_pre   = tl_reg_d2h;
   % else:
-  assign tl_win_o = tl_i;
+  assign tl_win_o = ${tl_h2d_expr};
   assign tl_o_pre = tl_win_i;
   % endif
 % else:
@@ -183,9 +219,9 @@ module ${mod_name} (
     .DReqDepth  ({${num_dsp}{4'h0}}),
     .DRspDepth  ({${num_dsp}{4'h0}})
   ) u_socket (
-    .clk_i,
-    .rst_ni,
-    .tl_h_i (tl_i),
+    .clk_i  (${reg_clk_expr}),
+    .rst_ni (${reg_rst_expr}),
+    .tl_h_i (${tl_h2d_expr}),
     .tl_h_o (tl_o_pre),
     .tl_d_o (tl_socket_h2d),
     .tl_d_i (tl_socket_d2h),
@@ -202,12 +238,12 @@ module ${mod_name} (
       base_addr = w.offset
       limit_addr = w.offset + w.size_in_bytes
 
-      hi_check = 'tl_i.a_address[AW-1:0] < {}'.format(limit_addr)
+      hi_check = f'{tl_h2d_expr}.a_address[AW-1:0] < {limit_addr}'
       addr_checks = []
       if base_addr > 0:
-        addr_checks.append('tl_i.a_address[AW-1:0] >= {}'.format(base_addr))
+        addr_checks.append(f'{tl_h2d_expr}.a_address[AW-1:0] >= {base_addr}')
       if limit_addr < 2**addr_width:
-        addr_checks.append('tl_i.a_address[AW-1:0] < {}'.format(limit_addr))
+        addr_checks.append(f'{tl_h2d_expr}.a_address[AW-1:0] < {limit_addr}')
 
       addr_test = ' && '.join(addr_checks)
 %>\
@@ -231,8 +267,8 @@ module ${mod_name} (
     .RegDw(DW),
     .EnableDataIntgGen(${adapt_data_intg_gen})
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+    .clk_i  (${reg_clk_expr}),
+    .rst_ni (${reg_rst_expr}),
 
     .tl_i (tl_reg_h2d),
     .tl_o (tl_reg_d2h),
@@ -242,9 +278,31 @@ module ${mod_name} (
     .addr_o  (reg_addr),
     .wdata_o (reg_wdata),
     .be_o    (reg_be),
+    .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
     .error_i (reg_error)
   );
+
+% if not rb.async_if:
+  // cdc oversampling signals
+  % for clock in rb.clocks.values():
+  <%
+    clk_name = clock.clock_base_name
+    tgl_expr = clk_name + "_tgl"
+    cname = clock.clock
+    rname = clock.reset
+  %>\
+  logic sync_${clk_name}_update;
+  prim_pulse_sync u_${tgl_expr} (
+    .clk_src_i(${cname}),
+    .rst_src_ni(${rname}),
+    .src_pulse_i(1'b1),
+    .clk_dst_i(${reg_clk_expr}),
+    .rst_dst_ni(${reg_rst_expr}),
+    .dst_pulse_o(sync_${clk_name}_update)
+  );
+  % endfor
+% endif
 
   % if block.expose_reg_if:
   assign reg2hw.reg_if.reg_we    = reg_we;
@@ -267,7 +325,7 @@ ${reg_sig_decl(r)}\
         fld_suff = '_' + f.name.lower() if len(r.fields) > 1 else ''
         sig_name = r.name.lower() + fld_suff
 %>\
-${field_sig_decl(f, sig_name, r.hwext, r.shadowed)}\
+${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     % endfor
   % endfor
 
@@ -401,6 +459,35 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
       end
     endcase
   end
+
+  // register busy
+  % if rb.async_if:
+  assign reg_busy = '0;
+  % else:
+  always_comb begin
+    reg_busy = '0;
+    unique case (1'b1)
+      % for i, r in enumerate(regs_flat):
+        % if r.async_clk and len(r.fields) == 1:
+      addr_hit[${i}]: begin
+        reg_busy = ${r.name.lower() + "_busy"};
+      end
+        % elif r.async_clk:
+      addr_hit[${i}]: begin
+        reg_busy =
+          % for f in r.fields:
+          ${r.name.lower() + "_" + f.name.lower() + "_busy"}${";" if loop.last else " |"}
+          % endfor
+      end
+        % endif
+      % endfor
+      default: begin
+        reg_busy  = '0;
+      end
+    endcase
+  end
+  % endif
+
 % endif
 
   // Unused signal tieoff
@@ -420,12 +507,12 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 % if rb.all_regs:
 
   // Assertions for Register Interface
-  `ASSERT_PULSE(wePulse, reg_we)
-  `ASSERT_PULSE(rePulse, reg_re)
+  `ASSERT_PULSE(wePulse, reg_we, ${reg_clk_expr}, !${reg_rst_expr})
+  `ASSERT_PULSE(rePulse, reg_re, ${reg_clk_expr}, !${reg_rst_expr})
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid)
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, ${reg_clk_expr}, !${reg_rst_expr})
 
-  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), ${reg_clk_expr}, !${reg_rst_expr})
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
@@ -453,12 +540,15 @@ ${bits.msb}\
   logic ${reg.name.lower()}_we;
   % endif
 </%def>\
-<%def name="field_sig_decl(field, sig_name, hwext, shadowed)">\
+<%def name="field_sig_decl(field, sig_name, hwext, shadowed, async_clk)">\
   % if field.swaccess.allows_read():
   logic ${str_arr_sv(field.bits)}${sig_name}_qs;
   % endif
   % if field.swaccess.allows_write():
   logic ${str_arr_sv(field.bits)}${sig_name}_wd;
+  % endif
+  % if async_clk:
+  logic ${str_arr_sv(Bits(0,0))}${sig_name}_busy;
   % endif
 </%def>\
 <%def name="finst_gen(reg, field, finst_name, fsig_name)">\
@@ -498,10 +588,27 @@ ${bits.msb}\
 
     qs_expr = f'{finst_name}_qs' if field.swaccess.allows_read() else ''
 %>\
+<%
+    clk_expr = reg.async_clk.clock if reg.async_clk else reg_clk_expr
+    rst_expr = reg.async_clk.reset if reg.async_clk else reg_rst_expr
+    if reg.async_clk:
+      update_expr = "sync_" + reg.async_clk.clock.strip("_iclk_")+ "_update"
+%>\
   % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
-  prim_subreg_ext #(
+<%
+    subreg_block = "prim_subreg_ext_async" if reg.async_clk else "prim_subreg_ext"
+%>\
+  ${subreg_block} #(
     .DW    (${field.bits.width()})
   ) u_${finst_name} (
+    % if reg.async_clk:
+    .clk_src_i    (${reg_clk_expr}),
+    .rst_src_ni   (${reg_rst_expr}),
+    .clk_dst_i    (${clk_expr}),
+    .rst_dst_ni   (${rst_expr}),
+    .src_update_i (${update_expr}),
+    .src_busy_o   (${finst_name}_busy),
+    % endif
     .re     (${re_expr}),
     .we     (${we_expr}),
     .wd     (${wd_expr}),
@@ -527,14 +634,34 @@ ${bits.msb}\
     % if is_const_reg:
   // constant-only read
   assign ${finst_name}_qs = ${resval_expr};
+    % elif reg.async_clk:
+  prim_subreg_async #(
+    .DW      (${field.bits.width()}),
+    .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
+    .RESVAL  (${resval_expr})
+  ) u_${finst_name} (
+    .clk_src_i    (${reg_clk_expr}),
+    .rst_src_ni   (${reg_rst_expr}),
+    .clk_dst_i    (${clk_expr}),
+    .rst_dst_ni   (${rst_expr}),
+    .src_update_i (${update_expr}),
+    .src_we_i     (${we_expr}),
+    .src_wd_i     (${wd_expr}),
+    .dst_de_i     (${de_expr}),
+    .dst_d_i      (${d_expr}),
+    .src_busy_o   (${finst_name}_busy),
+    .src_qs_o     (${qs_expr}),
+    .dst_qe_o     (${qe_expr}),
+    .q            (${q_expr})
+  );
     % else:
   ${subreg_block} #(
     .DW      (${field.bits.width()}),
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
     .RESVAL  (${resval_expr})
   ) u_${finst_name} (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (${reg_clk_expr}),
+    .rst_ni  (${reg_rst_expr}),
 
     // from register interface
       % if reg.shadowed:
@@ -592,5 +719,27 @@ ${space}\
         reg_rdata_next[${str_bits_sv(field.bits)}] = ${sig_name}_qs;
 % else:
         reg_rdata_next[${str_bits_sv(field.bits)}] = '0;
+% endif
+</%def>\
+<%def name="reg_enable_gen(reg, idx)">\
+  % if reg.needs_re():
+  assign ${reg.name.lower()}_re = addr_hit[${idx}] & reg_re & !reg_error;
+  % endif
+  % if reg.needs_we():
+  assign ${reg.name.lower()}_we = addr_hit[${idx}] & reg_we & !reg_error;
+  % endif
+</%def>\
+<%def name="reg_cdc_gen(field, sig_name, hwext, shadowed, idx)">\
+<%
+    needs_wd = field.swaccess.allows_write()
+    space = '\n' if needs_wd or needs_re else ''
+%>\
+${space}\
+% if needs_wd:
+  % if field.swaccess.swrd() == SwRdAccess.RC:
+  assign ${sig_name}_wd = '1;
+  % else:
+  assign ${sig_name}_wd = reg_wdata[${str_bits_sv(field.bits)}];
+  % endif
 % endif
 </%def>\

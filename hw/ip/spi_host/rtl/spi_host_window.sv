@@ -40,6 +40,7 @@ module spi_host_window (
     .addr_o    (addr),
     .wdata_o   (tx_data_o),
     .be_o      (tx_be_o),
+    .busy_i    ('0),
     .rdata_i   (rx_data_i),
     .error_i   (win_error)
   );

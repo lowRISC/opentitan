@@ -5,6 +5,7 @@
 from typing import Dict, List
 
 from reggen import register
+from .clocking import Clocking
 from .field import Field
 from .lib import check_keys, check_str, check_name, check_bool
 from .params import ReggenParams
@@ -38,7 +39,13 @@ OPTIONAL_FIELDS.update({
     'compact': [
         'pb', "If true, allow multireg compacting."
         "If false, do not compact."
-    ]
+    ],
+    'cdc': [
+        's',
+        "indicates the register must cross to a different "
+        "clock domain before use.  The value shown here "
+        "should correspond to one of the module's clocks."
+    ],
 })
 
 
@@ -48,7 +55,8 @@ class MultiRegister(RegBase):
                  addrsep: int,
                  reg_width: int,
                  params: ReggenParams,
-                 raw: object):
+                 raw: object,
+                 clocks: Clocking):
         super().__init__(offset)
 
         rd = check_keys(raw, 'multireg',
@@ -64,7 +72,12 @@ class MultiRegister(RegBase):
         reg_rd = {key: value
                   for key, value in rd.items()
                   if key in reg_allowed_keys}
-        self.reg = Register.from_raw(reg_width, offset, params, reg_rd)
+        self.reg = Register.from_raw(reg_width, offset, params, reg_rd, clocks)
+
+        # The entire multi-reg block is always on the same clock
+        # This is guaranteed by design
+        self.async_name = self.reg.async_name
+        self.async_clk = self.reg.async_clk
 
         self.cname = check_name(rd['cname'],
                                 'cname field of multireg {}'

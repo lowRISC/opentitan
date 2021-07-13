@@ -41,55 +41,64 @@ module aon_timer import aon_timer_reg_pkg::*;
   localparam int AON_WKUP = 0;
   localparam int AON_WDOG = 1;
 
-  // TLUL structs
-  tlul_pkg::tl_h2d_t         tl_aon_h2d;
-  tlul_pkg::tl_d2h_t         tl_aon_d2h;
   // Register structs
-  aon_timer_reg2hw_t         aon_reg2hw;
-  aon_timer_hw2reg_t         aon_hw2reg;
+  aon_timer_reg2hw_t         reg2hw;
+  aon_timer_hw2reg_t         hw2reg;
   // Register write signals
-  logic                      wkup_count_reg_wr;
-  logic [31:0]               wkup_count_wr_data;
-  logic                      wdog_count_reg_wr;
-  logic [31:0]               wdog_count_wr_data;
+  logic                      aon_wkup_count_reg_wr;
+  logic [31:0]               aon_wkup_count_wr_data;
+  logic                      aon_wdog_count_reg_wr;
+  logic [31:0]               aon_wdog_count_wr_data;
   // Other sync signals
   lc_ctrl_pkg::lc_tx_t [2:0] lc_escalate_en;
   // Interrupt signals
   logic                      aon_wkup_intr_set;
   logic                      aon_wdog_intr_set;
-  logic [1:0]                intr_aon_test_q;
-  logic                      intr_aon_test_qe;
-  logic [1:0]                intr_aon_state_q;
-  logic                      intr_aon_state_de;
-  logic [1:0]                intr_aon_state_d;
+  logic [1:0]                intr_test_q;
+  logic                      intr_test_qe;
+  logic [1:0]                intr_state_q;
+  logic                      intr_state_de;
+  logic [1:0]                intr_state_d;
   logic [1:0]                intr_out;
   // Reset signals
   logic                      aon_rst_req_set;
   logic                      aon_rst_req_d, aon_rst_req_q;
   // Alert signals
-  logic [NumAlerts-1:0]      aon_alert_test, aon_alerts;
+  logic [NumAlerts-1:0]      alert_test, alerts;
 
   //////////////////////////////
   // Register Write Interface //
   //////////////////////////////
 
-  assign aon_hw2reg.wkup_count.de = wkup_count_reg_wr;
-  assign aon_hw2reg.wkup_count.d  = wkup_count_wr_data;
-  assign aon_hw2reg.wdog_count.de = wdog_count_reg_wr;
-  assign aon_hw2reg.wdog_count.d  = wdog_count_wr_data;
+  logic aon_sleep_mode;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_sync_sleep_mode (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .d_i     (sleep_mode_i),
+    .q_o     (aon_sleep_mode)
+  );
+
+  assign hw2reg.wkup_count.de = aon_wkup_count_reg_wr;
+  assign hw2reg.wkup_count.d  = aon_wkup_count_wr_data;
+  assign hw2reg.wdog_count.de = aon_wdog_count_reg_wr;
+  assign hw2reg.wdog_count.d  = aon_wdog_count_wr_data;
 
   // registers instantiation
   aon_timer_reg_top u_reg (
-    .clk_i      (clk_aon_i),
-    .rst_ni     (rst_aon_ni),
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_aon_ni,
 
-    .tl_i       (tl_aon_h2d),
-    .tl_o       (tl_aon_d2h),
+    .tl_i,
+    .tl_o,
 
-    .reg2hw     (aon_reg2hw),
-    .hw2reg     (aon_hw2reg),
+    .reg2hw,
+    .hw2reg,
 
-    .intg_err_o (aon_alerts[0]),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
 
@@ -97,9 +106,9 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Alerts //
   ////////////
 
-  assign aon_alert_test = {
-    aon_reg2hw.alert_test.q &
-    aon_reg2hw.alert_test.qe
+  assign alert_test = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
@@ -107,34 +116,16 @@ module aon_timer import aon_timer_reg_pkg::*;
       .AsyncOn(AlertAsyncOn[i]),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
-      .clk_i         (clk_aon_i),
-      .rst_ni        (rst_aon_ni),
-      .alert_test_i  ( aon_alert_test[i] ),
-      .alert_req_i   ( aon_alerts[0]     ),
-      .alert_ack_o   (                   ),
-      .alert_state_o (                   ),
-      .alert_rx_i    ( alert_rx_i[i]     ),
-      .alert_tx_o    ( alert_tx_o[i]     )
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[0]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
     );
   end
-
-  ///////////////////////////////////////
-  // Sync TLUL signals into AON Domain //
-  ///////////////////////////////////////
-
-  tlul_fifo_async #(
-      .ReqDepth (1), // There will only ever be 1 req outstanding from the core
-      .RspDepth (1)
-  ) u_tlul_fifo (
-      .clk_h_i    (clk_i),
-      .rst_h_ni   (rst_aon_ni), // keep pointers consistent by using single reset
-      .clk_d_i    (clk_aon_i),
-      .rst_d_ni   (rst_aon_ni),
-      .tl_h_i     (tl_i),
-      .tl_h_o     (tl_o),
-      .tl_d_o     (tl_aon_h2d),
-      .tl_d_i     (tl_aon_d2h)
-  );
 
   // Lifecycle sync
   prim_lc_sync #(
@@ -150,26 +141,16 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Timer Core //
   ////////////////
 
-  logic sleep_mode;
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_sync_sleep_mode (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
-    .d_i     (sleep_mode_i),
-    .q_o     (sleep_mode)
-  );
-
   aon_timer_core u_core (
     .clk_aon_i,
     .rst_aon_ni,
-    .sleep_mode_i              (sleep_mode),
+    .sleep_mode_i              (aon_sleep_mode),
     .lc_escalate_en_i          (lc_escalate_en),
-    .reg2hw_i                  (aon_reg2hw),
-    .wkup_count_reg_wr_o       (wkup_count_reg_wr),
-    .wkup_count_wr_data_o      (wkup_count_wr_data),
-    .wdog_count_reg_wr_o       (wdog_count_reg_wr),
-    .wdog_count_wr_data_o      (wdog_count_wr_data),
+    .reg2hw_i                  (reg2hw),
+    .wkup_count_reg_wr_o       (aon_wkup_count_reg_wr),
+    .wkup_count_wr_data_o      (aon_wkup_count_wr_data),
+    .wdog_count_reg_wr_o       (aon_wdog_count_reg_wr),
+    .wdog_count_wr_data_o      (aon_wdog_count_wr_data),
     .wkup_intr_o               (aon_wkup_intr_set),
     .wdog_intr_o               (aon_wdog_intr_set),
     .wdog_reset_req_o          (aon_rst_req_set)
@@ -181,15 +162,15 @@ module aon_timer import aon_timer_reg_pkg::*;
 
   // Wakeup request is set by HW and cleared by SW
   // The wakeup cause is always captured and only sent out when the system has entered sleep mode
-  assign aon_hw2reg.wkup_cause.de = aon_wkup_intr_set | aon_wdog_intr_set;
-  assign aon_hw2reg.wkup_cause.d  = 1'b1;
+  assign hw2reg.wkup_cause.de = aon_wkup_intr_set | aon_wdog_intr_set;
+  assign hw2reg.wkup_cause.d  = 1'b1;
 
   // wakeup output is flopped in case of clock domain crossing
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
       aon_timer_wkup_req_o <= '0;
     end else begin
-      aon_timer_wkup_req_o <= aon_reg2hw.wkup_cause.q & sleep_mode;
+      aon_timer_wkup_req_o <= reg2hw.wkup_cause.q & aon_sleep_mode;
     end
   end
 
@@ -197,54 +178,79 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Interrupt Handling //
   ////////////////////////
 
+  // capture these signals as the origin sets are pulsed and it may
+  // happen when the bus clocks are not available.
+  logic [1:0] aon_intr_event_q;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      aon_intr_event_q <= '0;
+    end else begin
+      if (aon_wdog_intr_set) begin
+        aon_intr_event_q[AON_WDOG] <= ~aon_intr_event_q[AON_WDOG];
+      end
+      if (aon_wkup_intr_set) begin
+        aon_intr_event_q[AON_WKUP] <= ~aon_intr_event_q[AON_WKUP];
+      end
+    end
+  end
+
+  logic [1:0] aon_intr_set;
+  assign aon_intr_set[AON_WDOG] = aon_wdog_intr_set;
+  assign aon_intr_set[AON_WKUP] = aon_wkup_intr_set;
+
+  logic [1:0] intr_event_q, intr_event_q1;
+
+  for (genvar i = 0; i < 2; i++) begin : gen_intr_sync
+    prim_pulse_sync u_intr_sync (
+     .clk_src_i(clk_aon_i),
+     .rst_src_ni(rst_aon_ni),
+     .src_pulse_i(aon_intr_set[i]),
+     .clk_dst_i(clk_i),
+     .rst_dst_ni(rst_ni),
+     .dst_pulse_o(intr_event_q[i])
+    );
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intr_event_q1 <= '0;
+    end else begin
+      intr_event_q1 <= intr_event_q;
+    end
+  end
+
   // Registers to interrupt
-  assign intr_aon_test_qe           = aon_reg2hw.intr_test.wkup_timer_expired.qe |
-                                      aon_reg2hw.intr_test.wdog_timer_expired.qe;
-  assign intr_aon_test_q [AON_WKUP] = aon_reg2hw.intr_test.wkup_timer_expired.q;
-  assign intr_aon_state_q[AON_WKUP] = aon_reg2hw.intr_state.wkup_timer_expired.q;
-  assign intr_aon_test_q [AON_WDOG] = aon_reg2hw.intr_test.wdog_timer_expired.q;
-  assign intr_aon_state_q[AON_WDOG] = aon_reg2hw.intr_state.wdog_timer_expired.q;
+  assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe |
+                                  reg2hw.intr_test.wdog_timer_expired.qe;
+  assign intr_test_q [AON_WKUP] = reg2hw.intr_test.wkup_timer_expired.q;
+  assign intr_state_q[AON_WKUP] = reg2hw.intr_state.wkup_timer_expired.q;
+  assign intr_test_q [AON_WDOG] = reg2hw.intr_test.wdog_timer_expired.q;
+  assign intr_state_q[AON_WDOG] = reg2hw.intr_state.wdog_timer_expired.q;
 
   // Interrupts to registers
-  assign aon_hw2reg.intr_state.wkup_timer_expired.d  = intr_aon_state_d[AON_WKUP];
-  assign aon_hw2reg.intr_state.wkup_timer_expired.de = intr_aon_state_de;
-  assign aon_hw2reg.intr_state.wdog_timer_expired.d  = intr_aon_state_d[AON_WDOG];
-  assign aon_hw2reg.intr_state.wdog_timer_expired.de = intr_aon_state_de;
+  assign hw2reg.intr_state.wkup_timer_expired.d  = intr_state_d[AON_WKUP];
+  assign hw2reg.intr_state.wkup_timer_expired.de = intr_state_de;
+  assign hw2reg.intr_state.wdog_timer_expired.d  = intr_state_d[AON_WDOG];
+  assign hw2reg.intr_state.wdog_timer_expired.de = intr_state_de;
 
   prim_intr_hw #(
     .Width (2)
   ) u_intr_hw (
-    .clk_i                  (clk_aon_i),
-    .rst_ni                 (rst_aon_ni),
-    .event_intr_i           ({aon_wdog_intr_set, aon_wkup_intr_set}),
-
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event_q ^ intr_event_q1),
     .reg2hw_intr_enable_q_i (2'b11),
-    .reg2hw_intr_test_q_i   (intr_aon_test_q),
-    .reg2hw_intr_test_qe_i  (intr_aon_test_qe),
-    .reg2hw_intr_state_q_i  (intr_aon_state_q),
-    .hw2reg_intr_state_de_o (intr_aon_state_de),
-    .hw2reg_intr_state_d_o  (intr_aon_state_d),
+    .reg2hw_intr_test_q_i   (intr_test_q),
+    .reg2hw_intr_test_qe_i  (intr_test_qe),
+    .reg2hw_intr_state_q_i  (intr_state_q),
+    .hw2reg_intr_state_de_o (intr_state_de),
+    .hw2reg_intr_state_d_o  (intr_state_d),
 
     .intr_o                 (intr_out)
   );
 
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_sync_wkup_intr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .d_i     (intr_out[AON_WKUP]),
-    .q_o     (intr_wkup_timer_expired_o)
-  );
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_sync_wdog_intr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .d_i     (intr_out[AON_WDOG]),
-    .q_o     (intr_wdog_timer_bark_o)
-  );
+  assign intr_wkup_timer_expired_o = intr_out[AON_WKUP];
+  assign intr_wdog_timer_bark_o = intr_out[AON_WDOG];
 
   // The interrupt line can be routed as nmi as well.
   assign nmi_wdog_timer_bark_o = intr_wdog_timer_bark_o;
