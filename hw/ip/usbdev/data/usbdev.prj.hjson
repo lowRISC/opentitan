@@ -6,6 +6,7 @@
     name:               "usbdev",
     design_spec:        "../doc",
     dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     sw_checklist:       "/sw/device/lib/dif/dif_usbdev",
     version:            "0.5",
     life_stage:         "L1",
