@@ -14,30 +14,36 @@ class BusInterfaces:
     def __init__(self,
                  has_unnamed_host: bool,
                  named_hosts: List[str],
+                 host_async: Dict[Optional[str], str],
                  has_unnamed_device: bool,
-                 named_devices: List[str]):
+                 named_devices: List[str],
+                 device_async: Dict[Optional[str], str]):
         assert has_unnamed_device or named_devices
         assert len(named_hosts) == len(set(named_hosts))
         assert len(named_devices) == len(set(named_devices))
 
         self.has_unnamed_host = has_unnamed_host
         self.named_hosts = named_hosts
+        self.host_async = host_async
         self.has_unnamed_device = has_unnamed_device
         self.named_devices = named_devices
+        self.device_async = device_async
 
     @staticmethod
     def from_raw(raw: object, where: str) -> 'BusInterfaces':
         has_unnamed_host = False
         named_hosts = []
+        host_async = {}
 
         has_unnamed_device = False
         named_devices = []
+        device_async = {}
 
         for idx, raw_entry in enumerate(check_list(raw, where)):
             entry_what = 'entry {} of {}'.format(idx + 1, where)
             ed = check_keys(raw_entry, entry_what,
                             ['protocol', 'direction'],
-                            ['name'])
+                            ['name', 'async'])
 
             protocol = check_str(ed['protocol'],
                                  'protocol field of ' + entry_what)
@@ -54,6 +60,9 @@ class BusInterfaces:
             name = check_optional_str(ed.get('name'),
                                       'name field of ' + entry_what)
 
+            async_clk = check_optional_str(ed.get('async'),
+                                           'async field of ' + entry_what)
+
             if direction == 'host':
                 if name is None:
                     if has_unnamed_host:
@@ -67,6 +76,9 @@ class BusInterfaces:
                                          'with name {!r} at {}'
                                          .format(name, where))
                     named_hosts.append(name)
+
+                if async_clk is not None:
+                    host_async[name] = async_clk
             else:
                 if name is None:
                     if has_unnamed_device:
@@ -81,11 +93,14 @@ class BusInterfaces:
                                          .format(name, where))
                     named_devices.append(name)
 
+                if async_clk is not None:
+                    device_async[name] = async_clk
+
         if not (has_unnamed_device or named_devices):
             raise ValueError('No device interface at ' + where)
 
-        return BusInterfaces(has_unnamed_host, named_hosts,
-                             has_unnamed_device, named_devices)
+        return BusInterfaces(has_unnamed_host, named_hosts, host_async,
+                             has_unnamed_device, named_devices, device_async)
 
     def has_host(self) -> bool:
         return bool(self.has_unnamed_host or self.named_hosts)

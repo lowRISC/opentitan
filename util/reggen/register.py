@@ -5,6 +5,7 @@
 from typing import Dict, List, Optional
 
 from .access import SWAccess, HWAccess
+from .clocking import Clocking
 from .field import Field
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_int)
@@ -20,6 +21,12 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    'async': [
+        's',
+        "indicates the register must cross to a different "
+        "clock domain before use.  The value shown here "
+        "should correspond to one of the module's clocks."
+    ],
     'swaccess': [
         's',
         "software access permission to use for "
@@ -82,6 +89,8 @@ class Register(RegBase):
                  offset: int,
                  name: str,
                  desc: str,
+                 async_name: str,
+                 async_clk: object,
                  hwext: bool,
                  hwqe: bool,
                  hwre: bool,
@@ -95,6 +104,8 @@ class Register(RegBase):
         super().__init__(offset)
         self.name = name
         self.desc = desc
+        self.async_name = async_name
+        self.async_clk = async_clk
         self.hwext = hwext
         self.hwqe = hwqe
         self.hwre = hwre
@@ -182,13 +193,28 @@ class Register(RegBase):
     def from_raw(reg_width: int,
                  offset: int,
                  params: ReggenParams,
-                 raw: object) -> 'Register':
+                 raw: object,
+                 clocks: Clocking) -> 'Register':
         rd = check_keys(raw, 'register',
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
         name = check_name(rd['name'], 'name of register')
         desc = check_str(rd['desc'], 'desc for {} register'.format(name))
+
+        async_name = check_str(rd.get('async', ''), 'async clock for {} register'.format(name))
+        async_clk = None
+
+        if async_name:
+            valid_clocks = clocks.clock_signals()
+            if async_name not in valid_clocks:
+                raise ValueError('async clock {} defined for {} does not exist '
+                                 'in valid module clocks {}.'
+                                 .format(async_name,
+                                         name,
+                                         valid_clocks))
+            else:
+                async_clk = clocks.get_by_clock(async_name)
 
         swaccess = SWAccess('{} register'.format(name),
                             rd.get('swaccess', 'none'))
@@ -260,7 +286,7 @@ class Register(RegBase):
                                            'storage_err_alert for {} register'
                                            .format(name))
 
-        return Register(offset, name, desc,
+        return Register(offset, name, desc, async_name, async_clk,
                         hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert)
@@ -380,7 +406,7 @@ class Register(RegBase):
         # we've replicated fields).
         new_resval = None
 
-        return Register(offset, new_name, self.desc,
+        return Register(offset, new_name, self.desc, self.async_name, self.async_clk,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
                         self.update_err_alert, self.storage_err_alert)

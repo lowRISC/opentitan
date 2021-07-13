@@ -46,14 +46,16 @@ module otbn_reg_top (
   logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
+  logic reg_busy;
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
-    .tl_i,
+    .tl_i(tl_i),
     .err_o(intg_err)
   );
 
@@ -77,7 +79,7 @@ module otbn_reg_top (
     .EnableDataIntgGen(0)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
-    .tl_o
+    .tl_o(tl_o)
   );
 
   tlul_pkg::tl_h2d_t tl_socket_h2d [3];
@@ -106,8 +108,8 @@ module otbn_reg_top (
     .DReqDepth  ({3{4'h0}}),
     .DRspDepth  ({3{4'h0}})
   ) u_socket (
-    .clk_i,
-    .rst_ni,
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
     .tl_h_i (tl_i),
     .tl_h_o (tl_o_pre),
     .tl_d_o (tl_socket_h2d),
@@ -136,8 +138,8 @@ module otbn_reg_top (
     .RegDw(DW),
     .EnableDataIntgGen(1)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
 
     .tl_i (tl_reg_h2d),
     .tl_o (tl_reg_d2h),
@@ -147,9 +149,12 @@ module otbn_reg_top (
     .addr_o  (reg_addr),
     .wdata_o (reg_wdata),
     .be_o    (reg_be),
+    .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
     .error_i (reg_error)
   );
+
+  // cdc oversampling signals
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -899,6 +904,17 @@ module otbn_reg_top (
     endcase
   end
 
+  // register busy
+  always_comb begin
+    reg_busy = '0;
+    unique case (1'b1)
+      default: begin
+        reg_busy  = '0;
+      end
+    endcase
+  end
+
+
   // Unused signal tieoff
 
   // wdata / byte enable are not always fully used
@@ -909,12 +925,12 @@ module otbn_reg_top (
   assign unused_be = ^reg_be;
 
   // Assertions for Register Interface
-  `ASSERT_PULSE(wePulse, reg_we)
-  `ASSERT_PULSE(rePulse, reg_re)
+  `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
+  `ASSERT_PULSE(rePulse, reg_re, clk_i, !rst_ni)
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid)
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, clk_i, !rst_ni)
 
-  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), clk_i, !rst_ni)
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
