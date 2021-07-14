@@ -41,7 +41,7 @@ module lc_ctrl_state_decode
       // Don't decode anything in ResetSt
       ResetSt: ;
       // These are temporary, terminal states that are not encoded
-      // in the persistenc LC state vector from OTP, hence we decode them first.
+      // in the persistent LC state vector from OTP, hence we decode them first.
       EscalateSt:  dec_lc_state_o = DecLcStEscalate;
       PostTransSt: dec_lc_state_o = DecLcStPostTrans;
       InvalidSt:   dec_lc_state_o = DecLcStInvalid;

@@ -51,7 +51,7 @@ package lc_ctrl_pkg;
   ////////////////////
 
   // Encoding generated with:
-  // $ ./sparse-fsm-encode.py -d 5 -m 14 -n 16 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 15 -n 16 \
   //      -s 2934212379 --language=sv
   //
   // Hamming distance histogram:
@@ -61,21 +61,23 @@ package lc_ctrl_pkg;
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||| (6.59%)
-  //  6: |||||||||| (10.99%)
-  //  7: |||||||||||||||| (17.58%)
-  //  8: |||||||||||||||||||| (20.88%)
-  //  9: |||||||||||||||| (17.58%)
-  // 10: |||||||||||||| (15.38%)
-  // 11: |||||| (6.59%)
-  // 12: ||| (3.30%)
-  // 13: | (1.10%)
+  //  5: ||||||| (7.62%)
+  //  6: |||||||||| (10.48%)
+  //  7: ||||||||||||||||| (17.14%)
+  //  8: |||||||||||||||||||| (20.00%)
+  //  9: ||||||||||||||||||| (19.05%)
+  // 10: |||||||||||||| (14.29%)
+  // 11: |||||| (6.67%)
+  // 12: ||| (3.81%)
+  // 13:  (0.95%)
   // 14: --
   // 15: --
   // 16: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 13
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 11
   //
   localparam int FsmStateWidth = 16;
   typedef enum logic [FsmStateWidth-1:0] {
@@ -85,14 +87,15 @@ package lc_ctrl_pkg;
     CntIncrSt     = 16'b1100111011001001,
     CntProgSt     = 16'b0011001111000111,
     TransCheckSt  = 16'b0000110001010100,
-    TokenHashSt   = 16'b1110100010001111,
-    FlashRmaSt    = 16'b0110111010110000,
+    TokenHashSt   = 16'b0110111010110000,
+    FlashRmaSt    = 16'b1110100010001111,
     TokenCheck0St = 16'b0010000011000000,
     TokenCheck1St = 16'b1101010101101111,
     TransProgSt   = 16'b1000000110101011,
     PostTransSt   = 16'b0110110100101100,
-    EscalateSt    = 16'b1010100001010001,
-    InvalidSt     = 16'b1011110110011011
+    ScrapSt       = 16'b1010100001010001,
+    EscalateSt    = 16'b1011110110011011,
+    InvalidSt     = 16'b0011000101001100
   } fsm_state_e;
 
   ///////////////////////////////////////////
