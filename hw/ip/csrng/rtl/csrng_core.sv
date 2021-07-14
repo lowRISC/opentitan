@@ -1005,10 +1005,12 @@ module csrng_core import csrng_pkg::*; #(
 
   // Capture entropy from entropy_src
   assign entropy_src_seed_d =
+         cmd_req_dly_q ? '0 :                  // reset after every cmd
          (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
          cmd_entropy_avail ? (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
+         cmd_req_dly_q ? '0 :                  // reset after every cmd
          (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
          cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
