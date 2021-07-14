@@ -183,8 +183,8 @@ module lc_ctrl_fsm
         if (init_req_i && lc_state_valid_q) begin
           fsm_state_d = IdleSt;
           // Fetch LC state vector from OTP.
-          lc_state_d    = lc_state_i;
-          lc_cnt_d      = lc_cnt_i;
+          lc_state_d  = lc_state_i;
+          lc_cnt_d    = lc_cnt_i;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -197,10 +197,13 @@ module lc_ctrl_fsm
         // The state is locked in once a transition is started.
         lc_state_d    = lc_state_i;
         lc_cnt_d      = lc_cnt_i;
-
+        // If the life cycle state is SCRAP, we move the FSM into a terminal
+        // SCRAP state that does not allow any transitions to be initiated anymore.
+        if (lc_state_q == LcStScrap) begin
+          fsm_state_d = ScrapSt;
         // Initiate a transition. This will first increment the
         // life cycle counter before hashing and checking the token.
-        if (trans_cmd_i) begin
+        end else if (trans_cmd_i) begin
           fsm_state_d = ClkMuxSt;
         end
       end
@@ -375,7 +378,8 @@ module lc_ctrl_fsm
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Terminal error states.
+      // Terminal states.
+      ScrapSt,
       PostTransSt,
       EscalateSt,
       InvalidSt: ;

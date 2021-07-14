@@ -171,6 +171,8 @@ module lc_ctrl_signal_decode
               lc_escalate_en = On;
             end
           endcase // lc_state_i
+        end else begin
+          lc_escalate_en = On;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -182,6 +184,7 @@ module lc_ctrl_signal_decode
       ///////////////////////////////////////////////////////////////////
       // Virtual scrap states, make sure the escalation signal is
       // also asserted in this case.
+      ScrapSt,
       EscalateSt,
       InvalidSt: begin
         lc_escalate_en = On;
