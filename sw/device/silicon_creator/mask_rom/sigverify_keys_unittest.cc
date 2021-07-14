@@ -99,8 +99,8 @@ TEST(Keys, UniqueIds) {
 }
 
 // Note: The test cases below test sigverify using mask ROM keys. They have some
-// overlap with sigverify unit tests but this way we don't have to worry about
-// keeping the keys used in tests in sync with mask ROM keys.
+// overlap with sigverify_mod_exp_ibex unit tests but this way we don't have to
+// worry about keeping the keys used in those tests in sync with mask ROM keys.
 
 /**
  * Message and digest used in tests.
@@ -132,7 +132,7 @@ constexpr hmac_digest_t kDigest = {
  * These can be generated using the `openssl dgst` command as discussed in
  * sw/device/silicon_creator/keys/README.md.
  */
-struct SigTestCase {
+struct RsaVerifyTestCase {
   /**
    * Signer's RSA public key.
    */
@@ -143,7 +143,7 @@ struct SigTestCase {
   sigverify_rsa_buffer_t sig;
 };
 
-constexpr SigTestCase kSigTestCases[2]{
+constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
     // message: "test"
     {
         .key = &kSigVerifyRsaKeys[0],
@@ -200,22 +200,23 @@ constexpr SigTestCase kSigTestCases[2]{
     },
 };
 
-TEST(SigTestCases, AllKeys) {
+TEST(RsaVerifyTestCases, AllKeys) {
   std::unordered_set<uint32_t> ids;
-  for (auto const &test_case : kSigTestCases) {
+  for (auto const &test_case : kRsaVerifyTestCases) {
     ids.insert(sigverify_rsa_key_id_get(&test_case.key->n));
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
 }
 
-class Sigverify : public mask_rom_test::MaskRomTest,
-                  public testing::WithParamInterface<SigTestCase> {
+class SigverifyRsaVerify
+    : public mask_rom_test::MaskRomTest,
+      public testing::WithParamInterface<RsaVerifyTestCase> {
  protected:
   mask_rom_test::MockHmac hmac_;
 };
 
-TEST_P(Sigverify, Ibex) {
+TEST_P(SigverifyRsaVerify, Ibex) {
   EXPECT_CALL(hmac_, sha256_init());
   EXPECT_CALL(hmac_, sha256_update(kMessage.data(), kMessage.size()))
       .WillOnce(Return(kErrorOk));
@@ -226,7 +227,8 @@ TEST_P(Sigverify, Ibex) {
             kErrorOk);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllCases, Sigverify, testing::ValuesIn(kSigTestCases));
+INSTANTIATE_TEST_SUITE_P(AllCases, SigverifyRsaVerify,
+                         testing::ValuesIn(kRsaVerifyTestCases));
 
 }  // namespace
 }  // namespace sigverify_keys_unittest
