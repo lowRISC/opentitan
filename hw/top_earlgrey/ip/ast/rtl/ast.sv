@@ -37,6 +37,9 @@ module ast #(
   input clk_ast_ext_i,                        // Buffered AST External Clock
   input por_ni,                               // Power ON Reset
 
+  // Clocks' Oschillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA
+
   // power OK control
   // In non-power aware DV environment, the <>_supp_i is for debug only!
   // POK signal follow this input.
@@ -280,9 +283,11 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n, clk_sys_pd_n;
-assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
+logic clk_sys_ext;
 
-assign clk_sys_pd_n = vcmain_pok;
+assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
+assign clk_sys_pd_n  = vcmain_pok;
+assign clk_sys_ext   = clk_osc_byp_i.sys;
 
 sys_clk u_sys_clk (
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
@@ -292,6 +297,7 @@ sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .clk_sys_ext_i ( clk_sys_ext ),
   .clk_src_sys_o ( clk_src_sys_o ),
   .clk_src_sys_val_o ( clk_src_sys_val_o )
 );  // of u_sys_clk
@@ -306,9 +312,11 @@ sys_clk u_sys_clk (
 // USB Clock (Always ON)
 ///////////////////////////////////////
 logic rst_usb_clk_n, clk_usb_pd_n;
-assign rst_usb_clk_n = vcmain_pok_por;  // Scan reset included
+logic clk_usb_ext;
 
-assign clk_usb_pd_n = vcmain_pok;
+assign rst_usb_clk_n = vcmain_pok_por;
+assign clk_usb_pd_n  = vcmain_pok;
+assign clk_usb_ext   = clk_osc_byp_i.usb;
 
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -319,6 +327,7 @@ usb_clk u_usb_clk (
   .usb_ref_pulse_i ( usb_ref_pulse_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .clk_usb_ext_i ( clk_usb_ext ),
   .clk_src_usb_o ( clk_src_usb_o ),
   .clk_src_usb_val_o ( clk_src_usb_val_o )
 );  // of u_usb_clk
@@ -328,7 +337,10 @@ usb_clk u_usb_clk (
 // AON Clock (Always ON)
 ///////////////////////////////////////
 logic rst_aon_clk_n;
- assign rst_aon_clk_n = vcaon_pok;
+logic clk_aon_ext;
+
+assign rst_aon_clk_n = vcaon_pok;
+assign clk_aon_ext   = clk_osc_byp_i.aon;
 
 aon_clk  u_aon_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -337,6 +349,7 @@ aon_clk  u_aon_clk (
   .clk_src_aon_en_i ( 1'b1 ),  // Always Enabled
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .clk_aon_ext_i ( clk_aon_ext ),
   .clk_src_aon_o ( clk_src_aon_o ),
   .clk_src_aon_val_o ( clk_src_aon_val_o )
 );  // of u_aon_clk
@@ -364,9 +377,11 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 // IO Clock (Always ON)
 ///////////////////////////////////////
 logic clk_io_osc, clk_io_osc_val, rst_io_clk_n, clk_io_pd_n;
-assign rst_io_clk_n = vcmain_pok_por;  // scan reset included
+logic clk_io_ext;
 
-assign clk_io_pd_n = vcmain_pok;
+assign rst_io_clk_n = vcmain_pok_por;  // scan reset included
+assign clk_io_pd_n  = vcmain_pok;
+assign clk_io_ext   = clk_osc_byp_i.io;
 
 io_clk u_io_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -375,6 +390,7 @@ io_clk u_io_clk (
   .clk_src_io_en_i ( clk_src_io_en_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .clk_io_ext_i ( clk_io_ext ),
   .clk_src_io_o ( clk_io_osc ),
   .clk_src_io_val_o ( clk_io_osc_val )
 );  // of u_io_clk
@@ -663,7 +679,6 @@ assign ast_init_done_o = 1'b0;   // TODO
 ast_dft u_ast_dft (
   .clk_i ( clk_ast_tlul_i ),
   .rst_ni ( rst_ast_tlul_ni ),
-  .scan_mode_i ( scan_mode ),
   .clk_io_osc_i ( clk_io_osc ),
   .clk_io_osc_val_i ( clk_io_osc_val ),
   .rst_io_clk_ni ( rst_io_clk_n ),

@@ -11,7 +11,6 @@
 module ast_dft (
   input clk_i,                              // TLUL Clock
   input rst_ni,                             // TLUL Reset
-  input scan_mode_i,                        // Scan Mode
   input clk_io_osc_i,                       // IO Oscillator Clock
   input clk_io_osc_val_i,                   // IO Oscillator Clock Valid
   input rst_io_clk_ni,                      // IO Oscillator Clock Reset
@@ -32,10 +31,8 @@ module ast_dft (
 ////////////////////////////////////////
 // IO Source Clock Selection
 ////////////////////////////////////////
-logic clk_io_osc_scn;
 logic lc_clk_byp_sel, lc_clk_byp_en;
 
-assign clk_io_osc_scn = scan_mode_i ? clk_i : clk_io_osc_i;
 assign lc_clk_byp_sel = (lc_clk_byp_req_i == lc_ctrl_pkg::On);
 
 logic clks_aoff, clk_osc_en_q, clk_byp_en_q;

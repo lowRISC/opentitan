@@ -24,20 +24,27 @@ module rng #(
 // RNG Bus using LFSR
 ///////////////////////////////////////
 logic rst_n;
-logic[32-1:0] lfsr_val;
+logic[EntropyStreams-1:0] lfsr_val;
 
 assign rst_n = scan_mode_i ? rst_ni : rst_ni && rng_en_i;
 
-always_ff @(posedge clk_i, negedge rst_n ) begin
-  if ( !rst_n ) begin
-    lfsr_val       <= 32'h0000_0001;
-  end else if ( lfsr_val == {32{1'b1}} ) begin  // Skip one problematic value
-    lfsr_val       <= {{31{1'b1}}, 1'b0};
-  end else begin
-    lfsr_val[31:1] <= lfsr_val[30:0];
-    lfsr_val[0]    <= !(lfsr_val[31] ^ lfsr_val[21] ^ lfsr_val[1] ^ lfsr_val[0]);
-  end
-end
+prim_lfsr #(
+  .LfsrDw ( ast_pkg::LfsrWidth ),
+  .EntropyDw ( 1 ),
+  .StateOutDw ( EntropyStreams ),
+  .DefaultSeed ( ast_pkg::RndCnstLfsrSeedDefault ),
+  .StatePermEn ( 1'b1 ),
+  .StatePerm ( ast_pkg::RndCnstLfsrPermDefault ),
+  .ExtSeedSVA ( 1'b0 )  // ext seed is unused
+) u_sys_lfsr (
+  .clk_i ( clk_i ),
+  .rst_ni ( rst_n ),
+  .lfsr_en_i ( rng_en_i ),
+  .seed_en_i ( 1'b0 ),
+  .seed_i ( '0 ),
+  .entropy_i ( 1'b0 ),
+  .state_o ( lfsr_val )
+);
 
 logic srate_rng_val;
 logic [12-1:0] srate_cnt, srate_value;
