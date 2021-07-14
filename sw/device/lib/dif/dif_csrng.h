@@ -207,6 +207,52 @@ typedef struct dif_csrng_output_status {
 } dif_csrng_output_status_t;
 
 /**
+ * CSRNG internal state selector ID.
+ */
+typedef enum dif_csrng_internal_state_id {
+  /**
+   * CSRNG instance assigned to Entropy Distribution Network (EDN) 0.
+   */
+  kCsrngInternalStateIdEdn0 = 0,
+  /**
+   * CSRNG instance assigned to Entropy Distribution Network (EDN) 1.
+   */
+  kCsrngInternalStateIdEdn1 = 1,
+  /**
+   * CSRNG instance assigned to software interface.
+   */
+  kCsrngInternalStateIdSw = 2,
+} dif_csrng_internal_state_id_t;
+
+/**
+ * CSRNG internal state.
+ */
+typedef struct dif_csrng_internal_state {
+  /**
+   * Indicates the number of requests for pseudorandom bits since instantiation
+   * or reseeding.
+   */
+  uint32_t reseed_counter;
+  /**
+   * Internal V working state with a 128bit block size.
+   */
+  uint32_t v[4];
+  /**
+   * Internal key used to configure the internal CSRNG cipher.
+   */
+  uint32_t key[8];
+  /**
+   * Set to true when the CSRNG instance has been instantiated.
+   */
+  bool instantiated;
+  /**
+   * Set to true when FIPS compliant entropy was provided directly by the
+   * entropy source to instantiate or reseed the CSRNG instance.
+   */
+  bool fips_compliance;
+} dif_csrng_internal_state_t;
+
+/**
  * A CSRNG interrupt request type.
  */
 typedef enum dif_csrng_irq {
@@ -390,13 +436,27 @@ dif_csrng_result_t dif_csrng_get_cmd_interface_status(
  * This function can be used before calling `dif_csrng_generate_end()` to
  * check if there is data available to read.
  *
- * @param csrng A CSRNG handle
- * @param[out] status
+ * @param csrng A CSRNG handle.
+ * @param[out] status CSRNG output status.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_output_status(
     const dif_csrng_t *csrng, dif_csrng_output_status_t *status);
+
+/**
+ * Gets the working state of a CSRNG instance.
+ *
+ * @param csrng A CSRNG handle
+ * @param instance_id CSRNG instance ID.
+ * @param[out] state The working state of a CSRNG instance.
+ * @return The result of the operation.
+ *
+ */
+DIF_WARN_UNUSED_RESULT
+dif_csrng_result_t dif_csrng_get_internal_state(
+    const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
+    dif_csrng_internal_state_t *state);
 
 /**
  * Locks out CSRNG functionality.

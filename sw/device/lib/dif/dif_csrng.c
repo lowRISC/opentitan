@@ -5,6 +5,7 @@
 #include "sw/device/lib/dif/dif_csrng.h"
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
 #include "csrng_regs.h"  // Generated
@@ -251,5 +252,45 @@ dif_csrng_result_t dif_csrng_get_output_status(
     return kDifCsrngBadArg;
   }
   get_output_status(csrng, status);
+  return kDifCsrngOk;
+}
+
+DIF_WARN_UNUSED_RESULT
+dif_csrng_result_t dif_csrng_get_internal_state(
+    const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
+    dif_csrng_internal_state_t *state) {
+  if (csrng == NULL || state == NULL) {
+    return kDifCsrngBadArg;
+  }
+
+  // Select the instance id to read the internal state from, request a state
+  // machine halt, and wait for the internal registers to be ready to be read.
+  uint32_t reg = bitfield_field32_write(
+      0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
+  mmio_region_write32(csrng->params.base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET,
+                      reg);
+
+  // Read the internal state.
+  state->reseed_counter = mmio_region_read32(csrng->params.base_addr,
+                                             CSRNG_INT_STATE_VAL_REG_OFFSET);
+
+  for (size_t i = 0; i < ARRAYSIZE(state->v); ++i) {
+    state->v[i] = mmio_region_read32(csrng->params.base_addr,
+                                     CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+
+  for (size_t i = 0; i < ARRAYSIZE(state->key); ++i) {
+    state->key[i] = mmio_region_read32(csrng->params.base_addr,
+                                       CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+
+  uint32_t flags = mmio_region_read32(csrng->params.base_addr,
+                                      CSRNG_INT_STATE_VAL_REG_OFFSET);
+
+  // The following bit indexes are defined in
+  // https://docs.opentitan.org/hw/ip/csrng/doc/#working-state-values
+  state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
+  state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
+
   return kDifCsrngOk;
 }

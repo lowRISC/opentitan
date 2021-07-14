@@ -241,5 +241,48 @@ TEST_F(GenerateEndTest, ReadBadArgs) {
   EXPECT_EQ(dif_csrng_generate_end(nullptr, &data, /*len=*/1), kDifCsrngBadArg);
 }
 
+class GetInternalStateTest : public DifCsrngTest {};
+
+TEST_F(GetInternalStateTest, GetInternalStateOk) {
+  dif_csrng_internal_state_id_t instance_id = kCsrngInternalStateIdSw;
+
+  EXPECT_WRITE32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                 {
+                     {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                      static_cast<uint32_t>(instance_id)},
+                 });
+
+  dif_csrng_internal_state_t expected = {
+      .reseed_counter = 1,
+      .v = {1, 2, 3, 4},
+      .key = {1, 2, 3, 4, 5, 6, 7, 8},
+      .instantiated = true,
+      .fips_compliance = true,
+  };
+  EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, expected.reseed_counter);
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, expected.v[i]);
+  }
+  for (size_t i = 0; i < 8; ++i) {
+    EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, expected.key[i]);
+  }
+  EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, 3);
+
+  dif_csrng_internal_state_t got;
+  EXPECT_EQ(dif_csrng_get_internal_state(&csrng_, instance_id, &got),
+            kDifCsrngOk);
+}
+
+TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
+  EXPECT_EQ(
+      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, nullptr),
+      kDifCsrngBadArg);
+
+  dif_csrng_internal_state unused;
+  EXPECT_EQ(
+      dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused),
+      kDifCsrngBadArg);
+}
+
 }  // namespace
 }  // namespace dif_entropy_unittest
