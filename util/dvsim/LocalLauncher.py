@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import shlex
 import subprocess
 
 from Launcher import ErrorMessage, Launcher, LauncherError
@@ -47,9 +46,9 @@ class LocalLauncher(Launcher):
                      "w",
                      encoding="UTF-8",
                      errors="surrogateescape")
-            f.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
+            f.write("[Executing]:\n{}\n\n".format(" ".join(self.deploy.cmd)))
             f.flush()
-            self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
+            self.process = subprocess.Popen(self.deploy.cmd,
                                             bufsize=4096,
                                             universal_newlines=True,
                                             stdout=f,

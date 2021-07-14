@@ -209,9 +209,9 @@ class Deploy():
     def _construct_cmd(self):
         """Construct the command that will eventually be launched."""
 
-        cmd = "make -f {} {}".format(self.flow_makefile, self.target)
+        args = ["make", "-f", self.flow_makefile, self.target]
         if self.dry_run is True:
-            cmd += " -n"
+            args += ["-n"]
         for attr in sorted(self.mandatory_cmd_attrs.keys()):
             value = getattr(self, attr)
             if type(value) is list:
@@ -223,8 +223,9 @@ class Deploy():
                 value = int(value)
             if type(value) is str:
                 value = value.strip()
-            cmd += " {}={}".format(attr, shlex.quote(value))
-        return cmd
+            value = "" if value == "" else shlex.quote(value)
+            args += ["{}={}".format(attr, value)]
+        return args
 
     def is_equivalent_job(self, item):
         """Checks if job that would be dispatched with 'item' is equivalent to
@@ -240,7 +241,7 @@ class Deploy():
             return False
 
         # Check if the cmd field is identical.
-        item_cmd = item.cmd.replace(item.name, self.name)
+        item_cmd = [s.replace(item.name, self.name) for s in item.cmd]
         if self.cmd != item_cmd:
             return False
 
