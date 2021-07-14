@@ -22,10 +22,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // ---   D   -classd_phase0_cyc - classd_phase1_cyc - classd_phase2_cyc - classd_phase3_cyc --
   dv_base_reg   reg_esc_phase_cycs_per_class_q[NUM_ALERT_HANDLER_CLASSES][$];
 
-  uvm_reg_field alert_cause_fields[$];
   uvm_reg_field intr_state_fields[$];
-  uvm_reg_field loc_alert_cause_fields[$];
-  uvm_reg_field alert_cause_field, intr_state_field, loc_alert_cause_field;
+  uvm_reg_field intr_state_field;
   // once escalation triggers, no alerts can trigger another escalation in the same class
   // until the class esc is cleared
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
@@ -51,8 +49,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ral.alert_cause_0.get_fields(alert_cause_fields);
-    ral.loc_alert_cause_0.get_fields(loc_alert_cause_fields);
     ral.intr_state.get_fields(intr_state_fields);
     `ASSIGN_CLASS_PHASE_REGS(0, a)
     `ASSIGN_CLASS_PHASE_REGS(1, b)
@@ -84,17 +80,18 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       fork
         forever begin
           bit [TL_DW-1:0] alert_en;
+          dv_base_reg alert_en_csr = ral.get_dv_base_reg_by_name($sformatf("alert_en_%0d", index));
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
-          alert_en = ral.alert_en_0.get_mirrored_value();
-          if (alert_en[index]) begin
+          alert_en = alert_en_csr.get_mirrored_value();
+          if (alert_en) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
                 act_item.alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_2.get_mirrored_value();
               if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
             end else if (act_item.alert_esc_type == AlertEscPingTrans &&
                          act_item.ping_timeout) begin
@@ -125,11 +122,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // escalation integrity fail
           end else if (act_item.alert_esc_type == AlertEscIntFail ||
                (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_3.get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_1.get_mirrored_value();
             if (loc_alert_en[LocalEscPingFail]) begin
               process_alert_sig(index, 1, LocalEscPingFail);
               `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",
@@ -151,19 +148,21 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         cfg.clk_rst_vif.wait_n_clks(1);
         if (!under_reset) begin
           bit [TL_DW-1:0] intr_en, class_ctrl;
-          bit [NUM_ALERTS*2-1:0] alert_class;
           bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
           if (!is_int_err) begin
-            alert_class = get_alert_class_mirrored_val();
-            // extract the two bits that indicates which intr class this alert will trigger
-            class_i = (alert_class >> alert_i * 2) & 'b11;
-            alert_cause_field = alert_cause_fields[alert_i];
-            void'(alert_cause_field.predict(1));
+            dv_base_reg alert_class_reg = ral.get_dv_base_reg_by_name($sformatf("alert_class_%0d",
+                                                                      alert_i));
+            dv_base_reg alert_cause_reg = ral.get_dv_base_reg_by_name($sformatf("alert_cause_%0d",
+                                                                      alert_i));
+            class_i = `gmv(alert_class_reg);
+            void'(alert_cause_reg.predict(1));
           end else begin
-            alert_class = ral.loc_alert_class_0.get_mirrored_value();
-            class_i = (alert_class >> local_alert_type * 2) & 'b11;
-            loc_alert_cause_field = loc_alert_cause_fields[local_alert_type];
-            void'(loc_alert_cause_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
+            dv_base_reg loc_alert_class_reg = ral.get_dv_base_reg_by_name(
+                        $sformatf("loc_alert_class_%0d", alert_i));
+            dv_base_reg loc_alert_cause_reg = ral.get_dv_base_reg_by_name(
+                        $sformatf("loc_alert_cause_%0d", int'(local_alert_type)));
+            class_i = `gmv(loc_alert_class_reg);
+            void'(loc_alert_cause_reg.predict(1));
           end
 
           intr_state_field = intr_state_fields[class_i];

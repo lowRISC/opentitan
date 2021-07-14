@@ -52,17 +52,17 @@ class alert_handler_base_vseq extends cip_base_vseq #(
                                   bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
                                   bit [TL_DW-1:0]                     loc_alert_class = 'h0);
     csr_wr(.ptr(ral.intr_enable), .value(intr_en));
-    csr_wr(.ptr(ral.alert_en_0), .value(alert_en));
-    csr_wr(.ptr(ral.loc_alert_en_0), .value(loc_alert_en));
-    csr_wr(.ptr(ral.loc_alert_class_0), .value(loc_alert_class));
-    for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
-      string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
-                                                      $sformatf("alert_class_%0d", i);
-      uvm_reg alert_class_csr = ral.get_reg_by_name(alert_name);
-      `DV_CHECK_NE_FATAL(alert_class_csr, null, alert_name)
-      csr_wr(.ptr(alert_class_csr), .value(alert_class[i * TL_DW +: TL_DW]));
+    foreach (alert_en[i]) begin
+      dv_base_reg alert_en_reg = ral.get_dv_base_reg_by_name($sformatf("alert_en_%0d", i));
+      csr_wr(.ptr(alert_en_reg), .value(alert_en[i]));
     end
-
+    foreach (loc_alert_en[i]) begin
+      dv_base_reg loc_alert_en_reg = ral.get_dv_base_reg_by_name($sformatf("loc_alert_en_%0d", i));
+      csr_wr(.ptr(loc_alert_en_reg), .value(loc_alert_en[i]));
+    end
+    // TODO: not use fixed postfix "_0" but randomize it.
+    csr_wr(.ptr(ral.loc_alert_class_0), .value(loc_alert_class));
+    csr_wr(.ptr(ral.alert_class_0), .value(alert_class));
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);
