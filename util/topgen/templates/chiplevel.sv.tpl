@@ -830,6 +830,8 @@ module chip_${top["name"]}_${target["name"]} (
     .rst_ast_usb_ni        ( rsts_ast.rst_ast_usbdev_usb_n[Domain0Sel] ),
     .clk_ast_ext_i         ( ext_clk ),
     .por_ni                ( manual_in_por_n ),
+    // clocks' oschillator bypass for FPGA
+    .clk_osc_byp_i         ( '0 ),
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
     .vcaon_supp_i          ( 1'b1 ),

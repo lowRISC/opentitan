@@ -35,6 +35,17 @@ package ast_pkg;
   parameter int Ast2PadOutWidth = 9;
   parameter int Pad2AstInWidth  = 6;
 
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+  parameter int LfsrWidth = 64;
+  typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'h22d326255bd24320;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    128'h16108c9f9008aa37e5118d1ec1df64a7,
+    256'h24f3f1b73537f42d38383ee8f897286df81d49ab54b6bbbb666cbd1a16c41252
+  };
+
   // Memories Read-Write Margin Interface
   typedef struct packed {
     logic          marg_en_a;
@@ -107,6 +118,13 @@ package ast_pkg;
     SwAck  = 1
   } ast_ack_mode_e;
 
+  // Clocks Oschillator Bypass
+  typedef struct packed {
+    logic     usb;
+    logic     sys;
+    logic     io;
+    logic     aon;
+  } clks_osc_byp_t;
 
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV

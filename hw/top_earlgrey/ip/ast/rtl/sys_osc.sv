@@ -5,16 +5,12 @@
 // *Name: sys_osc
 // *Module Description: System Clock Oscilator
 //############################################################################
-`ifdef SYNTHESIS
-`ifndef PRIM_DEFAULT_IMPL
-`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-`endif
 
 module sys_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input sys_en_i,         // System Source Clock Enable
   input sys_jen_i,        // System Source Clock Jitter Enable
+  input clk_sys_ext_i,    // FPGA/VERILATOR Clock input
   output logic sys_clk_o  // System Clock Output
 );
 
@@ -25,7 +21,7 @@ timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
-logic clk, clk_n, en_dly, en_osc, en_osc_re, en_osc_fe;
+logic clk, en_dly;
 shortreal jitter;
 
 initial begin
@@ -36,21 +32,14 @@ initial begin
 end
 
 // Enable 5us RC Delay
-logic sys_en_dly;
+logic sys_en_dly, sys_clk_dly;
+
 assign #(SYS_EN_RDLY) sys_en_dly = sys_en_i;
-assign en_osc_re = vcore_pok_h_i && sys_en_i && (sys_en_dly && en_dly);
-assign clk_n = !clk;
+assign sys_clk_dly = sys_en_dly && en_dly;
 
-// Syncronize en_osc to clk FE for glitch free disable
-always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
-  if ( !vcore_pok_h_i ) begin
-    en_osc_fe <= 1'b0;
-  end else begin
-    en_osc_fe <= en_osc_re;
-  end
-end
-
-assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
+// Clock Oscillator
+////////////////////////////////////////
+logic en_osc;
 
 always begin
   // 0-2000ps is upto +20% Jitter
@@ -58,17 +47,29 @@ always begin
   #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
 end
 `else  // of SYNTHESIS
-// SYNTHESUS/VERILATOR/LINTER/FPGA
+// SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-logic clk, clk_n, en_osc, en_osc_re, en_osc_fe;
-// TODO: add sys_jen_i
+logic sys_clk_dly;
+assign sys_clk_dly = 1'b1;
 
-assign en_osc_re = vcore_pok_h_i && sys_en_i;
-assign clk_n = !clk;
+// Clock Oscillator
+////////////////////////////////////////
+logic clk, en_osc;
+
+prim_clock_gating u_clk_ckgt (
+  .clk_i ( clk_sys_ext_i ),
+  .en_i ( en_osc ),
+  .test_en_i ( 1'b0 ),
+  .clk_o ( clk )
+);
+`endif
+
+logic en_osc_re, en_osc_fe;
+
+assign en_osc_re = vcore_pok_h_i && sys_en_i && sys_clk_dly;
 
 // Syncronize en_osc to clk FE for glitch free disable
-always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
+always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -78,15 +79,8 @@ end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
-if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
-  // FPGA Specific (place holder)
-  ///////////////////////////////////////
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-end else begin : gen_generic
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-end
-`endif
-
+// Clock Output Buffer
+////////////////////////////////////////
 prim_clock_buf u_buf (
   .clk_i ( clk ),
   .clk_o ( sys_clk_o )
