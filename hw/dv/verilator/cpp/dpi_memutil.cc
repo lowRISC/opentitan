@@ -431,7 +431,7 @@ void DpiMemUtil::LoadElfToMemories(bool verbose, const std::string &filepath) {
 
     const MemArea &mem_area = *mem_areas_[mem_area_it->second];
 
-    for (const auto seg_pr : staged_mem.GetSegs()) {
+    for (const auto &seg_pr : staged_mem.GetSegs()) {
       const AddrRange<uint32_t> &seg_rng = seg_pr.first;
       const std::vector<uint8_t> &seg_data = seg_pr.second;
 
