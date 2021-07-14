@@ -15,6 +15,7 @@ module usb_clk (
   input usb_ref_pulse_i,                   // USB Reference Pulse
   input scan_mode_i,                       // Scan Mode
   input scan_reset_ni,                     // Scan Reset
+  input clk_usb_ext_i,                     // FPGA/VERILATOR Clock input
   //
   output logic clk_src_usb_o,              // USB Source Clock
   output logic clk_src_usb_val_o           // USB Source Clock Valid
@@ -32,6 +33,7 @@ usb_osc u_usb_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .usb_en_i (usb_clk_en ),
   .usb_ref_val_i ( usb_ref_val_i ),
+  .clk_usb_ext_i ( clk_usb_ext_i ),
   .usb_clk_o ( clk )
 );  // u_usb_osc
 

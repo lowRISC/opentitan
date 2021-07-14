@@ -5,17 +5,13 @@
 // *Name: usb_osc
 // *Module Description: USB Clock Oscilator
 //############################################################################
-`ifdef SYNTHESIS
-`ifndef PRIM_DEFAULT_IMPL
-`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-`endif
 
 module usb_osc (
-  input vcore_pok_h_i,     // VCORE POK @3.3V
-  input usb_en_i,          // USB Source Clock Enable
-  input usb_ref_val_i,     // USB Reference Valid
-  output logic usb_clk_o   // USB Clock Output
+  input vcore_pok_h_i,    // VCORE POK @3.3V
+  input usb_en_i,         // USB Source Clock Enable
+  input usb_ref_val_i,    // USB Reference Valid
+  input clk_usb_ext_i,    // FPGA/VERILATOR Clock input
+  output logic usb_clk_o  // USB Clock Output
 );
 
 `ifndef SYNTHESIS
@@ -25,8 +21,7 @@ timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real UsbClkPeriod = 1000000/48;  // ~20833.33333ps (48Mhz)
-logic clk, clk_n, en_dly, en_osc, en_osc_re, en_osc_fe;
-shortreal drift;
+logic clk, en_dly;
 integer rand32;
 
 initial begin
@@ -39,24 +34,18 @@ initial begin
 end
 
 // Enable 5us RC Delay
-logic usb_en_dly;
+logic usb_en_dly, usb_clk_dly;
+
 assign #(USB_EN_RDLY) usb_en_dly = usb_en_i;
-assign en_osc_re = vcore_pok_h_i && usb_en_i && (usb_en_dly && en_dly);
-assign clk_n = !clk;
-
-// Syncronize en_osc to clk FE for glitch free disable
-always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
-  if ( !vcore_pok_h_i ) begin
-    en_osc_fe <= 1'b0;
-  end else begin
-    en_osc_fe <= en_osc_re;
-  end
-end
-
-assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
+assign usb_clk_dly = usb_en_dly && en_dly;
 
 wire ref_val;
 assign #(USB_VAL_RDLY, USB_VAL_FDLY) ref_val = usb_ref_val_i;
+
+// Clock Oscillator
+////////////////////////////////////////
+logic en_osc;
+shortreal drift;
 
 assign drift = ref_val ? 0 : rand32;
 
@@ -64,16 +53,29 @@ always begin
   #((UsbClkPeriod + drift)/2000) clk = ~clk && en_osc;
 end
 `else  // of SYNTHESIS
-// SYNTHESUS/VERILATOR/LINTER/FPGA
+// SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-logic clk, clk_n, en_osc, en_osc_re, en_osc_fe;
+logic usb_clk_dly;
+assign usb_clk_dly = 1'b1;
 
-assign en_osc_re = vcore_pok_h_i && usb_en_i;
-assign clk_n = !clk;
+// Clock Oscillator
+////////////////////////////////////////
+logic clk, en_osc;
+
+prim_clock_gating u_clk_ckgt (
+  .clk_i ( clk_usb_ext_i ),
+  .en_i ( en_osc ),
+  .test_en_i ( 1'b0 ),
+  .clk_o ( clk )
+);
+`endif
+
+logic en_osc_re, en_osc_fe;
+
+assign en_osc_re = vcore_pok_h_i && usb_en_i && usb_clk_dly;
 
 // Syncronize en_osc to clk FE for glitch free disable
-always_ff @( posedge clk_n or negedge vcore_pok_h_i ) begin
+always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
   end else begin
@@ -83,15 +85,8 @@ end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
-if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
-  // FPGA Specific (place holder)
-  ///////////////////////////////////////
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-end else begin : gen_generic
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-end
-`endif
-
+// Clock Output Buffer
+////////////////////////////////////////
 prim_clock_buf u_buf (
   .clk_i ( clk ),
   .clk_o ( usb_clk_o )
