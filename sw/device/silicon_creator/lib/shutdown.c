@@ -197,7 +197,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity) {
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
   // TODO(lowRISC/opentitan#7148): Use a software alert when available.
   // For now, signal a fatal_intg_error from SRAM.
-  enum { kBase = TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR };
+  enum { kBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR };
   abs_mmio_write32(kBase + SRAM_CTRL_ALERT_TEST_REG_OFFSET, 1);
 }
 
@@ -221,7 +221,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
-  enum { kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR };
+  enum { kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR };
 
   // Disable SRAM execution and lock the register.
   abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_EN_OFFSET, 0);

@@ -135,12 +135,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_ram_ret_aon"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_otp_ctrl"
       act:    "req"
       package: "tlul_pkg"
@@ -165,7 +159,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sram_ctrl_ret_aon"
+      name:   "tl_sram_ctrl_ret_aon__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_ret_aon__ram"
       act:    "req"
       package: "tlul_pkg"
     }

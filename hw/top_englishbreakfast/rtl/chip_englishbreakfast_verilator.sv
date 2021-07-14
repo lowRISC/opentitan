@@ -160,7 +160,10 @@ module chip_englishbreakfast_verilator (
     .IbexICache(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    // TODO: extend topgen to override this directly in the Hjson declaration of these IPs
+    .SramCtrlRetAonSramDepth(1024),
+    .SramCtrlMainSramDepth(32768)
   ) top_englishbreakfast (
     .rst_ni                       (rst_ni            ),
     .clk_main_i                   (clk_i             ),

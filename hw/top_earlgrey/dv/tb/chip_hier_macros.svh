@@ -12,8 +12,8 @@
 `define EFLASH_HIER           `CHIP_HIER.u_flash_eflash.u_flash
 `define GPIO_HIER             `CHIP_HIER.u_gpio
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
-`define RAM_MAIN_HIER         `CHIP_HIER.u_ram1p_ram_main
-`define RAM_RET_HIER          `CHIP_HIER.u_ram1p_ram_ret_aon
+`define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
+`define RAM_RET_HIER          `CHIP_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
 `define ROM_CTRL_HIER         `CHIP_HIER.u_rom_ctrl
 `define RSTMGR_HIER           `CHIP_HIER.u_rstmgr_aon
 `define SPI_DEVICE_HIER       `CHIP_HIER.u_spi_device

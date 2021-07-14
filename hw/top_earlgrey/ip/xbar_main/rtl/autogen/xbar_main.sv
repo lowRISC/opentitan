@@ -13,7 +13,7 @@
 //     -> sm1_26
 //       -> rv_dm.rom
 //     -> sm1_27
-//       -> ram_main
+//       -> sram_ctrl_main.ram
 //     -> sm1_28
 //       -> eflash
 // cored
@@ -27,7 +27,7 @@
 //     -> sm1_31
 //       -> rv_dm.regs
 //     -> sm1_27
-//       -> ram_main
+//       -> sram_ctrl_main.ram
 //     -> sm1_28
 //       -> eflash
 //     -> sm1_33
@@ -58,7 +58,7 @@
 //     -> sm1_45
 //       -> kmac
 //     -> sm1_46
-//       -> sram_ctrl_main
+//       -> sram_ctrl_main.regs
 //     -> sm1_47
 //       -> rv_core_ibex_peri
 // rv_dm.sba
@@ -70,7 +70,7 @@
 //     -> sm1_31
 //       -> rv_dm.regs
 //     -> sm1_27
-//       -> ram_main
+//       -> sram_ctrl_main.ram
 //     -> sm1_28
 //       -> eflash
 //     -> sm1_33
@@ -101,7 +101,7 @@
 //     -> sm1_45
 //       -> kmac
 //     -> sm1_46
-//       -> sram_ctrl_main
+//       -> sram_ctrl_main.regs
 //     -> sm1_47
 //       -> rv_core_ibex_peri
 
@@ -128,8 +128,6 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_rom_ctrl__rom_i,
   output tlul_pkg::tl_h2d_t tl_rom_ctrl__regs_o,
   input  tlul_pkg::tl_d2h_t tl_rom_ctrl__regs_i,
-  output tlul_pkg::tl_h2d_t tl_ram_main_o,
-  input  tlul_pkg::tl_d2h_t tl_ram_main_i,
   output tlul_pkg::tl_h2d_t tl_eflash_o,
   input  tlul_pkg::tl_d2h_t tl_eflash_i,
   output tlul_pkg::tl_h2d_t tl_peri_o,
@@ -160,8 +158,10 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_keymgr_i,
   output tlul_pkg::tl_h2d_t tl_rv_core_ibex_peri_o,
   input  tlul_pkg::tl_d2h_t tl_rv_core_ibex_peri_i,
-  output tlul_pkg::tl_h2d_t tl_sram_ctrl_main_o,
-  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_main__regs_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main__regs_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_main__ram_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main__ram_i,
 
   input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
@@ -502,8 +502,8 @@ module xbar_main (
   assign tl_rv_dm__rom_o = tl_sm1_26_ds_h2d;
   assign tl_sm1_26_ds_d2h = tl_rv_dm__rom_i;
 
-  assign tl_ram_main_o = tl_sm1_27_ds_h2d;
-  assign tl_sm1_27_ds_d2h = tl_ram_main_i;
+  assign tl_sram_ctrl_main__ram_o = tl_sm1_27_ds_h2d;
+  assign tl_sm1_27_ds_d2h = tl_sram_ctrl_main__ram_i;
 
   assign tl_eflash_o = tl_sm1_28_ds_h2d;
   assign tl_sm1_28_ds_d2h = tl_eflash_i;
@@ -559,8 +559,8 @@ module xbar_main (
   assign tl_kmac_o = tl_sm1_45_ds_h2d;
   assign tl_sm1_45_ds_d2h = tl_kmac_i;
 
-  assign tl_sram_ctrl_main_o = tl_sm1_46_ds_h2d;
-  assign tl_sm1_46_ds_d2h = tl_sram_ctrl_main_i;
+  assign tl_sram_ctrl_main__regs_o = tl_sm1_46_ds_h2d;
+  assign tl_sm1_46_ds_d2h = tl_sram_ctrl_main__regs_i;
 
   assign tl_rv_core_ibex_peri_o = tl_sm1_47_ds_h2d;
   assign tl_sm1_47_ds_d2h = tl_rv_core_ibex_peri_i;
@@ -580,7 +580,7 @@ module xbar_main (
       dev_sel_s1n_24 = 3'd1;
 
     end else if ((tl_s1n_24_us_h2d.a_address &
-                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN__RAM)) == ADDR_SPACE_SRAM_CTRL_MAIN__RAM) begin
       dev_sel_s1n_24 = 3'd2;
 
     end else if ((tl_s1n_24_us_h2d.a_address &
@@ -609,7 +609,7 @@ end
       dev_sel_s1n_29 = 5'd3;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN__RAM)) == ADDR_SPACE_SRAM_CTRL_MAIN__RAM) begin
       dev_sel_s1n_29 = 5'd4;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
@@ -669,7 +669,7 @@ end
       dev_sel_s1n_29 = 5'd18;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN__REGS)) == ADDR_SPACE_SRAM_CTRL_MAIN__REGS) begin
       dev_sel_s1n_29 = 5'd19;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
@@ -694,7 +694,7 @@ end
       dev_sel_s1n_48 = 5'd2;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN__RAM)) == ADDR_SPACE_SRAM_CTRL_MAIN__RAM) begin
       dev_sel_s1n_48 = 5'd3;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
@@ -754,7 +754,7 @@ end
       dev_sel_s1n_48 = 5'd17;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN__REGS)) == ADDR_SPACE_SRAM_CTRL_MAIN__REGS) begin
       dev_sel_s1n_48 = 5'd18;
 
     end else if ((tl_s1n_48_us_h2d.a_address &

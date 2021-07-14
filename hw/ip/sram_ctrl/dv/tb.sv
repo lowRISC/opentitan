@@ -62,40 +62,34 @@ module tb;
   `define SRAM_ADDR_WIDTH 32
 `endif
 
-  // Width of the SRAM data.
-  // Will be 32-bit wide for both main and retention SRAM,
-  // potentially wider for the OTBN SRAM.
-`ifndef SRAM_DATA_WIDTH
-  `define SRAM_DATA_WIDTH 32
-`endif
-
-  sram_ctrl_wrapper #(
-    .AddrWidth(`SRAM_ADDR_WIDTH),
-    .DataWidth(`SRAM_DATA_WIDTH)
+  sram_ctrl #(
+    // memory size in bytes
+    .MemSizeRam(4 * 2 ** `SRAM_ADDR_WIDTH)
   ) dut (
     // main clock
-    .clk_i            (clk                    ),
-    .rst_ni           (rst_n                  ),
+    .clk_i               (clk                 ),
+    .rst_ni              (rst_n               ),
     // OTP clock
-    .clk_otp_i        (clk_otp                ),
-    .rst_otp_ni       (rst_otp_n              ),
+    .clk_otp_i           (clk_otp             ),
+    .rst_otp_ni          (rst_otp_n           ),
     // TLUL interface for CSR regfile
-    .csr_tl_i         (tl_if.h2d              ),
-    .csr_tl_o         (tl_if.d2h              ),
-    // TLUL interface for SRAM memory
-    .sram_tl_i        (sram_tl_if.h2d         ),
-    .sram_tl_o        (sram_tl_if.d2h         ),
+    .ram_tl_i            (sram_tl_if.h2d      ),
+    .ram_tl_o            (sram_tl_if.d2h      ),
+    // TLUL interface for CSR regfile
+    .regs_tl_i           (tl_if.h2d           ),
+    .regs_tl_o           (tl_if.d2h           ),
     // Alert I/O
-    .alert_rx_i       (alert_rx               ),
-    .alert_tx_o       (alert_tx               ),
+    .alert_rx_i          (alert_rx            ),
+    .alert_tx_o          (alert_tx            ),
     // Life cycle escalation
-    .lc_escalate_en_i (lc_if.lc_esc_en        ),
+    .lc_escalate_en_i    (lc_if.lc_esc_en     ),
     // OTP key derivation interface
-    .sram_otp_key_o   (key_req                ),
-    .sram_otp_key_i   (key_rsp                ),
+    .sram_otp_key_o      (key_req             ),
+    .sram_otp_key_i      (key_rsp             ),
     // SRAM ifetch interface
-    .lc_hw_debug_en_i     (exec_if.lc_hw_debug_en ),
-    .otp_en_sram_ifetch_i (exec_if.otp_en_sram_ifetch )
+    .lc_hw_debug_en_i    (exec_if.lc_hw_debug_en    ),
+    .otp_en_sram_ifetch_i(exec_if.otp_en_sram_ifetch),
+    .cfg_i               ('0                 )
   );
 
   // KDI interface assignments
@@ -109,7 +103,7 @@ module tb;
 
   // Instantitate the memory backdoor util instance.
   `define SRAM_CTRL_MEM_HIER \
-      tb.dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+      tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
 
   initial begin
     mem_bkdr_util m_mem_bkdr_util;

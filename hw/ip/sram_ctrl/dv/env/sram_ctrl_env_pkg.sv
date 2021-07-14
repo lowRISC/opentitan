@@ -12,7 +12,7 @@ package sram_ctrl_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
-  import sram_ctrl_ral_pkg::*;
+  import sram_ctrl_regs_ral_pkg::*;
   import sram_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
   import lc_ctrl_pkg::*;

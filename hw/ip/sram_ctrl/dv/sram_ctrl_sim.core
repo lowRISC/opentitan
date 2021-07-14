@@ -9,8 +9,6 @@ filesets:
     depend:
       - lowrisc:ip:sram_ctrl
       - lowrisc:prim:ram_1p_scr
-    files:
-      - sram_ctrl_wrapper.sv
     file_type: systemVerilogSource
 
   files_dv:

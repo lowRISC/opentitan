@@ -37,7 +37,6 @@ tl_if rv_dm__regs_tl_if(clk_main, rst_n);
 tl_if rv_dm__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
-tl_if ram_main_tl_if(clk_main, rst_n);
 tl_if eflash_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__prim_tl_if(clk_main, rst_n);
@@ -52,7 +51,8 @@ tl_if rv_plic_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
 tl_if keymgr_tl_if(clk_main, rst_n);
 tl_if rv_core_ibex_peri_tl_if(clk_main, rst_n);
-tl_if sram_ctrl_main_tl_if(clk_main, rst_n);
+tl_if sram_ctrl_main__regs_tl_if(clk_main, rst_n);
+tl_if sram_ctrl_main__ram_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
 tl_if uart2_tl_if(clk_io_div4, rst_n);
@@ -72,12 +72,12 @@ tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if rstmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if clkmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if pinmux_aon_tl_if(clk_io_div4, rst_n);
-tl_if ram_ret_aon_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if lc_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if alert_handler_tl_if(clk_io_div4, rst_n);
-tl_if sram_ctrl_ret_aon_tl_if(clk_io_div4, rst_n);
+tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io_div4, rst_n);
+tl_if sram_ctrl_ret_aon__ram_tl_if(clk_io_div4, rst_n);
 tl_if aon_timer_aon_tl_if(clk_io_div4, rst_n);
 tl_if sysrst_ctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if adc_ctrl_aon_tl_if(clk_io_div4, rst_n);
@@ -114,7 +114,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__rom, rv_dm, rom_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(ram_main, tl_adapter_ram_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(eflash, tl_adapter_eflash, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
@@ -129,7 +128,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(keymgr, keymgr, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex_peri, rv_core_ibex_peri, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main, sram_ctrl_main, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl)
@@ -149,12 +149,12 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(ram_ret_aon, tl_adapter_ram_ret_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl, otp_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl, lc_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl_aon, sensor_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon, sram_ctrl_ret_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)

@@ -32,7 +32,7 @@
     [
       rom_ctrl.rom
       rv_dm.rom
-      ram_main
+      sram_ctrl_main.ram
       eflash
     ]
     cored:
@@ -41,7 +41,7 @@
       rom_ctrl.regs
       rv_dm.rom
       rv_dm.regs
-      ram_main
+      sram_ctrl_main.ram
       eflash
       peri
       flash_ctrl.core
@@ -56,7 +56,7 @@
       otbn
       keymgr
       kmac
-      sram_ctrl_main
+      sram_ctrl_main.regs
       rv_core_ibex_peri
     ]
     rv_dm.sba:
@@ -64,7 +64,7 @@
       rom_ctrl.rom
       rom_ctrl.regs
       rv_dm.regs
-      ram_main
+      sram_ctrl_main.ram
       eflash
       peri
       flash_ctrl.core
@@ -79,7 +79,7 @@
       otbn
       keymgr
       kmac
-      sram_ctrl_main
+      sram_ctrl_main.regs
       rv_core_ibex_peri
     ]
   }
@@ -184,24 +184,6 @@
         {
           base_addr: 0x411e0000
           size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline_byp: "true"
-    }
-    {
-      name: ram_main
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: ram_1p_scr
-      addr_range:
-      [
-        {
-          base_addr: 0x10000000
-          size_byte: 0x20000
         }
       ]
       xbar: false
@@ -478,7 +460,7 @@
       pipeline: "true"
     }
     {
-      name: sram_ctrl_main
+      name: sram_ctrl_main.regs
       type: device
       clock: clk_main_i
       reset: rst_main_ni
@@ -489,6 +471,24 @@
         {
           base_addr: 0x411c0000
           size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: sram_ctrl_main.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x10000000
+          size_byte: 0x20000
         }
       ]
       xbar: false

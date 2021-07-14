@@ -4,7 +4,7 @@
 
 class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     .CFG_T(sram_ctrl_env_cfg),
-    .RAL_T(sram_ctrl_reg_block),
+    .RAL_T(sram_ctrl_regs_reg_block),
     .COV_T(sram_ctrl_env_cov)
   );
   `uvm_component_utils(sram_ctrl_scoreboard)

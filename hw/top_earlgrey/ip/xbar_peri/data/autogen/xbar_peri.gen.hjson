@@ -45,13 +45,13 @@
       rstmgr_aon
       clkmgr_aon
       pinmux_aon
-      ram_ret_aon
+      sram_ctrl_ret_aon.ram
       otp_ctrl
       lc_ctrl
       sensor_ctrl_aon
       alert_handler
       ast
-      sram_ctrl_ret_aon
+      sram_ctrl_ret_aon.regs
       aon_timer_aon
       adc_ctrl_aon
       sysrst_ctrl_aon
@@ -414,24 +414,6 @@
       pipeline_byp: "true"
     }
     {
-      name: ram_ret_aon
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: ram_1p_scr
-      addr_range:
-      [
-        {
-          base_addr: 0x40600000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline_byp: "true"
-    }
-    {
       name: otp_ctrl
       type: device
       clock: clk_peri_i
@@ -504,7 +486,7 @@
       pipeline_byp: "true"
     }
     {
-      name: sram_ctrl_ret_aon
+      name: sram_ctrl_ret_aon.regs
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -514,6 +496,24 @@
       [
         {
           base_addr: 0x40500000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: sram_ctrl_ret_aon.ram
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40600000
           size_byte: 0x1000
         }
       ]

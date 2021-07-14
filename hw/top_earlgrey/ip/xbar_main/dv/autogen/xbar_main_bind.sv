@@ -50,12 +50,6 @@ module xbar_main_bind;
     .h2d    (tl_rom_ctrl__regs_o),
     .d2h    (tl_rom_ctrl__regs_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_ram_main (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_ram_main_o),
-    .d2h    (tl_ram_main_i)
-  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_eflash (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
@@ -146,11 +140,17 @@ module xbar_main_bind;
     .h2d    (tl_rv_core_ibex_peri_o),
     .d2h    (tl_rv_core_ibex_peri_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_main (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_main__regs (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_sram_ctrl_main_o),
-    .d2h    (tl_sram_ctrl_main_i)
+    .h2d    (tl_sram_ctrl_main__regs_o),
+    .d2h    (tl_sram_ctrl_main__regs_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_main__ram (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_sram_ctrl_main__ram_o),
+    .d2h    (tl_sram_ctrl_main__ram_i)
   );
 
 endmodule

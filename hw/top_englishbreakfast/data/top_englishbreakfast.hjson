@@ -345,10 +345,19 @@
     { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
-      clock_group: "peri",
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: "Aon",
-      base_addr: "0x40500000"
+      base_addrs: {regs: "0x40500000", ram: "0x40600000"}
+      // Memory regions must be associated with a dedicated
+      // TL-UL device interface.
+      memory: {
+        ram: {
+          label:    "ram_ret_aon", // label for linker script
+          swaccess: "rwx",         // access attributes for linker script
+          size:     "0x1000"       // size in Bytes for linker script, xbar and RTL parameterization
+        }
+      }
     },
     { name: "flash_ctrl",
       type: "flash_ctrl",
@@ -393,7 +402,16 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys", rst_otp_ni: "lc_io_div4"},
-      base_addr: "0x411C0000",
+      base_addrs: {regs: "0x411C0000", ram: "0x10000000"}
+      // Memory regions must be associated with a dedicated
+      // TL-UL device interface.
+      memory: {
+        ram: {
+          label:    "ram_main", // label for linker script
+          swaccess: "rwx",      // access attributes for linker script
+          size:     "0x20000"   // size in Bytes for linker script, xbar and RTL parameterization
+        }
+      }
     },
   ]
 
@@ -417,97 +435,6 @@
           act: "rsp"
           name: "tl"
         }
-      ]
-    },
-    { name: "ram_main",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "infra",
-      reset_connections: {rst_ni: "sys"},
-      type: "ram_1p_scr",
-      base_addr: "0x10000000",
-      size: "0x10000",
-      byte_write: "true",
-      // data integrity width
-      integ_width: 7,
-      exec: "1",
-      inter_signal_list: [
-        { struct: "tl"
-          package: "tlul_pkg"
-          type: "req_rsp"
-          act: "rsp"
-          name: "tl"
-        },
-        // Interface to SRAM controller
-        { struct:  "sram_scr",
-          package: "sram_ctrl_pkg"
-          type:    "req_rsp",
-          name:    "sram_scr",
-          act:     "rsp",
-        },
-        { struct:  "sram_scr_init",
-          package: "sram_ctrl_pkg"
-          type:    "req_rsp",
-          name:    "sram_scr_init",
-          act:     "rsp",
-        },
-        { struct:  "tl_instr_en",
-          package: "tlul_pkg"
-          type:    "uni",
-          name:    "en_ifetch",
-          act:     "rcv",
-        },
-        { struct:  "logic",
-          package: ""
-          type:    "uni",
-          name:    "intg_error",
-          act:     "req",
-        },
-      ]
-    },
-    { name: "ram_ret_aon",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "infra",
-      reset_connections: {rst_ni: "sys_io_div4"},
-      domain: "Aon",
-      type: "ram_1p_scr",
-      base_addr: "0x40600000",
-      size: "0x1000",
-      byte_write: "true",
-      // data integrity width
-      integ_width: 7,
-      exec: "0",
-      inter_signal_list: [
-        { struct: "tl"
-          package: "tlul_pkg"
-          type: "req_rsp"
-          act: "rsp"
-          name: "tl"
-        },
-        // Interface to SRAM controller
-        { struct:  "sram_scr",
-          package: "sram_ctrl_pkg"
-          type:    "req_rsp",
-          name:    "sram_scr",
-          act:     "rsp",
-        },
-        { struct:  "sram_scr_init",
-          package: "sram_ctrl_pkg"
-          type:    "req_rsp",
-          name:    "sram_scr_init",
-          act:     "rsp",
-        },
-        { struct:  "tl_instr_en",
-          package: "tlul_pkg"
-          type:    "uni",
-          name:    "en_ifetch",
-          act:     "rcv",
-        },
-        { struct:  "logic",
-          package: ""
-          type:    "uni",
-          name:    "intg_error",
-          act:     "req",
-        },
       ]
     },
     { name: "eflash",
@@ -655,14 +582,6 @@
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
-      'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
-      'sram_ctrl_main.sram_scr_init' : ['ram_main.sram_scr_init'],
-      'sram_ctrl_ret_aon.sram_scr'  : ['ram_ret_aon.sram_scr'],
-      'sram_ctrl_ret_aon.sram_scr_init' : ['ram_ret_aon.sram_scr_init'],
-      'sram_ctrl_main.en_ifetch'    : ['ram_main.en_ifetch'],
-      'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch'],
-      'ram_main.intg_error'     : ['sram_ctrl_main.intg_error'],
-      'ram_ret_aon.intg_error'  : ['sram_ctrl_ret_aon.intg_error'],
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],

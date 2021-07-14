@@ -512,22 +512,40 @@ extern "C" {
 #define TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for sram_ctrl_ret_aon in top earlgrey.
+ * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR 0x40500000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0x40500000u
 
 /**
- * Peripheral size for sram_ctrl_ret_aon in top earlgrey.
+ * Peripheral size for regs device on sram_ctrl_ret_aon in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR and
- * `TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x40600000u
+
+/**
+ * Peripheral size for ram device on sram_ctrl_ret_aon in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for core device on flash_ctrl in top earlgrey.
@@ -764,22 +782,40 @@ extern "C" {
 #define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for sram_ctrl_main in top earlgrey.
+ * Peripheral base address for regs device on sram_ctrl_main in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR 0x411C0000u
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR 0x411C0000u
 
 /**
- * Peripheral size for sram_ctrl_main in top earlgrey.
+ * Peripheral size for regs device on sram_ctrl_main in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR and
- * `TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
+
+/**
+ * Peripheral size for ram device on sram_ctrl_main in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.
@@ -855,14 +891,14 @@ extern "C" {
 
 
 /**
- * Memory base address for ram_main in top earlgrey.
+ * Memory base address for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_MAIN_BASE_ADDR 0x10000000u
+#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
 
 /**
- * Memory size for ram_main in top earlgrey.
+ * Memory size for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000u
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
 
 /**
  * Memory base address for ram_ret_aon in top earlgrey.
@@ -875,14 +911,14 @@ extern "C" {
 #define TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES 0x1000u
 
 /**
- * Memory base address for eflash in top earlgrey.
+ * Memory base address for ram_main in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
+#define TOP_EARLGREY_RAM_MAIN_BASE_ADDR 0x10000000u
 
 /**
- * Memory size for eflash in top earlgrey.
+ * Memory size for ram_main in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
+#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000u
 
 /**
  * Memory base address for rom in top earlgrey.

@@ -475,18 +475,6 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_req;
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
   lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
-  sram_ctrl_pkg::sram_scr_req_t       sram_ctrl_main_sram_scr_req;
-  sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_main_sram_scr_rsp;
-  sram_ctrl_pkg::sram_scr_init_req_t       sram_ctrl_main_sram_scr_init_req;
-  sram_ctrl_pkg::sram_scr_init_rsp_t       sram_ctrl_main_sram_scr_init_rsp;
-  sram_ctrl_pkg::sram_scr_req_t       sram_ctrl_ret_aon_sram_scr_req;
-  sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_ret_aon_sram_scr_rsp;
-  sram_ctrl_pkg::sram_scr_init_req_t       sram_ctrl_ret_aon_sram_scr_init_req;
-  sram_ctrl_pkg::sram_scr_init_rsp_t       sram_ctrl_ret_aon_sram_scr_init_rsp;
-  tlul_pkg::tl_instr_en_t       sram_ctrl_main_en_ifetch;
-  tlul_pkg::tl_instr_en_t       sram_ctrl_ret_aon_en_ifetch;
-  logic       ram_main_intg_error;
-  logic       ram_ret_aon_intg_error;
   otp_ctrl_pkg::sram_otp_key_req_t [1:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [1:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
@@ -561,8 +549,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
   tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
   tlul_pkg::tl_d2h_t       rom_ctrl_regs_tl_rsp;
-  tlul_pkg::tl_h2d_t       ram_main_tl_req;
-  tlul_pkg::tl_d2h_t       ram_main_tl_rsp;
   tlul_pkg::tl_h2d_t       eflash_tl_req;
   tlul_pkg::tl_d2h_t       eflash_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
@@ -593,8 +579,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_peri_tl_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_peri_tl_rsp;
-  tlul_pkg::tl_h2d_t       sram_ctrl_main_tl_req;
-  tlul_pkg::tl_d2h_t       sram_ctrl_main_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_main_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_main_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_main_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -633,8 +621,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       pinmux_aon_tl_req;
   tlul_pkg::tl_d2h_t       pinmux_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       ram_ret_aon_tl_req;
-  tlul_pkg::tl_d2h_t       ram_ret_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
@@ -643,8 +629,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       sensor_ctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
   tlul_pkg::tl_d2h_t       alert_handler_tl_rsp;
-  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_tl_req;
-  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
   tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       sysrst_ctrl_aon_tl_req;
@@ -829,156 +817,6 @@ module top_earlgrey #(
     .tdo_i    (1'b0),
     .tdo_oe_i (1'b0)
   );
-
-  // sram device
-  logic        ram_main_req;
-  logic        ram_main_gnt;
-  logic        ram_main_we;
-  logic        ram_main_intg_err;
-  logic [14:0] ram_main_addr;
-  logic [38:0] ram_main_wdata;
-  logic [38:0] ram_main_wmask;
-  logic [38:0] ram_main_rdata;
-  logic        ram_main_rvalid;
-  logic [1:0]  ram_main_rerror;
-
-  tlul_adapter_sram #(
-    .SramAw(15),
-    .SramDw(32),
-    .Outstanding(2),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(0),
-    .EnableDataIntgPt(1)
-  ) u_tl_adapter_ram_main (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .tl_i        (ram_main_tl_req),
-    .tl_o        (ram_main_tl_rsp),
-    .en_ifetch_i (sram_ctrl_main_en_ifetch),
-    .req_o       (ram_main_req),
-    .req_type_o  (),
-    .gnt_i       (ram_main_gnt),
-    .we_o        (ram_main_we),
-    .addr_o      (ram_main_addr),
-    .wdata_o     (ram_main_wdata),
-    .wmask_o     (ram_main_wmask),
-    .intg_error_o(ram_main_intg_err),
-    .rdata_i     (ram_main_rdata),
-    .rvalid_i    (ram_main_rvalid),
-    .rerror_i    (ram_main_rerror)
-  );
-
-  prim_ram_1p_scr #(
-    .Width(39),
-    .Depth(32768),
-    .EnableParity(0),
-    .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm),
-    .DataBitsPerMask(1), // TODO: Temporary change to ensure byte updates can still be done
-    .DiffWidth(8)
-  ) u_ram1p_ram_main (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-
-    .key_valid_i (sram_ctrl_main_sram_scr_req.valid),
-    .key_i       (sram_ctrl_main_sram_scr_req.key),
-    .nonce_i     (sram_ctrl_main_sram_scr_req.nonce),
-    .init_req_i  (sram_ctrl_main_sram_scr_init_req.req),
-    .init_seed_i (sram_ctrl_main_sram_scr_init_req.seed),
-    .init_ack_o  (sram_ctrl_main_sram_scr_init_rsp.ack),
-
-    .req_i       (ram_main_req),
-    .intg_error_i(ram_main_intg_err),
-    .gnt_o       (ram_main_gnt),
-    .write_i     (ram_main_we),
-    .addr_i      (ram_main_addr),
-    .wdata_i     (ram_main_wdata),
-    .wmask_i     (ram_main_wmask),
-    .rdata_o     (ram_main_rdata),
-    .rvalid_o    (ram_main_rvalid),
-    .rerror_o    (ram_main_rerror),
-    .raddr_o     (sram_ctrl_main_sram_scr_rsp.raddr),
-    .intg_error_o(ram_main_intg_error),
-    .cfg_i       (ram_1p_cfg_i)
-  );
-
-  assign sram_ctrl_main_sram_scr_rsp.rerror = ram_main_rerror;
-
-  // sram device
-  logic        ram_ret_aon_req;
-  logic        ram_ret_aon_gnt;
-  logic        ram_ret_aon_we;
-  logic        ram_ret_aon_intg_err;
-  logic [9:0] ram_ret_aon_addr;
-  logic [38:0] ram_ret_aon_wdata;
-  logic [38:0] ram_ret_aon_wmask;
-  logic [38:0] ram_ret_aon_rdata;
-  logic        ram_ret_aon_rvalid;
-  logic [1:0]  ram_ret_aon_rerror;
-
-  tlul_adapter_sram #(
-    .SramAw(10),
-    .SramDw(32),
-    .Outstanding(2),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(0),
-    .EnableDataIntgPt(1)
-  ) u_tl_adapter_ram_ret_aon (
-    .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .tl_i        (ram_ret_aon_tl_req),
-    .tl_o        (ram_ret_aon_tl_rsp),
-    .en_ifetch_i (sram_ctrl_ret_aon_en_ifetch),
-    .req_o       (ram_ret_aon_req),
-    .req_type_o  (),
-    .gnt_i       (ram_ret_aon_gnt),
-    .we_o        (ram_ret_aon_we),
-    .addr_o      (ram_ret_aon_addr),
-    .wdata_o     (ram_ret_aon_wdata),
-    .wmask_o     (ram_ret_aon_wmask),
-    .intg_error_o(ram_ret_aon_intg_err),
-    .rdata_i     (ram_ret_aon_rdata),
-    .rvalid_i    (ram_ret_aon_rvalid),
-    .rerror_i    (ram_ret_aon_rerror)
-  );
-
-  prim_ram_1p_scr #(
-    .Width(39),
-    .Depth(1024),
-    .EnableParity(0),
-    .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm),
-    .DataBitsPerMask(1), // TODO: Temporary change to ensure byte updates can still be done
-    .DiffWidth(8)
-  ) u_ram1p_ram_ret_aon (
-    .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
-
-    .key_valid_i (sram_ctrl_ret_aon_sram_scr_req.valid),
-    .key_i       (sram_ctrl_ret_aon_sram_scr_req.key),
-    .nonce_i     (sram_ctrl_ret_aon_sram_scr_req.nonce),
-    .init_req_i  (sram_ctrl_ret_aon_sram_scr_init_req.req),
-    .init_seed_i (sram_ctrl_ret_aon_sram_scr_init_req.seed),
-    .init_ack_o  (sram_ctrl_ret_aon_sram_scr_init_rsp.ack),
-
-    .req_i       (ram_ret_aon_req),
-    .intg_error_i(ram_ret_aon_intg_err),
-    .gnt_o       (ram_ret_aon_gnt),
-    .write_i     (ram_ret_aon_we),
-    .addr_i      (ram_ret_aon_addr),
-    .wdata_i     (ram_ret_aon_wdata),
-    .wmask_i     (ram_ret_aon_wmask),
-    .rdata_o     (ram_ret_aon_rdata),
-    .rvalid_o    (ram_ret_aon_rvalid),
-    .rerror_o    (ram_ret_aon_rerror),
-    .raddr_o     (sram_ctrl_ret_aon_sram_scr_rsp.raddr),
-    .intg_error_o(ram_ret_aon_intg_error),
-    .cfg_i       (ram_1p_cfg_i)
-  );
-
-  assign sram_ctrl_ret_aon_sram_scr_rsp.rerror = ram_ret_aon_rerror;
 
 
   // host to flash communication
@@ -2042,6 +1880,7 @@ module top_earlgrey #(
     .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
     .RndCnstSramLfsrPerm(RndCnstSramCtrlRetAonSramLfsrPerm),
+    .MemSizeRam(4096),
     .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
       // [41]: fatal_intg_error
@@ -2052,17 +1891,14 @@ module top_earlgrey #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
-      .sram_scr_o(sram_ctrl_ret_aon_sram_scr_req),
-      .sram_scr_i(sram_ctrl_ret_aon_sram_scr_rsp),
-      .sram_scr_init_o(sram_ctrl_ret_aon_sram_scr_init_req),
-      .sram_scr_init_i(sram_ctrl_ret_aon_sram_scr_init_rsp),
+      .cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_en_sram_ifetch_i(sram_ctrl_ret_aon_otp_en_sram_ifetch),
-      .en_ifetch_o(sram_ctrl_ret_aon_en_ifetch),
-      .intg_error_i(ram_ret_aon_intg_error),
-      .tl_i(sram_ctrl_ret_aon_tl_req),
-      .tl_o(sram_ctrl_ret_aon_tl_rsp),
+      .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
+      .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
+      .ram_tl_i(sram_ctrl_ret_aon_ram_tl_req),
+      .ram_tl_o(sram_ctrl_ret_aon_ram_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_infra),
@@ -2439,6 +2275,7 @@ module top_earlgrey #(
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
     .RndCnstSramLfsrPerm(RndCnstSramCtrlMainSramLfsrPerm),
+    .MemSizeRam(131072),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
       // [60]: fatal_intg_error
@@ -2449,17 +2286,14 @@ module top_earlgrey #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
-      .sram_scr_o(sram_ctrl_main_sram_scr_req),
-      .sram_scr_i(sram_ctrl_main_sram_scr_rsp),
-      .sram_scr_init_o(sram_ctrl_main_sram_scr_init_req),
-      .sram_scr_init_i(sram_ctrl_main_sram_scr_init_rsp),
+      .cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
-      .en_ifetch_o(sram_ctrl_main_en_ifetch),
-      .intg_error_i(ram_main_intg_error),
-      .tl_i(sram_ctrl_main_tl_req),
-      .tl_o(sram_ctrl_main_tl_rsp),
+      .regs_tl_i(sram_ctrl_main_regs_tl_req),
+      .regs_tl_o(sram_ctrl_main_regs_tl_rsp),
+      .ram_tl_i(sram_ctrl_main_ram_tl_req),
+      .ram_tl_o(sram_ctrl_main_ram_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
@@ -2745,10 +2579,6 @@ module top_earlgrey #(
     .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),
     .tl_rom_ctrl__regs_i(rom_ctrl_regs_tl_rsp),
 
-    // port: tl_ram_main
-    .tl_ram_main_o(ram_main_tl_req),
-    .tl_ram_main_i(ram_main_tl_rsp),
-
     // port: tl_eflash
     .tl_eflash_o(eflash_tl_req),
     .tl_eflash_i(eflash_tl_rsp),
@@ -2809,9 +2639,13 @@ module top_earlgrey #(
     .tl_rv_core_ibex_peri_o(rv_core_ibex_peri_tl_req),
     .tl_rv_core_ibex_peri_i(rv_core_ibex_peri_tl_rsp),
 
-    // port: tl_sram_ctrl_main
-    .tl_sram_ctrl_main_o(sram_ctrl_main_tl_req),
-    .tl_sram_ctrl_main_i(sram_ctrl_main_tl_rsp),
+    // port: tl_sram_ctrl_main__regs
+    .tl_sram_ctrl_main__regs_o(sram_ctrl_main_regs_tl_req),
+    .tl_sram_ctrl_main__regs_i(sram_ctrl_main_regs_tl_rsp),
+
+    // port: tl_sram_ctrl_main__ram
+    .tl_sram_ctrl_main__ram_o(sram_ctrl_main_ram_tl_req),
+    .tl_sram_ctrl_main__ram_i(sram_ctrl_main_ram_tl_rsp),
 
 
     .scanmode_i
@@ -2900,10 +2734,6 @@ module top_earlgrey #(
     .tl_pinmux_aon_o(pinmux_aon_tl_req),
     .tl_pinmux_aon_i(pinmux_aon_tl_rsp),
 
-    // port: tl_ram_ret_aon
-    .tl_ram_ret_aon_o(ram_ret_aon_tl_req),
-    .tl_ram_ret_aon_i(ram_ret_aon_tl_rsp),
-
     // port: tl_otp_ctrl
     .tl_otp_ctrl_o(otp_ctrl_tl_req),
     .tl_otp_ctrl_i(otp_ctrl_tl_rsp),
@@ -2920,9 +2750,13 @@ module top_earlgrey #(
     .tl_alert_handler_o(alert_handler_tl_req),
     .tl_alert_handler_i(alert_handler_tl_rsp),
 
-    // port: tl_sram_ctrl_ret_aon
-    .tl_sram_ctrl_ret_aon_o(sram_ctrl_ret_aon_tl_req),
-    .tl_sram_ctrl_ret_aon_i(sram_ctrl_ret_aon_tl_rsp),
+    // port: tl_sram_ctrl_ret_aon__regs
+    .tl_sram_ctrl_ret_aon__regs_o(sram_ctrl_ret_aon_regs_tl_req),
+    .tl_sram_ctrl_ret_aon__regs_i(sram_ctrl_ret_aon_regs_tl_rsp),
+
+    // port: tl_sram_ctrl_ret_aon__ram
+    .tl_sram_ctrl_ret_aon__ram_o(sram_ctrl_ret_aon_ram_tl_req),
+    .tl_sram_ctrl_ret_aon__ram_i(sram_ctrl_ret_aon_ram_tl_rsp),
 
     // port: tl_aon_timer_aon
     .tl_aon_timer_aon_o(aon_timer_aon_tl_req),
