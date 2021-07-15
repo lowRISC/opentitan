@@ -45,7 +45,7 @@ OVERRIDABLE_DESC_KEYS = [
     'patch_repo.rev_base',
     'patch_repo.rev_patched',
     'upstream.url',
-    'upstream.ref',
+    'upstream.rev',
 ]
 
 verbose = False
