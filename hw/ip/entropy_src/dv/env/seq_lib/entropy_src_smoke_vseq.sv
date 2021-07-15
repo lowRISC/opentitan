@@ -8,24 +8,23 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
   `uvm_object_new
 
   task body();
-    // Ensure es_entropy is 0 before enabling
-    csr_rd_check(.ptr(ral.entropy_data), .compare_value(1'b0));
-
-    // Change entropy rate
-    csr_wr(.ptr(ral.rate), .value('h8));
-
-    // Route to ENTROPY_DATA register
-    csr_wr(.ptr(ral.entropy_control), .value(1'b1));
-
-    // Enable entropy_src - lfsr mode
-    csr_wr(.ptr(ral.conf), .value(2'b10));
+    // Create and start rng host sequence
+    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+         create("m_rng_push_seq");
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
+      rng_val = i % 16;
+      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
+    end
+    m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
 
     // Wait for entropy_valid interrupt
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
 
-    // Read entropy_data register (384/32=12 times) and expect POR_ENTROPY
-    for (int i = 0; i < 12; i++) begin
-      csr_rd_check(.ptr(ral.entropy_data), .compare_value(POR_ENTROPY[i]));
+    // Read and check entropy
+    for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW/2; i++) begin
+      csr_rd_check(.ptr(ral.entropy_data), .compare_value(INCR_ENTROPY_LO));
+      csr_rd_check(.ptr(ral.entropy_data), .compare_value(INCR_ENTROPY_HI));
     end
 
     // Ensure entropy_valid interrupt bit set

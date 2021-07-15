@@ -19,20 +19,10 @@ package entropy_src_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter bit [11:0][TL_DW-1:0] POR_ENTROPY = {32'h4836cb5a,
-                                                 32'h7efd9124,
-                                                 32'h836cb5a7,
-                                                 32'hefd91248,
-                                                 32'h36cb5a7e,
-                                                 32'hfd912483,
-                                                 32'h6cb5a7ef,
-                                                 32'hd9124836,
-                                                 32'hcb5a7efd,
-                                                 32'h9124836c,
-                                                 32'hb5a7efd9,
-                                                 32'h124836cb};
-  parameter string                LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
-  parameter uint                  NUM_ALERTS       = 2;
+  parameter bit [TL_DW-1:0]   INCR_ENTROPY_LO  = 32'h76543210;
+  parameter bit [TL_DW-1:0]   INCR_ENTROPY_HI  = 32'hfedcba98;
+  parameter string            LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
+  parameter uint              NUM_ALERTS       = 2;
 
   // types
   typedef enum int {

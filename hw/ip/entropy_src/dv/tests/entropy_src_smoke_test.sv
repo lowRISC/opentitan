@@ -10,9 +10,8 @@ class entropy_src_smoke_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    // TODO: Enable scoreboard and predict LFSR output in scoreboard
+    // TODO: Enable scoreboard
     cfg.en_scb             = 0;
-    cfg.mode_ptrng_pct     = 0;
     cfg.route_software_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)

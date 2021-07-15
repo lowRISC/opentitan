@@ -8,11 +8,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  rand uint        num_reqs;
-  rand bit [3:0]   rng_val, rng_val_q[$];
-  push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
-  push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
-
   task body();
     // Create and start rng host sequence
     m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
