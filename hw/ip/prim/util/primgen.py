@@ -12,8 +12,6 @@ sys.path.append('vendor')
 import re
 import shutil
 
-from distutils.version import StrictVersion
-
 import yaml
 from mako.template import Template
 
