@@ -569,6 +569,21 @@ def mk_path(path):
         sys.exit(1)
 
 
+def mk_symlink(path, link):
+    '''Create a symlink from the given path.
+
+    'link' is a Path-like object. If it does exist, remove the existing link and
+    create a new symlink with this given path.
+    If it does not exist, the function creates the symlink with the given path.
+    '''
+    while True:
+        try:
+            os.symlink(path, link)
+            break
+        except FileExistsError:
+            rm_path(link)
+
+
 def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     """Clean previous output directories.
 
