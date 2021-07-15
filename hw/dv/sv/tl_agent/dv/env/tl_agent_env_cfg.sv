@@ -26,6 +26,7 @@ class tl_agent_env_cfg extends dv_base_env_cfg;
     host_agent_cfg = tl_agent_cfg::type_id::create("host_agent_cfg");
     host_agent_cfg.max_outstanding_req = 1 << SourceWidth;
     host_agent_cfg.if_mode = dv_utils_pkg::Host;
+    host_agent_cfg.device_can_rsp_on_same_cycle = 1;
 
     device_agent_cfg = tl_agent_cfg::type_id::create("device_agent_cfg");
     device_agent_cfg.if_mode = dv_utils_pkg::Device;
