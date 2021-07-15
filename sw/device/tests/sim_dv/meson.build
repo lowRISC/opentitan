@@ -48,6 +48,26 @@ sw_tests += {
   }
 }
 
+lc_ctrl_transition_test_lib = declare_dependency(
+  link_with: static_library(
+    'lc_ctrl_transition_test_lib',
+    sources: [
+      'lc_ctrl_transition_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'lc_ctrl_transition_test': {
+    'library': lc_ctrl_transition_test_lib,
+  }
+}
+
 spi_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
     'spi_tx_rx_test_lib',

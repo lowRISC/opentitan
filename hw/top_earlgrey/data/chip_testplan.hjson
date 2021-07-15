@@ -926,7 +926,7 @@
             X-ref'ed chip_otp_ctrl_program.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_lc_ctrl_kmac_req
@@ -1734,7 +1734,7 @@
               LC state and LC count CSRs.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_otp_ctrl_program_error

@@ -9,4 +9,5 @@
 `include "chip_sw_uart_tx_rx_vseq.sv"
 `include "chip_sw_gpio_smoke_vseq.sv"
 `include "chip_sw_gpio_vseq.sv"
+`include "chip_sw_lc_ctrl_transition_vseq.sv"
 `include "chip_sw_spi_tx_rx_vseq.sv"

@@ -67,6 +67,12 @@ package chip_env_pkg;
     SwTypeOtp   // OTP image.
   } sw_type_e;
 
+  // Two status for LC JTAG to identify if LC state transition is successful.
+  typedef enum {
+    LcReady,
+    LcTransitionSuccessful
+  } lc_ctrl_status_e;
+
   // Extracts the address and size of a const symbol in a SW test (supplied as an ELF file).
   //
   // Used by a testbench to modify the given symbol in an executable (elf) generated for an embedded

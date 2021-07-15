@@ -196,6 +196,12 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_sw_lc_ctrl_transition
+      uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
+      sw_images: ["sw/device/tests/lc_ctrl_transition_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_sw_pwrmgr_usbdev_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
