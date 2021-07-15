@@ -148,9 +148,6 @@ module csrng_reg_top (
   logic genbits_vld_genbits_fips_qs;
   logic genbits_re;
   logic [31:0] genbits_qs;
-  logic halt_main_sm_we;
-  logic halt_main_sm_wd;
-  logic main_sm_sts_qs;
   logic int_state_num_we;
   logic [3:0] int_state_num_qs;
   logic [3:0] int_state_num_wd;
@@ -731,60 +728,6 @@ module csrng_reg_top (
     .qe     (),
     .q      (reg2hw.genbits.q),
     .qs     (genbits_qs)
-  );
-
-
-  // R[halt_main_sm]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
-  ) u_halt_main_sm (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (halt_main_sm_we),
-    .wd     (halt_main_sm_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.halt_main_sm.q),
-
-    // to register interface (read)
-    .qs     ()
-  );
-
-
-  // R[main_sm_sts]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RO"),
-    .RESVAL  (1'h0)
-  ) u_main_sm_sts (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.main_sm_sts.de),
-    .d      (hw2reg.main_sm_sts.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (main_sm_sts_qs)
   );
 
 
@@ -1593,7 +1536,7 @@ module csrng_reg_top (
 
 
 
-  logic [19:0] addr_hit;
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1607,15 +1550,13 @@ module csrng_reg_top (
     addr_hit[ 8] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
     addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
     addr_hit[10] = (reg_addr == CSRNG_GENBITS_OFFSET);
-    addr_hit[11] = (reg_addr == CSRNG_HALT_MAIN_SM_OFFSET);
-    addr_hit[12] = (reg_addr == CSRNG_MAIN_SM_STS_OFFSET);
-    addr_hit[13] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
-    addr_hit[14] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
-    addr_hit[15] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
-    addr_hit[17] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[18] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
-    addr_hit[19] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
+    addr_hit[11] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
+    addr_hit[12] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
+    addr_hit[13] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
+    addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[15] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
+    addr_hit[17] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1640,9 +1581,7 @@ module csrng_reg_top (
                (addr_hit[14] & (|(CSRNG_PERMIT[14] & ~reg_be))) |
                (addr_hit[15] & (|(CSRNG_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(CSRNG_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(CSRNG_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(CSRNG_PERMIT[19] & ~reg_be)))));
+               (addr_hit[17] & (|(CSRNG_PERMIT[17] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1687,20 +1626,17 @@ module csrng_reg_top (
   assign cmd_req_wd = reg_wdata[31:0];
   assign genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
   assign genbits_re = addr_hit[10] & reg_re & !reg_error;
-  assign halt_main_sm_we = addr_hit[11] & reg_we & !reg_error;
-
-  assign halt_main_sm_wd = reg_wdata[0];
-  assign int_state_num_we = addr_hit[13] & reg_we & !reg_error;
+  assign int_state_num_we = addr_hit[11] & reg_we & !reg_error;
 
   assign int_state_num_wd = reg_wdata[3:0];
-  assign int_state_val_re = addr_hit[14] & reg_re & !reg_error;
-  assign hw_exc_sts_we = addr_hit[15] & reg_we & !reg_error;
+  assign int_state_val_re = addr_hit[12] & reg_re & !reg_error;
+  assign hw_exc_sts_we = addr_hit[13] & reg_we & !reg_error;
 
   assign hw_exc_sts_wd = reg_wdata[14:0];
-  assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
-  assign sel_tracking_sm_we = addr_hit[18] & reg_we & !reg_error;
+  assign sel_tracking_sm_we = addr_hit[16] & reg_we & !reg_error;
 
   assign sel_tracking_sm_wd = reg_wdata[1:0];
 
@@ -1766,26 +1702,18 @@ module csrng_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[0] = '0;
-      end
-
-      addr_hit[12]: begin
-        reg_rdata_next[0] = main_sm_sts_qs;
-      end
-
-      addr_hit[13]: begin
         reg_rdata_next[3:0] = int_state_num_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[12]: begin
         reg_rdata_next[31:0] = int_state_val_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[13]: begin
         reg_rdata_next[14:0] = hw_exc_sts_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[2] = err_code_sfifo_cmdreq_err_qs;
@@ -1813,15 +1741,15 @@ module csrng_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[15]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[16]: begin
         reg_rdata_next[1:0] = '0;
       end
 
-      addr_hit[19]: begin
+      addr_hit[17]: begin
         reg_rdata_next[31:0] = tracking_sm_obs_qs;
       end
 

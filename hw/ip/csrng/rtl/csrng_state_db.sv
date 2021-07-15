@@ -39,9 +39,10 @@ module csrng_state_db import csrng_pkg::*; #(
   input logic [CtrLen-1:0]   state_db_wr_res_ctr_i,
   input logic                state_db_wr_sts_i,
   // status interface
-  input logic                state_db_lc_en_i,
+  input logic                state_db_is_dump_en_i,
   input logic                state_db_reg_rd_sel_i,
   input logic                state_db_reg_rd_id_pulse_i,
+  input logic [StateId-1:0]  state_db_reg_rd_id_i,
   output logic [31:0]        state_db_reg_rd_val_o,
   output logic               state_db_sts_ack_o,
   output logic               state_db_sts_sts_o,
@@ -62,8 +63,10 @@ module csrng_state_db import csrng_pkg::*; #(
   logic                            state_db_sts;
   logic                            state_db_write;
   logic                            instance_status;
-  logic [NApps-1:0]             int_st_out_sel;
+  logic [NApps-1:0]                int_st_out_sel;
+  logic [NApps-1:0]                int_st_dump_sel;
   logic [InternalStateWidth-1:0]   internal_states_out[NApps];
+  logic [InternalStateWidth-1:0]   internal_states_dump[NApps];
   logic [RegInternalStateWidth-1:0] internal_state_diag;
   logic                             reg_rd_ptr_inc;
 
@@ -72,6 +75,7 @@ module csrng_state_db import csrng_pkg::*; #(
   logic                            state_db_sts_sts_q, state_db_sts_sts_d;
   logic [StateId-1:0]              state_db_sts_id_q, state_db_sts_id_d;
   logic [StateId-1:0]              reg_rd_ptr_q, reg_rd_ptr_d;
+  logic [StateId-1:0]              int_st_dump_id_q, int_st_dump_id_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -79,23 +83,27 @@ module csrng_state_db import csrng_pkg::*; #(
       state_db_sts_sts_q   <= '0;
       state_db_sts_id_q    <= '0;
       reg_rd_ptr_q         <= '0;
+      int_st_dump_id_q     <= '0;
     end else begin
       state_db_sts_ack_q   <= state_db_sts_ack_d;
       state_db_sts_sts_q   <= state_db_sts_sts_d;
       state_db_sts_id_q    <= state_db_sts_id_d;
       reg_rd_ptr_q         <= reg_rd_ptr_d;
+      int_st_dump_id_q     <= int_st_dump_id_d;
     end
 
   // flops - no reset
   logic [InternalStateWidth-1:0]  internal_states_q[NApps], internal_states_d[NApps];
   logic [InternalStateWidth-1:0]  internal_state_pl_q, internal_state_pl_d;
+  logic [InternalStateWidth-1:0]  internal_state_pl_dump_q, internal_state_pl_dump_d;
 
 
   // no reset on state
   always_ff @(posedge clk_i)
     begin
-      internal_states_q  <=  internal_states_d;
-      internal_state_pl_q  <=  internal_state_pl_d;
+      internal_states_q <= internal_states_d;
+      internal_state_pl_q <= internal_state_pl_d;
+      internal_state_pl_dump_q <= internal_state_pl_dump_d;
     end
 
 
@@ -104,15 +112,19 @@ module csrng_state_db import csrng_pkg::*; #(
   //--------------------------------------------
   for (genvar rd = 0; rd < NApps; rd = rd+1) begin : gen_state_rd
     assign int_st_out_sel[rd] = (state_db_rd_inst_id_i == rd);
+    assign int_st_dump_sel[rd] = (int_st_dump_id_q == rd);
     assign internal_states_out[rd] = int_st_out_sel[rd] ? internal_states_q[rd] : '0;
+    assign internal_states_dump[rd] = int_st_dump_sel[rd] ? internal_states_q[rd] : '0;
   end
 
   // since only one of the internal states is active at a time, a
   // logical "or" is made of all of the buses into one
   always_comb begin
     internal_state_pl_d = '0;
+    internal_state_pl_dump_d = '0;
     for (int i = 0; i < NApps; i = i+1) begin
       internal_state_pl_d |= internal_states_out[i];
+      internal_state_pl_dump_d |= internal_states_dump[i];
     end
   end
 
@@ -121,8 +133,8 @@ module csrng_state_db import csrng_pkg::*; #(
           state_db_rd_res_ctr_o} = internal_state_pl_q;
 
 
-  // re-using the internal state pipeline version for better timing
-  assign internal_state_diag = {30'b0,internal_state_pl_q};
+  // using a copy of the internal state pipeline version for better timing
+  assign internal_state_diag = {30'b0,internal_state_pl_dump_q};
 
 
   // Register access of internal state
@@ -148,12 +160,17 @@ module csrng_state_db import csrng_pkg::*; #(
 
   assign reg_rd_ptr_d =
          (!state_db_enable_i) ? 4'hf :
-         (!state_db_lc_en_i) ? 4'hf :
+         (!state_db_is_dump_en_i) ? 4'hf :
          (reg_rd_ptr_q == 4'he) ? '0 :
          state_db_reg_rd_id_pulse_i ? '0 :
          reg_rd_ptr_inc ? (reg_rd_ptr_q+1) :
          reg_rd_ptr_q;
 
+
+  assign int_st_dump_id_d =
+         (!state_db_enable_i) ? '0 :
+         state_db_reg_rd_id_pulse_i ? state_db_reg_rd_id_i :
+         int_st_dump_id_q;
 
   //--------------------------------------------
   // write state logic

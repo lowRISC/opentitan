@@ -307,8 +307,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                    state_db_reg_rd_id_pulse;
   logic [StateId-1:0]      state_db_reg_rd_id;
   logic [31:0]             state_db_reg_rd_val;
-  logic                    halt_main_sm;
-  logic                    main_sm_sts;
 
   logic [30:0]             err_code_test_bit;
   logic                    ctr_drbg_upd_es_ack;
@@ -830,7 +828,6 @@ module csrng_core import csrng_pkg::*; #(
   assign shid_d =
          (!cs_enable) ? '0 :
          acmd_sop ? shid :
-         state_db_reg_rd_id_pulse ? state_db_reg_rd_id :
          shid_q;
 
   assign gen_last_d =
@@ -863,8 +860,6 @@ module csrng_core import csrng_pkg::*; #(
     .update_req_o(update_req),
     .uninstant_req_o(uninstant_req),
     .cmd_complete_i(state_db_wr_req),
-    .halt_main_sm_i(halt_main_sm),
-    .main_sm_halted_o(main_sm_sts),
     .main_sm_err_o(main_sm_err)
   );
 
@@ -926,11 +921,6 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
   assign hw2reg.int_state_val.d = state_db_reg_rd_val;
 
-  // main sm control
-  assign halt_main_sm = reg2hw.halt_main_sm.q;
-  assign hw2reg.main_sm_sts.de = 1'b1;
-  assign hw2reg.main_sm_sts.d = main_sm_sts;
-
 
   csrng_state_db #(
     .NApps(NApps),
@@ -960,9 +950,10 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_res_ctr_i(state_db_wr_rc),
     .state_db_wr_sts_i(state_db_wr_sts),
 
-    .state_db_lc_en_i(lc_hw_debug_on),
+    .state_db_is_dump_en_i(cs_enable), // TODO: add efuse and new config bit
     .state_db_reg_rd_sel_i(state_db_reg_rd_sel),
     .state_db_reg_rd_id_pulse_i(state_db_reg_rd_id_pulse),
+    .state_db_reg_rd_id_i(state_db_reg_rd_id),
     .state_db_reg_rd_val_o(state_db_reg_rd_val),
     .state_db_sts_ack_o(state_db_sts_ack),
     .state_db_sts_sts_o(state_db_sts_sts),
