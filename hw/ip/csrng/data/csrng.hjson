@@ -114,34 +114,6 @@
             tags: [// Exclude from writes to these bits.
                    "excl:CsrAllTests:CsrExclWrite"]
         },
-        {
-            bits: "1",
-            name: "AES_CIPHER_DISABLE",
-            desc: '''
-                  Setting this bit will disable the AES cipher core module. If set, then commands will
-                  bypass the AES cipher core, but still move through the logical flow of CSRNG.
-                  This mode is primarily for debug purposes.
-                  '''
-        },
-        {
-            bits: "19:16",
-            name: "FIFO_DEPTH_STS_SEL",
-            desc: "This field will select which FIFO depth will be read out for diagnostic purposes."
-        },
-      ]
-    },
-    {
-      name: "SUM_STS",
-      desc: "Summary status register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
-      fields: [
-        { bits: "23:0",
-          name: "FIFO_DEPTH_STS",
-          desc: "These bits show the current status of the CRSNG FIFO depths."
-        }
       ]
     },
     {
@@ -563,14 +535,57 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "31:0",
-          name: "TRACKING_SM_OBS",
+        { bits: "7:0",
+          name: "TRACKING_SM_OBS0",
           desc: '''
-                This field will hold 4 csrng command tracking state machine fields,
-                each field being 8 bits. Bits 7:0 hold tracking field 0 for instance 0,
-                Bits 16:8 hold tracking field 1 for instance 1, etc.
+                This field will hold csrng command tracking state machine status,
+                This field holds tracking information for instance 0 if the
+                !!SEL_TRACKING_SM register is set to 0.
                 If more than 4 instances are active, then the selection register
                 can be programmed to select up to 3 other groups.
+                The life cycle state must be set to debug state to read this field.
+                '''
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
+          resval: "0"
+        }
+        { bits: "15:8",
+          name: "TRACKING_SM_OBS1",
+          desc: '''
+                This field will hold csrng command tracking state machine status,
+                This field holds tracking information for instance 1 if the
+                !!SEL_TRACKING_SM register is set to 0.
+                If more than 4 instances are active, then the selection register
+                can be programmed to select up to 3 other groups.
+                The life cycle state must be set to debug state to read this field.
+                '''
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
+          resval: "0"
+        }
+        { bits: "23:16",
+          name: "TRACKING_SM_OBS2",
+          desc: '''
+                This field will hold csrng command tracking state machine status,
+                This field holds tracking information for instance 2 if the
+                !!SEL_TRACKING_SM register is set to 0.
+                If more than 4 instances are active, then the selection register
+                can be programmed to select up to 3 other groups.
+                The life cycle state must be set to debug state to read this field.
+                '''
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
+          resval: "0"
+        }
+        { bits: "31:24",
+          name: "TRACKING_SM_OBS3",
+          desc: '''
+                This field will hold csrng command tracking state machine status,
+                This field holds tracking information for instance 3 if the
+                !!SEL_TRACKING_SM register is set to 0.
+                If more than 4 instances are active, then the selection register
+                can be programmed to select up to 3 other groups.
+                The life cycle state must be set to debug state to read this field.
                 '''
           tags: [// Internal HW can modify status register
                  "excl:CsrAllTests:CsrExclCheck"]

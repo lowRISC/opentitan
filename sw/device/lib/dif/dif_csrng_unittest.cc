@@ -44,14 +44,15 @@ class ConfigTest : public DifCsrngTest {
     EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET,
                    {
                        {CSRNG_CTRL_ENABLE_BIT, true},
-                       {CSRNG_CTRL_AES_CIPHER_DISABLE_BIT, bypass_aes_cipher},
-                       {CSRNG_CTRL_FIFO_DEPTH_STS_SEL_OFFSET, 0},
+                         // TODO: Remove/clean all references to AES
+//                       {CSRNG_CTRL_AES_CIPHER_DISABLE_BIT, bypass_aes_cipher},
+//                       {CSRNG_CTRL_FIFO_DEPTH_STS_SEL_OFFSET, 0},
                    });
   }
 
-  dif_csrng_config_t config_ = {
-      .debug_config = {.bypass_aes_cipher = false},
-  };
+  //  dif_csrng_config_t config_ = {
+  //      .debug_config = {.bypass_aes_cipher = false},
+  //  };
 };
 
 TEST_F(ConfigTest, NullArgs) {
@@ -59,14 +60,14 @@ TEST_F(ConfigTest, NullArgs) {
 }
 
 TEST_F(ConfigTest, ConfigOk) {
-  config_.debug_config.bypass_aes_cipher = false;
-  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
+  //  config_.debug_config.bypass_aes_cipher = false;
+  //  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
   EXPECT_EQ(dif_csrng_configure(&csrng_, config_), kDifCsrngOk);
 }
 
 TEST_F(ConfigTest, ConfigAesBypassOk) {
-  config_.debug_config.bypass_aes_cipher = true;
-  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
+  //  config_.debug_config.bypass_aes_cipher = true;
+  //  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
   EXPECT_EQ(dif_csrng_configure(&csrng_, config_), kDifCsrngOk);
 }
 

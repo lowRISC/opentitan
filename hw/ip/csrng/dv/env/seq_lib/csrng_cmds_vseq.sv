@@ -16,7 +16,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
   task body();
     ral.ctrl.enable.set(1'b1);
-    ral.ctrl.aes_cipher_disable.set(cfg.aes_cipher_disable);
     csr_update(.csr(ral.ctrl));
 
     // TODO: Create/start entropy_src device sequence still under development. Will remove/modify

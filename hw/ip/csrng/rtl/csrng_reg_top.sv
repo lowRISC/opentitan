@@ -132,13 +132,8 @@ module csrng_reg_top (
   logic regwen_re;
   logic regwen_qs;
   logic ctrl_we;
-  logic ctrl_enable_qs;
-  logic ctrl_enable_wd;
-  logic ctrl_aes_cipher_disable_qs;
-  logic ctrl_aes_cipher_disable_wd;
-  logic [3:0] ctrl_fifo_depth_sts_sel_qs;
-  logic [3:0] ctrl_fifo_depth_sts_sel_wd;
-  logic [23:0] sum_sts_qs;
+  logic ctrl_qs;
+  logic ctrl_wd;
   logic cmd_req_we;
   logic [31:0] cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
@@ -186,7 +181,10 @@ module csrng_reg_top (
   logic [4:0] err_code_test_wd;
   logic sel_tracking_sm_we;
   logic [1:0] sel_tracking_sm_wd;
-  logic [31:0] tracking_sm_obs_qs;
+  logic [7:0] tracking_sm_obs_tracking_sm_obs0_qs;
+  logic [7:0] tracking_sm_obs_tracking_sm_obs1_qs;
+  logic [7:0] tracking_sm_obs_tracking_sm_obs2_qs;
+  logic [7:0] tracking_sm_obs_tracking_sm_obs3_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -497,18 +495,17 @@ module csrng_reg_top (
 
   // R[ctrl]: V(False)
 
-  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_ctrl_enable (
+  ) u_ctrl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_we),
-    .wd     (ctrl_enable_wd),
+    .wd     (ctrl_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -516,89 +513,10 @@ module csrng_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.enable.q),
+    .q      (reg2hw.ctrl.q),
 
     // to register interface (read)
-    .qs     (ctrl_enable_qs)
-  );
-
-
-  //   F[aes_cipher_disable]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_ctrl_aes_cipher_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (ctrl_we),
-    .wd     (ctrl_aes_cipher_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.aes_cipher_disable.q),
-
-    // to register interface (read)
-    .qs     (ctrl_aes_cipher_disable_qs)
-  );
-
-
-  //   F[fifo_depth_sts_sel]: 19:16
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_ctrl_fifo_depth_sts_sel (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (ctrl_we),
-    .wd     (ctrl_fifo_depth_sts_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.fifo_depth_sts_sel.q),
-
-    // to register interface (read)
-    .qs     (ctrl_fifo_depth_sts_sel_qs)
-  );
-
-
-  // R[sum_sts]: V(False)
-
-  prim_subreg #(
-    .DW      (24),
-    .SWACCESS("RO"),
-    .RESVAL  (24'h0)
-  ) u_sum_sts (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.sum_sts.de),
-    .d      (hw2reg.sum_sts.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (sum_sts_qs)
+    .qs     (ctrl_qs)
   );
 
 
@@ -1509,11 +1427,12 @@ module csrng_reg_top (
 
   // R[tracking_sm_obs]: V(False)
 
+  //   F[tracking_sm_obs0]: 7:0
   prim_subreg #(
-    .DW      (32),
+    .DW      (8),
     .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_tracking_sm_obs (
+    .RESVAL  (8'h0)
+  ) u_tracking_sm_obs_tracking_sm_obs0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1522,21 +1441,99 @@ module csrng_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.tracking_sm_obs.de),
-    .d      (hw2reg.tracking_sm_obs.d),
+    .de     (hw2reg.tracking_sm_obs.tracking_sm_obs0.de),
+    .d      (hw2reg.tracking_sm_obs.tracking_sm_obs0.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (tracking_sm_obs_qs)
+    .qs     (tracking_sm_obs_tracking_sm_obs0_qs)
+  );
+
+
+  //   F[tracking_sm_obs1]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SWACCESS("RO"),
+    .RESVAL  (8'h0)
+  ) u_tracking_sm_obs_tracking_sm_obs1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+  logic [17:0] addr_hit;
+    .de     (hw2reg.tracking_sm_obs.tracking_sm_obs1.de),
+    .d      (hw2reg.tracking_sm_obs.tracking_sm_obs1.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tracking_sm_obs_tracking_sm_obs1_qs)
+  );
+
+
+  //   F[tracking_sm_obs2]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SWACCESS("RO"),
+    .RESVAL  (8'h0)
+  ) u_tracking_sm_obs_tracking_sm_obs2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tracking_sm_obs.tracking_sm_obs2.de),
+    .d      (hw2reg.tracking_sm_obs.tracking_sm_obs2.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tracking_sm_obs_tracking_sm_obs2_qs)
+  );
+
+
+  //   F[tracking_sm_obs3]: 31:24
+  prim_subreg #(
+    .DW      (8),
+    .SWACCESS("RO"),
+    .RESVAL  (8'h0)
+  ) u_tracking_sm_obs_tracking_sm_obs3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tracking_sm_obs.tracking_sm_obs3.de),
+    .d      (hw2reg.tracking_sm_obs.tracking_sm_obs3.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tracking_sm_obs_tracking_sm_obs3_qs)
   );
 
 
 
 
-  logic [17:0] addr_hit;
+  logic [18:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1545,11 +1542,11 @@ module csrng_reg_top (
     addr_hit[ 3] = (reg_addr == CSRNG_ALERT_TEST_OFFSET);
     addr_hit[ 4] = (reg_addr == CSRNG_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == CSRNG_CTRL_OFFSET);
-    addr_hit[ 6] = (reg_addr == CSRNG_SUM_STS_OFFSET);
-    addr_hit[ 7] = (reg_addr == CSRNG_CMD_REQ_OFFSET);
-    addr_hit[ 8] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
-    addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
-    addr_hit[10] = (reg_addr == CSRNG_GENBITS_OFFSET);
+    addr_hit[ 6] = (reg_addr == CSRNG_CMD_REQ_OFFSET);
+    addr_hit[ 7] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
+    addr_hit[ 8] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
+    addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_OFFSET);
+    addr_hit[10] = (reg_addr == CSRNG_HALT_MAIN_SM_OFFSET);
     addr_hit[11] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
     addr_hit[12] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
     addr_hit[13] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
@@ -1616,16 +1613,12 @@ module csrng_reg_top (
   assign regwen_re = addr_hit[4] & reg_re & !reg_error;
   assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign ctrl_enable_wd = reg_wdata[0];
-
-  assign ctrl_aes_cipher_disable_wd = reg_wdata[1];
-
-  assign ctrl_fifo_depth_sts_sel_wd = reg_wdata[19:16];
-  assign cmd_req_we = addr_hit[7] & reg_we & !reg_error;
+  assign ctrl_wd = reg_wdata[0];
+  assign cmd_req_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cmd_req_wd = reg_wdata[31:0];
-  assign genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
-  assign genbits_re = addr_hit[10] & reg_re & !reg_error;
+  assign genbits_vld_re = addr_hit[8] & reg_re & !reg_error;
+  assign genbits_re = addr_hit[9] & reg_re & !reg_error;
   assign int_state_num_we = addr_hit[11] & reg_we & !reg_error;
 
   assign int_state_num_wd = reg_wdata[3:0];
@@ -1674,34 +1667,28 @@ module csrng_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = ctrl_enable_qs;
-        reg_rdata_next[1] = ctrl_aes_cipher_disable_qs;
-        reg_rdata_next[19:16] = ctrl_fifo_depth_sts_sel_qs;
+        reg_rdata_next[0] = ctrl_qs;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[23:0] = sum_sts_qs;
-      end
-
-      addr_hit[7]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
         reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = genbits_vld_genbits_vld_qs;
         reg_rdata_next[1] = genbits_vld_genbits_fips_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = genbits_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[10]: begin
         reg_rdata_next[3:0] = int_state_num_qs;
       end
 
@@ -1750,7 +1737,10 @@ module csrng_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = tracking_sm_obs_qs;
+        reg_rdata_next[7:0] = tracking_sm_obs_tracking_sm_obs0_qs;
+        reg_rdata_next[15:8] = tracking_sm_obs_tracking_sm_obs1_qs;
+        reg_rdata_next[23:16] = tracking_sm_obs_tracking_sm_obs2_qs;
+        reg_rdata_next[31:24] = tracking_sm_obs_tracking_sm_obs3_qs;
       end
 
       default: begin

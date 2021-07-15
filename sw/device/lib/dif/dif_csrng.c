@@ -131,12 +131,14 @@ dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng,
   }
 
   uint32_t reg = bitfield_bit32_write(0, CSRNG_CTRL_ENABLE_BIT, 1);
-  reg = bitfield_bit32_write(reg, CSRNG_CTRL_AES_CIPHER_DISABLE_BIT,
+  // TODO: Remove below
+  // reg = bitfield_bit32_write(reg, CSRNG_CTRL_AES_CIPHER_DISABLE_BIT,
                              config.debug_config.bypass_aes_cipher);
 
   // TODO: Determine if the dif library should support a diagnostics mode
   // of operation.
-  reg = bitfield_field32_write(reg, CSRNG_CTRL_FIFO_DEPTH_STS_SEL_FIELD, 0);
+  // TODO: Remove below
+  // reg = bitfield_field32_write(reg, CSRNG_CTRL_FIFO_DEPTH_STS_SEL_FIELD, 0);
 
   mmio_region_write32(csrng->params.base_addr, CSRNG_CTRL_REG_OFFSET, reg);
   return kDifCsrngOk;
