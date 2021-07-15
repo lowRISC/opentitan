@@ -50,8 +50,8 @@ module rom_ctrl
 
   logic [RomIndexWidth-1:0] rom_index;
   logic                     rom_req;
-  logic [39:0]              rom_scr_rdata;
-  logic [39:0]              rom_clr_rdata;
+  logic [38:0]              rom_scr_rdata;
+  logic [38:0]              rom_clr_rdata;
   logic                     rom_rvalid;
 
   logic [RomIndexWidth-1:0] bus_rom_index;
@@ -62,7 +62,7 @@ module rom_ctrl
 
   logic [RomIndexWidth-1:0] checker_rom_index;
   logic                     checker_rom_req;
-  logic [39:0]              checker_rom_rdata;
+  logic [38:0]              checker_rom_rdata;
 
   // Pack / unpack kmac connection data ========================================
 
@@ -172,7 +172,7 @@ module rom_ctrl
 
   rom_ctrl_scrambled_rom #(
     .MemInitFile (BootRomInitFile),
-    .Width       (40),
+    .Width       (39),
     .Depth       (RomSizeWords),
     .ScrNonce    (RndCnstScrNonce),
     .ScrKey      (RndCnstScrKey)
@@ -188,7 +188,7 @@ module rom_ctrl
   );
 
   // Zero expand checker rdata to pass to KMAC
-  assign kmac_rom_data = {24'd0, checker_rom_rdata};
+  assign kmac_rom_data = {25'd0, checker_rom_rdata};
 
   // Register block ============================================================
 

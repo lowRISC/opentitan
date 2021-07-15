@@ -209,7 +209,7 @@ def rom_selfchecking(request, bin_dir):
     # Allow tests to optionally specify their subdir within the project.
     test_dir = rom_config.get('test_dir', 'sw/device/tests')
 
-    test_filename = binary_name + '_sim_verilator.scr.40.vmem'
+    test_filename = binary_name + '_sim_verilator.scr.39.vmem'
     bin_path = bin_dir / test_dir / test_filename
     assert bin_path.is_file()
 
@@ -348,7 +348,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
@@ -374,7 +374,7 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
     rom_vmem_path = bin_dir / ("sw/device/silicon_creator/mask_rom/"
-                               "mask_rom_sim_verilator.scr.40.vmem")
+                               "mask_rom_sim_verilator.scr.39.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     # Use a longer timeout for boot due to the overhead of signature verification.
@@ -398,7 +398,7 @@ def test_spiflash(tmp_path, bin_dir):
     """ Load a single application to the Verilator simulation using spiflash """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
@@ -428,7 +428,7 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
     """
     # Run a simulation (bootrom only, no app beyond that)
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)

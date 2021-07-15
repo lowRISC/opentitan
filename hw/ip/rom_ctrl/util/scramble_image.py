@@ -367,11 +367,11 @@ class Scrambler:
 
         return flattened
 
-    def scramble40(self, mem: MemFile) -> MemFile:
+    def scramble(self, mem: MemFile) -> MemFile:
         assert len(mem.chunks) == 1
         assert len(mem.chunks[0].words) == self.rom_size_words
 
-        word_width = 40
+        word_width = mem.width
 
         # Write addr_sp, data_sp for the S&P networks for address and data,
         # respectively. Write clr[i] for unscrambled data word i and scr[i] for
@@ -485,14 +485,10 @@ def main() -> int:
 
     # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits.
     clr_flat.add_ecc32()
-
-    # Zero-extend the cleartext memory by one more bit (this is the size we
-    # actually use in the physical ROM)
     assert clr_flat.width == 39
-    clr_flat.width = 40
 
     # Scramble the memory
-    scr_mem = scrambler.scramble40(clr_flat)
+    scr_mem = scrambler.scramble(clr_flat)
 
     # Insert the expected hash here to the top 8 words
     scrambler.add_hash(scr_mem)

@@ -8,21 +8,21 @@
 // The data decoding is different from SRAM, but most of the underlying SRAM functions are reused
 // Also note that this function returns the raw data rather than data + syndrome + error because
 // the rom_ctrl testbench needs this for checking.
-virtual function bit [39:0] rom_encrypt_read32(bit [bus_params_pkg::BUS_AW-1:0] addr,
+virtual function bit [38:0] rom_encrypt_read32(bit [bus_params_pkg::BUS_AW-1:0] addr,
                                                logic [SRAM_KEY_WIDTH-1:0]       key,
                                                logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
                                                bit                              unscramble_data);
 
   logic [bus_params_pkg::BUS_AW-1:0] mem_addr = '0;
-  logic [39:0]                       data = '0;
+  logic [38:0]                       data = '0;
 
   logic addr_arr      [] = new[addr_width];
   logic scrambled_addr[] = new[addr_width];
-  logic data_arr      [] = new[40];
+  logic data_arr      [] = new[39];
   logic key_arr       [] = new[SRAM_KEY_WIDTH];
   logic nonce_arr     [] = new[SRAM_BLOCK_WIDTH];
   logic keystream     [] = new[SRAM_BLOCK_WIDTH];
-  logic zero_key      [] = new[40];
+  logic zero_key      [] = new[39];
 
   key_arr   = {<<{key}};
   nonce_arr = {<<{nonce}};
@@ -55,12 +55,12 @@ virtual function bit [39:0] rom_encrypt_read32(bit [bus_params_pkg::BUS_AW-1:0] 
   // Generate the keystream
   keystream = sram_scrambler_pkg::gen_keystream(addr_arr, addr_width, key_arr, nonce_arr);
 
-  for (int i = 0; i < 40; i++) begin
+  for (int i = 0; i < 39; i++) begin
     zero_key[i] = '0;
   end
 
-  data_arr = sram_scrambler_pkg::sp_decrypt(data_arr, 40, zero_key);
-  for (int i = 0; i < 40; i++) begin
+  data_arr = sram_scrambler_pkg::sp_decrypt(data_arr, 39, zero_key);
+  for (int i = 0; i < 39; i++) begin
     data[i] = data_arr[i] ^ keystream[i];
   end
 

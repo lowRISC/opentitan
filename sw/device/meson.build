@@ -121,7 +121,7 @@ scramble_image_hjson = [
   meson.source_root() / 'hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
 ]
 scramble_image_outputs = [
-  '@BASENAME@.scr.40.vmem',
+  '@BASENAME@.scr.39.vmem',
 ]
 scramble_image_command = [
     prog_python,

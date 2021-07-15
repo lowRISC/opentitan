@@ -34,8 +34,8 @@ package rom_ctrl_env_pkg;
   parameter uint MAX_CHECK_ADDR = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (DIGEST_SIZE / 8);
   // The data for each line in rom up to the digest is padded out to the kmac message width
   parameter uint KMAC_DATA_SIZE = MAX_CHECK_ADDR / (TL_DW / 8) * (kmac_pkg::MsgWidth / 8);
-  // The rom width is rounded up to 40 for scrambling symmetry
-  parameter uint ROM_MEM_W = 40;
+  // The rom width in bits
+  parameter uint ROM_MEM_W = 39;
 
   // types
   typedef virtual rom_ctrl_if rom_ctrl_vif;
