@@ -141,33 +141,25 @@ module prim_arbiter_tree #(
           // local helper variable
           logic sel;
 
-          // TODO: The always_comb code is split into two blocks to allow Verilator to schedule them
-          //       separately (avoiding a spurious UNOPTFLAT warning). The whole lot would probably
-          //       be clearer as a set of continuous assignments, rather than using always_comb
-          //       blocks. Unfortunately, we can't currently do that because of a Vivado bug,
-          //       reported in January 2020. This is tracked with OpenTitan issue #1408. There's
-          //       currently no information about a Vivado version with this fixed.
-          always_comb begin : p_sel
-            // forward path (requests and data)
-            // each node looks at its two children, and selects the one with higher priority
-            sel = ~req_tree[C0] | ~prio_tree[C0] & prio_tree[C1];
-          end
-          always_comb begin : p_node
-            // propagate requests
-            req_tree[Pa]  = req_tree[C0] | req_tree[C1];
-            prio_tree[Pa] = prio_tree[C1] | prio_tree[C0];
-            // data and index muxes
-            idx_tree[Pa]  = (sel) ? idx_tree[C1]  : idx_tree[C0];
-            data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
+          // forward path (requests and data)
+          // each node looks at its two children, and selects the one with higher priority
+          assign sel = ~req_tree[C0] | ~prio_tree[C0] & prio_tree[C1];
+          // propagate requests
+          assign req_tree[Pa]  = req_tree[C0] | req_tree[C1];
+          assign prio_tree[Pa] = prio_tree[C1] | prio_tree[C0];
+          // data and index muxes
+          // Note: these ternaries have triggered a synthesis bug in Vivado versions older
+          // than 2020.2. If the problem resurfaces again, have a look at issue #1408.
+          assign idx_tree[Pa]  = (sel) ? idx_tree[C1]  : idx_tree[C0];
+          assign data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
 
-            // backward path (grants and prefix sum)
-            // this propagates the selction index back and computes a hot one mask
-            sel_tree[C0] = sel_tree[Pa] & ~sel;
-            sel_tree[C1] = sel_tree[Pa] &  sel;
-            // this performs a prefix sum for masking the input requests in the next cycle
-            mask_tree[C0] = mask_tree[Pa];
-            mask_tree[C1] = mask_tree[Pa] | sel_tree[C0];
-          end
+          // backward path (grants and prefix sum)
+          // this propagates the selction index back and computes a hot one mask
+          assign sel_tree[C0] = sel_tree[Pa] & ~sel;
+          assign sel_tree[C1] = sel_tree[Pa] &  sel;
+          // this performs a prefix sum for masking the input requests in the next cycle
+          assign mask_tree[C0] = mask_tree[Pa];
+          assign mask_tree[C1] = mask_tree[Pa] | sel_tree[C0];
         end
       end : gen_level
     end : gen_tree
