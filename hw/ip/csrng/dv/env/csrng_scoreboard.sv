@@ -10,7 +10,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(csrng_scoreboard)
 
   // local variables
-  csrng_item              cs_item;
   bit [RSD_CTR_LEN-1:0]   reseed_counter;
   bit [BLOCK_LEN-1:0]     v;
   bit [KEY_LEN-1:0]       key;
@@ -19,7 +18,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
       entropy_src_fifo;
-  uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo;
+  uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[NUM_HW_APPS];
 
   // local queues to hold incoming packets pending comparison
   push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
@@ -31,7 +30,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
 
     entropy_src_fifo = new("entropy_src_fifo", this);
-    csrng_cmd_fifo   = new("csrng_cmd_fifo", this);
+    for (int i = 0; i < NUM_HW_APPS; i++) begin
+      csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -43,7 +44,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     fork
       process_entropy_src_fifo();
-      process_csrng_cmd_fifo();
+      for (int i = 0; i < NUM_HW_APPS; i++)
+        process_csrng_cmd_fifo(i);
     join_none
   endtask
 
@@ -152,7 +154,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // From NIST.SP.800-90Ar1
-  function bit [csrng_env_pkg::BLOCK_LEN-1:0] block_encrypt(bit [csrng_env_pkg::KEY_LEN-1:0] key,
+  function automatic bit [csrng_env_pkg::BLOCK_LEN-1:0] block_encrypt(
+      bit [csrng_env_pkg::KEY_LEN-1:0]   key,
       bit [csrng_env_pkg::BLOCK_LEN-1:0] input_block);
 
     bit [csrng_env_pkg::BLOCK_LEN-1:0]   output_block;
@@ -169,9 +172,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     return output_block;
   endfunction
 
-  function void ctr_drbg_update(bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] provided_data,
-                                ref bit [csrng_env_pkg::KEY_LEN-1:0]       key,
-                                ref bit [csrng_env_pkg::BLOCK_LEN-1:0]     v);
+  function automatic void ctr_drbg_update(uint hwapp,
+                                bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] provided_data);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   temp;
     bit [csrng_env_pkg::CTR_LEN-1:0]             inc;
@@ -180,68 +182,71 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     for (int i = 0; i < (entropy_src_pkg::CSRNG_BUS_WIDTH/csrng_env_pkg::BLOCK_LEN); i++) begin
       if (csrng_env_pkg::CTR_LEN < csrng_env_pkg::BLOCK_LEN) begin
-        inc = (v[csrng_env_pkg::CTR_LEN-1:0] + 1);
+        inc = (cfg.v[hwapp][csrng_env_pkg::CTR_LEN-1:0] + 1);
         mod_val = 2**csrng_env_pkg::CTR_LEN;
         inc = inc % mod_val;
-        v = {v[csrng_env_pkg::BLOCK_LEN - 1:csrng_env_pkg::CTR_LEN], inc};
+        cfg.v[hwapp] = {cfg.v[hwapp][csrng_env_pkg::BLOCK_LEN - 1:csrng_env_pkg::CTR_LEN], inc};
       end
       else begin
-        v += 1;
+        cfg.v[hwapp] += 1;
         mod_val = 2**csrng_env_pkg::BLOCK_LEN;
-        v = v % mod_val;
+        cfg.v[hwapp] = cfg.v[hwapp] % mod_val;
       end
 
-      output_block = block_encrypt(key, v);
+      output_block = block_encrypt(cfg.key[hwapp], cfg.v[hwapp]);
       temp = {temp, output_block};
     end
 
     temp = temp ^ provided_data;
-    key  = temp[entropy_src_pkg::CSRNG_BUS_WIDTH-1:(entropy_src_pkg::CSRNG_BUS_WIDTH -
-           csrng_env_pkg::KEY_LEN)];
-    v    = temp[csrng_env_pkg::BLOCK_LEN-1:0];
+    cfg.key[hwapp] = temp[entropy_src_pkg::CSRNG_BUS_WIDTH-1:(entropy_src_pkg::CSRNG_BUS_WIDTH -
+        csrng_env_pkg::KEY_LEN)];
+    cfg.v[hwapp] = temp[csrng_env_pkg::BLOCK_LEN-1:0];
   endfunction
 
-  function void ctr_drbg_instantiate(bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
+  function automatic void ctr_drbg_instantiate(uint hwapp,
+                                     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
                                      bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                          personalization_string = 'h0);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material = entropy_input ^ personalization_string;
-    cfg.key = 'h0;
-    cfg.v = 'h0;
-    ctr_drbg_update(seed_material, cfg.key, cfg.v);
-    cfg.reseed_counter = 1'b1;
-    cfg.status = 1'b1;
+    cfg.key[hwapp] = 'h0;
+    cfg.v[hwapp] = 'h0;
+    ctr_drbg_update(hwapp, seed_material);
+    cfg.reseed_counter[hwapp] = 1'b1;
+    cfg.status[hwapp] = 1'b1;
   endfunction
 
-  function void ctr_drbg_reseed(bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
+  function automatic void ctr_drbg_reseed(uint hwapp,
+                                bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                     additional_input = 'h0);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material = entropy_input ^ additional_input;
-    ctr_drbg_update(seed_material, cfg.key, cfg.v);
-    cfg.reseed_counter = 1'b1;
+    ctr_drbg_update(hwapp, seed_material);
+    cfg.reseed_counter[hwapp] = 1'b1;
   endfunction
 
-  virtual task process_csrng_cmd_fifo();
+  task automatic process_csrng_cmd_fifo(uint hwapp);
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed;
+    csrng_item                                   cs_item;
 
     forever begin
-      csrng_cmd_fifo.get(cs_item);
-      seed = '0;
-      for (int i = 0; i < cs_item.cmd_data_q.size(); i++) begin
-        seed = (cs_item.cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) + seed;
-      end
-
-      case (cs_item.acmd)
-        csrng_pkg::INS: begin
-          ctr_drbg_instantiate(seed);
+        csrng_cmd_fifo[hwapp].get(cs_item);
+        seed = '0;
+        for (int i = 0; i < cs_item.cmd_data_q.size(); i++) begin
+          seed = (cs_item.cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) + seed;
         end
-      endcase
-    end
+
+        case (cs_item.acmd)
+          csrng_pkg::INS: begin
+            ctr_drbg_instantiate(hwapp, seed);
+          end
+        endcase
+      end
   endtask
 
 endclass
