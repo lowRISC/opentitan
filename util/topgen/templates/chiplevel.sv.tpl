@@ -927,13 +927,6 @@ module chip_${top["name"]}_${target["name"]} (
   //////////////////////
 
   top_${top["name"]} #(
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b0),
-    .KmacReuseShare(0),
-    .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
     .rst_ni                       ( aon_pok                    ),
