@@ -10,6 +10,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(entropy_src_base_vseq)
 
+  rand bit [3:0]   rng_val;
+  rand uint        num_reqs;
+  push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
+  push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
+
   // various knobs to enable certain routines
   bit  do_entropy_src_init = 1'b1;
 
