@@ -16,9 +16,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   input logic                rst_ni,
 
    // update interface
-  input logic                block_encrypt_bypass_i,
   input logic                block_encrypt_enable_i,
-  input logic                block_encrypt_lc_hw_debug_not_on_i,
   input logic                block_encrypt_req_i,
   output logic               block_encrypt_rdy_o,
   input logic [KeyLen-1:0]   block_encrypt_key_i,
@@ -36,7 +34,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
 );
 
   localparam int BlkEncFifoDepth = 1;
-  localparam int BlkEncFifoWidth = BlkLen+StateId+Cmd;
+  localparam int BlkEncFifoWidth = StateId+Cmd;
   localparam int NumShares = 1;
 
   // signals
@@ -50,7 +48,6 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // breakout
   logic [Cmd-1:0]             sfifo_blkenc_cmd;
   logic [StateId-1:0]         sfifo_blkenc_id;
-  logic [BlkLen-1:0]          sfifo_blkenc_v;
 
   aes_pkg::sp2v_e       cipher_in_valid;
   aes_pkg::sp2v_e       cipher_in_ready;
@@ -81,7 +78,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // aes cipher core lifecycle enable
   //--------------------------------------------
 
-  assign aes_cipher_core_enable = (!block_encrypt_bypass_i) || block_encrypt_lc_hw_debug_not_on_i;
+  assign     aes_cipher_core_enable = block_encrypt_enable_i;
 
   //--------------------------------------------
   // aes cipher core
@@ -128,7 +125,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
 
 
   //--------------------------------------------
-  // bypass fifo - intent is to bypass the aes block
+  // cmd / id tracking fifo
   //--------------------------------------------
 
   prim_fifo_sync #(
@@ -150,24 +147,20 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   );
 
   assign sfifo_blkenc_push = block_encrypt_req_i && !sfifo_blkenc_full;
-  assign sfifo_blkenc_wdata = {block_encrypt_v_i,block_encrypt_id_i,block_encrypt_cmd_i};
+  assign sfifo_blkenc_wdata = {block_encrypt_id_i,block_encrypt_cmd_i};
 
-  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? !sfifo_blkenc_full :
-               (cipher_in_ready == aes_pkg::SP2V_HIGH) ? 1'b1               : 1'b0;
+  assign block_encrypt_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
 
   assign sfifo_blkenc_pop = block_encrypt_ack_o;
-  assign {sfifo_blkenc_v,sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
+  assign {sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
 
-  assign block_encrypt_ack_o = block_encrypt_rdy_i &&
-         (!aes_cipher_core_enable                  ? sfifo_blkenc_not_empty :
-          (cipher_out_valid == aes_pkg::SP2V_HIGH) ? 1'b1                   : 1'b0);
+  assign block_encrypt_ack_o = block_encrypt_rdy_i && (cipher_out_valid == aes_pkg::SP2V_HIGH);
 
   assign block_encrypt_cmd_o = sfifo_blkenc_cmd;
   assign block_encrypt_id_o = sfifo_blkenc_id;
-  assign block_encrypt_v_o = !aes_cipher_core_enable ? sfifo_blkenc_v : cipher_data_out;
-  assign cipher_out_ready =
-         block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH :
-         aes_pkg::SP2V_LOW;
+  assign block_encrypt_v_o = cipher_data_out;
+
+  assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   assign block_encrypt_sfifo_blkenc_err_o =
          {(sfifo_blkenc_push && sfifo_blkenc_full),

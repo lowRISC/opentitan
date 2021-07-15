@@ -160,15 +160,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     bit [csrng_env_pkg::BLOCK_LEN-1:0]   output_block;
 
-    if (cfg.aes_cipher_disable)
-      output_block = input_block;
-    else begin
-      sv_dpi_aes_crypt_block(.impl_i(1'b0), .op_i(1'b0), .mode_i(6'b00_0001), .key_len_i(3'b100),
-                             .iv_i('h0),
-                             .key_i(key),
-                             .data_i(input_block),
-                             .data_o(output_block));
-    end
+    sv_dpi_aes_crypt_block(.impl_i(1'b0), .op_i(1'b0), .mode_i(6'b00_0001), .key_len_i(3'b100),
+                           .iv_i('h0),
+                           .key_i(key),
+                           .data_i(input_block),
+                           .data_o(output_block));
     return output_block;
   endfunction
 

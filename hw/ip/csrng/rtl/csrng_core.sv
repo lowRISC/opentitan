@@ -70,7 +70,6 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_hw_inst_exc;
   logic       event_cs_fatal_err;
   logic       cs_enable;
-  logic       aes_cipher_enable;
   logic       acmd_avail;
   logic       acmd_sop;
   logic       acmd_mop;
@@ -133,7 +132,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                   generate_req;
   logic                   update_req;
   logic                   uninstant_req;
-  logic [3:0]             fifo_sel;
   logic [Cmd-1:0]         ctr_drbg_cmd_ccmd;
   logic                   ctr_drbg_cmd_req;
   logic                   ctr_drbg_gen_req;
@@ -298,10 +296,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                    genbits_stage_bus_rd_sw;
   logic [31:0]             genbits_stage_bus_sw;
   logic                    genbits_stage_fips_sw;
-  logic [2:0]              pfifo_sw_genbits_depth;
 
   logic [14:0]             hw_exception_sts;
-  logic                    lc_hw_debug_not_on;
   logic                    lc_hw_debug_on;
   logic                    state_db_reg_rd_sel;
   logic                    state_db_reg_rd_id_pulse;
@@ -648,11 +644,8 @@ module csrng_core import csrng_pkg::*; #(
   };
 
   // master module enable
-  assign cs_enable = reg2hw.ctrl.enable.q;
-  assign aes_cipher_enable = !reg2hw.ctrl.aes_cipher_disable.q;
+  assign cs_enable = reg2hw.ctrl.q;
   assign hw2reg.regwen.d = !cs_enable; // hw reg lock implementation
-  // fifo selection for debug
-  assign fifo_sel = reg2hw.ctrl.fifo_depth_sts_sel.q;
 
   //------------------------------------------
   // application interface
@@ -733,7 +726,7 @@ module csrng_core import csrng_pkg::*; #(
     .rvalid_o   (genbits_stage_vldo_sw),
     .rdata_o    (genbits_stage_bus_sw),
     .rready_i   (genbits_stage_bus_rd_sw),
-    .depth_o    (pfifo_sw_genbits_depth)
+    .depth_o    ()
   );
 
   // flops for SW fips status
@@ -1208,10 +1201,10 @@ module csrng_core import csrng_pkg::*; #(
   // provide control logic to determine
   // how certain debug features are controlled.
 
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_hw_debug_en_out;
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_out;
 
   prim_lc_sync #(
-    .NumCopies(2)
+    .NumCopies(1)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
@@ -1219,8 +1212,7 @@ module csrng_core import csrng_pkg::*; #(
     .lc_en_o(lc_hw_debug_en_out)
   );
 
-  assign      lc_hw_debug_not_on = (lc_hw_debug_en_out[0] != lc_ctrl_pkg::On);
-  assign      lc_hw_debug_on = (lc_hw_debug_en_out[1] == lc_ctrl_pkg::On);
+  assign      lc_hw_debug_on = (lc_hw_debug_en_out == lc_ctrl_pkg::On);
 
 
   //-------------------------------------
@@ -1242,9 +1234,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_block_encrypt (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .block_encrypt_bypass_i(!aes_cipher_enable),
     .block_encrypt_enable_i(cs_enable),
-    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),
@@ -1452,12 +1442,34 @@ module csrng_core import csrng_pkg::*; #(
 
   assign sel_track_sm_grp = reg2hw.sel_tracking_sm.q;
 
-  assign hw2reg.tracking_sm_obs.de = cs_enable;
-  assign hw2reg.tracking_sm_obs.d =
-         (sel_track_sm_grp == 2'h3) ? {track_sm[15],track_sm[14],track_sm[13],track_sm[12]} :
-         (sel_track_sm_grp == 2'h2) ? {track_sm[11],track_sm[10],track_sm[9],track_sm[8]} :
-         (sel_track_sm_grp == 2'h1) ? {track_sm[7],track_sm[6],track_sm[5],track_sm[4]} :
-         {track_sm[3],track_sm[2],track_sm[1],track_sm[0]};
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.de = cs_enable && lc_hw_debug_on;
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.de = cs_enable && lc_hw_debug_on;
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.de = cs_enable && lc_hw_debug_on;
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.de = cs_enable && lc_hw_debug_on;
+
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.d =
+         (sel_track_sm_grp == 2'h3) ? track_sm[15] :
+         (sel_track_sm_grp == 2'h2) ? track_sm[11] :
+         (sel_track_sm_grp == 2'h1) ? track_sm[7] :
+         track_sm[3];
+
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.d =
+         (sel_track_sm_grp == 2'h3) ? track_sm[14] :
+         (sel_track_sm_grp == 2'h2) ? track_sm[10] :
+         (sel_track_sm_grp == 2'h1) ? track_sm[6] :
+         track_sm[2];
+
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.d =
+         (sel_track_sm_grp == 2'h3) ? track_sm[13] :
+         (sel_track_sm_grp == 2'h2) ? track_sm[9] :
+         (sel_track_sm_grp == 2'h1) ? track_sm[5] :
+         track_sm[1];
+
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.d =
+         (sel_track_sm_grp == 2'h3) ? track_sm[12] :
+         (sel_track_sm_grp == 2'h2) ? track_sm[8] :
+         (sel_track_sm_grp == 2'h1) ? track_sm[4] :
+         track_sm[0];
 
   //--------------------------------------------
   // report csrng request summary
@@ -1466,11 +1478,6 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.hw_exc_sts.de = cs_enable;
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
-
-  assign hw2reg.sum_sts.de = cs_enable;
-  assign hw2reg.sum_sts.d  =
-         (fifo_sel == 4'h0) ? {21'b0,pfifo_sw_genbits_depth} :
-         24'b0;
 
   // unused signals
   assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]);
