@@ -16,7 +16,7 @@
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
  *
- * Word-wise montgomery modular arithmetic requires a quantity m0' to be
+ * Word-wise Montgomery modular arithmetic requires a quantity m0' to be
  * precomputed once per modulus M. m0' is the negative of the
  * modular multiplicative inverse of the lowest limb m0 of the modulus M, in
  * the field GF(2^w), where w is the number of bits per limb. w is set to 256
@@ -101,7 +101,7 @@ m0inv:
  *
  * Conditionally subtracts the modulus located in dmem from the bigint
  * located in a buffer in the wide regfile (starting at w5). The subtracted
- * value is seleced when FG1.C equals 1, otherwise the unmodifed value is
+ * value is selected when FG1.C equals 1, otherwise the unmodified value is
  * selected.
  *
  * Note that the interpretation of the subtrahend as a modulus is only
@@ -468,9 +468,9 @@ mont_loop:
   jal       x1, mul256_w30xw25
 
 
-  /* With the computation of u_i, the compuations in a cycle 0 of the loop
+  /* With the computation of u_i, the computations in a cycle 0 of the loop
      below are already partly done. The following instructions (until the
-     start of the loop) implement the remainder, such that cylce 0 can be
+     start of the loop) implement the remainder, such that cycle 0 can be
      omitted in the loop */
 
   /* [_, u_i] = [w28, w25] = [w26, w27]  */
@@ -504,7 +504,7 @@ mont_loop:
   loop      x31, 14
     /* Step 1: First multiplication takes a limb of each of the operands and
        computes the product. The carry word from the previous cycle c_xy and
-       the j_th limb of the buffer A, A[j] arre added to the multiplication
+       the j_th limb of the buffer A, A[j] are added to the multiplication
        result.
 
     /* load limb of y (operand a) and mult. with x_i: [w26, w27] <= y[j]*x_i */
@@ -551,7 +551,7 @@ mont_loop:
   li        x10, 4
 
   /* This replaces Step 3 of HAC 14.36 and performs conditional constant-time
-     subtraction of the modulus from the output buffer  */
+     subtraction of the modulus from the output buffer. */
   jal       x1, cond_sub_to_reg
 
   /* restore pointer */
@@ -615,7 +615,7 @@ cond_sub_to_dmem:
  * Returns: C = montmul(1,A) = A*R^(-1) mod M
  *
  * Routine for back-conversion from Montgomery domain.
- * This implements the limb-by-limb interleadved Montgomory Modular
+ * This implements the limb-by-limb interleaved Montgomery Modular
  * Multiplication Algorithm, with one operand fixed to 1. This is only a
  * wrapper around the main loop body. For algorithmic implementation details
  * see the mont_loop subroutine.
@@ -664,7 +664,7 @@ montmul_mul1:
     addi      x16, x6, 0
     addi      x19, x7, 0
 
-    /* Main loop body of Montgomory Multiplication algorithm */
+    /* Main loop body of Montgomery Multiplication algorithm */
     /* 1[i]*A */
     jal       x1, mont_loop
 
@@ -716,7 +716,7 @@ montmul_mul1:
  *
  * Returns: C = montmul(A,B) = A*B*R^(-1) mod M
  *
- * This implements the limb-by-limb interleadved Montgomory Modular
+ * This implements the limb-by-limb interleaved Montgomery Modular
  * Multiplication Algorithm. This is only a wrapper around the main loop body.
  * For algorithmic implementation details see the mont_loop subroutine.
  *
@@ -759,7 +759,7 @@ montmul:
     addi      x6, x16, 0
     addi      x7, x19, 0
 
-    /* Main loop body of Montgomory Multiplication algorithm */
+    /* Main loop body of Montgomery Multiplication algorithm */
     jal       x1, mont_loop
 
     /* restore regs */
