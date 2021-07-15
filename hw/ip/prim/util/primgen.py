@@ -5,14 +5,8 @@
 import os
 import sys
 
-_SELF_DIR = os.path.dirname(__file__)
-_REPO_TOP = os.path.normpath(os.path.join(_SELF_DIR, '../../../../'))
-_UTIL_DIR = os.path.join(_REPO_TOP, 'util/')
-_VERIBLE_VERILOG_SYNTAX_PY_DIR = os.path.join(
-    _REPO_TOP, 'sw/host/vendor/google_verible_verilog_syntax_py/')
-
-sys.path.append(_UTIL_DIR)
-sys.path.append(_VERIBLE_VERILOG_SYNTAX_PY_DIR)
+# Make vendored packages available in the search path.
+sys.path.append('vendor')
 
 import re
 import shutil
@@ -22,7 +16,6 @@ from distutils.version import StrictVersion
 import yaml
 from mako.template import Template
 
-import check_tool_requirements  # noqa
 
 try:
     from yaml import CSafeLoader as YamlLoader, CSafeDumper as YamlDumper
@@ -108,7 +101,7 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
     See _parse_module_header() for API details.
     """
 
-    from verible_verilog_syntax import VeribleVerilogSyntax, PreOrderTreeIterator
+    from google_verible_verilog_syntax_py.verible_verilog_syntax import VeribleVerilogSyntax, PreOrderTreeIterator
 
     parser = VeribleVerilogSyntax()
 
@@ -148,15 +141,6 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
 
     ports = header.find({"tag": "kPortDeclarationList"})
 
-    try:
-        # Get Verible version for eventual debugging
-        tool_requirements = check_tool_requirements.read_tool_requirements()
-        verible_req = tool_requirements['verible']
-        verible_version = verible_req.get_version()
-        parser_info = f'Verible {verible_version}'
-    except:
-        parser_info = f'Verible'
-
     return {
         'module_header': header.text,
         'package_import_declaration': '\n'.join([i.text for i in imports]),
@@ -164,7 +148,7 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
             parameters_list.text if parameters_list else '',
         'ports': ports.text if ports else '',
         'parameters': parameters,
-        'parser': parser_info
+        'parser': 'Verible'
     }
 
 
