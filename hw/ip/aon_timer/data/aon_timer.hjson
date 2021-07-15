@@ -9,7 +9,7 @@
     {clock: "clk_aon_i", reset: "rst_aon_ni"}
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device"}
   ],
   interrupt_list: [
     { name: "wkup_timer_expired",
@@ -75,6 +75,7 @@
       desc: "Wakeup Timer Control register",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "enable",
@@ -90,6 +91,7 @@
       desc: "Wakeup Timer Threshold Register",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
       fields: [
         { bits: "31:0",
           name: "threshold",
@@ -101,6 +103,7 @@
       desc: "Wakeup Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
+      async: "clk_aon_i",
       fields: [
         { bits: "31:0",
           name: "count",
@@ -126,6 +129,7 @@
       desc: "Watchdog Timer Control register",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "0",
@@ -142,6 +146,7 @@
       desc: "Watchdog Timer Bark Threshold Register",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -154,6 +159,7 @@
       desc: "Watchdog Timer Bite Threshold Register",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -166,6 +172,7 @@
       desc: "Watchdog Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
+      async: "clk_aon_i",
       fields: [
         { bits: "31:0",
           name: "count",
@@ -213,6 +220,7 @@
       desc: "Wakeup request status",
       swaccess: "rw0c",
       hwaccess: "hrw",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "cause",
