@@ -41,20 +41,18 @@ class csrng_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
   endtask
 
-  virtual task send_cmd_req(csrng_item cs_item);
+  task automatic send_cmd_req(uint hwapp, csrng_item cs_item);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
-    cfg.m_edn_agent_cfg.m_cmd_push_agent_cfg.add_h_user_data(cmd);
-      m_edn_push_seq.num_trans = cs_item.clen + 1;
-      for (int i = 0; i < cs_item.clen; i++)
-        cfg.m_edn_agent_cfg.m_cmd_push_agent_cfg.add_h_user_data(cs_item.cmd_data_q.pop_front());
+    cfg.m_edn_agent_cfg[hwapp].m_cmd_push_agent_cfg.add_h_user_data(cmd);
+    m_edn_push_seq.num_trans = cs_item.clen + 1;
+    for (int i = 0; i < cs_item.clen; i++)
+      cfg.m_edn_agent_cfg[hwapp].m_cmd_push_agent_cfg.add_h_user_data(cs_item.cmd_data_q.pop_front());
     // Drive cmd_req
-    m_edn_push_seq.start(p_sequencer.edn_sequencer_h.m_cmd_push_sequencer);
+    m_edn_push_seq.start(p_sequencer.edn_sequencer_h[hwapp].m_cmd_push_sequencer);
     // Wait for cmd_ack
-    cfg.m_edn_agent_cfg.vif.wait_cmd_ack();
-    if (cfg.chk_int_state)
-      cfg.check_int_state();
+    cfg.m_edn_agent_cfg[hwapp].vif.wait_cmd_ack();
   endtask
 
 endclass : csrng_base_vseq
