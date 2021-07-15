@@ -19,7 +19,7 @@ static const uint32_t kEdnCtrlRegOffset = 0x14;
 
 static void setup_edn(void) {
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-                      kEntropySrcConfRegOffset, 0x2);
+                      kEntropySrcConfRegOffset, 0x1);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
                       kCsrngCtrlRegOffset, 0x1);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),

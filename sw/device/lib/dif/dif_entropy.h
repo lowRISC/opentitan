@@ -115,6 +115,7 @@ typedef enum dif_entropy_mode {
    */
   kDifEntropyModePtrng = 1,
 
+  // TODO: remove references to LFSR mode, LFSR seed, and LSFR sample_rate
   /**
    * The Linear Feedback Shift Register (LFSR) mode.
    *
@@ -124,7 +125,7 @@ typedef enum dif_entropy_mode {
    * In this mode, the `dif_entropy_config.lfsr_seed` value is used to
    * initialize the internal state of the LFSR.
    */
-  kDifEntropyModeLfsr = 2,
+  // kDifEntropyModeLfsr = 2,
 } dif_entropy_mode_t;
 
 /**
@@ -270,16 +271,18 @@ typedef struct dif_entropy_config {
    */
   dif_entropy_test_config_t test_config;
 
+  // TODO: remove references to the rate register
   /**
    * The rate at which the entropy bits are generated, in clock cycles.
    */
   uint16_t sample_rate;
 
+  // TODO: remove references to the seed register
   /**
    * Seed used to load into the LFSR initial state. The maximum allowable value
    * is 15. See `dif_entropy_mode.kDifEntropyModeLfsr` for more details.
    */
-  uint16_t lfsr_seed;
+  // uint16_t lfsr_seed;
 } dif_entropy_config_t;
 
 /**

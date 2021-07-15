@@ -72,7 +72,7 @@ bool test_main(void) {
 
   // First of all, we need to get the entropy complex up and running.
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-                      ENTROPY_SRC_CONF_REG_OFFSET, 0x2);
+                      ENTROPY_SRC_CONF_REG_OFFSET, 0x1);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
                       CSRNG_CTRL_REG_OFFSET, 0x1);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),

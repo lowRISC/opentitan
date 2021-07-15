@@ -126,14 +126,11 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits: "1:0",
+        { bits: "0",
           name: "ENABLE",
-          desc: '''This field is the module enable for the ENTROPY_SRC entropy generation function.
-                This two bit field determines what source will be used for all processing:
-                0b00: Disabled
-                0b01: PTRNG mode enabled
-                0b10: LFSR mode enabled
-                0b11: Reserved
+          desc: '''This bit is the module enable for the ENTROPY_SRC entropy generation function.
+                Setting this bit will enabled all functions for this block. Clearing this bit
+                bit will put this module back into a reset state.
                 '''
           tags: [// Exclude from writes to these bits to avoid Xs from entropy FIFO.
                  "excl:CsrAllTests:CsrExclWrite"]
@@ -188,21 +185,6 @@
           desc: '''Setting this bit disables the health test called Repetition Count test,
                 which is based on counting symbols.
                 '''
-        }
-      ]
-    },
-    { name: "RATE",
-      desc: "Entropy rate register",
-      swaccess: "rw",
-      fields: [
-        { bits: "15:0",
-          name: "ENTROPY_RATE",
-          desc: '''This register determines the rate that entropy bits will be supplied.
-                   In LFSR mode, this is the rate that the LFSR value will be advanced.
-                   The number in this register represents how many clocks there are between
-                   each newLFSR value generation.
-                '''
-          resval: "0x00000004"
         }
       ]
     },
@@ -1100,18 +1082,6 @@
           name: "MAIN_SM_STATE",
           desc: "This is the state of the entropy_src main state machine."
         }
-      ]
-    },
-    { name: "SEED",
-      desc: "ENTROPY_SRC seed register",
-      swaccess: "rw",
-      regwen:   "REGWEN",
-      fields: [
-        { bits: "3:0",
-          name: "LFSR_SEED",
-          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGWEN bit 0 is cleared.",
-          resval: "0xb"
-       }
       ]
     },
     {

@@ -67,16 +67,19 @@ dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
     return kDifEntropyBadArg;
   }
 
-  if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
-    return kDifEntropyBadArg;
-  }
+  // TODO: remove references to seed
+  // if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
+  //  return kDifEntropyBadArg;
+  // }
 
-  uint32_t seed = config.mode == kDifEntropyModeLfsr ? config.lfsr_seed : 0;
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
+  // TODO: remove references to lfsr register
+  // uint32_t seed = config.mode == kDifEntropyModeLfsr ? config.lfsr_seed : 0;
+  // mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
                       seed);
 
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
-                      (uint32_t)config.sample_rate);
+  // TODO: remove references to rate register
+  // mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
+  //                    (uint32_t)config.sample_rate);
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
   // a regular mode of operation.
