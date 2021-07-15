@@ -52,3 +52,6 @@ report_metrics \
   -assertionStatus \
   -allAssertionCounters \
   -all
+
+# rank the test runs
+rank -runfile $cov_merge_db_dir/runs.txt -html -out $cov_report_dir/grading
