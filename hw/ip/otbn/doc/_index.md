@@ -260,10 +260,12 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
       <td>0xFC0</td>
       <td>R</td>
       <td>
-        <strong>RND</strong>.
-        A random number.
-        The number is sourced from the EDN via a single-entry cache.
-        Reads when the cache is empty will cause OTBN to be stalled until a new random number is available.
+<strong>RND</strong>.
+An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+Primarily intended to be used for key generation.
+
+The number is sourced from the EDN via a single-entry cache.
+Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
     </tr>
     <tr>
@@ -279,10 +281,13 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
       <td>0xFC2</td>
       <td>R</td>
       <td>
-        <strong>URND</strong>.
-        A random number.
-        The number is sourced from an LFSR.
-        Reads never stall.
+<strong>URND</strong>.
+A random number without guaranteed secrecy properties or specific statistical properties.
+Intended for use in masking and blinding schemes.
+Use RND for high-quality randomness.
+
+The number is sourced from an LFSR.
+Reads never stall.
       </td>
     </tr>
   </tbody>
@@ -339,9 +344,11 @@ This WSR is also visible as CSRs `MOD0` through to `MOD7`.
       <td><strong>RND</strong></td>
       <td>R</td>
       <td>
-        A random number.
-        The number is sourced from the EDN via a single-entry cache.
-        Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
+An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+Primarily intended to be used for key generation.
+
+The number is sourced from the EDN via a single-entry cache.
+Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
     </tr>
     <tr>
@@ -357,9 +364,12 @@ This WSR is also visible as CSRs `MOD0` through to `MOD7`.
       <td><strong>URND</strong></td>
       <td>R</td>
       <td>
-        A random number.
-        The number is sourced from an LFSR.
-        Reads never stall.
+A random number without guaranteed secrecy properties or specific statistical properties.
+Intended for use in masking and blinding schemes.
+Use RND for high-quality randomness.
+
+The number is sourced from an LFSR.
+Reads never stall.
       </td>
     </tr>
   </tbody>
@@ -418,7 +428,7 @@ Additionally, instructions and data stored in the instruction and data memory, r
 Refer to the [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}) section for details of how the data integrity protections are implemented.
 
 ## Instruction Counter
- 
+
 In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from {{< regref "INSN_CNT">}} and verify whether it matches the expectation.
 
 # Theory of Operations
@@ -430,6 +440,22 @@ In order to detect and mitigate fault injection attacks on the OTBN, the host CP
 ## Hardware Interfaces
 
 {{< incGenFromIpDesc "../data/otbn.hjson" "hwcfg" >}}
+
+### Hardware Interface Requirements
+
+OTBN connects to other components in an OpenTitan system.
+This section lists requirements on those interfaces that go beyond the physical connectivity.
+
+#### Entropy Distribution Network (EDN)
+
+OTBN has two EDN connections: `edn_urnd` and `edn_rnd`.
+What kind of randomness is provided on the EDN connections is configurable at runtime, but unknown to OTBN.
+To maintain its security properties, OTBN requires the following configuration for the two EDN connections:
+
+* OTBN has no specific requirements on the randomness drawn from `edn_urnd`.
+  For performance reasons, requests on this EDN connection should be answered quickly.
+* `edn_rnd` must provide AIS31-compliant class PTG.3 random numbers.
+  The randomness from this interface is made available through the `RND` WSR and intended to be used for key generation.
 
 ## Design Details {#design-details}
 
@@ -460,7 +486,7 @@ All memory accesses through the register interface must be word-aligned 32b word
 
 OTBN is connected to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/edn/doc" >}}) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
 
-`RND` provides bits taken directly from the EDN.
+`RND` provides bits taken directly from the EDN connected via `edn_rnd`.
 As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request.
 A read from `RND` empties this cache.
 A prefetch into the cache, which can be used to hide the EDN latency, is triggered on any write to the `RND_PREFETCH` CSR.
@@ -468,10 +494,10 @@ Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or whe
 OTBN will stall until the request provides bits.
 Both the `RND` CSR and WSR take their bits from the same cache.
 `RND` CSR reads simply discard the other 192 bits on a read.
-When stalling on an `RND` read, OTBN will unstall on the cycle after `otbn_core` receives WLEN RND data from the EDN.
+When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
 
-`URND` provides bits from an LFSR; reads from it never stall.
-The `URND` LFSR is seeded once from the EDN when OTBN starts execution.
+`URND` provides bits from an LFSR within OTBN; reads from it never stall.
+The `URND` LFSR is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
 Each new execution of OTBN will reseed the `URND` LFSR.
 The LFSR state is advanced every cycle when OTBN is running.
 
