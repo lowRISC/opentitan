@@ -64,7 +64,7 @@
         '''{eval_cmd} \
         opts=;  \
         types=(rom flash otbn otp); \
-        exts=(scr.40.vmem elf elf vmem); \
+        exts=(scr.39.vmem elf elf vmem); \
         images=`echo {sw_images}`; \
         for image in $images; do \
           path=`echo $image | cut -d: -f 1`;  \

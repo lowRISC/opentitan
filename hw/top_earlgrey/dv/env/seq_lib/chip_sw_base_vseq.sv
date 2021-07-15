@@ -37,7 +37,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
     // Backdoor load memories with sw images.
-    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.40.vmem"});
+    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.39.vmem"});
 
     // TODO: the location of the main execution image should be randomized to either bank in future.
     if (cfg.use_spi_load_bootstrap) begin
