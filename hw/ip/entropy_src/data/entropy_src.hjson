@@ -149,13 +149,6 @@
                 '''
           resval: "0x5"
         },
-        { bits: "11:8",
-          name: "LFSR_ENABLE",
-          desc: '''
-                Setting this field to 0xA will enable the ENTROPY_SRC LFSR mode.
-                '''
-          resval: "0x5"
-        },
         { bits: "15:12",
           name: "BOOT_BYPASS_DISABLE",
           desc: '''
@@ -189,21 +182,6 @@
                 0b10: RNG bit 2
                 0b11: RNG bit 3
                 '''
-        }
-      ]
-    },
-    { name: "RATE",
-      desc: "Entropy rate register",
-      swaccess: "rw",
-      fields: [
-        { bits: "15:0",
-          name: "ENTROPY_RATE",
-          desc: '''This register determines the rate that entropy bits will be supplied.
-                   In LFSR mode, this is the rate that the LFSR value will be advanced.
-                   The number in this register represents how many clocks there are between
-                   each newLFSR value generation.
-                '''
-          resval: "0x00000004"
         }
       ]
     },
@@ -1116,18 +1094,6 @@
         }
       ]
     },
-    { name: "SEED",
-      desc: "ENTROPY_SRC seed register",
-      swaccess: "rw",
-      regwen:   "REGWEN",
-      fields: [
-        { bits: "3:0",
-          name: "LFSR_SEED",
-          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGWEN bit 0 is cleared.",
-          resval: "0xb"
-       }
-      ]
-    },
     {
       name: "RECOV_ALERT_STS",
       desc: "Recoverable alert status register",
@@ -1254,6 +1220,9 @@
                   '''
         },
       ]
+      tags: [// Writes to this register will cause alerts to fire. Do this in directed
+             // tests only.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     },
   ]
 }

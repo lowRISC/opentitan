@@ -30,8 +30,8 @@ bool test_main() {
   // Disable entropy for test purpose, as it has been turned on by ROM
   CHECK(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
 
-  const dif_entropy_src_config_t config = {
-      .mode = kDifEntropySrcModeLfsr,
+  const dif_entropy_config_t config = {
+      .mode = kDifEntropyModePtrng,
       .tests =
           {
               [kDifEntropySrcTestRepCount] = false,
@@ -45,8 +45,6 @@ bool test_main() {
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = true,
-      .sample_rate = 2,
-      .lfsr_seed = 2,
   };
   CHECK(dif_entropy_src_configure(&entropy, config) == kDifEntropySrcOk);
 
