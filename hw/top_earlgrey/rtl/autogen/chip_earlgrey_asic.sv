@@ -1073,13 +1073,6 @@ module chip_earlgrey_asic (
   //////////////////////
 
   top_earlgrey #(
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b0),
-    .KmacReuseShare(0),
-    .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       ( aon_pok                    ),

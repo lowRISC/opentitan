@@ -3295,12 +3295,15 @@
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
+      param_decl:
+      {
+        InstrExec: "0"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -3338,7 +3341,7 @@
           name: InstrExec
           desc: Support execution from SRAM
           type: bit
-          default: "1"
+          default: "0"
           expose: "true"
           name_top: SramCtrlRetAonInstrExec
         }
@@ -3971,13 +3974,19 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
+      param_decl:
+      {
+        Masking: "1"
+        SBoxImpl: aes_pkg::SBoxImplDom
+        SecStartTriggerDelay: "0"
+        SecAllowForcingMasks: 1'b0
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_aes
         clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
       domain: "0"
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -3997,7 +4006,7 @@
             Masking requires the use of a masked S-Box, see SBoxImpl parameter.
             '''
           type: bit
-          default: 1'b1
+          default: "1"
           expose: "true"
           name_top: AesMasking
         }
@@ -4213,6 +4222,7 @@
       param_decl:
       {
         EnMasking: "1"
+        ReuseShare: "0"
       }
       clock_srcs:
       {
@@ -5103,13 +5113,16 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
+      param_decl:
+      {
+        InstrExec: "1"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      param_decl: {}
       memory: {}
       param_list:
       [

@@ -42,13 +42,13 @@ module top_earlgrey #(
   // parameters for aon_timer_aon
   // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
-  parameter bit SramCtrlRetAonInstrExec = 1,
+  parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   // parameters for rv_plic
   // parameters for aes
-  parameter bit AesMasking = 1'b1,
+  parameter bit AesMasking = 1,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
