@@ -142,15 +142,16 @@ package kmac_env_pkg;
   } kmac_app_e;
 
   // state values of the App FSM
-  typedef enum bit [3:0] {
-    StIdle                  = 4'b0000,
-    StAppCfg                = 4'b1110,
-    StAppMsg                = 4'b0101,
-    StAppOutLen             = 4'b0110,
-    StAppProcess            = 4'b1010,
-    StAppWait               = 4'b0111,
-    StSw                    = 4'b0100,
-    StKeyMgrErrKeyNotValid  = 4'b1111
+  typedef enum bit [9:0] {
+    StIdle                  = 10'b1011011010,
+    StAppCfg                = 10'b0001010000,
+    StAppMsg                = 10'b0001011111,
+    StAppOutLen             = 10'b1011001111,
+    StAppProcess            = 10'b1000100110,
+    StAppWait               = 10'b0010010110,
+    StSw                    = 10'b0111111111,
+    StKeyMgrErrKeyNotValid  = 10'b1001110100,
+    StError                 = 10'b1101011101
   } kmac_app_st_e;
 
   // states of the error FSM
