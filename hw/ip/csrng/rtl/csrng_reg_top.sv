@@ -1466,7 +1466,7 @@ module csrng_reg_top (
     .we     (1'b0),
     .wd     ('0),
 
-  logic [17:0] addr_hit;
+    // from internal hardware
     .de     (hw2reg.tracking_sm_obs.tracking_sm_obs1.de),
     .d      (hw2reg.tracking_sm_obs.tracking_sm_obs1.d),
 
@@ -1533,7 +1533,7 @@ module csrng_reg_top (
 
 
 
-  logic [18:0] addr_hit;
+  logic [16:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1546,14 +1546,13 @@ module csrng_reg_top (
     addr_hit[ 7] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
     addr_hit[ 8] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
     addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_OFFSET);
-    addr_hit[10] = (reg_addr == CSRNG_HALT_MAIN_SM_OFFSET);
-    addr_hit[11] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
-    addr_hit[12] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
-    addr_hit[13] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
-    addr_hit[15] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
-    addr_hit[17] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
+    addr_hit[10] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
+    addr_hit[11] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
+    addr_hit[12] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
+    addr_hit[13] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[15] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1577,8 +1576,7 @@ module csrng_reg_top (
                (addr_hit[13] & (|(CSRNG_PERMIT[13] & ~reg_be))) |
                (addr_hit[14] & (|(CSRNG_PERMIT[14] & ~reg_be))) |
                (addr_hit[15] & (|(CSRNG_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(CSRNG_PERMIT[17] & ~reg_be)))));
+               (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1619,17 +1617,17 @@ module csrng_reg_top (
   assign cmd_req_wd = reg_wdata[31:0];
   assign genbits_vld_re = addr_hit[8] & reg_re & !reg_error;
   assign genbits_re = addr_hit[9] & reg_re & !reg_error;
-  assign int_state_num_we = addr_hit[11] & reg_we & !reg_error;
+  assign int_state_num_we = addr_hit[10] & reg_we & !reg_error;
 
   assign int_state_num_wd = reg_wdata[3:0];
-  assign int_state_val_re = addr_hit[12] & reg_re & !reg_error;
-  assign hw_exc_sts_we = addr_hit[13] & reg_we & !reg_error;
+  assign int_state_val_re = addr_hit[11] & reg_re & !reg_error;
+  assign hw_exc_sts_we = addr_hit[12] & reg_we & !reg_error;
 
   assign hw_exc_sts_wd = reg_wdata[14:0];
-  assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[14] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
-  assign sel_tracking_sm_we = addr_hit[16] & reg_we & !reg_error;
+  assign sel_tracking_sm_we = addr_hit[15] & reg_we & !reg_error;
 
   assign sel_tracking_sm_wd = reg_wdata[1:0];
 
@@ -1692,15 +1690,15 @@ module csrng_reg_top (
         reg_rdata_next[3:0] = int_state_num_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[11]: begin
         reg_rdata_next[31:0] = int_state_val_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[12]: begin
         reg_rdata_next[14:0] = hw_exc_sts_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[2] = err_code_sfifo_cmdreq_err_qs;
@@ -1728,15 +1726,15 @@ module csrng_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[14]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[15]: begin
         reg_rdata_next[1:0] = '0;
       end
 
-      addr_hit[17]: begin
+      addr_hit[16]: begin
         reg_rdata_next[7:0] = tracking_sm_obs_tracking_sm_obs0_qs;
         reg_rdata_next[15:8] = tracking_sm_obs_tracking_sm_obs1_qs;
         reg_rdata_next[23:16] = tracking_sm_obs_tracking_sm_obs2_qs;

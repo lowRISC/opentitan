@@ -35,40 +35,15 @@ TEST_F(InitTest, InitOk) {
   EXPECT_EQ(dif_csrng_init(params_, &csrng), kDifCsrngOk);
 }
 
-class ConfigTest : public DifCsrngTest {
- protected:
-  /**
-   * Sets CTRL write register expectations.
-   */
-  void ExpectCtrlWrite(bool bypass_aes_cipher) {
-    EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET,
-                   {
-                       {CSRNG_CTRL_ENABLE_BIT, true},
-                         // TODO: Remove/clean all references to AES
-//                       {CSRNG_CTRL_AES_CIPHER_DISABLE_BIT, bypass_aes_cipher},
-//                       {CSRNG_CTRL_FIFO_DEPTH_STS_SEL_OFFSET, 0},
-                   });
-  }
-
-  //  dif_csrng_config_t config_ = {
-  //      .debug_config = {.bypass_aes_cipher = false},
-  //  };
-};
+class ConfigTest : public DifCsrngTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_csrng_configure(nullptr, {}), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_configure(nullptr), kDifCsrngBadArg);
 }
 
 TEST_F(ConfigTest, ConfigOk) {
-  //  config_.debug_config.bypass_aes_cipher = false;
-  //  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
-  EXPECT_EQ(dif_csrng_configure(&csrng_, config_), kDifCsrngOk);
-}
-
-TEST_F(ConfigTest, ConfigAesBypassOk) {
-  //  config_.debug_config.bypass_aes_cipher = true;
-  //  ExpectCtrlWrite(config_.debug_config.bypass_aes_cipher);
-  EXPECT_EQ(dif_csrng_configure(&csrng_, config_), kDifCsrngOk);
+  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 1);
+  EXPECT_EQ(dif_csrng_configure(&csrng_), kDifCsrngOk);
 }
 
 class GetCmdInterfaceStatusTest : public DifCsrngTest {};

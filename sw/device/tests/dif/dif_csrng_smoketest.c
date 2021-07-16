@@ -102,11 +102,7 @@ bool test_main() {
   };
   dif_csrng_t csrng;
   CHECK(dif_csrng_init(params, &csrng) == kDifCsrngOk);
-
-  const dif_csrng_config_t config = {
-      .debug_config = {.bypass_aes_cipher = false},
-  };
-  CHECK(dif_csrng_configure(&csrng, config) == kDifCsrngOk);
+  CHECK(dif_csrng_configure(&csrng) == kDifCsrngOk);
 
   test_ctr_drbg_ctr0(&csrng);
 
