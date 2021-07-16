@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 static const char kMessage[] = "test message";
+
+// sec_mmio (used by the OTP driver) requires this symbol to be defined.
+sec_mmio_ctx_t sec_mmio_ctx;
 
 // See sw/device/silicon_creator/keys/README.md for more details on how to
 // update the structs below.

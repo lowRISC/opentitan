@@ -52,9 +52,11 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
     sources: [
       'sigverify_mod_exp_ibex.c',
       'sigverify.c',
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
       sw_silicon_creator_lib_driver_hmac,
+      sw_silicon_creator_lib_driver_otp,
     ],
   ),
 )
@@ -167,6 +169,7 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
     sources: [
       'sigverify_unittest.cc',
       'sigverify.c',
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
