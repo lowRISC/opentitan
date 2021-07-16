@@ -19,6 +19,20 @@
              // TODO: if we default "_fpv" cov to be on, and the rest of the tbs cov off, need a
              // command-line switch to disable cov.
              {
+              name: alert_handler_esc_timer_fpv
+              fusesoc_core:lowrisc:fpv:alert_handler_esc_timer_fpv
+              import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+              rel_path: "hw/ip/alert_handler/alert_handler_esc_timer/{sub_flow}/{tool}"
+              cov: true
+             }
+             {
+              name: alert_handler_ping_timer_fpv
+              fusesoc_core:lowrisc:fpv:alert_handler_ping_timer_fpv
+              import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+              rel_path: "hw/ip/alert_handler/alert_handler/ping_timer/{sub_flow}/{tool}"
+              cov: true
+             }
+             {
                name: prim_arbiter_ppc_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
