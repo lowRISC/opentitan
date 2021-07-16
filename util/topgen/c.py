@@ -427,28 +427,25 @@ class TopGenC:
         We differentiate "gateable" clocks and "hintable" clocks because the
         clock manager has separate register interfaces for each group.
         """
+        clocks = self.top['clocks']
 
-        aon_clocks = set()
-        for src in self.top['clocks']['srcs'] + self.top['clocks'][
-                'derived_srcs']:
-            if src['aon'] == 'yes':
-                aon_clocks.add(src['name'])
+        aon_clocks = set(src.name
+                         for src in clocks.all_srcs.values() if src.aon)
 
         gateable_clocks = CEnum(self._top_name + Name(["gateable", "clocks"]))
         hintable_clocks = CEnum(self._top_name + Name(["hintable", "clocks"]))
 
         # This replicates the behaviour in `topgen.py` in deriving `hints` and
         # `sw_clocks`.
-        for group in self.top['clocks']['groups']:
-            for (name, source) in group['clocks'].items():
-                if source not in aon_clocks:
+        for group in clocks.groups.values():
+            for name, source in group.clocks.items():
+                if source.name not in aon_clocks:
                     # All these clocks start with `clk_` which is redundant.
                     clock_name = Name.from_snake_case(name).remove_part("clk")
-                    docstring = "Clock {} in group {}".format(
-                        name, group['name'])
-                    if group["sw_cg"] == "yes":
+                    docstring = "Clock {} in group {}".format(name, group.name)
+                    if group.sw_cg == "yes":
                         gateable_clocks.add_constant(clock_name, docstring)
-                    elif group["sw_cg"] == "hint":
+                    elif group.sw_cg == "hint":
                         hintable_clocks.add_constant(clock_name, docstring)
 
         gateable_clocks.add_last_constant("Last Valid Gateable Clock")

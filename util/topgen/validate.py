@@ -167,36 +167,6 @@ special_sig_optional = {
 }
 special_sig_added = {}
 
-clock_srcs_required = {
-    'name': ['s', 'name of clock group'],
-    'aon': ['s', 'yes, no. aon attribute of a clock'],
-    'freq': ['s', 'frequency of clock in Hz'],
-}
-
-clock_srcs_optional = {
-    'derived': ['s', 'whether clock is derived'],
-    'params': ['s', 'extra clock parameters']
-}
-
-derived_clock_srcs_required = {
-    'name': ['s', 'name of clock group'],
-    'aon': ['s', 'yes, no. aon attribute of a clock'],
-    'freq': ['s', 'frequency of clock in Hz'],
-    'src': ['s', 'source clock'],
-    'div': ['d', 'ratio between source clock and derived clock'],
-}
-
-clock_groups_required = {
-    'name': ['s', 'name of clock group'],
-    'src': ['s', 'yes, no. This clock group is directly from source'],
-    'sw_cg': ['s', 'yes, no, hint. Software clock gate attributes'],
-}
-clock_groups_optional = {
-    'unique': ['s', 'whether clocks in the group are unique'],
-    'clocks': ['g', 'groups of clock name to source'],
-}
-clock_groups_added = {}
-
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
     'base_addr': ['s', 'hex start address of memory'],
@@ -613,44 +583,6 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
     return error
 
 
-# check for inconsistent clock group definitions
-def check_clock_groups(top):
-
-    # default empty assignment
-    if "groups" not in top['clocks']:
-        top['clocks']['groups'] = []
-
-    error = 0
-    for group in top['clocks']['groups']:
-        error = check_keys(group, clock_groups_required, clock_groups_optional,
-                           clock_groups_added, "Clock Groups")
-
-        # Check sw_cg values are valid
-        if group['sw_cg'] not in ['yes', 'no', 'hint']:
-            log.error("Incorrect attribute for sw_cg: {}".format(
-                group['sw_cg']))
-            error += 1
-
-        # Check combination of src and sw are valid
-        if group['src'] == 'yes' and group['sw_cg'] != 'no':
-            log.error("Invalid combination of src and sw_cg: {} and {}".format(
-                group['src'], group['sw_cg']))
-            error += 1
-
-        # Check combination of sw_cg and unique are valid
-        unique = group['unique'] if 'unique' in group else 'no'
-        if group['sw_cg'] == 'no' and unique != 'no':
-            log.error(
-                "Incorrect attribute combination.  When sw_cg is no, unique must be no"
-            )
-            error += 1
-
-        if error:
-            break
-
-    return error
-
-
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     error = 0
@@ -664,30 +596,9 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         log.error("Incorrect number of pwrmgr/clkmgr/rstmgr")
         error += 1
 
-    # check clock fields are all there
-    ext_srcs = []
-    for src in top['clocks']['srcs']:
-        check_keys(src, clock_srcs_required, clock_srcs_optional, {},
-                   "Clock source")
-        ext_srcs.append(src['name'])
-
-    # check derived clock sources
-    log.info("Collected clocks are {}".format(ext_srcs))
-    for src in top['clocks']['derived_srcs']:
-        check_keys(src, derived_clock_srcs_required, {}, {}, "Derived clocks")
-        try:
-            ext_srcs.index(src['src'])
-        except Exception:
-            error += 1
-            log.error("{} is not a valid src for {}".format(
-                src['src'], src['name']))
-
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
-    clock_srcs = [
-        clock['name']
-        for clock in top['clocks']['srcs'] + top['clocks']['derived_srcs']
-    ]
+    clock_srcs = list(top['clocks'].all_srcs.keys())
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
@@ -937,9 +848,6 @@ def validate_top(top, ipobjs, xbarobjs):
 
     # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
-
-    # Clock group check
-    error += check_clock_groups(top)
 
     # RV_PLIC check
 

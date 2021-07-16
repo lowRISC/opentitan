@@ -5,10 +5,7 @@
 // functionality but is incomplete
 
 <%
-clks_attr = cfg['clocks']
-srcs = clks_attr['srcs']
-grps = clks_attr['groups']
-num_grps = len(grps)
+clocks = cfg['clocks']
 %>
 
 # CLKMGR register template
@@ -18,13 +15,13 @@ num_grps = len(grps)
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for src in srcs:
-    % if src['aon'] == 'no':
-    {reset: "rst_${src['name']}_ni"},
+% for src in clocks.srcs.values():
+    % if not src.aon:
+    {reset: "rst_${src.name}_ni"},
     % endif
 % endfor
-% for src in div_srcs:
-    {reset: "rst_${src['name']}_ni"},
+% for src in clocks.derived_srcs.values():
+    {reset: "rst_${src.name}_ni"},
 % endfor
   ]
   bus_interfaces: [
@@ -42,7 +39,7 @@ num_grps = len(grps)
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "${num_grps}",
+      default: "${len(clocks.groups)}",
       local: "true"
     },
   ],
@@ -98,10 +95,10 @@ num_grps = len(grps)
     },
 
   // All clock inputs
-% for src in srcs:
+% for src in clocks.srcs.values():
     { struct:  "logic",
       type:    "uni",
-      name:    "clk_${src['name']}",
+      name:    "clk_${src.name}",
       act:     "rcv",
       package: "",
     },

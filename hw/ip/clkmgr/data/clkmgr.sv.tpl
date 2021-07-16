@@ -7,8 +7,7 @@
 `include "prim_assert.sv"
 
 <%
-clks_attr = cfg['clocks']
-srcs = clks_attr['srcs']
+clocks = cfg['clocks']
 %>
 
   module clkmgr
@@ -25,17 +24,17 @@ srcs = clks_attr['srcs']
 
   // System clocks and resets
   // These are the source clocks for the system
-% for src in srcs:
-  input clk_${src['name']}_i,
-  % if src['aon'] == 'no':
-  input rst_${src['name']}_ni,
+% for src in clocks.srcs.values():
+  input clk_${src.name}_i,
+  % if not src.aon:
+  input rst_${src.name}_ni,
   % endif
 % endfor
 
   // Resets for derived clocks
   // clocks are derived locally
-% for src in div_srcs:
-  input rst_${src['name']}_ni,
+% for src_name in clocks.derived_srcs:
+  input rst_${src_name}_ni,
 % endfor
 
   // Bus Interface
@@ -125,34 +124,34 @@ srcs = clks_attr['srcs']
   ////////////////////////////////////////////////////
 
   lc_tx_t step_down_req;
-  logic [${len(div_srcs)-1}:0] step_down_acks;
+  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
-% for src in div_srcs:
-  logic clk_${src['name']}_i;
+% for src_name in clocks.derived_srcs:
+  logic clk_${src_name}_i;
 % endfor
 
-% for src in div_srcs:
+% for src in clocks.derived_srcs.values():
 
-  lc_tx_t ${src['name']}_div_scanmode;
+  lc_tx_t ${src.name}_div_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
-  ) u_${src['name']}_div_scanmode_sync  (
+  ) u_${src.name}_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
-    .lc_en_o(${src['name']}_div_scanmode)
+    .lc_en_o(${src.name}_div_scanmode)
   );
 
   prim_clock_div #(
-    .Divisor(${src['div']})
-  ) u_no_scan_${src['name']}_div (
-    .clk_i(clk_${src['src']}_i),
-    .rst_ni(rst_${src['src']}_ni),
+    .Divisor(${src.div})
+  ) u_no_scan_${src.name}_div (
+    .clk_i(clk_${src.src.name}_i),
+    .rst_ni(rst_${src.src.name}_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(${src['name']}_div_scanmode == lc_ctrl_pkg::On),
-    .clk_o(clk_${src['name']}_i)
+    .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clk_${src.name}_i)
   );
 % endfor
 
@@ -161,7 +160,7 @@ srcs = clks_attr['srcs']
   ////////////////////////////////////////////////////
 
   clkmgr_byp #(
-    .NumDivClks(${len(div_srcs)})
+    .NumDivClks(${len(clocks.derived_srcs)})
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
@@ -183,7 +182,7 @@ srcs = clks_attr['srcs']
   ////////////////////////////////////////////////////
 % for k,v in ft_clks.items():
   prim_clock_buf u_${k}_buf (
-    .clk_i(clk_${v}_i),
+    .clk_i(clk_${v.name}_i),
     .clk_o(clocks_o.${k})
   );
 % endfor
@@ -292,7 +291,7 @@ srcs = clks_attr['srcs']
   // Clocks with only root gate
   ////////////////////////////////////////////////////
 % for k,v in rg_clks.items():
-  assign clocks_o.${k} = clk_${v}_root;
+  assign clocks_o.${k} = clk_${v.name}_root;
 % endfor
 
   ////////////////////////////////////////////////////
@@ -307,8 +306,8 @@ srcs = clks_attr['srcs']
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
-    .clk_i(clk_${v}_i),
-    .rst_ni(rst_${v}_ni),
+    .clk_i(clk_${v.name}_i),
+    .rst_ni(rst_${v.name}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
   );
@@ -327,8 +326,8 @@ srcs = clks_attr['srcs']
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
-    .clk_i(clk_${v}_root),
-    .en_i(${k}_sw_en & clk_${v}_en),
+    .clk_i(clk_${v.name}_root),
+    .en_i(${k}_sw_en & clk_${v.name}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
@@ -352,8 +351,8 @@ srcs = clks_attr['srcs']
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_hint_sync (
-    .clk_i(clk_${v["src"]}_i),
-    .rst_ni(rst_${v["src"]}_ni),
+    .clk_i(clk_${v["src"].name}_i),
+    .rst_ni(rst_${v["src"].name}_ni),
     .d_i(reg2hw.clk_hints.${k}_hint.q),
     .q_o(${k}_hint)
   );
@@ -372,8 +371,8 @@ srcs = clks_attr['srcs']
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
-    .clk_i(clk_${v["src"]}_root),
-    .en_i(${k}_en & clk_${v["src"]}_en),
+    .clk_i(clk_${v["src"].name}_root),
+    .en_i(${k}_en & clk_${v["src"].name}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
