@@ -24,10 +24,11 @@ module flash_ctrl_prim_reg_top (
   import flash_ctrl_reg_pkg::* ;
 
 
+
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
-    .tl_i,
+    .tl_i(tl_i),
     .err_o(intg_err)
   );
 
@@ -51,7 +52,7 @@ module flash_ctrl_prim_reg_top (
     .EnableDataIntgGen(1)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
-    .tl_o
+    .tl_o(tl_o)
   );
 
   tlul_pkg::tl_h2d_t tl_socket_h2d [0];
@@ -73,8 +74,8 @@ module flash_ctrl_prim_reg_top (
     .DReqDepth  ({0{4'h0}}),
     .DRspDepth  ({0{4'h0}})
   ) u_socket (
-    .clk_i,
-    .rst_ni,
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
     .tl_h_i (tl_i),
     .tl_h_o (tl_o_pre),
     .tl_d_o (tl_socket_h2d),

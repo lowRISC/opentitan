@@ -2216,12 +2216,12 @@ module pwm_reg_top (
   assign unused_be = ^reg_be;
 
   // Assertions for Register Interface
-  `ASSERT_PULSE(wePulse, reg_we)
-  `ASSERT_PULSE(rePulse, reg_re)
+  `ASSERT_PULSE(wePulse, reg_we, clk_core_i, !rst_core_ni)
+  `ASSERT_PULSE(rePulse, reg_re, clk_core_i, !rst_core_ni)
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid)
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, clk_core_i, !rst_core_ni)
 
-  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), clk_core_i, !rst_core_ni)
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
