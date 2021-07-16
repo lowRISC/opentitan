@@ -997,6 +997,7 @@
         'entropy_src.otp_en_entropy_src_fw_read',
         'entropy_src.otp_en_entropy_src_fw_over',
         'lc_ctrl.otp_device_id',
+        'lc_ctrl.otp_manuf_state',
         'keymgr.otp_device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         'sram_ctrl_ret_aon.otp_en_sram_ifetch'

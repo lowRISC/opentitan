@@ -362,10 +362,22 @@
       default: "32",
       local: "true"
     },
+    { name: "ManufStateOffset",
+      desc: "Offset of MANUF_STATE",
+      type: "int",
+      default: "1568",
+      local: "true"
+    },
+    { name: "ManufStateSize",
+      desc: "Size of MANUF_STATE",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
     { name: "EnSramIfetchOffset",
       desc: "Offset of EN_SRAM_IFETCH",
       type: "int",
-      default: "1568",
+      default: "1600",
       local: "true"
     },
     { name: "EnSramIfetchSize",
@@ -377,7 +389,7 @@
     { name: "EnCsrngSwAppReadOffset",
       desc: "Offset of EN_CSRNG_SW_APP_READ",
       type: "int",
-      default: "1569",
+      default: "1601",
       local: "true"
     },
     { name: "EnCsrngSwAppReadSize",
@@ -389,7 +401,7 @@
     { name: "EnEntropySrcFwReadOffset",
       desc: "Offset of EN_ENTROPY_SRC_FW_READ",
       type: "int",
-      default: "1570",
+      default: "1602",
       local: "true"
     },
     { name: "EnEntropySrcFwReadSize",
@@ -401,7 +413,7 @@
     { name: "EnEntropySrcFwOverOffset",
       desc: "Offset of EN_ENTROPY_SRC_FW_OVER",
       type: "int",
-      default: "1571",
+      default: "1603",
       local: "true"
     },
     { name: "EnEntropySrcFwOverSize",

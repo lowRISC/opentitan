@@ -721,6 +721,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_read;
   otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_over;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
+  otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
   otp_ctrl_pkg::otp_en_t       sram_ctrl_ret_aon_otp_en_sram_ifetch;
@@ -765,6 +766,7 @@ module top_earlgrey #(
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
   assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
 
   logic unused_otp_hw_cfg_bits;
@@ -1667,6 +1669,7 @@ module top_earlgrey #(
       .lc_seed_hw_rd_en_o(lc_ctrl_lc_seed_hw_rd_en),
       .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
       .otp_device_id_i(lc_ctrl_otp_device_id),
+      .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,
