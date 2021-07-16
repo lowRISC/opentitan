@@ -82,7 +82,7 @@ endgroup
 
 class tl_errors_cg_wrap;
   // This covergroup sampled all kinds of TL error cases.
-  covergroup tl_errors_cg (string ral_name)
+  covergroup tl_errors_cg (string name)
       with function sample(bit unmapped_err,
                            bit csr_aligned_err,
                            bit csr_size_err,
@@ -91,7 +91,7 @@ class tl_errors_cg_wrap;
                            bit mem_ro_err,
                            bit tl_protocol_err);
     option.per_instance = 1;
-    option.name = ral_name;
+    option.name = name;
 
     // these cp should be disabled (set weight to 0), when they're not applicable for the block
     cp_unmapped_err: coverpoint unmapped_err;
@@ -107,8 +107,8 @@ class tl_errors_cg_wrap;
   endgroup
 
   // Function: new
-  function new(string ral_name);
-    tl_errors_cg = new(ral_name);
+  function new(string name);
+    tl_errors_cg = new(name);
   endfunction : new
 
   // Function: sample
@@ -127,12 +127,12 @@ endclass
 
 class tl_intg_err_cg_wrap;
   // This covergroup sampled all kinds of TL integrity error and numbers of error bits.
-  covergroup tl_intg_err_cg (string ral_name) with function sample(tl_intg_err_e tl_intg_err_type,
+  covergroup tl_intg_err_cg (string name) with function sample(tl_intg_err_e tl_intg_err_type,
                                                                    uint          num_cmd_err_bits,
                                                                    uint          num_data_err_bits,
                                                                    bit           is_mem);
     option.per_instance = 1;
-    option.name = ral_name;
+    option.name = name;
 
     cp_tl_intg_err_type: coverpoint tl_intg_err_type;
 
@@ -146,8 +146,8 @@ class tl_intg_err_cg_wrap;
   endgroup
 
   // Function: new
-  function new(string ral_name);
-    tl_intg_err_cg = new(ral_name);
+  function new(string name);
+    tl_intg_err_cg = new(name);
   endfunction : new
 
   // Function: sample
@@ -156,6 +156,39 @@ class tl_intg_err_cg_wrap;
                        uint          num_data_err_bits,
                        bit           is_mem);
     tl_intg_err_cg.sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits, is_mem);
+  endfunction : sample
+endclass
+
+class tl_intg_err_mem_subword_cg_wrap;
+  // Design handles mem subword write specially. Add this CG to cover all types subword write
+  // with integrity errors
+  covergroup tl_intg_err_mem_subword_cg (string name) with function sample(
+        tl_intg_err_e tl_intg_err_type,
+        bit            write,
+        int            num_enable_bytes);
+    option.per_instance = 1;
+    option.name = name;
+
+    cp_tl_intg_err_type: coverpoint tl_intg_err_type;
+
+    cp_num_num_enable_bytes: coverpoint num_enable_bytes {
+      bins values[] = {[0:BUS_DW/8]};
+    }
+    cp_write: coverpoint write;
+
+    cr_all: cross cp_tl_intg_err_type, cp_num_num_enable_bytes, cp_write;
+  endgroup
+
+  // Function: new
+  function new(string name);
+    tl_intg_err_mem_subword_cg = new(name);
+  endfunction : new
+
+  // Function: sample
+  function void sample(tl_intg_err_e tl_intg_err_type,
+                       uint          write,
+                       uint          num_enable_bytes);
+    tl_intg_err_mem_subword_cg.sample(tl_intg_err_type, write, num_enable_bytes);
   endfunction : sample
 endclass
 
