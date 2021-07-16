@@ -516,6 +516,7 @@ module edn_core import edn_pkg::*;
   ) u_prim_arbiter_ppc_packer_arb (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+    .req_chk_i(1'b1),
     .req_i(packer_arb_req), // N number of reqs
     .data_i('{default: 1'b0}),
     .gnt_o(packer_arb_gnt), // N number of gnts

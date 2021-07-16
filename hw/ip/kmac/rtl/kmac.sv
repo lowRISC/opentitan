@@ -880,10 +880,11 @@ module kmac
       // Design side
       .clk_i,
       .rst_ni,
-      .req_i (entropy_req),
-      .ack_o (entropy_ack),
-      .data_o(entropy_data),
-      .fips_o(entropy_fips),
+      .req_chk_i (1'b1),
+      .req_i     (entropy_req),
+      .ack_o     (entropy_ack),
+      .data_o    (entropy_data),
+      .fips_o    (entropy_fips),
       // EDN side
       .clk_edn_i,
       .rst_edn_ni,

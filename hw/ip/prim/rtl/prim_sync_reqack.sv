@@ -23,20 +23,23 @@
 
 `include "prim_assert.sv"
 
-module prim_sync_reqack #(
-  // Non-functional parameter to switch on the request stability assertion
-  parameter bit EnReqStabA = 1
-) (
+module prim_sync_reqack (
   input  clk_src_i,       // REQ side, SRC domain
   input  rst_src_ni,      // REQ side, SRC domain
   input  clk_dst_i,       // ACK side, DST domain
   input  rst_dst_ni,      // ACK side, DST domain
+
+  input  logic req_chk_i, // Used for gating assertions. Drive to 1 during normal operation.
 
   input  logic src_req_i, // REQ side, SRC domain
   output logic src_ack_o, // REQ side, SRC domain
   output logic dst_req_o, // ACK side, DST domain
   input  logic dst_ack_i  // ACK side, DST domain
 );
+
+  // req_chk_i is used for gating assertions only.
+  logic unused_req_chk;
+  assign unused_req_chk = req_chk_i;
 
   // Types
   typedef enum logic {
@@ -167,10 +170,9 @@ module prim_sync_reqack #(
     end
   end
 
-  if (EnReqStabA) begin : gen_lock_assertion
-    // SRC domain can only de-assert REQ after receiving ACK.
-    `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) |-> $fell(src_ack_o), clk_src_i, !rst_src_ni)
-  end
+  // SRC domain can only de-assert REQ after receiving ACK.
+  `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) |->
+      $fell(src_ack_o), clk_src_i, !rst_src_ni || !req_chk_i)
 
   // DST domain cannot assert ACK without REQ.
   `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, !rst_dst_ni)

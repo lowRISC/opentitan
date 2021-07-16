@@ -8,7 +8,6 @@
 //   N:           Number of request ports
 //   DW:          Data width
 //   DataPort:    Set to 1 to enable the data port. Otherwise that port will be ignored.
-//   EnReqStabA:  Checks whether requests remain asserted until granted
 //
 // This is the original implementation of the arbiter which relies on parallel prefix computing
 // optimization to optimize the request / arbiter tree. Not all synthesis tools may support this.
@@ -18,8 +17,8 @@
 // this behavior.
 //
 // Also, this module contains a request stability assertion that checks that requests stay asserted
-// until they have been served. This assertion can be optionally disabled by setting EnReqStabA to
-// zero. This is a non-functional parameter and does not affect the designs behavior.
+// until they have been served. This assertion can be gated by driving the req_chk_i low. This is
+// a non-functional input and does not affect the designs behavior.
 //
 // See also: prim_arbiter_tree
 
@@ -33,15 +32,14 @@ module prim_arbiter_ppc #(
   // EnDataPort: {0, 1}, if 0, input data will be ignored
   parameter bit EnDataPort = 1,
 
-  // Non-functional parameter to switch on the request stability assertion
-  parameter bit EnReqStabA = 1,
-
   // Derived parameters
   localparam int IdxW = $clog2(N)
 ) (
   input clk_i,
   input rst_ni,
 
+  input                    req_chk_i, // Used for gating assertions. Drive to 1 during normal
+                                      // operation.
   input        [ N-1:0]    req_i,
   input        [DW-1:0]    data_i [N],
   output logic [ N-1:0]    gnt_o,
@@ -51,6 +49,10 @@ module prim_arbiter_ppc #(
   output logic [DW-1:0]    data_o,
   input                    ready_i
 );
+
+  // req_chk_i is used for gating assertions only.
+  logic unused_req_chk;
+  assign unused_req_chk = req_chk_i;
 
   `ASSERT_INIT(CheckNGreaterZero_A, N > 0)
 
@@ -165,13 +167,12 @@ if (EnDataPort) begin: gen_data_port_assertion
   `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
 end
 
-if (EnReqStabA) begin : gen_lock_assertion
   // requests must stay asserted until they have been granted
-  `ASSUME(ReqStaysHighUntilGranted0_M, (|req_i) && !ready_i |=>
-      (req_i & $past(req_i)) == $past(req_i))
+  `ASSUME(ReqStaysHighUntilGranted0_M, |req_i && !ready_i |=>
+      (req_i & $past(req_i)) == $past(req_i), clk_i, !rst_ni || !req_chk_i)
   // check that the arbitration decision is held if the sink is not ready
-  `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o))
-end
+  `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o),
+      clk_i, !rst_ni || !req_chk_i)
 
 // FPV-only assertions with symbolic variables
 `ifdef FPV_ON
@@ -216,11 +217,9 @@ end
     end
   end
 
-  if (EnReqStabA) begin : gen_lock_assertion_fpv
-    // requests must stay asserted until they have been granted
-    `ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] & !gnt_o[k] |=>
-        req_i[k], clk_i, !rst_ni)
-  end
+  // requests must stay asserted until they have been granted
+  `ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] && !gnt_o[k] |=>
+      req_i[k], clk_i, !rst_ni || !req_chk_i)
 `endif
 
 endmodule : prim_arbiter_ppc

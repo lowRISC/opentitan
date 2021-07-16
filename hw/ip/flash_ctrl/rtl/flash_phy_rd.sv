@@ -140,12 +140,11 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   prim_arbiter_tree #(
     .N(NumBuf),
-    // disable request stability assertion
-    .EnReqStabA(0),
     .DW(2)
   ) i_valid_random (
     .clk_i,
     .rst_ni,
+    .req_chk_i(1'b0), // Valid is allowed to drop without ready.
     .req_i(buf_valid),
     .data_i(dummy_data),
     .gnt_o(buf_valid_alloc),

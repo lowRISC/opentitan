@@ -67,13 +67,14 @@ module prim_sram_arbiter #(
     ) u_reqarb (
       .clk_i,
       .rst_ni,
+      .req_chk_i ( 1'b1        ),
       .req_i,
-      .data_i  ( req_packed  ),
+      .data_i    ( req_packed  ),
       .gnt_o,
-      .idx_o   (             ),
-      .valid_o ( sram_req_o  ),
-      .data_o  ( sram_packed ),
-      .ready_i ( 1'b1        )
+      .idx_o     (             ),
+      .valid_o   ( sram_req_o  ),
+      .data_o    ( sram_packed ),
+      .ready_i   ( 1'b1        )
     );
   end else if (ArbiterImpl == "BINTREE") begin : gen_tree_arb
     prim_arbiter_tree #(
@@ -82,13 +83,14 @@ module prim_sram_arbiter #(
     ) u_reqarb (
       .clk_i,
       .rst_ni,
+      .req_chk_i ( 1'b1        ),
       .req_i,
-      .data_i  ( req_packed  ),
+      .data_i    ( req_packed  ),
       .gnt_o,
-      .idx_o   (             ),
-      .valid_o ( sram_req_o  ),
-      .data_o  ( sram_packed ),
-      .ready_i ( 1'b1        )
+      .idx_o     (             ),
+      .valid_o   ( sram_req_o  ),
+      .data_o    ( sram_packed ),
+      .ready_i   ( 1'b1        )
     );
   end else begin : gen_unknown
     `ASSERT_INIT(UnknownArbImpl_A, 0)

@@ -653,6 +653,7 @@ module otbn
   ) u_prim_edn_rnd_req (
     .clk_i,
     .rst_ni     ( rst_n        ),
+    .req_chk_i  ( 1'b1         ),
     .req_i      ( edn_rnd_req  ),
     .ack_o      ( edn_rnd_ack  ),
     .data_o     ( edn_rnd_data ),
@@ -668,6 +669,7 @@ module otbn
   ) u_prim_edn_urnd_req (
     .clk_i,
     .rst_ni     ( rst_n         ),
+    .req_chk_i  ( 1'b1          ),
     .req_i      ( edn_urnd_req  ),
     .ack_o      ( edn_urnd_ack  ),
     .data_o     ( edn_urnd_data ),

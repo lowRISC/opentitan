@@ -91,6 +91,7 @@ module alert_handler
     // Alert handler side
     .clk_i,
     .rst_ni,
+    .req_chk_i   ( 1'b1     ),
     .req_i       ( edn_req  ),
     .ack_o       ( edn_ack  ),
     .data_o      ( edn_data ),

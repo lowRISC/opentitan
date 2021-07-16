@@ -74,6 +74,7 @@ module spi_host_command_cdc (
     .rst_src_ni (rst_ni),
     .clk_dst_i  (clk_core_i),
     .rst_dst_ni (rst_core_ni),
+    .req_chk_i  (1'b1),
     .src_req_i  (cdc_req_q),
     .src_ack_o  (cdc_ack),
     .dst_req_o  (core_cdc_req),

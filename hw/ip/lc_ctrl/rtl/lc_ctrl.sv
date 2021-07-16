@@ -536,7 +536,7 @@ module lc_ctrl
   // KMAC Interface //
   ////////////////////
 
-  logic token_hash_req, token_hash_ack, token_hash_err;
+  logic token_hash_req, token_hash_req_chk, token_hash_ack, token_hash_err;
   lc_token_t hashed_token;
   lc_ctrl_kmac_if u_lc_ctrl_kmac_if (
     .clk_i,
@@ -545,11 +545,12 @@ module lc_ctrl
     .rst_kmac_ni,
     .kmac_data_i,
     .kmac_data_o,
-    .transition_token_i ( transition_token_q ),
-    .token_hash_req_i   ( token_hash_req     ),
-    .token_hash_ack_o   ( token_hash_ack     ),
-    .token_hash_err_o   ( token_hash_err     ),
-    .hashed_token_o     ( hashed_token       )
+    .transition_token_i   ( transition_token_q ),
+    .token_hash_req_i     ( token_hash_req     ),
+    .token_hash_req_chk_i ( token_hash_req_chk ),
+    .token_hash_ack_o     ( token_hash_ack     ),
+    .token_hash_err_o     ( token_hash_err     ),
+    .hashed_token_o       ( hashed_token       )
   );
 
   ////////////
@@ -584,6 +585,7 @@ module lc_ctrl
     .dec_lc_cnt_o           ( dec_lc_cnt                      ),
     .dec_lc_id_state_o      ( dec_lc_id_state                 ),
     .token_hash_req_o       ( token_hash_req                  ),
+    .token_hash_req_chk_o   ( token_hash_req_chk              ),
     .token_hash_ack_i       ( token_hash_ack                  ),
     .token_hash_err_i       ( token_hash_err                  ),
     .hashed_token_i         ( hashed_token                    ),
