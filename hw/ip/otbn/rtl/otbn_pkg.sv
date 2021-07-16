@@ -200,8 +200,8 @@ package otbn_pkg;
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod   = 'd0,
     WsrRnd   = 'd1,
-    WsrAcc   = 'd2,
-    WsrUrnd  = 'd3
+    WsrUrnd  = 'd2,
+    WsrAcc   = 'd3
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)

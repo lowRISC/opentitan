@@ -762,8 +762,8 @@ module otbn_controller
     unique case (wsr_addr)
       WsrMod:  ispr_addr_bignum = IsprMod;
       WsrRnd:  ispr_addr_bignum = IsprRnd;
-      WsrAcc:  ispr_addr_bignum = IsprAcc;
       WsrUrnd: ispr_addr_bignum = IsprUrnd;
+      WsrAcc:  ispr_addr_bignum = IsprAcc;
       default: wsr_illegal_addr = 1'b1;
     endcase
   end
