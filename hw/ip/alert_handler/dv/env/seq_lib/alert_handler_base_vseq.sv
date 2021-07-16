@@ -48,21 +48,14 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [NUM_ALERTS-1:0]                alert_en = '1,
-                                  bit [TL_DW-1:0]                     alert_class = 'h0,
+                                  bit [NUM_ALERT_HANDLER_CLASSES-1:0][TL_DW-1:0] alert_class = 'h0,
                                   bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
-                                  bit [TL_DW-1:0]                     loc_alert_class = 'h0);
+                                  bit [NUM_ALERT_HANDLER_CLASSES-1:0][TL_DW-1:0] loc_alert_class = 'h0);
     csr_wr(.ptr(ral.intr_enable), .value(intr_en));
-    foreach (alert_en[i]) begin
-      dv_base_reg alert_en_reg = ral.get_dv_base_reg_by_name($sformatf("alert_en_%0d", i));
-      csr_wr(.ptr(alert_en_reg), .value(alert_en[i]));
-    end
-    foreach (loc_alert_en[i]) begin
-      dv_base_reg loc_alert_en_reg = ral.get_dv_base_reg_by_name($sformatf("loc_alert_en_%0d", i));
-      csr_wr(.ptr(loc_alert_en_reg), .value(loc_alert_en[i]));
-    end
-    // TODO: not use fixed postfix "_0" but randomize it.
-    csr_wr(.ptr(ral.loc_alert_class[0]), .value(loc_alert_class));
-    csr_wr(.ptr(ral.alert_class[0]), .value(alert_class));
+    foreach (alert_en[i])        csr_wr(.ptr(ral.alert_en[i]), .value(alert_en[i]));
+    foreach (alert_class[i])     csr_wr(.ptr(ral.alert_class[i]), .value(alert_class[i]));
+    foreach (loc_alert_en[i])    csr_wr(.ptr(ral.loc_alert_en[i]), .value(loc_alert_en[i]));
+    foreach (loc_alert_class[i]) csr_wr(.ptr(ral.loc_alert_class[i]), .value(loc_alert_class[i]));
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);

@@ -80,10 +80,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       fork
         forever begin
           bit [TL_DW-1:0] alert_en;
-          dv_base_reg alert_en_csr = ral.get_dv_base_reg_by_name($sformatf("alert_en_%0d", index));
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
-          alert_en = alert_en_csr.get_mirrored_value();
+          alert_en = ral.alert_en[index].get_mirrored_value();
           if (alert_en) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
@@ -150,19 +149,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           bit [TL_DW-1:0] intr_en, class_ctrl;
           bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
           if (!is_int_err) begin
-            dv_base_reg alert_class_reg = ral.get_dv_base_reg_by_name($sformatf("alert_class_%0d",
-                                                                      alert_i));
-            dv_base_reg alert_cause_reg = ral.get_dv_base_reg_by_name($sformatf("alert_cause_%0d",
-                                                                      alert_i));
-            class_i = `gmv(alert_class_reg);
-            void'(alert_cause_reg.predict(1));
+            class_i = `gmv(ral.alert_class[alert_i]);
+            void'(ral.alert_cause[alert_i].predict(1));
           end else begin
-            dv_base_reg loc_alert_class_reg = ral.get_dv_base_reg_by_name(
-                        $sformatf("loc_alert_class_%0d", alert_i));
-            dv_base_reg loc_alert_cause_reg = ral.get_dv_base_reg_by_name(
-                        $sformatf("loc_alert_cause_%0d", int'(local_alert_type)));
-            class_i = `gmv(loc_alert_class_reg);
-            void'(loc_alert_cause_reg.predict(1));
+            class_i = `gmv(ral.loc_alert_class[int'(local_alert_type)]);
+            void'(ral.loc_alert_cause[int'(local_alert_type)].predict(1));
           end
 
           intr_state_field = intr_state_fields[class_i];
@@ -549,15 +540,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     return class_timeout_rg.get_mirrored_value();
   endfunction
 
-  // If num_alerts exceeds TL_DW/2, then alert_class will need more than one reg to hold its value
-  function bit [NUM_ALERTS*2-1:0] get_alert_class_mirrored_val();
-    for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
-      string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
-                                                      $sformatf("alert_class_%0d", i);
-      dv_base_reg alert_class_csr = ral.get_dv_base_reg_by_name(alert_name);
-      get_alert_class_mirrored_val |= (alert_class_csr.get_mirrored_value() << i * TL_DW);
-    end
-  endfunction
 endclass
 
 `undef ASSIGN_CLASS_PHASE_REGS
