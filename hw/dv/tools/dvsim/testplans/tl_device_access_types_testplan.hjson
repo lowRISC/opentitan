@@ -27,7 +27,8 @@
               - write a CSR with unaligned address, e.g. `a_address[1:0] != 0`
               - write a CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
               - write a memory with `a_mask != '1` when it doesn't support partial accesses
-              - read a WO (write-only) memory'''
+              - read a WO (write-only) memory
+              - write a RO (read-only) memory'''
       milestone: V2
       tests: ["{name}_tl_errors"]
     }
@@ -61,6 +62,31 @@
             Verify that triggers the correct fatal alert.'''
       milestone: V3
       tests: ["{name}_tl_intg_err"]
+    }
+  ]
+  covergroups: [
+    {
+      name: tl_errors_cg
+      desc: '''Cover the following error cases on TL-UL bus:
+            - TL-UL protocol error cases.
+            - OpenTitan defined error cases, refer to testpoint `tl_d_illegal_access`.
+            '''
+    }
+    {
+      name: tl_intg_err_cg
+      desc: '''Cover all kinds of integrity errors (command, data or both) and cover number of
+               error bits on each integrity check.
+            '''
+    }
+    {
+      name: tl_intg_err_mem_subword_cg
+      desc: '''Cover the kinds of integrity errors with byte enabled write on memory.
+
+               Some memories store the integrity values. When there is a subword write, design
+               re-calculate the integrity with full word data and update integrity in the memory.
+               This coverage ensures that memory byte write has been issued and the related design
+               logic has been verfied.
+            '''
     }
   ]
 }
