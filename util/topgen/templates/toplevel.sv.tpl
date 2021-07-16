@@ -53,11 +53,19 @@ module top_${top["name"]} #(
 <% continue %>
   % endif
   // parameters for ${m['name']}
-% for p_exp in [p for p in m["param_list"] if p.get("expose") == "true" ]:
-    % if not p_exp["type"]:
-  parameter ${p_exp["name_top"]} = ${p_exp["default"]}${"" if loop.parent.last & loop.last else ","}
+  % for p_exp in [p for p in m["param_list"] if p.get("expose") == "true" ]:
+<%
+    p_type = p_exp.get('type')
+    p_type_word = p_type + ' ' if p_type else ''
+
+    p_lhs = f'{p_type_word}{p_exp["name_top"]}'
+    p_rhs = p_exp['default']
+%>\
+    % if 12 + len(p_lhs) + 3 + len(p_rhs) + 1 < 100:
+  parameter ${p_lhs} = ${p_rhs}${"" if loop.parent.last & loop.last else ","}
     % else:
-  parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]}${"" if loop.parent.last & loop.last else ","}
+  parameter ${p_lhs} =
+      ${p_rhs}${"" if loop.parent.last & loop.last else ","}
     % endif
   % endfor
 % endfor

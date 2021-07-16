@@ -88,8 +88,10 @@ module top_earlgrey #(
   parameter bit RvCoreIbexBranchPredictor = 0,
   parameter bit RvCoreIbexDbgTriggerEn = 1,
   parameter bit SecRvCoreIbexureIbex = 1,
-  parameter int unsigned RvCoreIbexDmHaltAddr = tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0],
-  parameter int unsigned RvCoreIbexDmExceptionAddr = tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0],
+  parameter int unsigned RvCoreIbexDmHaltAddr =
+      tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0],
+  parameter int unsigned RvCoreIbexDmExceptionAddr =
+      tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0],
   parameter bit RvCoreIbexPipeLine = 0
 ) (
   // Reset, clocks defined as part of intermodule
