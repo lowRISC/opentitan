@@ -31,6 +31,7 @@ from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
 from topgen.gen_dv import gen_dv
 from topgen.top import Top
+from topgen.clocks import Clocks
 
 # Common header for generated files
 warnhdr = '''//
@@ -400,11 +401,8 @@ def generate_clkmgr(top, cfg_path, out_path):
     outputs = [hjson_out, rtl_out, pkg_out]
     names = ['clkmgr.hjson', 'clkmgr.sv', 'clkmgr_pkg.sv']
 
-    # A dictionary of the aon attribute for easier lookup. src_aon_attr[C] is
-    # True if clock C is always-on and False otherwise.
-    src_aon_attr = {src['name']: (src['aon'] == 'yes')
-                    for src in (top['clocks']['srcs'] +
-                                top['clocks']['derived_srcs'])}
+    clocks = top['clocks']
+    assert isinstance(clocks, Clocks)
 
     # Classify the various clock signals. Here, we build the following
     # dictionaries, each mapping the derived clock name to its source.
@@ -431,39 +429,39 @@ def generate_clkmgr(top, cfg_path, out_path):
     sw_clks = {}
     hints = {}
 
-    # We also build rg_srcs_set, which is the set of non-always-on clock sources
-    # that are exposed without division. This doesn't include clock sources
-    # that are only used to derive divided clocks (we might gate the divided
-    # clocks, but don't bother gating the upstream source).
+    # We also build rg_srcs_set, which is the set of names of non-always-on
+    # clock sources that are exposed without division. This doesn't include
+    # clock sources that are only used to derive divided clocks (we might gate
+    # the divided clocks, but don't bother gating the upstream source).
     rg_srcs_set = set()
 
-    for grp in top['clocks']['groups']:
-        if grp['name'] == 'powerup':
+    for grp in clocks.groups.values():
+        if grp.name == 'powerup':
             # All clocks in the "powerup" group are considered feed-throughs.
-            ft_clks.update(grp['clocks'])
+            ft_clks.update(grp.clocks)
             continue
 
-        for clk, src in grp['clocks'].items():
-            if src_aon_attr[src]:
+        for clk, src in grp.clocks.items():
+            if src.aon:
                 # Any always-on clock is a feedthrough
                 ft_clks[clk] = src
                 continue
 
-            rg_srcs_set.add(src)
+            rg_srcs_set.add(src.name)
 
-            if grp['sw_cg'] == 'no':
+            if grp.sw_cg == 'no':
                 # A non-feedthrough clock with no software control
                 rg_clks[clk] = src
                 continue
 
-            if grp['sw_cg'] == 'yes':
+            if grp.sw_cg == 'yes':
                 # A non-feedthrough clock with direct software control
                 sw_clks[clk] = src
                 continue
 
             # The only other valid value for the sw_cg field is "hint", which
             # means a non-feedthrough clock with "hint" software control.
-            assert grp['sw_cg'] == 'hint'
+            assert grp.sw_cg == 'hint'
             hints[clk] = src
             continue
 
@@ -487,7 +485,6 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 div_srcs=top['clocks']['derived_srcs'],
                                  rg_srcs=rg_srcs,
                                  ft_clks=ft_clks,
                                  rg_clks=rg_clks,

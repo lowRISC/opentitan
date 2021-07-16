@@ -62,11 +62,10 @@ num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["ex
 max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
 max_sigwidth = len("{}".format(max_sigwidth))
 
-clks_attr = top['clocks']
-cpu_clk = top['clocks']['hier_paths']['top'] + "clk_proc_main"
+cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
 cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
-esc_clk = top['clocks']['hier_paths']['top'] + "clk_io_div4_timers"
+esc_clk = top['clocks'].hier_paths['top'] + "clk_io_div4_timers"
 esc_rst = top["reset_paths"]["sys_io_div4"]
 
 unused_resets = lib.get_unused_resets(top)

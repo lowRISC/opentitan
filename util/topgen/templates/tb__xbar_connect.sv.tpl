@@ -8,7 +8,7 @@ from collections import OrderedDict
 import topgen.lib as lib
 
 top_hier = 'tb.dut.top_' + top["name"] + '.'
-clk_hier = top_hier + top["clocks"]["hier_paths"]["top"]
+clk_hier = top_hier + top["clocks"].hier_paths["top"]
 
 clk_src = OrderedDict()
 for xbar in top["xbar"]:
@@ -16,9 +16,9 @@ for xbar in top["xbar"]:
     clk_src[clk] = src
 
 clk_freq = OrderedDict()
-for clock in top["clocks"]["srcs"] + top["clocks"]["derived_srcs"]:
-  if clock["name"] in clk_src.values():
-    clk_freq[clock["name"]] = clock["freq"]
+for clock in top["clocks"].all_srcs.values():
+  if clock.name in clk_src.values():
+    clk_freq[clock.name] = clock.freq
 
 hosts = OrderedDict()
 devices = OrderedDict()

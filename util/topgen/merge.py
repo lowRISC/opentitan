@@ -10,6 +10,8 @@ from math import ceil, log2
 from typing import Dict, List
 
 from topgen import c, lib
+from .clocks import Clocks
+
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 
@@ -514,32 +516,13 @@ def amend_clocks(top: OrderedDict):
     """Add a list of clocks to each clock group
        Amend the clock connections of each entry to reflect the actual gated clock
     """
-    clks_attr = top['clocks']
-    clk_paths = clks_attr['hier_paths']
-    clkmgr_name = _find_module_name(top['module'], 'clkmgr')
-    groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
+    clocks = Clocks(top['clocks'])
+    top['clocks'] = clocks
+
     exported_clks = OrderedDict()
     trans_eps = []
 
-    # Assign default parameters to source clocks
-    for src in clks_attr['srcs']:
-        if 'derived' not in src:
-            src['derived'] = "no"
-            src['params'] = OrderedDict()
-
-    # Default assignments
-    for group in clks_attr['groups']:
-
-        # if unique not defined, it defaults to 'no'
-        if 'unique' not in group:
-            group['unique'] = "no"
-
-        # if no hardwired clocks, define an empty set
-        group['clocks'] = OrderedDict(
-        ) if 'clocks' not in group else group['clocks']
-
     for ep in top['module'] + top['memory'] + top['xbar']:
-
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case
@@ -558,29 +541,22 @@ def amend_clocks(top: OrderedDict):
         ep_name = ep['name']
         ep_clks = []
 
-        # clock group index
-        cg_idx = groups_in_top.index(ep_grp)
-
-        # unique property of each group
-        unique = clks_attr['groups'][cg_idx]['unique']
-
-        # src property of each group
-        src = clks_attr['groups'][cg_idx]['src']
+        group = clocks.groups[ep_grp]
 
         for port, clk in ep['clock_srcs'].items():
             ep_clks.append(clk)
 
             name = ''
-            hier_name = clk_paths[src]
+            hier_name = clocks.hier_paths[group.src]
 
-            if src == 'ext':
+            if group.src == 'ext':
                 # clock comes from top ports
                 if clk == 'main':
                     name = "i"
                 else:
                     name = "{}_i".format(clk)
 
-            elif unique == "yes":
+            elif group.unique:
                 # new unqiue clock name
                 name = "{}_{}".format(clk, ep_name)
 
@@ -591,7 +567,7 @@ def amend_clocks(top: OrderedDict):
             clk_name = "clk_" + name
 
             # add clock to a particular group
-            clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
+            clocks.add_clock_to_group(group, clk_name, clk)
 
             # add clock connections
             clock_connections[port] = hier_name + clk_name
@@ -618,6 +594,7 @@ def amend_clocks(top: OrderedDict):
     top['exported_clks'] = exported_clks
 
     # add entry to inter_module automatically
+    clkmgr_name = _find_module_name(top['module'], 'clkmgr')
     for intf in top['exported_clks']:
         top['inter_module']['external']['{}.clocks_{}'.format(
             clkmgr_name, intf)] = "clks_{}".format(intf)
