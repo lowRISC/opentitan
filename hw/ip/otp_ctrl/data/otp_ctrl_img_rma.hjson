@@ -21,6 +21,13 @@
                     value: "0x0",
                 },
                 {
+                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    // Use software mod_exp implementation for signature
+                    // verification. See the definition of `hardened_bool_t` in
+                    // sw/device/lib/base/hardened.h.
+                    value: "0x739",
+                },
+                {
                     name: "CREATOR_SW_CFG_KEY_IS_VALID",
                     // Mark the first two keys as valid and remaining as
                     // invalid since we have currently only two keys. See the
