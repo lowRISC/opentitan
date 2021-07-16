@@ -15,12 +15,11 @@
  * Sets the `entropy` source configuration register with the settings
  * derived from `config`.
  */
-static void set_config_register(const dif_entropy_t *entropy,
+static void config_register_set(const dif_entropy_t *entropy,
                                 const dif_entropy_config_t *config) {
   // TODO: Make this configurable at the API level.
   // TODO: Currently bypass disable cannot be set, as it causes the hw fsm to
-  // get stuck
-  // uint32_t reg = 0;
+  // get stuck.
   uint32_t reg =
       bitfield_bit32_write(0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_BIT, 1);
 
@@ -52,6 +51,30 @@ static void set_config_register(const dif_entropy_t *entropy,
                       reg);
 }
 
+static dif_entropy_result_t fw_override_set(
+    const dif_entropy_t *entropy,
+    const dif_entropy_fw_override_config_t *config) {
+  if (config->buffer_threshold > kDifEntropyFifoMaxCapacity) {
+    return kDifEntropyInvalidFwOverrideBufferThreshold;
+  }
+
+  if (config->entropy_insert_enable && !config->enable) {
+    return kDifEntropyInvalidFwOverrideSettings;
+  }
+  mmio_region_write32(entropy->params.base_addr,
+                      ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                      config->buffer_threshold);
+
+  uint32_t reg = bitfield_bit32_write(
+      0, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, config->enable);
+  reg = bitfield_bit32_write(reg,
+                             ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT,
+                             config->entropy_insert_enable);
+  mmio_region_write32(entropy->params.base_addr,
+                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, reg);
+  return kDifEntropyOk;
+}
+
 dif_entropy_result_t dif_entropy_init(dif_entropy_params_t params,
                                       dif_entropy_t *entropy) {
   if (entropy == NULL) {
@@ -71,6 +94,11 @@ dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
     return kDifEntropyBadArg;
   }
 
+  dif_entropy_result_t result = fw_override_set(entropy, &config.fw_override);
+  if (result != kDifEntropyOk) {
+    return result;
+  }
+
   uint32_t seed = config.mode == kDifEntropyModeLfsr ? config.lfsr_seed : 0;
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
                       seed);
@@ -78,21 +106,16 @@ dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
                       (uint32_t)config.sample_rate);
 
-  // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
-  // a regular mode of operation.
+  // TODO: Add test configuration parameters.
+
+  // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
+  // intended as a regular mode of operation.
   uint32_t reg = bitfield_bit32_write(
       0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_BIT, config.route_to_firmware);
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_BIT, 0);
   mmio_region_write32(entropy->params.base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, reg);
-
-  // TODO: Add test configuration parameters.
-
-  // TODO: Add support for FIFO mode.
-  mmio_region_write32(entropy->params.base_addr,
-                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
-
-  set_config_register(entropy, &config);
+  config_register_set(entropy, &config);
   return kDifEntropyOk;
 }
 
@@ -134,10 +157,81 @@ dif_entropy_result_t dif_entropy_read(const dif_entropy_t *entropy,
   return kDifEntropyOk;
 }
 
+dif_entropy_result_t dif_entropy_fifo_read(const dif_entropy_t *entropy,
+                                           uint32_t *buf, size_t len) {
+  if (entropy == NULL) {
+    return kDifEntropyBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(entropy->params.base_addr,
+                                    ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
+  if (!bitfield_bit32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT)) {
+    return kDifEntropyInvalidFwOverrideSettings;
+  }
+
+  reg = mmio_region_read32(entropy->params.base_addr,
+                           ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET);
+  if (reg < len) {
+    return kDifEntropyInvalidFifoReadLen;
+  }
+
+  do {
+    reg = mmio_region_read32(entropy->params.base_addr,
+                             ENTROPY_SRC_INTR_STATE_REG_OFFSET);
+  } while (!bitfield_bit32_read(
+      reg, ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT));
+
+  for (size_t i = 0; i < len; ++i) {
+    reg = mmio_region_read32(entropy->params.base_addr,
+                             ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
+    if (buf != NULL) {
+      buf[i] = reg;
+    }
+  }
+
+  // Clear the status bit.
+  reg = mmio_region_read32(entropy->params.base_addr,
+                           ENTROPY_SRC_INTR_STATE_REG_OFFSET);
+  reg = bitfield_bit32_write(
+      reg, ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true);
+  mmio_region_write32(entropy->params.base_addr,
+                      ENTROPY_SRC_INTR_STATE_REG_OFFSET, reg);
+  return kDifEntropyOk;
+}
+
+dif_entropy_result_t dif_entropy_fifo_write(const dif_entropy_t *entropy,
+                                            const uint32_t *buf, size_t len) {
+  if (entropy == NULL || buf == NULL) {
+    return kDifEntropyBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(entropy->params.base_addr,
+                                    ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
+  if (!bitfield_bit32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT) ||
+      !bitfield_bit32_read(
+          reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT)) {
+    return kDifEntropyInvalidFwOverrideSettings;
+  }
+
+  for (size_t i = 0; i < len; ++i) {
+    mmio_region_write32(entropy->params.base_addr,
+                        ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, buf[i]);
+  }
+  return kDifEntropyOk;
+}
+
 dif_entropy_result_t dif_entropy_disable(const dif_entropy_t *entropy) {
+  if (entropy == NULL) {
+    return kDifEntropyBadArg;
+  }
   // TODO: should first check if entropy is locked and return error if it is.
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       0);
 
-  return kDifEntropyOk;
+  const dif_entropy_fw_override_config_t kDefaultFwOverrideConfig = {
+      .enable = false,
+      .entropy_insert_enable = false,
+      .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+  };
+  return fw_override_set(entropy, &kDefaultFwOverrideConfig);
 }

@@ -26,6 +26,8 @@ enum {
    */
   // TODO: Synchronize value with hardware.
   kDifEntropyFifoMaxCapacity = 64,
+
+  kDifEntropyFifoIntDefaultThreshold = 32,
 };
 
 /**
@@ -213,6 +215,33 @@ typedef struct dif_entropy_params {
 } dif_entropy_params_t;
 
 /**
+ * Firmware override parameters for an entropy source.
+ */
+typedef struct dif_entropy_fw_override_config {
+  /**
+   * Enables firmware monitoring of the post-health test entropy via
+   * `dif_entropy_fifo_read()` calls.
+   */
+  bool enable;
+
+  /**
+   * Enables fimrware to insert entropy bits back into the pre-coditioner block
+   * via `dif_entropy_fifo_write()` calls. This feature is useful when the
+   * firmware is require to implement additional health checks, and to peform
+   * known answer tests of the preconditioner function.
+   *
+   * This fields requires `fw_override_enable` to be set.
+   */
+  bool entropy_insert_enable;
+
+  /**
+   * This field sets the depth of the observe FIFO hardware buffer used when
+   * `fw_override_enable` is set to true.
+   */
+  uint8_t buffer_threshold;
+} dif_entropy_fw_override_config_t;
+
+/**
  * Runtime configuration for an entropy source.
  *
  * This struct describes runtime information for one-time configuration of the
@@ -280,6 +309,8 @@ typedef struct dif_entropy_config {
    * is 15. See `dif_entropy_mode.kDifEntropyModeLfsr` for more details.
    */
   uint16_t lfsr_seed;
+
+  dif_entropy_fw_override_config_t fw_override;
 } dif_entropy_config_t;
 
 /**
@@ -371,6 +402,18 @@ typedef enum dif_entropy_result {
    * Indicates that entropy is not idle
    */
   kDifEntropyNotIdle = 5,
+  /**
+   * Indicates an invalid firmware override configuration.
+   */
+  kDifEntropyInvalidFwOverrideSettings = 6,
+  /**
+   * Indicates invalid firmware observe FIFO interrupt threshold.
+   */
+  kDifEntropyInvalidFwOverrideBufferThreshold = 7,
+  /**
+   * Indicated invalid firmware FIFO override read size.
+   */
+  kDifEntropyInvalidFifoReadLen = 8,
 } dif_entropy_result_t;
 
 /**
@@ -617,9 +660,9 @@ dif_entropy_result_t dif_entropy_alert_force(const dif_entropy_t *entropy,
 /**
  * Performs an override read from the entropy pipeline.
  *
- * This function pauses entropy flow out of the pre-conditioner FIFO and
- * instead flows words into `buf`. Normal operation of the entropy pipeline
- * will not resume until `dif_entropy_fifo_reconnect()` is called.
+ * Entropy source must be configured with firmware override mode enabled, and
+ * the `len` parameter must be strictly less than the FIFO threshold set in the
+ * firware override parameters.
  *
  * `buf` may be `NULL`; in this case, reads will be discarded.
  *
@@ -635,9 +678,9 @@ dif_entropy_result_t dif_entropy_fifo_read(const dif_entropy_t *entropy,
 /**
  * Performs an override write to the entropy pipeline.
  *
- * This function pauses entropy flow into the pre-conditioner FIFO and
- * instead flows words out of `buf`. Normal operation of the entropy pipeline
- * will not resume until `dif_entropy_fifo_reconnect()` is called.
+ * Entropy source must be configured with firmware override and insert mode
+ * enabled, otherwise the function will return
+ * `kDifEntropyInvalidFwOverrideSettings`.
  *
  * @param entropy An entropy source handle.
  * @param buf A buffer to push words from into the pipeline.
@@ -647,57 +690,6 @@ dif_entropy_result_t dif_entropy_fifo_read(const dif_entropy_t *entropy,
 DIF_WARN_UNUSED_RESULT
 dif_entropy_result_t dif_entropy_fifo_write(const dif_entropy_t *entropy,
                                             const uint32_t *buf, size_t len);
-
-/**
- * Gets the current number of entries in the pre-conditioner FIFO.
- *
- * This function pauses the flow through the FIFO.
- *
- * @param entropy An entropy source handle.
- * @param[out] len The number of words in the FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_get_len(const dif_entropy_t *entropy,
-                                              uint8_t *len);
-
-/**
- * Gets the current capacity of the pre-conditioner FIFO.
- *
- * @param entropy An entropy source handle.
- * @param[out] capacity The number of words of capacity in the FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_get_capacity(const dif_entropy_t *entropy,
-                                                   uint8_t *capacity);
-
-/**
- * Sets the current capacity of the pre-conditioner FIFO.
- *
- * The `capacity` value must be less or equal to the physical capacity
- * of the fifo, defined as `kDifEntropyFifoMaxCapacity`.
- *
- * @param entropy An entropy source handle.
- * @param capacity The new capacity for the FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_set_capacity(const dif_entropy_t *entropy,
-                                                   uint8_t capacity);
-
-/**
- * Reconnects the entropy pipeline after an operation that pauses it.
- *
- * This is a separate function call to avoid races between software and hardware
- * when performing multiple such operations, such as getting the length followed
- * by a read.
- *
- * @param entropy An entropy source handle.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_reconnect(const dif_entropy_t *entropy);
 
 /**
  * Disables the entropy module

@@ -37,7 +37,11 @@ static void setup_entropy_src(void) {
       .route_to_firmware = false,
       .sample_rate = 2,
       .lfsr_seed = 0,
-  };
+      .fw_override = {
+          .enable = false,
+          .entropy_insert_enable = false,
+          .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+      }};
   CHECK(dif_entropy_configure(&entropy, config) == kDifEntropyOk);
 }
 

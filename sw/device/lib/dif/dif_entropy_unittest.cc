@@ -44,6 +44,12 @@ class ConfigTest : public DifEntropyTest {
       .test_config = {0},
       .sample_rate = 64,
       .lfsr_seed = 4,
+      .fw_override =
+          {
+              .enable = false,
+              .entropy_insert_enable = false,
+              .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+          },
   };
 };
 
@@ -54,6 +60,19 @@ TEST_F(ConfigTest, NullArgs) {
 TEST_F(ConfigTest, LfsrSeedBadArg) {
   config_.lfsr_seed = 16;
   EXPECT_EQ(dif_entropy_configure(&entropy_, config_), kDifEntropyBadArg);
+}
+
+TEST_F(ConfigTest, InvalidFifoThreshold) {
+  config_.fw_override.buffer_threshold = 65;
+  EXPECT_EQ(dif_entropy_configure(&entropy_, config_),
+            kDifEntropyInvalidFwOverrideBufferThreshold);
+}
+
+TEST_F(ConfigTest, InvalidFwOverrideSettings) {
+  config_.fw_override.enable = false;
+  config_.fw_override.entropy_insert_enable = true;
+  EXPECT_EQ(dif_entropy_configure(&entropy_, config_),
+            kDifEntropyInvalidFwOverrideSettings);
 }
 
 struct ConfigParams {
@@ -78,6 +97,16 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   config_.route_to_firmware = test_param.route_to_firmware;
   config_.reset_health_test_registers = test_param.reset_health_test_registers;
 
+  EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                 config_.fw_override.buffer_threshold);
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                 {
+                     {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT,
+                      config_.fw_override.enable},
+                     {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT,
+                      config_.fw_override.entropy_insert_enable},
+                 });
+
   EXPECT_WRITE32(ENTROPY_SRC_SEED_REG_OFFSET, test_param.expected_seed);
   EXPECT_WRITE32(ENTROPY_SRC_RATE_REG_OFFSET, 64);
   EXPECT_WRITE32(ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
@@ -86,7 +115,6 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
                       test_param.route_to_firmware},
                      {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_BIT, false},
                  });
-  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
@@ -162,6 +190,107 @@ TEST_F(ReadTest, ReadOk) {
   uint32_t got_word;
   EXPECT_EQ(dif_entropy_read(&entropy_, &got_word), kDifEntropyOk);
   EXPECT_EQ(got_word, expected_word);
+}
+
+class ReadFifoTest : public DifEntropyTest {};
+
+TEST_F(ReadFifoTest, ReadOk) {
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {
+                    {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, true},
+                });
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 1);
+
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                {
+                    {ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true},
+                });
+
+  uint32_t expected = 0xA5A5A5A5;
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET, expected);
+
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                {
+                    {ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true},
+                });
+  EXPECT_WRITE32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                 {
+                     {ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true},
+                 });
+
+  uint32_t got;
+  EXPECT_EQ(dif_entropy_fifo_read(&entropy_, &got, /*len=*/1), kDifEntropyOk);
+  EXPECT_EQ(got, expected);
+}
+
+TEST_F(ReadFifoTest, BadArgs) {
+  uint32_t buf;
+  EXPECT_EQ(dif_entropy_fifo_read(/*entropy=*/NULL, &buf, /*len=*/1),
+            kDifEntropyBadArg);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, false}});
+  EXPECT_EQ(dif_entropy_fifo_read(&entropy_, &buf, /*len=*/1),
+            kDifEntropyInvalidFwOverrideSettings);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, true}});
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 0);
+  EXPECT_EQ(dif_entropy_fifo_read(&entropy_, &buf, /*len=*/1),
+            kDifEntropyInvalidFifoReadLen);
+}
+
+class WriteFifoTest : public DifEntropyTest {};
+
+TEST_F(WriteFifoTest, WriteOk) {
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {
+                    {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, true},
+                    {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT, true},
+                });
+
+  uint32_t expected = 0xA5A5A5A5;
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, expected);
+  EXPECT_EQ(dif_entropy_fifo_write(&entropy_, &expected, /*len=*/1),
+            kDifEntropyOk);
+}
+
+TEST_F(WriteFifoTest, BadArgs) {
+  uint32_t buf;
+  EXPECT_EQ(dif_entropy_fifo_write(/*entropy=*/NULL, &buf, /*len=*/1),
+            kDifEntropyBadArg);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, false}});
+  EXPECT_EQ(dif_entropy_fifo_write(&entropy_, &buf, /*len=*/1),
+            kDifEntropyInvalidFwOverrideSettings);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                {
+                    {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, true},
+                    {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT, false},
+                });
+  EXPECT_EQ(dif_entropy_fifo_write(&entropy_, &buf, /*len=*/1),
+            kDifEntropyInvalidFwOverrideSettings);
+}
+
+class DisableTest : public DifEntropyTest {};
+
+TEST_F(DisableTest, DisableOk) {
+  EXPECT_WRITE32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
+  EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                 kDifEntropyFifoIntDefaultThreshold);
+  EXPECT_WRITE32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {
+          {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_BIT, false},
+          {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_BIT, false},
+      });
+  EXPECT_EQ(dif_entropy_disable(&entropy_), kDifEntropyOk);
+}
+
+TEST_F(DisableTest, BadArgs) {
+  EXPECT_EQ(dif_entropy_disable(/*entropy=*/NULL), kDifEntropyBadArg);
 }
 
 }  // namespace
