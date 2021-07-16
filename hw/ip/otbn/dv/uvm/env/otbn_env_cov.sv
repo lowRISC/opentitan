@@ -240,9 +240,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       12'h7d5: return 8;   // MOD5
       12'h7d6: return 9;   // MOD6
       12'h7d7: return 10;  // MOD7
-      12'hfc0: return 11;  // RND
-      12'hfc1: return 12;  // RND_PREFETCH
-      12'hfc2: return 13;  // URND
+      12'hfc8: return 11;  // RND_PREFETCH
+      12'hfc0: return 12;  // RND
+      12'hfc1: return 13;  // URND
       default: return -1;  // (invalid)
     endcase
   endfunction
@@ -260,8 +260,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     bins mod5         = {8};           \
     bins mod6         = {9};           \
     bins mod7         = {10};          \
-    bins rnd          = {11};          \
-    bins rnd_prefetch = {12};          \
+    bins rnd_prefetch = {11};          \
+    bins rnd          = {12};          \
     bins urnd         = {13};          \
     bins invalid      = {-1};          \
     illegal_bins bad  = default;       \

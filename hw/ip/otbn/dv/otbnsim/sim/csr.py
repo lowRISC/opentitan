@@ -39,18 +39,25 @@ class CSRFile:
             mod_n = idx - 0x7d0
             return self._get_field(mod_n, 32, wsrs.MOD.read_unsigned())
 
+        if idx == 0x7d8:
+            # RND_PREFETCH register
+            return 0
+
         if idx == 0xfc0:
             # RND register
             return wsrs.RND.read_u32()
-
-        if idx == 0xfc1:
-            # RND_PREFETCH register
-            return 0
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
 
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
         assert 0 <= value < (1 << 32)
+
+        # The RISC-V Privileged Specification v1.11 describes an address map
+        # for custom CSRs which depends on them being read-only or read-write.
+        if not (idx >= 0x7C0 and idx <= 0x7FF):
+            raise RuntimeError('CSR {:#x} not in writable range (0x7c0 - '
+                               '0x7ff), according to the RISC-V Privileged '
+                               'Specification v1.11.'.format(idx))
 
         if 0x7c0 <= idx <= 0x7c1:
             # FG0/FG1
@@ -71,8 +78,9 @@ class CSRFile:
             wsrs.MOD.write_unsigned(self._set_field(mod_n, 32, value, old))
             return
 
-        if idx == 0xfc0 or idx == 0xfc1:
-            # RND/RND_PREFETCH register (writes are ignored)
+        if idx == 0x7d8:
+            # RND_PREFETCH
+            # TODO: Implement.
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))

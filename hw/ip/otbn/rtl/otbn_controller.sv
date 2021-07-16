@@ -689,13 +689,13 @@ module otbn_controller
         ispr_addr_base      = IsprMod;
         ispr_word_addr_base = csr_sub_addr;
       end
-      CsrRnd: begin
-        ispr_addr_base      = IsprRnd;
-        ispr_word_addr_base = '0;
-      end
       CsrRndPrefetch: begin
         // Reading from RND_PREFETCH results in 0, there is no ISPR to read so no address is set.
         // The csr_rdata mux logic takes care of producing the 0.
+      end
+      CsrRnd: begin
+        ispr_addr_base      = IsprRnd;
+        ispr_word_addr_base = '0;
       end
       CsrUrnd: begin
         ispr_addr_base      = IsprUrnd;
