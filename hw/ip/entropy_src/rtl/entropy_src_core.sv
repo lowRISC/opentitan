@@ -74,9 +74,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
 
   // signals
-  logic [RngBusWidth-1:0] lfsr_value;
-  logic [RngBusWidth-1:0] seed_value;
-  logic       load_seed;
   logic       fw_ov_mode;
   logic       fw_ov_entropy_insert;
   logic [ObserveFifoWidth-1:0] fw_ov_wr_data;
@@ -84,20 +81,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       fw_ov_fifo_wr_pulse;
   logic       es_enable;
   logic       es_enable_early;
-  logic       es_enable_lfsr;
   logic       es_enable_rng;
   logic       es_rng_rdy;
   logic       rng_bit_en;
   logic [1:0] rng_bit_sel;
-  logic       lfsr_incr;
   logic       sw_es_rd_pulse;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
   logic       event_es_observe_fifo_ready;
   logic       event_es_fatal_err;
-  logic [15:0] es_rate;
-  logic        es_rate_entropy_pulse;
-  logic        es_rng_src_valid;
+  logic       es_rng_src_valid;
   logic [RngBusWidth-1:0] es_rng_bus;
 
   logic [RngBusWidth-1:0] sfifo_esrng_wdata;
@@ -290,7 +283,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                     pfifo_esbit_wdata;
   logic [RngBusWidth-1:0]   pfifo_esbit_rdata;
-  logic                     pfifo_esbit_not_empty;
+//  logic                     pfifo_esbit_not_empty;
   logic                     pfifo_esbit_push;
   logic                     pfifo_esbit_clr;
   logic                     pfifo_esbit_pop;
@@ -370,8 +363,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_fw_ov_rd_data;
 
   // flops
-  logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
-  logic        lfsr_incr_dly_q, lfsr_incr_dly_d;
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
   logic        ht_esbus_vld_dly_q, ht_esbus_vld_dly_d;
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
@@ -383,13 +374,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
-  logic [1:0]  es_enable_q, es_enable_d;
+  logic        es_enable_q, es_enable_d;
   logic        rng_rdy_q, rng_rdy_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      es_rate_cntr_q        <= 16'h0001;
-      lfsr_incr_dly_q       <= '0;
       boot_bypass_q         <= 1'b1;
       ht_failed_q           <= '0;
       ht_failed_pulse_q     <= '0;
@@ -404,8 +393,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_enable_q           <= '0;
       rng_rdy_q             <= '0;
     end else begin
-      es_rate_cntr_q        <= es_rate_cntr_d;
-      lfsr_incr_dly_q       <= lfsr_incr_dly_d;
       boot_bypass_q         <= boot_bypass_d;
       ht_failed_q           <= ht_failed_d;
       ht_failed_pulse_q     <= ht_failed_pulse_d;
@@ -423,10 +410,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign es_enable_d = reg2hw.conf.enable.q;
   assign es_enable_early = (|reg2hw.conf.enable.q);
-  assign es_enable = (|es_enable_q);
-  assign es_enable_lfsr = es_enable_q[1];
-  assign es_enable_rng = es_enable_q[0];
-  assign load_seed = !es_enable;
+  assign es_enable = es_enable_q;
+  assign es_enable_rng = es_enable_q;
+
   assign hw2reg.regwen.d = !es_enable; // hw reg lock implementation
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
@@ -512,50 +498,44 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // lfsr - a version of a entropy source
   //--------------------------------------------
 
-  assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
-  assign lfsr_incr_dly_d =
-         !es_enable ? 1'b0 :
-         lfsr_incr;
-
-  prim_lfsr #(
-    .LfsrDw(RngBusWidth),
-    .EntropyDw(RngBusWidth),
-    .StateOutDw(RngBusWidth),
-    .DefaultSeed(1),
-    .CustomCoeffs('0)
-  ) u_prim_lfsr (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .seed_en_i      (load_seed),
-    .seed_i         (seed_value),
-    .lfsr_en_i      (lfsr_incr_dly_q),
-    .entropy_i      ('0),
-    .state_o        (lfsr_value)
-  );
-
-  // entropy rate limiter
-
-  assign es_rate_cntr_d =
-         !es_enable ? 16'h0001 :
-         (es_rate == '0) ? 16'h0000 :
-         es_rate_entropy_pulse ? es_rate :
-         (es_rate_cntr_q - 1);
-
-  assign es_rate_entropy_pulse =
-         !es_enable ? 1'b0 :
-         (es_rate == '0) ? 1'b0 :
-         (es_rate_cntr_q == 16'h0001);
+//  assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
+//  assign lfsr_incr_dly_d =
+//         !es_enable ? 1'b0 :
+//         lfsr_incr;
+//
+//  prim_lfsr #(
+//    .LfsrDw(RngBusWidth),
+//    .EntropyDw(RngBusWidth),
+//    .StateOutDw(RngBusWidth),
+//    .DefaultSeed(1),
+//    .CustomCoeffs('0)
+//  ) u_prim_lfsr (
+//    .clk_i          (clk_i),
+//    .rst_ni         (rst_ni),
+//    .seed_en_i      (load_seed),
+//    .seed_i         (seed_value),
+//    .lfsr_en_i      (lfsr_incr_dly _q),
+//    .entropy_i      ('0),
+//    .state_o        (lfsr_value)
+//  );
+//
+//  // entropy rate limiter
+//
+//  assign es_rate_cntr_d =
+//         !es_enable ? 16'h0001 :
+//         (es_rate == '0) ? 16'h0000 :
+//         es_rate_entropy_pulse ? es_rate :
+//         (es_rate_cntr_q - 1);
+//
+//  assign es_rate_entropy_pulse =
+//         !es_enable ? 1'b0 :
+//         (es_rate == '0) ? 1'b0 :
+//         (es_rate_cntr_q == 16'h0001);
 
   //--------------------------------------------
   // tlul register settings
   //--------------------------------------------
 
-
-  // seed register
-  assign seed_value = reg2hw.seed.q;
-
-  // es rate register
-  assign es_rate = reg2hw.rate.q;
 
   // set the interrupt event when enabled
   assign event_es_entropy_valid = pfifo_swread_not_empty;
@@ -717,15 +697,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .wvalid_i   (pfifo_esbit_push),
     .wdata_i    (pfifo_esbit_wdata),
     .wready_o   (),
-    .rvalid_o   (pfifo_esbit_not_empty),
+    .rvalid_o   (),
     .rdata_o    (pfifo_esbit_rdata),
     .rready_i   (pfifo_esbit_pop),
     .depth_o    ()
   );
 
-  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop && es_rate_entropy_pulse;
+  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop;
   assign pfifo_esbit_clr = !es_enable;
-  assign pfifo_esbit_pop = es_rate_entropy_pulse && pfifo_esbit_not_empty;
+  assign pfifo_esbit_pop = sfifo_esrng_push;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
          (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
@@ -735,11 +715,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // select source for health testing
 
-  assign health_test_esbus = es_enable_lfsr ? lfsr_value :
+  assign health_test_esbus =
          (es_enable_rng && rng_bit_en) ? pfifo_esbit_rdata :
          sfifo_esrng_rdata;
 
-  assign health_test_esbus_vld = es_enable_lfsr ? es_rate_entropy_pulse :
+  assign health_test_esbus_vld =
          (es_enable_rng && rng_bit_en) ? pfifo_esbit_pop :
          sfifo_esrng_pop;
 
@@ -2094,7 +2074,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o        (sfifo_esfinal_depth)
   );
 
-  assign fips_compliance = !es_bypass_mode && es_enable_rng && !es_enable_lfsr && !rng_bit_en;
+  assign fips_compliance = !es_bypass_mode && es_enable_rng && !rng_bit_en;
 
   // fifo controls
   assign sfifo_esfinal_push = sfifo_esfinal_not_full &&

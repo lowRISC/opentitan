@@ -11,11 +11,10 @@ This module conforms to the [Comportable guideline for peripheral functionality.
 ## Features
 
 
-- This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator or PTRNG) source, and an LFSR (linear feedback shift register) digital source.
-The LFSR is used as a digital, pseudo-random type of entropy source, while the PTRNG external source is a physical true random noise source.
+- This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator.
+The PTRNG external source is a physical true random noise source.
 A noise source and its relation to an entropy source are defined by [SP 800-90B.](https://csrc.nist.gov/publications/detail/sp/800-90b/final)
 - A set of registers is provided for firmware to obtain entropy bits.
-- The set of registers is designed such that firmware can select between an LFSR or a PTRNG noise source.
 - Interrupts are supported:
   - Entropy bits are available for firmware consumption.
   - The internal health tests have detected a test failure.
@@ -94,13 +93,10 @@ However, the general design of this block follows the overall NIST recommendatio
 # Theory of Operations
 
 As already described, this IP block will collect bits of entropy for firmware or hardware consumption.
-This revision supports both an LFSR for the pseudo-random digital implementation, and an external interface for the PTRNG noise source implementation.
+This revision supports only an external interface for a PTRNG noise source implementation.
 
 The first step is initialization and enabling.
-Normally PTRNG noise source mode is selected, and the `ENABLE` field will be set to enable PTRNG noise source mode.
-If using LFSR mode, before setting the `ENABLE` field, the LFSR seed input should be initialized, using the {{< regref "SEED" >}} register.
-The {{< regref "ENTROPY_RATE" >}} register will default to a sample rate of 20 microseconds, assuming a system clock rate of 100 nanoseconds.
-The {{< regref "SEED" >}} register will transfer its value to the LFSR block, but the LFSR block is locked once the `ENABLE` field is set.
+The PTRNG noise source mode is selected when the `ENABLE` field will be set.
 After the block is enabled and initialized, entropy bits will be collected up indefinitely until disabled.
 
 
@@ -191,8 +187,6 @@ See the Programmers Guide section for more details on the ENTROPY_SRC block disa
 ### Initialization
 
 After power-up, the ENTROPY_SRC block is disabled.
-In this state, the seed register will continuously be loaded into the LFSR.
-The seed register can be written without restriction, regardless of any state of any control bits.
 
 For simplicity of initialization, only a single register write is needed to start functional operation of the ENTROPY_SRC block.
 This assumes that proper defaults are chosen for thresholds, sampling rate, and other registers.
@@ -211,10 +205,6 @@ A full twelve 32-bit words need to be read at a time.
 The hardware entropy interface will move entropy bits out of the ENTROPY FIFO when it is not empty, and the downstream hardware is ready.
 If firmware is not currently reading entropy bits, all processed entropy bits will flow to the hardware entropy interface.
 
-An additional feature is the {{< regref "RATE" >}} register.
-The purpose of this register is to simulate faster or slower entropy generation sources than when the digital source is selected.
-This will aid firmware design and debug when trying to handle all entropy source types and rates.
-When in PTRNG mode, this register must exactly match the sample rate required by the PTRNG source, expected to be in the range of about 25 to 50 kilohertz.
 
 ### Interrupts
 
@@ -265,7 +255,7 @@ The following waveform shows an example of what the PTRNG timing looks like.
 {{< /wavejson >}}
 
 ### Repetition Count Test
-The following waveform shows how a sampling of the LFSR data pattern will be tested by the Repetition Count test.
+The following waveform shows how a sampling of a data pattern will be tested by the Repetition Count test.
 Operating on each bit stream, this test will count when a signal is at a stuck level.
 This NIST test is intended to signal a catastrophic failure with the PTRNG noise source.
 
@@ -293,7 +283,7 @@ This NIST test is intended to signal a catastrophic failure with the PTRNG noise
 {{< /wavejson >}}
 
 ### Adaptive Proportion Test
-The following waveform shows how a sampling of the LFSR data pattern will be tested by the Adaptive Proportion test.
+The following waveform shows how a sampling of a data pattern will be tested by the Adaptive Proportion test.
 Operating on all four bit streams, this test will count how many ones are present in the full sample period.
 This NIST test is intended to find bias when either too many or too few ones are present.
 
@@ -316,7 +306,7 @@ This NIST test is intended to find bias when either too many or too few ones are
 {{< /wavejson >}}
 
 ### Bucket Test
-The following waveform shows how a sampling of the LFSR data pattern will be tested by the Bucket test.
+The following waveform shows how a sampling of a data pattern will be tested by the Bucket test.
 Operating on all four bit streams, this test will identify the symbol and sort it into bin counters, or "buckets".
 This test is intended to find bias with a symbol or symbols.
 
@@ -345,7 +335,7 @@ This test is intended to find bias with a symbol or symbols.
 {{< /wavejson >}}
 
 ### Markov Test
-The following waveform shows how a sampling of the LFSR data pattern will be tested by the Markov test.
+The following waveform shows how a sampling of a data pattern will be tested by the Markov test.
 Operating on all four bit streams, this test will identify pairs of transitions in time per bit stream.
 Specifically, only pairs of `0b01` and `0b10` will be counted.
 
@@ -379,9 +369,6 @@ The following code snippet demonstrates initializing the ENTROPY_SRC block for e
 ```cpp
 
 void entropy_src_init(unsigned int rate) {
-
-  // set the rate value (optional)
-  *SEED_REG = rate;
 
   // set the configuration enable bits (rng mode, all health tests enabled)
   *CONF_REG = 0x1;
