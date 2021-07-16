@@ -363,10 +363,10 @@ module lc_ctrl
         end
 
         if (reg2hw.otp_test_ctrl.ext_clock.qe) begin
-          use_ext_clock_d = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+          use_ext_clock_d = reg2hw.otp_test_ctrl.ext_clock.q;
         end
         if (reg2hw.otp_test_ctrl.val.qe) begin
-          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
+          otp_test_ctrl_d = reg2hw.otp_test_ctrl.val.q;
         end
       end
     end
