@@ -30,6 +30,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // covergroups
   tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
   tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
+  tl_intg_err_mem_subword_cg_wrap tl_intg_err_mem_subword_cgs_wrap[string];
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -75,6 +76,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
       if (!has_ro_mem) begin
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
+      end
+
+      if (has_mem) begin
+        tl_intg_err_mem_subword_cgs_wrap[ral_name] = new(
+            $sformatf("tl_intg_err_mem_subword_cgs_wrap[%0s]", ral_name));
       end
 
       if (cfg.en_tl_intg_gen) begin
@@ -342,6 +348,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
         tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
                                               is_mem_addr(item, ral_name));
+
+        if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
+          tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
+              .tl_intg_err_type(tl_intg_err_type),
+              .write(item.a_opcode != tlul_pkg::Get),
+              .num_enable_bytes($countones(item.a_mask)));
+        end
       end
     end
 
