@@ -107,11 +107,22 @@ module lc_ctrl_signal_decode
             LcStTestUnlocked3,
             LcStTestUnlocked4,
             LcStTestUnlocked5,
-            LcStTestUnlocked6,
-            LcStTestUnlocked7: begin
+            LcStTestUnlocked6: begin
               lc_test_or_rma       = On;
               lc_dft_en            = On;
               lc_nvm_debug_en      = On;
+              lc_hw_debug_en       = On;
+              lc_cpu_en            = On;
+              lc_iso_part_sw_wr_en = On;
+              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
+            end
+            ///////////////////////////////////////////////////////////////////
+            // This is the last TEST_UNLOCKED state. The same feature set is enabled
+            // as in the other TEST_UNLOCKED states above, except for NVM debug en,
+            // which is disabled in this state.
+            LcStTestUnlocked7: begin
+              lc_test_or_rma       = On;
+              lc_dft_en            = On;
               lc_hw_debug_en       = On;
               lc_cpu_en            = On;
               lc_iso_part_sw_wr_en = On;

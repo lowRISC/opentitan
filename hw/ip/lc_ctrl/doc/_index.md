@@ -178,6 +178,9 @@ This feature may be there for a variety of reasons, but primarily it can be used
 This type of functionality, if it exists, must be disabled during specific life cycle states.
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
+Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be be securely populated, without exposing its contents via the NVM backdoor interface.
+See also accessibility description of the [isolated flash partition]({{< relref "#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}).
+
 #### HW_DEBUG_EN
 
 HW_DEBUG_EN refers to the general ungating of both invasive (JTAG control of the processor, bidirectional analog test points) and non-invasive debug (debug bus observation, and register access error returns).
@@ -255,7 +258,7 @@ This signal is dependent on the personalization state of the device and will onl
 These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
 The isolated partition is both read and writable during the PROD / PROD_END / RMA states.
 In all other states it is inaccessible, except during the TEST_UNLOCKED* states where the partition is write-only.
-This construction allows to write a value to that partitition and keep it secret before advancing into any of the production states.
+This construction allows to write a value to that partition and keep it secret before advancing into any of the production states.
 
 
 ## OTP Collateral
