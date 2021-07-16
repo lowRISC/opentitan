@@ -24,6 +24,8 @@ extern unsigned int otbn_base_call_stack_get_size();
 extern unsigned int otbn_base_call_stack_get_element(int index);
 extern unsigned int otbn_base_reg_get(int index);
 extern unsigned int otbn_bignum_reg_get(int index, int quarter);
+extern svBit otbn_err_get();
+extern int otbn_core_get_stop_pc();
 }
 
 /**
