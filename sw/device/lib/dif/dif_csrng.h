@@ -89,38 +89,6 @@ typedef struct dif_csrng_params {
 } dif_csrng_params_t;
 
 /**
- * Runtime debug configuration for CSRNG.
- *
- * This struct describes runtime debug configuration parameters for one-time
- * configuration of the hardware.
- */
-// TODO: Add support to disable this functionality in production mode.
-typedef struct dif_csrng_debug_config {
-  /**
-   * Bypass the AES cipher core.
-   *
-   * Commands will bypass the AES cipher core, but still move through the
-   * logical flow of CSRNG. this mode is for debug purposes only.
-   */
-  // TODO(#5576): Consider making AES_CIPHER_DISABLE configurable by fuses
-  // or RTL parameters.
-  bool bypass_aes_cipher;
-} dif_csrng_debug_config_t;
-
-/**
- * Runtime configuration for CSRNG.
- *
- * This struct describes runtime information for one-time configuration of the
- * hardware.
- */
-typedef struct dif_csrng_config {
-  /**
-   * Debug configuration parameters.
-   */
-  dif_csrng_debug_config_t debug_config;
-} dif_csrng_config_t;
-
-/**
  * A handle to CSRNG.
  *
  * This type should be treated as opaque by users.
@@ -283,17 +251,15 @@ dif_csrng_result_t dif_csrng_init(dif_csrng_params_t params,
                                   dif_csrng_t *csrng);
 
 /**
- * Configures CSRNG with runtime information.
+ * Configures CSRNG.
  *
  * This function should need to be called once for the lifetime of `csrng`.
  *
  * @param csrng A CSRNG handle.
- * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng,
-                                       dif_csrng_config_t config);
+dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng);
 
 /**
  * Initializes CSRNG instance with a new seed value.
