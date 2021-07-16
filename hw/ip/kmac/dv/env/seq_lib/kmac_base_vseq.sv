@@ -276,6 +276,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg.entropy_mode.set(entropy_mode);
     ral.cfg.entropy_fast_process.set(entropy_fast_process);
     ral.cfg.entropy_ready.set(entropy_ready);
+    ral.cfg.err_processed.set(1'b0);
     csr_update(.csr(ral.cfg));
 
     // setup KEY_LEN csr
@@ -331,6 +332,9 @@ class kmac_base_vseq extends cip_base_vseq #(
       // Need to pulse `entropy_ready` once we signal that SW has finished processing
       // the entropy-related errors, otherwise FSM will be infinitely looping in Reset state
       csr_wr(.ptr(ral.cfg.entropy_ready), .value(1'b1));
+    end else if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin
+      ral.cfg.err_processed.set(1);
+      csr_update(.csr(ral.cfg));
     end
     `uvm_info(`gfn, "Finished checking error", UVM_HIGH)
   endtask

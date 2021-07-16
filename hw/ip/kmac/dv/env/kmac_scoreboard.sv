@@ -340,7 +340,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             //
             // Assume that application interface requests do not collide.
             `uvm_info(`gfn, "waiting for new kmac_app request", UVM_HIGH)
-            wait(!in_kmac_app &&
+            wait(!in_kmac_app && app_fsm_active &&
                  (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
                   `KMAC_APP_VALID_TRANS(AppLc) ||
                   `KMAC_APP_VALID_TRANS(AppRom)));
@@ -374,29 +374,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                      app_mode == AppKeymgr);
             end
 
-            wait(!in_kmac_app &&
-                 (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
-                  `KMAC_APP_VALID_TRANS(AppLc) ||
-                  `KMAC_APP_VALID_TRANS(AppRom)));
-
-            in_kmac_app = 1;
-            `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
-
-            // we need to choose the correct application interface
-            if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
-              app_mode = AppKeymgr;
-            end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
-              app_mode = AppLc;
-            end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
-              app_mode = AppRom;
-            end
             @(posedge sha3_idle);
           end
           ,
-          wait(cfg.under_reset);
+          wait(cfg.under_reset || kmac_err.code == ErrKeyNotValid);
       )
       if (cfg.under_reset) begin
         @(negedge cfg.under_reset);
+      end
+      if (kmac_err.code == ErrKeyNotValid) begin
+        `uvm_info(`gfn, "kmac_err.code is ErrKeyNotValid", UVM_HIGH)
+        `uvm_info(`gfn, "waiting for error to drop", UVM_HIGH)
+        wait(kmac_err.code == ErrNone);
+        `uvm_info(`gfn, "ErrKeyNotValid has been handled", UVM_HIGH)
       end
       wait(!cfg.under_reset);
     end
@@ -426,14 +416,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               StAppCfg: begin
                 if (app_mode == AppKeymgr && !cfg.sideload_vif.sideload_key.valid) begin
                   app_st = StKeyMgrErrKeyNotValid;
-
-                  kmac_err.valid = 1;
-                  kmac_err.code = kmac_pkg::ErrKeyNotValid;
-                  kmac_err.info = '0;
-
-                  in_kmac_app = 0;
-
-                  predict_err(.is_kmac_err(1));
                 end else begin
                   app_st = StAppMsg;
                 end
@@ -469,7 +451,31 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 end
               end
               StKeyMgrErrKeyNotValid: begin
-                // infinitely loop in this state until a reset is issued
+                app_st = StError;
+                app_fsm_active = 0;
+                in_kmac_app = 0;
+
+                kmac_err.valid = 1;
+                kmac_err.code = kmac_pkg::ErrKeyNotValid;
+                kmac_err.info = '0;
+
+                predict_err(.is_kmac_err(1));
+              end
+              StError: begin
+
+                if (`gmv(ral.cfg.err_processed)) begin
+                  app_st = StIdle;
+                end else begin
+                  app_st = StError;
+                end
+
+                // It's possible for SW to not clear the error until after the hash is done.
+                // In this case the hash will be garbage data, so do not check it.
+                if (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid &&
+                    cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.last) begin
+                  do_check_digest = 0;
+                end
+
               end
               default: begin
                 app_st = StIdle;
@@ -605,66 +611,49 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     forever begin
       wait(!cfg.under_reset);
       `DV_SPINWAIT_EXIT(
-          fork
-            begin
-              forever begin
-                wait(!cfg.under_reset);
-                @(posedge in_kmac_app);
-                `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
-                `DV_SPINWAIT_EXIT(
-                    kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
-                    `uvm_info(`gfn,
-                              $sformatf("Detected a KMAC_APP response:\n%0s",
-                                        kmac_app_rsp.sprint()),
-                              UVM_HIGH)
+          forever begin
+            wait(!cfg.under_reset);
+            @(posedge in_kmac_app);
+            `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
+            `DV_SPINWAIT_EXIT(
+                kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
+                `uvm_info(`gfn,
+                          $sformatf("Detected a KMAC_APP response:\n%0s",
+                                    kmac_app_rsp.sprint()),
+                          UVM_HIGH)
 
-                    // sample coverage
-                    if (cfg.en_cov) begin
-                      cov.app_cg_wrappers[app_mode].sample(
-                        kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
-                        '0,
-                        kmac_app_rsp.rsp_error,
-                        1,
-                        0
-                      );
-                    end
-
-                    // safety check that things are working properly and
-                    // no random KMAC_APP operations are seen
-                    `DV_CHECK_FATAL(in_kmac_app == 1,
-                        "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
-
-                    // TODO error checks
-
-                    // assign digest values
-                    kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-                    kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
-
-                    if (do_check_digest) check_digest();
-
-                    in_kmac_app = 0;
-                    `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
-
-                    clear_state();
-                    ,
-                    wait(!in_kmac_app);
-                )
-              end
-            end
-            begin
-              forever begin
-                wait(!cfg.under_reset);
-                @(posedge in_kmac_app);
-                @(negedge in_kmac_app);
-                if (entropy_mode == EntropyModeEdn) begin
-                  cfg.clk_rst_vif.wait_clks(3);
-                  in_edn_fetch = cfg.enable_masking;
-                  refresh_entropy = cfg.enable_masking;
-                  `uvm_info(`gfn, "raised refresh_entropy", UVM_HIGH)
+                // sample coverage
+                if (cfg.en_cov) begin
+                  cov.app_cg_wrappers[app_mode].sample(
+                    kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
+                    '0,
+                    kmac_app_rsp.rsp_error,
+                    1,
+                    0
+                  );
                 end
-              end
-            end
-          join
+
+                // safety check that things are working properly and
+                // no random KMAC_APP operations are seen
+                `DV_CHECK_FATAL(in_kmac_app == 1,
+                    "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
+
+                // TODO error checks
+
+                // assign digest values
+                kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
+                kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+
+                if (do_check_digest) check_digest();
+
+                in_kmac_app = 0;
+                `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
+
+                clear_state();
+                ,
+                wait(!in_kmac_app);
+            )
+          end
           ,
           wait(cfg.under_reset);
       )
@@ -700,6 +689,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
+      sha3_absorb = ral.status.sha3_absorb.get_reset();
       `DV_SPINWAIT_EXIT(
           forever begin
             // sha3_absorb should go high when CmdStart is written or
@@ -715,7 +705,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, "dropped sha3_absorb", UVM_HIGH)
           end
           ,
-          wait(cfg.under_reset);
+          @(posedge cfg.under_reset or kmac_err.code == ErrKeyNotValid);
       )
     end
   endtask
@@ -811,6 +801,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
+      wait(!kmac_err.valid);
       `DV_SPINWAIT_EXIT(
           forever begin
             // Wait for KMAC to move out of IDLE state, meaning that:
@@ -896,7 +887,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             @(posedge sha3_idle);
           end
           ,
-          wait(cfg.under_reset);
+          @(cfg.under_reset == 1 or posedge sha3_idle or kmac_err.code == ErrKeyNotValid);
       )
     end
   endtask
@@ -1609,7 +1600,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end : increment_fifo_rd_ptr
           join
           ,
-          wait(cfg.under_reset || msg_digest_done);
+          @(cfg.under_reset == 1 or msg_digest_done == 1 or
+            posedge kmac_err.code == ErrKeyNotValid);
       )
       wait(sha3_idle == 1);
     end
@@ -1820,7 +1812,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             cfg.clk_rst_vif.wait_clks(1);
           end
           ,
-          wait(cfg.under_reset || msg_digest_done);
+          @(cfg.under_reset == 1 or msg_digest_done == 1 or
+            posedge kmac_err.code == ErrKeyNotValid);
       )
       `uvm_info(`gfn, "msg is done, stopping processing fifo_wr_ptr", UVM_HIGH)
       wait(sha3_idle == 1);
@@ -2404,6 +2397,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end else if (is_kmac_err) begin
       void'(ral.err_code.predict(.value(TL_DW'(kmac_err)), .kind(UVM_PREDICT_DIRECT)));
     end
+
+    kmac_err = '{valid: 1'b0,
+                 code: kmac_pkg::ErrNone,
+                 info: '0};
+    sha3_err = '{valid: 1'b0,
+                 code: sha3_pkg::ErrNone,
+                 info: '0};
   endfunction
 
   virtual function void reset(string kind = "HARD");

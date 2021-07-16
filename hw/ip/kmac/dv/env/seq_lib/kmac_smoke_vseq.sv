@@ -143,7 +143,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // Only send a KMAC_APP request when in KMAC mode
       if (en_app) begin
-        bit key_err = 0;
+        bit process_key_err_before_app_done = $urandom_range(0, 1);
+        `uvm_info(`gfn, $sformatf("process_key_err_before_app_done: %0b", process_key_err_before_app_done), UVM_HIGH)
         fork
           // This thread carries out the "normal" functionality by initiating data transfer
           // over the application interface to the KMAC.
@@ -187,20 +188,17 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin : check_invalid_key_err
             // wait until the first valid request is seen
             wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
-            disable send_kmac_req;
-            key_err = 1;
-            check_err();
-            // read the output window to ensure nothing has been corrupted
-            read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
-            read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share1);
-            csr_utils_pkg::wait_no_outstanding_access();
-            fork
-              apply_reset();
-              wait_for_reset();
-            join
+            if (process_key_err_before_app_done) begin
+              disable send_kmac_req;
+              check_err();
+              // read the output window to ensure nothing has been corrupted
+              read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
+              read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share1);
+              csr_utils_pkg::wait_no_outstanding_access();
+            end
           end : check_invalid_key_err
         join
-        if (key_err) begin
+        if (process_key_err_before_app_done) begin
           continue;
         end else begin
           // Wait until the KMAC engine has completely finished

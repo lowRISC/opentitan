@@ -48,6 +48,11 @@ class kmac_app_monitor extends dv_base_monitor #(
         bit last;
         push_pull_item#(`CONNECT_DATA_WIDTH) data_item;
 
+        // KMAC (device) supports prematurely ending an App transaction and going back to Idle state
+        // before the full data has been sent from the connected App host (KeyMgr/ROM/LC).
+        // As a result, we need to set `ok_to_end` here otherwise the monitor's corresponding
+        // objection will never drop in this scenario.
+        ok_to_end = 1;
         data_fifo.get(data_item);
         {data, strb, last} = data_item.h_data;
         ok_to_end = 0;
