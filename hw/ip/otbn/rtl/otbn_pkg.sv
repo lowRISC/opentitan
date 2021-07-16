@@ -174,6 +174,8 @@ package otbn_pkg;
   // Control and Status Registers (CSRs)
   parameter int CsrNumWidth = 12;
   typedef enum logic [CsrNumWidth-1:0] {
+    // Address ranges follow the RISC-V Privileged Specification v1.11
+    // 0x7C0-0x7FF Custom read/write
     CsrFg0         = 12'h7C0,
     CsrFg1         = 12'h7C1,
     CsrFlags       = 12'h7C8,
@@ -185,9 +187,11 @@ package otbn_pkg;
     CsrMod5        = 12'h7D5,
     CsrMod6        = 12'h7D6,
     CsrMod7        = 12'h7D7,
+    CsrRndPrefetch = 12'h7D8,
+
+    // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
-    CsrRndPrefetch = 12'hFC1,
-    CsrUrnd        = 12'hFC2
+    CsrUrnd        = 12'hFC1
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)

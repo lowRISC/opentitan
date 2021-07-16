@@ -257,6 +257,15 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
       </td>
     </tr>
     <tr>
+      <td>0x7D8</td>
+      <td>RW</td>
+      <td>
+        <strong>RND_PREFETCH</strong>.
+        Write to this CSR to begin a request to fill the RND cache.
+        Always reads as 0.
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>R</td>
       <td>
@@ -268,15 +277,6 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     </tr>
     <tr>
       <td>0xFC1</td>
-      <td>RW</td>
-      <td>
-        <strong>RND_PREFETCH</strong>.
-        Write to this CSR to begin a request to fill the RND cache.
-        Always reads as 0.
-      </td>
-    </tr>
-    <tr>
-      <td>0xFC2</td>
       <td>R</td>
       <td>
         <strong>URND</strong>.
