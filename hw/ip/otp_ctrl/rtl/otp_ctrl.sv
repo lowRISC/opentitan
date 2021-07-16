@@ -128,6 +128,8 @@ module otp_ctrl
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
+  // Single wire for gating assertions in arbitration and CDC primitives.
+  logic lc_escalate_en_any;
 
   prim_lc_sync #(
     .NumCopies(NumAgentsIdx+2)
@@ -373,6 +375,8 @@ module otp_ctrl
     fatal_bus_integ_error_d = fatal_bus_integ_error_q | (|intg_error);
     // These are the per-partition buffered escalation inputs
     lc_escalate_en = lc_escalate_en_synced;
+    // Need a single wire for gating assertions in arbitration and CDC primitives.
+    lc_escalate_en_any = 1'b0;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
@@ -393,6 +397,9 @@ module otp_ctrl
       // to a terminal error state.
       if (fatal_macro_error_q || fatal_check_error_q) begin
         lc_escalate_en[k] = lc_escalate_en_synced[k] | lc_ctrl_pkg::On;
+      end
+      if (lc_escalate_en[k] == lc_ctrl_pkg::On) begin
+        lc_escalate_en_any = 1'b1;
       end
     end
   end
@@ -566,34 +573,32 @@ module otp_ctrl
   logic key_edn_req, key_edn_ack;
   prim_arbiter_tree #(
     .N(2),
-    .EnDataPort(0),
-    // Disable req stable assertion check due to lc_escalate_en_i
-    .EnReqStabA(0)
+    .EnDataPort(0)
   ) u_edn_arb (
     .clk_i,
     .rst_ni,
-    .req_i   ( {lfsr_edn_req, key_edn_req} ),
-    .data_i  ( '{default: '0}              ),
-    .gnt_o   ( {lfsr_edn_ack, key_edn_ack} ),
-    .idx_o   (                             ), // unused
-    .valid_o ( edn_req                     ),
-    .data_o  (                             ), // unused
-    .ready_i ( edn_ack                     )
+    .req_chk_i ( ~lc_escalate_en_any         ),
+    .req_i     ( {lfsr_edn_req, key_edn_req} ),
+    .data_i    ( '{default: '0}              ),
+    .gnt_o     ( {lfsr_edn_ack, key_edn_ack} ),
+    .idx_o     (                             ), // unused
+    .valid_o   ( edn_req                     ),
+    .data_o    (                             ), // unused
+    .ready_i   ( edn_ack                     )
   );
 
   // This synchronizes the data coming from EDN and stacks the
   // 32bit EDN words to achieve an internal entropy width of 64bit.
   prim_edn_req #(
-    .OutWidth(EdnDataWidth),
-    // Disable req stable assertion check due to lc_escalate_en_i
-    .EnReqStabA(0)
+    .OutWidth(EdnDataWidth)
   ) u_prim_edn_req (
     .clk_i,
     .rst_ni,
-    .req_i      ( edn_req  ),
-    .ack_o      ( edn_ack  ),
-    .data_o     ( edn_data ),
-    .fips_o     (          ), // unused
+    .req_chk_i ( ~lc_escalate_en_any ),
+    .req_i     ( edn_req             ),
+    .ack_o     ( edn_ack             ),
+    .data_o    ( edn_data            ),
+    .fips_o    (                     ), // unused
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o,
@@ -621,19 +626,18 @@ module otp_ctrl
   // transactions can be completely independent.
   prim_arbiter_tree #(
     .N(NumAgents),
-    .DW($bits(otp_bundle_t)),
-    // Disable req stable assertion check due to lc_escalate_en_i
-    .EnReqStabA(0)
+    .DW($bits(otp_bundle_t))
   ) u_otp_arb (
     .clk_i,
     .rst_ni,
-    .req_i   ( part_otp_arb_req    ),
-    .data_i  ( part_otp_arb_bundle ),
-    .gnt_o   ( part_otp_arb_gnt    ),
-    .idx_o   ( otp_arb_idx         ),
-    .valid_o ( otp_arb_valid       ),
-    .data_o  ( otp_arb_bundle      ),
-    .ready_i ( otp_arb_ready       )
+    .req_chk_i ( ~lc_escalate_en_any ),
+    .req_i     ( part_otp_arb_req    ),
+    .data_i    ( part_otp_arb_bundle ),
+    .gnt_o     ( part_otp_arb_gnt    ),
+    .idx_o     ( otp_arb_idx         ),
+    .valid_o   ( otp_arb_valid       ),
+    .data_o    ( otp_arb_bundle      ),
+    .ready_i   ( otp_arb_ready       )
   );
 
   prim_otp_pkg::err_e          part_otp_err;
@@ -749,18 +753,18 @@ module otp_ctrl
   // Hence, the idx_o signal is guaranteed to remain stable until ack'ed.
   prim_arbiter_tree #(
     .N(NumAgents),
-    .DW($bits(scrmbl_bundle_t)),
-    .EnReqStabA(0)
+    .DW($bits(scrmbl_bundle_t))
   ) u_scrmbl_mtx (
     .clk_i,
     .rst_ni,
-    .req_i   ( part_scrmbl_mtx_req  ),
-    .data_i  ( part_scrmbl_req_bundle ),
-    .gnt_o   (                        ),
-    .idx_o   ( scrmbl_mtx_idx         ),
-    .valid_o ( scrmbl_mtx_valid       ),
-    .data_o  ( scrmbl_req_bundle      ),
-    .ready_i ( 1'b0                   )
+    .req_chk_i ( ~lc_escalate_en_any    ),
+    .req_i     ( part_scrmbl_mtx_req    ),
+    .data_i    ( part_scrmbl_req_bundle ),
+    .gnt_o     (                        ),
+    .idx_o     ( scrmbl_mtx_idx         ),
+    .valid_o   ( scrmbl_mtx_valid       ),
+    .data_o    ( scrmbl_req_bundle      ),
+    .ready_i   ( 1'b0                   )
   );
 
   // Since the ready_i signal of the arbiter is statically set to 1'b0 above, we are always in a

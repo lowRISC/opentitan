@@ -45,6 +45,7 @@ module lc_ctrl_fsm
   output dec_lc_id_state_e      dec_lc_id_state_o,
   // Token hashing interface
   output logic                  token_hash_req_o,
+  output logic                  token_hash_req_chk_o,
   input                         token_hash_ack_i,
   input                         token_hash_err_i,
   input  lc_token_t             hashed_token_i,
@@ -149,7 +150,8 @@ module lc_ctrl_fsm
     lc_cnt_d      = lc_cnt_q;
 
     // Token hashing.
-    token_hash_req_o = 1'b0;
+    token_hash_req_o     = 1'b0;
+    token_hash_req_chk_o = 1'b1;
 
     // OTP Interface
     otp_prog_req_o = 1'b0;
@@ -380,9 +382,13 @@ module lc_ctrl_fsm
       ///////////////////////////////////////////////////////////////////
       // Terminal states.
       ScrapSt,
-      PostTransSt,
+      PostTransSt: ;
+
       EscalateSt,
-      InvalidSt: ;
+      InvalidSt: begin
+        // During an escalation it is okay to de-assert token_hash_req without receivng ACK.
+        token_hash_req_chk_o = 1'b0;
+      end
       ///////////////////////////////////////////////////////////////////
       // Go to terminal error state if we get here.
       default: fsm_state_d = InvalidSt;

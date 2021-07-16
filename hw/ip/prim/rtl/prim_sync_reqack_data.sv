@@ -20,14 +20,15 @@ module prim_sync_reqack_data #(
   parameter int unsigned Width       = 1,
   parameter bit          DataSrc2Dst = 1'b1, // Direction of data flow: 1'b1 = SRC to DST,
                                              //                         1'b0 = DST to SRC
-  parameter bit          DataReg     = 1'b0, // Enable optional register stage for data,
+  parameter bit          DataReg     = 1'b0  // Enable optional register stage for data,
                                              // only usable with DataSrc2Dst == 1'b0.
-  parameter bit EnReqStabA = 1               // Used in submodule `prim_sync_reqack`.
 ) (
   input  clk_src_i,       // REQ side, SRC domain
   input  rst_src_ni,      // REQ side, SRC domain
   input  clk_dst_i,       // ACK side, DST domain
   input  rst_dst_ni,      // ACK side, DST domain
+
+  input  logic req_chk_i, // Used for gating assertions. Drive to 1 during normal operation.
 
   input  logic src_req_i, // REQ side, SRC domain
   output logic src_ack_o, // REQ side, SRC domain
@@ -41,13 +42,13 @@ module prim_sync_reqack_data #(
   ////////////////////////////////////
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
-  prim_sync_reqack #(
-    .EnReqStabA(EnReqStabA)
-  ) u_prim_sync_reqack (
+  prim_sync_reqack u_prim_sync_reqack (
     .clk_src_i,
     .rst_src_ni,
     .clk_dst_i,
     .rst_dst_ni,
+
+    .req_chk_i,
 
     .src_req_i,
     .src_ack_o,

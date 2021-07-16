@@ -174,13 +174,14 @@ module otp_ctrl_kdi
   u_req_arb (
     .clk_i,
     .rst_ni,
-    .req_i   ( req         ),
-    .data_i  ( req_bundles ),
-    .gnt_o   ( gnt         ),
-    .idx_o   (             ),
-    .valid_o ( req_valid   ),
-    .data_o  ( req_bundle  ),
-    .ready_i ( req_ready   )
+    .req_chk_i ( 1'b1        ),
+    .req_i     ( req         ),
+    .data_i    ( req_bundles ),
+    .gnt_o     ( gnt         ),
+    .idx_o     (             ),
+    .valid_o   ( req_valid   ),
+    .data_o    ( req_bundle  ),
+    .ready_i   ( req_ready   )
   );
 
   //////////////////////////////

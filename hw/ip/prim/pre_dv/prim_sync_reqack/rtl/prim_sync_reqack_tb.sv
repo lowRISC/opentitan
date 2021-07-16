@@ -69,6 +69,8 @@ module prim_sync_reqack_tb #(
     .clk_dst_i  (clk_dst),
     .rst_dst_ni (rst_slow_n),
 
+    .req_chk_i  (1'b1),
+
     .src_req_i  (src_req),
     .src_ack_o  (src_ack),
     .dst_req_o  (dst_req),

@@ -24,6 +24,8 @@ module lc_ctrl_kmac_if
   // Token hashing interface to LC FSM'
   input lc_token_t              transition_token_i,
   input                         token_hash_req_i,
+  // Used for gating assertions inside CDC primitives.
+  input                         token_hash_req_chk_i,
   output                        token_hash_ack_o,
   output                        token_hash_err_o,
   output lc_token_t             hashed_token_o
@@ -44,15 +46,13 @@ module lc_ctrl_kmac_if
   // make sure the CDC paths go through a prim_sync_reqack_data instance).
   prim_sync_reqack_data #(
     .Width(LcTokenWidth),
-    .DataSrc2Dst(1'b1),
-    // Source domain requests may drop out
-    // when the LC FSM goes into error state.
-    .EnReqStabA(1'b0)
+    .DataSrc2Dst(1'b1)
   ) u_prim_sync_reqack_data_out (
     .clk_src_i  ( clk_i                 ),
     .rst_src_ni ( rst_ni                ),
     .clk_dst_i  ( clk_kmac_i            ),
     .rst_dst_ni ( rst_kmac_ni           ),
+    .req_chk_i  ( token_hash_req_chk_i  ),
     .src_req_i  ( token_hash_req        ),
     .src_ack_o  (                       ), // not connected
     .dst_req_o  (                       ), // not connected
@@ -71,25 +71,23 @@ module lc_ctrl_kmac_if
     .DataSrc2Dst(1'b0),
     // This instantiates a data register
     // on the destination side.
-    .DataReg    (1'b1),
-    // Source domain requests may drop out
-    // when the LC FSM goes into error state.
-    .EnReqStabA(1'b0)
+    .DataReg    (1'b1)
   ) u_prim_sync_reqack_data_in (
-    .clk_src_i  ( clk_i            ),
-    .rst_src_ni ( rst_ni           ),
-    .clk_dst_i  ( clk_kmac_i       ),
-    .rst_dst_ni ( rst_kmac_ni      ),
-    .src_req_i  ( token_hash_req   ),
-    .src_ack_o  ( token_hash_ack_d ),
-    .dst_req_o  ( kmac_req         ),
-    .dst_ack_i  ( kmac_ack         ),
+    .clk_src_i  ( clk_i                ),
+    .rst_src_ni ( rst_ni               ),
+    .clk_dst_i  ( clk_kmac_i           ),
+    .rst_dst_ni ( rst_kmac_ni          ),
+    .req_chk_i  ( token_hash_req_chk_i ),
+    .src_req_i  ( token_hash_req       ),
+    .src_ack_o  ( token_hash_ack_d     ),
+    .dst_req_o  ( kmac_req             ),
+    .dst_ack_i  ( kmac_ack             ),
     // Truncate hash to 128bit and remove masking (not required here).
     .data_i     ( {kmac_data_i.error,
                    kmac_data_i.digest_share0[LcTokenWidth-1:0] ^
                    kmac_data_i.digest_share1[LcTokenWidth-1:0]} ),
     .data_o     ( {token_hash_err_d,
-                   hashed_token_d} )
+                   hashed_token_d}     )
   );
 
   logic unused_sigs;

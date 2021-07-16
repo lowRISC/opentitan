@@ -112,6 +112,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .rst_src_ni(rst_ni),
     .clk_dst_i(clk_edn_i),
     .rst_dst_ni(rst_edn_ni),
+    .req_chk_i(1'b1),
     .src_req_i(edn_req),
     .src_ack_o(edn_ack),
     .dst_req_o(edn_o.edn_req),

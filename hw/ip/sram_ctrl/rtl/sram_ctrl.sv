@@ -240,6 +240,7 @@ module sram_ctrl
     .rst_src_ni ( rst_ni             ),
     .clk_dst_i  ( clk_otp_i          ),
     .rst_dst_ni ( rst_otp_ni         ),
+    .req_chk_i  ( 1'b1               ),
     .src_req_i  ( key_req_pending_q  ),
     .src_ack_o  ( key_ack            ),
     .dst_req_o  ( sram_otp_key_o.req ),

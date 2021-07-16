@@ -168,34 +168,34 @@ module tlul_socket_m1 #(
   if (tlul_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t)),
-      .EnReqStabA (0)
+      .DW         ($bits(tlul_pkg::tl_h2d_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,
-      .req_i   ( hrequest    ),
-      .data_i  ( hreq_fifo_o ),
-      .gnt_o   ( hgrant      ),
-      .idx_o   (             ),
-      .valid_o ( arb_valid   ),
-      .data_o  ( arb_data    ),
-      .ready_i ( arb_ready   )
+      .req_chk_i ( 1'b0        ), // TL-UL allows dropping valid without ready. See #3354.
+      .req_i     ( hrequest    ),
+      .data_i    ( hreq_fifo_o ),
+      .gnt_o     ( hgrant      ),
+      .idx_o     (             ),
+      .valid_o   ( arb_valid   ),
+      .data_o    ( arb_data    ),
+      .ready_i   ( arb_ready   )
     );
   end else if (tlul_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
     prim_arbiter_tree #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t)),
-      .EnReqStabA (0)
+      .DW         ($bits(tlul_pkg::tl_h2d_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,
-      .req_i   ( hrequest    ),
-      .data_i  ( hreq_fifo_o ),
-      .gnt_o   ( hgrant      ),
-      .idx_o   (             ),
-      .valid_o ( arb_valid   ),
-      .data_o  ( arb_data    ),
-      .ready_i ( arb_ready   )
+      .req_chk_i ( 1'b0        ), // TL-UL allows dropping valid without ready. See #3354.
+      .req_i     ( hrequest    ),
+      .data_i    ( hreq_fifo_o ),
+      .gnt_o     ( hgrant      ),
+      .idx_o     (             ),
+      .valid_o   ( arb_valid   ),
+      .data_o    ( arb_data    ),
+      .ready_i   ( arb_ready   )
     );
   end else begin : gen_unknown
     `ASSERT_INIT(UnknownArbImpl_A, 0)

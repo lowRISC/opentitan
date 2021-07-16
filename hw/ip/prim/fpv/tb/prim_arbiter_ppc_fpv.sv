@@ -9,11 +9,12 @@ module prim_arbiter_ppc_fpv #(
   parameter int unsigned N = 8,
   parameter int unsigned DW = 32,
   parameter bit EnDataPort = 1,
-  parameter bit EnReqStabA = 1,
   localparam int IdxW = $clog2(N)
 ) (
   input clk_i,
   input rst_ni,
+
+  input                    req_chk_i,
 
   input        [ N-1:0]    req_i,
   input        [DW-1:0]    data_i [N],
@@ -29,11 +30,11 @@ module prim_arbiter_ppc_fpv #(
   prim_arbiter_ppc #(
     .N(N),
     .DW(DW),
-    .EnDataPort(EnDataPort),
-    .EnReqStabA(EnReqStabA)
+    .EnDataPort(EnDataPort)
   ) i_prim_arbiter_ppc (
     .clk_i,
     .rst_ni,
+    .req_chk_i,
     .req_i,
     .data_i,
     .gnt_o,
