@@ -9,6 +9,8 @@
 module pwm_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_core_i,
+  input rst_core_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -40,20 +42,37 @@ module pwm_reg_top (
   logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
+  logic reg_busy;
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+  tlul_pkg::tl_h2d_t tl_async_h2d;
+  tlul_pkg::tl_d2h_t tl_async_d2h;
+  tlul_fifo_async #(
+    .ReqDepth(2),
+    .RspDepth(2)
+  ) u_if_sync (
+    .clk_h_i(clk_i),
+    .rst_h_ni(rst_ni),
+    .clk_d_i(clk_core_i),
+    .rst_d_ni(rst_core_ni),
+    .tl_h_i(tl_i),
+    .tl_h_o(tl_o),
+    .tl_d_o(tl_async_h2d),
+    .tl_d_i(tl_async_d2h)
+  );
+
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
-    .tl_i,
+    .tl_i(tl_async_h2d),
     .err_o(intg_err)
   );
 
   logic intg_err_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
       intg_err_q <= '0;
     end else if (intg_err) begin
       intg_err_q <= 1'b1;
@@ -71,10 +90,10 @@ module pwm_reg_top (
     .EnableDataIntgGen(1)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
-    .tl_o
+    .tl_o(tl_async_d2h)
   );
 
-  assign tl_reg_h2d = tl_i;
+  assign tl_reg_h2d = tl_async_h2d;
   assign tl_o_pre   = tl_reg_d2h;
 
   tlul_adapter_reg #(
@@ -82,8 +101,8 @@ module pwm_reg_top (
     .RegDw(DW),
     .EnableDataIntgGen(0)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+    .clk_i  (clk_core_i),
+    .rst_ni (rst_core_ni),
 
     .tl_i (tl_reg_h2d),
     .tl_o (tl_reg_d2h),
@@ -93,9 +112,11 @@ module pwm_reg_top (
     .addr_o  (reg_addr),
     .wdata_o (reg_wdata),
     .be_o    (reg_be),
+    .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
     .error_i (reg_error)
   );
+
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -268,8 +289,8 @@ module pwm_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h1)
   ) u_regen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (regen_we),
@@ -296,8 +317,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (27'h8000)
   ) u_cfg_clk_div (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (cfg_we),
@@ -322,8 +343,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h7)
   ) u_cfg_dc_resn (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (cfg_we),
@@ -348,8 +369,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cfg_cntr_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (cfg_we),
@@ -378,8 +399,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -404,8 +425,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -430,8 +451,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -456,8 +477,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -482,8 +503,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -508,8 +529,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_en_we),
@@ -539,8 +560,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -565,8 +586,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -591,8 +612,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -617,8 +638,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -643,8 +664,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -669,8 +690,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_invert_invert_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (invert_we),
@@ -700,8 +721,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_0_phase_delay_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_0_we),
@@ -726,8 +747,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_0_htbt_en_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_0_we),
@@ -752,8 +773,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_0_blink_en_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_0_we),
@@ -781,8 +802,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_1_phase_delay_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_1_we),
@@ -807,8 +828,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_1_htbt_en_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_1_we),
@@ -833,8 +854,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_1_blink_en_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_1_we),
@@ -862,8 +883,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_2_phase_delay_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_2_we),
@@ -888,8 +909,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_2_htbt_en_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_2_we),
@@ -914,8 +935,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_2_blink_en_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_2_we),
@@ -943,8 +964,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_3_phase_delay_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_3_we),
@@ -969,8 +990,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_3_htbt_en_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_3_we),
@@ -995,8 +1016,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_3_blink_en_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_3_we),
@@ -1024,8 +1045,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_4_phase_delay_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_4_we),
@@ -1050,8 +1071,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_4_htbt_en_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_4_we),
@@ -1076,8 +1097,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_4_blink_en_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_4_we),
@@ -1105,8 +1126,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_pwm_param_5_phase_delay_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_5_we),
@@ -1131,8 +1152,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_5_htbt_en_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_5_we),
@@ -1157,8 +1178,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pwm_param_5_blink_en_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (pwm_param_5_we),
@@ -1188,8 +1209,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_0_a_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_0_we),
@@ -1214,8 +1235,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_0_b_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_0_we),
@@ -1243,8 +1264,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_1_a_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_1_we),
@@ -1269,8 +1290,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_1_b_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_1_we),
@@ -1298,8 +1319,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_2_a_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_2_we),
@@ -1324,8 +1345,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_2_b_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_2_we),
@@ -1353,8 +1374,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_3_a_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_3_we),
@@ -1379,8 +1400,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_3_b_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_3_we),
@@ -1408,8 +1429,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_4_a_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_4_we),
@@ -1434,8 +1455,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_4_b_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_4_we),
@@ -1463,8 +1484,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_5_a_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_5_we),
@@ -1489,8 +1510,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_5_b_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (duty_cycle_5_we),
@@ -1520,8 +1541,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_0_x_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_0_we),
@@ -1546,8 +1567,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_0_y_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_0_we),
@@ -1575,8 +1596,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_1_x_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_1_we),
@@ -1601,8 +1622,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_1_y_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_1_we),
@@ -1630,8 +1651,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_2_x_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_2_we),
@@ -1656,8 +1677,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_2_y_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_2_we),
@@ -1685,8 +1706,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_3_x_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_3_we),
@@ -1711,8 +1732,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_3_y_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_3_we),
@@ -1740,8 +1761,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_4_x_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_4_we),
@@ -1766,8 +1787,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_4_y_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_4_we),
@@ -1795,8 +1816,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_5_x_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_5_we),
@@ -1821,8 +1842,8 @@ module pwm_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_blink_param_5_y_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_core_i),
+    .rst_ni  (rst_core_ni),
 
     // from register interface
     .we     (blink_param_5_we),
@@ -2180,6 +2201,10 @@ module pwm_reg_top (
       end
     endcase
   end
+
+  // register busy
+  assign reg_busy = '0;
+
 
   // Unused signal tieoff
 

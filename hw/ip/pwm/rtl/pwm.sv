@@ -35,6 +35,8 @@ module pwm
   pwm_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .clk_core_i,
+    .rst_core_ni,
     .tl_i,
     .tl_o,
     .reg2hw,
