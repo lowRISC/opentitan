@@ -33,6 +33,12 @@ TEST_APPS_SELFCHECKING = [
         "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
         "targets": ["sim_verilator"],
     },
+    {
+        "name": "otbn_randomness_test",
+        # TODO: Run this test also against the ISS once URND and RND are
+        # implemented.
+        "targets": ["sim_verilator", "fpga_cw310"],
+    },
     # The OTBN end-to-end tests can be run in simulation, but take a long time
     # there. Run them on the CW310 FPGA board only for faster test results.
     {

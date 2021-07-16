@@ -39,3 +39,22 @@ sw_tests += {
     'library': otbn_ecdsa_p256_test_lib
   }
 }
+
+otbn_randomness_test_lib = declare_dependency(
+  link_with: static_library(
+    'otbn_randomness_test_lib',
+    sources: ['otbn_randomness_test.c'],
+    dependencies: [
+      sw_lib_runtime_otbn,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      top_earlgrey,
+      sw_otbn['randomness']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += {
+  'otbn_randomness_test': {
+    'library': otbn_randomness_test_lib
+  }
+}

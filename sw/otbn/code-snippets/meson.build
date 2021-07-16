@@ -59,4 +59,7 @@ sw_otbn_sources += {
     'p256_ecdsa.s',
     'p256.s',
   ),
+  'randomness': files(
+    'randomness.s',
+  ),
 }
