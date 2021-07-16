@@ -35,6 +35,7 @@ module lc_ctrl_kmac_if
 
   logic kmac_req, kmac_ack;
   lc_token_t kmac_transition_token;
+  logic token_hash_req;
 
   // The transition_token_i register is guaranteed to remain stable once a life cycle
   // transition has been initiated.
@@ -52,7 +53,7 @@ module lc_ctrl_kmac_if
     .rst_src_ni ( rst_ni                ),
     .clk_dst_i  ( clk_kmac_i            ),
     .rst_dst_ni ( rst_kmac_ni           ),
-    .src_req_i  ( token_hash_req_i      ),
+    .src_req_i  ( token_hash_req        ),
     .src_ack_o  (                       ), // not connected
     .dst_req_o  (                       ), // not connected
     .dst_ack_i  ( kmac_ack              ),
@@ -79,7 +80,7 @@ module lc_ctrl_kmac_if
     .rst_src_ni ( rst_ni           ),
     .clk_dst_i  ( clk_kmac_i       ),
     .rst_dst_ni ( rst_kmac_ni      ),
-    .src_req_i  ( token_hash_req_i ),
+    .src_req_i  ( token_hash_req   ),
     .src_ack_o  ( token_hash_ack_d ),
     .dst_req_o  ( kmac_req         ),
     .dst_ack_i  ( kmac_ack         ),
@@ -116,6 +117,9 @@ module lc_ctrl_kmac_if
   assign token_hash_ack_o = token_hash_ack_q;
   assign token_hash_err_o = token_hash_err_q;
   assign hashed_token_o   = hashed_token_q;
+
+  // Stop requesting tokens upon latching on LC side.
+  assign token_hash_req = token_hash_req_i & ~token_hash_ack_q;
 
   /////////////////////////////////////////////
   // Serialization FSM Running on KMAC Clock //
