@@ -20,9 +20,25 @@
     <td><strong>13</strong></td>
     <td><strong>14</strong></td>
     <td><strong>15</strong></td>
+    <td><strong>16</strong></td>
+    <td><strong>17</strong></td>
+    <td><strong>18</strong></td>
+    <td><strong>19</strong></td>
+    <td><strong>20</strong></td>
+    <td><strong>21</strong></td>
+    <td><strong>22</strong></td>
+    <td><strong>23</strong></td>
   </tr>
   <tr>
     <td style="text-align:left">0 strokes</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
+    <td style="background:#bbedc2">0</td>
     <td style="background:#bbedc2">0</td>
     <td style="background:#bbedc2">0</td>
     <td style="background:#bbedc2">0</td>
@@ -57,7 +73,15 @@
     <td style="background:#c9daf8">C12</td>
     <td style="background:#c9daf8">C13</td>
     <td style="background:#c9daf8">C14</td>
-    <td style="background:#c9daf8">D15</td>
+    <td style="background:#c9daf8">C15</td>
+    <td style="background:#c9daf8">C16</td>
+    <td style="background:#c9daf8">C17</td>
+    <td style="background:#c9daf8">C18</td>
+    <td style="background:#c9daf8">C19</td>
+    <td style="background:#c9daf8">C20</td>
+    <td style="background:#c9daf8">C21</td>
+    <td style="background:#c9daf8">C22</td>
+    <td style="background:#c9daf8">C23</td>
   </tr>
   <tr>
    <td style="text-align:left">2 strokes</td>
@@ -77,6 +101,14 @@
     <td style="background:#c9daf8">C13</td>
     <td style="background:#c9daf8">C14</td>
     <td style="background:#c9daf8">C15</td>
+    <td style="background:#c9daf8">C16</td>
+    <td style="background:#c9daf8">C17</td>
+    <td style="background:#c9daf8">C18</td>
+    <td style="background:#c9daf8">C19</td>
+    <td style="background:#c9daf8">C20</td>
+    <td style="background:#c9daf8">C21</td>
+    <td style="background:#c9daf8">C22</td>
+    <td style="background:#c9daf8">C23</td>
   </tr>
   <tr>
    <td style="text-align:left">3 strokes</td>
@@ -96,9 +128,17 @@
     <td style="background:#c9daf8">C13</td>
     <td style="background:#c9daf8">C14</td>
     <td style="background:#c9daf8">C15</td>
+    <td style="background:#c9daf8">C16</td>
+    <td style="background:#c9daf8">C17</td>
+    <td style="background:#c9daf8">C18</td>
+    <td style="background:#c9daf8">C19</td>
+    <td style="background:#c9daf8">C20</td>
+    <td style="background:#c9daf8">C21</td>
+    <td style="background:#c9daf8">C22</td>
+    <td style="background:#c9daf8">C23</td>
   </tr>
   <tr>
-   <td style="text-align:left">16 strokes</td>
+   <td style="text-align:left">24 strokes</td>
     <td style="background:#dadce0">D0</td>
     <td style="background:#dadce0">D1</td>
     <td style="background:#dadce0">D2</td>
@@ -115,5 +155,13 @@
     <td style="background:#dadce0">D13</td>
     <td style="background:#dadce0">D14</td>
     <td style="background:#dadce0">D15</td>
+    <td style="background:#dadce0">D16</td>
+    <td style="background:#dadce0">D17</td>
+    <td style="background:#dadce0">D18</td>
+    <td style="background:#dadce0">D19</td>
+    <td style="background:#dadce0">D20</td>
+    <td style="background:#dadce0">D21</td>
+    <td style="background:#dadce0">D22</td>
+    <td style="background:#dadce0">D23</td>
   </tr>
 </table>

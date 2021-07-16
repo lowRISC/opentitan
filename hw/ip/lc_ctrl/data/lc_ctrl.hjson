@@ -64,7 +64,7 @@
     { name:    "CsrLcStateWidth",
       desc:    "Number of life cycle state enum bits.",
       type:    "int"
-      default: "4",
+      default: "5",
       local:   "true"
     }
     { name:    "CsrLcCountWidth",
@@ -546,22 +546,54 @@
               desc:  "Unlocked test state where debug functions are enabled."
             }
             { value: "8",
+              name:  "TEST_LOCKED3",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "9",
+              name:  "TEST_UNLOCKED4",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "10",
+              name:  "TEST_LOCKED4",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "11",
+              name:  "TEST_UNLOCKED5",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "12",
+              name:  "TEST_LOCKED5",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "13",
+              name:  "TEST_UNLOCKED6",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "14",
+              name:  "TEST_LOCKED6",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "15",
+              name:  "TEST_UNLOCKED7",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "16",
               name:  "DEV",
               desc:  "Development life cycle state where limited debug functionality is available."
             }
-            { value: "9",
+            { value: "17",
               name:  "PROD",
               desc:  "Production life cycle state."
             }
-            { value: "10",
+            { value: "18",
               name:  "PROD_END",
-              desc:  "Production life cycle state."
+              desc:  "Same as PROD, but transition into RMA is not possible from this state."
             }
-            { value: "11",
+            { value: "19",
               name:  "RMA",
               desc:  "RMA life cycle state."
             }
-            { value: "12",
+            { value: "20",
               name:  "SCRAP",
               desc:  "SCRAP life cycle state where all functions are disabled."
             }
@@ -652,35 +684,67 @@
               desc:  "Unlocked test state where debug functions are enabled."
             }
             { value: "8",
+              name:  "TEST_LOCKED3",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "9",
+              name:  "TEST_UNLOCKED4",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "10",
+              name:  "TEST_LOCKED4",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "11",
+              name:  "TEST_UNLOCKED5",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "12",
+              name:  "TEST_LOCKED5",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "13",
+              name:  "TEST_UNLOCKED6",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "14",
+              name:  "TEST_LOCKED6",
+              desc:  "Locked test state where debug all functions are disabled."
+            }
+            { value: "15",
+              name:  "TEST_UNLOCKED7",
+              desc:  "Unlocked test state where debug functions are enabled."
+            }
+            { value: "16",
               name:  "DEV",
               desc:  "Development life cycle state where limited debug functionality is available."
             }
-            { value: "9",
+            { value: "17",
               name:  "PROD",
               desc:  "Production life cycle state."
             }
-            { value: "10",
+            { value: "18",
               name:  "PROD_END",
               desc:  "Same as PROD, but transition into RMA is not possible from this state."
             }
-            { value: "11",
+            { value: "19",
               name:  "RMA",
               desc:  "RMA life cycle state."
             }
-            { value: "12",
+            { value: "20",
               name:  "SCRAP",
               desc:  "SCRAP life cycle state where all functions are disabled."
             }
             // The following states are temporary.
-            { value: "13",
+            { value: "21",
               name:  "POST_TRANSITION",
               desc:  "This state is temporary and behaves the same way as SCRAP."
             }
-            { value: "14",
+            { value: "22",
               name:  "ESCALATE",
               desc:  "This state is temporary and behaves the same way as SCRAP."
             }
-            { value: "15",
+            { value: "23",
               name:  "INVALID",
               desc:   '''
                       This state is reported when the life cycle state encoding is invalid.

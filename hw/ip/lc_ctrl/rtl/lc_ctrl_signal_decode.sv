@@ -91,7 +91,11 @@ module lc_ctrl_signal_decode
             LcStRaw,
             LcStTestLocked0,
             LcStTestLocked1,
-            LcStTestLocked2: begin
+            LcStTestLocked2,
+            LcStTestLocked3,
+            LcStTestLocked4,
+            LcStTestLocked5,
+            LcStTestLocked6: begin
               lc_test_or_rma = On;
             end
             ///////////////////////////////////////////////////////////////////
@@ -100,7 +104,11 @@ module lc_ctrl_signal_decode
             LcStTestUnlocked0,
             LcStTestUnlocked1,
             LcStTestUnlocked2,
-            LcStTestUnlocked3: begin
+            LcStTestUnlocked3,
+            LcStTestUnlocked4,
+            LcStTestUnlocked5,
+            LcStTestUnlocked6,
+            LcStTestUnlocked7: begin
               lc_test_or_rma       = On;
               lc_dft_en            = On;
               lc_nvm_debug_en      = On;
@@ -343,12 +351,20 @@ module lc_ctrl_signal_decode
                           PostTransSt} &&
       !(lc_state_i inside {LcStRaw,
                            LcStTestUnlocked0,
-                           LcStTestLocked0,
                            LcStTestUnlocked1,
-                           LcStTestLocked1,
                            LcStTestUnlocked2,
-                           LcStTestLocked2,
                            LcStTestUnlocked3,
+                           LcStTestUnlocked4,
+                           LcStTestUnlocked5,
+                           LcStTestUnlocked6,
+                           LcStTestUnlocked7,
+                           LcStTestLocked0,
+                           LcStTestLocked1,
+                           LcStTestLocked2,
+                           LcStTestLocked3,
+                           LcStTestLocked4,
+                           LcStTestLocked5,
+                           LcStTestLocked6,
                            LcStDev,
                            LcStProd,
                            LcStProdEnd,

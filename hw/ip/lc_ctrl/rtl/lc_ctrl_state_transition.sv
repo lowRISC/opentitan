@@ -67,7 +67,15 @@ module lc_ctrl_state_transition
         LcCnt13:  next_lc_cnt_o = LcCnt14;
         LcCnt14:  next_lc_cnt_o = LcCnt15;
         LcCnt15:  next_lc_cnt_o = LcCnt16;
-        LcCnt16:  trans_cnt_oflw_error_o = 1'b1;
+        LcCnt16:  next_lc_cnt_o = LcCnt17;
+        LcCnt17:  next_lc_cnt_o = LcCnt18;
+        LcCnt18:  next_lc_cnt_o = LcCnt19;
+        LcCnt19:  next_lc_cnt_o = LcCnt20;
+        LcCnt20:  next_lc_cnt_o = LcCnt21;
+        LcCnt21:  next_lc_cnt_o = LcCnt22;
+        LcCnt22:  next_lc_cnt_o = LcCnt23;
+        LcCnt23:  next_lc_cnt_o = LcCnt24;
+        LcCnt24:  trans_cnt_oflw_error_o = 1'b1;
         default:  trans_cnt_oflw_error_o = 1'b1;
       endcase // lc_cnt_i
 
@@ -103,6 +111,14 @@ module lc_ctrl_state_transition
             DecLcStTestUnlocked2: next_lc_state_o = LcStTestUnlocked2;
             DecLcStTestLocked2:   next_lc_state_o = LcStTestLocked2;
             DecLcStTestUnlocked3: next_lc_state_o = LcStTestUnlocked3;
+            DecLcStTestLocked3:   next_lc_state_o = LcStTestLocked3;
+            DecLcStTestUnlocked4: next_lc_state_o = LcStTestUnlocked4;
+            DecLcStTestLocked4:   next_lc_state_o = LcStTestLocked4;
+            DecLcStTestUnlocked5: next_lc_state_o = LcStTestUnlocked5;
+            DecLcStTestLocked5:   next_lc_state_o = LcStTestLocked5;
+            DecLcStTestUnlocked6: next_lc_state_o = LcStTestUnlocked6;
+            DecLcStTestLocked6:   next_lc_state_o = LcStTestLocked6;
+            DecLcStTestUnlocked7: next_lc_state_o = LcStTestUnlocked7;
             DecLcStDev:           next_lc_state_o = LcStDev;
             DecLcStProd:          next_lc_state_o = LcStProd;
             DecLcStProdEnd:       next_lc_state_o = LcStProdEnd;

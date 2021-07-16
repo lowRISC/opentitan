@@ -147,11 +147,11 @@ ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {
 % for state in lc_st_enc.config['lc_state'].keys():
-    DecLcSt${_to_pascal_case(state)},
+    DecLcSt${_to_pascal_case(state)} = ${loop.index},
 % endfor
-    DecLcStPostTrans,
-    DecLcStEscalate,
-    DecLcStInvalid
+    DecLcStPostTrans = ${len(lc_st_enc.config['lc_state']) + 0},
+    DecLcStEscalate = ${len(lc_st_enc.config['lc_state']) + 1},
+    DecLcStInvalid = ${len(lc_st_enc.config['lc_state']) + 2}
   } dec_lc_state_e;
 
   typedef enum logic [DecLcIdStateWidth-1:0] {
