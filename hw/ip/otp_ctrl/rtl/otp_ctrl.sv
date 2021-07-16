@@ -757,7 +757,8 @@ module otp_ctrl
   ) u_scrmbl_mtx (
     .clk_i,
     .rst_ni,
-    .req_chk_i ( ~lc_escalate_en_any    ),
+    .req_chk_i ( 1'b0                   ), // REQ is allowed to go low again without ACK even
+                                           // during normal operation.
     .req_i     ( part_scrmbl_mtx_req    ),
     .data_i    ( part_scrmbl_req_bundle ),
     .gnt_o     (                        ),
