@@ -179,28 +179,37 @@
             bkout_type: "True",
             items: [
                 {
-                    name:    "DEVICE_ID",
-                    size:    "32",
+                    name:        "DEVICE_ID",
+                    size:        "32",
                     // Default value to be output in case partition has not
                     // initialized or is in error state. If not specified,
                     // a value of '0 will be used.
                     inv_default: "<random>",
                 },
                 {
-                    name:    "EN_SRAM_IFETCH",
-                    size:    "1",
+                    name:        "MANUF_STATE",
+                    size:        "32",
+                    inv_default: "<random>",
                 },
                 {
-                    name:    "EN_CSRNG_SW_APP_READ",
-                    size:    "1",
+                    name:        "EN_SRAM_IFETCH",
+                    size:        "1",
+                    inv_default: "0",
                 },
                 {
-                    name:    "EN_ENTROPY_SRC_FW_READ",
-                    size:    "1",
+                    name:        "EN_CSRNG_SW_APP_READ",
+                    size:        "1",
+                    inv_default: "0",
                 },
                 {
-                    name:    "EN_ENTROPY_SRC_FW_OVER",
-                    size:    "1",
+                    name:        "EN_ENTROPY_SRC_FW_READ",
+                    size:        "1",
+                    inv_default: "0",
+                },
+                {
+                    name:        "EN_ENTROPY_SRC_FW_OVER",
+                    size:        "1",
+                    inv_default: "0",
                 },
             ],
             desc: '''EN_SRAM_IFETCH: TODO: add

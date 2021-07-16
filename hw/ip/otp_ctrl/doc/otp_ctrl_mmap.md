@@ -22,10 +22,11 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |                ROM_ALERT_PHASE_CYCLES                 |     0x4B4      |     64     |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
 |    2    |     HW_CFG     |    208     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
-|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x620      |     1      |
-|         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x621      |     1      |
-|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_READ                 |     0x622      |     1      |
-|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_OVER                 |     0x623      |     1      |
+|         |                |            |      32bit       |                      MANUF_STATE                      |     0x620      |     32     |
+|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x640      |     1      |
+|         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x641      |     1      |
+|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_READ                 |     0x642      |     1      |
+|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_OVER                 |     0x643      |     1      |
 |         |                |            |      64bit       |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6C8      |     8      |
 |    3    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6D0      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6E0      |     16     |

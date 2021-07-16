@@ -91,6 +91,12 @@
       default: "8",
       local:   "true"
     }
+    { name:    "NumManufStateWords",
+      desc:    "Number of 32bit words in the manufacturing state.",
+      type:    "int"
+      default: "8",
+      local:   "true"
+    }
   ]
 
   /////////////////////////////
@@ -293,6 +299,14 @@
     { struct:  "otp_device_id",
       type:    "uni",
       name:    "otp_device_id",
+      act:     "rcv",
+      package: "otp_ctrl_pkg",
+      default: "'0"
+    },
+    // HW config input for MANUF_STATE
+    { struct:  "otp_manuf_state",
+      type:    "uni",
+      name:    "otp_manuf_state",
       act:     "rcv",
       package: "otp_ctrl_pkg",
       default: "'0"
@@ -819,6 +833,27 @@
                   If this register reads all-zero, this is indicative that the value has not been programmed to OTP yet.
                   '''
         count:    "NumDeviceIdWords", // 8 x 32bit = 256bit
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        cname:    "WORD",
+        tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
+                "excl:CsrAllTests:CsrExclCheck"],
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    }
+    //////////////////////////////
+    // Manufacturing State Bits //
+    //////////////////////////////
+    { multireg: {
+        name:     "MANUF_STATE",
+        desc:     '''
+                  This is a 256bit field used for keeping track of the manufacturing state.
+                  '''
+        count:    "NumManufStateWords", // 8 x 32bit = 256bit
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
