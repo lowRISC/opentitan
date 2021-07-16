@@ -31,6 +31,19 @@
       randcount: "128",
       randtype:  "data"
     }
+
+    { name:      "SecDisableScrambling",
+      type:      "bit",
+      desc:      '''
+        Disable scrambling and checking in rom_ctrl, turning the block into a
+        simple ROM wrapper. This isn't intended for real chips, but is useful
+        for small FPGA targets where there's not space for the PRINCE
+        primitives.
+      '''
+      local:     "false",
+      expose:    "true",
+      default:   "1'b0"
+    }
   ]
   alert_list: [
     { name: "fatal"

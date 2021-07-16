@@ -571,6 +571,9 @@
           swaccess: "rx",
           size:     "0x4000"
         }
+      },
+      param_decl: {
+        SecDisableScrambling: "1'b0"
       }
     },
     { name: "rv_core_ibex",

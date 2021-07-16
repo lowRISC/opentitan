@@ -21,6 +21,11 @@
 `define UART_HIER             `CHIP_HIER.u_uart
 `define USBDEV_HIER           `CHIP_HIER.u_usbdev
 
+// The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
+// without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call
+// in the system-level testbench).
+`define ROM_CTRL_INT_PATH     gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.`MEM_ARRAY_SUB
+
 // Memory hierarchies.
 // TODO: Temporarily only reference info type0 of the info partitions in flash. In the future, this
 // needs to be upgraded to support all info types.
@@ -34,6 +39,6 @@
 `define FLASH1_INFO_MEM_HIER  `FLASH_BANK1_HIER.gen_info_types[0].u_info_mem.`MEM_ARRAY_SUB
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
-`define ROM_MEM_HIER          `ROM_CTRL_HIER.u_rom.u_rom.u_prim_rom.`MEM_ARRAY_SUB
+`define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
 `define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
