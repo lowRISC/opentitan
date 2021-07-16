@@ -26,6 +26,7 @@ sw_rom_ext_tests = {
 }
 
 subdir('dif')
+subdir('entropy_src')
 subdir('sim_dv')
 subdir('otbn')
 
