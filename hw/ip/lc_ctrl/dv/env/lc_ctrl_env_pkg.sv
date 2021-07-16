@@ -82,7 +82,7 @@ package lc_ctrl_env_pkg;
     // TestLock6
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock7
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  Off, On,  On,  Off, Off, Off, Off, On,  Off, Off},
     // Dev: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
     // lc_seed_hw_rd_en_o (On if device is personalized)
     {Off, Off, On,  On,  On,  On,  On,  Off, On,  On,  Off},
