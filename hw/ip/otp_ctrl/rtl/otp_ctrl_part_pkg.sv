@@ -139,7 +139,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Buffered,
       offset:     11'd1536,
-      size:       240,
+      size:       208,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b1,
@@ -149,7 +149,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1776,
+      offset:     11'd1744,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -160,7 +160,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1816,
+      offset:     11'd1784,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -171,7 +171,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1904,
+      offset:     11'd1872,
       size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -182,8 +182,8 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     11'd1992,
-      size:       56,
+      offset:     11'd1960,
+      size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b0,
@@ -214,7 +214,7 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
-      logic [1567:0] unallocated;
+      logic [1311:0] unallocated;
       logic [7:0] en_entropy_src_fw_over;
       logic [7:0] en_entropy_src_fw_read;
       logic [7:0] en_csrng_sw_app_read;
@@ -225,7 +225,7 @@ package otp_ctrl_part_pkg;
   // default value used for intermodule
   parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
     hw_cfg_digest: 64'h128F4AF0AFFC1AAC,
-    unallocated: 1568'h0,
+    unallocated: 1312'h0,
     en_entropy_src_fw_over: 8'h0,
     en_entropy_src_fw_read: 8'h0,
     en_csrng_sw_app_read: 8'h0,
@@ -247,9 +247,9 @@ package otp_ctrl_part_pkg;
 
   // OTP invalid partition default for buffered partitions.
   parameter logic [16383:0] PartInvDefault = 16384'({
-    448'({
-      192'hB1D5ABE9610E8395490EC23C0A1EDCCE280E8ECA88CEA2E9,
-      256'h9470329E17324EDB1E2960279AB8F882A991BEA2CF16541724A52D80A891BCD5
+    704'({
+      320'h7D7EA64D850E128D1D00E175E3739EC1DAAF8720F255C5C84D1D9C10648A878DB1D5ABE9610E8395,
+      384'h490EC23C0A1EDCCE280E8ECA88CEA2E99470329E17324EDB1E2960279AB8F882A991BEA2CF16541724A52D80A891BCD5
     }),
     704'({
       64'h2BE973D4C5752E3A,
@@ -268,9 +268,9 @@ package otp_ctrl_part_pkg;
       128'hFA602470308055C4ABFF25A58087D34A,
       128'h37E5AE39A58FACEE41389646B3968A3B
     }),
-    1920'({
+    1664'({
       64'h128F4AF0AFFC1AAC,
-      1568'h0, // unallocated space
+      1312'h0, // unallocated space
       8'h0,
       8'h0,
       8'h0,

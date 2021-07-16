@@ -98,7 +98,7 @@ All others CAN be device unique and are stored in OTP.
 For conditional transitions, there is a limit to how many times they can be attempted.
 This is to prevent an attacker from brute-forcing any specific token, as this also helps to reduce the overall required token size.
 
-For OpenTitan, the total amount of state transitions and transition attempts is limited to 16.
+For OpenTitan, the total amount of state transitions and transition attempts is limited to 24.
 Once this number is reached, the life cycle controller rejects further attempts, effectively locking the device into its current state.
 
 The token counters are maintained in the OTP.
@@ -527,7 +527,7 @@ The second readout pass uses a linearly increasing address sequence, whereas the
 
 ### Transition Counter Encoding
 
-The life cycle transition counter has 16 strokes where each stroke maps to one 16bit OTP word.
+The life cycle transition counter has 24 strokes where each stroke maps to one 16bit OTP word.
 The strokes are similarly encoded as the life cycle state in the sense that upon the first transition attempt, all words are initialized with unique Cx values that can later be overwritten with unique Dx values without producing an ECC error.
 
 {{< snippet "lc_ctrl_counter_table.md" >}}

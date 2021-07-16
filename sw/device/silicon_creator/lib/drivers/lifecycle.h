@@ -46,6 +46,38 @@ typedef enum LcState {
    */
   kLcStateTestUnlocked3,
   /**
+   * Locked test state where debug all functions are disabled.
+   */
+  kLcStateTestLocked3,
+  /**
+   * Unlocked test state where debug functions are enabled.
+   */
+  kLcStateTestUnlocked4,
+  /**
+   * Locked test state where debug all functions are disabled.
+   */
+  kLcStateTestLocked4,
+  /**
+   * Unlocked test state where debug functions are enabled.
+   */
+  kLcStateTestUnlocked5,
+  /**
+   * Locked test state where debug all functions are disabled.
+   */
+  kLcStateTestLocked5,
+  /**
+   * Unlocked test state where debug functions are enabled.
+   */
+  kLcStateTestUnlocked6,
+  /**
+   * Locked test state where debug all functions are disabled.
+   */
+  kLcStateTestLocked6,
+  /**
+   * Unlocked test state where debug functions are enabled.
+   */
+  kLcStateTestUnlocked7,
+  /**
    * Development life cycle state where limited debug functionality is
    * available.
    */

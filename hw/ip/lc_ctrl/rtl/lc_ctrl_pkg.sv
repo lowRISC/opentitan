@@ -102,89 +102,77 @@ package lc_ctrl_pkg;
   // Manufacturing State Transition Matrix //
   ///////////////////////////////////////////
 
+  // Helper macro to assemble the token index matrix below.
+  // From TEST_UNLOCKED(N)
+  // -> SCRAP, RMA
+  // -> PROD, PROD_END, DEV
+  // -> TEST_UNLOCKED(N+1)-7
+  // -> TEST_LOCKED(N)-6
+  // -> TEST_UNLOCKED0-(N), RAW
+  `define TEST_UNLOCKED(idx)         \
+        {2{ZeroTokenIdx}},           \
+        {3{TestExitTokenIdx}},       \
+        {(7-idx){InvalidTokenIdx,    \
+                 ZeroTokenIdx}},     \
+        {(2*idx+2){InvalidTokenIdx}}
+
+  // Helper macro to assemble the token index matrix below.
+  // From TEST_LOCKED(N)
+  // -> SCRAP
+  // -> RMA
+  // -> PROD, PROD_END, DEV
+  // -> TEST_UNLOCKED(N+1)-7
+  // -> TEST_LOCKED(N)-6
+  // -> TEST_UNLOCKED0-(N), RAW
+  `define TEST_LOCKED(idx)         \
+      ZeroTokenIdx,                \
+      InvalidTokenIdx,             \
+      {3{TestExitTokenIdx}},       \
+      {(7-idx){TestUnlockTokenIdx, \
+               InvalidTokenIdx}},  \
+      {(2*idx+2){InvalidTokenIdx}}
+
   // The token index matrix below encodes 1) which transition edges are valid and 2) which token
   // to use for a given transition edge. Note that unconditional but otherwise valid transitions
   // are assigned the ZeroTokenIdx, whereas invalid transitions are assigned an InvalidTokenIdx.
   parameter token_idx_e [NumLcStates-1:0][NumLcStates-1:0] TransTokenIdxMatrix = {
     // SCRAP
-    {13{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END, RMA, SCRAP
+    {21{InvalidTokenIdx}}, // -> TEST_LOCKED0-6, TEST_UNLOCKED0-7, DEV, PROD, PROD_END, RMA, SCRAP
     // RMA
     ZeroTokenIdx,          // -> SCRAP
-    {12{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END, RMA
+    {20{InvalidTokenIdx}}, // -> TEST_LOCKED0-6, TEST_UNLOCKED0-7, DEV, PROD, PROD_END, RMA
     // PROD_END
     ZeroTokenIdx,          // -> SCRAP
-    {12{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END, RMA
+    {20{InvalidTokenIdx}}, // -> TEST_LOCKED0-6, TEST_UNLOCKED0-7, DEV, PROD, PROD_END, RMA
     // PROD
     ZeroTokenIdx,          // -> SCRAP
     RmaTokenIdx,           // -> RMA
-    {11{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END
+    {19{InvalidTokenIdx}}, // -> TEST_LOCKED0-6, TEST_UNLOCKED0-7, DEV, PROD, PROD_END
     // DEV
     ZeroTokenIdx,          // -> SCRAP
     RmaTokenIdx,           // -> RMA
-    {11{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END
-    // TEST_UNLOCKED3
-    {2{ZeroTokenIdx}},     // -> SCRAP, RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    {8{InvalidTokenIdx}},  // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, RAW
-    // TEST_LOCKED2
-    ZeroTokenIdx,          // -> SCRAP
-    InvalidTokenIdx,       // -> RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED3
-    {7{InvalidTokenIdx}},  // -> TEST_LOCKED0-2, TEST_UNLOCKED0-2, RAW
-    // TEST_UNLOCKED2
-    {2{ZeroTokenIdx}},     // -> SCRAP, RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    InvalidTokenIdx,       // -> TEST_UNLOCKED3
-    ZeroTokenIdx,          // -> TEST_LOCKED2
-    {6{InvalidTokenIdx}},  // -> TEST_LOCKED0-1, TEST_UNLOCKED0-2, RAW
-    // TEST_LOCKED1
-    ZeroTokenIdx,          // -> SCRAP
-    InvalidTokenIdx,       // -> RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED3
-    InvalidTokenIdx  ,     // -> TEST_LOCKED2
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED2
-    {5{InvalidTokenIdx}},  // -> TEST_LOCKED0-1, TEST_UNLOCKED0-1, RAW
-    // TEST_UNLOCKED1
-    {2{ZeroTokenIdx}},     // -> SCRAP, RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    InvalidTokenIdx,       // -> TEST_UNLOCKED3
-    ZeroTokenIdx,          // -> TEST_LOCKED2
-    InvalidTokenIdx,       // -> TEST_UNLOCKED2
-    ZeroTokenIdx,          // -> TEST_LOCKED1
-    {4{InvalidTokenIdx}},  // -> TEST_LOCKED0, TEST_UNLOCKED0-1, RAW
-    // TEST_LOCKED0
-    ZeroTokenIdx,          // -> SCRAP
-    InvalidTokenIdx,       // -> RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED3
-    InvalidTokenIdx,       // -> TEST_LOCKED2
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED2
-    InvalidTokenIdx,       // -> TEST_LOCKED1
-    TestUnlockTokenIdx,    // -> TEST_UNLOCKED1
-    {3{InvalidTokenIdx}},  // -> TEST_LOCKED0, TEST_UNLOCKED0, RAW
-    // TEST_UNLOCKED0
-    {2{ZeroTokenIdx}},     // -> SCRAP, RMA
-    {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
-    InvalidTokenIdx,       // -> TEST_UNLOCKED3
-    ZeroTokenIdx,          // -> TEST_LOCKED2
-    InvalidTokenIdx,       // -> TEST_UNLOCKED2
-    ZeroTokenIdx,          // -> TEST_LOCKED1
-    InvalidTokenIdx,       // -> TEST_UNLOCKED1
-    ZeroTokenIdx,          // -> TEST_LOCKED0
-    {2{InvalidTokenIdx}},  // -> TEST_UNLOCKED0, RAW
+    {19{InvalidTokenIdx}}, // -> TEST_LOCKED0-6, TEST_UNLOCKED0-7, DEV, PROD, PROD_END
+    // TEST_UNLOCKED0-7, TEST_LOCKED0-6
+    `TEST_UNLOCKED(7),
+    `TEST_LOCKED(6),
+    `TEST_UNLOCKED(6),
+    `TEST_LOCKED(5),
+    `TEST_UNLOCKED(5),
+    `TEST_LOCKED(4),
+    `TEST_UNLOCKED(4),
+    `TEST_LOCKED(3),
+    `TEST_UNLOCKED(3),
+    `TEST_LOCKED(2),
+    `TEST_UNLOCKED(2),
+    `TEST_LOCKED(1),
+    `TEST_UNLOCKED(1),
+    `TEST_LOCKED(0),
+    `TEST_UNLOCKED(0),
     // RAW
     ZeroTokenIdx,          // -> SCRAP
     {4{InvalidTokenIdx}},  // -> RMA, PROD, PROD_END, DEV
-    RawUnlockTokenIdx,     // -> TEST_UNLOCKED3
-    InvalidTokenIdx,       // -> TEST_LOCKED2
-    RawUnlockTokenIdx,     // -> TEST_UNLOCKED2
-    InvalidTokenIdx,       // -> TEST_LOCKED1
-    RawUnlockTokenIdx,     // -> TEST_UNLOCKED1
-    InvalidTokenIdx,       // -> TEST_LOCKED0
-    RawUnlockTokenIdx,     // -> TEST_UNLOCKED0
-    InvalidTokenIdx        // -> RAW
+    {8{RawUnlockTokenIdx,  // -> TEST_UNLOCKED0-7
+       InvalidTokenIdx}}   // -> RAW, TEST_LOCKED0-6
   };
 
 endpackage : lc_ctrl_pkg
