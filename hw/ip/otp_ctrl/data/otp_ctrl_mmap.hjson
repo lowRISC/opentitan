@@ -169,7 +169,7 @@
         {
             name:       "HW_CFG",
             variant:    "Buffered",
-            size:       "240", // in bytes
+            size:       "208", // in bytes
             secret:     "False",
             sw_digest:  "False",
             hw_digest:  "True",
@@ -307,7 +307,7 @@
         {
             name:       "LIFE_CYCLE",
             variant:    "LifeCycle",
-            size:       "56", // in bytes
+            size:       "88", // in bytes
             secret:     "False",
             sw_digest:  "False",
             hw_digest:  "False",
@@ -330,12 +330,12 @@
                 {
                     name: "LC_TRANSITION_CNT",
                     inv_default: "<random>",
-                    size: "32"
+                    size: "48"
                 }
                 {
                     name: "LC_STATE",
                     inv_default: "<random>",
-                    size: "24"
+                    size: "40"
                 }
             ],
             desc: '''Life-cycle related bits. This

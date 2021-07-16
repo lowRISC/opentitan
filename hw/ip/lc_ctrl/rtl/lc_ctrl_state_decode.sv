@@ -63,6 +63,14 @@ module lc_ctrl_state_decode
           LcStTestUnlocked2: dec_lc_state_o = DecLcStTestUnlocked2;
           LcStTestLocked2:   dec_lc_state_o = DecLcStTestLocked2;
           LcStTestUnlocked3: dec_lc_state_o = DecLcStTestUnlocked3;
+          LcStTestLocked3:   dec_lc_state_o = DecLcStTestLocked3;
+          LcStTestUnlocked4: dec_lc_state_o = DecLcStTestUnlocked4;
+          LcStTestLocked4:   dec_lc_state_o = DecLcStTestLocked4;
+          LcStTestUnlocked5: dec_lc_state_o = DecLcStTestUnlocked5;
+          LcStTestLocked5:   dec_lc_state_o = DecLcStTestLocked5;
+          LcStTestUnlocked6: dec_lc_state_o = DecLcStTestUnlocked6;
+          LcStTestLocked6:   dec_lc_state_o = DecLcStTestLocked6;
+          LcStTestUnlocked7: dec_lc_state_o = DecLcStTestUnlocked7;
           LcStDev:           dec_lc_state_o = DecLcStDev;
           LcStProd:          dec_lc_state_o = DecLcStProd;
           LcStProdEnd:       dec_lc_state_o = DecLcStProdEnd;
@@ -89,6 +97,14 @@ module lc_ctrl_state_decode
           LcCnt14:  dec_lc_cnt_o = 5'd14;
           LcCnt15:  dec_lc_cnt_o = 5'd15;
           LcCnt16:  dec_lc_cnt_o = 5'd16;
+          LcCnt17:  dec_lc_cnt_o = 5'd17;
+          LcCnt18:  dec_lc_cnt_o = 5'd18;
+          LcCnt19:  dec_lc_cnt_o = 5'd19;
+          LcCnt20:  dec_lc_cnt_o = 5'd20;
+          LcCnt21:  dec_lc_cnt_o = 5'd21;
+          LcCnt22:  dec_lc_cnt_o = 5'd22;
+          LcCnt23:  dec_lc_cnt_o = 5'd23;
+          LcCnt24:  dec_lc_cnt_o = 5'd24;
           default:  state_invalid_error_o = 1'b1;
         endcase // lc_cnt_i
 

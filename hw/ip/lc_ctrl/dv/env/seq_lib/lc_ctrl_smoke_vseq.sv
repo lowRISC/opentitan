@@ -46,7 +46,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
       end
 
       // SW transition request
-      if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt16) begin
+      if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt24) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
