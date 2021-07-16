@@ -87,7 +87,7 @@ rom_error_t sigverify_rsa_verify(const void *signed_message,
       RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
       break;
     case kHardenedBoolFalse:
-      // FIXME: OTBN modular exponentiation.
+      RETURN_IF_ERROR(sigverify_mod_exp_otbn(key, signature, &enc_msg));
       break;
     default:
       return kErrorSigverifyBadOtpValue;
