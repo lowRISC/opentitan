@@ -1877,6 +1877,18 @@
           index: -1
         }
         {
+          name: otp_manuf_state
+          struct: otp_manuf_state
+          package: otp_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: lc_ctrl
+          top_signame: lc_ctrl_otp_manuf_state
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -7033,6 +7045,7 @@
       entropy_src.otp_en_entropy_src_fw_read
       entropy_src.otp_en_entropy_src_fw_over
       lc_ctrl.otp_device_id
+      lc_ctrl.otp_manuf_state
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
       sram_ctrl_ret_aon.otp_en_sram_ifetch
@@ -13958,6 +13971,18 @@
         index: -1
       }
       {
+        name: otp_manuf_state
+        struct: otp_manuf_state
+        package: otp_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: lc_ctrl
+        top_signame: lc_ctrl_otp_manuf_state
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -20298,6 +20323,15 @@
         package: otp_ctrl_pkg
         struct: otp_device_id
         signame: lc_ctrl_otp_device_id
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_manuf_state
+        signame: lc_ctrl_otp_manuf_state
         width: 1
         type: uni
         end_idx: -1

@@ -387,6 +387,7 @@ Signal                       | Direction        | Type                          
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                    | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                | Seed for flash RMA.
 `otp_device_id_i`            | `input`          | `otp_device_id_t`                    | HW_CFG bits from OTP ({{< regref DEVICE_ID_0 >}}).
+`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                  | HW_CFG bits from OTP ({{< regref MANUF_STATE_0 >}}).
 `lc_dft_en_o`                | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
