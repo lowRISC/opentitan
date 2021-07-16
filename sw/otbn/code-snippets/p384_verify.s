@@ -187,7 +187,7 @@ mod_inv_var:
   ebgcd_loop:
   /* test if u is odd */
   bn.or     w8, w8, w8
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_u_odd
 
@@ -198,7 +198,7 @@ mod_inv_var:
 
   /* test if r is odd */
   bn.or     w4, w4, w4
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_r_odd
 
@@ -219,7 +219,7 @@ mod_inv_var:
   ebgcd_u_odd:
   /* test if v is odd */
   bn.or     w10, w10, w10
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_uv_odd
 
@@ -230,7 +230,7 @@ mod_inv_var:
 
   /* test if s is odd */
   bn.or     w6, w6, w6
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_s_odd
 
@@ -252,7 +252,7 @@ mod_inv_var:
   /* test if v >= u */
   bn.cmp    w10, w8
   bn.cmpb   w11, w9
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, ebgcd_v_gte_u
 
@@ -286,7 +286,7 @@ mod_inv_var:
   /* if v > 0 go back to start of loop */
   bn.cmp    w31, w10
   bn.cmpb   w31, w11
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   bne       x2, x0, ebgcd_loop
 
@@ -438,14 +438,14 @@ p384_verify:
   /* goto 'fail' if [w30,w29] == [w31, w31] <=> s == 0 */
   bn.cmp    w31, w29
   bn.cmpb   w31, w30
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
   /* goto 'fail' if [w30,w29] >= [w12,w13] <=> s >= n */
   bn.cmp    w29, w12
   bn.cmpb   w30, w13
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
@@ -481,14 +481,14 @@ p384_verify:
   /* goto 'fail' if [w11, w10] == [w31, w31] <=> r == 0 */
   bn.cmp    w31, w10
   bn.cmpb   w31, w11
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
   /* goto 'fail' if [w11,w10] >= [w12,w13] <=> r >= n */
   bn.cmp    w10, w12
   bn.cmpb   w11, w13
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
@@ -606,7 +606,7 @@ p384_verify:
     bn.addc   w1, w1, w1
 
     /* keep MSB/carry bit in x3: x3 <= u1[i] */
-    csrrs     x3, 1984, x0
+    csrrs     x3, 0x7c0, x0
     andi      x3, x3, 1
 
     /* left shift u2 = [w3,w2] <= [w3,w2] << 1 */
@@ -614,7 +614,7 @@ p384_verify:
     bn.addc   w3, w3, w3
 
     /* keep MSB/carry bit in x3: x4 <= u2[i] */
-    csrrs     x4, 1984, x0
+    csrrs     x4, 0x7c0, x0
     andi      x4, x4, 1
     li        x2, 0
 

@@ -884,7 +884,7 @@ mod_inv_n_p384:
     bn.addc   w3, w3, w3
 
     /* skip multiplication if C flag not set */
-    csrrs     x2, 1984, x0
+    csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, nomul
 
