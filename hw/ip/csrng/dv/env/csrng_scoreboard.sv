@@ -44,9 +44,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     fork
       process_entropy_src_fifo();
-      for (int i = 0; i < NUM_HW_APPS; i++)
-        process_csrng_cmd_fifo(i);
-    join_none
+
+      for (int i = 0; i < NUM_HW_APPS; i++) begin
+        automatic int j = i;
+        fork
+          begin
+            process_csrng_cmd_fifo(j);
+          end
+        join_none;
+      end
+    join
   endtask
 
   virtual task process_entropy_src_fifo();

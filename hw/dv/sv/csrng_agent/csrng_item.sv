@@ -37,6 +37,21 @@ class csrng_item extends uvm_sequence_item;
 //      glen == 'h0;
 //  };
 
+   //--------------------------------------------------------------------
+   // do_copy
+   //--------------------------------------------------------------------
+   virtual function void do_copy(uvm_object rhs);
+      csrng_item   rhs_;
+      $cast(rhs_, rhs);
+      super.do_copy(rhs);
+
+      this.acmd       = rhs_.acmd;
+      this.clen       = rhs_.clen;
+      this.flags      = rhs_.flags;
+      this.glen       = rhs_.glen;
+      this.cmd_data_q = rhs_.cmd_data_q;
+   endfunction
+
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
@@ -47,7 +62,7 @@ class csrng_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t |* glen           :   0x%5h      *| \t", glen)               };
     if (cmd_data_q.size()) begin
       for (int i = 0; i < cmd_data_q.size(); i++) begin
-        str = {str,  $sformatf("\n\t |* cmd_data_q[%2d] :   0x%0h   *| \t", i, cmd_data_q[i]) };
+        str = {str,  $sformatf("\n\t |* cmd_data_q[%2d] :   0x%8h   *| \t", i, cmd_data_q[i]) };
       end
     end
     str = {str,  $sformatf("\n\t |***********************************| \t")                   };
