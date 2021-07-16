@@ -649,49 +649,27 @@ dif_entropy_result_t dif_entropy_fifo_write(const dif_entropy_t *entropy,
                                             const uint32_t *buf, size_t len);
 
 /**
- * Gets the current number of entries in the pre-conditioner FIFO.
+ * Sets the current interrupt threshold of the observe FIFO.
  *
- * This function pauses the flow through the FIFO.
- *
- * @param entropy An entropy source handle.
- * @param[out] len The number of words in the FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_get_len(const dif_entropy_t *entropy,
-                                              uint8_t *len);
-
-/**
- * Gets the current capacity of the pre-conditioner FIFO.
- *
- * @param entropy An entropy source handle.
- * @param[out] capacity The number of words of capacity in the FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_get_capacity(const dif_entropy_t *entropy,
-                                                   uint8_t *capacity);
-
-/**
- * Sets the current capacity of the pre-conditioner FIFO.
- *
- * The `capacity` value must be less or equal to the physical capacity
+ * The `threshold` value must be less or equal to the physical capacity
  * of the fifo, defined as `kDifEntropyFifoMaxCapacity`.
  *
  * @param entropy An entropy source handle.
- * @param capacity The new capacity for the FIFO.
+ * @param capacity The new interrupt threshold for the FIFO.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_entropy_result_t dif_entropy_fifo_set_capacity(const dif_entropy_t *entropy,
-                                                   uint8_t capacity);
+dif_entropy_result_t dif_entropy_fifo_set_threshold(
+    const dif_entropy_t *entropy, uint8_t threshold);
+
+DIF_WARN_UNUSED_RESULT
+dif_entropy_result_t dif_entropy_fifo_disconnect(const dif_entropy_t *entropy);
 
 /**
  * Reconnects the entropy pipeline after an operation that pauses it.
  *
  * This is a separate function call to avoid races between software and hardware
- * when performing multiple such operations, such as getting the length followed
- * by a read.
+ * when performing multiple such operations.
  *
  * @param entropy An entropy source handle.
  * @return The result of the operation.
