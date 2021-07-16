@@ -19,16 +19,16 @@ package alert_handler_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint NUM_ALERTS                  = alert_handler_reg_pkg::NAlerts;
-  parameter uint NUM_ESCS                    = 4;
-  parameter uint NUM_MAX_ESC_SEV             = 8;
-  parameter uint NUM_ESC_SIGNALS             = 4;
-  parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
-  parameter uint NUM_ESC_PHASES              = 4;
-  parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
-  parameter uint MIN_CYCLE_PER_PHASE         = 2;
-  parameter uint NUM_LOCAL_ALERT             = 4;
-  parameter bit  [NUM_ALERTS-1:0] ASYNC_ON   = alert_handler_reg_pkg::AsyncOn;
+  parameter uint NUM_ALERTS                = alert_handler_reg_pkg::NAlerts;
+  parameter uint NUM_ESCS                  = 4;
+  parameter uint NUM_MAX_ESC_SEV           = 8;
+  parameter uint NUM_ESC_SIGNALS           = 4;
+  parameter uint NUM_ALERT_CLASSES         = 4;
+  parameter uint NUM_ESC_PHASES            = 4;
+  parameter uint NUM_ALERT_CLASS_MSB       = $clog2(NUM_ALERT_CLASSES) - 1;
+  parameter uint MIN_CYCLE_PER_PHASE       = 2;
+  parameter uint NUM_LOCAL_ALERTS          = 4;
+  parameter bit  [NUM_ALERTS-1:0] ASYNC_ON = alert_handler_reg_pkg::AsyncOn;
   // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
   // extra cycle to the calculated cnt, or even combine two signals into one.
   parameter uint IGNORE_CNT_CHECK_NS         = 100_000_000;

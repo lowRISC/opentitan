@@ -8,19 +8,19 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
   `uvm_object_new
 
-  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en;
-  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en;
-  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit_en;
-  rand bit [NUM_ALERTS-1:0]                alert_trigger;
-  rand bit [NUM_ALERTS-1:0]                alert_int_err;
-  rand bit [NUM_ALERTS-1:0]                alert_en;
-  rand bit [NUM_ALERTS-1:0]                alert_ping_timeout;
-  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0][NUM_ALERTS-1:0]      alert_class_map;
-  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0][NUM_LOCAL_ALERT-1:0] local_alert_en;
-  rand bit [NUM_LOCAL_ALERT-1:0]         local_alert_class_map;
-  rand bit [NUM_ESCS-1:0]                  esc_int_err;
-  rand bit [NUM_ESCS-1:0]                  esc_standalone_int_err;
-  rand bit [NUM_ESCS-1:0]                  esc_ping_timeout;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       intr_en;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       clr_en;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       lock_bit_en;
+  rand bit [NUM_ALERTS-1:0]                              alert_trigger;
+  rand bit [NUM_ALERTS-1:0]                              alert_int_err;
+  rand bit [NUM_ALERTS-1:0]                              alert_en;
+  rand bit [NUM_ALERTS-1:0]                              alert_ping_timeout;
+  rand bit [NUM_ALERT_CLASSES-1:0][NUM_ALERTS-1:0]       alert_class_map;
+  rand bit [NUM_ALERT_CLASSES-1:0][NUM_LOCAL_ALERTS-1:0] local_alert_en;
+  rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_class_map;
+  rand bit [NUM_ESCS-1:0]                                esc_int_err;
+  rand bit [NUM_ESCS-1:0]                                esc_standalone_int_err;
+  rand bit [NUM_ESCS-1:0]                                esc_ping_timeout;
 
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
@@ -29,8 +29,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   rand bit rand_drive_entropy;
   rand bit [TL_DW-1:0] ping_timeout_cyc;
   rand bit [TL_DW-1:0] max_phase_cyc;
-  rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_HANDLER_CLASSES];
-  rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_HANDLER_CLASSES];
+  rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_CLASSES];
+  rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_CLASSES];
 
   int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
   int max_intr_timeout_cyc;
