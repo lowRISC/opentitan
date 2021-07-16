@@ -157,11 +157,12 @@ class WSRFile:
         self.ACC = DumbWSR('ACC')
 
     def _wsr_for_idx(self, idx: int) -> WSR:
-        assert 0 <= idx <= 2
+        assert 0 <= idx <= 3
         return {
             0: self.MOD,
             1: self.RND,
-            2: self.ACC
+            # TODO: Implement 2: URND
+            3: self.ACC
         }[idx]
 
     def read_at_idx(self, idx: int) -> int:

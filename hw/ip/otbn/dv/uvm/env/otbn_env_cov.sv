@@ -272,8 +272,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     case (wsr_idx)
       8'h00: return 0;     // MOD
       8'h01: return 1;     // RND
-      8'h02: return 2;     // ACC
-      8'h03: return 3;     // URND
+      8'h02: return 2;     // URND
+      8'h03: return 3;     // ACC
       default: return -1;  // (invalid)
     endcase
   endfunction
@@ -282,8 +282,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   NAME: coverpoint (remap_wsr(EXPR)) { \
     bins mod         = {0};            \
     bins rnd         = {1};            \
-    bins acc         = {2};            \
-    bins urnd        = {3};            \
+    bins urnd        = {2};            \
+    bins acc         = {3};            \
     bins invalid     = {-1};           \
     illegal_bins bad = default;        \
   }
