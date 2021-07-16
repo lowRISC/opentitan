@@ -82,4 +82,16 @@
       tests: ["pattgen_stress_all"]
     }
   ]
+
+  covergroups: [
+    {
+      name: pattgen_op_cg
+      desc: '''
+            Covers the following conditions:
+              - whether single or dual channel are enabled
+              - whether channel polarity bit is set/unset
+              - whether channel are run at high/low throughput
+            '''
+    }
+  ]
 }
