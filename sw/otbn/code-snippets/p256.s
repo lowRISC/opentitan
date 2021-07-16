@@ -788,7 +788,7 @@ mod_inv:
 
     /* skip multiplication if C flag not set */
     bn.sel    w1, w1, w3, C
-    csrrs     x2, 1984, x0
+    csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, nomul
 
@@ -1328,7 +1328,7 @@ mod_inv_var:
   ebgcd_loop:
   /* test if u is odd */
   bn.or     w4, w4, w4
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_u_odd
 
@@ -1338,7 +1338,7 @@ mod_inv_var:
 
   /* test if r is odd */
   bn.or     w2, w2, w2
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_r_odd
 
@@ -1357,7 +1357,7 @@ mod_inv_var:
   ebgcd_u_odd:
   /* test if v is odd */
   bn.or     w5, w5, w5
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_uv_odd
 
@@ -1367,7 +1367,7 @@ mod_inv_var:
 
   /* test if s is odd */
   bn.or     w3, w3, w3
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 4
   bne       x2, x0, ebgcd_s_odd
 
@@ -1386,7 +1386,7 @@ mod_inv_var:
   ebgcd_uv_odd:
   /* test if v >= u */
   bn.cmp    w5, w4
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, ebgcd_v_gte_u
 
@@ -1406,7 +1406,7 @@ mod_inv_var:
   bn.sub    w5, w5, w4
 
   /* if v > 0 go back to start of loop */
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 8
   beq       x2, x0, ebgcd_loop
 
@@ -1505,13 +1505,13 @@ p256_verify:
 
   /* goto 'fail' if w0 == w31 <=> s == 0 */
   bn.cmp    w0, w31
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 8
   bne       x2, x0, fail
 
   /* goto 'fail' if w0 >= w29 <=> s >= n */
   bn.cmp    w0, w29
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
@@ -1524,13 +1524,13 @@ p256_verify:
 
   /* goto 'fail' if w24 == w31 <=> r == 0 */
   bn.cmp    w24, w31
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 8
   bne       x2, x0, fail
 
   /* goto 'fail' if w0 >= w29 <=> r >= n */
   bn.cmp    w24, w29
-  csrrs     x2, 1984, x0
+  csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
 
@@ -1604,7 +1604,7 @@ p256_verify:
 
     /* if either  u_1[i] == 0 or u_2[i] == 0 jump to 'no_both' */
     bn.add    w2, w2, w2
-    csrrs     x2, 1984, x0
+    csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, no_both
 
@@ -1621,7 +1621,7 @@ p256_verify:
 
     /* if u2[i] is not set jump to 'no_g' */
     bn.add    w6, w0, w0
-    csrrs     x2, 1984, x0
+    csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, no_g
 
@@ -1634,7 +1634,7 @@ p256_verify:
     no_g:
     /* if u1[i] is not set jump to 'no_q' */
     bn.add    w6, w1, w1
-    csrrs     x2, 1984, x0
+    csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, no_q
 
