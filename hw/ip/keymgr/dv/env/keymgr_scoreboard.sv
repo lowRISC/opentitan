@@ -656,31 +656,38 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       keymgr_pkg::StInit: begin
         if (cfg.keymgr_vif.keymgr_div inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on keymgr_div", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.otp_device_id inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.rom_digest.data inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on rom_digest", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.otp_key.key_share0 inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on key_share0", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.otp_key.key_share1 inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on key_share1", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
         end
       end
       keymgr_pkg::StCreatorRootKey: begin
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
           is_err = 1;
+          `uvm_info(`gfn, "HW invalid input on flash.seeds[OwnerSeedIdx]", UVM_LOW)
         end
       end
       default: ;
