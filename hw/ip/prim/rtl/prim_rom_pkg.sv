@@ -10,4 +10,6 @@ package prim_rom_pkg;
     logic [3:0] cfg;
   } rom_cfg_t;
 
+  parameter rom_cfg_t ROM_CFG_DEFAULT = '0;
+
 endpackage // prim_rom_pkg
