@@ -1072,7 +1072,6 @@ module chip_${top["name"]}_${target["name"]} (
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
-    .RomCtrlBootRomInitFile(BootRomInitFile),
 % elif target["name"] == "cw305":
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -1080,7 +1079,6 @@ module chip_${top["name"]}_${target["name"]} (
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
     .RvCoreIbexICache(0),
-    .BootRomInitFile(BootRomInitFile),
 % else:
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
@@ -1093,8 +1091,8 @@ module chip_${top["name"]}_${target["name"]} (
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
-    .RomCtrlBootRomInitFile(BootRomInitFile),
 % endif
+    .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexPipeLine(1),
     .SecRvCoreIbexureIbex(0),

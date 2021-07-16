@@ -17,7 +17,6 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:rom_adv
       - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl
       - lowrisc:ip:sram_ctrl
@@ -41,6 +40,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
+      - lowrisc:ip:rom_ctrl
 
   files_verilator_waiver:
     depend:
