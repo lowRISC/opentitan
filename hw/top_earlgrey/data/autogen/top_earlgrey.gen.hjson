@@ -5481,12 +5481,15 @@
           size: 0x4000
         }
       }
+      param_decl:
+      {
+        SecDisableScrambling: 1'b0
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
       domain: "0"
-      param_decl: {}
       param_list:
       [
         {
@@ -5516,6 +5519,20 @@
           name_top: RndCnstRomCtrlScrKey
           default: 0xb798ab7845c3feab0d2f4c7cf730a567
           randwidth: 128
+        }
+        {
+          name: SecDisableScrambling
+          desc:
+            '''
+            Disable scrambling and checking in rom_ctrl, turning the block into a
+            simple ROM wrapper. This isn't intended for real chips, but is useful
+            for small FPGA targets where there's not space for the PRINCE
+            primitives.
+            '''
+          type: bit
+          default: 1'b0
+          expose: "true"
+          name_top: SecRomCtrlDisableScrambling
         }
       ]
       inter_signal_list:

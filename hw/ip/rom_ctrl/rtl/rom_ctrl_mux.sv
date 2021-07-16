@@ -7,7 +7,8 @@
 //
 
 module rom_ctrl_mux #(
-  parameter int AW = 8
+  parameter int AW = 8,
+  parameter int DW = 39
 ) (
   input logic           clk_i,
   input logic           rst_ni,
@@ -19,19 +20,19 @@ module rom_ctrl_mux #(
   input logic [AW-1:0]  bus_addr_i,
   input logic           bus_req_i,
   output logic          bus_gnt_o,
-  output logic [38:0]   bus_rdata_o,
+  output logic [DW-1:0] bus_rdata_o,
   output logic          bus_rvalid_o,
 
   // Interface for ROM checker
   input logic [AW-1:0]  chk_addr_i,
   input logic           chk_req_i,
-  output logic [38:0]   chk_rdata_o,
+  output logic [DW-1:0] chk_rdata_o,
 
   // Interface for ROM
   output logic [AW-1:0] rom_addr_o,
   output logic          rom_req_o,
-  input logic [38:0]    rom_scr_rdata_i,
-  input logic [38:0]    rom_clr_rdata_i,
+  input logic [DW-1:0]  rom_scr_rdata_i,
+  input logic [DW-1:0]  rom_clr_rdata_i,
   input logic           rom_rvalid_i,
 
   // Alert output

@@ -71,6 +71,7 @@ module top_earlgrey #(
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
+  parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -2501,7 +2502,8 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:64]),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey)
+    .RndCnstScrKey(RndCnstRomCtrlScrKey),
+    .SecDisableScrambling(SecRomCtrlDisableScrambling)
   ) u_rom_ctrl (
       // [64]: fatal
       .alert_tx_o  ( alert_tx[64:64] ),

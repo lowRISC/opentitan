@@ -11,7 +11,12 @@ module rom_ctrl
   parameter                       BootRomInitFile = "",
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit [63:0]            RndCnstScrNonce = '0,
-  parameter bit [127:0]           RndCnstScrKey = '0
+  parameter bit [127:0]           RndCnstScrKey = '0,
+
+  // Disable all (de)scrambling operation. This disables both the scrambling block and the boot-time
+  // checker. Don't use this in a real chip, but it's handy for small FPGA targets where we don't
+  // want to spend area on unused scrambling.
+  parameter bit                   SecDisableScrambling = 1'b0
 ) (
   input  clk_i,
   input  rst_ni,
@@ -46,23 +51,28 @@ module rom_ctrl
   localparam int unsigned RomSizeWords = RomSizeByte >> 2;
   localparam int unsigned RomIndexWidth = vbits(RomSizeWords);
 
+  // DataWidth is normally 39, representing 32 bits of actual data plus 7 ECC check bits. If
+  // scrambling is disabled ("insecure mode"), we store a raw 32-bit image and generate ECC check
+  // bits on the fly.
+  localparam int unsigned DataWidth = SecDisableScrambling ? 32 : 39;
+
   logic                     rom_select;
 
   logic [RomIndexWidth-1:0] rom_index;
   logic                     rom_req;
-  logic [38:0]              rom_scr_rdata;
-  logic [38:0]              rom_clr_rdata;
+  logic [DataWidth-1:0]     rom_scr_rdata;
+  logic [DataWidth-1:0]     rom_clr_rdata;
   logic                     rom_rvalid;
 
   logic [RomIndexWidth-1:0] bus_rom_index;
   logic                     bus_rom_req;
   logic                     bus_rom_gnt;
-  logic [38:0]              bus_rom_rdata;
+  logic [DataWidth-1:0]     bus_rom_rdata;
   logic                     bus_rom_rvalid;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
   logic                     checker_rom_req;
-  logic [38:0]              checker_rom_rdata;
+  logic [DataWidth-1:0]     checker_rom_rdata;
 
   // Pack / unpack kmac connection data ========================================
 
@@ -73,22 +83,43 @@ module rom_ctrl
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
 
-  assign kmac_data_o = '{valid: kmac_rom_vld,
-                         data: kmac_rom_data,
-                         strb: '1,
-                         last: kmac_rom_last};
+  if (!SecDisableScrambling) begin : gen_kmac_scramble_enabled
+    // The usual situation, with scrambling enabled. Collect up output signals for kmac and split up
+    // the input struct into separate signals.
 
-  assign kmac_rom_rdy = kmac_data_i.ready;
-  assign kmac_done = kmac_data_i.done;
-  assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
+    assign kmac_data_o = '{valid: kmac_rom_vld,
+                           data: kmac_rom_data,
+                           strb: '1,
+                           last: kmac_rom_last};
 
-  logic unused_kmac_error;
-  assign unused_kmac_error = ^kmac_data_i.error;
-  logic unused_kmac_digest;
-  assign unused_kmac_digest = ^{
-    kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
-    kmac_data_i.digest_share1[kmac_pkg::AppDigestW-1:256]
-  };
+    assign kmac_rom_rdy = kmac_data_i.ready;
+    assign kmac_done = kmac_data_i.done;
+    assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
+
+    logic unused_kmac_error;
+    assign unused_kmac_error = ^kmac_data_i.error;
+    logic unused_kmac_digest;
+    assign unused_kmac_digest = ^{
+      kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
+      kmac_data_i.digest_share1[kmac_pkg::AppDigestW-1:256]
+    };
+
+  end : gen_kmac_scramble_enabled
+  else begin : gen_kmac_scramble_disabled
+    // Scrambling is disabled. Stub out all KMAC connections and waive the ignored signals.
+
+    assign kmac_data_o = '0;
+    assign kmac_rom_rdy = 1'b0;
+    assign kmac_done = 1'b0;
+    assign kmac_digest = '0;
+
+    logic unused_kmac_inputs;
+    assign unused_kmac_inputs = ^{kmac_data_i};
+
+    logic unused_kmac_outputs;
+    assign unused_kmac_outputs = ^{kmac_rom_vld, kmac_rom_data, kmac_rom_last};
+
+  end : gen_kmac_scramble_disabled
 
   // TL interface ==============================================================
 
@@ -121,7 +152,8 @@ module rom_ctrl
     .ByteAccess(0),
     .ErrOnWrite(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgPt(1)
+    .EnableDataIntgGen(SecDisableScrambling),
+    .EnableDataIntgPt(!SecDisableScrambling)
   ) u_tl_adapter_rom (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
@@ -147,7 +179,8 @@ module rom_ctrl
   logic mux_alert;
 
   rom_ctrl_mux #(
-    .AW (RomIndexWidth)
+    .AW (RomIndexWidth),
+    .DW (DataWidth)
   ) u_mux (
     .clk_i           (clk_i),
     .rst_ni          (rst_ni),
@@ -170,25 +203,52 @@ module rom_ctrl
 
   // The ROM itself ============================================================
 
-  rom_ctrl_scrambled_rom #(
-    .MemInitFile (BootRomInitFile),
-    .Width       (39),
-    .Depth       (RomSizeWords),
-    .ScrNonce    (RndCnstScrNonce),
-    .ScrKey      (RndCnstScrKey)
-  ) u_rom (
-    .clk_i       (clk_i),
-    .rst_ni      (rst_ni),
-    .req_i       (rom_req),
-    .addr_i      (rom_index),
-    .rvalid_o    (rom_rvalid),
-    .scr_rdata_o (rom_scr_rdata),
-    .clr_rdata_o (rom_clr_rdata),
-    .cfg_i       (rom_cfg_i)
-  );
+  if (!SecDisableScrambling) begin : gen_rom_scramble_enabled
+
+    rom_ctrl_scrambled_rom #(
+      .MemInitFile (BootRomInitFile),
+      .Width       (DataWidth),
+      .Depth       (RomSizeWords),
+      .ScrNonce    (RndCnstScrNonce),
+      .ScrKey      (RndCnstScrKey)
+    ) u_rom (
+      .clk_i       (clk_i),
+      .rst_ni      (rst_ni),
+      .req_i       (rom_req),
+      .addr_i      (rom_index),
+      .rvalid_o    (rom_rvalid),
+      .scr_rdata_o (rom_scr_rdata),
+      .clr_rdata_o (rom_clr_rdata),
+      .cfg_i       (rom_cfg_i)
+    );
+
+  end : gen_rom_scramble_enabled
+  else begin : gen_rom_scramble_disabled
+
+    // If scrambling is disabled then instantiate a normal ROM primitive (no PRINCE cipher etc.).
+    // Note that this "raw memory" doesn't have ECC bits either.
+
+    prim_rom_adv #(
+      .Width       (DataWidth),
+      .Depth       (RomSizeWords),
+      .MemInitFile (BootRomInitFile)
+    ) u_rom (
+      .clk_i    (clk_i),
+      .rst_ni   (rst_ni),
+      .req_i    (rom_req),
+      .addr_i   (rom_index),
+      .rvalid_o (rom_rvalid),
+      .rdata_o  (rom_scr_rdata),
+      .cfg_i    (rom_cfg_i)
+    );
+
+    // There's no scrambling, so "scrambled" and "clear" rdata are equal.
+    assign rom_clr_rdata = rom_scr_rdata;
+
+  end : gen_rom_scramble_disabled
 
   // Zero expand checker rdata to pass to KMAC
-  assign kmac_rom_data = {25'd0, checker_rom_rdata};
+  assign kmac_rom_data = {{64-DataWidth{1'b0}}, checker_rom_rdata};
 
   // Register block ============================================================
 
@@ -218,32 +278,66 @@ module rom_ctrl
 
   logic         checker_alert;
 
-  rom_ctrl_fsm #(
-    .RomDepth (RomSizeWords),
-    .TopCount (8)
-  ) u_checker_fsm (
-    .clk_i                (clk_i),
-    .rst_ni               (rst_ni),
-    .digest_i             (digest_q),
-    .exp_digest_i         (exp_digest_q),
-    .digest_o             (digest_d),
-    .digest_vld_o         (digest_de),
-    .exp_digest_o         (exp_digest_word_d),
-    .exp_digest_vld_o     (exp_digest_de),
-    .exp_digest_idx_o     (exp_digest_idx),
-    .pwrmgr_data_o        (pwrmgr_data_o),
-    .keymgr_data_o        (keymgr_data_o),
-    .kmac_rom_rdy_i       (kmac_rom_rdy),
-    .kmac_rom_vld_o       (kmac_rom_vld),
-    .kmac_rom_last_o      (kmac_rom_last),
-    .kmac_done_i          (kmac_done),
-    .kmac_digest_i        (kmac_digest),
-    .rom_select_o         (rom_select),
-    .rom_addr_o           (checker_rom_index),
-    .rom_req_o            (checker_rom_req),
-    .rom_data_i           (checker_rom_rdata[31:0]),
-    .alert_o              (checker_alert)
-  );
+  if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled
+
+    rom_ctrl_fsm #(
+      .RomDepth (RomSizeWords),
+      .TopCount (8)
+    ) u_checker_fsm (
+      .clk_i                (clk_i),
+      .rst_ni               (rst_ni),
+      .digest_i             (digest_q),
+      .exp_digest_i         (exp_digest_q),
+      .digest_o             (digest_d),
+      .digest_vld_o         (digest_de),
+      .exp_digest_o         (exp_digest_word_d),
+      .exp_digest_vld_o     (exp_digest_de),
+      .exp_digest_idx_o     (exp_digest_idx),
+      .pwrmgr_data_o        (pwrmgr_data_o),
+      .keymgr_data_o        (keymgr_data_o),
+      .kmac_rom_rdy_i       (kmac_rom_rdy),
+      .kmac_rom_vld_o       (kmac_rom_vld),
+      .kmac_rom_last_o      (kmac_rom_last),
+      .kmac_done_i          (kmac_done),
+      .kmac_digest_i        (kmac_digest),
+      .rom_select_o         (rom_select),
+      .rom_addr_o           (checker_rom_index),
+      .rom_req_o            (checker_rom_req),
+      .rom_data_i           (checker_rom_rdata[31:0]),
+      .alert_o              (checker_alert)
+    );
+
+  end : gen_fsm_scramble_enabled
+  else begin : gen_fsm_scramble_disabled
+
+    // If scrambling is disabled, there's no checker FSM.
+
+    assign digest_d = '0;
+    assign digest_de = 1'b0;
+    assign exp_digest_word_d = '0;
+    assign exp_digest_de = 1'b0;
+    assign exp_digest_idx = '0;
+
+    assign pwrmgr_data_o = '{done: 1'b1, good: 1'b1};
+    // Send something other than '1 or '0 because the key manager has an "all ones" and an "all
+    // zeros" check.
+    assign keymgr_data_o = '{data: {128{2'b10}}, valid: 1'b1};
+
+    assign kmac_rom_vld = 1'b0;
+    assign kmac_rom_last = 1'b0;
+
+    // select = 0 => grant access to the bus. Setting this to a constant should mean the mux gets
+    // synthesized away completely.
+    assign rom_select = 1'b0;
+
+    assign checker_rom_index = '0;
+    assign checker_rom_req = 1'b0;
+    assign checker_alert = 1'b0;
+
+    logic unused_fsm_inputs;
+    assign unused_fsm_inputs = ^{kmac_rom_rdy, kmac_done, kmac_digest, digest_q, exp_digest_q};
+
+  end : gen_fsm_scramble_disabled
 
   // Register data =============================================================
 
