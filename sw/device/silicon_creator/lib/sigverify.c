@@ -4,12 +4,15 @@
 
 #include "sw/device/silicon_creator/lib/sigverify.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 /**
  * Checks the padding and the digest of an EMSA-PKCS1-v1_5 encoded message.
@@ -78,10 +81,17 @@ rom_error_t sigverify_rsa_verify(const void *signed_message,
   RETURN_IF_ERROR(hmac_sha256_update(signed_message, signed_message_len));
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
-  // FIXME: Choose between Ibex and OTBN using OTP.
-  // FIXME: OTBN modular exponentiation.
   sigverify_rsa_buffer_t enc_msg;
-  RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
+  switch (otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET)) {
+    case kHardenedBoolTrue:
+      RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
+      break;
+    case kHardenedBoolFalse:
+      // FIXME: OTBN modular exponentiation.
+      break;
+    default:
+      return kErrorSigverifyBadOtpValue;
+  }
   RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, &act_digest));
 
   return kErrorOk;
