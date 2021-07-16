@@ -20,24 +20,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // ---   B   -classb_phase0_cyc - classb_phase1_cyc - classb_phase2_cyc - classb_phase3_cyc --
   // ---   C   -classc_phase0_cyc - classc_phase1_cyc - classc_phase2_cyc - classc_phase3_cyc --
   // ---   D   -classd_phase0_cyc - classd_phase1_cyc - classd_phase2_cyc - classd_phase3_cyc --
-  dv_base_reg   reg_esc_phase_cycs_per_class_q[NUM_ALERT_HANDLER_CLASSES][$];
+  dv_base_reg   reg_esc_phase_cycs_per_class_q[NUM_ALERT_CLASSES][$];
 
   uvm_reg_field intr_state_fields[$];
   uvm_reg_field intr_state_field;
   // once escalation triggers, no alerts can trigger another escalation in the same class
   // until the class esc is cleared
-  bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
-  bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_intr_classes;
-  bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_esc_under_intr;
-  int intr_cnter_per_class    [NUM_ALERT_HANDLER_CLASSES];
-  int accum_cnter_per_class   [NUM_ALERT_HANDLER_CLASSES];
-  esc_state_e state_per_class [NUM_ALERT_HANDLER_CLASSES];
+  bit [NUM_ALERT_CLASSES-1:0] under_esc_classes;
+  bit [NUM_ALERT_CLASSES-1:0] under_intr_classes;
+  bit [NUM_ALERT_CLASSES-1:0] clr_esc_under_intr;
+  int intr_cnter_per_class    [NUM_ALERT_CLASSES];
+  int accum_cnter_per_class   [NUM_ALERT_CLASSES];
+  esc_state_e state_per_class [NUM_ALERT_CLASSES];
   int  esc_cnter_per_signal[NUM_ESC_SIGNALS];
   int  esc_signal_release  [NUM_ESC_SIGNALS];
   int  esc_sig_class       [NUM_ESC_SIGNALS]; // one class can increment one esc signal at a time
   // For different alert classify in the same class and trigger at the same cycle, design only
   // count once. So record the alert triggered timing here
-  realtime last_triggered_alert_per_class[NUM_ALERT_HANDLER_CLASSES];
+  realtime last_triggered_alert_per_class[NUM_ALERT_CLASSES];
 
   string class_name[] = {"a", "b", "c", "d"};
   bit [TL_DW-1:0] intr_state_val;
@@ -147,7 +147,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         cfg.clk_rst_vif.wait_n_clks(1);
         if (!under_reset) begin
           bit [TL_DW-1:0] intr_en, class_ctrl;
-          bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
+          bit [NUM_ALERT_CLASS_MSB:0] class_i;
           if (!is_int_err) begin
             class_i = `gmv(ral.alert_class[alert_i]);
             void'(ral.alert_cause[alert_i].predict(1));
@@ -261,7 +261,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
             if (cfg.en_cov) begin
               bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-              for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
                 cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_state_exp[i]);
               end
             end
@@ -313,12 +313,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         if (cfg.en_cov) begin
           if (csr.get_name() == "intr_state") begin
             bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-            for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+            for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
               cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
               cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
             end
           end else begin
-            for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+            for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
               if (csr.get_name() == $sformatf("class%s_accum_cnt", class_name[i])) begin
                 cov.accum_cnt_cg.sample(i, item.d_data);
               end
@@ -336,7 +336,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       end else begin
         // predict in address phase to avoid the register's value changed during the read
-        for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+        for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
           if (csr.get_name() == $sformatf("class%s_esc_cnt", class_name[i])) begin
             void'(csr.predict(.value(intr_cnter_per_class[i]), .kind(UVM_PREDICT_READ)));
           end else if (csr.get_name() == $sformatf("class%s_accum_cnt", class_name[i])) begin
@@ -353,7 +353,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // a counter to count how long each interrupt pins stay high until it is being reset
   // if counter exceeds threshold, call predict_esc() function to calculate related esc
   virtual task check_intr_timeout_trigger_esc();
-    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+    for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
       fork
         automatic int class_i = i;
         begin : intr_sig_counter
@@ -400,7 +400,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // escalation signal is always one cycle longer than phase length, and the esc_p/n signal is an
   // "OR" result of different classes
   virtual task esc_phase_signal_cnter();
-    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+    for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
       fork
         automatic int class_i = i;
         begin : esc_phases_counter

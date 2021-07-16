@@ -46,11 +46,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   // setup basic alert_handler features
   // alert_class default 0 -> all alert will trigger interrupt classA
-  virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
-                                  bit [NUM_ALERTS-1:0]                alert_en = '1,
-                                  bit [NUM_ALERT_HANDLER_CLASSES-1:0][TL_DW-1:0] alert_class = 'h0,
-                                  bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
-                                  bit [NUM_ALERT_HANDLER_CLASSES-1:0][TL_DW-1:0] loc_alert_class = 'h0);
+  virtual task alert_handler_init(bit [NUM_ALERT_CLASSES-1:0]            intr_en = '1,
+                                  bit [NUM_ALERTS-1:0]                   alert_en = '1,
+                                  bit [NUM_ALERT_CLASSES-1:0][TL_DW-1:0] alert_class = 'h0,
+                                  bit [NUM_LOCAL_ALERTS-1:0]             loc_alert_en = '1,
+                                  bit [NUM_ALERT_CLASSES-1:0][TL_DW-1:0] loc_alert_class = 'h0);
     csr_wr(.ptr(ral.intr_enable), .value(intr_en));
     foreach (alert_en[i])        csr_wr(.ptr(ral.alert_en[i]), .value(alert_en[i]));
     foreach (alert_class[i])     csr_wr(.ptr(ral.alert_class[i]), .value(alert_class[i]));
@@ -58,15 +58,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     foreach (loc_alert_class[i]) csr_wr(.ptr(ral.loc_alert_class[i]), .value(loc_alert_class[i]));
   endtask
 
-  virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);
-    bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en = $urandom();
+  virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_CLASSES-1:0] lock_bit);
+    bit [NUM_ALERT_CLASSES-1:0] class_en = $urandom();
     if (class_en[0]) `RAND_WRITE_CLASS_CTRL(a, lock_bit[0])
     if (class_en[1]) `RAND_WRITE_CLASS_CTRL(b, lock_bit[1])
     if (class_en[2]) `RAND_WRITE_CLASS_CTRL(c, lock_bit[2])
     if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d, lock_bit[3])
   endtask
 
-  virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] regwen);
+  virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_CLASSES-1:0] regwen);
     if (!regwen[0]) csr_wr(.ptr(ral.classa_clr_regwen), .value($urandom_range(0, 1)));
     if (!regwen[1]) csr_wr(.ptr(ral.classb_clr_regwen), .value($urandom_range(0, 1)));
     if (!regwen[2]) csr_wr(.ptr(ral.classc_clr_regwen), .value($urandom_range(0, 1)));
@@ -230,14 +230,14 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     `RAND_AND_WR_CLASS_PHASES_CYCLE(d);
   endtask
 
-  virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES]);
+  virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_CLASSES]);
     csr_wr(.ptr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
     csr_wr(.ptr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
     csr_wr(.ptr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
     csr_wr(.ptr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
   endtask
 
-  virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_HANDLER_CLASSES]);
+  virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_CLASSES]);
     csr_wr(.ptr(ral.classa_accum_thresh), .value(accum_thresh[0]));
     csr_wr(.ptr(ral.classb_accum_thresh), .value(accum_thresh[1]));
     csr_wr(.ptr(ral.classc_accum_thresh), .value(accum_thresh[2]));
