@@ -9,20 +9,20 @@ code for execution, as well as to sign ownership management commands[^1].
 OpenTitan supports the following device life cycle states to manage the
 ownership state of the device:
 
-*   _UNOWNED_: The device is ready to be assigned to a new owner.
-*   _OWNED_: The device is assigned to an owner and in operational mode.
+*   _UNLOCKED_OWNERSHIP_: The device is ready to be assigned to a new owner.
+*   _LOCKED_OWNERSHIP_: The device is assigned to an owner and in operational mode.
 
 This document defines the ownership management functions that control the
 transitions between ownership states:
 
 ### Unlock Ownership {#unlock-ownership-top}
 
-Implements transition from `OWNED` to `UNOWNED` state. The device must be in
-`UNOWNED` state before it can be assigned to a new owner.
+Implements transition from `LOCKED_OWNERSHIP` to `UNLOCKED_OWNERSHIP` state. The device must be in
+`UNLOCKED_OWNERSHIP` state before it can be assigned to a new owner.
 
 ### Ownership Transfer (or Ownership Assignment) {#ownership-transfer-top}
 
-Implements transition from `UNOWNED` to `OWNED` stage. The rest of this document
+Implements transition from `UNLOCKED_OWNERSHIP` to `LOCKED_OWNERSHIP` stage. The rest of this document
 refers to this functionality as Ownership Transfer.
 
 ## Owner Keys {#owner-keys}
@@ -51,7 +51,7 @@ Authorization is implemented via key identification (`UNLOCK` versus
 
 <!-- TODO: Add link to Identities and Root Keys doc -->
 
-Transition into `OWNED` stage results in a new device [Owner Identity](#), used
+Transition into `LOCKED_OWNERSHIP` stage results in a new device [Owner Identity](#), used
 in attestation and post-ownership-transfer application provisioning flows.
 
 There are three modes of ownership transfer supported:
@@ -155,6 +155,10 @@ Definitions:
 <table>
   <tr>
     <td>
+    <!--
+    svgs are made in google docs, and can be found here: 
+    https://docs.google.com/drawings/d/1hnC2EgkYpkxhVJ6I0prxdoQbglstqfwxvBYh_JIt8TA/edit?usp=sharing
+    -->
       <img src="ownership_transfer_fig1.svg" width="900" alt="fig1">
     </td>
   </tr>
@@ -237,7 +241,8 @@ availability of `K` is enforced by software to fulfill IK_REQ2 and IK_REQ3.
 **Key Manager Availability**
 
 The `ROM_EXT` is required to disable the key manager before handing over
-execution to the next boot stage when the device is in device `UNLOCKED`
+execution to the next boot stage when the device is in device
+`UNLOCKED_OWNERSHIP`
 ownership state.
 
 **Manufacturing Requirements**
@@ -258,9 +263,9 @@ infrastructure.
 
 ### Unlock Ownership {#unlock-ownership}
 
-This flow implements transition from `OWNED` to `UNOWNED` ownership states. It
+This flow implements transition from `LOCKED_OWNERSHIP` to `UNLOCKED_OWNERSHIP` states. It
 is used by the Silicon Owner to relinquish ownership of the device and enable
-ownership transfer functionality. The device must be in `UNOWNED` state before
+ownership transfer functionality. The device must be in `UNLOCKED_OWNERSHIP` state before
 it can be assigned to a new owner.
 
 The unlock operation is implemented as a signed command sent from the
@@ -331,7 +336,7 @@ boot services memory region shared with the `ROM_EXT`, and performs a reset to
 trigger the unlock operation on the next boot.
 
 **Step 8 (S8) Unlock steps**: The `ROM_EXT` verifies the unlock command and
-updates the device state to `UNOWNED` state. The Device proceeds with the boot
+updates the device state to `UNLOCKED_OWNERSHIP` state. The Device proceeds with the boot
 flow and reports the unlock result to the kernel via shared memory.
 
 **Step 9 (S9) Unlock result**: The unlock result is first propagated to the
@@ -364,12 +369,12 @@ field.
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td>Unowned state</td>
+    <td>UNLOCKED_OWNERSHIP state</td>
     <td>
 
 Entry into the ownership transfer flow is conditional to the device being in
-`UNOWNED` state. See [Unlock Flow](#unlock-ownership) for more details on how
-to transition from OWNED to UNOWNED states.
+`UNLOCKED_OWNERSHIP` state. See [Unlock Flow](#unlock-ownership) for more details on how
+to transition from LOCKED_OWNERSHIP to UNLOCKED_OWNERSHIP states.
     </td>
   </tr>
   <tr>
@@ -441,7 +446,7 @@ level.
 
 ### Unlock Ownership
 
-The Device is initially in `OWNED` state and configured with a stack signed by
+The Device is initially in `LOCKED_OWNERSHIP` state and configured with a stack signed by
 the current owner. The following steps must be implemented in a fault tolerant
 way:
 
@@ -456,7 +461,7 @@ way:
 In this section, SPI EEPROM is used as the target device. However, the
 implementation may opt for supporting other targets.
 
-The Device is initially in `UNOWNED` state and configured with a stack (Kernel +
+The Device is initially in `UNLOCKED_OWNERSHIP` state and configured with a stack (Kernel +
 APPs) able to scan an external SPI EEPROM and trigger the ownership transfer
 flow. The following procedure also assumes that the Device storage follows the
 internal [flash layout](#flash-layout) guidelines.
@@ -473,7 +478,7 @@ Detailed steps:
     owner boot stages.
 3.  The Device kernel module or application in charge of performing ownership
     transfer, referred to as _the application_, is activated upon detecting the
-    `UNOWNED` ownership state at Device boot time.
+    `UNLOCKED_OWNERSHIP` state at Device boot time.
 4.  The application scans the external EEPROM for a valid key endorsement
     manifest and update payload. The key endorsement manifest is validated with
     the current owner’s `NEXT_OWNER` key. The update payload is validated with
@@ -540,8 +545,8 @@ described in the [Key Provisioning](#key-provisioning) section.
 <!-- TODO: Link to Attestation specification document -->
 
 Regular attestation updates as described in the [Attestation](#) specification
-are available when the device has an active owner. Devices in ownership
-`UNOWNED` state may have restricted attestation capabilities, for example,
+are available when the device has an active owner. Devices in
+`UNLOCKED_OWNERSHIP` state may have restricted attestation capabilities, for example,
 restricted to only end-to-end attestation.
 
 ## Ownership Transfer During Manufacturing
@@ -551,9 +556,9 @@ stack configurations:
 
 <!-- TODO: Update links to device life cycle specification doc.  -->
 
-*   [`OWNED`](#) state with default factory image.
-*   [`UNOWNED`](#) (unlocked) state with default factory image.
-*   [`OWNED`](#) state with default factory image and Ownership Transfer
+*   [`LOCKED_OWNERSHIP`](#) state with default factory image.
+*   [`UNLOCKED_OWNERSHIP`](#) state with default factory image.
+*   [`LOCKED_OWNERSHIP`](#) state with default factory image and Ownership Transfer
     disabled.
 
 Factory software may be used to configure the ownership slots before injecting
