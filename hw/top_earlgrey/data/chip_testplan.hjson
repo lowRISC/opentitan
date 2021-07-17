@@ -1501,6 +1501,87 @@
     }
 
     // KEYMGR (pre-verified IP) integration tests:
+    {
+      name: chip_keymgr_key_derivation
+      desc: '''Verify the keymgr advances to all states and generate identity / SW output.
+
+            - Backdoor load random value to OTP key, OTP device ID, Flash seeds and ROM degist
+              data.
+            - For HardwareRevisionSecret and LC diversification, use the constant values in design.
+            - Configure the keymgr and advance to `CreatorRootKey`.
+            - Generate identity / SW output for both Attestation CDI and Sealing CDI.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+              keymgr.
+            - Verify that the keymgr has received valid output from the KMAC.
+            - Advance to `OwnerIntermediateKey` and `OwnerRootKey` to repeat the above sequences.
+            - Generating identity / SW output in `OwnerRootKey` is optional as there is not
+              additional interaction between keymgr and other blocks.
+            - Advance to `Disabled` and verify keymgr enters the state successfully.
+            - Generate identity / SW output and ensure these are neither all 1s/0s nor any valid
+              key value, which proves secrets are wiped by entropy value from EDN.
+
+            - For each operation, wait for the interrupt `op_done` to be triggered and check CSR
+              `op_status` is `DONE_SUCCESS`.
+
+            - Note: there are 3 ways of calculating the digest data for comparison. Any of them is
+              acceptable.
+              - Use SW to calculate that, and it will also exercise the Ibex
+              - SW sends all the keys through CSRs to KMAC to generate the degist data
+              - DV calls C functions to generate and backdoor load to a specific memory location
+                for SW
+
+            X-ref'ed with kmac test.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_keymgr_lc_disable
+      desc: '''Verify the keymgr advances to an operational state and let LC disable keymgr
+
+            - Configure the keymgr and advance to `CreatorRootKey`.
+            - Transition life cycle to `ESCALATION` state, which should disable keymgr.
+            - Verify keymgr enters the `Disabled` state successfully.
+
+            X-ref'ed with life cycle test.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_keymgr_sideload_kmac
+      desc: '''Verify the keymgr interface to KMAC, similar to `chip_kmac_app_keymgr`.
+
+            - Configure the keymgr and advance to `CreatorRootKey`.
+            - Transmit a sideloaded key to the KMAC.
+            - Configure KMAC to use the sideload key to generate digest data.
+            - Verify the degist data are correct to prove keymgr sends the right sideload key.
+            - Advance to 2 other operational states and repeat the above sequences (optional).
+
+            X-ref'ed with kmac test.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_keymgr_sideload_aes
+      desc: '''Same as `chip_keymgr_sideload_kmac`, except sideloading to aes.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_keymgr_sideload_otbn
+      desc: '''Load otbn binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
+               sideloading to otbn.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // OTBN (pre-verified IP) integration tests:
     {
