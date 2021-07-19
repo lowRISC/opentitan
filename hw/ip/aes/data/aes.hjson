@@ -6,8 +6,8 @@
 {
   name: "aes",
   clocking: [
-    {clock: "clk_i", reset: "rst_ni", primary: true},
-    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni", idle: "idle_o"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

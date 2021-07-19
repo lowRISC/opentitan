@@ -24,7 +24,7 @@ from reggen import access, gen_rtl, window
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.lib import check_list
-from topgen import amend_clocks, get_hjsonobj_xbars
+from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
@@ -32,6 +32,7 @@ from topgen.c import TopGenC
 from topgen.gen_dv import gen_dv
 from topgen.top import Top
 from topgen.clocks import Clocks
+from topgen.merge import extract_clocks, connect_clocks
 
 # Common header for generated files
 warnhdr = '''//
@@ -410,7 +411,7 @@ def generate_clkmgr(top, cfg_path, out_path):
     # "idle" feedback signal from each), in ascending order.
     hint_blocks = sorted(set(ep_name
                              for sig in by_type.hint_clks.values()
-                             for ep_name in sig.endpoints))
+                             for ep_name, ep_port in sig.endpoints))
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -729,7 +730,8 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # Unlike other generated hjsons, clkmgr thankfully does not require
     # ip.hjson information.  All the information is embedded within
     # the top hjson file
-    amend_clocks(topcfg)
+    topcfg['clocks'] = Clocks(topcfg['clocks'])
+    extract_clocks(topcfg)
     generate_clkmgr(topcfg, cfg_path, out_path)
 
     # It may require two passes to check if the module is needed.
@@ -783,6 +785,14 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
+    name_to_block = {}  # type: Dict[str, IpBlock]
+    for block in ip_objs:
+        lblock = block.name.lower()
+        assert lblock not in name_to_block
+        name_to_block[lblock] = block
+
+    connect_clocks(topcfg, name_to_block)
+
     # Read the crossbars under the top directory
     xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
@@ -806,12 +816,6 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
-
-    name_to_block = {}  # type: Dict[str, IpBlock]
-    for block in ip_objs:
-        lblock = block.name.lower()
-        assert lblock not in name_to_block
-        name_to_block[lblock] = block
 
     completecfg = merge_top(topcfg, name_to_block, xbar_objs)
 
