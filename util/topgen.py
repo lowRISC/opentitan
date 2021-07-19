@@ -414,13 +414,8 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 rg_srcs=typed_clocks.rg_srcs,
-                                 ft_clks=typed_clocks.ft_clks,
-                                 rg_clks=typed_clocks.rg_clks,
-                                 sw_clks=typed_clocks.sw_clks,
-                                 hint_clks=typed_clocks.hint_clks,
-                                 all_clks=typed_clocks.all_clocks(),
-                                 export_clks=top['exported_clks'],
+                                 clocks=clocks,
+                                 typed_clocks=typed_clocks,
                                  hint_names=hint_names)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
