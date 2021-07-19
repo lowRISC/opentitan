@@ -4,5 +4,5 @@
 
 from .lib import get_hjsonobj_xbars, search_ips  # noqa: F401
 # noqa: F401 These functions are used in topgen.py
-from .merge import amend_clocks, merge_top  # noqa: F401
+from .merge import merge_top  # noqa: F401
 from .validate import validate_top, check_flash  # noqa: F401

@@ -512,12 +512,16 @@ def _find_module_name(modules, module_type):
     return None
 
 
-def amend_clocks(top: OrderedDict):
-    """Add a list of clocks to each clock group
-       Amend the clock connections of each entry to reflect the actual gated clock
-    """
-    clocks = Clocks(top['clocks'])
-    top['clocks'] = clocks
+def extract_clocks(top: OrderedDict):
+    '''Add clock exports to top and connections to endpoints
+
+    This function sets up all the clock-related machinery that is needed to
+    generate the (templated) clkmgr code. This runs before we load up IP blocks
+    with reggen, so can only see top-level configuration.
+
+    '''
+    clocks = top['clocks']
+    assert isinstance(clocks, Clocks)
 
     exported_clks = OrderedDict()
 
@@ -563,7 +567,7 @@ def amend_clocks(top: OrderedDict):
 
             # add clock to a particular group
             clk_sig = clocks.add_clock_to_group(group, clk_name, clk)
-            clk_sig.add_endpoint(ep_name)
+            clk_sig.add_endpoint(ep_name, port)
 
             # add clock connections
             clock_connections[port] = hier_name + clk_name
@@ -589,11 +593,16 @@ def amend_clocks(top: OrderedDict):
     # add entry to top level json
     top['exported_clks'] = exported_clks
 
+
+def connect_clocks(top, name_to_block: Dict[str, IpBlock]):
+    clocks = top['clocks']
+    assert isinstance(clocks, Clocks)
+
     # add entry to inter_module automatically
     clkmgr_name = _find_module_name(top['module'], 'clkmgr')
+    external = top['inter_module']['external']
     for intf in top['exported_clks']:
-        top['inter_module']['external']['{}.clocks_{}'.format(
-            clkmgr_name, intf)] = "clks_{}".format(intf)
+        external[f'{clkmgr_name}.clocks_{intf}'] = f"clks_{intf}"
 
     # TODO: If an endpoint has two clocks with idle signals, we don't yet have
     #       a good solution for connecting them up properly. At the moment, we
@@ -606,11 +615,11 @@ def amend_clocks(top: OrderedDict):
     # also used to derive an enum naming the bits of the connection.
     clkmgr_idle = []
     for sig in clocks.typed_clocks().hint_clks.values():
-        ep_names = list(sig.endpoints)
+        ep_names = list(set(ep_name for ep_name, ep_port in sig.endpoints))
         if len(ep_names) != 1:
             raise ValueError(f'There are {len(ep_names)} end-points connected '
-                             f'to the {clk_name} clock: {ep_names}. Where should the idle '
-                             f'signal come from?')
+                             f'to the {sig.name} clock: {ep_names}. Where '
+                             f'should the idle signal come from?')
         ep_name = ep_names[0]
 
         # TODO: This is a hack that needs replacing properly: see note above
@@ -618,10 +627,64 @@ def amend_clocks(top: OrderedDict):
         #       all if the only hit appears at the end of the list of clocks)
         if ep_name in eps_with_idle:
             continue
-
-        signal_name = ep_name + '.idle'
-        clkmgr_idle.append(signal_name)
         eps_with_idle.add(ep_name)
+
+        # We've got the name of the endpoint, but that's not enough: we need to
+        # find the corresponding IpBlock. To do this, we have to do a (linear)
+        # search through top['module'] to find the instance that matches the
+        # endpoint, then use that instance's type as a key in name_to_block.
+        ep_inst = None
+        for inst in top['module']:
+            if inst['name'] == ep_name:
+                ep_inst = inst
+                break
+        if ep_inst is None:
+            raise ValueError(f'No module instance with name {ep_name}: only '
+                             f'modules can have hint clocks. Is this a '
+                             f'crossbar or a memory?')
+
+        ip_block = name_to_block[ep_inst['type']]
+
+        # Walk through the clocking items for the block to find the one that
+        # defines each of the ports.
+        idle_signal = None
+        for ep_name, ep_port in sig.endpoints:
+            ep_idle = None
+            for item in ip_block.clocking.items:
+                if item.clock != ep_port:
+                    continue
+                if item.idle is None:
+                    raise ValueError(f'Cannot connect the {sig.name} clock to '
+                                     f'port {ep_port} of {ep_name}. This is a '
+                                     f'hint clock, but the clocking item on '
+                                     f'the module defines no idle signal.')
+                if idle_signal is not None and item.idle != idle_signal:
+                    raise ValueError(f'Cannot connect the {sig.name} clock to '
+                                     f'port {ep_port} of {ep_name}. We '
+                                     f'already have a connection to another '
+                                     f'clock signal which has an assocated '
+                                     f'idle signal called {idle_signal}, but '
+                                     f'this clocking item has an idle signal '
+                                     f'called {item.idle}.')
+                ep_idle = item.idle
+                break
+            if ep_idle is None:
+                raise ValueError(f'Cannot connect the {sig.name} clock to '
+                                 f'port {ep_port} of {ep_name}: no such '
+                                 f'clocking item.')
+            idle_signal = ep_idle
+        assert idle_signal is not None
+
+        # At this point, there's a slight problem: we use names like "idle_o"
+        # for signals in the hjson, but the inter-module list expects names
+        # like "idle". Drop the trailing "_o".
+        if not idle_signal.endswith('_o'):
+            raise ValueError(f'Idle signal for {ep_port} of {ep_name} is '
+                             f'{idle_signal}, which is missing the expected '
+                             f'"_o" suffix.')
+        idle_signal = idle_signal[:-2]
+
+        clkmgr_idle.append(ep_name + '.' + idle_signal)
 
     top['inter_module']['connect']['{}.idle'.format(clkmgr_name)] = clkmgr_idle
 

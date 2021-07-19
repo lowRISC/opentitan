@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, NamedTuple, Set
+from typing import Dict, List, NamedTuple, Tuple
 
 
 def _yn_to_bool(yn: object) -> bool:
@@ -67,10 +67,10 @@ class ClockSignal:
     def __init__(self, name: str, src: SourceClock):
         self.name = name
         self.src = src
-        self.endpoints = set()  # type: Set[str]
+        self.endpoints = []  # type: List[Tuple[str, str]]
 
-    def add_endpoint(self, ep_name: str) -> None:
-        self.endpoints.add(ep_name)
+    def add_endpoint(self, ep_name: str, ep_port: str) -> None:
+        self.endpoints.append((ep_name, ep_port))
 
 
 class Group:
