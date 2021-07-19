@@ -248,4 +248,4 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
 
 
-endmodule // rstmgr
+endmodule // clkmgr
