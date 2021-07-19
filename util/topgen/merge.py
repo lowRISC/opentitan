@@ -520,7 +520,10 @@ def amend_clocks(top: OrderedDict):
     top['clocks'] = clocks
 
     exported_clks = OrderedDict()
-    trans_eps = []
+
+    # A dictionary mapping each clock name to the set of the names of endpoints
+    # using it
+    clock_to_eps = {}
 
     for ep in top['module'] + top['memory'] + top['xbar']:
         clock_connections = OrderedDict()
@@ -532,10 +535,6 @@ def amend_clocks(top: OrderedDict):
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
             'clock_group']
         ep_grp = ep['clock_group']
-
-        # if ep is in the transactional group, collect into list below
-        if ep['clock_group'] == 'trans':
-            trans_eps.append(ep['name'])
 
         # end point names and clocks
         ep_name = ep['name']
@@ -568,6 +567,7 @@ def amend_clocks(top: OrderedDict):
 
             # add clock to a particular group
             clocks.add_clock_to_group(group, clk_name, clk)
+            clock_to_eps.setdefault(clk_name, set()).add(ep_name)
 
             # add clock connections
             clock_connections[port] = hier_name + clk_name
@@ -599,10 +599,35 @@ def amend_clocks(top: OrderedDict):
         top['inter_module']['external']['{}.clocks_{}'.format(
             clkmgr_name, intf)] = "clks_{}".format(intf)
 
-    # add to intermodule connections
-    for ep in trans_eps:
-        entry = ep + ".idle"
-        top['inter_module']['connect']['{}.idle'.format(clkmgr_name)].append(entry)
+    # TODO: If an endpoint has two clocks with idle signals, we don't yet have
+    #       a good solution for connecting them up properly. At the moment, we
+    #       just connect up the first idle signal. See issue #7170 for more
+    #       details.
+    eps_with_idle = set()
+
+    # Set up intermodule connections for idle clocks. Note that these *must*
+    # match the ordering of the hint_clks list from clocks.py, since this is
+    # also used to derive an enum naming the bits of the connection.
+    clkmgr_idle = []
+    for clk_name in clocks.typed_clocks().hint_clks.keys():
+        ep_names = clock_to_eps[clk_name]
+        if len(ep_names) != 1:
+            raise ValueError(f'There are {len(ep_names)} end-points connected '
+                             f'to the {clk_name} clock: {ep_names}. Where should the idle '
+                             f'signal come from?')
+        ep_name = ep_names.pop()
+
+        # TODO: This is a hack that needs replacing properly: see note above
+        #       definition of eps_with_idle. (In particular, it only works at
+        #       all if the only hit appears at the end of the list of clocks)
+        if ep_name in eps_with_idle:
+            continue
+
+        signal_name = ep_name + '.idle'
+        clkmgr_idle.append(signal_name)
+        eps_with_idle.add(ep_name)
+
+    top['inter_module']['connect']['{}.idle'.format(clkmgr_name)] = clkmgr_idle
 
 
 def amend_resets(top):
