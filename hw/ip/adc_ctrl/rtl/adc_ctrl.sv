@@ -83,9 +83,9 @@ module adc_ctrl
   );
 
   // Instantiate DCD core module
-  adc_ctrl_core i_adc_ctrl_core (
+  adc_ctrl_core u_adc_ctrl_core (
     .clk_aon_i(clk_aon_i),
-    .rst_slow_ni(rst_slow_ni),
+    .rst_aon_ni(rst_slow_ni),
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .adc_en_ctl_i(reg2hw.adc_en_ctl),
@@ -97,6 +97,7 @@ module adc_ctrl
     .adc_chn1_filter_ctl_i(reg2hw.adc_chn1_filter_ctl),
     .adc_wakeup_ctl_i(reg2hw.adc_wakeup_ctl),
     .adc_intr_ctl_i(reg2hw.adc_intr_ctl),
+    .adc_wakeup_status_i(reg2hw.adc_wakeup_status),
     .adc_chn_val_o(hw2reg.adc_chn_val),
     .intr_state_i(reg2hw.intr_state),
     .intr_enable_i(reg2hw.intr_enable),

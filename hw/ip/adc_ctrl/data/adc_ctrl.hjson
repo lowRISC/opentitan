@@ -169,10 +169,15 @@
           { bits: "27:18",
 	    name: "max_v",
 	    desc: "10-bit for chn0 filter max value ",
+	  },
+          { bits: "31",
+	    name: "EN",
+	    desc: "Enable for filter",
 	  }
         ],
       }
     }
+
     { multireg: {
         name: "adc_chn1_filter_ctl",
         desc: '''ADC channel1 filter range
@@ -209,10 +214,15 @@
           { bits: "27:18",
 	    name: "max_v",
 	    desc: "10-bit for chn0 filter max value ",
+	  },
+          { bits: "31",
+	    name: "EN",
+	    desc: "Enable for filter",
 	  }
         ],
       }
-    }
+    },
+
     { multireg: {
         name: "adc_chn_val",
         desc: "ADC value sampled on channel",
@@ -241,130 +251,62 @@
         ],
       }
     }
+
     { name: "adc_wakeup_ctl",
-      desc: "wakeup control",
+      desc: '''
+        Enable filter matches as wakeups
+      ''',
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       resval: "0",
       fields: [
-        { bits: "0",
-	  name: "chn0_1_filter0_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "1",
-	  name: "chn0_1_filter1_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "2",
-	  name: "chn0_1_filter2_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "3",
-	  name: "chn0_1_filter3_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "4",
-	  name: "chn0_1_filter4_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "5",
-	  name: "chn0_1_filter5_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "6",
-	  name: "chn0_1_filter6_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "7",
-	  name: "chn0_1_filter7_en",
-          desc: "0: disable; 1: enable",
+        { bits: "NumAdcFilter-1:0",
+	  name: "EN",
+          desc: "0: filter match wil not generate wakeupe; 1: filter match will generate wakeup",
         }
       ]
     }
+
     { name: "adc_wakeup_status",
-      desc: "Wakeup internal status",
+      desc: '''
+        Wakeup internal status.
+
+        Uses the same bit enumeration as !!ADC_INTR_STATUS, but does not contain
+        one-shot mode as a wakeup option.
+      ''',
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
+      hwqe: "true",
       resval: "0",
       fields: [
-        { bits: "0",
-	  name: "cc_sink_det",
-          desc: "0: filter0 condition is not met; 1: filter0 condition is met",
-        }
-	{ bits: "1",
-          name: "cc_1A5_sink_det",
-          desc: "0: filter1 condition is not met; 1: filter1 condition is met",
-        }
-	{ bits: "2",
-          name: "cc_3A0_sink_det",
-          desc: "0: filter2 condition is not met; 1: filter2 condition is met",
-        }
-	{ bits: "3",
-          name: "cc_src_det",
-          desc: "0: filter3 condition is not met; 1: filter3 condition is met",
-        }
-	{ bits: "4",
-          name: "cc_1A5_src_det",
-          desc: "0: filter4 condition is not met; 1: filter4 condition is met",
-        }
-	{ bits: "5",
-          name: "cc_src_det_flip",
-          desc: "0: filter5 condition is not met; 1: filter5 condition is met",
-        }
-	{ bits: "6",
-          name: "cc_1A5_src_det_flip",
-          desc: "0: filter6 condition is not met; 1: filter6 condition is met",
-        }
-	{ bits: "7",
-          name: "cc_discon",
-          desc: "0: filter7 condition is not met; 1: filter7 condition is met",
+        { bits: "7:0",
+	  name: "COND",
+          desc: "0: filter condition is not met; 1: filter condition is met",
         }
       ]
     }
+
     { name: "adc_intr_ctl",
-      desc: "Debug cable internal control",
+      desc: '''
+        Interrupt enable controls.
+
+        adc_ctrl sends out only 1 interrupt, so this register controls
+        which internal sources are actually registered.
+
+        This register uses the same bit enumeration as !!ADC_INTR_STATUS
+      ''',
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
       fields: [
-        { bits: "0",
-	  name: "chn0_1_filter0_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "1",
-	  name: "chn0_1_filter1_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "2",
-	  name: "chn0_1_filter2_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "3",
-	  name: "chn0_1_filter3_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "4",
-	  name: "chn0_1_filter4_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "5",
-	  name: "chn0_1_filter5_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "6",
-	  name: "chn0_1_filter6_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "7",
-	  name: "chn0_1_filter7_en",
-          desc: "0: disable; 1: enable",
-        }
-        { bits: "8",
-	  name: "oneshot_intr_en",
-          desc: "0: disable; 1: enable",
+        { bits: "8:0",
+	  name: "EN",
+          desc: "0: interrupt source is enabled; 1: interrupt source not enabled",
         }
       ]
     }
+
     { name: "adc_intr_status",
       desc: "Debug cable internal status",
       swaccess: "rw1c",

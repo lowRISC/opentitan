@@ -26,6 +26,7 @@ filesets:
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
+      - lowrisc:prim:pulse_sync
     files:
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_sram_arbiter.sv
@@ -37,7 +38,6 @@ filesets:
       - rtl/prim_packer.sv
       - rtl/prim_packer_fifo.sv
       - rtl/prim_gate_gen.sv
-      - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
       - rtl/prim_filter_ctr.sv
       - rtl/prim_intr_hw.sv
