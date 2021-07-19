@@ -406,16 +406,11 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     by_type = clocks.typed_clocks()
 
-    # hint clocks dict.
-    #
-    # The clock is constructed as clk_{src_name}_{module_name}. So to get the
-    # module name we split from the right and pick the last entry
-    hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
-                 for clk, src in by_type.hint_clks.items()}
-
-    # The names of blocks that use one or more sw hint clocks (clkmgr has an
+    # The names of endpoints that use one or more sw hint clocks (clkmgr has an
     # "idle" feedback signal from each), in ascending order.
-    hint_blocks = sorted(set([v['name'] for v in hint_clks.values()]))
+    hint_blocks = sorted(set(ep_name
+                             for sig in by_type.hint_clks.values()
+                             for ep_name in sig.endpoints))
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -427,8 +422,8 @@ def generate_clkmgr(top, cfg_path, out_path):
                                  ft_clks=by_type.ft_clks,
                                  rg_clks=by_type.rg_clks,
                                  sw_clks=by_type.sw_clks,
+                                 hint_clks=by_type.hint_clks,
                                  export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks,
                                  hint_blocks=hint_blocks)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
