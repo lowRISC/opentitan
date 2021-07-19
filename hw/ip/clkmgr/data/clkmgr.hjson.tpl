@@ -4,9 +4,7 @@
 // TODO: This module is only a draft implementation that covers most of the clkmgr
 // functionality but is incomplete
 
-<%
-clocks = cfg['clocks']
-%>
+
 
 # CLKMGR register template
 #
@@ -100,7 +98,7 @@ clocks = cfg['clocks']
 % endfor
 
   // Exported clocks
-% for intf in export_clks:
+% for intf in cfg['exported_clks']:
     { struct:  "clkmgr_${intf}_out",
       type:    "uni",
       name:    "clocks_${intf}",
@@ -120,7 +118,7 @@ clocks = cfg['clocks']
       name:    "idle",
       act:     "rcv",
       package: "",
-      width:   "${len(hint_clks)}"
+      width:   "${len(hint_names)}"
     },
   ],
 
@@ -189,7 +187,7 @@ clocks = cfg['clocks']
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in sw_clks:
+% for clk in typed_clocks.sw_clks:
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_EN",
