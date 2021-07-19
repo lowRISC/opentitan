@@ -6,9 +6,7 @@
 
 `include "prim_assert.sv"
 
-<%
-clocks = cfg['clocks']
-%>
+
 
   module clkmgr
     import clkmgr_pkg::*;
@@ -53,7 +51,7 @@ clocks = cfg['clocks']
   input lc_tx_t scanmode_i,
 
   // idle hints
-  input [${len(hint_clks)-1}:0] idle_i,
+  input [${len(typed_clocks.hint_clks)-1}:0] idle_i,
 
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
@@ -68,7 +66,7 @@ clocks = cfg['clocks']
   output logic jitter_en_o,
 
   // clock output interface
-% for intf in export_clks:
+% for intf in cfg['exported_clks']:
   output clkmgr_${intf}_out_t clocks_${intf}_o,
 % endfor
   output clkmgr_out_t clocks_o
@@ -180,7 +178,7 @@ clocks = cfg['clocks']
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-% for k,v in ft_clks.items():
+% for k,v in typed_clocks.ft_clks.items():
   prim_clock_buf u_${k}_buf (
     .clk_i(clk_${v.name}_i),
     .clk_o(clocks_o.${k})
@@ -198,12 +196,12 @@ clocks = cfg['clocks']
   logic [1:0] en_status_q;
   logic [1:0] dis_status_q;
   logic clk_status;
-% for src in rg_srcs:
+% for src in typed_clocks.rg_srcs:
   logic clk_${src}_root;
   logic clk_${src}_en;
 % endfor
 
-% for src in rg_srcs:
+% for src in typed_clocks.rg_srcs:
   lc_tx_t ${src}_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
@@ -228,7 +226,7 @@ clocks = cfg['clocks']
   // an async AND of all the synchronized enables
   // return feedback to pwrmgr only when all clocks are enabled
   assign wait_enable =
-% for src in rg_srcs:
+% for src in typed_clocks.rg_srcs:
     % if loop.last:
     clk_${src}_en;
     % else:
@@ -239,7 +237,7 @@ clocks = cfg['clocks']
   // an async OR of all the synchronized enables
   // return feedback to pwrmgr only when all clocks are disabled
   assign wait_disable =
-% for src in rg_srcs:
+% for src in typed_clocks.rg_srcs:
     % if loop.last:
     clk_${src}_en;
     % else:
@@ -290,7 +288,7 @@ clocks = cfg['clocks']
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
-% for k,v in rg_clks.items():
+% for k,v in typed_clocks.rg_clks.items():
   assign clocks_o.${k} = clk_${v.name}_root;
 % endfor
 
@@ -298,11 +296,11 @@ clocks = cfg['clocks']
   // Software direct control group
   ////////////////////////////////////////////////////
 
-% for k in sw_clks:
+% for k in typed_clocks.sw_clks:
   logic ${k}_sw_en;
 % endfor
 
-% for k,v in sw_clks.items():
+% for k,v in typed_clocks.sw_clks.items():
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
@@ -340,12 +338,12 @@ clocks = cfg['clocks']
   // clock target
   ////////////////////////////////////////////////////
 
-% for clk in hint_clks:
+% for clk in typed_clocks.hint_clks:
   logic ${clk}_hint;
   logic ${clk}_en;
 % endfor
 
-% for clk, src in hint_clks.items():
+% for clk, src in typed_clocks.hint_clks.items():
   assign ${clk}_en = ${clk}_hint | ~idle_i[${hint_names[clk]}];
 
   prim_flop_2sync #(
@@ -380,7 +378,7 @@ clocks = cfg['clocks']
 % endfor
 
   // state readback
-% for clk in hint_clks:
+% for clk in typed_clocks.hint_clks:
   assign hw2reg.clk_hints_status.${clk}_val.de = 1'b1;
   assign hw2reg.clk_hints_status.${clk}_val.d = ${clk}_en;
 % endfor
@@ -391,7 +389,7 @@ clocks = cfg['clocks']
   // Exported clocks
   ////////////////////////////////////////////////////
 
-% for intf, eps in export_clks.items():
+% for intf, eps in cfg['exported_clks'].items():
   % for ep, clks in eps.items():
     % for clk in clks:
   assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
@@ -410,7 +408,7 @@ clocks = cfg['clocks']
   `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
-% for intf in export_clks:
+% for intf in cfg['exported_clks']:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)
 % endfor
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)

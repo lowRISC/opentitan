@@ -404,11 +404,11 @@ def generate_clkmgr(top, cfg_path, out_path):
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
 
-    by_type = clocks.typed_clocks()
+    typed_clocks = clocks.typed_clocks()
 
     # A map from block name to the list of hint clocks that it uses.
     block_to_hints = {}
-    for clk, src in by_type.hint_clks.items():
+    for clk, src in typed_clocks.hint_clks.items():
         block = clk.rsplit('_', 1)[-1]
         block_to_hints.setdefault(block, []).append(clk)
 
@@ -430,13 +430,8 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 rg_srcs=by_type.rg_srcs,
-                                 ft_clks=by_type.ft_clks,
-                                 rg_clks=by_type.rg_clks,
-                                 sw_clks=by_type.sw_clks,
-                                 hint_clks=by_type.hint_clks,
-                                 all_clks=by_type.all_clocks(),
-                                 export_clks=top['exported_clks'],
+                                 clocks=clocks,
+                                 typed_clocks=typed_clocks,
                                  hint_names=hint_names)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())

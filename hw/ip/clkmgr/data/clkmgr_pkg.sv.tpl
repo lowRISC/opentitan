@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-from collections import OrderedDict
-
-num_hints = len(hint_clks)
+num_hints = len(typed_clocks.hint_clks)
 %>
 
 package clkmgr_pkg;
@@ -17,13 +15,13 @@ package clkmgr_pkg;
   } hint_names_e;
 
   typedef struct packed {
-% for clk in all_clks:
+% for clk in typed_clocks.all_clocks():
     logic ${clk};
 % endfor
 
   } clkmgr_out_t;
 
-% for intf, eps in export_clks.items():
+% for intf, eps in cfg['exported_clks'].items():
   typedef struct packed {
   % for ep, clks in eps.items():
     % for clk in clks:
