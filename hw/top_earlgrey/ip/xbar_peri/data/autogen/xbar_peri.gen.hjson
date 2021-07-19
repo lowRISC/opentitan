@@ -16,7 +16,7 @@
   reset: rst_peri_ni
   reset_connections:
   {
-    rst_peri_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+    rst_peri_ni: sys_io_div4
   }
   clock_connections:
   {
