@@ -388,16 +388,13 @@ class TopGenC:
 
     # Enumerates the positions of all software controllable resets
     def _init_rstmgr_sw_rsts(self):
-        sw_rsts = [
-            rst for rst in self.top["resets"]["nodes"]
-            if 'sw' in rst and rst['sw'] == 1
-        ]
+        sw_rsts = self.top['resets'].get_sw_resets()
 
         enum = CEnum(self._top_name +
                      Name(["reset", "manager", "sw", "resets"]))
 
         for rst in sw_rsts:
-            enum.add_constant(Name.from_snake_case(rst["name"]))
+            enum.add_constant(Name.from_snake_case(rst))
 
         enum.add_last_constant("Last valid rstmgr software reset request")
 
