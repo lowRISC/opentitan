@@ -10,7 +10,11 @@ from .lib import check_keys, check_list, check_bool, check_optional_name
 
 
 class ClockingItem:
-    def __init__(self, clock: Optional[str], reset: Optional[str], primary: bool):
+    def __init__(self,
+                 clock: Optional[str],
+                 reset: Optional[str],
+                 idle: Optional[str],
+                 primary: bool):
         if primary:
             assert clock is not None
             assert reset is not None
@@ -18,14 +22,16 @@ class ClockingItem:
         self.clock = clock
         self.reset = reset
         self.primary = primary
+        self.idle = idle
 
     @staticmethod
     def from_raw(raw: object, only_item: bool, where: str) -> 'ClockingItem':
         what = f'clocking item at {where}'
-        rd = check_keys(raw, what, [], ['clock', 'reset', 'primary'])
+        rd = check_keys(raw, what, [], ['clock', 'reset', 'idle', 'primary'])
 
         clock = check_optional_name(rd.get('clock'), 'clock field of ' + what)
         reset = check_optional_name(rd.get('reset'), 'reset field of ' + what)
+        idle = check_optional_name(rd.get('idle'), 'idle field of ' + what)
         primary = check_bool(rd.get('primary', only_item),
                              'primary field of ' + what)
 
@@ -37,7 +43,7 @@ class ClockingItem:
                 raise ValueError('No reset signal for primary '
                                  f'clocking item at {what}.')
 
-        return ClockingItem(clock, reset, primary)
+        return ClockingItem(clock, reset, idle, primary)
 
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
@@ -45,6 +51,8 @@ class ClockingItem:
             ret['clock'] = self.clock,
         if self.reset is not None:
             ret['reset'] = self.reset
+        if self.idle is not None:
+            ret['idle'] = self.idle
 
         ret['primary'] = self.primary
         return ret

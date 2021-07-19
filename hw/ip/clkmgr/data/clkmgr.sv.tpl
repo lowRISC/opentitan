@@ -348,7 +348,7 @@ clocks = cfg['clocks']
 % for k, sig in hint_clks.items():
 <%
     ## Hint clocks should be connected to exactly one endpoint
-    eps = list(sig.endpoints)
+    eps = list(set(ep_name for ep_name, ep_port in sig.endpoints))
     assert len(eps) == 1
 %>\
   assign ${k}_en = ${k}_hint | ~idle_i[${eps[0].capitalize()}];
