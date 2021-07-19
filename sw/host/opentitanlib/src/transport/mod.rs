@@ -9,6 +9,8 @@ use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
+pub mod verilator;
+
 bitflags! {
     /// A bitmap of capabilities which may be provided by a transport.
     pub struct Capability: u32 {
