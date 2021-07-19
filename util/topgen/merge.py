@@ -11,7 +11,7 @@ from typing import Dict, List
 
 from topgen import c, lib
 from .clocks import Clocks
-
+from .resets import Resets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 
@@ -605,16 +605,35 @@ def amend_clocks(top: OrderedDict):
         top['inter_module']['connect']['{}.idle'.format(clkmgr_name)].append(entry)
 
 
-def amend_resets(top):
+def amend_resets(top, name_to_block):
     """Generate exported reset structure and automatically connect to
        intermodule.
+
+       Also iterate through and determine need for shadowed reset and
+       domains.
     """
 
+    top_resets = Resets(top['resets'], top['clocks'])
     rstmgr_name = _find_module_name(top['module'], 'rstmgr')
 
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
+
+        block = name_to_block[module['type']]
+        block_clock = block.get_primary_clock()
+        primary_reset = module['reset_connections'][block_clock.reset]
+
+        # shadowed determination
+        if block.has_shadowed_reg():
+            top_resets.mark_reset_shadowed(primary_reset)
+
+        # domain determination
+        if module['domain']:
+            for r in block.clocking.items:
+                if r.reset:
+                    reset = module['reset_connections'][r.reset]
+                    top_resets.add_reset_domain(reset, module['domain'])
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work
@@ -637,38 +656,12 @@ def amend_resets(top):
     for intf in top['exported_rsts']:
         top['inter_module']['external']['{}.resets_{}'.format(
             rstmgr_name, intf)] = "rsts_{}".format(intf)
-    """Discover the full path and selection to each reset connection.
-       This is done by modifying the reset connection of each end point.
-    """
-    for end_point in top['module'] + top['memory'] + top['xbar']:
-        for port, net in end_point['reset_connections'].items():
-            reset_path = lib.get_reset_path(net, end_point['domain'],
-                                            top['resets'])
-            end_point['reset_connections'][port] = reset_path
 
-    # reset paths are still needed temporarily until host only modules are properly automated
-    reset_paths = OrderedDict()
-    reset_hiers = top["resets"]['hier_paths']
+    # reset class objects
+    top["resets"] = top_resets
 
-    for reset in top["resets"]["nodes"]:
-        if "type" not in reset:
-            log.error("{} missing type field".format(reset["name"]))
-            return
-
-        if reset["type"] == "top":
-            reset_paths[reset["name"]] = "{}rst_{}_n".format(
-                reset_hiers["top"], reset["name"])
-
-        elif reset["type"] == "ext":
-            reset_paths[reset["name"]] = reset_hiers["ext"] + reset['name']
-        elif reset["type"] == "int":
-            log.info("{} used as internal reset".format(reset["name"]))
-        else:
-            log.error("{} type is invalid".format(reset["type"]))
-
-    top["reset_paths"] = reset_paths
-
-    return
+    # The original resets dict is transformed to the reset class
+    assert isinstance(top["resets"], Resets)
 
 
 def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
@@ -1049,7 +1042,7 @@ def merge_top(topcfg: OrderedDict,
 
     # Add path names to declared resets.
     # Declare structure for exported resets.
-    amend_resets(topcfg)
+    amend_resets(topcfg, name_to_block)
 
     # remove unwanted fields 'debug_mem_base_addr'
     topcfg.pop('debug_mem_base_addr', None)

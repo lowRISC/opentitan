@@ -419,3 +419,11 @@ class RegBlock:
     def get_addr_width(self) -> int:
         '''Calculate the number of bits to address every byte of the block'''
         return (self.offset - 1).bit_length()
+
+    def has_shadowed_reg(self) -> bool:
+        '''Return boolean indication whether reg block contains shadowed reigsters'''
+        for r in self.flat_regs:
+            if r.shadowed:
+                return True
+
+        return False

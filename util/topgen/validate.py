@@ -752,21 +752,6 @@ def check_power_domains(top):
         error += 1
         return error
 
-    # check that power domain definition is consistent with reset and module definition
-    for reset in top['resets']['nodes']:
-        if reset['gen']:
-            if 'domains' not in reset:
-                log.error("{} missing domain definition".format(reset['name']))
-                error += 1
-                return error
-            else:
-                for domain in reset['domains']:
-                    if domain not in top['power']['domains']:
-                        log.error("{} defined invalid domain {}".format(
-                            reset['name'], domain))
-                        error += 1
-                        return error
-
     # Check that each module, xbar, memory has a power domain defined.
     # If not, give it a default.
     # If there is one defined, check that it is a valid definition
