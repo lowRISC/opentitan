@@ -11,7 +11,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// Temporary solution to configue/enable the EDN and CSRNG to allow OTBN to run
+// Temporary solution to configure/enable the EDN and CSRNG to allow OTBN to run
 // before a DIF is available, https://github.com/lowRISC/opentitan/issues/6082
 static const uint32_t kEntropySrcConfRegOffset = 0x18;
 static const uint32_t kCsrngCtrlRegOffset = 0x14;
