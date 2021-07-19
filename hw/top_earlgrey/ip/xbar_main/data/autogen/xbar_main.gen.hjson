@@ -17,8 +17,8 @@
   reset: rst_main_ni
   reset_connections:
   {
-    rst_main_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
-    rst_fixed_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+    rst_main_ni: sys
+    rst_fixed_ni: sys_io_div4
   }
   clock_connections:
   {

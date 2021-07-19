@@ -16,7 +16,7 @@ module rstmgr
   // Primary module clocks
   input clk_i,
   input rst_ni, // this is connected to the top level reset
-% for clk in clks:
+% for clk in reset_obj.get_clocks():
   input clk_${clk}_i,
 % endfor
 
@@ -251,14 +251,14 @@ module rstmgr
 % for i, rst in enumerate(leaf_rsts):
   logic [PowerDomains-1:0] rst_${rst['name']}_n;
   % for domain in power_domains:
-    % if domain in rst['domains']:
+     % if domain in reset_obj.get_reset_domains(rst['name']):
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_${domain.lower()}_${rst['name']} (
     .clk_i(clk_${rst['clk']}_i),
     .rst_ni(rst_${rst['parent']}_n[Domain${domain}Sel]),
-      % if "sw" in rst:
+      % if rst["sw"]:
     .d_i(sw_rst_ctrl_n[${rst['name'].upper()}]),
       % else:
     .d_i(1'b1),

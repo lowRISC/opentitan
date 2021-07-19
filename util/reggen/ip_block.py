@@ -10,7 +10,7 @@ import hjson  # type: ignore
 
 from .alert import Alert
 from .bus_interfaces import BusInterfaces
-from .clocking import Clocking
+from .clocking import Clocking, ClockingItem
 from .inter_signal import InterSignal
 from .lib import (check_keys, check_name, check_int, check_bool,
                   check_list, check_optional_str)
@@ -348,3 +348,18 @@ class IpBlock:
         else:
             raise ValueError("Signal {} does not exist in IP block {}"
                              .format(name, self.name))
+
+    def has_shadowed_reg(self) -> bool:
+        '''Return boolean indication whether reg block contains shadowed registers'''
+
+        for rb in self.reg_blocks.values():
+            if rb.has_shadowed_reg():
+                return True
+
+        # if we are here, then no one has has a shadowed register
+        return False
+
+    def get_primary_clock(self) -> ClockingItem:
+        '''Return primary clock of an block'''
+
+        return self.clocking.primary
