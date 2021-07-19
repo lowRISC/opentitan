@@ -5,7 +5,8 @@
 // functionality but is incomplete
 
 <%
-clocks = cfg['clocks']
+hint_clks = typed_clocks.hint_clks
+sw_clks = typed_clocks.sw_clks
 %>
 
 # CLKMGR register template
@@ -100,7 +101,7 @@ clocks = cfg['clocks']
 % endfor
 
   // Exported clocks
-% for intf in export_clks:
+% for intf in cfg['exported_clks']:
     { struct:  "clkmgr_${intf}_out",
       type:    "uni",
       name:    "clocks_${intf}",
@@ -223,7 +224,7 @@ clocks = cfg['clocks']
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks:
+% for clk in hint_clks.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_HINT",
