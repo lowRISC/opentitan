@@ -4,7 +4,7 @@
 {
   // Additional build-time options needed to compile C++ sources in
   // simulators such as VCS and Xcelium for anything that uses
-  // otbn_memutil.
+  // crypto_prince_ref.
   crypto_prince_ref_core: "lowrisc:dv:crypto_prince_ref:0.1"
   crypto_prince_ref_src_dir: "{eval_cmd} echo \"{crypto_prince_ref_core}\" | tr ':' '_'"
 
