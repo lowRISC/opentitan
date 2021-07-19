@@ -176,6 +176,9 @@ module tb;
 
     .start_i      (model_if.start),
     .done_o       (model_if.done),
+
+    .err_bits_o   (),
+
     .start_addr_i (model_if.start_addr),
 
     .edn_rnd_data_valid_i  (edn_rnd_data_valid),
