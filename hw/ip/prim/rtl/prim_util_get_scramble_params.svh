@@ -29,7 +29,7 @@
       return 0;
     end
 
-    nonce = 0;
+    nonce = '0;
     nonce[NonceWidth-1:0] = nonce_i;
     return 1;
   endfunction
