@@ -182,7 +182,7 @@ clocks = cfg['clocks']
   ////////////////////////////////////////////////////
 % for k,v in ft_clks.items():
   prim_clock_buf u_${k}_buf (
-    .clk_i(clk_${v.name}_i),
+    .clk_i(clk_${v.src.name}_i),
     .clk_o(clocks_o.${k})
   );
 % endfor
@@ -291,7 +291,7 @@ clocks = cfg['clocks']
   // Clocks with only root gate
   ////////////////////////////////////////////////////
 % for k,v in rg_clks.items():
-  assign clocks_o.${k} = clk_${v.name}_root;
+  assign clocks_o.${k} = clk_${v.src.name}_root;
 % endfor
 
   ////////////////////////////////////////////////////
@@ -306,8 +306,8 @@ clocks = cfg['clocks']
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
-    .clk_i(clk_${v.name}_i),
-    .rst_ni(rst_${v.name}_ni),
+    .clk_i(clk_${v.src.name}_i),
+    .rst_ni(rst_${v.src.name}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
   );
@@ -326,8 +326,8 @@ clocks = cfg['clocks']
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
-    .clk_i(clk_${v.name}_root),
-    .en_i(${k}_sw_en & clk_${v.name}_en),
+    .clk_i(clk_${v.src.name}_root),
+    .en_i(${k}_sw_en & clk_${v.src.name}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
@@ -340,19 +340,24 @@ clocks = cfg['clocks']
   // clock target
   ////////////////////////////////////////////////////
 
-% for k in hint_clks:
+% for k in hint_clks.keys():
   logic ${k}_hint;
   logic ${k}_en;
 % endfor
 
-% for k,v in hint_clks.items():
-  assign ${k}_en = ${k}_hint | ~idle_i[${v["name"].capitalize()}];
+% for k, sig in hint_clks.items():
+<%
+    ## Hint clocks should be connected to exactly one endpoint
+    eps = list(sig.endpoints)
+    assert len(eps) == 1
+%>\
+  assign ${k}_en = ${k}_hint | ~idle_i[${eps[0].capitalize()}];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_hint_sync (
-    .clk_i(clk_${v["src"].name}_i),
-    .rst_ni(rst_${v["src"].name}_ni),
+    .clk_i(clk_${sig.src.name}_i),
+    .rst_ni(rst_${sig.src.name}_ni),
     .d_i(reg2hw.clk_hints.${k}_hint.q),
     .q_o(${k}_hint)
   );
@@ -371,8 +376,8 @@ clocks = cfg['clocks']
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
-    .clk_i(clk_${v["src"].name}_root),
-    .en_i(${k}_en & clk_${v["src"].name}_en),
+    .clk_i(clk_${sig.src.name}_root),
+    .en_i(${k}_en & clk_${sig.src.name}_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
@@ -380,7 +385,7 @@ clocks = cfg['clocks']
 % endfor
 
   // state readback
-% for k,v in hint_clks.items():
+% for k in hint_clks.keys():
   assign hw2reg.clk_hints_status.${k}_val.de = 1'b1;
   assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
 % endfor

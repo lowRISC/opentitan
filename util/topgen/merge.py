@@ -521,10 +521,6 @@ def amend_clocks(top: OrderedDict):
 
     exported_clks = OrderedDict()
 
-    # A dictionary mapping each clock name to the set of the names of endpoints
-    # using it
-    clock_to_eps = {}
-
     for ep in top['module'] + top['memory'] + top['xbar']:
         clock_connections = OrderedDict()
 
@@ -566,8 +562,8 @@ def amend_clocks(top: OrderedDict):
             clk_name = "clk_" + name
 
             # add clock to a particular group
-            clocks.add_clock_to_group(group, clk_name, clk)
-            clock_to_eps.setdefault(clk_name, set()).add(ep_name)
+            clk_sig = clocks.add_clock_to_group(group, clk_name, clk)
+            clk_sig.add_endpoint(ep_name)
 
             # add clock connections
             clock_connections[port] = hier_name + clk_name
@@ -609,13 +605,13 @@ def amend_clocks(top: OrderedDict):
     # match the ordering of the hint_clks list from clocks.py, since this is
     # also used to derive an enum naming the bits of the connection.
     clkmgr_idle = []
-    for clk_name in clocks.typed_clocks().hint_clks.keys():
-        ep_names = clock_to_eps[clk_name]
+    for sig in clocks.typed_clocks().hint_clks.values():
+        ep_names = list(sig.endpoints)
         if len(ep_names) != 1:
             raise ValueError(f'There are {len(ep_names)} end-points connected '
                              f'to the {clk_name} clock: {ep_names}. Where should the idle '
                              f'signal come from?')
-        ep_name = ep_names.pop()
+        ep_name = ep_names[0]
 
         # TODO: This is a hack that needs replacing properly: see note above
         #       definition of eps_with_idle. (In particular, it only works at
