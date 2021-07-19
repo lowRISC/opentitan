@@ -9,7 +9,7 @@ description: "A wrapper around memutil_verilator for OTBN"
 filesets:
   files_cpp:
     depend:
-      - lowrisc:dv_verilator:memutil_dpi
+      - lowrisc:dv_verilator:memutil_dpi_scrambled
     files:
       - otbn_memutil.cc
       - otbn_memutil.h: { is_include_file: true }

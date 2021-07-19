@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options needed to compile C++ sources in
+  // simulators such as VCS and Xcelium for anything that uses
+  // memutil_dpi_scrambled.
+  memutil_dpi_core: "lowrisc:dv_verilator:memutil_dpi:0"
+  memutil_dpi_src_dir: "{eval_cmd} echo \"{memutil_dpi_core}\" | tr ':' '_'"
+
+  memutil_dpi_scrambled_core: "lowrisc:dv_verilator:memutil_dpi_scrambled:0"
+  memutil_dpi_scrambled_src_dir: "{eval_cmd} echo \"{memutil_dpi_scrambled_core}\" | tr ':' '_'"
+
+  secded_enc_core: "lowrisc:dv:secded_enc:0"
+  secded_enc_src_dir: "{eval_cmd} echo \"{secded_enc_core}\" | tr ':' '_'"
+
+  scramble_model_core: "lowrisc:dv:scramble_model:0"
+  scramble_model_dir: "{eval_cmd} echo \"{scramble_model_core}\" | tr ':' '_'"
+
+  prince_ref_core: "lowrisc:dv:crypto_prince_ref:0.1"
+  prince_ref_src_dir: "{eval_cmd} echo \"{prince_ref_core}\" | tr ':' '_'"
+
+
+  build_modes: [
+    {
+      name: vcs_memutil_dpi_scrambled_build_opts
+      build_opts: ["-CFLAGS -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
+                   "-CFLAGS -I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-CFLAGS -I{build_dir}/src/{secded_enc_src_dir}",
+                   "-CFLAGS -I{build_dir}/src/{scramble_model_dir}",
+                   "-CFLAGS -I{build_dir}/src/{prince_ref_src_dir}",
+                   "-lelf"]
+    }
+
+    {
+      name: xcelium_memutil_dpi_scrambled_build_opts
+      build_opts: ["-I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
+                   "-I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-I{build_dir}/src/{prince_ref_src_dir}",
+                   "-I{build_dir}/src/{scramble_model_dir}",
+                   "-lelf"]
+    }
+  ]
+}

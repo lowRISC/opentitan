@@ -38,6 +38,7 @@
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson",
                 // Config files to get the correct flags for otbn_memutil and otbn_tracer
+                "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{proj_root}/hw/top_earlgrey/dv/chip_dif_tests.hjson",
@@ -96,9 +97,11 @@
     }
   ]
 
-  // Add options needed to compile against otbn_memutil and otbn_tracer
+  // Add options needed to compile against otbn_memutil, otbn_tracer, and
+  // memutil_dpi_scrambled.
   en_build_modes: ["{tool}_otbn_memutil_build_opts",
-                   "{tool}_otbn_tracer_build_opts"]
+                   "{tool}_otbn_tracer_build_opts",
+                   "{tool}_memutil_dpi_scrambled_build_opts"]
 
   // Add run modes.
   run_modes: [
