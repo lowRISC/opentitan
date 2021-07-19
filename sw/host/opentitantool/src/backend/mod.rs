@@ -8,10 +8,15 @@ use thiserror::Error;
 
 use opentitanlib::transport::{EmptyTransport, Transport};
 
+pub mod verilator;
+
 #[derive(Debug, StructOpt)]
 pub struct BackendOpts {
     #[structopt(long, default_value)]
     interface: String,
+
+    #[structopt(flatten)]
+    verilator_opts: verilator::VerilatorOpts,
 }
 
 #[derive(Error, Debug)]
@@ -24,6 +29,7 @@ pub enum Error {
 pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     match args.interface.as_str() {
         "" => Ok(Box::new(EmptyTransport)),
+        "verilator" => verilator::create(&args.verilator_opts),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }
 }
