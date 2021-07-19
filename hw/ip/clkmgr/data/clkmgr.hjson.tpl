@@ -15,13 +15,8 @@ clocks = cfg['clocks']
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for src in clocks.srcs.values():
-    % if not src.aon:
-    {reset: "rst_${src.name}_ni"},
-    % endif
-% endfor
-% for src in clocks.derived_srcs.values():
-    {reset: "rst_${src.name}_ni"},
+% for rst in clocks.reset_signals():
+    {reset: "${rst}"},
 % endfor
   ]
   bus_interfaces: [
