@@ -426,26 +426,24 @@ class TopGenC:
         """
         clocks = self.top['clocks']
 
-        aon_clocks = set(src.name
-                         for src in clocks.all_srcs.values() if src.aon)
-
         gateable_clocks = CEnum(self._top_name + Name(["gateable", "clocks"]))
         hintable_clocks = CEnum(self._top_name + Name(["hintable", "clocks"]))
 
-        # This replicates the behaviour in `topgen.py` in deriving `hints` and
-        # `sw_clocks`.
-        for group in clocks.groups.values():
-            for name, source in group.clocks.items():
-                if source.name not in aon_clocks:
-                    # All these clocks start with `clk_` which is redundant.
-                    clock_name = Name.from_snake_case(name).remove_part("clk")
-                    docstring = "Clock {} in group {}".format(name, group.name)
-                    if group.sw_cg == "yes":
-                        gateable_clocks.add_constant(clock_name, docstring)
-                    elif group.sw_cg == "hint":
-                        hintable_clocks.add_constant(clock_name, docstring)
+        c2g = clocks.make_clock_to_group()
+        by_type = clocks.typed_clocks()
 
+        for name in by_type.sw_clks.keys():
+            # All these clocks start with `clk_` which is redundant.
+            clock_name = Name.from_snake_case(name).remove_part("clk")
+            docstring = "Clock {} in group {}".format(name, c2g[name].name)
+            gateable_clocks.add_constant(clock_name, docstring)
         gateable_clocks.add_last_constant("Last Valid Gateable Clock")
+
+        for name in by_type.hint_clks.keys():
+            # All these clocks start with `clk_` which is redundant.
+            clock_name = Name.from_snake_case(name).remove_part("clk")
+            docstring = "Clock {} in group {}".format(name, c2g[name].name)
+            hintable_clocks.add_constant(clock_name, docstring)
         hintable_clocks.add_last_constant("Last Valid Hintable Clock")
 
         self.clkmgr_gateable_clocks = gateable_clocks

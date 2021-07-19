@@ -5,7 +5,6 @@
 <%
 from collections import OrderedDict
 
-clocks = cfg['clocks']
 num_hints = len(hint_clks)
 %>
 
