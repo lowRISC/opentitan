@@ -404,80 +404,18 @@ def generate_clkmgr(top, cfg_path, out_path):
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
 
-    # Classify the various clock signals. Here, we build the following
-    # dictionaries, each mapping the derived clock name to its source.
-    #
-    # ft_clks:  Clocks fed through clkmgr but are not disturbed in any way.
-    #           This maintains the clocking structure consistency.
-    #           This includes two groups of clocks:
-    #             - Clocks fed from the always-on source
-    #             - Clocks fed to the powerup group
-    #
-    # rg_clks: Non-feedthrough clocks that have no software control. These
-    #          clocks are root-gated and the root-gated clock is then exposed
-    #          directly in clocks_o.
-    #
-    # sw_clks: Non-feedthrough clocks that have direct software control. These
-    #          are root-gated, but (unlike rg_clks) then go through a second
-    #          clock gate which is controlled by software.
-    #
-    # hints: Non-feedthrough clocks that have "hint" software control (with a
-    #        feedback mechanism to allow blocks to avoid being suspended when
-    #        they are not idle).
-    ft_clks = {}
-    rg_clks = {}
-    sw_clks = {}
-    hints = {}
-
-    # We also build rg_srcs_set, which is the set of names of non-always-on
-    # clock sources that are exposed without division. This doesn't include
-    # clock sources that are only used to derive divided clocks (we might gate
-    # the divided clocks, but don't bother gating the upstream source).
-    rg_srcs_set = set()
-
-    for grp in clocks.groups.values():
-        if grp.name == 'powerup':
-            # All clocks in the "powerup" group are considered feed-throughs.
-            ft_clks.update(grp.clocks)
-            continue
-
-        for clk, src in grp.clocks.items():
-            if src.aon:
-                # Any always-on clock is a feedthrough
-                ft_clks[clk] = src
-                continue
-
-            rg_srcs_set.add(src.name)
-
-            if grp.sw_cg == 'no':
-                # A non-feedthrough clock with no software control
-                rg_clks[clk] = src
-                continue
-
-            if grp.sw_cg == 'yes':
-                # A non-feedthrough clock with direct software control
-                sw_clks[clk] = src
-                continue
-
-            # The only other valid value for the sw_cg field is "hint", which
-            # means a non-feedthrough clock with "hint" software control.
-            assert grp.sw_cg == 'hint'
-            hints[clk] = src
-            continue
+    by_type = clocks.typed_clocks()
 
     # hint clocks dict.
     #
     # The clock is constructed as clk_{src_name}_{module_name}. So to get the
     # module name we split from the right and pick the last entry
     hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
-                 for clk, src in hints.items()}
+                 for clk, src in by_type.hint_clks.items()}
 
     # The names of blocks that use one or more sw hint clocks (clkmgr has an
     # "idle" feedback signal from each), in ascending order.
     hint_blocks = sorted(set([v['name'] for v in hint_clks.values()]))
-
-    # Define a canonical ordering for rg_srcs
-    rg_srcs = sorted(rg_srcs_set)
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -485,10 +423,10 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 rg_srcs=rg_srcs,
-                                 ft_clks=ft_clks,
-                                 rg_clks=rg_clks,
-                                 sw_clks=sw_clks,
+                                 rg_srcs=by_type.rg_srcs,
+                                 ft_clks=by_type.ft_clks,
+                                 rg_clks=by_type.rg_clks,
+                                 sw_clks=by_type.sw_clks,
                                  export_clks=top['exported_clks'],
                                  hint_clks=hint_clks,
                                  hint_blocks=hint_blocks)
