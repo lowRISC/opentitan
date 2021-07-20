@@ -355,14 +355,6 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     </tr>
     <tr>
       <td>0x2</td>
-      <td>RW</td>
-      <td>ACC</td>
-      <td>
-        The accumulator register used by the {{< otbnInsnRef "BN.MULQACC" >}} instruction.
-      </td>
-    </tr>
-    <tr>
-      <td>0x3</td>
       <td>URND</td>
       <td>R</td>
       <td>
@@ -372,6 +364,14 @@ Use RND for high-quality randomness.
 
 The number is sourced from an LFSR.
 Reads never stall.
+      </td>
+    </tr>
+    <tr>
+      <td>0x3</td>
+      <td>RW</td>
+      <td>ACC</td>
+      <td>
+        The accumulator register used by the {{< otbnInsnRef "BN.MULQACC" >}} instruction.
       </td>
     </tr>
   </tbody>
