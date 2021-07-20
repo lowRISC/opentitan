@@ -10,7 +10,8 @@ class csrng_smoke_vseq extends csrng_base_vseq;
 
   task body();
     // Enable CSRNG
-    ral.ctrl.enable.set(1'b1);
+    ral.ctrl.enable.set(4'hA);
+    ral.ctrl.sw_app_enable.set(4'hA);
     csr_update(.csr(ral.ctrl));
 
     // Wait for CSRNG cmd_rdy

@@ -86,9 +86,8 @@
   registers: [
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "ro", // lock is managed by HW
-      hwaccess: "hwo",
-      hwext: "true",
+      swaccess: "rw0c",
+      hwaccess: "none",
       fields: [
         {
             bits: "0",
@@ -103,16 +102,27 @@
       desc: "Control register",
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "REGWEN",
+      tags: [// Exclude from writes to these bits since hardware actions will start.
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
-            bits: "0",
+            bits: "3:0",
             name: "ENABLE",
             desc: '''
-                  Setting this bit will enable the CSRNG module. The application interface for software
-                  (register based) will be enabled only if the respective efuse input is enabled.
+                  Setting this field to 0xA will enable the CSRNG module.
                   '''
-            tags: [// Exclude from writes to these bits.
-                   "excl:CsrAllTests:CsrExclWrite"]
+          resval: "0x5"
+        },
+        {
+            bits: "7:4",
+            name: "SW_APP_ENABLE",
+            desc: '''
+                  Setting this field to 0xA will enable reading from the GENBITS register.
+                  This application interface for software (register based) will be enabled
+                  only if the efuse_sw_app_enable input is set.
+                  '''
+          resval: "0x5"
         },
       ]
     },

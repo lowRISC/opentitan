@@ -21,7 +21,7 @@ static void setup_edn(void) {
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
                       kEntropySrcConfRegOffset, 0x2);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                      kCsrngCtrlRegOffset, 0x1);
+                      kCsrngCtrlRegOffset, 0xaa);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
                       kEdnCtrlRegOffset, 0x9);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
