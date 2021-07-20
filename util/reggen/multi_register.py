@@ -5,6 +5,7 @@
 from typing import Dict, List
 
 from reggen import register
+from .clocking import Clocking
 from .field import Field
 from .lib import check_keys, check_str, check_name, check_bool
 from .params import ReggenParams
@@ -38,7 +39,13 @@ OPTIONAL_FIELDS.update({
     'compact': [
         'pb', "If true, allow multireg compacting."
         "If false, do not compact."
-    ]
+    ],
+    'cdc': [
+        's',
+        "indicates the register must cross to a different "
+        "clock domain before use.  The value shown here "
+        "should correspond to one of the module's clocks."
+    ],
 })
 
 
@@ -139,6 +146,14 @@ class MultiRegister(RegBase):
 
     def is_homogeneous(self) -> bool:
         return self.reg.is_homogeneous()
+
+    def handle_async(self, clocks: Clocking) -> object:
+        # multi reg must all have the same async clock
+        clock = None
+        for r in self.regs:
+            clock = r.handle_async(clocks)
+
+        return clock
 
     def _asdict(self) -> Dict[str, object]:
         rd = self.reg._asdict()

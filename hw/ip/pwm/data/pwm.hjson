@@ -7,7 +7,7 @@
     {clock: "clk_core_i", reset: "rst_core_ni"}
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device", async: "clk_core_i" }
   ],
   regwidth: "32",
   param_list: [

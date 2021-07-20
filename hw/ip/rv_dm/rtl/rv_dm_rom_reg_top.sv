@@ -29,10 +29,11 @@ module rv_dm_rom_reg_top (
   import rv_dm_reg_pkg::* ;
 
 
+
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
-    .tl_i,
+    .tl_i(tl_i),
     .err_o(intg_err)
   );
 
@@ -56,7 +57,7 @@ module rv_dm_rom_reg_top (
     .EnableDataIntgGen(1)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
-    .tl_o
+    .tl_o(tl_o)
   );
 
   assign tl_win_o = tl_i;

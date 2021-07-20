@@ -72,6 +72,8 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   // Timer reset
   assign wdog_reset_req_o = wdog_incr & (reg2hw_i.wdog_count.q == reg2hw_i.wdog_bite_thold.q);
 
-  assign unused_reg2hw = |{reg2hw_i.intr_state, reg2hw_i.intr_test, reg2hw_i.wkup_cause};
+  assign unused_reg2hw = |{reg2hw_i.intr_state, reg2hw_i.intr_test, reg2hw_i.wkup_cause,
+                           reg2hw_i.alert_test};
+
 
 endmodule

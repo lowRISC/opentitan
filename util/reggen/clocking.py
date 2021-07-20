@@ -7,6 +7,7 @@
 from typing import Dict, List, Optional
 
 from .lib import check_keys, check_list, check_bool, check_optional_name
+import re
 
 
 class ClockingItem:
@@ -39,6 +40,10 @@ class ClockingItem:
 
         return ClockingItem(clock, reset, primary)
 
+    def set_reg_clock(self, clock: str) -> None:
+
+        self.reg = True
+
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
         if self.clock is not None:
@@ -48,6 +53,16 @@ class ClockingItem:
 
         ret['primary'] = self.primary
         return ret
+
+    def get_base_name(self) -> str:
+        if not self.clock:
+            raise ValueError('Cannot extract clock base name from None clock')
+
+        match = re.match(r'^clk_([A-Za-z0-9_]+)_i', str(self.clock))
+        if match:
+            return match.group(1)
+        else:
+            return ""
 
 
 class Clocking:
@@ -92,3 +107,10 @@ class Clocking:
 
     def reset_signals(self) -> List[str]:
         return [item.reset for item in self.items if item.reset is not None]
+
+    def get_by_clock(self, name: Optional[str]) -> object:
+        for item in self.items:
+            if name == item.clock:
+                return item
+
+        return None
