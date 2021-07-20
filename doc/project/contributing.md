@@ -22,7 +22,7 @@ Important points before getting started:
   We are always looking for ways to improve and welcome feedback on any project matter, technical or not.
 
 **Important**: Please read the next three, short sections on reporting bugs, reporting security issues, and contributing code in preparation for making your first contribution to OpenTitan.
-If you would like more details, see the Detailed Contribution Guide (coming soon).
+If you would like more details, see the [Detailed Contribution Guide]({{<relref "detailed_contribution_guide/_index.md" >}}).
 
 ## Bug reports
 
