@@ -288,8 +288,8 @@ module edn_core import edn_pkg::*;
   };
 
   // master module enable
-  assign edn_enable = reg2hw.ctrl.edn_enable.q;
-  assign cmd_fifo_rst = reg2hw.ctrl.cmd_fifo_rst.q;
+  assign edn_enable = (reg2hw.ctrl.edn_enable.q == EDN_FIELD_ON);
+  assign cmd_fifo_rst = (reg2hw.ctrl.cmd_fifo_rst.q == EDN_FIELD_ON);
 
   //--------------------------------------------
   // sw register interface
@@ -299,7 +299,7 @@ module edn_core import edn_pkg::*;
   // cmd req
   assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
-  assign auto_req_mode = (reg2hw.ctrl.hw_req_mode.q == 2'b01);
+  assign auto_req_mode = (reg2hw.ctrl.auto_req_mode.q == EDN_FIELD_ON);
   assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
   assign hw2reg.sum_sts.req_mode_sm_sts.d = seq_auto_req_mode;
   assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
@@ -479,7 +479,7 @@ module edn_core import edn_pkg::*;
 
 
   // boot request
-  assign boot_request = (reg2hw.ctrl.hw_req_mode.q == 2'b10);
+  assign boot_request = (reg2hw.ctrl.boot_req_mode.q == EDN_FIELD_ON);
 
   assign boot_req_d[0] =
          (!edn_enable) ? '0 :
