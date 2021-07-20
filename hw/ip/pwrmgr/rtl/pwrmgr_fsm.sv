@@ -277,7 +277,10 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         // only in active state, allow processor to execute
         fetch_en_d = lc_ctrl_pkg::On;
 
+        // when handling reset request or low power entry of any
+        // kind, stop processor from fetching
         if (reset_req || low_power_entry_i) begin
+          fetch_en_d = lc_ctrl_pkg::Off;
           reset_cause_d = ResetUndefined;
           state_d = FastPwrStateDisClks;
         end
