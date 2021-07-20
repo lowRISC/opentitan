@@ -78,8 +78,10 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
    * startup, reset and shutdown related tasks
    */
   virtual task dut_init(string reset_kind = "HARD");
-    if (do_apply_reset)         apply_reset(reset_kind);
-    else if (do_wait_for_reset) wait_for_reset(reset_kind);
+    if (do_apply_reset) begin
+      apply_reset(reset_kind);
+      post_apply_reset(reset_kind);
+    end else if (do_wait_for_reset) wait_for_reset(reset_kind);
     // delay after reset for tl agent check seq_item_port empty
     #1ps;
   endtask
@@ -135,6 +137,11 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
       cfg.clk_rst_vif.drive_rst_pin(1);
     end
+  endtask
+
+  // This is called after apply_reset in this class and after apply_resets_concurrently
+  // in cip_base_vseq::run_stress_all_with_rand_reset_vseq.
+  virtual task post_apply_reset(string reset_kind = "HARD");
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",
