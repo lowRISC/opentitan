@@ -95,6 +95,9 @@ package flash_ctrl_env_pkg;
     bit [TL_AW-1:0] addr;       // starting addr for the op
   } flash_op_t;
 
+  // Data queue for flash transactions
+  typedef logic [TL_DW-1:0] data_q_t[$];
+
   // functions
 
   // package sources

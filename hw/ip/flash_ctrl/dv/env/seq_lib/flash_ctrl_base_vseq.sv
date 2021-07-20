@@ -184,7 +184,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Program data into flash, stopping whenever full.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_write(bit [TL_DW-1:0] data[$], bit poll_fifo_status);
+  virtual task flash_ctrl_write(data_q_t data, bit poll_fifo_status);
     foreach (data[i]) begin
       // Check if prog fifo is full. If yes, then wait for space to become available.
       // Note that this polling is not needed since the interface is backpressure enabled.
@@ -198,7 +198,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read data from flash, stopping whenever empty.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_read(uint num_words, ref bit [TL_DW-1:0] data[$], bit poll_fifo_status);
+  virtual task flash_ctrl_read(uint num_words, ref data_q_t data, bit poll_fifo_status);
     for (int i = 0; i < num_words; i++) begin
       // Check if rd fifo is empty. If yes, then wait for data to become available.
       // Note that this polling is not needed since the interface is backpressure enabled.
