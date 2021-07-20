@@ -16,6 +16,13 @@ sw_lib_arch_sim_verilator = declare_dependency(
   ),
 )
 
+sw_lib_arch_fpga_cw310 = declare_dependency(
+  link_with: static_library(
+    'device_fpga_cw310',
+    sources: ['device_fpga_cw310.c'],
+  ),
+)
+
 sw_lib_arch_fpga_nexysvideo = declare_dependency(
   link_with: static_library(
     'device_fpga_nexysvideo',
@@ -30,5 +37,6 @@ sw_lib_arch_fpga_nexysvideo = declare_dependency(
 sw_lib_arch_core_devices = {
   'sim_dv': sw_lib_arch_sim_dv,
   'sim_verilator': sw_lib_arch_sim_verilator,
+  'fpga_cw310': sw_lib_arch_fpga_cw310,
   'fpga_nexysvideo': sw_lib_arch_fpga_nexysvideo,
 }

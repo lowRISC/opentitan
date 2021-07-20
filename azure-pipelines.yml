@@ -385,9 +385,7 @@ jobs:
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
-    # Currently, we are still using the reduce script for the CW310 meaning we can re-use the
-    # software binaries built for the NexysVideo board.
-    - sw_build_nexysvideo
+    - sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
@@ -396,7 +394,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - sw_build_nexysvideo
+        - sw_build
   - bash: |
       set -e
       . util/build_consts.sh
@@ -406,11 +404,9 @@ jobs:
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.scr.39.vmem"
+      BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_cw310.scr.39.vmem"
       test -f "$BOOTROM_VMEM"
-      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
+      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem"
       test -f "$OTP_VMEM"
 
       fusesoc --cores-root=. \
@@ -551,7 +547,6 @@ jobs:
   timeoutInMinutes: 30
   dependsOn:
     - chip_earlgrey_cw310
-    - sw_build_nexysvideo
     - sw_build
   steps:
   - template: ci/install-package-dependencies.yml
@@ -559,7 +554,6 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
-        - sw_build_nexysvideo
         - sw_build
   - bash: |
       set -e

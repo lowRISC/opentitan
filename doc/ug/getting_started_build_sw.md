@@ -19,8 +19,8 @@ $ cd $REPO_TOP
 $ ./meson_init.sh
 
 # Build the two targets we care about, specifically.
-$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
-$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_cw310
+$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_cw310
 
 # Build *everything*, including targets for other devices.
 $ ninja -C build-out all

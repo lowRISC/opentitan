@@ -36,10 +36,8 @@ $ ./meson_init.sh
 $ ninja -C build-out all
 ```
 
-Since not all FPGAs are able to fit the full design, there is a separate script that can be invoked to reduce the size of the design.
-Note that even though the ChipWhisperer CW310 board with Xilinx Kintex 7 XC7K410T FPGA is able to hold the full OpenTitan design, it currently requires the size of the design to be reduced just like for the Nexys Video FPGA board.
-
-To reduce the design such that it fits the Nexys Video FPGA board:
+Only the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA can fit the whole Earl Grey design.
+When working with the Nexys Video FPGA board, the Earl Grey design has to be modified to reduce its size using a script.
 ```console
 $ cd $REPO_TOP
 $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
@@ -47,6 +45,7 @@ $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
 The `--build` argument is optional and ensures that the boot ROM is rebuilt for the reduced design.
 Alternatively, the boot ROM can be manually regenerated using the previous command.
 
+Next, the actual FPGA implementation can be started.
 In the following example we synthesize the Earl Grey design for the ChipWhisperer CW310 board using Xilinx Vivado {{< tool_version "vivado" >}}.
 To target the Nexys Video board, replace `cw310` by `nexysvideo` in the instructions below.
 
@@ -54,7 +53,6 @@ To target the Nexys Video board, replace `cw310` by `nexysvideo` in the instruct
 $ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
-$ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
 $ ninja -C build-out all
 $ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_cw310
 ```
@@ -157,17 +155,16 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Run the loading tool.
    ```console
    $ cd ${REPO_TOP}
-   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
+   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
    ```
-   Note that even though targeting the ChipWhisperer CW310 board, the binary contains `nexysvideo` in its name as the software build tool currently only supports one FPGA target.
 
    This should report how the binary is split into frames:
    ```
    CW310 Loader: Attemping to find CW310 FPGA Board:
        No bitstream specified
    Board found, setting PLL2 to 100 MHz
-   INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
-   Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin"...
+   INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
+   Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin"...
    Transferring frame 0x00000000 @ 0x00000000.
    Transferring frame 0x00000001 @ 0x000007D8.
    Transferring frame 0x00000002 @ 0x00000FB0.
