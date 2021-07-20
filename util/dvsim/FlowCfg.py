@@ -15,7 +15,7 @@ from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards, md_results_to_html,
-                   mk_path, rm_path, subst_wildcards)
+                   mk_path, mk_symlink, rm_path, subst_wildcards)
 
 
 # Interface class for extensions.
@@ -134,6 +134,8 @@ class FlowCfg():
 
         self.results_path = os.path.join(self.scratch_base_path, "reports", self.rel_path,
                                          self.timestamp)
+        self.symlink_path = os.path.join(self.scratch_base_path, "reports", self.rel_path,
+                                         "latest")
 
         # Process overrides before substituting wildcards
         self._process_overrides()
@@ -422,19 +424,23 @@ class FlowCfg():
         # Keep up to 2 weeks results.
         clean_odirs(odir=self.results_path, max_odirs=14)
         mk_path(self.results_path)
+        mk_path(self.symlink_path)
 
         # Write results to the report area.
         if self.is_primary_cfg:
             results_html = md_results_to_html(self.results_title, self.css_file,
                                               self.results_summary_md)
             result_path = os.path.join(self.results_path, "summary.html")
+            symlink_path = os.path.join(self.symlink_path, "summary.html")
         else:
             results_html = md_results_to_html(self.results_title, self.css_file,
                                               self.results_md)
             result_path = os.path.join(self.results_path, "results.html")
+            symlink_path = os.path.join(self.symlink_path, "results.html")
         with open(result_path, "w") as results_file:
             results_file.write(results_html)
         log.log(VERBOSE, "[results page]: [%s][%s], self.name, results_path")
+        mk_symlink(result_path, symlink_path)
 
     def _get_results_page_link(self, link_text):
         if not self.args.publish:

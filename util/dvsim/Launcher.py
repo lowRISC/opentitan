@@ -9,7 +9,7 @@ import re
 import sys
 from pathlib import Path
 
-from utils import VERBOSE, clean_odirs, rm_path
+from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
 
 
 class LauncherError(Exception):
@@ -161,13 +161,7 @@ class Launcher:
 
         dest = Path(self.deploy.sim_cfg.links[status], self.deploy.qual_name)
 
-        # If dest exists, then atomically remove it and link the odir again.
-        while True:
-            try:
-                os.symlink(self.deploy.odir, dest)
-                break
-            except FileExistsError:
-                rm_path(dest)
+        mk_symlink(self.deploy.odir, dest)
 
         # Delete the symlink from dispatched directory if it exists.
         if status != "D":
