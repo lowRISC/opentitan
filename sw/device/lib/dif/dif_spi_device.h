@@ -22,18 +22,32 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * A signal edge type: positive or negative.
+ * Clock polarity type
  */
-typedef enum dif_spi_device_edge {
+typedef enum dif_spi_device_clock_polarity {
   /**
-   * Represents a positive edge (i.e., from low to high).
+   * Positive polarity (CPOL=0)
    */
-  kDifSpiDeviceEdgePositive,
+  kDifSpiDeviceClockPositive,
   /**
-   * Represents a negative edge (i.e., from high to low).
+   * Negative polarity (CPOL=1)
    */
-  kDifSpiDeviceEdgeNegative,
-} dif_spi_device_edge_t;
+  kDifSpiDeviceClockNegative,
+} dif_spi_device_clock_polarity_t;
+
+/**
+ * Clock phase
+ */
+typedef enum dif_spi_device_clock_phase {
+  /**
+   * Sample data on leading edge (CPHA=0)
+   */
+  kDifSpiDevicePhaseSampleLeading,
+  /**
+   * Sample data on trailing edge (CPHA=1)
+   */
+  kDifSpiDevicePhaseSampleTrailing,
+} dif_spi_device_clock_phase_t;
 
 /**
  * A bit ordering within a byte.
@@ -87,8 +101,8 @@ typedef struct dif_spi_device_params {
  * hardware.
  */
 typedef struct dif_spi_device_config {
-  dif_spi_device_edge_t clock_polarity;
-  dif_spi_device_edge_t data_phase;
+  dif_spi_device_clock_polarity_t clock_polarity;
+  dif_spi_device_clock_phase_t clock_phase;
   dif_spi_device_bit_order_t tx_order;
   dif_spi_device_bit_order_t rx_order;
   uint8_t rx_fifo_timeout;

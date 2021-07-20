@@ -46,8 +46,8 @@ class SpiTest : public testing::Test, public MmioTest {
   };
 
   dif_spi_device_config_t config_ = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
+      .clock_polarity = kDifSpiDeviceClockPositive,
+      .clock_phase = kDifSpiDevicePhaseSampleLeading,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_fifo_timeout = 63,
@@ -113,8 +113,8 @@ TEST_F(ConfigTest, BasicInit) {
 
 TEST_F(ConfigTest, ComplexInit) {
   config_ = {
-      .clock_polarity = kDifSpiDeviceEdgeNegative,
-      .data_phase = kDifSpiDeviceEdgePositive,
+      .clock_polarity = kDifSpiDeviceClockNegative,
+      .clock_phase = kDifSpiDevicePhaseSampleTrailing,
       .tx_order = kDifSpiDeviceBitOrderLsbToMsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_fifo_timeout = 42,

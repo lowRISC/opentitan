@@ -141,8 +141,8 @@ static void spi_device_init_with_irqs(mmio_region_t base_addr,
                                       dif_spi_device_t *spi_device) {
   LOG_INFO("Initializing the SPI_DEVICE.");
   dif_spi_device_config_t spi_device_config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
+      .clock_polarity = kDifSpiDeviceClockPositive,
+      .clock_phase = kDifSpiDevicePhaseSampleLeading,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_fifo_timeout = 63,
