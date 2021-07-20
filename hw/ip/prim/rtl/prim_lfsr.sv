@@ -429,8 +429,14 @@ module prim_lfsr #(
   endfunction : compute_next_state
 
   // check whether next state is computed correctly
-  `ASSERT(NextStateCheck_A, lfsr_en_i && !seed_en_i |=> lfsr_q ==
-    compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)))
+  // we shift the assertion by one clock cycle (##1) in order to avoid
+  // erroneous SVA triggers right after reset deassertion in cases where
+  // the precondition is true throughout the reset.
+  // this can happen since the disable_iff evaluates using unsampled values,
+  // meaning that the assertion may already read rst_ni == 1 on an active
+  // clock edge while the flops in the design have not yet changed state.
+  `ASSERT(NextStateCheck_A, ##1 lfsr_en_i && !seed_en_i |=> lfsr_q ==
+      compute_next_state(coeffs, $past(entropy_i), $past(lfsr_q)))
 
   // Only check this if enabled.
   if (StatePermEn) begin : gen_perm_check
