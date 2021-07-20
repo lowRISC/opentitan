@@ -153,6 +153,11 @@ class dv_base_reg extends uvm_reg;
     en_shadow_wr = val;
   endfunction
 
+  // A helper function for shadow register or field read to clear the `shadow_wr_staged` flag.
+  virtual function void clear_shadow_wr_staged();
+    if (is_shadowed) shadow_wr_staged = 0;
+  endfunction
+
   function bit get_is_shadowed();
     return is_shadowed;
   endfunction
@@ -208,7 +213,7 @@ class dv_base_reg extends uvm_reg;
 
   // shadow register read will clear its phase tracker
   virtual task post_read(uvm_reg_item rw);
-    if (is_shadowed) shadow_wr_staged = 0;
+    clear_shadow_wr_staged();
   endtask
 
   virtual function void set_is_ext_reg(bit is_ext);

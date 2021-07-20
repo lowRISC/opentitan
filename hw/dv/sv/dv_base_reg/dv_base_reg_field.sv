@@ -126,6 +126,12 @@ class dv_base_reg_field extends uvm_reg_field;
     lockable_flds_q = lockable_flds;
   endfunction
 
+  // shadow register field read will clear its phase tracker
+  virtual task post_read(uvm_reg_item rw);
+    dv_base_reg parent_csr = get_dv_base_reg_parent();
+    parent_csr.clear_shadow_wr_staged();
+  endtask
+
   // override RAL's reset function to support enable registers
   // when reset issued - the lockable field's access will be reset to original access
   virtual function void reset(string kind = "HARD");
