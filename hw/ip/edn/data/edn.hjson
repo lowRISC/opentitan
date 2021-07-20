@@ -53,12 +53,12 @@
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
       swaccess: "rw0c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         { bits: "0",
           desc: '''
-                When true, the BOOT_REQ_DIS and BCAST_MODE_DIS fields within the CTRL registers
-                can be modified. When false, this field read-only. Defaults true, write one to clear.
+                When true, the CTRL can be written by software.
+                When false, this field read-only. Defaults true, write one to clear.
                 Note that this needs to be cleared after initial configuration at boot in order to
                 lock in the listed register settings.
                 '''
@@ -70,53 +70,47 @@
       desc: "EDN control register",
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "REGWEN",
       tags: [ // Exclude from writes to these bits since hardware actions will start.
               "excl:CsrAllTests:CsrExclWrite"]
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "EDN_ENABLE",
           desc: '''
-                 Setting this bit enables the EDN module.
+                Setting this field to 0xA enables the EDN module.
                  '''
+          resval: "0x5"
         },
-        { bits: "1",
-          name: "CMD_FIFO_RST",
+        { bits: "7:4",
+          name: "BOOT_REQ_MODE",
           desc: '''
-                Setting this bit clears the three command FIFOs: the SW_CMD_REQ FIFO, the
-                RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This bit must be cleared by
-                software before any further commands can be issued to these FIFOs.
-                '''
-        }
-        { bits: "3:2",
-          name: "HW_REQ_MODE",
-          resval: 0
-          desc: This field determines what hardware-based operational modes the EDN block will operate in.
-          enum: [
-            { value: 0,
-              name: "DISABLED",
-              desc: Disables BOOT_REQ_MODE and AUTO_REQ_MODE.
-            },
-            { value: 1,
-              name: "AUTO_REQ_MODE",
-              desc: '''
-                Setting this bit will enable the EDN block to automatically send another request to
-                CSRNG application interface. It is assumed that the command has been set up ahead of
-                time, such that when the previous command has returned ack, then a new command will be
-                send out again without software intervention. It is expected that the generate command
-                will be sent repeatedly so that a continuous supply of entropy can be delivered to the
-                endpoints.
-                '''
-            },
-            { value: 2,
-              name: "BOOT_REQ_MODE",
-              desc: '''
-                This decode will enable the feature where the EDN block will automatically
-                send a boot-time request to the CSRNG application interface.
+                Setting this field to 0xA will enable the feature where the EDN block will
+                automatically send a boot-time request to the CSRNG application interface.
                 The purpose of this feature is to request entropy as fast as possible after reset,
                 and during chip boot-time.
+                 '''
+          resval: "0x5"
+        },
+        { bits: "11:8",
+          name: "AUTO_REQ_MODE",
+          desc: '''
+                Setting this field to 0xA will enable the EDN block to automatically send another
+                request to CSRNG application interface. It is assumed that the command has been
+                set up ahead of time, such that when the previous command has returned ack, then
+                a new command will be send out again without software intervention. It is expected
+                that the generate command will be sent repeatedly so that a continuous supply of
+                entropy can be delivered to the endpoints.
+                 '''
+          resval: "0x5"
+        },
+        { bits: "15:12",
+          name: "CMD_FIFO_RST",
+          desc: '''
+                Setting this field to 0xA  clears the three command FIFOs: the SW_CMD_REQ FIFO, the
+                RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This field must be set to the reset
+                state by software before any further commands can be issued to these FIFOs.
                 '''
-            },
-          ]
+          resval: "0x5"
         },
       ]
     },
@@ -156,7 +150,6 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "SW_CMD_REQ",
@@ -200,7 +193,6 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "RESEED_CMD",
@@ -221,7 +213,6 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "GENERATE_CMD",
@@ -330,7 +321,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         {
             bits: "4:0",

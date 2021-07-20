@@ -51,19 +51,18 @@ package edn_reg_pkg;
   } edn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-  } edn_reg2hw_regwen_reg_t;
-
-  typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } edn_enable;
     struct packed {
-      logic        q;
-    } cmd_fifo_rst;
+      logic [3:0]  q;
+    } boot_req_mode;
     struct packed {
-      logic [1:0]  q;
-    } hw_req_mode;
+      logic [3:0]  q;
+    } auto_req_mode;
+    struct packed {
+      logic [3:0]  q;
+    } cmd_fifo_rst;
   } edn_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -157,12 +156,11 @@ package edn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    edn_reg2hw_intr_state_reg_t intr_state; // [152:151]
-    edn_reg2hw_intr_enable_reg_t intr_enable; // [150:149]
-    edn_reg2hw_intr_test_reg_t intr_test; // [148:145]
-    edn_reg2hw_alert_test_reg_t alert_test; // [144:143]
-    edn_reg2hw_regwen_reg_t regwen; // [142:142]
-    edn_reg2hw_ctrl_reg_t ctrl; // [141:138]
+    edn_reg2hw_intr_state_reg_t intr_state; // [163:162]
+    edn_reg2hw_intr_enable_reg_t intr_enable; // [161:160]
+    edn_reg2hw_intr_test_reg_t intr_test; // [159:156]
+    edn_reg2hw_alert_test_reg_t alert_test; // [155:154]
+    edn_reg2hw_ctrl_reg_t ctrl; // [153:138]
     edn_reg2hw_sw_cmd_req_reg_t sw_cmd_req; // [137:105]
     edn_reg2hw_reseed_cmd_reg_t reseed_cmd; // [104:72]
     edn_reg2hw_generate_cmd_reg_t generate_cmd; // [71:39]
@@ -229,7 +227,7 @@ package edn_reg_pkg;
     4'b 0001, // index[ 2] EDN_INTR_TEST
     4'b 0001, // index[ 3] EDN_ALERT_TEST
     4'b 0001, // index[ 4] EDN_REGWEN
-    4'b 0001, // index[ 5] EDN_CTRL
+    4'b 0011, // index[ 5] EDN_CTRL
     4'b 0001, // index[ 6] EDN_SUM_STS
     4'b 1111, // index[ 7] EDN_SW_CMD_REQ
     4'b 0001, // index[ 8] EDN_SW_CMD_STS

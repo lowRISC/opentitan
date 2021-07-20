@@ -159,7 +159,7 @@ _mask_rom_start_boot:
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
   li a0, TOP_EARLGREY_EDN0_BASE_ADDR
-  li t0, (1 << EDN_CTRL_EDN_ENABLE_BIT) | (EDN_CTRL_HW_REQ_MODE_VALUE_BOOT_REQ_MODE << EDN_CTRL_HW_REQ_MODE_OFFSET)
+  li t0, (0xa << EDN_CTRL_EDN_ENABLE_OFFSET) | (0xa << EDN_CTRL_BOOT_REQ_MODE_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Scramble and initialize main memory (main SRAM).

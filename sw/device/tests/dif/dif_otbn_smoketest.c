@@ -23,9 +23,9 @@ static void setup_edn(void) {
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
                       kCsrngCtrlRegOffset, 0xaa);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      kEdnCtrlRegOffset, 0x9);
+                      kEdnCtrlRegOffset, 0xaa);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      kEdnCtrlRegOffset, 0x9);
+                      kEdnCtrlRegOffset, 0xaa);
 }
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
