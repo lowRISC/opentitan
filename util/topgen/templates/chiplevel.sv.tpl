@@ -1053,11 +1053,6 @@ module chip_${top["name"]}_${target["name"]} (
   // for verilator purposes, make these two the same.
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
 
-% if target["name"] == "cw305":
-  // This is used for outputting the capture trigger
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_pre;
-% endif
-
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
@@ -1134,11 +1129,7 @@ module chip_${top["name"]}_${target["name"]} (
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in   ),
-% if target["name"] == "cw305":
-    .mio_out_o       ( mio_out_pre  ),
-% else:
     .mio_out_o       ( mio_out  ),
-% endif
     .mio_oe_o        ( mio_oe   ),
 
     // Dedicated I/O
@@ -1163,45 +1154,74 @@ module chip_${top["name"]}_${target["name"]} (
   );
 % endif
 
-
 ###################################################################
-## CW305 capture board interface                                 ##
+## CW310/305 capture board interface                             ##
 ###################################################################
-## TODO: This needs to be adapted to enable captures on the CW310. In particular,
-## - a precise capture trigger and the target clock need to be output, and
-## - a separate UART should be used for the simpleserial communication with the capture board.
-## See also pins_cw310.xdc
-% if target["name"] in ["cw305"]:
+% if target["name"] in ["cw310", "cw305"]:
 
-  //////////////////////////////////////
-  // Generate precise capture trigger //
-  //////////////////////////////////////
-
-  // TODO: make this a "manual" IO specific to the CW305 target
-  // such that we can decouple this from the MIO signals.
-  localparam int MioIdxTrigger = 15;
-
-  // To obtain a more precise capture trigger for side-channel analysis, we only forward the
-  // software-controlled capture trigger when the AES module is actually busy (performing
-  // either encryption/decryption or clearing internal registers).
-  // GPIO15 is used as capture trigger (mapped to IOB6 at the moment in pinmux.c).
-  always_comb begin : p_trigger
-    mio_out = mio_out_pre;
-    mio_out[MioIdxTrigger] = mio_out_pre[MioIdxTrigger] &
-                             ~top_${top["name"]}.clkmgr_aon_idle[clkmgr_pkg::HintMainAes];
-  end
-
-  //////////////////////
-  // ChipWhisperer IO //
-  //////////////////////
+  /////////////////////////////////////////////////////
+  // ChipWhisperer CW310/305 Capture Board Interface //
+  /////////////////////////////////////////////////////
+  // This is used to interface OpenTitan as a target with a capture board trough the ChipWhisperer
+  // 20-pin connector. This is used for SCA/FI experiments only.
 
   logic unused_inputs;
-  assign unused_inputs = manual_in_tio_clkout ^ manual_in_io_utx_debug;
+  % if target["name"] == "cw305":
+  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger ^ manual_in_io_utx_debug;
+  % else:
+  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger;
+  % endif
 
-  // Clock output to capture board.
-  assign manual_out_tio_clkout = manual_in_io_clk;
-  assign manual_oe_tio_clkout = 1'b1;
+  // Synchronous clock output to capture board.
+  assign manual_out_io_clkout = manual_in_io_clk;
+  assign manual_oe_io_clkout = 1'b1;
 
+  // Capture trigger.
+  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
+  // GPIO[11:9] is used for selecting the IP of interest. The encoding is as follows (see
+  // hint_names_e enum in clkmgr_pkg.sv for details).
+  //
+  // IP              - GPIO[11:9] - Index for clkmgr_aon_idle
+  // ------------------------------------------------------------
+  //  AES            -   000      -  0
+  //  HMAC           -   001      -  1
+  //  KMAC           -   010      -  2 - not implemented on CW305
+  //  OTBN (IO_DIV4) -   011      -  3 - not implemented on CW305
+  //  OTBN           -   100      -  4 - not implemented on CW305
+  //
+  // In addition, GPIO8 is used for gating the capture trigger in software.
+  // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
+  // On the CW305, GPIO[9,8] are connected to LED[5,7].
+
+  clkmgr_pkg::hint_names_e trigger_sel;
+  % if target["name"] == "cw305":
+  assign trigger_sel = mio_out[MioOutGpioGpio9] ? clkmgr_pkg::HintMainHmac :
+                                                  clkmgr_pkg::HintMainAes;
+  % else:
+  always_comb begin : trigger_sel_mux
+    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
+      3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
+      3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
+      3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
+      3'b011:  trigger_sel = clkmgr_pkg::HintIoDiv4Otbn;
+      3'b100:  trigger_sel = clkmgr_pkg::HintMainOtbn;
+      default: trigger_sel = clkmgr_pkg::HintMainAes;
+    endcase;
+  end
+  % endif
+  logic trigger, trigger_oe;
+  assign trigger = mio_out[MioOutGpioGpio8] & ~top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+  assign trigger_oe = mio_oe[MioOutGpioGpio8];
+
+  // Synchronize trigger to manual_in_io_clk.
+  prim_flop_2sync #(
+    .Width ( 2 )
+  ) u_sync_trigger (
+    .clk_i  ( manual_in_io_clk                              ),
+    .rst_ni ( manual_in_por_n                               ),
+    .d_i    ( {trigger,               trigger_oe}           ),
+    .q_o    ( {manual_out_io_trigger, manual_oe_io_trigger} )
+  );
 % endif
 ## This separate UART debugging output is needed for the CW305 only.
 % if target["name"] == "cw305":
@@ -1209,7 +1229,6 @@ module chip_${top["name"]}_${target["name"]} (
   // UART Tx for debugging. The UART itself is connected to the capture board.
   assign manual_out_io_utx_debug = top_${top["name"]}.cio_uart0_tx_d2p;
   assign manual_oe_io_utx_debug = 1'b1;
-
 % endif
 
 endmodule : chip_${top["name"]}_${target["name"]}

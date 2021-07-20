@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/sca/lib/simple_serial.h"
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -205,9 +206,12 @@ void simple_serial_process_packet(void) {
 
 void simple_serial_send_packet(const uint8_t cmd, const uint8_t *data,
                                size_t data_len) {
-  base_printf("%c", cmd);
+  char buf;
+  base_snprintf(&buf, 1, "%c", cmd);
+  IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf));
   simple_serial_print_hex(data, data_len);
-  base_printf("\n");
+  base_snprintf(&buf, 1, "\n");
+  IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf));
 }
 
 void simple_serial_send_status(uint8_t res) {
@@ -215,7 +219,10 @@ void simple_serial_send_status(uint8_t res) {
 }
 
 void simple_serial_print_hex(const uint8_t *data, size_t data_len) {
+  char buf[2];
   for (size_t i = 0; i < data_len; ++i) {
-    base_printf("%2x", data[i]);
+    base_snprintf(&buf[0], 2, "%2x", data[i]);
+    IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf[0]));
+    IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf[1]));
   }
 }

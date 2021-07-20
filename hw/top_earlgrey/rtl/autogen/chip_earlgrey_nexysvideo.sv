@@ -724,7 +724,6 @@ module chip_earlgrey_nexysvideo #(
   // for verilator purposes, make these two the same.
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
 
-
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
@@ -806,7 +805,6 @@ module chip_earlgrey_nexysvideo #(
     .scan_en_i          ( 1'b0             ),
     .scanmode_i         ( lc_ctrl_pkg::Off )
   );
-
 
 
 endmodule : chip_earlgrey_nexysvideo

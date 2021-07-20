@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/sca/lib/sca.h"
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -27,8 +28,15 @@
 enum {
   /**
    * GPIO capture trigger values.
+   *
+   * GPIO10[11:9]: Trigger select, 000 for AES, see chiplevel.sv.tpl for
+   *               details.
+   * GPIO8:        Trigger enable
    */
-  kGpioCaptureTriggerHigh = 0x08200,
+  kGpioCaptureTriggerSelMask = 0x00E00,
+  kGpioCaptureTriggerEnMask = 0x00100,
+  kGpioCaptureTriggerSel = 0x00000,
+  kGpioCaptureTriggerHigh = 0x00100,
   kGpioCaptureTriggerLow = 0x00000,
   /**
    * RV timer settings.
@@ -37,7 +45,8 @@ enum {
   kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
 };
 
-static dif_uart_t uart;
+static dif_uart_t uart0;
+static dif_uart_t uart1;
 static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
 
@@ -47,19 +56,27 @@ static dif_rv_timer_t timer;
  * Initializes the UART peripheral.
  */
 static void sca_init_uart(void) {
+  const dif_uart_config_t uart_config = {
+      .baudrate = kUartBaudrate,
+      .clk_freq_hz = kClockFreqPeripheralHz,
+      .parity_enable = kDifUartToggleDisabled,
+      .parity = kDifUartParityEven,
+  };
+
   IGNORE_RESULT(dif_uart_init(
       (dif_uart_params_t){
           .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
       },
-      &uart));
-  IGNORE_RESULT(
-      dif_uart_configure(&uart, (dif_uart_config_t){
-                                    .baudrate = kUartBaudrate,
-                                    .clk_freq_hz = kClockFreqPeripheralHz,
-                                    .parity_enable = kDifUartToggleDisabled,
-                                    .parity = kDifUartParityEven,
-                                }));
-  base_uart_stdout(&uart);
+      &uart0));
+  IGNORE_RESULT(dif_uart_configure(&uart0, uart_config));
+  base_uart_stdout(&uart0);
+
+  IGNORE_RESULT(dif_uart_init(
+      (dif_uart_params_t){
+          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR),
+      },
+      &uart1));
+  IGNORE_RESULT(dif_uart_configure(&uart1, uart_config));
 }
 
 /**
@@ -69,8 +86,10 @@ static void sca_init_gpio(void) {
   dif_gpio_params_t gpio_params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
   IGNORE_RESULT(dif_gpio_init(gpio_params, &gpio));
-  IGNORE_RESULT(
-      dif_gpio_output_set_enabled_all(&gpio, kGpioCaptureTriggerHigh));
+  IGNORE_RESULT(dif_gpio_output_set_enabled_all(
+      &gpio, kGpioCaptureTriggerSelMask | kGpioCaptureTriggerEnMask));
+  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerSelMask,
+                                      kGpioCaptureTriggerSel));
 }
 
 /**
@@ -112,14 +131,16 @@ void sca_init(void) {
   sca_init_timer();
 }
 
-void sca_get_uart(const dif_uart_t **uart_out) { *uart_out = &uart; }
+void sca_get_uart(const dif_uart_t **uart_out) { *uart_out = &uart1; }
 
 void sca_set_trigger_high() {
-  IGNORE_RESULT(dif_gpio_write_all(&gpio, kGpioCaptureTriggerHigh));
+  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerEnMask,
+                                      kGpioCaptureTriggerHigh));
 }
 
 void sca_set_trigger_low() {
-  IGNORE_RESULT(dif_gpio_write_all(&gpio, kGpioCaptureTriggerLow));
+  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerEnMask,
+                                      kGpioCaptureTriggerLow));
 }
 
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {

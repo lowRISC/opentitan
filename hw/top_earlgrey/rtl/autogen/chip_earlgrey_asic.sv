@@ -1152,5 +1152,4 @@ module chip_earlgrey_asic (
 
 
 
-
 endmodule : chip_earlgrey_asic
