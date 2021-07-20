@@ -70,6 +70,7 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_hw_inst_exc;
   logic       event_cs_fatal_err;
   logic       cs_enable;
+  logic       sw_app_enable;
   logic       acmd_avail;
   logic       acmd_sop;
   logic       acmd_mop;
@@ -316,6 +317,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
   logic                    unused_int_state_val;
+  logic                    unused_regwen;
 
   // flops
   logic [2:0]  acmd_q, acmd_d;
@@ -644,8 +646,8 @@ module csrng_core import csrng_pkg::*; #(
   };
 
   // master module enable
-  assign cs_enable = reg2hw.ctrl.q;
-  assign hw2reg.regwen.d = !cs_enable; // hw reg lock implementation
+  assign cs_enable = (reg2hw.ctrl.enable.q == CS_FIELD_ON);
+  assign sw_app_enable = (reg2hw.ctrl.sw_app_enable.q == CS_FIELD_ON);
 
   //------------------------------------------
   // application interface
@@ -707,7 +709,7 @@ module csrng_core import csrng_pkg::*; #(
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
-  assign hw2reg.genbits.d = efuse_sw_app_enable_i ? genbits_stage_bus_sw : '0;
+  assign hw2reg.genbits.d = (sw_app_enable && efuse_sw_app_enable_i) ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
 
 
@@ -1486,6 +1488,7 @@ module csrng_core import csrng_pkg::*; #(
   assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
+  assign unused_regwen = reg2hw.regwen.q;
 
 
 endmodule // csrng_core
