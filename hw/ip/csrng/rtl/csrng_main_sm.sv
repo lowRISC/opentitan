@@ -28,42 +28,42 @@ module csrng_main_sm import csrng_pkg::*; (
   input logic                cmd_complete_i,
   output logic               main_sm_err_o
 );
-
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
-//      -s 610129199 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 12 -n 8 \
+//      -s 2565810189 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||||| (32.73%)
-//  4: |||||||||||||||||||| (36.36%)
-//  5: |||||||| (14.55%)
-//  6: ||||| (9.09%)
-//  7: |||| (7.27%)
+//  3: |||||||||||||||| (30.30%)
+//  4: |||||||||||||||||||| (37.88%)
+//  5: ||||||||| (18.18%)
+//  6: |||| (9.09%)
+//  7: || (4.55%)
 //  8: --
 //
 // Minimum Hamming distance: 3
 // Maximum Hamming distance: 7
-// Minimum Hamming weight: 3
+// Minimum Hamming weight: 2
 // Maximum Hamming weight: 6
 //
 
   localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
-    Idle    =      8'b01110011, // idle
-    InstantPrep  = 8'b11010010, // instantiate prep
-    InstantReq   = 8'b01010100, // instantiate request (takes adata or entropy)
-    ReseedPrep   = 8'b10101111, // reseed prep
-    ReseedReq    = 8'b00101010, // reseed request (takes adata and entropy and Key,V,RC)
-    GenerateReq  = 8'b00100101, // generate request (takes adata? and Key,V,RC)
-    UpdatePrep   = 8'b11001011, // update prep
-    UpdateReq    = 8'b00010111, // update request (takes adata and Key,V,RC)
-    UninstantReq = 8'b10000110, // uninstantiate request (no input)
-    CmdCompWait  = 8'b10011100, // wait for command to complete
-    Error        = 8'b11000101  // error state, results in fatal alert
+    Idle         = 8'b01010011, // idle
+    ParseCmd     = 8'b01001100, // parse the cmd
+    InstantPrep  = 8'b00101010, // instantiate prep
+    InstantReq   = 8'b11011101, // instantiate request (takes adata or entropy)
+    ReseedPrep   = 8'b10110111, // reseed prep
+    ReseedReq    = 8'b11001011, // reseed request (takes adata and entropy and Key,V,RC)
+    GenerateReq  = 8'b10011110, // generate request (takes adata? and Key,V,RC)
+    UpdatePrep   = 8'b10101001, // update prep
+    UpdateReq    = 8'b00011001, // update request (takes adata and Key,V,RC)
+    UninstantReq = 8'b00000111, // uninstantiate request (no input)
+    CmdCompWait  = 8'b00010100, // wait for command to complete
+    Error        = 8'b11110001  // error state, results in fatal alert
   } state_e;
 
   state_e state_d, state_q;
@@ -99,30 +99,38 @@ module csrng_main_sm import csrng_pkg::*; (
       Idle: begin
         if (enable_i) begin
           if (ctr_drbg_cmd_req_rdy_i) begin
+            // signal the arbiter to grant this request
             if (acmd_avail_i) begin
               acmd_accept_o = 1'b1;
-              if (acmd_i == INS) begin
-                if (acmd_eop_i) begin
-                  acmd_hdr_capt_o = 1'b1;
-                  state_d = InstantPrep;
-                end
-              end else if (acmd_i == RES) begin
-                if (acmd_eop_i) begin
-                  acmd_hdr_capt_o = 1'b1;
-                  state_d = ReseedPrep;
-                end
-              end else if (acmd_i == GEN) begin
+              state_d = ParseCmd;
+            end
+          end
+        end
+      end
+      ParseCmd: begin
+        if (enable_i) begin
+          if (ctr_drbg_cmd_req_rdy_i) begin
+            if (acmd_i == INS) begin
+              if (acmd_eop_i) begin
                 acmd_hdr_capt_o = 1'b1;
-                state_d = GenerateReq;
-              end else if (acmd_i == UPD) begin
-                if (acmd_eop_i) begin
-                  acmd_hdr_capt_o = 1'b1;
-                  state_d = UpdatePrep;
-                end
-              end else if (acmd_i == UNI) begin
-                acmd_hdr_capt_o = 1'b1;
-                state_d = UninstantReq;
+                state_d = InstantPrep;
               end
+            end else if (acmd_i == RES) begin
+              if (acmd_eop_i) begin
+                acmd_hdr_capt_o = 1'b1;
+                state_d = ReseedPrep;
+              end
+            end else if (acmd_i == GEN) begin
+              acmd_hdr_capt_o = 1'b1;
+              state_d = GenerateReq;
+            end else if (acmd_i == UPD) begin
+              if (acmd_eop_i) begin
+                acmd_hdr_capt_o = 1'b1;
+                state_d = UpdatePrep;
+              end
+            end else if (acmd_i == UNI) begin
+              acmd_hdr_capt_o = 1'b1;
+              state_d = UninstantReq;
             end
           end
         end
