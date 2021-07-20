@@ -359,7 +359,16 @@ module tb;
   initial begin
     void'($value$plusargs("stub_cpu=%0b", stub_cpu));
     if (stub_cpu) begin
-     force `CPU_CORE_HIER.clk_i = 1'b0;
+      // silence the main cpu clock to ensure there are no transactions.
+      // also silence the translation modules as they contain arbiters
+      // that are unhappy with X's, which can happen if csr_rw happens to
+      // hit the right register during testing.
+      // We cannot kill all clocks to CPU_CORE because the DV hijack point
+      // is in front of a FIFO, so potentially this can kill transactions
+      // being buffered.
+      force `CPU_CORE_HIER.clk_i = 1'b0;
+      force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
+      force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
       // tl type is used to calculate ECC and we use DataType for cpu data interface
       force cpu_d_tl_if.h2d.a_user.tl_type = tlul_pkg::DataType;
       force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
