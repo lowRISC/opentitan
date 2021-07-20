@@ -42,7 +42,7 @@ TEST_F(ConfigTest, NullArgs) {
 }
 
 TEST_F(ConfigTest, ConfigOk) {
-  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 1);
+  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 0xaa);
   EXPECT_EQ(dif_csrng_configure(&csrng_), kDifCsrngOk);
 }
 

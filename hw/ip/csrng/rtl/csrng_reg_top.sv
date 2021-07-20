@@ -129,11 +129,14 @@ module csrng_reg_top (
   logic intr_test_cs_fatal_err_wd;
   logic alert_test_we;
   logic alert_test_wd;
-  logic regwen_re;
+  logic regwen_we;
   logic regwen_qs;
+  logic regwen_wd;
   logic ctrl_we;
-  logic ctrl_qs;
-  logic ctrl_wd;
+  logic [3:0] ctrl_enable_qs;
+  logic [3:0] ctrl_enable_wd;
+  logic [3:0] ctrl_sw_app_enable_qs;
+  logic [3:0] ctrl_sw_app_enable_wd;
   logic cmd_req_we;
   logic [31:0] cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
@@ -477,35 +480,19 @@ module csrng_reg_top (
   );
 
 
-  // R[regwen]: V(True)
-
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_regwen (
-    .re     (regwen_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.regwen.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (regwen_qs)
-  );
-
-
-  // R[ctrl]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_ctrl (
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_we),
-    .wd     (ctrl_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -513,10 +500,64 @@ module csrng_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.q),
+    .q      (),
 
     // to register interface (read)
-    .qs     (ctrl_qs)
+    .qs     (regwen_qs)
+  );
+
+
+  // R[ctrl]: V(False)
+
+  //   F[enable]: 3:0
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h5)
+  ) u_ctrl_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we & regwen_qs),
+    .wd     (ctrl_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.enable.q),
+
+    // to register interface (read)
+    .qs     (ctrl_enable_qs)
+  );
+
+
+  //   F[sw_app_enable]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h5)
+  ) u_ctrl_sw_app_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we & regwen_qs),
+    .wd     (ctrl_sw_app_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.sw_app_enable.q),
+
+    // to register interface (read)
+    .qs     (ctrl_sw_app_enable_qs)
   );
 
 
@@ -1608,10 +1649,14 @@ module csrng_reg_top (
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
+
+  assign regwen_wd = reg_wdata[0];
   assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign ctrl_wd = reg_wdata[0];
+  assign ctrl_enable_wd = reg_wdata[3:0];
+
+  assign ctrl_sw_app_enable_wd = reg_wdata[7:4];
   assign cmd_req_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cmd_req_wd = reg_wdata[31:0];
@@ -1665,7 +1710,8 @@ module csrng_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = ctrl_qs;
+        reg_rdata_next[3:0] = ctrl_enable_qs;
+        reg_rdata_next[7:4] = ctrl_sw_app_enable_qs;
       end
 
       addr_hit[6]: begin

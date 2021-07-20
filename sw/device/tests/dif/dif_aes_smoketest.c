@@ -74,7 +74,7 @@ bool test_main(void) {
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
                       ENTROPY_SRC_CONF_REG_OFFSET, 0x2);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                      CSRNG_CTRL_REG_OFFSET, 0x1);
+                      CSRNG_CTRL_REG_OFFSET, 0xaa);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
                       EDN_CTRL_REG_OFFSET, 0x9);
 

@@ -70,6 +70,7 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_hw_inst_exc;
   logic       event_cs_fatal_err;
   logic       cs_enable;
+  logic       sw_app_enable;
   logic       acmd_avail;
   logic       acmd_sop;
   logic       acmd_mop;
@@ -644,8 +645,8 @@ module csrng_core import csrng_pkg::*; #(
   };
 
   // master module enable
-  assign cs_enable = reg2hw.ctrl.q;
-  assign hw2reg.regwen.d = !cs_enable; // hw reg lock implementation
+  assign cs_enable = (cs_enb_e'(reg2hw.ctrl.enable.q) == CS_FIELD_ON);
+  assign sw_app_enable = (cs_enb_e'(reg2hw.ctrl.sw_app_enable.q) == CS_FIELD_ON);
 
   //------------------------------------------
   // application interface
@@ -707,7 +708,7 @@ module csrng_core import csrng_pkg::*; #(
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
-  assign hw2reg.genbits.d = efuse_sw_app_enable_i ? genbits_stage_bus_sw : '0;
+  assign hw2reg.genbits.d = (sw_app_enable && efuse_sw_app_enable_i) ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
 
 
