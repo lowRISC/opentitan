@@ -46,6 +46,8 @@ transition is legal and allowed by the life cycle definition.
 
 See the table below for more details.
 
+<!--SVG for flow chart below in google docs at
+https://docs.google.com/drawings/d/1kENEhJzrWDkzonu8ZC6SKDRtjETyH6S4SslcO1RpVPM/edit?usp=sharing-->
 <img src="device_life_cycle_fig1.svg" alt="Fig1" style="width: 800px;"/>
 
 In the diagram above,
@@ -85,7 +87,7 @@ to support the provisioning flow ownership transfer model.
 For example, transitions into the DEV / PROD / RMA manufacturing states affect
 OTP states and therefore cannot be reversed once completed.
 
-OWNED / UNOWNED identity states are defined in flash and thus can be reversed
+LOCKED_OWNERSHIP / UNLOCKED_OWNERSHIP identity states are defined in flash and thus can be reversed
 under the right circumstances.
 
 Below, each state is described in detail.
@@ -481,7 +483,7 @@ directly consumed by hardware.
     </td>
   </tr>
   <tr>
-    <td>UNOWNED</td>
+    <td>UNLOCKED_OWNERSHIP</td>
     <td>Flash</td>
     <td>
 
@@ -493,14 +495,14 @@ state.
     </td>
   </tr>
   <tr>
-    <td>OWNED</td>
+    <td>LOCKED_OWNERSHIP</td>
     <td>Flash</td>
     <td>
 
 This state represents a device which contains both a Creator Identity and a
 Silicon Owner.
 
-A device in the OWNED state can transition back to UNOWNED when it is explicitly
+A device in the LOCKED_OWNERSHIP state can transition back to UNLOCKED_OWNERSHIP when it is explicitly
 unbound. The unbinding process is described separately.
 
 Since this state is software managed, software is free to define a different
