@@ -26,4 +26,10 @@ package edn_pkg;
   parameter edn_req_t EDN_REQ_DEFAULT = '0;
   parameter edn_rsp_t EDN_RSP_DEFAULT = '0;
 
+  // Sparse four-value signal type
+  parameter int EDN_MODE_WIDTH = 4;
+  typedef enum logic [EDN_MODE_WIDTH-1:0] {
+    EDN_FIELD_ON = 4'b1010
+  } edn_enb_e;
+
 endpackage : edn_pkg
