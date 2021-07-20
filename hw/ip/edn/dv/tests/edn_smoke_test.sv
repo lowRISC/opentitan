@@ -11,6 +11,7 @@ class edn_smoke_test extends edn_base_test;
     super.configure_env();
 
     cfg.auto_req_mode_pct = 0;
+    cfg.boot_req_mode_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
