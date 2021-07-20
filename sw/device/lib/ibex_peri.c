@@ -11,7 +11,7 @@
 
 void init_translation(uint32_t src_addr, uint32_t size, uint32_t dst_addr) {
   mmio_region_t ibex_base =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
 
   uint32_t mask = src_addr | ((size - 1) >> 1);
   mmio_region_write32(ibex_base, RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,

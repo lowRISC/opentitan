@@ -854,22 +854,22 @@ extern "C" {
 #define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x4000u
 
 /**
- * Peripheral base address for reg device on rv_core_ibex in top earlgrey.
+ * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR 0x411F0000u
+#define TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR 0x411F0000u
 
 /**
- * Peripheral size for reg device on rv_core_ibex in top earlgrey.
+ * Peripheral size for cfg device on rv_core_ibex in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR and
- * `TOP_EARLGREY_RV_CORE_IBEX_REG_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_REG_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR and
+ * `TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_CORE_IBEX_REG_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x1000u
 
 
 /**

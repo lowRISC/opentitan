@@ -279,7 +279,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     # Gather the inter_signal_list
     instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
-        topcfg["host"] + topcfg["port"]
+        topcfg["port"]
 
     for x in instances:
         old_isl = x.get('inter_signal_list')
@@ -662,12 +662,9 @@ def find_otherside_modules(topcfg: OrderedDict, m,
     """
     # TODO: handle special cases
     special_inst_names = {
-        ('main', 'tl_rom'): ('tl_adapter_rom', 'tl'),
         ('main', 'tl_ram_main'): ('tl_adapter_ram_main', 'tl'),
         ('main', 'tl_eflash'): ('tl_adapter_eflash', 'tl'),
         ('peri', 'tl_ram_ret_aon'): ('tl_adapter_ram_ret_aon', 'tl'),
-        ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
-        ('main', 'tl_debug_mem'): ('dm_top', 'tl_d'),
         ('peri', 'tl_ast'): ('ast', 'tl')
     }
     special_result = special_inst_names.get((m, s))

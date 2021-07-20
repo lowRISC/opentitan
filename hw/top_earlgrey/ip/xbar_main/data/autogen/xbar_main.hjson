@@ -147,7 +147,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rv_core_ibex__reg"
+      name:   "tl_rv_core_ibex__cfg"
       act:    "req"
       package: "tlul_pkg"
     }

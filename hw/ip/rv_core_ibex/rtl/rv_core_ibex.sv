@@ -80,8 +80,8 @@ module rv_core_ibex
   input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // peripheral interface access
-  input  tlul_pkg::tl_h2d_t reg_tl_d_i,
-  output tlul_pkg::tl_d2h_t reg_tl_d_o,
+  input  tlul_pkg::tl_h2d_t cfg_tl_d_i,
+  output tlul_pkg::tl_d2h_t cfg_tl_d_o,
 
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -93,8 +93,8 @@ module rv_core_ibex
   import tlul_pkg::*;
 
   // Register module
-  rv_core_ibex_reg_reg2hw_t reg2hw;
-  rv_core_ibex_reg_hw2reg_t hw2reg;
+  rv_core_ibex_cfg_reg2hw_t reg2hw;
+  rv_core_ibex_cfg_hw2reg_t hw2reg;
 
   // if pipeline=1, do not allow pass through and always break the path
   // if pipeline is 0, passthrough the fifo completely
@@ -463,11 +463,11 @@ module rv_core_ibex
   //////////////////////////////////
 
   logic intg_err;
-  rv_core_ibex_reg_reg_top u_reg_reg (
+  rv_core_ibex_cfg_reg_top u_reg_cfg (
     .clk_i,
     .rst_ni,
-    .tl_i(reg_tl_d_i),
-    .tl_o(reg_tl_d_o),
+    .tl_i(cfg_tl_d_i),
+    .tl_o(cfg_tl_d_o),
     .reg2hw,
     .hw2reg,
     .intg_err_o (intg_err),

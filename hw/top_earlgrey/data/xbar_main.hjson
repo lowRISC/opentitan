@@ -143,7 +143,7 @@
       reset:     "rst_main_ni"
       pipeline_byp: "false"
     },
-    { name:      "rv_core_ibex.reg",
+    { name:      "rv_core_ibex.cfg",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
@@ -163,13 +163,13 @@
       "ram_main", "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main",
-      "rv_core_ibex.reg"
+      "rv_core_ibex.cfg"
     ],
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "ram_main",
       "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim", "aes",
       "entropy_src", "csrng", "edn0", "edn1", "hmac", "rv_plic",
-      "otbn", "keymgr", "kmac", "sram_ctrl_main", "rv_core_ibex.reg"
+      "otbn", "keymgr", "kmac", "sram_ctrl_main", "rv_core_ibex.cfg"
     ],
   },
 }

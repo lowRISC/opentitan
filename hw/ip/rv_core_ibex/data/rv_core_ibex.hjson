@@ -8,7 +8,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "corei" }
     { protocol: "tlul", direction: "host",   name: "cored" }
-    { protocol: "tlul", direction: "device", name: "reg" }
+    { protocol: "tlul", direction: "device", name: "cfg" }
   ],
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
@@ -284,7 +284,7 @@
 
   regwidth: "32",
   registers: {
-    reg: [
+    cfg: [
       { multireg: {
           cname: "SW_ALERTS_REGWEN",
           name: "SW_ALERT_REGWEN",
