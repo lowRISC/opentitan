@@ -515,7 +515,7 @@ If OTBN was running when the alert occurred (this is true whenever {{< regref "S
 - Set the {{< regref "ERR_BITS" >}} register to a non-zero value describing the error.
 
 Note that OTBN can detect some errors even when it isn't running.
-One example of this is an error caused by an ECC failure when reading or programming OTBN's memories over the bus.
+One example of this is an error caused by an integrity error when reading or writing OTBN's memories over the bus.
 In this case, the {{< regref "ERR_BITS" >}} register will not change.
 This avoids race conditions with the host processor's error handling software.
 However, every error that OTBN detects when it isn't running causes a fatal alert.
