@@ -32,9 +32,10 @@ p256_ecdsa_verify:
 k:
   .zero 32
 
-.globl rnd
+/* result of the verification x1 */
+.globl x1
 .balign 32
-rnd:
+x1:
   .zero 32
 
 /* message digest */

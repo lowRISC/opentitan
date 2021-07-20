@@ -1107,8 +1107,6 @@ scalar_mult_int:
  * This routine runs in constant time.
  *
  * @param[in]  dmem[0]: dptr_k, pointer to a 256 bit random secret in dmem
- * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
- *                                number for blinding
  * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
  * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
  *                               of signature will be placed
@@ -1130,11 +1128,6 @@ p256_sign:
   /* load dmem pointer to secret random scalar k: x16 <= dptr_k = dmem[0] */
   la        x16, dptr_k
   lw        x16, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
 
   /* load dmem pointer to message msg in dmem: x18 <= dptr_msg = dmem[8] */
   la        x18, dptr_msg
@@ -1228,8 +1221,6 @@ p256_sign:
  * P-256.
  * This routine runs in constant time.
  *
- * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
- *                      number for blinding
  * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  dmem[28]: dptr_d, pointer to location in dmem containing
@@ -1237,7 +1228,7 @@ p256_sign:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w26
+ * clobbered registers: x2, x3, x16, x21, x22, w0 to w26
  * clobbered flag groups: FG0
  */
 p256_base_mult:
@@ -1249,11 +1240,6 @@ p256_base_mult:
   la        x16, dptr_d
   lw        x16, 0(x16)
   bn.lid    x0, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
 
   /* set dmem pointers to base point coordinates */
   la        x21, p256_gx
@@ -1457,8 +1443,8 @@ p256_verify:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load dmem pointer to x1 (result) from dmem: x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
+  /* load dmem pointer to x1 (result) from dmem: x17 <= dptr_x1 = dmem[4] */
+  la        x17, dptr_x1
   lw        x17, 0(x17)
 
   /* load dmem pointer to message msg in dmem: x18 <= dptr_msg = dmem[8] */
@@ -1685,16 +1671,14 @@ p256_verify:
  * Sets up context and calls internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]  dmem[0]: dK, pointer to location in dmem containing scalar k
- * @param[in]  dmem[4]: dRnd, pointer to location in dmem containing random
- *                        number for blinding
+ * @param[in]  dmem[0]: dptr_k, pointer to location in dmem containing scalar k
  * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w25
+ * clobbered registers: x2, x3, x16, x21, x22, w0 to w25
  * clobbered flag groups: FG0
  */
 p256_scalar_mult:
@@ -1706,11 +1690,6 @@ p256_scalar_mult:
   la        x16, dptr_k
   lw        x16, 0(x16)
   bn.lid    x0, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
 
   /* set dmem pointer to point x-coordinate */
   la        x21, dptr_x
@@ -1742,9 +1721,9 @@ p256_scalar_mult:
 dptr_k:
   .zero 4
 
-/* pointer to rnd (dptr_rnd) */
-.globl dptr_rnd
-dptr_rnd:
+/* pointer to x1 (dptr_x1) (the output of the verify operation) */
+.globl dptr_x1
+dptr_x1:
   .zero 4
 
 /* pointer to msg (dptr_msg) */
