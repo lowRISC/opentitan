@@ -21,7 +21,7 @@ filesets:
     files:
       - rtl/rv_core_ibex_pkg.sv
       - rtl/rv_core_ibex_reg_pkg.sv
-      - rtl/rv_core_ibex_reg_reg_top.sv
+      - rtl/rv_core_ibex_cfg_reg_top.sv
       - rtl/rv_core_ibex.sv
       - rtl/rv_core_addr_trans.sv
     file_type: systemVerilogSource

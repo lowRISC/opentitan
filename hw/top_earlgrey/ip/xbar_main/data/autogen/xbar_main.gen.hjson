@@ -57,7 +57,7 @@
       keymgr
       kmac
       sram_ctrl_main
-      rv_core_ibex.reg
+      rv_core_ibex.cfg
     ]
     rv_dm.sba:
     [
@@ -80,7 +80,7 @@
       keymgr
       kmac
       sram_ctrl_main
-      rv_core_ibex.reg
+      rv_core_ibex.cfg
     ]
   }
   nodes:
@@ -460,7 +460,7 @@
       pipeline: "true"
     }
     {
-      name: rv_core_ibex.reg
+      name: rv_core_ibex.cfg
       type: device
       clock: clk_main_i
       reset: rst_main_ni

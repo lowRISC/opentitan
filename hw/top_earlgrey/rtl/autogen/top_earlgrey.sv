@@ -646,8 +646,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
   tlul_pkg::tl_h2d_t       keymgr_tl_req;
   tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
-  tlul_pkg::tl_h2d_t       rv_core_ibex_reg_tl_d_req;
-  tlul_pkg::tl_d2h_t       rv_core_ibex_reg_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       rv_core_ibex_cfg_tl_d_req;
+  tlul_pkg::tl_d2h_t       rv_core_ibex_cfg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
@@ -2577,8 +2577,8 @@ module top_earlgrey #(
       .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
       .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),
       .cored_tl_h_i(main_tl_rv_core_ibex__cored_rsp),
-      .reg_tl_d_i(rv_core_ibex_reg_tl_d_req),
-      .reg_tl_d_o(rv_core_ibex_reg_tl_d_rsp),
+      .cfg_tl_d_i(rv_core_ibex_cfg_tl_d_req),
+      .cfg_tl_d_o(rv_core_ibex_cfg_tl_d_rsp),
       .scanmode_i,
       .scan_rst_ni,
 
@@ -2837,9 +2837,9 @@ module top_earlgrey #(
     .tl_keymgr_o(keymgr_tl_req),
     .tl_keymgr_i(keymgr_tl_rsp),
 
-    // port: tl_rv_core_ibex__reg
-    .tl_rv_core_ibex__reg_o(rv_core_ibex_reg_tl_d_req),
-    .tl_rv_core_ibex__reg_i(rv_core_ibex_reg_tl_d_rsp),
+    // port: tl_rv_core_ibex__cfg
+    .tl_rv_core_ibex__cfg_o(rv_core_ibex_cfg_tl_d_req),
+    .tl_rv_core_ibex__cfg_i(rv_core_ibex_cfg_tl_d_rsp),
 
     // port: tl_sram_ctrl_main
     .tl_sram_ctrl_main_o(sram_ctrl_main_tl_req),

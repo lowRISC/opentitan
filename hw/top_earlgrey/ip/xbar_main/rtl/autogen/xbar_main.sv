@@ -60,7 +60,7 @@
 //     -> sm1_46
 //       -> sram_ctrl_main
 //     -> sm1_47
-//       -> rv_core_ibex.reg
+//       -> rv_core_ibex.cfg
 // rv_dm.sba
 //   -> s1n_48
 //     -> sm1_25
@@ -103,7 +103,7 @@
 //     -> sm1_46
 //       -> sram_ctrl_main
 //     -> sm1_47
-//       -> rv_core_ibex.reg
+//       -> rv_core_ibex.cfg
 
 module xbar_main (
   input clk_main_i,
@@ -158,8 +158,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_otbn_i,
   output tlul_pkg::tl_h2d_t tl_keymgr_o,
   input  tlul_pkg::tl_d2h_t tl_keymgr_i,
-  output tlul_pkg::tl_h2d_t tl_rv_core_ibex__reg_o,
-  input  tlul_pkg::tl_d2h_t tl_rv_core_ibex__reg_i,
+  output tlul_pkg::tl_h2d_t tl_rv_core_ibex__cfg_o,
+  input  tlul_pkg::tl_d2h_t tl_rv_core_ibex__cfg_i,
   output tlul_pkg::tl_h2d_t tl_sram_ctrl_main_o,
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main_i,
 
@@ -562,8 +562,8 @@ module xbar_main (
   assign tl_sram_ctrl_main_o = tl_sm1_46_ds_h2d;
   assign tl_sm1_46_ds_d2h = tl_sram_ctrl_main_i;
 
-  assign tl_rv_core_ibex__reg_o = tl_sm1_47_ds_h2d;
-  assign tl_sm1_47_ds_d2h = tl_rv_core_ibex__reg_i;
+  assign tl_rv_core_ibex__cfg_o = tl_sm1_47_ds_h2d;
+  assign tl_sm1_47_ds_d2h = tl_rv_core_ibex__cfg_i;
 
   assign tl_s1n_48_us_h2d = tl_rv_dm__sba_i;
   assign tl_rv_dm__sba_o = tl_s1n_48_us_d2h;
@@ -673,7 +673,7 @@ end
       dev_sel_s1n_29 = 5'd19;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_CORE_IBEX__REG)) == ADDR_SPACE_RV_CORE_IBEX__REG) begin
+                  ~(ADDR_MASK_RV_CORE_IBEX__CFG)) == ADDR_SPACE_RV_CORE_IBEX__CFG) begin
       dev_sel_s1n_29 = 5'd20;
 end
   end
@@ -758,7 +758,7 @@ end
       dev_sel_s1n_48 = 5'd18;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_CORE_IBEX__REG)) == ADDR_SPACE_RV_CORE_IBEX__REG) begin
+                  ~(ADDR_MASK_RV_CORE_IBEX__CFG)) == ADDR_SPACE_RV_CORE_IBEX__CFG) begin
       dev_sel_s1n_48 = 5'd19;
 end
   end

@@ -167,12 +167,6 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
-
-  // `host` defines the host only components in the system
-  // This function is deprecated and will be removed as a separate PR.
-  host: [
-  ]
-
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here
