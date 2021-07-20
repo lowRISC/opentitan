@@ -16,7 +16,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Computes the modular exponentiation of an RSA signature.
+ * Computes the modular exponentiation of an RSA signature on Ibex.
  *
  * Given an RSA public key and sig, this function computes sig^e mod n using
  * Montgomery multiplication, where
@@ -26,9 +26,26 @@ extern "C" {
  * @param key An RSA public key.
  * @param sig Buffer that holds the signature, little-endian.
  * @param result Buffer to write the result to, little-endian.
- * @return True if successful, false otherwise.
+ * @return The result of the operation.
  */
 rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+                                   const sigverify_rsa_buffer_t *sig,
+                                   sigverify_rsa_buffer_t *result);
+
+/**
+ * Computes the modular exponentiation of an RSA signature on OTBN.
+ *
+ * Given an RSA public key and sig, this function computes sig^e mod n using
+ * Montgomery multiplication, where
+ * - sig is an RSA signature,
+ * - e and n are the exponent and the modulus of the key, respectively.
+ *
+ * @param key An RSA public key.
+ * @param sig Buffer that holds the signature, little-endian.
+ * @param result Buffer to write the result to, little-endian.
+ * @return The result of the operation.
+ */
+rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result);
 

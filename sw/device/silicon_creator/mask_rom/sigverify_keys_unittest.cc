@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
@@ -214,6 +215,7 @@ class SigverifyRsaVerify
       public testing::WithParamInterface<RsaVerifyTestCase> {
  protected:
   mask_rom_test::MockHmac hmac_;
+  mask_rom_test::MockOtp otp_;
 };
 
 TEST_P(SigverifyRsaVerify, Ibex) {
@@ -222,6 +224,10 @@ TEST_P(SigverifyRsaVerify, Ibex) {
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(hmac_, sha256_final(NotNull()))
       .WillOnce(DoAll(SetArgPointee<0>(kDigest), Return(kErrorOk)));
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+      .WillOnce(Return(kHardenedBoolTrue));
+
   EXPECT_EQ(sigverify_rsa_verify(kMessage.data(), kMessage.size(),
                                  &GetParam().sig, GetParam().key),
             kErrorOk);

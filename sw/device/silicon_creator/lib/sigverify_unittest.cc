@@ -6,12 +6,15 @@
 
 #include <cstring>
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
-#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_ibex.h"
+#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 namespace sigverify_unittest {
 namespace {
@@ -85,19 +88,53 @@ constexpr sigverify_rsa_buffer_t kSignature{};
 
 class SigVerifyTest : public mask_rom_test::MaskRomTest {
  protected:
-  mask_rom_test::MockSigverifyModExp sigverify_mod_exp_;
+  void ExpectSha256() {
+    EXPECT_CALL(hmac_, sha256_init());
+    EXPECT_CALL(hmac_,
+                sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
+        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(hmac_, sha256_final(NotNull()))
+        .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
+  }
+
+  mask_rom_test::MockSigverifyModExpIbex sigverify_mod_exp_ibex_;
+  mask_rom_test::MockSigverifyModExpOtbn sigverify_mod_exp_otbn_;
   mask_rom_test::MockHmac hmac_;
+  mask_rom_test::MockOtp otp_;
   // The content of this key is not significant since we use mocks.
   sigverify_rsa_key_t key_{};
 };
 
-TEST_F(SigVerifyTest, GoodSignature) {
-  EXPECT_CALL(hmac_, sha256_init());
-  EXPECT_CALL(hmac_, sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(hmac_, sha256_final(NotNull()))
-      .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-  EXPECT_CALL(sigverify_mod_exp_, ibex(&key_, &kSignature, NotNull()))
+TEST_F(SigVerifyTest, BadOtpValue) {
+  ExpectSha256();
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+      .WillOnce(Return(0xA5A5A5A5));
+
+  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                 &kSignature, &key_),
+            kErrorSigverifyBadOtpValue);
+}
+
+TEST_F(SigVerifyTest, GoodSignatureIbex) {
+  ExpectSha256();
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
+      .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
+
+  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                 &kSignature, &key_),
+            kErrorOk);
+}
+
+TEST_F(SigVerifyTest, GoodSignatureOtbn) {
+  ExpectSha256();
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+      .WillOnce(Return(kHardenedBoolFalse));
+  EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
@@ -112,13 +149,11 @@ TEST_F(SigVerifyTest, BadSignature) {
     auto bad_enc_msg = kEncMsg;
     bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
 
-    EXPECT_CALL(hmac_, sha256_init());
-    EXPECT_CALL(hmac_,
-                sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
-        .WillOnce(Return(kErrorOk));
-    EXPECT_CALL(hmac_, sha256_final(NotNull()))
-        .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-    EXPECT_CALL(sigverify_mod_exp_, ibex(&key_, &kSignature, NotNull()))
+    ExpectSha256();
+    EXPECT_CALL(otp_,
+                read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+        .WillOnce(Return(kHardenedBoolTrue));
+    EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
     EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
