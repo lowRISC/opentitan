@@ -46,7 +46,7 @@ The instruction set is split into two groups:
 
 * The **base instruction subset** operates on the 32b General Purpose Registers (GPRs).
   Its instructions are used for the control flow of a OTBN application.
-  The base instructions are inspired by RISC-V’s RV32I instruction set, but not compatible with it.
+  The base instructions are inspired by RISC-V's RV32I instruction set, but not compatible with it.
 * The **big number instruction subset** operates on 256b Wide Data Registers (WDRs).
   Its instructions are used for data processing.
 
