@@ -70,7 +70,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   }
 
   // Flash ctrl op data - use for programing or reading the flash.
-  rand bit [TL_DW-1:0] flash_op_data[$];
+  rand data_q_t flash_op_data;
 
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
@@ -248,6 +248,8 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
       // Send num_flash_ops_per_cfg number of ops with this configuration.
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
+        data_q_t exp_data;
+
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op)
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op_data)
 
@@ -263,22 +265,27 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         `uvm_info(`gfn, $sformatf("Wait for operation to be done, then %s (check_mem_post_tran=%0d)",
                                   (cfg.seq_cfg.check_mem_post_tran ? "backdoor check the flash" :
                                   "skip to next transaction"), cfg.seq_cfg.check_mem_post_tran), UVM_HIGH)
+        // Calculate expected data for post-transaction checks
+        exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
         case (flash_op.op)
           flash_ctrl_pkg::FlashOpRead: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            if (cfg.seq_cfg.check_mem_post_tran)
+              cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpProgram: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_write(flash_op_data, poll_fifo_status);
             wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            if (cfg.seq_cfg.check_mem_post_tran)
+              cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
           end
           flash_ctrl_pkg::FlashOpErase: begin
             wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op);
+            if (cfg.seq_cfg.check_mem_post_tran)
+              cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
           end
           default: begin
             // TODO: V2 test item.
