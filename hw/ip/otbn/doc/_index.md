@@ -98,13 +98,13 @@ A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
 Providing the stack has at least one element, this is allowed, even if the stack is full.
 
-### Control and Status Registers (CSRs)
+### Control and Status Registers (CSRs) {#csrs}
 
 Control and Status Registers (CSRs) are 32b wide registers used for "special" purposes, as detailed in their description;
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, {{< otbnInsnRef "CSRRS" >}} and {{< otbnInsnRef "CSRRW" >}}.
-Writes to read-only registers are ignored; they do not signal an error.
-All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.start" >}}).
+Writes to read-only (RO) registers are ignored; they do not signal an error.
+All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to {{< regref "CMD.start" >}}).
 
 <!-- This list of CSRs is replicated in the RTL, in otbn_env_cov.sv and in csr.py.
      If editing one, edit the other three as well. -->
@@ -112,7 +112,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
   <thead>
     <tr>
       <th>Number</th>
-      <th>Privilege</th>
+      <th>Access</th>
+      <th>Name</th>
       <th>Description</th>
     </tr>
   </thead>
@@ -120,8 +121,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7C0</td>
       <td>RW</td>
+      <td>FG0</td>
       <td>
-        <strong>FG0</strong>.
         Wide arithmetic flag group 0.
         This CSR provides access to flag group 0 used by wide integer arithmetic.
         <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
@@ -141,8 +142,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7C1</td>
       <td>RW</td>
+      <td>FG1</td>
       <td>
-        <strong>FG1</strong>.
         Wide arithmetic flag group 1.
         This CSR provides access to flag group 1 used by wide integer arithmetic.
         <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
@@ -162,8 +163,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7C8</td>
       <td>RW</td>
+      <td>FLAGS</td>
       <td>
-        <strong>FLAGS</strong>.
         Wide arithmetic flag groups.
         This CSR provides access to both flags groups used by wide integer arithmetic.
         <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
@@ -187,8 +188,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D0</td>
       <td>RW</td>
+      <td>MOD0</td>
       <td>
-        <strong>MOD0</strong>.
         Bits [31:0] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -196,8 +197,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D1</td>
       <td>RW</td>
+      <td>MOD1</td>
       <td>
-        <strong>MOD1</strong>.
         Bits [63:32] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -205,8 +206,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D2</td>
       <td>RW</td>
+      <td>MOD2</td>
       <td>
-        <strong>MOD2</strong>.
         Bits [95:64] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -214,8 +215,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D3</td>
       <td>RW</td>
+      <td>MOD3</td>
       <td>
-        <strong>MOD3</strong>.
         Bits [127:96] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -223,8 +224,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D4</td>
       <td>RW</td>
+      <td>MOD4</td>
       <td>
-        <strong>MOD4</strong>.
         Bits [159:128] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -232,8 +233,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D5</td>
       <td>RW</td>
+      <td>MOD5</td>
       <td>
-        <strong>MOD5</strong>.
         Bits [191:160] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -241,8 +242,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D6</td>
       <td>RW</td>
+      <td>MOD6</td>
       <td>
-        <strong>MOD6</strong>.
         Bits [223:192] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -250,8 +251,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D7</td>
       <td>RW</td>
+      <td>MOD7</td>
       <td>
-        <strong>MOD7</strong>.
         Bits [255:224] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
@@ -259,8 +260,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0x7D8</td>
       <td>RW</td>
+      <td>RND_PREFETCH</td>
       <td>
-        <strong>RND_PREFETCH</strong>.
         Write to this CSR to begin a request to fill the RND cache.
         Always reads as 0.
       </td>
@@ -268,8 +269,8 @@ All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.
     <tr>
       <td>0xFC0</td>
       <td>R</td>
+      <td>RND</td>
       <td>
-<strong>RND</strong>.
 An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
 Primarily intended to be used for key generation.
 
@@ -280,8 +281,8 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     <tr>
       <td>0xFC1</td>
       <td>R</td>
+      <td>URND</td>
       <td>
-<strong>URND</strong>.
 A random number without guaranteed secrecy properties or specific statistical properties.
 Intended for use in masking and blinding schemes.
 Use RND for high-quality randomness.
@@ -310,28 +311,30 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 | ...      |
 | w31      |
 
-### Wide Special Purpose Registers (WSRs)
+### Wide Special Purpose Registers (WSRs) {#wsrs}
 
 OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
-They can be accessed with the {{< otbnInsnRef "BN.WSRRS" >}} and {{< otbnInsnRef "BN.WSRRW" >}} instructions.
-Writes to read-only registers are ignored; they do not signal an error.
-All RW WSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.start" >}}).
+They can be accessed with the {{< otbnInsnRef "BN.WSRR" >}} and {{< otbnInsnRef "BN.WSRW" >}} instructions.
+Writes to read-only (RO) registers are ignored; they do not signal an error.
+All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is written to {{< regref "CMD.start" >}}).
 
+<!-- This list of WSRs is replicated in the RTL, in otbn_env_cov.sv and in
+     wsr.py. If editing one, edit the other three as well. -->
 <table>
   <thead>
     <tr>
       <th>Number</th>
+      <th>Access</th>
       <th>Name</th>
-      <th>R/W</th>
       <th>Description</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>0x0</td>
-      <td><strong>MOD</strong></td>
       <td>RW</td>
+      <td>MOD</td>
 <td>
 
 The modulus used by the {{< otbnInsnRef "BN.ADDM" >}} and {{< otbnInsnRef "BN.SUBM" >}} instructions.
@@ -341,8 +344,8 @@ This WSR is also visible as CSRs `MOD0` through to `MOD7`.
     </tr>
     <tr>
       <td>0x1</td>
-      <td><strong>RND</strong></td>
       <td>R</td>
+      <td>RND</td>
       <td>
 An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
 Primarily intended to be used for key generation.
@@ -353,15 +356,15 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     </tr>
     <tr>
       <td>0x2</td>
-      <td><strong>ACC</strong></td>
       <td>RW</td>
+      <td>ACC</td>
       <td>
         The accumulator register used by the {{< otbnInsnRef "BN.MULQACC" >}} instruction.
       </td>
     </tr>
     <tr>
       <td>0x3</td>
-      <td><strong>URND</strong></td>
+      <td>URND</td>
       <td>R</td>
       <td>
 A random number without guaranteed secrecy properties or specific statistical properties.
