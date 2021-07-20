@@ -36,8 +36,13 @@ typedef enum device_type {
    */
   kDeviceSimVerilator,
   /**
-   * Represents the "Nexys Video FPGA" device, i.e., the particular FPGA board
-   * blessed for OpenTitan development, containing a Xilinx FPGA.
+   * Represents the "ChipWhisperer CW310 FPGA" device, i.e., the particular
+   * FPGA board blessed for OpenTitan development, containing a Xilinx FPGA.
+   */
+  kDeviceFpgaCw310,
+  /**
+   * Represents the "Nexys Video FPGA" device, i.e., the previous main FPGA
+   * development board for OpenTitan, containing a Xilinx FPGA.
    */
   kDeviceFpgaNexysVideo,
 } device_type_t;
