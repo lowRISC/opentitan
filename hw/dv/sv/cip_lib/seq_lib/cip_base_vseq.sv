@@ -595,6 +595,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           // delay to avoid race condition when sending item and checking no item after reset occur
           // at the same time
           #1ps;
+          post_apply_reset("HARD");
           if (do_read_and_check_all_csrs) read_and_check_all_csrs_after_reset();
         end : isolation_fork
       join
