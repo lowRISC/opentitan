@@ -87,8 +87,11 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
                 $sformatf("Performing %0d random memory accesses!", num_ops),
                 UVM_LOW)
       if (stress_pipeline) begin
+        bit [TL_AW-1:0] stress_addr;
         for (int i = 0; i < num_ops; i++) begin
-          do_stress_ops($urandom(), $urandom_range(5, 20));
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(stress_addr,
+              stress_addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]};)
+          do_stress_ops(stress_addr, $urandom_range(5, 20));
         end
       end else begin
         do_rand_ops(.num_ops(num_ops),

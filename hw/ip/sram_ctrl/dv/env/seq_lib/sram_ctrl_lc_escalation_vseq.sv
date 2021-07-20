@@ -43,9 +43,9 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
 
     // configure the SRAM TLUL agent to wait at least 2 cycles before dropping a request,
     // ONLY if the transaction is configured to abort
-    cfg.m_sram_cfg.allow_a_valid_drop_wo_a_ready = 1;
-    cfg.m_sram_cfg.a_valid_len_min = 2;
-    cfg.m_sram_cfg.a_valid_len_max = 10;
+    cfg.m_tl_agent_cfgs[cfg.sram_ral_name].allow_a_valid_drop_wo_a_ready = 1;
+    cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;
+    cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_max = 10;
   endtask
 
   virtual task body();
@@ -56,7 +56,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
       fork
         begin
           // randomly enable zero delays in the SRAM TLUL agent
-          cfg.cfg_sram_zero_delays($urandom_range(0, 1));
+          cfg.zero_delays = $urandom_range(0, 1);
           req_scr_key();
           csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)

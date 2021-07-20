@@ -61,7 +61,7 @@
   build_modes: [
     {
       name: sram_ctrl_main
-      build_opts: ["+define+SRAM_ADDR_WIDTH=14"]
+      build_opts: ["+define+SRAM_ADDR_WIDTH=15"]
     }
     {
       name: sram_ctrl_ret
@@ -96,10 +96,6 @@
     {
       name: "{variant}_lc_escalation"
       uvm_test_seq: sram_ctrl_lc_escalation_vseq
-    }
-    {
-      name: "{variant}_mem_tl_errors"
-      uvm_test_seq: sram_ctrl_mem_tl_errors_vseq
     }
     {
       name: "{variant}_access_during_key_req"

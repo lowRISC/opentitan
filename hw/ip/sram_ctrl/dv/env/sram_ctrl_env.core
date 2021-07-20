@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_util
     files:
+      - sram_ctrl_prim_ral_pkg.sv
       - sram_ctrl_env_pkg.sv
       - sram_ctrl_lc_if.sv
       - sram_ctrl_exec_if.sv
@@ -27,7 +28,6 @@ filesets:
       - seq_lib/sram_ctrl_bijection_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_stress_pipeline_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_lc_escalation_vseq.sv: {is_include_file: true}
-      - seq_lib/sram_ctrl_mem_tl_errors_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_access_during_key_req_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_executable_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_stress_all_vseq.sv: {is_include_file: true}

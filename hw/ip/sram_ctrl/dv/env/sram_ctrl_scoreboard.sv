@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(sram_ctrl_env_cfg),
+class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scoreboard #(
+    .CFG_T(sram_ctrl_env_cfg#(AddrWidth)),
     .RAL_T(sram_ctrl_reg_block),
-    .COV_T(sram_ctrl_env_cov)
+    .COV_T(sram_ctrl_env_cov#(AddrWidth))
   );
-  `uvm_component_utils(sram_ctrl_scoreboard)
+  `uvm_component_param_utils(sram_ctrl_scoreboard#(AddrWidth))
   `uvm_component_new
 
   // local variables
@@ -238,8 +238,6 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       process_sram_init();
       process_lc_escalation();
       process_sram_executable();
-      process_sram_tl_a_chan_fifo();
-      process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
       process_completed_trans();
     join_none
@@ -257,11 +255,12 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
                 forever begin
                   // sample the covergroup every time a new TL request is seen
                   // while a key request is outstanding.
-                  @(posedge cfg.m_sram_cfg.vif.h2d.a_valid);
+                  @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
                   // zero delay to allow bus values to settle
                   #0;
                   if (cfg.en_cov) begin
-                    cov.access_during_key_req_cg.sample(cfg.m_sram_cfg.vif.h2d.a_opcode);
+                    cov.access_during_key_req_cg.sample(
+                        cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
                   end
                 end
                 ,
@@ -736,92 +735,348 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ_FATAL(exp_masked_data, act_masked_data)
   endfunction
 
+  virtual task process_tl_a_chan_fifo();
+    foreach (tl_a_chan_fifos[i]) begin
+      automatic string ral_name = i;
+      fork
+        forever begin
+          tl_seq_item item;
+          if (ral_name == RAL_T::type_name) begin
+            tl_a_chan_fifos[ral_name].get(item);
+            `uvm_info(`gfn,
+                      $sformatf("received tl a_chan item from %0s:\n%0s", i, item.sprint()),
+                      UVM_HIGH)
+            if (cfg.en_scb_tl_err_chk) begin
+              if (predict_tl_err(item, AddrChannel, ral_name)) continue;
+            end
+            if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
+              process_mem_write(item, ral_name);
+            end
+            if (!cfg.en_scb) continue;
+            process_tl_access(item, AddrChannel, ral_name);
+          end else if (ral_name == cfg.sram_ral_name) begin
+            // If using the memory primitive RAL mode, need to use `try_get()` as there are hazard
+            // scenarios that need to be checked on "empty" cycles when we don't get a TL item
+            if (tl_a_chan_fifos[cfg.sram_ral_name].try_get(item) > 0) begin
+              `uvm_info(`gfn,
+                        $sformatf("received tl a_chan item from %0s:\n%0s",
+                            cfg.sram_ral_name, item.sprint()),
+                            UVM_HIGH)
+              // update internal state related to instruction type and SRAM execution
+              valid_csr_exec = detected_csr_exec;
+              valid_hw_debug_en = detected_hw_debug_en;
+              valid_en_sram_ifetch = detected_en_sram_ifetch;
+
+              allow_ifetch = (valid_en_sram_ifetch == otp_ctrl_pkg::Enabled) ?
+                             (valid_csr_exec == tlul_pkg::InstrEn) :
+                             (valid_hw_debug_en == lc_ctrl_pkg::On);
+
+              if (!cfg.en_scb || in_key_req || status_lc_esc) continue;
+
+              if (cfg.en_scb_tl_err_chk) begin
+                if (predict_tl_err(item, AddrChannel, ral_name)) continue;
+              end
+              if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
+                process_mem_write(item, ral_name);
+              end
+              process_tl_access(item, AddrChannel, ral_name);
+            end else begin
+              // terminate the raw_hazard status in the scenario:
+              // `write -> 1+ reads -> empty cycle` - if an empty cycle occurs after the last read
+              // transaction that causes a hazard, the write will be resolved during this cycle,
+              // so clear the hazard status and check the held write transaction
+              if (in_raw_hazard && !status_lc_esc) begin
+                `uvm_info(`gfn, "Empty cycle seen after hazardous read, clearing hazard state", UVM_HIGH)
+                completed_trans_mbox.put(held_trans);
+                clear_hazard_state();
+              end
+            end
+            cfg.clk_rst_vifs[ral_name].wait_clks(1);
+            #1;
+          end else begin
+            `uvm_fatal(`gfn, $sformatf("%0s is an invalid RAL model name", ral_name))
+          end
+        end
+      join_none
+    end
+  endtask
+
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    bit is_tl_err = super.predict_tl_err(item, channel, ral_name);
+    if (ral_name == cfg.sram_ral_name) begin
+      tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+      if (a_user.tl_type == tlul_pkg::InstrType) begin
+        // 2 error cases if an InstrType transaction is seen:
+        // - if it is a write transactions
+        // - if the SRAM is not configured in executable mode
+        is_tl_err |= ((allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1);
+      end
+      if (channel == DataChannel) begin
+        `DV_CHECK_EQ(item.d_error, is_tl_err,
+            $sformatf("item_err: %0d", is_tl_err))
+      end
+    end
+    return is_tl_err;
+  endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    bit     do_read_check         = 1'b1;
+    bit     write                 = item.is_write();
+    uvm_reg_addr_t csr_addr       = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    bit [TL_AW-1:0] csr_addr_mask = cfg.ral_models[ral_name].get_addr_mask();
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-    end
-
-    // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-    end
-
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
-      // add individual case item for each csr
-      "alert_test": begin
-        // do nothing
+    // the CSR RAL model
+    if (ral_name == RAL_T::type_name) begin
+      // if access was to a valid csr, get the csr handle
+      if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+        csr = ral.default_map.get_reg_by_offset(csr_addr);
+        `DV_CHECK_NE_FATAL(csr, null)
       end
-      "exec_regwen": begin
-        // do nothing
+      else begin
+        `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
       end
-      "exec": begin
-        if (addr_phase_write) begin
+
+      // if incoming access is a write to a valid csr, then make updates right away
+      if (addr_phase_write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
+
+      // process the csr req
+      // for write, update local variable and fifo at address phase
+      // for read, update predication at address phase and compare at data phase
+      case (csr.get_name())
+        // add individual case item for each csr
+        "alert_test": begin
+          // do nothing
+        end
+        "exec_regwen": begin
+          // do nothing
+        end
+        "exec": begin
+          if (addr_phase_write) begin
+            #1;
+            detected_csr_exec = item.a_data;
+          end
+        end
+        "status": begin
+          if (addr_phase_read) begin
+            void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
+          end
+        end
+        "ctrl_regwen": begin
+          // do nothing
+        end
+        "ctrl": begin
+          // do nothing if 0 is written
+          if (addr_phase_write) begin
+            if (item.a_data[SramCtrlRenewScrKey]) begin
+              in_key_req = 1;
+              exp_status[SramCtrlScrKeyValid] = 0;
+            end
+            if (item.a_data[SramCtrlInit]) begin
+              in_init = 1;
+              `uvm_info(`gfn, "raised in_init", UVM_HIGH)
+            end
+          end else if (addr_phase_read) begin
+            // CTRL.renew_scr_key always reads as 0
+            void'(ral.ctrl.renew_scr_key.predict(.value(0), .kind(UVM_PREDICT_READ)));
+
+            // CTRL.init will be set to 0 once initialization is complete
+            void'(ral.ctrl.init.predict(.value(in_init), .kind(UVM_PREDICT_READ)));
+          end
+        end
+        "error_address": begin
+          // TODO
+          do_read_check = 1'b0;
+        end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
+      endcase
+
+      // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+      if (data_phase_read) begin
+        if (do_read_check) begin
+          `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+        end
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      end
+    end else if (ral_name == cfg.sram_ral_name) begin // memory primitive RAL model
+      sram_trans_t addr_trans;
+      sram_trans_t data_trans;
+
+      if (channel == AddrChannel) begin
+        addr_trans.we    = item.is_write();
+        addr_trans.addr  = word_align_addr(item.a_addr);
+        addr_trans.mask  = item.a_mask;
+        addr_trans.key   = key;
+        addr_trans.nonce = nonce;
+        if (item.is_write()) begin
+          addr_trans.data = item.a_data;
+        end
+        // write the addr_trans into the mailbox
+        addr_phase_mbox.put(addr_trans);
+
+        `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
+            $sformatf("Put ADDR_PHASE transaction into addr_phase_mbox: %0p", addr_trans),
+            UVM_HIGH)
+
+        // terminate the raw_hazard status if we see this series of mem accesses -
+        // `write -> 1+ reads -> write`, where we are currently looking at
+        // the final `write` transaction
+        //
+        // in this case, we should send the held write transaction off to be checked,
+        // and not do anything to the pending address transaction currently in the address phase
+        //
+        // we also need to lower `in_raw_hazard` as we no longer require data forwarding
+        cfg.clk_rst_vif.wait_n_clks(1);
+        if (in_raw_hazard && addr_trans.we) begin
+          `uvm_info(`gfn, "next b2b transaction is a write, clearing hazard state", UVM_HIGH)
+          completed_trans_mbox.put(held_trans);
+          clear_hazard_state();
+        end
+      end else begin
+
+        bit addr_trans_available = (addr_phase_mbox.try_get(addr_trans) > 0);
+
+        if (in_key_req) begin
+          `DV_CHECK_EQ(addr_trans_available, 1,
+              "SRAM returned TLUL response during active key request")
+        end
+
+        // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
+        //
+        // Excepting this edge case, detecting any other item in the `addr_phase_mbox` indicates that
+        // a TLUL response has been seen from the SRAM even though it hasn't been processed by
+        // `process_sram_tl_a_chan_fifo()`. This means one of two things:
+        //
+        // 1) There is a bug in the scoreboard.
+        //
+        // 2) There is a bug in the design and the SRAM is actually servicing memory requests
+        //    while in the terminal escalated state.
+        if (status_lc_esc) begin
+          if (handling_lc_esc) begin
+            return;
+          end else begin
+            `DV_CHECK_EQ(addr_trans_available, 1,
+                "SRAM returned TLUL response in LC escalation state")
+          end
+        end
+
+        // the addr_phase_mbox will be populated during A_phase of each memory transaction.
+        //
+        // since we use the addr_phase_mbox in this task to check for data forwarding hazards,
+        // need to keep it up to date with the current transaction.
+        //
+        // it is guaranteed that both:
+        // - the mailbox will have at least 1 addr_trans item in it at this point
+        // - the first item in the mailbox matches up to the current data_phase transaction
+        //
+        // as a result we can safely remove the item from the mailbox here,
+        // and check that the addr_trans and data_trans correspond to the same TLUL operation
+        `DV_CHECK_NE(addr_trans_available, 0,
+          "AddrPhase transaction not available in addr_phase_mbox")
+
+        // assign data_trans fields
+        clear_trans(data_trans);
+        data_trans.we    = item.is_write();
+        data_trans.addr  = word_align_addr(item.a_addr);
+        data_trans.mask  = item.a_mask;
+        data_trans.key   = addr_trans.key;
+        data_trans.nonce = addr_trans.nonce;
+        data_trans.data  = item.is_write() ? item.a_data : item.d_data;
+        `DV_CHECK_EQ(eq_trans(addr_trans, data_trans), 1)
+
+        `uvm_info(`gfn, $sformatf("in_raw_hazard: %0d",  in_raw_hazard), UVM_HIGH)
+
+        if (!item.is_write()) begin // read
+          `uvm_info(`gfn, "Processing READ transaction", UVM_HIGH)
+
+          if (in_raw_hazard) begin
+            // executing a read while `in_raw_hazard` is high means that this read comes after
+            // the most recent write transaction, which has then been held
+            //
+            // as a result we need to check for an address collision then act accordingly.
+
+            // if we have an address collision (read address is the same as the pending write address)
+            // return data based on the `held_data`
+            if (eq_sram_addr(data_trans.addr, held_trans.addr)) begin
+              bit [TL_DW-1:0] exp_masked_rdata = held_data & expand_bit_mask(item.a_mask);
+              `uvm_info(`gfn, $sformatf("exp_masked_rdata: 0x%0x", exp_masked_rdata), UVM_HIGH)
+              `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data)
+            end else begin
+              // in this case we do not have a strict RAW hazard on the same address,
+              // so we can check the read transaction normally, as it will complete
+              // before the pending write
+              completed_trans_mbox.put(data_trans);
+            end
+
+          end else begin
+            completed_trans_mbox.put(data_trans);
+          end
+        end else if (item.is_write()) begin // write
+          bit b2b_detected;
+
+          `uvm_info(`gfn, "Processing WRITE transaction", UVM_HIGH)
+
+          // insert a small delay before checking addr_phase_mbox to allow b2b
+          // transactions to be picked up (otherwise we wait until the next cycle)
           #1;
-          detected_csr_exec = item.a_data;
-        end
-      end
-      "status": begin
-        if (addr_phase_read) begin
-          void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
-        end
-      end
-      "ctrl_regwen": begin
-        // do nothing
-      end
-      "ctrl": begin
-        // do nothing if 0 is written
-        if (addr_phase_write) begin
-          if (item.a_data[SramCtrlRenewScrKey]) begin
-            in_key_req = 1;
-            exp_status[SramCtrlScrKeyValid] = 0;
-          end
-          if (item.a_data[SramCtrlInit]) begin
-            in_init = 1;
-            `uvm_info(`gfn, "raised in_init", UVM_HIGH)
-          end
-        end else if (addr_phase_read) begin
-          // CTRL.renew_scr_key always reads as 0
-          void'(ral.ctrl.renew_scr_key.predict(.value(0), .kind(UVM_PREDICT_READ)));
 
-          // CTRL.init will be set to 0 once initialization is complete
-          void'(ral.ctrl.init.predict(.value(in_init), .kind(UVM_PREDICT_READ)));
+          // peek at the next address phase request
+          b2b_detected = addr_phase_mbox.try_peek(addr_trans);
+          `uvm_info(`gfn, $sformatf("b2b_detected: %0d", b2b_detected), UVM_HIGH)
+
+          if (b2b_detected) begin
+
+            bit  [TL_AW-1:0] waddr = '0;
+
+            `uvm_info(`gfn, $sformatf("addr_trans: %0p", addr_trans), UVM_HIGH)
+
+            if (addr_trans.we == 0) begin
+              // if we see a read directly after a write and we are not currently in a RAW hazard
+              // handling state, we need to do the following:
+              //
+              // - backdoor read the memory at the given address to get the currently stored data,
+              //   and update the scb data holding "register" with this value
+              //
+              // - overwrite this data holding register with the masked write data sent by the
+              //   original write transaction that caused the forwarding scenario (this is so that
+              //   sub-word reads reading different bytes from the ones being written can still
+              //   return the most recently written values)
+              `uvm_info(`gfn, "detected RAW hazard", UVM_HIGH)
+              in_raw_hazard = 1;
+              held_trans = data_trans;
+              waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
+              held_data = cfg.mem_bkdr_util_h.sram_encrypt_read32(waddr, data_trans.key, data_trans.nonce);
+
+              for (int i = 0; i < TL_DBW; i++) begin
+                if (data_trans.mask[i]) begin
+                  held_data[i*8 +: 8] = data_trans.data[i*8 +: 8];
+                end
+              end
+              `uvm_info(`gfn, $sformatf("new held_data: 0x%0x", held_data), UVM_HIGH)
+            end else begin
+              // if we have a write-after-write scenario, whether the addresses are the same or not,
+              // just proceed as normal and send the current transaction off to be checked
+              completed_trans_mbox.put(data_trans);
+            end
+          end else begin
+            // if no b2b transaction detected, it is safe to send
+            // the collected transaction off for checking
+            completed_trans_mbox.put(data_trans);
+          end
         end
       end
-      "error_address": begin
-        // TODO
-        do_read_check = 1'b0;
-      end
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-      end
-    endcase
-
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end else begin
+      `uvm_fatal(`gfn, $sformatf("%0s is invalid RAL model name", ral_name))
     end
   endtask
 
