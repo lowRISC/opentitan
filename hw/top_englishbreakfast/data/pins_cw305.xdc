@@ -40,6 +40,7 @@ set_property -dict { PACKAGE_PIN E13 IOSTANDARD LVCMOS33 } [get_ports { IOB2 }];
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [get_ports { IOB3 }]; #JP3.F15
 set_property -dict { PACKAGE_PIN E11 IOSTANDARD LVCMOS33 } [get_ports { IOB4 }]; #JP3.E11
 set_property -dict { PACKAGE_PIN F13 IOSTANDARD LVCMOS33 } [get_ports { IOB5 }]; #JP3.F13
+set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { IOB6 }]; #JP3.A12
 
 set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { USB_P }]; #JP3.C16
 set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { USB_N }]; #JP3.D13
@@ -49,14 +50,14 @@ set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_D
 
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } [get_ports { IO_UTX_DEBUG }]; #JP3.G16 (UART) for debugging
 
-## Unused pins of JP3: A12, B12, F12
+## Unused pins of JP3: B12, F12
 
 ## 20-Pin Connector (JP1)
 
-set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }];     #JP1 PIN 10 (UART)
-set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }];     #JP1 PIN 12 (UART)
-set_property -dict { PACKAGE_PIN T14 IOSTANDARD LVCMOS33 } [get_ports { IOB6 }];    #JP1 PIN 16 TIO4 (Trigger)
-set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 } [get_ports { TIO_CLKOUT }]; #JP1 PIN 4 TIO_HS1. Clock sync capture board.
+set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }];      #JP1 PIN 12 TIO2    - OpenTitan UART0 TX
+set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }];      #JP1 PIN 10 TIO1    - OpenTitan UART0 RX
+set_property -dict { PACKAGE_PIN T14 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #JP1 PIN 16 TIO4    - Capture Trigger
+set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #JP1 PIN  4 TIO_HS1 - Target clock
 
 
 ## USB Connector

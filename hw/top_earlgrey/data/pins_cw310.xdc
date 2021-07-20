@@ -60,18 +60,14 @@ set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 } [get_ports { IOC4 }];
 set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 } [get_ports { IOC5 }]; #USERIOB-14
 set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; #USERIOB-16
 set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; #USERIOB-18
-set_property -dict { PACKAGE_PIN C9  IOSTANDARD LVCMOS33 } [get_ports { IOC8 }]; #USERIOB-24
-set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }]; #USERIOB-26
+#set_property -dict { PACKAGE_PIN C9  IOSTANDARD LVCMOS33 } [get_ports { IOC8 }]; #USERIOB-24
+#set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }]; #USERIOB-26
 
 ## ChipWhisperer 20-Pin Connector (J14)
-## TODO: This needs to be adapted to enable captures on the CW310. In particular,
-## - a precise capture trigger and the target clock need to be output, and
-## - a separate UART should be used for the simpleserial communication with the capture board.
-## See also chiplevel.sv.tpl
-#set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }];      #J14 PIN 10 CWIO_IO1 (UART)
-#set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }];      #J14 PIN 12 CWIO_IO2 (UART)
-#set_property -dict { PACKAGE_PIN AF24 IOSTANDARD LVCMOS33 } [get_ports { IOB6 }];       #J14 PIN 16 CWIO_IO4 (Trigger)
-#set_property -dict { PACKAGE_PIN AB21 IOSTANDARD LVCMOS33 } [get_ports { TIO_CLKOUT }]; #J14 PIN  4 CWIO_HS1 (Target clock)
+set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }];       #J14 PIN 12 CWIO_IO2 - OpenTitan UART1 TX
+set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOC8 }];       #J14 PIN 10 CWIO_IO1 - OpenTitan UART1 RX
+set_property -dict { PACKAGE_PIN AF24 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #J14 PIN 16 CWIO_IO4 - Capture Trigger
+set_property -dict { PACKAGE_PIN AB21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #J14 PIN  4 CWIO_HS1 - Target clock
 
 ## TI TUSB1106 USB PHY usbdev testing
 set_property -dict { PACKAGE_PIN AF19  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DP_TX }]; #USRUSB_VPO
@@ -93,8 +89,8 @@ set_property -dict { PACKAGE_PIN A12   IOSTANDARD LVCMOS33 } [get_ports { IO_USB
 set_property -dict { PACKAGE_PIN A13   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #USERIOB-27
 
 ## UART
-set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #UART1RXD
-set_property -dict { PACKAGE_PIN W24  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #UART1TXD
+set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #UART1RXD - OpenTitan UART0 TX
+set_property -dict { PACKAGE_PIN W24  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #UART1TXD - OpenTitan UART0 RX
 
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]

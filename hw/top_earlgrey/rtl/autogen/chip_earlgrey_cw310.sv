@@ -38,6 +38,8 @@ module chip_earlgrey_cw310 #(
   inout IO_UPHY_OE_N, // Manual Pad
   inout IO_UPHY_SENSE, // Manual Pad
   inout IO_UPHY_DPPULLUP, // Manual Pad
+  inout IO_CLKOUT, // Manual Pad
+  inout IO_TRIGGER, // Manual Pad
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -216,6 +218,8 @@ module chip_earlgrey_cw310 #(
   logic manual_in_io_uphy_oe_n, manual_out_io_uphy_oe_n, manual_oe_io_uphy_oe_n;
   logic manual_in_io_uphy_sense, manual_out_io_uphy_sense, manual_oe_io_uphy_sense;
   logic manual_in_io_uphy_dppullup, manual_out_io_uphy_dppullup, manual_oe_io_uphy_dppullup;
+  logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
+  logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_usb_p;
@@ -233,6 +237,8 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_io_uphy_oe_n;
   pad_attr_t manual_attr_io_uphy_sense;
   pad_attr_t manual_attr_io_uphy_dppullup;
+  pad_attr_t manual_attr_io_clkout;
+  pad_attr_t manual_attr_io_trigger;
 
   /////////////////////////
   // Stubbed pad tie-off //
@@ -323,9 +329,11 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(20),
+    .NDioPads(22),
     .NMioPads(29),
     .DioPadType ({
+      BidirStd, // IO_TRIGGER
+      BidirStd, // IO_CLKOUT
       BidirStd, // IO_UPHY_DPPULLUP
       BidirStd, // IO_UPHY_SENSE
       BidirStd, // IO_UPHY_OE_N
@@ -385,6 +393,8 @@ module chip_earlgrey_cw310 #(
     .dio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
+      IO_TRIGGER,
+      IO_CLKOUT,
       IO_UPHY_DPPULLUP,
       IO_UPHY_SENSE,
       IO_UPHY_OE_N,
@@ -441,6 +451,8 @@ module chip_earlgrey_cw310 #(
 
     // Core-facing
     .dio_in_o ({
+        manual_in_io_trigger,
+        manual_in_io_clkout,
         manual_in_io_uphy_dppullup,
         manual_in_io_uphy_sense,
         manual_in_io_uphy_oe_n,
@@ -463,6 +475,8 @@ module chip_earlgrey_cw310 #(
         manual_in_por_n
       }),
     .dio_out_i ({
+        manual_out_io_trigger,
+        manual_out_io_clkout,
         manual_out_io_uphy_dppullup,
         manual_out_io_uphy_sense,
         manual_out_io_uphy_oe_n,
@@ -485,6 +499,8 @@ module chip_earlgrey_cw310 #(
         manual_out_por_n
       }),
     .dio_oe_i ({
+        manual_oe_io_trigger,
+        manual_oe_io_clkout,
         manual_oe_io_uphy_dppullup,
         manual_oe_io_uphy_sense,
         manual_oe_io_uphy_oe_n,
@@ -507,6 +523,8 @@ module chip_earlgrey_cw310 #(
         manual_oe_por_n
       }),
     .dio_attr_i ({
+        manual_attr_io_trigger,
+        manual_attr_io_clkout,
         manual_attr_io_uphy_dppullup,
         manual_attr_io_uphy_sense,
         manual_attr_io_uphy_oe_n,
@@ -724,7 +742,6 @@ module chip_earlgrey_cw310 #(
   // for verilator purposes, make these two the same.
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
 
-
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
@@ -803,5 +820,59 @@ module chip_earlgrey_cw310 #(
   );
 
 
+  /////////////////////////////////////////////////////
+  // ChipWhisperer CW310/305 Capture Board Interface //
+  /////////////////////////////////////////////////////
+  // This is used to interface OpenTitan as a target with a capture board trough the ChipWhisperer
+  // 20-pin connector. This is used for SCA/FI experiments only.
+
+  logic unused_inputs;
+  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger;
+
+  // Synchronous clock output to capture board.
+  assign manual_out_io_clkout = manual_in_io_clk;
+  assign manual_oe_io_clkout = 1'b1;
+
+  // Capture trigger.
+  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
+  // GPIO[11:9] is used for selecting the IP of interest. The encoding is as follows (see
+  // hint_names_e enum in clkmgr_pkg.sv for details).
+  //
+  // IP              - GPIO[11:9] - Index for clkmgr_aon_idle
+  // ------------------------------------------------------------
+  //  AES            -   000      -  0
+  //  HMAC           -   001      -  1
+  //  KMAC           -   010      -  2 - not implemented on CW305
+  //  OTBN (IO_DIV4) -   011      -  3 - not implemented on CW305
+  //  OTBN           -   100      -  4 - not implemented on CW305
+  //
+  // In addition, GPIO8 is used for gating the capture trigger in software.
+  // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
+  // On the CW305, GPIO[9,8] are connected to LED[5,7].
+
+  clkmgr_pkg::hint_names_e trigger_sel;
+  always_comb begin : trigger_sel_mux
+    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
+      3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
+      3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
+      3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
+      3'b011:  trigger_sel = clkmgr_pkg::HintIoDiv4Otbn;
+      3'b100:  trigger_sel = clkmgr_pkg::HintMainOtbn;
+      default: trigger_sel = clkmgr_pkg::HintMainAes;
+    endcase;
+  end
+  logic trigger, trigger_oe;
+  assign trigger = mio_out[MioOutGpioGpio8] & ~top_earlgrey.clkmgr_aon_idle[trigger_sel];
+  assign trigger_oe = mio_oe[MioOutGpioGpio8];
+
+  // Synchronize trigger to manual_in_io_clk.
+  prim_flop_2sync #(
+    .Width ( 2 )
+  ) u_sync_trigger (
+    .clk_i  ( manual_in_io_clk                              ),
+    .rst_ni ( manual_in_por_n                               ),
+    .d_i    ( {trigger,               trigger_oe}           ),
+    .q_o    ( {manual_out_io_trigger, manual_oe_io_trigger} )
+  );
 
 endmodule : chip_earlgrey_cw310
