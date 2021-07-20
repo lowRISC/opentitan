@@ -31,6 +31,11 @@ package keymgr_env_pkg;
     NumKeyMgrIntr
   } keymgr_intr_e;
 
+  typedef enum {
+    Sealing,
+    Attestation
+  } keymgr_cdi_type_e;
+
   string msg_id = "keymgr_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled

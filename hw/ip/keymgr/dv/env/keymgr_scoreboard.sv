@@ -71,7 +71,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
-  bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[keymgr_pkg::keymgr_working_state_e];
+  bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[keymgr_cdi_type_e][
+                                     keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[keymgr_pkg::keymgr_working_state_e];
@@ -128,23 +129,27 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_pkg::OpAdvance: begin
+        keymgr_cdi_type_e cdi_type;
+        `downcast(cdi_type, adv_cnt)
+
         case (current_state)
           keymgr_pkg::StInit: begin
             bit is_err = get_hw_invalid_input();
-
-            compare_adv_creator_data(.exp_match(!is_err),
+            compare_adv_creator_data(.cdi_type(cdi_type),
+                                     .exp_match(!is_err),
                                      .byte_data_q(item.byte_data_q));
             if (is_err) compare_invalid_data(item.byte_data_q);
           end
           keymgr_pkg::StCreatorRootKey: begin
             bit is_err = get_hw_invalid_input();
 
-            compare_adv_owner_int_data(.exp_match(!is_err),
+            compare_adv_owner_int_data(.cdi_type(cdi_type),
+                                       .exp_match(!is_err),
                                        .byte_data_q(item.byte_data_q));
             if (is_err) compare_invalid_data(item.byte_data_q);
           end
           keymgr_pkg::StOwnerIntKey: begin
-            compare_adv_owner_data(item.byte_data_q);
+            compare_adv_owner_data(cdi_type, item.byte_data_q);
           end
           keymgr_pkg::StOwnerKey, keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
             compare_invalid_data(item.byte_data_q);
@@ -170,40 +175,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void process_kmac_data_rsp(kmac_app_item item);
     update_result_e update_result;
     bit process_update;
-    bit adv_from_non_reset;
-    int cdis;
 
     is_kmac_rsp_err = item.rsp_error;
     is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
-
-    // TODO: hack alert.  Since advance operations take 2 passes now, add the following
-    // to inform the function when to actaully process the update.
-    // This is not entirely correct, because an error that shows up during the first pass
-    // is still considered an error.  The process function must be updated to account for that.
-    adv_from_non_reset = 1'b0;
-    if (get_operation() == keymgr_pkg::OpAdvance && current_state != keymgr_pkg::StReset) begin
-      adv_from_non_reset = 1'b1;
-    end
-
-    cdis = keymgr_pkg::CDIs - 1;
-    if (adv_from_non_reset && (adv_cnt == cdis)) begin
-      `uvm_info(`gfn, $sformatf("complete advance"), UVM_MEDIUM)
-      adv_cnt = 0;
-      process_update = 1'b1;
-    end else if (adv_from_non_reset && (adv_cnt < cdis)) begin
-      `uvm_info(`gfn, $sformatf("partial advance"), UVM_MEDIUM)
-      adv_cnt = adv_cnt + 1;
-      process_update = 1'b0;
-      update_result = UpdateInternalKey;
-    end else if (get_operation() != keymgr_pkg::OpAdvance) begin
-      `uvm_info(`gfn, $sformatf("not advance"), UVM_MEDIUM)
-      adv_cnt = 0;
-      process_update = 1'b1;
-    end
-
-    if (process_update) begin
-      update_result = process_update_after_op_done();
-    end
+    update_result = process_update_after_op_done();
 
     case (update_result)
       UpdateInternalKey: begin
@@ -249,18 +224,28 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function update_result_e process_update_after_op_done();
     update_result_e update_result;
     keymgr_pkg::keymgr_ops_e op = get_operation();
+    bit is_final_kdf;
 
+    // for advance after StReset, it needs 2 KDF. Only update opt_status after the last one
+    if (!(op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) ||
+        current_state == keymgr_pkg::StReset) begin
+      is_final_kdf = 1;
+    end else begin
+      is_final_kdf = (adv_cnt == keymgr_pkg::CDIs - 1);
+    end
     // op_status is updated one cycle after done. If SW reads at this edge, still return old value
     // delay half cycle to push the update available in next cycle
     fork
       begin
         cfg.clk_rst_vif.wait_n_clks(1);
-        if (get_err_code()) current_op_status = keymgr_pkg::OpDoneFail;
-        else                current_op_status = keymgr_pkg::OpDoneSuccess;
+        if (is_final_kdf) begin
+          if (get_err_code()) current_op_status = keymgr_pkg::OpDoneFail;
+          else                current_op_status = keymgr_pkg::OpDoneSuccess;
+        end
       end
     join_none
 
-    process_error_n_alert();
+    if (is_final_kdf) process_error_n_alert();
     // IntrOpDone occurs after every KDF
     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
 
@@ -279,15 +264,26 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
               if (current_state == keymgr_pkg::StOwnerKey) update_result = NotUpdate;
               else                                         update_result = UpdateInternalKey;
-              update_state(get_next_state(current_state));
-              // set sw_binding_regwen after advance OP
-              void'(ral.sw_binding_regwen.predict(.value(1)));
-              ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
+
+              if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+                adv_cnt++;
+              end else begin
+                adv_cnt = 0;
+                update_state(get_next_state(current_state));
+                // set sw_binding_regwen after advance OP
+                void'(ral.sw_binding_regwen.predict(.value(1)));
+                ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
+              end
             end
           end
           keymgr_pkg::OpDisable: begin
             update_result = UpdateInternalKey;
-            update_state(keymgr_pkg::StDisabled);
+            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+              adv_cnt++;
+            end else begin
+              adv_cnt = 0;
+              update_state(keymgr_pkg::StDisabled);
+            end
           end
           keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
             // If only op error but no fault error, no update for output
@@ -307,6 +303,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         case (op)
           keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable: begin
             update_result = NotUpdate;
+            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+              adv_cnt++;
+            end else begin
+              adv_cnt = 0;
+            end
           end
           keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenId: begin
             update_result = UpdateSwOut;
@@ -716,9 +717,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  virtual function void compare_adv_creator_data(bit exp_match, const ref byte byte_data_q[$]);
+  virtual function void compare_adv_creator_data(keymgr_cdi_type_e cdi_type,
+                                                 bit exp_match,
+                                                 const ref byte byte_data_q[$]);
     adv_creator_data_t exp, act;
-    string str;
+    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
     act = {<<8{byte_data_q}};
@@ -729,10 +732,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     exp.DeviceIdentifier   = cfg.keymgr_vif.otp_device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
 
-    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
-      exp.SoftwareBinding[i] = `gmv(rg);
-    end
+    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     // The order of the string creation must match the design
     `CREATE_CMP_STR(DiversificationKey)
@@ -748,20 +748,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    if (exp_match) adv_data_a_array[keymgr_pkg::StCreatorRootKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StCreatorRootKey] = act;
   endfunction
 
-  virtual function void compare_adv_owner_int_data(bit exp_match, const ref byte byte_data_q[$]);
+  virtual function void compare_adv_owner_int_data(keymgr_cdi_type_e cdi_type,
+                                                   bit exp_match,
+                                                   const ref byte byte_data_q[$]);
     adv_owner_int_data_t exp, act;
-    string str;
+    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
     act = {<<8{byte_data_q}};
 
     exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
-      exp.SoftwareBinding[i] = `gmv(rg);
-    end
+    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
     `CREATE_CMP_STR(OwnerRootSecret)
@@ -775,19 +774,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    if (exp_match) adv_data_a_array[keymgr_pkg::StOwnerIntKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StOwnerIntKey] = act;
   endfunction
 
-  virtual function void compare_adv_owner_data(const ref byte byte_data_q[$]);
+  virtual function void compare_adv_owner_data(keymgr_cdi_type_e cdi_type,
+                                               const ref byte byte_data_q[$]);
     adv_owner_data_t exp, act;
-    string str;
+    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
     act = {<<8{byte_data_q}};
 
-    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
-      uvm_reg rg = ral.get_reg_by_name($sformatf("sealing_sw_binding_%0d", i));
-      exp.SoftwareBinding[i] = `gmv(rg);
-    end
+    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
     for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
@@ -796,7 +793,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     `DV_CHECK_EQ(act, exp, str)
 
-    adv_data_a_array[keymgr_pkg::StOwnerKey] = act;
+    adv_data_a_array[Sealing][keymgr_pkg::StOwnerKey] = act;
   endfunction
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
@@ -805,8 +802,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     adv_owner_data_t act;
 
     act = {<<8{byte_data_q}};
-    foreach (adv_data_a_array[i]) begin
-      `DV_CHECK_NE(act, adv_data_a_array[i], $sformatf("Adv data to state %0s", i.name))
+    foreach (adv_data_a_array[i, j]) begin
+      `DV_CHECK_NE(act, adv_data_a_array[i][j], $sformatf("Adv data to state %0s for %0s", j.name,
+                                                          i.name))
     end
     foreach (id_data_a_array[i]) begin
       `DV_CHECK_NE(act, id_data_a_array[i], $sformatf("ID data at state %0s", i.name))
@@ -880,6 +878,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     `CREATE_CMP_STR(SoftwareExportConstant)
 
     `DV_CHECK_EQ(act, exp, str)
+  endfunction
+
+  virtual function void get_sw_binding_mirrored_value(
+        input keymgr_cdi_type_e cdi_type,
+        output bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
+
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      case (cdi_type)
+        Sealing: sw_binding[i] = `gmv(ral.sealing_sw_binding[i]);
+        Attestation: sw_binding[i] = `gmv(ral.attest_sw_binding[i]);
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported CDI type %s", cdi_type.name))
+      endcase
+    end
   endfunction
 
   // if it's not defined operation, treat as OpDisable

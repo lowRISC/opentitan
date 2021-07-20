@@ -208,6 +208,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     ral.control.start.set(1'b1);
     ral.control.operation.set(int'(operation));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.control.cdi_sel)
     // TODO, test KMAC interface only since the other interface may be removed later
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control.dest_sel,
                                    value inside {keymgr_pkg::None, keymgr_pkg::Kmac};);
