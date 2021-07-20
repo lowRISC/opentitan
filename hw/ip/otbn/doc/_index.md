@@ -18,7 +18,6 @@ See that document for integration overview within the broader top level system.
 * Full control-flow support with conditional branch and unconditional jump instructions, hardware loops, and hardware-managed call/return stacks.
 * Reduced, security-focused instruction set architecture for easier verification and the prevention of data leaks.
 * Built-in access to random numbers.
-  Note: The (quality) properties of the provided random numbers are not currently specified; this gap in the specification will be addressed in a future revision.
 
 ## Description
 
