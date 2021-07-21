@@ -398,7 +398,7 @@ module otp_ctrl
       // we locally trigger escalation within OTP, which moves all FSMs
       // to a terminal error state.
       if (fatal_macro_error_q || fatal_check_error_q) begin
-        lc_escalate_en[k] = lc_escalate_en_synced[k] | lc_ctrl_pkg::On;
+        lc_escalate_en[k] = lc_ctrl_pkg::On;
       end
       if (lc_escalate_en[k] == lc_ctrl_pkg::On) begin
         lc_escalate_en_any = 1'b1;
