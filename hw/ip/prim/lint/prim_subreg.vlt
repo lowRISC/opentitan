@@ -7,3 +7,7 @@
 // prim_subreg
 // for RO wd is not used
 lint_off -rule UNUSED -file "*/rtl/prim_subreg.sv" -match "Signal is not used: 'wd'"
+
+// prim_subreg_shadow
+// Operations on a string parameter (without explicit data type) are fine.
+lint_off -rule WIDTH -file "*/rtl/prim_subreg_shadow.sv" -match "*SWACCESS*"
