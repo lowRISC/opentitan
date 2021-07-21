@@ -21,6 +21,7 @@ const uint32_t kExpectedEntropyData[] = {
 };
 
 bool test_main() {
+  LOG_INFO("entropy_smoketest");
   const dif_entropy_params_t params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
   };
@@ -31,7 +32,6 @@ bool test_main() {
   CHECK(dif_entropy_disable(&entropy) == kDifEntropyOk);
 
   const dif_entropy_config_t config = {
-      .mode = kDifEntropyModeLfsr,
       .tests =
           {
               [kDifEntropyTestRepCount] = false,
@@ -45,8 +45,6 @@ bool test_main() {
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySingleBitModeDisabled,
       .route_to_firmware = true,
-      .sample_rate = 2,
-      .lfsr_seed = 2,
   };
   CHECK(dif_entropy_configure(&entropy, config) == kDifEntropyOk);
 

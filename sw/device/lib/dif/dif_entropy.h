@@ -99,35 +99,6 @@ typedef enum dif_entropy_test {
 } dif_entropy_test_t;
 
 /**
- * A mode of operation for the entropy source.
- */
-typedef enum dif_entropy_mode {
-  /**
-   * Indicates that the source is disabled.
-   */
-  kDifEntropyModeDisabled = 0,
-
-  /**
-   * The physical true random number generator mode.
-   *
-   * This mode uses a physical random noise generator for operation, and is
-   * truly random. This noise generator is compatible with SP 800-90B.
-   */
-  kDifEntropyModePtrng = 1,
-
-  /**
-   * The Linear Feedback Shift Register (LFSR) mode.
-   *
-   * This mode is digital, and as such is only pseudo-random and intended
-   * for test purposes only.
-   *
-   * In this mode, the `dif_entropy_config.lfsr_seed` value is used to
-   * initialize the internal state of the LFSR.
-   */
-  kDifEntropyModeLfsr = 2,
-} dif_entropy_mode_t;
-
-/**
  * A single-bit RNG mode, where only one bit is sampled.
  */
 typedef enum dif_entropy_single_bit_mode {
@@ -220,11 +191,6 @@ typedef struct dif_entropy_params {
  */
 typedef struct dif_entropy_config {
   /**
-   * The mode to configure the entropy source in.
-   */
-  dif_entropy_mode_t mode;
-
-  /**
    * Which health tests to enable.
    *
    * The variants of `dif_entropy_test` are used to index fields in this
@@ -269,17 +235,6 @@ typedef struct dif_entropy_config {
    * Configuration parameters for health tests.
    */
   dif_entropy_test_config_t test_config;
-
-  /**
-   * The rate at which the entropy bits are generated, in clock cycles.
-   */
-  uint16_t sample_rate;
-
-  /**
-   * Seed used to load into the LFSR initial state. The maximum allowable value
-   * is 15. See `dif_entropy_mode.kDifEntropyModeLfsr` for more details.
-   */
-  uint16_t lfsr_seed;
 } dif_entropy_config_t;
 
 /**
