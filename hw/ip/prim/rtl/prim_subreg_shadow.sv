@@ -37,8 +37,8 @@ module prim_subreg_shadow #(
   // we need to invert the polarity of the SW access if it is either "W1S" or "W0C".
   // W1C is forbidden since the W0S complement is not implemented.
   `ASSERT_INIT(CheckSwAccessIsLegal_A, SWACCESS inside {"RW", "RO", "WO", "W1S", "W0C", "RC"})
-  parameter bit [3*8-1:0] INVERTED_SWACCESS = (SWACCESS == "W1S") ? "W0C" :
-                                              (SWACCESS == "W0C") ? "W1S" : SWACCESS;
+  parameter INVERTED_SWACCESS = (SWACCESS == "W1S") ? "W0C" :
+                                (SWACCESS == "W0C") ? "W1S" : SWACCESS;
 
   // Subreg control signals
   logic          phase_clear;
