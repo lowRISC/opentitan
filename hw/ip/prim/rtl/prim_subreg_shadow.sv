@@ -60,13 +60,13 @@ module prim_subreg_shadow #(
     .DW       ( DW       ),
     .SWACCESS ( SWACCESS )
   ) wr_en_data_arb (
-    .we      ( we      ),
-    .wd      ( wd      ),
-    .de      ( de      ),
-    .d       ( d       ),
-    .q       ( q       ),
-    .wr_en   ( wr_en   ),
-    .wr_data ( wr_data )
+    .we      ( we          ),
+    .wd      ( wd          ),
+    .de      ( de          ),
+    .d       ( d           ),
+    .q       ( committed_q ),
+    .wr_en   ( wr_en       ),
+    .wr_data ( wr_data     )
   );
 
   // Phase clearing:
