@@ -117,7 +117,7 @@ mask_rom_epmp_init:
            CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_LRW) | /* Stack Guard */ \
+  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
            CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1
@@ -132,24 +132,3 @@ mask_rom_epmp_init:
 
   // Set function size to allow disassembly.
   .size mask_rom_epmp_init, .-mask_rom_epmp_init
-
-/**
- * Disable all accesses to the stack guard word.
- *
- * This function follows the standard ILP32 calling convention but does not
- * require a valid stack pointer, thread pointer or global pointer.
- *
- * Clobbers t0.
- */
-mask_rom_epmp_stack_guard_init:
-  .globl mask_rom_epmp_stack_guard_init
-  .type mask_rom_epmp_stack_guard_init, @function
-
-  // Remove all permissions from entry 14 (the stack guard).
-  li   t0, CFG_INDEX(14 % 4, EPMP_CFG_R | EPMP_CFG_W | EPMP_CFG_X)
-  csrc pmpcfg3, t0
-
-  ret
-
-  // Set function size to allow disassembly.
-  .size mask_rom_epmp_stack_guard_init, .-mask_rom_epmp_stack_guard_init
