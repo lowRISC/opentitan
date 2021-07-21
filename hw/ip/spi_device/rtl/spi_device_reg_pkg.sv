@@ -196,6 +196,9 @@ package spi_device_reg_pkg;
       logic        q;
     } addr_4b_affected;
     struct packed {
+      logic        q;
+    } mbyte_en;
+    struct packed {
       logic [2:0]  q;
     } dummy_size;
     struct packed {
@@ -282,21 +285,21 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [812:807]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [806:801]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [800:789]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [788:787]
-    spi_device_reg2hw_control_reg_t control; // [786:781]
-    spi_device_reg2hw_cfg_reg_t cfg; // [780:768]
-    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [767:736]
-    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [735:720]
-    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [719:704]
-    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [703:672]
-    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [671:640]
-    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [639:384]
-    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [383:352]
-    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [351:320]
-    spi_device_reg2hw_cmd_info_mreg_t [15:0] cmd_info; // [319:0]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [828:823]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [822:817]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [816:805]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [804:803]
+    spi_device_reg2hw_control_reg_t control; // [802:797]
+    spi_device_reg2hw_cfg_reg_t cfg; // [796:784]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [783:752]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [751:736]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [735:720]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [719:688]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [687:656]
+    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [655:400]
+    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [399:368]
+    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [367:336]
+    spi_device_reg2hw_cmd_info_mreg_t [15:0] cmd_info; // [335:0]
   } spi_device_reg2hw_t;
 
   // HW -> register type

@@ -173,8 +173,6 @@ module spi_device
 
   // CMD interface
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
-  spi_byte_t     cmd_opcode;
-
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
   logic mailbox_assumed, passthrough_assumed_by_internal;
@@ -186,7 +184,11 @@ module spi_device
   logic [31:0] addr_swap_data;
 
   // Command Info structure
-  cmd_info_t [spi_device_reg_pkg::NumCmdInfo-1:0] cmd_info;
+  cmd_info_t [NumCmdInfo-1:0] cmd_info;
+  // Broadcasted cmd_info. cmdparse compares the opcode up to CmdInfoReadCmdEnd
+  // and latches the cmd_info and broadcast to submodules
+  cmd_info_t                  cmd_info_broadcast;
+  logic [CmdInfoIdxW-1:0]     cmd_info_idx_broadcast;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -378,6 +380,7 @@ module spi_device
         addr_en:          reg2hw.cmd_info[i].addr_en.q,
         addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,
         addr_4b_affected: reg2hw.cmd_info[i].addr_4b_affected.q,
+        mbyte_en:         reg2hw.cmd_info[i].mbyte_en.q,
         dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
         payload_en:       reg2hw.cmd_info[i].payload_en.q,
@@ -785,14 +788,15 @@ module spi_device
 
     .spi_mode_i   (spi_mode),
 
-    .upload_mask_i (cfg_upload_mask),
+    .upload_mask_i(cfg_upload_mask),
 
     .cmd_info_i   (cmd_info),
 
     .io_mode_o    (sub_iomode[IoModeCmdParse]),
 
-    .sel_dp_o     (cmd_dp_sel),
-    .opcode_o     (cmd_opcode),
+    .sel_dp_o       (cmd_dp_sel),
+    .cmd_info_o     (cmd_info_broadcast),
+    .cmd_info_idx_o (cmd_info_idx_broadcast),
 
     // Not used for now
     .cmd_config_req_o (),
@@ -808,7 +812,6 @@ module spi_device
     .sys_rst_ni (rst_ni),
 
     .sel_dp_i   (cmd_dp_sel),
-    .opcode_i   (cmd_opcode),
 
     // SRAM interface
     .sram_req_o    (sub_sram_req      [IoModeReadCmd]),
@@ -830,10 +833,9 @@ module spi_device
     .p2s_sent_i    (sub_p2s_sent  [IoModeReadCmd]),
 
     .spi_mode_i       (spi_mode),
-    // TODO: connect to reg intf
-    .fastread_dummy_i (3'h 7),
-    .dualread_dummy_i (3'h 3),
-    .quadread_dummy_i (3'h 1),
+
+    .cmd_info_i     (cmd_info_broadcast),
+    .cmd_info_idx_i (cmd_info_idx_broadcast),
 
     .readbuf_threshold_i ('0), //$clog2(ReadBufferDepth)-1
 

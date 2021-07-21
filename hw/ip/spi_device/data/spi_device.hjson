@@ -446,6 +446,12 @@
               If not, the address size of the command is always 3B.
               '''
           }
+          { bits:   "11"
+            name:   "mbyte_en"
+            desc:   '''If 1, the command has a MByte field following the
+              address field. This is set to 1 for DualIO, QuadIO commands.
+              '''
+          }
           { bits:   "14:12"
             resval: "7"
             name:   "dummy_size"
