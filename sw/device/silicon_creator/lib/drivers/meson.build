@@ -347,3 +347,50 @@ test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM retention SRAM driver
+sw_silicon_creator_lib_driver_retention_sram = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_retention_sram',
+    sources: [
+      hw_ip_sram_ctrl_reg_h,
+      'retention_sram.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_retention_sram_unittest', executable(
+    'sw_silicon_creator_lib_driver_retention_sram_unittest',
+    sources: [
+      'retention_sram_unittest.cc',
+      hw_ip_sram_ctrl_reg_h,
+      'retention_sram.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
+
+sw_silicon_creator_lib_driver_retention_sram_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_retention_sram_functest',
+    sources: ['retention_sram_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_retention_sram,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_retention_sram_functest': {
+    'library': sw_silicon_creator_lib_driver_retention_sram_functest,
+  }
+}

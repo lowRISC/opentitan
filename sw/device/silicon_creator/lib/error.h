@@ -35,6 +35,7 @@ enum module_ {
   kModuleEpmp = 0x5045,          // ASCII "EP",
   kModuleOtp = 0x504f,           // ASCII "OP".
   kModuleOtbn = 0x4e42,          // ASCII "BN".
+  kModuleRetSram = 0x5352,       // ASCII "RS".
 };
 
 /**
@@ -86,6 +87,7 @@ enum module_ {
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffset,              ERROR_(3, kModuleOtbn, kInvalidArgument)), \
+  X(kErrorRetSramLocked,              ERROR_(1, kModuleRetSram, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
