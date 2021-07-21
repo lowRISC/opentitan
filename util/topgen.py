@@ -24,7 +24,7 @@ from reggen import access, gen_rtl, window
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.lib import check_list
-from topgen import amend_clocks, get_hjsonobj_xbars
+from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
@@ -32,6 +32,7 @@ from topgen.c import TopGenC
 from topgen.gen_dv import gen_dv
 from topgen.top import Top
 from topgen.clocks import Clocks
+from topgen.merge import extract_clocks, connect_clocks
 
 # Common header for generated files
 warnhdr = '''//
@@ -404,80 +405,8 @@ def generate_clkmgr(top, cfg_path, out_path):
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
 
-    # Classify the various clock signals. Here, we build the following
-    # dictionaries, each mapping the derived clock name to its source.
-    #
-    # ft_clks:  Clocks fed through clkmgr but are not disturbed in any way.
-    #           This maintains the clocking structure consistency.
-    #           This includes two groups of clocks:
-    #             - Clocks fed from the always-on source
-    #             - Clocks fed to the powerup group
-    #
-    # rg_clks: Non-feedthrough clocks that have no software control. These
-    #          clocks are root-gated and the root-gated clock is then exposed
-    #          directly in clocks_o.
-    #
-    # sw_clks: Non-feedthrough clocks that have direct software control. These
-    #          are root-gated, but (unlike rg_clks) then go through a second
-    #          clock gate which is controlled by software.
-    #
-    # hints: Non-feedthrough clocks that have "hint" software control (with a
-    #        feedback mechanism to allow blocks to avoid being suspended when
-    #        they are not idle).
-    ft_clks = {}
-    rg_clks = {}
-    sw_clks = {}
-    hints = {}
-
-    # We also build rg_srcs_set, which is the set of names of non-always-on
-    # clock sources that are exposed without division. This doesn't include
-    # clock sources that are only used to derive divided clocks (we might gate
-    # the divided clocks, but don't bother gating the upstream source).
-    rg_srcs_set = set()
-
-    for grp in clocks.groups.values():
-        if grp.name == 'powerup':
-            # All clocks in the "powerup" group are considered feed-throughs.
-            ft_clks.update(grp.clocks)
-            continue
-
-        for clk, src in grp.clocks.items():
-            if src.aon:
-                # Any always-on clock is a feedthrough
-                ft_clks[clk] = src
-                continue
-
-            rg_srcs_set.add(src.name)
-
-            if grp.sw_cg == 'no':
-                # A non-feedthrough clock with no software control
-                rg_clks[clk] = src
-                continue
-
-            if grp.sw_cg == 'yes':
-                # A non-feedthrough clock with direct software control
-                sw_clks[clk] = src
-                continue
-
-            # The only other valid value for the sw_cg field is "hint", which
-            # means a non-feedthrough clock with "hint" software control.
-            assert grp.sw_cg == 'hint'
-            hints[clk] = src
-            continue
-
-    # hint clocks dict.
-    #
-    # The clock is constructed as clk_{src_name}_{module_name}. So to get the
-    # module name we split from the right and pick the last entry
-    hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
-                 for clk, src in hints.items()}
-
-    # The names of blocks that use one or more sw hint clocks (clkmgr has an
-    # "idle" feedback signal from each), in ascending order.
-    hint_blocks = sorted(set([v['name'] for v in hint_clks.values()]))
-
-    # Define a canonical ordering for rg_srcs
-    rg_srcs = sorted(rg_srcs_set)
+    typed_clocks = clocks.typed_clocks()
+    hint_names = typed_clocks.hint_names()
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -485,13 +414,9 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
-                                 rg_srcs=rg_srcs,
-                                 ft_clks=ft_clks,
-                                 rg_clks=rg_clks,
-                                 sw_clks=sw_clks,
-                                 export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks,
-                                 hint_blocks=hint_blocks)
+                                 clocks=clocks,
+                                 typed_clocks=typed_clocks,
+                                 hint_names=hint_names)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
 
@@ -809,7 +734,8 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # Unlike other generated hjsons, clkmgr thankfully does not require
     # ip.hjson information.  All the information is embedded within
     # the top hjson file
-    amend_clocks(topcfg)
+    topcfg['clocks'] = Clocks(topcfg['clocks'])
+    extract_clocks(topcfg)
     generate_clkmgr(topcfg, cfg_path, out_path)
 
     # It may require two passes to check if the module is needed.
@@ -863,6 +789,14 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
+    name_to_block = {}  # type: Dict[str, IpBlock]
+    for block in ip_objs:
+        lblock = block.name.lower()
+        assert lblock not in name_to_block
+        name_to_block[lblock] = block
+
+    connect_clocks(topcfg, name_to_block)
+
     # Read the crossbars under the top directory
     xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
@@ -886,12 +820,6 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
-
-    name_to_block = {}  # type: Dict[str, IpBlock]
-    for block in ip_objs:
-        lblock = block.name.lower()
-        assert lblock not in name_to_block
-        name_to_block[lblock] = block
 
     completecfg = merge_top(topcfg, name_to_block, xbar_objs)
 

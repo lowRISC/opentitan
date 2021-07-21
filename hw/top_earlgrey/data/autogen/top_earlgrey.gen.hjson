@@ -2595,8 +2595,8 @@
           inst_name: clkmgr_aon
           default: ""
           package: ""
-          end_idx: 4
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: clkmgr_aon_idle
           index: -1
         }
@@ -5423,6 +5423,18 @@
           default: ""
           package: ""
           top_signame: clkmgr_aon_idle
+          index: 4
+        }
+        {
+          name: idle_otp
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: otbn
+          default: ""
+          package: ""
+          top_signame: clkmgr_aon_idle
           index: 3
         }
         {
@@ -6671,6 +6683,7 @@
         aes.idle
         hmac.idle
         kmac.idle
+        otbn.idle_otp
         otbn.idle
       ]
       pinmux_aon.lc_jtag:
@@ -14520,8 +14533,8 @@
         inst_name: clkmgr_aon
         default: ""
         package: ""
-        end_idx: 4
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: clkmgr_aon_idle
         index: -1
       }
@@ -16148,6 +16161,18 @@
       }
       {
         name: idle
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: otbn
+        default: ""
+        package: ""
+        top_signame: clkmgr_aon_idle
+        index: 4
+      }
+      {
+        name: idle_otp
         struct: logic
         type: uni
         act: req
@@ -18663,7 +18688,7 @@
         signame: clkmgr_aon_idle
         width: 5
         type: uni
-        end_idx: 4
+        end_idx: -1
         act: rcv
         suffix: ""
         default: "'0"

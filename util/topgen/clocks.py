@@ -2,7 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List
+from typing import Dict, List, NamedTuple, Tuple
+
+from .lib import Name
 
 
 def _yn_to_bool(yn: object) -> bool:
@@ -62,6 +64,17 @@ class DerivedSourceClock(SourceClock):
         return ret
 
 
+class ClockSignal:
+    '''A clock signal in the design'''
+    def __init__(self, name: str, src: SourceClock):
+        self.name = name
+        self.src = src
+        self.endpoints = []  # type: List[Tuple[str, str]]
+
+    def add_endpoint(self, ep_name: str, ep_port: str) -> None:
+        self.endpoints.append((ep_name, ep_port))
+
+
 class Group:
     def __init__(self,
                  raw: Dict[str, object],
@@ -82,7 +95,7 @@ class Group:
                              f'combination with sw_cg of {self.sw_cg} and '
                              f'unique set.')
 
-        self.clocks = {}  # type: Dict[str, SourceClock]
+        self.clocks = {}  # type: Dict[str, ClockSignal]
         raw_clocks = raw.get('clocks', {})
         if not isinstance(raw_clocks, dict):
             raise ValueError(f'clocks for {what} is not a dictionary')
@@ -92,19 +105,22 @@ class Group:
                 raise ValueError(f'The {clk_name} entry of clocks for {what} '
                                  f'has source {src_name}, which is not a '
                                  f'known clock source.')
-            self.clocks[clk_name] = src
+            self.add_clock(clk_name, src)
 
-    def add_clock(self, clk_name: str, src: SourceClock):
+    def add_clock(self, clk_name: str, src: SourceClock) -> ClockSignal:
         # Duplicates are ok, so long as they have the same source.
-        existing_src = self.clocks.get(clk_name)
-        if existing_src is not None:
-            if existing_src is not src:
+        sig = self.clocks.get(clk_name)
+        if sig is not None:
+            if sig.src is not src:
                 raise ValueError(f'Cannot add clock {clk_name} to group '
                                  f'{self.name} with source {src.name}: the '
                                  f'clock is there already with source '
-                                 f'{existing_src.name}.')
+                                 f'{sig.src.name}.')
         else:
-            self.clocks[clk_name] = src
+            sig = ClockSignal(clk_name, src)
+            self.clocks[clk_name] = sig
+
+        return sig
 
     def _asdict(self) -> Dict[str, object]:
         return {
@@ -112,8 +128,74 @@ class Group:
             'src': self.src,
             'sw_cg': self.sw_cg,
             'unique': _bool_to_yn(self.unique),
-            'clocks': {name: src.name for name, src in self.clocks.items()}
+            'clocks': {name: sig.src.name
+                       for name, sig in self.clocks.items()}
         }
+
+
+class TypedClocks(NamedTuple):
+    # Clocks fed through clkmgr but not disturbed in any way. This maintains
+    # the clocking structure consistency. This includes two groups of clocks:
+    #
+    #   - Clocks fed from the always-on source
+    #   - Clocks fed to the powerup group
+    ft_clks: Dict[str, ClockSignal]
+
+    # Non-feedthrough clocks that have no software control. These clocks are
+    # root-gated and the root-gated clock is then exposed directly in clocks_o.
+    rg_clks: Dict[str, ClockSignal]
+
+    # Non-feedthrough clocks that have direct software control. These are
+    # root-gated, but (unlike rg_clks) then go through a second clock gate
+    # which is controlled by software.
+    sw_clks: Dict[str, ClockSignal]
+
+    # Non-feedthrough clocks that have "hint" software control (with a feedback
+    # mechanism to allow blocks to avoid being suspended when they are not
+    # idle).
+    hint_clks: Dict[str, ClockSignal]
+
+    # A list of the of non-always-on clock sources that are exposed without
+    # division, sorted by name. This doesn't include clock sources that are
+    # only used to derive divided clocks (we might gate the divided clocks, but
+    # don't bother gating the upstream source).
+    rg_srcs: List[str]
+
+    def all_clocks(self) -> Dict[str, ClockSignal]:
+        ret = {}
+        ret.update(self.ft_clks)
+        ret.update(self.hint_clks)
+        ret.update(self.rg_clks)
+        ret.update(self.sw_clks)
+        return ret
+
+    def hint_names(self) -> Dict[str, str]:
+        '''Return a dictionary with hint names for the hint clocks
+
+        These are used as enum items that name the clock hint signals. The
+        insertion ordering in this dictionary is important because it gives the
+        mapping from enum name to index.
+
+        '''
+        # A map from endpoint to the list of hint clocks that it uses.
+        ep_to_hints = {}
+        for sig in self.hint_clks.values():
+            for ep, port_name in sig.endpoints:
+                ep_to_hints.setdefault(ep, []).append(sig.name)
+
+        # A map from hint clock name to the associated enumeration name which
+        # will appear in hint_names_e in clkmgr_pkg.sv. Note that this is
+        # ordered alphabetically by endpoint: the precise ordering shouldn't
+        # matter, but it's probably nicer to keep endpoints' signals together.
+        hint_names = {}
+        for ep, clks in sorted(ep_to_hints.items()):
+            for clk in sorted(clks):
+                # Remove any "clk" prefix
+                clk_name = Name.from_snake_case(clk).remove_part('clk')
+                hint_name = Name(['hint']) + clk_name
+                hint_names[clk] = hint_name.as_camel_case()
+
+        return hint_names
 
 
 class Clocks:
@@ -131,6 +213,7 @@ class Clocks:
             self.srcs[clk.name] = clk
 
         self.derived_srcs = {}
+        assert isinstance(raw['derived_srcs'], list)
         for r in raw['derived_srcs']:
             clk = DerivedSourceClock(r, self.srcs)
             self.derived_srcs[clk.name] = clk
@@ -153,10 +236,83 @@ class Clocks:
             'groups': list(self.groups.values())
         }
 
-    def add_clock_to_group(self, grp: Group, clk_name: str, src_name: str):
+    def add_clock_to_group(self,
+                           grp: Group,
+                           clk_name: str,
+                           src_name: str) -> ClockSignal:
         src = self.all_srcs.get(src_name)
         if src is None:
             raise ValueError(f'Cannot add clock {clk_name} to group '
                              f'{grp.name}: the given source name is '
                              f'{src_name}, which is unknown.')
-        grp.add_clock(clk_name, src)
+        return grp.add_clock(clk_name, src)
+
+    def reset_signals(self) -> List[str]:
+        '''Return the list of clock reset signal names
+
+        These signals are inputs to the clock manager (from the reset
+        manager)
+
+        '''
+        ret = []
+        for src in self.srcs.values():
+            if not src.aon:
+                ret.append(f'rst_{src.name}_ni')
+        for src in self.derived_srcs.values():
+            ret.append(f'rst_{src.name}_ni')
+        return ret
+
+    def typed_clocks(self) -> TypedClocks:
+        '''Split the clocks by type'''
+        ft_clks = {}
+        rg_clks = {}
+        sw_clks = {}
+        hint_clks = {}
+        rg_srcs_set = set()
+
+        for grp in self.groups.values():
+            if grp.name == 'powerup':
+                # All clocks in the "powerup" group are considered feed-throughs.
+                ft_clks.update(grp.clocks)
+                continue
+
+            for clk, sig in grp.clocks.items():
+                if sig.src.aon:
+                    # Any always-on clock is a feedthrough
+                    ft_clks[clk] = sig
+                    continue
+
+                rg_srcs_set.add(sig.src.name)
+
+                if grp.sw_cg == 'no':
+                    # A non-feedthrough clock with no software control
+                    rg_clks[clk] = sig
+                    continue
+
+                if grp.sw_cg == 'yes':
+                    # A non-feedthrough clock with direct software control
+                    sw_clks[clk] = sig
+                    continue
+
+                # The only other valid value for the sw_cg field is "hint", which
+                # means a non-feedthrough clock with "hint" software control.
+                assert grp.sw_cg == 'hint'
+                hint_clks[clk] = sig
+                continue
+
+        # Define a canonical ordering for rg_srcs
+        rg_srcs = list(sorted(rg_srcs_set))
+
+        return TypedClocks(ft_clks=ft_clks,
+                           rg_clks=rg_clks,
+                           sw_clks=sw_clks,
+                           hint_clks=hint_clks,
+                           rg_srcs=rg_srcs)
+
+    def make_clock_to_group(self) -> Dict[str, Group]:
+        '''Return a map from clock name to the group containing the clock'''
+        c2g = {}
+        for grp in self.groups.values():
+            for clk_name in grp.clocks.keys():
+                c2g[clk_name] = grp
+        return c2g
