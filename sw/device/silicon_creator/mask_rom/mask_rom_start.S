@@ -230,11 +230,8 @@ _mask_rom_start_boot:
   li x30, 0x0
   li x31, 0x0
 
-  .extern crt_section_clear
-  .extern crt_section_copy
-  .extern mask_rom_epmp_init
-
   // Must be called prior to any Main RAM access.
+  .extern mask_rom_epmp_init
   call mask_rom_epmp_init
 
   /**
@@ -245,11 +242,13 @@ _mask_rom_start_boot:
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
+  .extern crt_section_copy
   call crt_section_copy
 
   // Initialize the `.bss` section.
   la   a0, _bss_start
   la   a1, _bss_end
+  .extern crt_section_clear
   call crt_section_clear
 
   // Setup global pointer.
