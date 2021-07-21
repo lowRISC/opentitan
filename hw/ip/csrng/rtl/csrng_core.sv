@@ -277,6 +277,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NApps-1:0]       cmd_stage_rdy;
   logic [NApps-1:0]       cmd_arb_req;
   logic [NApps-1:0]       cmd_arb_gnt;
+  logic [$clog2(NApps)-1:0] cmd_arb_idx;
   logic [NApps-1:0]       cmd_arb_sop;
   logic [NApps-1:0]       cmd_arb_mop;
   logic [NApps-1:0]       cmd_arb_eop;
@@ -322,6 +323,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [3:0]  shid_q, shid_d;
   logic        gen_last_q, gen_last_d;
   logic        flag0_q, flag0_d;
+  logic [$clog2(NApps)-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic        statedb_wr_select_q, statedb_wr_select_d;
   logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
   logic        cmd_req_dly_q, cmd_req_dly_d;
@@ -337,6 +339,7 @@ module csrng_core import csrng_pkg::*; #(
       shid_q  <= '0;
       gen_last_q <= '0;
       flag0_q <= '0;
+      cmd_arb_idx_q <= '0;
       statedb_wr_select_q <= '0;
       genbits_stage_fips_sw_q <= '0;
       cmd_req_dly_q <= '0;
@@ -350,6 +353,7 @@ module csrng_core import csrng_pkg::*; #(
       shid_q  <= shid_d;
       gen_last_q <= gen_last_d;
       flag0_q <= flag0_d;
+      cmd_arb_idx_q <= cmd_arb_idx_d;
       statedb_wr_select_q <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
       cmd_req_dly_q <= cmd_req_dly_d;
@@ -786,25 +790,27 @@ module csrng_core import csrng_pkg::*; #(
   // and processed by the main state machine
   // logic block.
 
+  assign cmd_arb_idx_d = (acmd_avail && acmd_accept) ? cmd_arb_idx : cmd_arb_idx_q;
 
-  // create control bus for commands
-  assign acmd_sop = (|cmd_arb_sop);
-  assign acmd_mop = (|cmd_arb_mop);
-  assign acmd_eop = (|cmd_arb_eop);
+  assign acmd_sop = cmd_arb_sop[cmd_arb_idx_q];
+  assign acmd_mop = cmd_arb_mop[cmd_arb_idx_q];
+  assign acmd_eop = cmd_arb_eop[cmd_arb_idx_q];
+  assign acmd_bus = cmd_arb_bus[cmd_arb_idx_q];
 
   prim_arbiter_ppc #(
+    .EnDataPort(0),    // Ignore data port
     .N(NApps),  // Number of request ports
-    .DW(AppCmdWidth) // Data width
+    .DW(1) // Data width
   ) u_prim_arbiter_ppc_acmd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .req_chk_i(1'b1),
     .req_i(cmd_arb_req),
-    .data_i(cmd_arb_bus),
+    .data_i('{default: 1'b0}),
     .gnt_o(cmd_arb_gnt),
-    .idx_o(), // NC
+    .idx_o(cmd_arb_idx),
     .valid_o(acmd_avail), // 1 req
-    .data_o(acmd_bus), // info with req
+    .data_o(), //NC
     .ready_i(acmd_accept) // 1 fsm rdy
   );
 

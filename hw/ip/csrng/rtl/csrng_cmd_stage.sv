@@ -185,36 +185,41 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   //---------------------------------------------------------
   // state machine to process command
   //---------------------------------------------------------
-
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
-//      -s 2519129599 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
+//      -s 170131814 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||||||| (57.14%)
-//  4: ||||||||||||||| (42.86%)
-//  5: --
-//  6: --
+//  3: |||||||||||||||| (28.89%)
+//  4: |||||||||||||||||||| (35.56%)
+//  5: |||||||||||| (22.22%)
+//  6: ||||| (8.89%)
+//  7: | (2.22%)
+//  8: | (2.22%)
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 4
+// Maximum Hamming distance: 8
 // Minimum Hamming weight: 1
-// Maximum Hamming weight: 5
+// Maximum Hamming weight: 7
 //
 
-  localparam int StateWidth = 6;
+// Encoding generated with:
+  localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
-    Idle      = 6'b001010, // idle
-    SendSOP   = 6'b000111, // send sop (start of packet)
-    SendMOP   = 6'b010000, // send mop (middle of packet)
-    GenCmdChk = 6'b011101, // gen cmd check
-    CmdAck    = 6'b111011, // wait for command ack
-    GenReq    = 6'b110110, // process gen requests
-    Error     = 6'b101100  // illegal state reached and hang
+    Idle      = 8'b00011011, // idle
+    ArbGnt    = 8'b11110101, // general arbiter request
+    SendSOP   = 8'b00011100, // send sop (start of packet)
+    SendMOP   = 8'b00000001, // send mop (middle of packet)
+    GenCmdChk = 8'b01010110, // gen cmd check
+    CmdAck    = 8'b10001101, // wait for command ack
+    GenReq    = 8'b11000000, // process gen requests
+    GenArbGnt = 8'b11111110, // generate subsequent arb request
+    GenSOP    = 8'b10110010, // generate subsequent request
+    Error     = 8'b10111001  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -252,28 +257,30 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     unique case (state_q)
       Idle: begin
         if (!cmd_fifo_zero) begin
+          state_d = ArbGnt;
+        end
+      end
+      ArbGnt: begin
+        cmd_arb_req_o = 1'b1;
+        if (cmd_arb_gnt_i) begin
           state_d = SendSOP;
         end
       end
       SendSOP: begin
-        cmd_arb_req_o = 1'b1;
-        if (cmd_arb_gnt_i) begin
-          cmd_gen_1st_req = 1'b1;
-          cmd_arb_sop_o = 1'b1;
-          cmd_fifo_pop = 1'b1;
-          if (sfifo_cmd_rdata[30:12] == GenBitsCntrWidth'(1)) begin
-            cmd_gen_cnt_last = 1'b1;
-          end
-          if (cmd_len == '0) begin
-            cmd_arb_eop_o = 1'b1;
-            state_d = GenCmdChk;
-          end else begin
-            state_d = SendMOP;
-          end
+        cmd_gen_1st_req = 1'b1;
+        cmd_arb_sop_o = 1'b1;
+        cmd_fifo_pop = 1'b1;
+        if (sfifo_cmd_rdata[30:12] == GenBitsCntrWidth'(1)) begin
+          cmd_gen_cnt_last = 1'b1;
+        end
+        if (cmd_len == '0) begin
+          cmd_arb_eop_o = 1'b1;
+          state_d = GenCmdChk;
+        end else begin
+          state_d = SendMOP;
         end
       end
       SendMOP: begin
-        cmd_arb_req_o = 1'b1;
         if (!cmd_fifo_zero) begin
           cmd_fifo_pop = 1'b1;
           cmd_len_dec = 1'b1;
@@ -307,23 +314,29 @@ module csrng_cmd_stage import csrng_pkg::*; #(
               state_d = Idle;
             end else begin
               // issue a subsequent gen request
-              cmd_arb_req_o = 1'b1;
-              if (cmd_arb_gnt_i) begin
-                cmd_arb_sop_o = 1'b1;
-                cmd_arb_eop_o = 1'b1;
-                cmd_gen_inc_req = 1'b1;
-                state_d = GenCmdChk;
-                // check for final genbits beat
-                if (cmd_gen_cnt_q == GenBitsCntrWidth'(1)) begin
-                  cmd_gen_cnt_last = 1'b1;
-                end
-              end
+              state_d = GenArbGnt;
             end
           end
         end else begin
           // ack for the non-gen request case
           cmd_final_ack = 1'b1;
           state_d = Idle;
+        end
+      end
+      GenArbGnt: begin
+        cmd_arb_req_o = 1'b1;
+        if (cmd_arb_gnt_i) begin
+          state_d = GenSOP;
+        end
+      end
+      GenSOP: begin
+        cmd_arb_sop_o = 1'b1;
+        cmd_arb_eop_o = 1'b1;
+        cmd_gen_inc_req = 1'b1;
+        state_d = GenCmdChk;
+        // check for final genbits beat
+        if (cmd_gen_cnt_q == GenBitsCntrWidth'(1)) begin
+          cmd_gen_cnt_last = 1'b1;
         end
       end
       Error: begin
