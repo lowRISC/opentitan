@@ -15,7 +15,7 @@ from .state import OTBNState
 # a particular Insn object from shared.insn_yaml, so we want a class variable
 # on the OTBNInsn that points at the corresponding Insn.
 try:
-    _INSNS_FILE = load_insns_yaml()
+    INSNS_FILE = load_insns_yaml()
 except RuntimeError as err:
     sys.stderr.write('{}\n'.format(err))
     sys.exit(1)
@@ -53,7 +53,7 @@ def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
     on this way).
 
     '''
-    insn = _INSNS_FILE.mnemonic_to_insn.get(mnemonic)
+    insn = INSNS_FILE.mnemonic_to_insn.get(mnemonic)
     if insn is None:
         sys.stderr.write('Failed to find an instruction for mnemonic {!r} in '
                          'insns.yml.\n'
