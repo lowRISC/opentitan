@@ -73,7 +73,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // The addr arg need not be word aligned - its the same addr programmed into the `control` CSR.
   // TODO: add support for partition.
   virtual function void flash_mem_bkdr_read(flash_op_t flash_op,
-                                            ref logic [TL_DW-1:0] data[$]);
+                                            ref data_q_t data);
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
     data.delete();
     for (int i = 0; i < flash_op.num_words; i++) begin
@@ -92,7 +92,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_write(flash_op_t flash_op,
                                              flash_mem_init_e scheme,
-                                             logic [TL_DW-1:0] data[$] = {});
+                                             data_q_t data = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
     logic [TL_DW-1:0] wr_data;
 
@@ -159,8 +159,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // The exp data queue is sized for the bus word.
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
-                                                  const ref bit [TL_DW-1:0] exp_data[$]);
-    logic [TL_DW-1:0] data[$];
+                                                  const ref data_q_t exp_data);
+    data_q_t data;
     flash_mem_bkdr_read(flash_op, data);
     foreach (data[i]) begin
       `DV_CHECK_CASE_EQ(data[i], exp_data[i])
@@ -168,7 +168,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   endfunction : flash_mem_bkdr_read_check
 
   // Verifies that the flash page / bank has indeed been erased.
-  virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op);
+  virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op, data_q_t exp_data = {});
     flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
     bit [TL_AW-1:0]         erase_check_addr;
     uint                    num_words;
@@ -197,10 +197,21 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
       `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: bank: %0d, partition: %s , ",
                                  "addr: 0x%0h, data: 0x%0h"}, addr_attrs.bank,
                                  flash_op.partition.name(), erase_check_addr, data), UVM_MEDIUM)
-      `DV_CHECK_CASE_EQ(data, '1)
+      // If the expected data is not empty then it should be taken is expected. If it is empty the
+      //  default expected value is checked - which for successful erase is all 1s.
+      if (exp_data.size() <= i) begin
+        `DV_CHECK_CASE_EQ(data, '1)
+      end else begin
+        `DV_CHECK_CASE_EQ(data, exp_data[i])
+      end
       erase_check_addr += TL_DBW;
     end
   endfunction : flash_mem_bkdr_erase_check
 
+  // Function to enable changing of the expected data to be checked in the post-transaction
+  //  checks.
+  virtual function data_q_t calculate_expected_data(flash_op_t flash_op, const ref data_q_t exp_data);
+    return exp_data;
+  endfunction : calculate_expected_data
 
 endclass
