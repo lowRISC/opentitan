@@ -162,7 +162,11 @@ module spi_readcmd
   //input [31:0] mailbox_mask_i,
 
   // Indicator to take SPI line in Passthrough mode
-  output mailbox_assumed_o,
+  output logic mailbox_assumed_o,
+
+  // Read buf addr in SCK domain. It is synchronized to bus clock in the top
+  // module
+  output logic [31:0] readbuf_address_o,
 
   output io_mode_e io_mode_o,
 
@@ -284,6 +288,13 @@ module spi_readcmd
 
   logic [31:0] addr_q, addr_d;
 
+  // Read buffer access address.
+  //
+  // This differs from addr_q. addr_q is to maintain the SRAM access.
+  // readbuf_addr is to track the Read command address which does not fall
+  // into SFDP, Mailbox.
+  logic [31:0] readbuf_addr;
+
   // Dummy counter
   logic dummycnt_eq_zero;
   logic load_dummycnt;
@@ -340,6 +351,16 @@ module spi_readcmd
       addr_q <= addr_d;
     end
   end
+
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      readbuf_addr <= '0;
+    end else if (addr_latch_en && sel_dp_i == DpReadCmd
+                 && !(mailbox_en_i && addr_in_mailbox)) begin
+      readbuf_addr <= addr_d;
+    end
+  end
+  assign readbuf_address_o = readbuf_addr;
 
   always_comb begin
     addr_d = '0; // default value. In 3B mode, upper most byte is 0

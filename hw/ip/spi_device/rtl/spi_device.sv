@@ -171,6 +171,10 @@ module spi_device
   spi_byte_t   sub_p2s_data[IoModeEnd];
   logic        sub_p2s_sent[IoModeEnd];
 
+  // Read commands related signals
+  logic [31:0] readbuf_addr_sck;
+  logic [31:0] readbuf_addr_busclk;
+
   // CMD interface
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
 
@@ -189,6 +193,10 @@ module spi_device
   // and latches the cmd_info and broadcast to submodules
   cmd_info_t                  cmd_info_broadcast;
   logic [CmdInfoIdxW-1:0]     cmd_info_idx_broadcast;
+
+  // Bus clock pulse event of CSb de-assertion. It is used to latch the SCK
+  // domain variables into the bus clock domain.
+  logic csb_deasserted_busclk;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -360,6 +368,17 @@ module spi_device
   assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
       (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
 
+  // SPI Flash commands registers
+  // TODO: Add 2FF sync? or just waive?
+  assign hw2reg.last_read_addr.d = readbuf_addr_busclk;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      readbuf_addr_busclk <= '0;
+    end else if (csb_deasserted_busclk) begin
+      readbuf_addr_busclk <= readbuf_addr_sck;
+    end
+  end
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -534,6 +553,24 @@ module spi_device
     .sel_i  (scanmode[RstSramSel] == lc_ctrl_pkg::On),
     .clk_o  (sram_rst_n)
   );
+
+  // CSb deassertion pulse generator
+  logic csb_sync, csb_sync_q;
+  prim_flop_2sync #(
+    .Width      (1),
+    .ResetValue (1'b 1)
+  ) u_csb_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i     (cio_csb_i),
+    .q_o     (csb_sync)
+  );
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) csb_sync_q <= 1'b 1;
+    else         csb_sync_q <= csb_sync;
+  end
+
+  assign csb_deasserted_busclk = !csb_sync_q && csb_sync;
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -844,6 +881,8 @@ module spi_device
     .mailbox_en_i      (1'b 0),
     .mailbox_addr_i    ('0), // 32
     .mailbox_assumed_o (mailbox_assumed),
+
+    .readbuf_address_o (readbuf_addr_sck),
 
     .io_mode_o (sub_iomode [IoModeReadCmd]),
 

@@ -356,6 +356,22 @@
         }
       ],
     },
+    { name: "LAST_READ_ADDR"
+      desc: '''Last Read Address
+
+        This register shows the last address accessed by the host system.
+        It is updated by the HW when CSb is de-asserted.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: true
+      fields: [
+        { bits: "31:0"
+          name: "addr"
+          desc: "Last address"
+        }
+      ]
+    } // R: LAST_READ_ADDR
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"
