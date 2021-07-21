@@ -189,11 +189,23 @@ module spi_readcmd
   assign unused_sram_rerr = sram_rerror_i;
 
   // TODO: Implement cmd_info
-  logic unused_cmd_info;
-  assign unused_cmd_info = ^cmd_info_i;
-
   logic unused_cmd_info_idx;
   assign unused_cmd_info_idx = ^cmd_info_idx_i;
+
+  logic unused_cmd_info_members;
+  assign unused_cmd_info_members = ^{
+    cmd_info_i.addr_en,       // Always assume Readcmd has addr_en set
+    cmd_info_i.addr_swap_en,  // address swap feature is used in Passthrough
+    cmd_info_i.opcode,        // Does not need to check opcode. (fixed slot)
+    cmd_info_i.payload_dir    // Always output mode
+    };
+
+  `ASSERT(ValidCmdConfig_A,
+          main_st == MainAddress |-> cmd_info_i.addr_en
+          && cmd_info_i.payload_dir == PayloadOut)
+
+  logic unused_s2p_bitcnt;
+  assign unused_s2p_bitcnt = ^s2p_bitcnt_i;
 
   /////////////////
   // Definitions //
@@ -418,6 +430,7 @@ module spi_readcmd
   // Convert into masked address
   localparam int unsigned MailboxAw = $clog2(MailboxDepth);
   localparam logic [31:0] MailboxMask = {{30-MailboxAw{1'b1}}, {2+MailboxAw{1'b0}}};
+  localparam int unsigned SfdpAw = $clog2(SfdpDepth);
 
   assign mailbox_masked_addr = addr_d & MailboxMask;
 
@@ -433,7 +446,10 @@ module spi_readcmd
 
   always_comb begin
     sram_addr = '0;
-    if (mailbox_en_i && addr_in_mailbox) begin
+    if (sel_dp_i == DpReadSFDP) begin
+      // SFDP Read command. Upper address is swapped to SFDP Base Addr
+      sram_addr = SfdpBaseAddr | sram_addr_t'(addr_d[2+:SfdpAw]);
+    end else if (mailbox_en_i && addr_in_mailbox) begin
       sram_addr = MailboxBaseAddr | sram_addr_t'(addr_d[2+:MailboxAw]);
     end else begin
       // Read Buffer Address
