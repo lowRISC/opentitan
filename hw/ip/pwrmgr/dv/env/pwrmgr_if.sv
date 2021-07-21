@@ -14,39 +14,56 @@ interface pwrmgr_if (
 
   // Ports to the dut side.
 
-  pwrmgr_pkg::pwr_ast_req_t                                    pwr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t                                    pwr_ast_rsp;
+  pwrmgr_pkg::pwr_ast_req_t                                      pwr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t                                      pwr_ast_rsp;
 
-  pwrmgr_pkg::pwr_rst_req_t                                    pwr_rst_req;
-  pwrmgr_pkg::pwr_rst_rsp_t                                    pwr_rst_rsp;
+  pwrmgr_pkg::pwr_rst_req_t                                      pwr_rst_req;
+  pwrmgr_pkg::pwr_rst_rsp_t                                      pwr_rst_rsp;
 
-  pwrmgr_pkg::pwr_clk_req_t                                    pwr_clk_req;
-  pwrmgr_pkg::pwr_clk_rsp_t                                    pwr_clk_rsp;
+  pwrmgr_pkg::pwr_clk_req_t                                      pwr_clk_req;
+  pwrmgr_pkg::pwr_clk_rsp_t                                      pwr_clk_rsp;
 
-  pwrmgr_pkg::pwr_otp_req_t                                    pwr_otp_req;
-  pwrmgr_pkg::pwr_otp_rsp_t                                    pwr_otp_rsp;
+  pwrmgr_pkg::pwr_otp_req_t                                      pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t                                      pwr_otp_rsp;
 
-  pwrmgr_pkg::pwr_lc_req_t                                     pwr_lc_req;
-  pwrmgr_pkg::pwr_lc_rsp_t                                     pwr_lc_rsp;
+  pwrmgr_pkg::pwr_lc_req_t                                       pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t                                       pwr_lc_rsp;
 
-  pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
+  pwrmgr_pkg::pwr_flash_t                                        pwr_flash;
 
-  pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
+  pwrmgr_pkg::pwr_cpu_t                                          pwr_cpu;
 
-  lc_ctrl_pkg::lc_tx_t                                         fetch_en;
+  lc_ctrl_pkg::lc_tx_t                                           fetch_en;
 
-  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
+  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 
-  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
+  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
 
-  logic                                                        strap;
-  logic                                                        low_power;
-  rom_ctrl_pkg::pwrmgr_data_t                                  rom_ctrl;
+  logic                                                          strap;
+  logic                                                          low_power;
+  rom_ctrl_pkg::pwrmgr_data_t                                    rom_ctrl;
 
-  prim_esc_pkg::esc_tx_t                                       esc_rst_tx;
-  prim_esc_pkg::esc_rx_t                                       esc_rst_rx;
+  prim_esc_pkg::esc_tx_t                                         esc_rst_tx;
+  prim_esc_pkg::esc_rx_t                                         esc_rst_rx;
 
-  logic                                                        intr_wakeup;
+  logic                                                          intr_wakeup;
+
+  // Relevant CSR values.
+  pwrmgr_env_pkg::clk_enables_t                                  clk_enables;
+
+  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
+  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
+
+  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
+  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
+
+  // Slow fsm state.
+  pwrmgr_pkg::slow_pwr_state_e                                   slow_state;
+  always_comb slow_state = tb.dut.i_slow_fsm.state_q;
+
+  // Fast fsm state.
+  pwrmgr_pkg::fast_pwr_state_e fast_state;
+  always_comb fast_state = tb.dut.i_fsm.state_q;
 
   function automatic void update_ast_main_pok(logic value);
     pwr_ast_rsp.main_pok = value;
@@ -84,6 +101,10 @@ interface pwrmgr_if (
     rstreqs_i = resets;
   endfunction
 
+  function automatic void update_clock_enables(pwrmgr_env_pkg::clk_enables_t clk_enables);
+    clk_enables = clk_enables;
+  endfunction
+
   // FIXME Move all these initializations to sequences.
   initial begin
     // From AST.
@@ -101,18 +122,21 @@ interface pwrmgr_if (
   end
 
   clocking slow_cb @(posedge clk_slow);
-    input  pwr_ast_req;
+    input slow_state;
+    input pwr_ast_req;
+    input clk_enables;
     output pwr_ast_rsp;
   endclocking
 
   clocking fast_cb @(posedge clk);
-    input  pwr_rst_req;
+    input fast_state;
+    input pwr_rst_req;
     output pwr_rst_rsp;
-    input  pwr_clk_req;
+    input pwr_clk_req;
     output pwr_clk_rsp;
-    input  pwr_lc_req;
+    input pwr_lc_req;
     output pwr_lc_rsp;
-    input  pwr_otp_req;
+    input pwr_otp_req;
     output pwr_otp_rsp;
   endclocking
 endinterface

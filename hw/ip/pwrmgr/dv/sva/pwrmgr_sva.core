@@ -9,8 +9,12 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:pwrmgr
     files:
       - pwrmgr_bind.sv
+      - pwrmgr_ast_if.sv
+      - pwrmgr_rstmgr_if.sv
+      - pwrmgr_clock_enables_if.sv
     file_type: systemVerilogSource
 
   files_formal:
