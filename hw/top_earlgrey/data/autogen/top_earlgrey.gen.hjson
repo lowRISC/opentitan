@@ -3983,8 +3983,6 @@
       {
         Masking: "1"
         SBoxImpl: aes_pkg::SBoxImplDom
-        SecStartTriggerDelay: "0"
-        SecAllowForcingMasks: 1'b0
       }
       clock_connections:
       {

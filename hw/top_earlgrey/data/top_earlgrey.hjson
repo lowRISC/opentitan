@@ -465,10 +465,7 @@
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
       param_decl: {
         Masking: "1",
-        SBoxImpl: "aes_pkg::SBoxImplDom",
-        SecStartTriggerDelay: "0",
-        SecAllowForcingMasks: "1'b0",
-
+        SBoxImpl: "aes_pkg::SBoxImplDom"
       }
       base_addr: "0x41100000",
     },
