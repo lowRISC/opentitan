@@ -248,9 +248,6 @@ _mask_rom_start_boot:
   call crt_section_copy
 
   // Initialize the `.bss` section.
-  //
-  // We do this despite zeroing all of SRAM above, so that we still zero `.bss`
-  // once we've enabled SRAM scrambling.
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
