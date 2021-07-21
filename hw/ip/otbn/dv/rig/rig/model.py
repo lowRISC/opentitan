@@ -158,7 +158,7 @@ class Model:
 
         wsrs.touch_addr(0x0)        # MOD
         wsrs.touch_addr(0x1)        # RND
-        wsrs.touch_addr(0x2)        # ACC
+        wsrs.touch_addr(0x3)        # ACC
 
         # The current PC (the address of the next instruction that needs
         # generating)
