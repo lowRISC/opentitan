@@ -173,6 +173,15 @@ When an RMA entry request is received from the life cycle manager, the flash con
 The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
 Unlike the seed phase, after the RMA phase, the flash controller does not grant control back to software as the system is expected to reboot after an RMA attempt.
 
+#### RMA Entry
+During RMA entry, the flash controller "wipes" the contents of the following
+- Creator partition
+- Owner partition
+- Isolated partition
+- All data partitions
+
+This process ensures that after RMA there is no sensitive information left that can be made use on the tester.
+
 #### Memory Protection
 
 Flash memory protection is handled differently depending on what type of partition is accessed.
@@ -317,7 +326,7 @@ This sections details the default settings used by the flash controller:
 * Size of information partition type 1: 1 page
 * Size of information partition type 2: 2 pages
 * Secret partition 0 (used for creator): Bank 0, information partition 0, page 1
-* Secret partition 1 (used for creator): Bank 0, information partition 0, page 2
+* Secret partition 1 (used for owner): Bank 0, information partition 0, page 2
 * Isolated partition: Bank 0, information partition 0, page 3
 
 ## Hardware Interfaces
