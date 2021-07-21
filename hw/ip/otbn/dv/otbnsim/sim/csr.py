@@ -11,6 +11,15 @@ class CSRFile:
     def __init__(self) -> None:
         self.flags = FlagGroups()
 
+        self._known_indices = set()
+        self._known_indices.add(0x7c0)  # FG0
+        self._known_indices.add(0x7c1)  # FG1
+        self._known_indices.add(0x7c8)  # FLAGS
+        for idx in range(0x7d0, 0x7d8):
+            self._known_indices.add(idx)  # MODi
+        self._known_indices.add(0x7d8)  # RND_PREFETCH
+        self._known_indices.add(0xfc0)  # RND
+
     @staticmethod
     def _get_field(field_idx: int, field_size: int, val: int) -> int:
         mask = (1 << field_size) - 1
@@ -23,6 +32,10 @@ class CSRFile:
         mask = (1 << field_size) - 1
         shift = field_size * field_idx
         return (old_val & ~(mask << shift)) | (field_val << shift)
+
+    def check_idx(self, idx: int) -> bool:
+        '''Return True if idx points to a valid CSR; False otherwise.'''
+        return idx in self._known_indices
 
     def read_unsigned(self, wsrs: WSRFile, idx: int) -> int:
         if 0x7c0 <= idx <= 0x7c1:
@@ -52,13 +65,6 @@ class CSRFile:
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
         assert 0 <= value < (1 << 32)
 
-        # The RISC-V Privileged Specification v1.11 describes an address map
-        # for custom CSRs which depends on them being read-only or read-write.
-        if not (idx >= 0x7C0 and idx <= 0x7FF):
-            raise RuntimeError('CSR {:#x} not in writable range (0x7c0 - '
-                               '0x7ff), according to the RISC-V Privileged '
-                               'Specification v1.11.'.format(idx))
-
         if 0x7c0 <= idx <= 0x7c1:
             # FG0/FG1
             fg = idx - 0x7c0
@@ -81,6 +87,10 @@ class CSRFile:
         if idx == 0x7d8:
             # RND_PREFETCH
             # TODO: Implement.
+            return
+
+        if idx == 0xfc0:
+            # RND register (which ignores writes)
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))

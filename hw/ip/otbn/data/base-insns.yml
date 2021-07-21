@@ -372,6 +372,8 @@
     The initial value in `grs1` is treated as a bit mask that specifies bits to be set in the CSR.
     Any bit that is high in `grs1` will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
     Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+
+    If `csr` isn't the index of a valid CSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   encoding:
     scheme: I
     mapping:
@@ -393,6 +395,8 @@
     Reads the old value of the CSR, and writes it to the GPR `grd`.
     Writes the initial value in `grs1` to the CSR `csr`.
     If `grd == x0` the instruction does not read the CSR or cause any read-related side-effects.
+
+    If `csr` isn't the index of a valid CSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   encoding:
     scheme: I
     mapping:

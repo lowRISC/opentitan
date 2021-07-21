@@ -290,6 +290,11 @@ class CSRRS(OTBNInsn):
         return True
 
     def execute(self, state: OTBNState) -> None:
+        if not state.csrs.check_idx(self.csr):
+            # Invalid CSR index. Stop with an illegal instruction error.
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            return
+
         old_val = state.read_csr(self.csr)
         bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
         new_val = old_val | bits_to_set
@@ -317,6 +322,11 @@ class CSRRW(OTBNInsn):
         return True
 
     def execute(self, state: OTBNState) -> None:
+        if not state.csrs.check_idx(self.csr):
+            # Invalid CSR index. Stop with an illegal instruction error.
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            return
+
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
 
         if self.grd != 0:
