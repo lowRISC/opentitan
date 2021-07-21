@@ -233,12 +233,9 @@ _mask_rom_start_boot:
   .extern crt_section_clear
   .extern crt_section_copy
   .extern mask_rom_epmp_init
-  .extern mask_rom_epmp_stack_guard_init
 
   // Must be called prior to any Main RAM access.
-  // FIXME: merge these two functions.
   call mask_rom_epmp_init
-  call mask_rom_epmp_stack_guard_init
 
   /**
    * Setup C Runtime
