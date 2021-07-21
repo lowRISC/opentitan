@@ -226,7 +226,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         TransKmac: begin
           check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_kmac);
         end
-        TransOtbn: begin
+        TransOtbnIoDiv4: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_otbn);
+        end
+        TransOtbnMain: begin
           check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
         end
       endcase

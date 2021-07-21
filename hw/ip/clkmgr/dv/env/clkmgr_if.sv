@@ -45,7 +45,8 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   } clk_enables_t;
 
   typedef struct packed {
-    logic otbn;
+    logic otbn_main;
+    logic otbn_io_div4;
     logic kmac;
     logic hmac;
     logic aes;

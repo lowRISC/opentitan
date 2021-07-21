@@ -47,7 +47,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
         '{TransAes, ral.clk_hints.clk_main_aes_hint, ral.clk_hints_status.clk_main_aes_val},
         '{TransHmac, ral.clk_hints.clk_main_hmac_hint, ral.clk_hints_status.clk_main_hmac_val},
         '{TransKmac, ral.clk_hints.clk_main_kmac_hint, ral.clk_hints_status.clk_main_kmac_val},
-        '{TransAes, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
+        '{TransOtbnIoDiv4, ral.clk_hints.clk_io_div4_otbn_hint, ral.clk_hints_status.clk_io_div4_otbn_val},
+        '{TransOtbnMain, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
     };
     idle = 0;
     cfg.clkmgr_vif.update_idle(idle);
