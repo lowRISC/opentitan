@@ -152,6 +152,10 @@ interface keymgr_if(input clk, input rst_n);
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
                                              local_flash.seeds[idx] inside {0, '1};, , msg_id)
         end
+        1: begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
+                                             local_rom_digest inside {0, '1};, , msg_id)
+        end
       endcase
     end
 
