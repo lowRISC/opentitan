@@ -238,7 +238,11 @@ class dv_base_reg extends uvm_reg;
     if (is_shadowed) atomic_shadow_wr.get(1);
     super.write(status, value, path, map, parent, prior, extension, fname, lineno);
     if (is_shadowed && en_shadow_wr) begin
-      super.write(status, value, path, map, parent, prior, extension, fname, lineno);
+      // If one of the shadow register write is successful (not aborted), the status will be
+      // UVM_IS_OK. Then predict function can predict according to the phase tracker.
+      uvm_status_e shadow_wr_status;
+      super.write(shadow_wr_status, value, path, map, parent, prior, extension, fname, lineno);
+      if (shadow_wr_status == UVM_IS_OK) status = shadow_wr_status;
     end
     if (is_shadowed) atomic_shadow_wr.put(1);
   endtask
