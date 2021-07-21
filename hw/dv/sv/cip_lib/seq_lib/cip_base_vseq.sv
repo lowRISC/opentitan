@@ -279,7 +279,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endfunction
 
   local function void extract_common_csrs();
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(all_csrs);
+    foreach (cfg.ral_models[i]) begin
+      dv_base_reg regs[$];
+      cfg.ral_models[i].get_dv_base_regs(regs);
+      foreach (regs[i]) all_csrs.push_back(regs[i]);
+    end
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
       if (!uvm_re_match("intr_state*", csr_name)) begin
