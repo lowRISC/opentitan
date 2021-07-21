@@ -13,6 +13,7 @@ module io_clk (
   input clk_src_io_en_i,                   // IO Source Clock Enable
   input scan_mode_i,                       // Scan Mode
   input scan_reset_ni,                     // Scan Reset
+  input clk_io_ext_i,                      // FPGA/VERILATOR Clock input
   output logic clk_src_io_o,               // IO Source Clock
   output logic clk_src_io_val_o            // IO Source Clock Valid
 );
@@ -28,6 +29,7 @@ assign io_clk_en = scan_mode_i || osc_en;
 io_osc u_io_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .io_en_i ( io_clk_en ),
+  .clk_io_ext_i ( clk_io_ext_i ),
   .io_clk_o ( clk )
 );  // of u_io_osc
 

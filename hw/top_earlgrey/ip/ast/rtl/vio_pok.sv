@@ -15,14 +15,14 @@ module vio_pok (
   output logic vio_pok_o
 );
 
-`ifndef SYNTHESIS
-import ast_bhv_pkg::* ;
-
-// Behavioral Model
-////////////////////////////////////////
 // Local signal for testing hook
 logic gen_supp_a;
 assign gen_supp_a = 1'b1;
+
+`ifndef SYNTHESIS
+// Behavioral Model
+////////////////////////////////////////
+import ast_bhv_pkg::* ;
 
 // The initial is needed to clear the X of the delays at the start
 // Also to force a power-up effect at the bgining.
@@ -42,19 +42,17 @@ always @( * ) begin
     vio_pok_o <= #(VIO_POK_FDLY) gen_supp_a;
   end
 end
-
 `else
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
-// SYNTHESUS/VERILATOR/LINTER/FPGA
+// SYNTHESIS/VERILATOR/LINTER/FPGA
 //////////////////////////////////////
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
 if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
-  assign vio_pok_o = 1'b1;
+  assign vio_pok_o = gen_supp_a;
 end else begin : gen_generic
-  assign vio_pok_o = 1'b1;
+  assign vio_pok_o = gen_supp_a;
 end
 `endif
 
