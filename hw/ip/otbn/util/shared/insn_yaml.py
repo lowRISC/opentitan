@@ -14,7 +14,7 @@ from .encoding_scheme import EncSchemes
 from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
-from .yaml_parse_helpers import (check_keys, check_str, check_bool, check_int,
+from .yaml_parse_helpers import (check_keys, check_str, check_bool,
                                  check_list, index_list, get_optional_str,
                                  load_yaml)
 
@@ -203,38 +203,6 @@ class Insn:
         return mnem + ''.join(hunks).lstrip()
 
 
-def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:
-    '''Check for ambiguous instruction encodings
-
-    Returns a list of ambiguous pairs (mnemonic0, mnemonic1, bits) where
-    bits is a bit pattern that would match either instruction.
-
-    '''
-    masks = {}
-    for insn in insns:
-        if insn.encoding is not None:
-            masks[insn.mnemonic] = insn.encoding.get_masks()
-
-    ret = []
-    for mnem0, mnem1 in itertools.combinations(masks.keys(), 2):
-        m00, m01 = masks[mnem0]
-        m10, m11 = masks[mnem1]
-
-        # The pair of instructions is ambiguous if a bit pattern might be
-        # either instruction. That happens if each bit index is either
-        # allowed to be a 0 in both or allowed to be a 1 in both.
-        # ambiguous_mask is the set of bits that don't distinguish the
-        # instructions from each other.
-        m0 = m00 & m10
-        m1 = m01 & m11
-
-        ambiguous_mask = m0 | m1
-        if ambiguous_mask == (1 << 32) - 1:
-            ret.append((mnem0, mnem1, m1 & ~m0))
-
-    return ret
-
-
 class InsnGroup:
     def __init__(self,
                  path: str,
@@ -307,19 +275,76 @@ class InsnsFile:
         self.mnemonic_to_insn = index_list('insns', self.insns,
                                            lambda insn: insn.mnemonic.lower())
 
-        ambiguous_encodings = find_ambiguous_encodings(self.insns)
-        if ambiguous_encodings:
-            ambiguity_msgs = []
-            for mnem0, mnem1, bits in ambiguous_encodings:
-                ambiguity_msgs.append('{!r} and {!r} '
-                                      'both match bit pattern {:#010x}'
-                                      .format(mnem0, mnem1, bits))
+        masks_exc, ambiguities = self._get_masks()
+        if ambiguities:
             raise ValueError('Ambiguous instruction encodings: ' +
-                             ', '.join(ambiguity_msgs))
+                             ', '.join(ambiguities))
+
+        self._masks = masks_exc
 
     def grouped_insns(self) -> List[Tuple[InsnGroup, List[Insn]]]:
         '''Return the instructions in groups'''
         return [(grp, grp.insns) for grp in self.groups.groups]
+
+    def _get_masks(self) -> Tuple[Dict[str, Tuple[int, int]], List[str]]:
+        '''Generate a list of zeros/ones masks and do ambiguity checks
+
+        Returns a pair (masks, ambiguities). Masks is keyed by instruction
+        mnemonic. Its elements are pairs (m0, m1) where m0 is the bits that are
+        always zero for this instruction's in the encoding and m1 is the bits
+        that are always one. (Bits that can be either are not set in m0 or m1).
+
+        ambiguities is a list of error messages describing ambiguities in the
+        encoding. Unless something has gone wrong, it should be empty.
+
+        '''
+        masks_inc = {}
+        masks_exc = {}
+        for insn in self.insns:
+            if insn.encoding is not None:
+                m0, m1 = insn.encoding.get_masks()
+                masks_inc[insn.mnemonic] = (m0, m1)
+                masks_exc[insn.mnemonic] = (m0 & ~m1, m1 & ~m0)
+
+        ambiguities = []
+        for mnem0, mnem1 in itertools.combinations(masks_inc.keys(), 2):
+            m00, m01 = masks_inc[mnem0]
+            m10, m11 = masks_inc[mnem1]
+
+            # The pair of instructions is ambiguous if a bit pattern might be
+            # either instruction. That happens if each bit index is either
+            # allowed to be a 0 in both or allowed to be a 1 in both.
+            # ambiguous_mask is the set of bits that don't distinguish the
+            # instructions from each other.
+            m0 = m00 & m10
+            m1 = m01 & m11
+
+            ambiguous_mask = m0 | m1
+            if ambiguous_mask == (1 << 32) - 1:
+                ambiguities.append('{!r} and {!r} '
+                                   'both match bit pattern {:#010x}'
+                                   .format(mnem0, mnem1, m1 & ~m0))
+
+        return (masks_exc, ambiguities)
+
+    def mnem_for_word(self, word: int) -> Optional[str]:
+        '''Find the instruction that could be encoded as word
+
+        If there is no such instruction, return None.
+
+        '''
+        ret = None
+        for mnem, (m0, m1) in self._masks.items():
+            # If any bit is set that should be zero or if any bit is clear that
+            # should be one, ignore this instruction.
+            if word & m0 or (~ word) & m1:
+                continue
+
+            # Belt-and-braces ambiguity check
+            assert ret is None
+            ret = mnem
+
+        return ret
 
 
 def load_file(path: str) -> InsnsFile:

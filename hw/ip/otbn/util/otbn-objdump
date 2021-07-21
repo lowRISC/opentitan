@@ -8,9 +8,9 @@
 import re
 import subprocess
 import sys
-from typing import List, Optional, Tuple
+from typing import List
 
-from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
+from shared.insn_yaml import InsnsFile, load_insns_yaml
 from shared.toolchain import find_tool
 
 
@@ -27,29 +27,6 @@ def snoop_disasm_flags(argv: List[str]) -> bool:
     return False
 
 
-def get_insn(raw: int, masks: List[Tuple[int, int, Insn]]) -> Optional[Insn]:
-    '''Try to find a mnemonic for this raw instruction
-
-    masks is a list of tuples (m0, m1, mnemonic) as returned by
-    get_insn_masks. If no tuple matches, returns None.
-
-    '''
-    found = None
-    for m0, m1, insn in masks:
-        # If any bit is set that should be zero or if any bit is clear that
-        # should be one, ignore this instruction.
-        if raw & m0 or (~ raw) & m1:
-            continue
-
-        # We have a match! The code in insn_yaml should already have checked
-        # this is the only one, but it can't hurt to be careful.
-        assert found is None
-
-        found = insn
-
-    return found
-
-
 # OTBN instructions are 32 bit wide, so there's just one "word" in the second
 # column. The stuff that gets passed through looks like this:
 #
@@ -64,8 +41,7 @@ _RAW_INSN_RE = re.compile(r'([\s]*([0-9a-f]+):[\s]+([0-9a-f]{8})[\s]+)'
                           r'0x[0-9a-f]+\s*$')
 
 
-def transform_disasm_line(line: str,
-                          masks: List[Tuple[int, int, Insn]]) -> str:
+def transform_disasm_line(line: str, insns_file: InsnsFile) -> str:
     '''Transform filter to insert OTBN disasm as needed'''
     match = _RAW_INSN_RE.match(line)
     if match is None:
@@ -76,16 +52,18 @@ def transform_disasm_line(line: str,
     raw = int(match.group(3), 16)
     assert 0 <= raw < (1 << 32)
 
-    insn = get_insn(raw, masks)
-    if insn is None:
+    mnem = insns_file.mnem_for_word(raw)
+    if mnem is None:
         # No match for this instruction pattern. Leave as-is.
         return line
+
+    insn = insns_file.mnemonic_to_insn[mnem]
 
     # match.group(2) is the PC in hex.
     pc = int(match.group(2), 16)
 
-    # Extract the encoded values. We know we have an encoding (otherwise
-    # get_insn_masks wouldn't have added the instruction to the masks list).
+    # Extract the encoded values. We know we have an encoding (otherwise the
+    # instruction wouldn't have appeared in the the masks list).
     assert insn.encoding is not None
     enc_vals = insn.encoding.extract_operands(raw)
 
@@ -96,27 +74,6 @@ def transform_disasm_line(line: str,
     # Similarly, we know we have a syntax (again, get_insn_masks requires it).
     # The rendering of the fields is done by the syntax object.
     return match.group(1) + insn.disassemble(pc, op_vals)
-
-
-def get_insn_masks(insns_file: InsnsFile) -> List[Tuple[int, int, Insn]]:
-    '''Generate a list of zeros/ones masks for known instructions
-
-    The returned list has elements (m0, m1, mnemonic). We don't check here that
-    the results are unambiguous: that check is supposed to happen in insn_yaml
-    already, and we'll do a belt-and-braces check for each instruction as we
-    go.
-
-    '''
-    ret = []
-    for insn in insns_file.insns:
-        if insn.encoding is None:
-            continue
-
-        m0, m1 = insn.encoding.get_masks()
-        # Encoding.get_masks sets bits that are 'x', so we have to do a
-        # difference operation too.
-        ret.append((m0 & ~m1, m1 & ~m0, insn))
-    return ret
 
 
 def main() -> int:
@@ -150,12 +107,10 @@ def main() -> int:
         sys.stderr.write('{}\n'.format(err))
         return 1
 
-    insn_masks = get_insn_masks(insns_file)
-
     # If we get here, we think we're disassembling something, objdump ran
     # successfully and we have its results in proc.stdout
     for line in proc.stdout.split('\n'):
-        transformed = transform_disasm_line(line, insn_masks)
+        transformed = transform_disasm_line(line, insns_file)
         sys.stdout.write(transformed + '\n')
 
     return 0
