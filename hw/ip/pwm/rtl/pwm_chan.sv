@@ -35,8 +35,11 @@ module pwm_chan (
   logic [15:0] blink_ctr_d;
   logic [15:0] duty_cycle_blink;
 
+  logic unused_sum;
+  logic [15:0] blink_sum;
+  assign {unused_sum, blink_sum} = blink_param_x_i + blink_param_y_i + 16'h1;
   assign blink_ctr_d = (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) ? 16'h0 :
-                       ((blink_ctr_q == blink_param_x_i + blink_param_y_i + 16'h1) && cycle_end_i)
+                       ((blink_ctr_q == blink_sum[15:0]) && cycle_end_i)
                        ? 16'h0 : (cycle_end_i) ? blink_ctr_q + 16'h1 : blink_ctr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -112,7 +115,9 @@ module pwm_chan (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dc_htbt_q <= '0;
-    end else if (dc_htbt_q != duty_cycle_a_i) begin
+    end else if (!htbt_en_i && dc_htbt_q != duty_cycle_a_i) begin
+      // the heart beat duty cycle is only changed when the heartbeat is not currently
+      // ticking.
       dc_htbt_q <= duty_cycle_a_i;
     end else begin
       dc_htbt_q <= ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? dc_htbt_d : dc_htbt_q;
@@ -123,14 +128,19 @@ module pwm_chan (
   assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
                              (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
 
-  logic [15:0] phase_delay_scaled;
-  logic [15:0] duty_cycle_scaled;
+  logic [30:0] phase_delay_scaled;
+  logic [30:0] duty_cycle_scaled;
+  logic [3:0] lshift;
+  logic unused_shift;
 
-  assign phase_delay_scaled = phase_delay_i << (4'd15 - dc_resn_i);
-  assign duty_cycle_scaled = duty_cycle_actual << (4'd15 - dc_resn_i);
+  assign lshift = 4'd15 - dc_resn_i;
+  assign phase_delay_scaled = phase_delay_i << lshift;
+  assign duty_cycle_scaled = duty_cycle_actual << lshift;
+  assign unused_shift = ^phase_delay_scaled | ^duty_cycle_scaled;
 
-  assign on_phase = phase_delay_scaled;
-  assign {phase_wrap, off_phase} = {1'b0, phase_delay_scaled} + {1'b0, duty_cycle_scaled};
+  assign on_phase = phase_delay_scaled[15:0];
+  assign {phase_wrap, off_phase} = {1'b0, phase_delay_scaled[15:0]} +
+                                   {1'b0, duty_cycle_scaled[15:0]};
 
   logic on_phase_exceeded;
   logic off_phase_exceeded;
