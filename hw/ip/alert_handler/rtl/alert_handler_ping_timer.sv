@@ -310,7 +310,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     esc_ping_fail_o   = spurious_esc_ping;
 
     unique case (state_q)
-      // wait until activiated
+      // wait until activated
       // we never return to this state
       // once activated!
       InitSt: begin

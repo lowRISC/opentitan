@@ -252,6 +252,7 @@ module top_${top["name"]} #(
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
   assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
 
   logic unused_otp_hw_cfg_bits;

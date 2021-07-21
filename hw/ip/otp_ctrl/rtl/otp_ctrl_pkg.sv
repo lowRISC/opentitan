@@ -59,8 +59,11 @@ package otp_ctrl_pkg;
     Enabled = 8'hA5
   } enable_e;
 
-  parameter int DeviceIdwidth = 256;
-  typedef logic [DeviceIdwidth-1:0] otp_device_id_t;
+  parameter int DeviceIdWidth = 256;
+  typedef logic [DeviceIdWidth-1:0] otp_device_id_t;
+
+  parameter int ManufStateWidth = 256;
+  typedef logic [ManufStateWidth-1:0] otp_manuf_state_t;
 
   //////////////////////////////////////
   // Typedefs for OTP Macro Interface //

@@ -85,7 +85,9 @@ module lc_ctrl
   // State group diversification value for keymgr.
   output lc_keymgr_div_t                             lc_keymgr_div_o,
   // Hardware config input, needed for the DEVICE_ID field.
-  input  otp_ctrl_pkg::otp_device_id_t               otp_device_id_i
+  input  otp_ctrl_pkg::otp_device_id_t               otp_device_id_i,
+  // Hardware config input, needed for the MANUF_STATE field.
+  input  otp_ctrl_pkg::otp_device_id_t               otp_manuf_state_i
 );
 
   ////////////////////////
@@ -278,6 +280,8 @@ module lc_ctrl
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
     hw2reg.device_id                     = otp_device_id_i;
+    hw2reg.manuf_state                   = otp_manuf_state_i;
+
 
     // The assignments above are identical for the TAP.
     tap_hw2reg = hw2reg;
@@ -359,10 +363,10 @@ module lc_ctrl
         end
 
         if (reg2hw.otp_test_ctrl.ext_clock.qe) begin
-          use_ext_clock_d = tap_reg2hw.otp_test_ctrl.ext_clock.q;
+          use_ext_clock_d = reg2hw.otp_test_ctrl.ext_clock.q;
         end
         if (reg2hw.otp_test_ctrl.val.qe) begin
-          otp_test_ctrl_d = tap_reg2hw.otp_test_ctrl.val.q;
+          otp_test_ctrl_d = reg2hw.otp_test_ctrl.val.q;
         end
       end
     end

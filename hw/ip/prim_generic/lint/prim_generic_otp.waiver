@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-waive -rules {CONST_FF} -location {prim_generic_otp.sv} -msg {Flip-flop 'err_q[3]' is driven by constant zero} \
-      -comment "Due to the error encoding, this bit is always constant in this module."
+waive -rules {CONST_FF} -location {prim_ram_1p_adv.sv} -msg {Flip-flop 'rerror_q' is driven by constant zeros in module 'prim_ram_1p_adv' (Depth=1024,Width=22,EnableInputPipeline=1,EnableOutputPipeline=1)}\
+      -comment "The read error bits are unused and hence set to zero."
 
 waive -rules {INOUT_AS_IN} -location {prim_generic_otp.sv} -msg {Inout port 'ext_voltage_io' has no driver in module 'prim_generic_otp'} \
       -comment "This signal is not driven in the generic model."

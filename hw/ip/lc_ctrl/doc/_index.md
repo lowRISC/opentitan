@@ -98,7 +98,7 @@ All others CAN be device unique and are stored in OTP.
 For conditional transitions, there is a limit to how many times they can be attempted.
 This is to prevent an attacker from brute-forcing any specific token, as this also helps to reduce the overall required token size.
 
-For OpenTitan, the total amount of state transitions and transition attempts is limited to 16.
+For OpenTitan, the total amount of state transitions and transition attempts is limited to 24.
 Once this number is reached, the life cycle controller rejects further attempts, effectively locking the device into its current state.
 
 The token counters are maintained in the OTP.
@@ -178,6 +178,9 @@ This feature may be there for a variety of reasons, but primarily it can be used
 This type of functionality, if it exists, must be disabled during specific life cycle states.
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
+Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be be securely populated, without exposing its contents via the NVM backdoor interface.
+See also accessibility description of the [isolated flash partition]({{< relref "#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}).
+
 #### HW_DEBUG_EN
 
 HW_DEBUG_EN refers to the general ungating of both invasive (JTAG control of the processor, bidirectional analog test points) and non-invasive debug (debug bus observation, and register access error returns).
@@ -255,7 +258,7 @@ This signal is dependent on the personalization state of the device and will onl
 These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
 The isolated partition is both read and writable during the PROD / PROD_END / RMA states.
 In all other states it is inaccessible, except during the TEST_UNLOCKED* states where the partition is write-only.
-This construction allows to write a value to that partitition and keep it secret before advancing into any of the production states.
+This construction allows to write a value to that partition and keep it secret before advancing into any of the production states.
 
 
 ## OTP Collateral
@@ -384,6 +387,7 @@ Signal                       | Direction        | Type                          
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                    | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                | Seed for flash RMA.
 `otp_device_id_i`            | `input`          | `otp_device_id_t`                    | HW_CFG bits from OTP ({{< regref DEVICE_ID_0 >}}).
+`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                  | HW_CFG bits from OTP ({{< regref MANUF_STATE_0 >}}).
 `lc_dft_en_o`                | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
@@ -527,7 +531,7 @@ The second readout pass uses a linearly increasing address sequence, whereas the
 
 ### Transition Counter Encoding
 
-The life cycle transition counter has 16 strokes where each stroke maps to one 16bit OTP word.
+The life cycle transition counter has 24 strokes where each stroke maps to one 16bit OTP word.
 The strokes are similarly encoded as the life cycle state in the sense that upon the first transition attempt, all words are initialized with unique Cx values that can later be overwritten with unique Dx values without producing an ECC error.
 
 {{< snippet "lc_ctrl_counter_table.md" >}}
