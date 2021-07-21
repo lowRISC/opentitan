@@ -160,3 +160,10 @@ class Clocks:
                              f'{grp.name}: the given source name is '
                              f'{src_name}, which is unknown.')
         grp.add_clock(clk_name, src)
+
+    def get_clock_by_name(self, name: str) -> object:
+
+        ret = self.all_srcs.get(name)
+        if ret is None:
+            raise ValueError(f'{name} is not a valid clock')
+        return ret

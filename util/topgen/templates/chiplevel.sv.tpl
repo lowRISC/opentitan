@@ -63,12 +63,7 @@ max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["io
 max_sigwidth = len("{}".format(max_sigwidth))
 
 cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
-cpu_rst = top["reset_paths"]["sys"]
-dm_rst = top["reset_paths"]["lc"]
-esc_clk = top['clocks'].hier_paths['top'] + "clk_io_div4_timers"
-esc_rst = top["reset_paths"]["sys_io_div4"]
 
-unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
 %>\

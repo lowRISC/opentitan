@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import hjson
-
 from reggen.ip_block import IpBlock
 
 # Ignore flake8 warning as the function is used in the template
@@ -290,48 +289,16 @@ def get_clk_name(clk):
         return "clk_{}_i".format(clk)
 
 
-def get_reset_path(reset, domain, reset_cfg):
+def get_reset_path(reset, domain, top):
     """Return the appropriate reset path given name
     """
-    # find matching node for reset
-    node_match = [node for node in reset_cfg['nodes'] if node['name'] == reset]
-    assert len(node_match) == 1
-    reset_type = node_match[0]['type']
-
-    # find matching path
-    hier_path = ""
-    if reset_type == "int":
-        log.debug("{} used as internal reset".format(reset["name"]))
-    else:
-        hier_path = reset_cfg['hier_paths'][reset_type]
-
-    # find domain selection
-    domain_sel = ''
-    if reset_type not in ["ext", "int"]:
-        domain_sel = "[rstmgr_pkg::Domain{}Sel]".format(domain)
-
-    reset_path = ""
-    if reset_type == "ext":
-        reset_path = reset
-    else:
-        reset_path = "{}rst_{}_n{}".format(hier_path, reset, domain_sel)
-
-    return reset_path
+    return top['resets'].get_path(reset, domain)
 
 
 def get_unused_resets(top):
     """Return dict of unused resets and associated domain
     """
-    unused_resets = OrderedDict()
-    unused_resets = {
-        reset['name']: domain
-        for reset in top['resets']['nodes']
-        for domain in top['power']['domains']
-        if reset['type'] == 'top' and domain not in reset['domains']
-    }
-
-    log.debug("Unused resets are {}".format(unused_resets))
-    return unused_resets
+    return top['resets'].get_unused_resets(top['power']['domains'])
 
 
 def is_templated(module):
@@ -512,7 +479,7 @@ def make_bit_concatenation(sig_name: str,
     return ''.join(acc)
 
 
-def is_rom_ctrl (modules):
+def is_rom_ctrl(modules):
     '''Return true if rom_ctrl (and thus boot-up rom integrity checking)
        exists in the design
     '''

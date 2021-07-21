@@ -26,10 +26,6 @@ max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["io
 max_sigwidth = len("{}".format(max_sigwidth))
 
 cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
-cpu_rst = top["reset_paths"]["sys"]
-dm_rst = top["reset_paths"]["lc"]
-esc_clk = top['clocks'].hier_paths['top'] + "clk_io_div4_timers"
-esc_rst = top["reset_paths"]["sys_io_div4"]
 
 unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
@@ -268,7 +264,7 @@ module top_${top["name"]} #(
   logic unused_d${v.lower()}_rst_${k};
 % endfor
 % for k, v in unused_resets.items():
-  assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top['resets'])};
+  assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top)};
 % endfor
 
   // ibex specific assignments
@@ -335,8 +331,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
     .tl_i        (${m["name"]}_tl_req),
     .tl_o        (${m["name"]}_tl_rsp),
@@ -370,8 +366,8 @@ mem_name = lib.Name(mem_name[1:])
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
 
     .key_valid_i (${m["inter_signal_list"][1]["top_signame"]}_req.valid),
@@ -425,8 +421,8 @@ mem_name = lib.Name(mem_name[1:])
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
 
     .tl_i        (${m["name"]}_tl_req),
@@ -453,8 +449,8 @@ mem_name = lib.Name(mem_name[1:])
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
     .req_i    (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
@@ -488,8 +484,8 @@ mem_name = lib.Name(mem_name[1:])
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
 
     .tl_i        (${m["name"]}_tl_req),
@@ -512,8 +508,8 @@ mem_name = lib.Name(mem_name[1:])
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key, value in resets.items():
-    .${key}   (${value}),
+    % for port, reset in resets.items():
+    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
     % endfor
     .host_req_i        (flash_host_req),
     .host_intg_err_i   (flash_host_intg_err),
@@ -664,8 +660,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % for k, v in m["clock_connections"].items():
       .${k} (${v}),
     % endfor
-    % for k, v in m["reset_connections"].items():
-      .${k} (${v})${"," if not loop.last else ""}
+    % for port, reset in m["reset_connections"].items():
+      .${port} (${lib.get_reset_path(reset, m['domain'], top)})${"," if not loop.last else ""}
     % endfor
   );
 
@@ -689,8 +685,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   % for k, v in xbar["clock_connections"].items():
     .${k} (${v}),
   % endfor
-  % for k, v in xbar["reset_connections"].items():
-    .${k} (${v}),
+  % for port, reset in xbar["reset_connections"].items():
+    .${port} (${lib.get_reset_path(reset, xbar["domain"], top)}),
   % endfor
 
   ## Inter-module signal

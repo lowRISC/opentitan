@@ -588,33 +588,19 @@ def generate_rstmgr(topcfg, out_path):
             outputs.append(rtl_path / Path(x))
 
     # Parameters needed for generation
-    clks = []
-    output_rsts = OrderedDict()
-    sw_rsts = OrderedDict()
-    leaf_rsts = OrderedDict()
+    reset_obj = topcfg['resets']
 
     # unique clocks
-    for rst in topcfg["resets"]["nodes"]:
-        if rst['type'] != "ext" and rst['clk'] not in clks:
-            clks.append(rst['clk'])
+    clks = reset_obj.get_clocks()
 
     # resets sent to reset struct
-    output_rsts = [
-        rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"
-    ]
+    output_rsts = reset_obj.get_top_resets()
 
     # sw controlled resets
-    sw_rsts = [
-        rst for rst in topcfg["resets"]["nodes"]
-        if 'sw' in rst and rst['sw'] == 1
-    ]
+    sw_rsts = reset_obj.get_sw_resets()
 
     # leaf resets
-    leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
-
-    log.info("output resets {}".format(output_rsts))
-    log.info("software resets {}".format(sw_rsts))
-    log.info("leaf resets {}".format(leaf_rsts))
+    leaf_rsts = reset_obj.get_generated_resets()
 
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"])
@@ -631,7 +617,8 @@ def generate_rstmgr(topcfg, out_path):
                                  sw_rsts=sw_rsts,
                                  output_rsts=output_rsts,
                                  leaf_rsts=leaf_rsts,
-                                 export_rsts=topcfg['exported_rsts'])
+                                 export_rsts=topcfg['exported_rsts'],
+                                 reset_obj=topcfg['resets'])
 
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())

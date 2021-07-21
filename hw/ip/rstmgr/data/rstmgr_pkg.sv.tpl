@@ -19,14 +19,14 @@ package rstmgr_pkg;
 
   // positions of software controllable reset bits
 % for rst in sw_rsts:
-  parameter int ${rst['name'].upper()} = ${loop.index};
+  parameter int ${rst.upper()} = ${loop.index};
 % endfor
 
   // resets generated and broadcast
   // This should be templatized and generated
   typedef struct packed {
 % for rst in output_rsts:
-    logic [PowerDomains-1:0] rst_${rst['name']}_n;
+    logic [PowerDomains-1:0] rst_${rst}_n;
 % endfor
   } rstmgr_out_t;
 

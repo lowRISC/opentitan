@@ -12,7 +12,7 @@
   name: "RSTMGR",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for clk in clks:
+% for clk in reset_obj.get_clocks():
     {clock: "clk_${clk}_i"}
 % endfor
   ]
