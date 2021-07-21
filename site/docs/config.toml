@@ -48,7 +48,6 @@ ignoreFiles = [
   "/__pycache__/*",
   "/build/*",
   "/ci/",
-  "/sw/device/tock/chips/*",
   "/hw/vendor/*",
   "/sw/vendor/*",
   "/meson.build$",

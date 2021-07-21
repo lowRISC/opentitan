@@ -15,12 +15,6 @@ option(
 )
 
 option(
-  'tock_local',
-  type: 'boolean',
-  value: false,
-)
-
-option(
   'keep_includes',
   type: 'boolean',
   value: true,
