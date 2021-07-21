@@ -97,51 +97,100 @@
     // SPI_DEVICE (pre-verified IP) integration tests:
     {
       name: chip_spi_device_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI device port.
+      desc: '''Verify the transmission of data on the chip's SPI device port in firmware mode with
+               single mode.
 
-            The testbench sends a known payload over the chip's SPI device input port. The SW test,
-            at the same time sends a known payload out over the chip's SPI device output port. On
-            reception, both payloads are checked for integrity. SW validates the reception of RX
-            fifo full, RX fifo over level, TX fifo under level, RX overflow and TX underflow
-            interrupts. Run with min and max SPI clk frequencies. Also, run with single, dual and
-            quad SPI modes. Also, ensure that the spi_device does not recieve transactions when the
-            csb is high.
+            - The testbench sends a known payload over the chip's SPI device input port.
+            - The SW test, at the same time sends a known payload out over the chip's SPI device
+              output port.
+            - On reception, both payloads are checked for integrity.
+            - SW validates the reception of RX fifo full, RX fifo over level, TX fifo under level,
+              RX overflow and TX underflow interrupts.
+            - Run with min (6MHz), typical (30-48Mhz) and max(48MHz) SPI clk frequencies.
+              should use
+            - Also, ensure that the spi_device does not receive transactions when the csb is high.
+            - TODO, consider to test this mode with a real use case. The actual use case of this
+              mdoe is not clear right now.
             '''
       milestone: V2
       tests: ["chip_sw_spi_device_tx_rx"]
     }
     {
-      name: chip_spi_device_eeprom
-      desc: '''Verify the SPI device in EEPROM mode.
+      name: chip_spi_device_flash_mode
+      desc: '''Verify the SPI device in flash mode.
 
-            SW puts the SPI device in EEPROM mode and allows a firmware image (a.k.a. a known
-            payload) to be downloaded into the in-built EEPROM. SW verifies the integrity of the
-            payload upon reception by reading the EEPROM. Details TBD since the feature is NA yet.
+            - SW puts the SPI device in flash mode
+            - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device
+              memory.
+            - Ensure the image is executed correctly
             '''
       milestone: V2
       tests: []
     }
     {
       name: chip_spi_device_pass_through
-      desc: '''Verifies the pass through mode from an end-to-end perspective.
+      desc: '''Verify the pass through mode from an end-to-end perspective.
 
             - Configure the SPI device and host in pass through mode.
-            - Send a random payload over the SPI device interface (chip IOs) from the testbench.
-            - Verify the integrity of the payload received on the SPI host interface, also at chip
-              IOs.
-            - Run with min and max SPI clk frequencies. Run with single, dual and quad SPI modes.
+            - Configure and enable both spi_host0 and spi_host1
+            - Send a random flash commands over the SPI device interface (chip IOs) from the
+              testbench.
+            - Verify the flash commands which pass through spi_host0, are received on chip IOs.
+            - Verify spi_host1 doesn't send out any data from spi_device
+            - Run with min (6MHz), typical (30-48Mhz) and max(48MHz) SPI clk frequencies.
+            - Run with single, dual and quad SPI modes.
+            - Testbench should test the following commands:
+              - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
+
             '''
       milestone: V2
       tests: []
     }
     {
       name: chip_spi_device_pass_through_filter
-      desc: '''Verifies the command filtering mechanism in passthrough mode.
+      desc: '''Verify the command filtering mechanism in passthrough mode.
 
             - Extend the chip_spi_device_pass_through test.
-            - Program the cmd_filter_* CSRs to filter out certain commands.
+            - Program the cmd_filter_* CSRs to filter out certain commands. a one byte command (such
+              as Chip Erase) and a multi-bytes command (such as Program or Sector/Block Erase) must
+              be added to filter
             - Verify that only the payloads that are not filtered show up on the SPI host interface
               at chip IOs.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_spi_device_pass_through_flash_model
+      desc: '''Verify the command filtering mechanism in passthrough mode.
+
+            - Extend the chip_spi_device_pass_through and chip_spi_device_pass_through_filter
+              tests.
+            - Connect with a real flash model on spi_host
+            - Verify that the flash commands are received and interpreted correctly in the flash
+              model
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_spi_device_connectivity_with_ast
+      desc: '''Verify the connectivity between spi_device and AST on scanmode and mbist
+
+            This could be done through the connectivity test with FPV
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: chip_spi_device_pass_through_collision
+      desc: '''Verify the collisions on driving spi_host is handled properly
+
+            TODO, add detail testplan once we have a conclusion on #5134
             '''
       milestone: V2
       tests: []
@@ -1981,7 +2030,14 @@
       name: chip_sw_boot
       desc: '''Verify the full flash image download with bootstrap signal set.
 
-             Details TBD.
+            - SW puts the SPI device in firmware mode
+            - Load a firmware image (bootstrap) through spi input pin to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device
+              memory.
+            - Ensure the image is executed correctly
+
+             Note: This flow will be replaced by using spi_device flash mode.
+             For detail, refer to chip_spi_device_flash_mode
              '''
       milestone: V2
       tests: ["chip_sw_uart_tx_rx_bootstrap"]
