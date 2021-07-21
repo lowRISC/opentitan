@@ -557,12 +557,17 @@ bool ISSWrapper::read_child_response(std::vector<std::string> *dst) const {
   }
 }
 
-bool ISSWrapper::run_command(const std::string &cmd,
+void ISSWrapper::run_command(const std::string &cmd,
                              std::vector<std::string> *dst) const {
   assert(cmd.size() > 0);
   assert(cmd.back() == '\n');
 
   fputs(cmd.c_str(), child_write_file);
   fflush(child_write_file);
-  return read_child_response(dst);
+  if (!read_child_response(dst)) {
+    std::ostringstream oss;
+    std::string cmd_line = cmd.substr(0, cmd.size() - 1);
+    oss << "Failed to run command '" << cmd_line << "': EOF from ISS.";
+    throw std::runtime_error(oss.str());
+  }
 }
