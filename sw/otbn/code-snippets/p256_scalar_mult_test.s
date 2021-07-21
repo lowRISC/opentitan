@@ -32,11 +32,6 @@ scalar_mult_test:
   la       x3, dptr_k
   sw       x2, 0(x3)
 
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
   /* call scalar point multiplication routine in P-256 lib */
   jal      x1, p256_scalar_mult
 
@@ -62,17 +57,6 @@ scalar:
   .word 0x1b76ebe8
   .word 0x74210263
   .word 0x1420fc41
-
-/* random number for blinding */
-blinding_param:
-  .word 0x7ab203c3
-  .word 0xd6ee4951
-  .word 0xd5b89b43
-  .word 0x409d2b56
-  .word 0x8e9d2186
-  .word 0x1de0f8ec
-  .word 0x0fa0bf9a
-  .word 0xa21c2147
 
 /* example curve point x-coordinate */
 p1_x:

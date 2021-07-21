@@ -24,11 +24,6 @@ ecdsa_sign_test:
   la       x3, dptr_k
   sw       x2, 0(x3)
 
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
   /* set dmem pointer to point to message */
   la       x2, msg
   la       x3, dptr_msg

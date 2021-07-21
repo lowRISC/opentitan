@@ -21,11 +21,6 @@ p256_base_mult_test:
   la       x3, dptr_d
   sw       x2, 0(x3)
 
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
   /* set dmem pointer to point to x-coordinate */
   la       x2, p1_x
   la       x3, dptr_x
@@ -61,17 +56,6 @@ scalar:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
-
-   /* blinding parameter rnd */
- blinding_param:
-  .word 0x7ab203c3
-  .word 0xd6ee4951
-  .word 0xd5b89b43
-  .word 0x409d2b56
-  .word 0x8e9d2186
-  .word 0x1de0f8ec
-  .word 0x0fa0bf9a
-  .word 0xa21c2147
 
 /* result buffer x-coordinate */
 p1_x:
