@@ -19,18 +19,18 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if clk_rst_if(
-    .clk(clk),
+  clk_rst_if clk_rst_if (
+    .clk  (clk),
     .rst_n(rst_n)
   );
-  clk_rst_if slow_clk_rst_if(
-    .clk(clk_slow),
+  clk_rst_if slow_clk_rst_if (
+    .clk  (clk_slow),
     .rst_n(rst_slow_n)
   );
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(
-    .clk(clk),
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+    .clk  (clk),
     .rst_n(rst_n)
   );
 
@@ -70,8 +70,8 @@ module tb;
     .pwr_otp_i(pwrmgr_if.pwr_otp_rsp),
     .pwr_otp_o(pwrmgr_if.pwr_otp_req),
 
-    .pwr_lc_i(pwrmgr_if.pwr_lc_rsp ),
-    .pwr_lc_o(pwrmgr_if.pwr_lc_req ),
+    .pwr_lc_i(pwrmgr_if.pwr_lc_rsp),
+    .pwr_lc_o(pwrmgr_if.pwr_lc_req),
 
     .pwr_flash_i(pwrmgr_if.pwr_flash),
     .pwr_cpu_i  (pwrmgr_if.pwr_cpu),
@@ -102,6 +102,12 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    // Bound assertions interfaces.
+    uvm_config_db#(virtual pwrmgr_ast_if)::set(null, "*.env", "pwrmgr_ast_vif", dut.pwrmgr_ast_if);
+    uvm_config_db#(virtual pwrmgr_clock_enables_if)::set(null, "*.env", "pwrmgr_clock_enables_vif",
+                                                         dut.pwrmgr_clock_enables_if);
+    uvm_config_db#(virtual pwrmgr_rstmgr_if)::set(null, "*.env", "pwrmgr_rstmgr_vif",
+                                                  dut.pwrmgr_rstmgr_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

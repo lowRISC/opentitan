@@ -27,6 +27,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    cfg.run_phase = phase;
     fork
     join_none
   endtask
@@ -59,6 +60,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
+    // TODO handle more read checks.
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -74,12 +76,18 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       end
       "ctrl_cfg_regwen": begin
         // Read-only. Hardware clears this bit when going to low power mode,
-        //  and sets it in active mode.
+        // and sets it in active mode.
         do_read_check = 1'b0;
       end
       "control": begin
         // Only some bits can be checked on reads. Bit 0 is cleared by hardware
-        // on low power transition or when registering a valid resets.
+        // on low power transition or when registering a valid reset.
+        cfg.pwrmgr_vif.update_clock_enables(
+            '{core_clk_en: ral.control.core_clk_en.get_mirrored_value(),
+              io_clk_en: ral.control.io_clk_en.get_mirrored_value(),
+              usb_clk_en_lp: ral.control.usb_clk_en_lp.get_mirrored_value(),
+              usb_clk_en_active: ral.control.usb_clk_en_active.get_mirrored_value(),
+              main_pd_n: ral.control.main_pd_n.get_mirrored_value()});
       end
       "cfg_cdc_sync": begin
         // rw1c: When written to 1 this bit self-clears when the slow clock domain
@@ -87,11 +95,9 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       "wakeup_en_regwen": begin
-        // Write with 0 clears (so write with 1 is a no-op).
-        do_read_check = 1'b0;
+        // rw0c, so writing a 1 is a no-op.
       end
       "wakeup_en": begin
-        // What do the bits control?
       end
       "wake_status": begin
         // Read-only.
@@ -101,7 +107,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         // rw0c, so writing a 1 is a no-op.
       end
       "reset_en": begin
-        // What do the bits control?
       end
       "reset_status": begin
         // Read-only.

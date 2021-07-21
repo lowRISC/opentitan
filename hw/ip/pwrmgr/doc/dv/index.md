@@ -21,12 +21,11 @@ For detailed information on PWRMGR design features, please see the [PWRMGR HWIP 
 PWRMGR testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
-TBD
-
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/pwrmgr/dv/tb.sv`. It instantiates the PWRMGR DUT module `hw/ip/pwrmgr/rtl/pwrmgr.sv`.
+Top level testbench is located at `hw/ip/pwrmgr/dv/tb.sv`.
+It instantiates the PWRMGR DUT module `hw/ip/pwrmgr/rtl/pwrmgr.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
@@ -60,25 +59,36 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 The sequences are closely related to the testplan's testpoints.
 Testpoints and coverage are described in more detail in the [testplan](#dv-plan).
 #### Test sequences
-All test sequences reside in `hw/ip/pwrmgr/dv/env/seq_lib`.
+All test sequences reside in `hw/ip/pwrmgr/dv/env/seq_lib`, and extend `pwrmgr_base_vseq`.
 The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `pwrmgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
 * task `start_slow_fsm`:
-  Sets external inputs as needed for the slow fsm to start the fast fsm.
-  Randomizes some waits.
-* task `start_fast_from_low_power`:
-  Sets external inputs as needed for the fast fsm to go active.
-  Randomizes some waits.
-* task `turn_clocks_off_for_slow_to_low_power`:
-  Drivers inputs from AST turning required clocks off per the `control` CSR.
+  Sets the AST main_pok input to 1 after some random slow clock cycles.
 * task `wait_for_fast_fsm_active`:
-  Waits for the `ctrl_cfg_regwen` to become 1, indicating the fast fsm is active.
+  Waits for the `fetch_en_o` output to become 1, indicating the fast fsm is active and the cpu can fetch instructions.
+  We wait for this before the tests can start, since any CSR accesses require the CPU to be running.
+  Due to complexities in the UVM sequences this task is called in the virtual post_apply_reset task of dv_base_vseq.
 * task `wait_for_csr_to_propagate_to_slow_domain`:
   Waits for `cfg_cdc_sync` CSR to be clear, indicating the CDC to the slow clock has completed.
 * task `wait_for_reset_cause`:
   Waits for the `pwr_rst_req.reset_cause` output to match an expected cause.
+
+In addition, the base sequence provides two tasks that provide expected inputs based on the pwrmgr outputs.
+In the absence of these inputs the pwrmgr will be stuck waiting forever.
+Being based on outputs means the inputs are in accordance to the implicit protocol.
+The tasks in question are:
+* task `slow_responder`:
+  Handles required input changes for the slow state machine.
+  For the various *clk_en outputs it changes the *clk_val as required.
+* task `fast_responder`:
+  Handles input changes for the fast state machine.
+  * Completes the handshake with rstmgr for lc and sys resets: some random cycles after an output reset is requested the corresponding reset src input must go low.
+  * Completes the handshake with clkmgr: the `clk_status` input needs to match the `ip_clk_en` output after some cycles.
+  * Completes the handshake with lc and otp: either *_done input must match the corresponding *_init output after some cycles.
+
+These tasks are started by the parent sequence's `pre_start` task, and terminated gracefully in the parent sequence's `post_start` task.
+Notice we plan to implement these responders in drivers instead of the base sequence.
 
 The `pwrmgr_smoke_vseq` sequence tests the pwrmgr through POR, entry and exit from software initiated low power and reset.
 
@@ -127,13 +137,14 @@ See also the test plan for specific ways these are driven to trigger different t
   These clock enables should match their corresponding enables in the `control` CSR on low power transitions.
   These clock enables are cleared on reset.
   These clock enables are checked in the scoreboard.
+  When slow fsm transitions to `SlowPwrStateReqPwrUp` the clock enables should be on (except usb should match `control.usb_clk_en_active`).
+  When slow fsm transitions to `SlowPwrStatePwrClampOn` the clock enables should match their bits in the `control` CSR.
 - Inputs `core_clk_val`, `io_clk_val`, and `usb_clk_val` track the corresponding enables.
   They are driven by sequences, which turn them off when their enables go off, and turn them back on a few random slow clock cycles after their enables go on.
   Slow fsm waits for them to go high prior to requesting fast fsm wakeup.
   Lack of a high transition when needed is detected via timeout.
   Such timeout would be due to the corresponding enables being set incorrectly.
-- Output `main_pd_n` resets high, should match `control.main_pd_n` CSR on low power transitions.
-  Goes high when during slow fsm transition to power up.
+- Output `main_pd_n` should go high when slow fsm transitions to `SlowPwrStateMainPowerOn`, and should match `control.main_pd_n` CSR when slow fsm transitions to `SlowPwrStateMainPowerOff`.
 - Input `main_pok` should turn on for the slow fsm to start power up sequence.
   Sequences will turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
   Lack of a high transition causes a timeout, and would point to `main_pd_n` being set incorrectly.
@@ -185,11 +196,19 @@ There are a number of wakeup and reset requests.
 They are driven by sequences as they need to.
 
 #### Assertions
-* TLUL assertions: The `tb/pwrmgr_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/ip/pwrmgr/dv/sva/pwrmgr_bind.sv` module binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
+* Clock enables assertions:
+  The `hw/ip/pwrmgr/dv/sva/pwrmgr_bind.sv` module binds `pwrmgr_clock_enables_if` to the ip.
+  It contains assertions checking that the various clk_en outputs correspond to the settings in the `control` CSR.
+* AST input/output handshake assertions:
+  The `hw/ip/pwrmgr/dv/sva/pwrmgr_bind.sv` module binds `pwrmgr_ast_if` to the ip.
+  It contains assertions checking that the inputs from the AST respond to the pwrmgr outputs.
+* RSTMGR input/output handshake assertions:
+  The `hw/ip/pwrmgr/dv/sva/pwrmgr_bind.sv` module binds `pwrmgr_rstmgr_if` to the ip.
+  It contains assertions checking that the inputs from the RSTMGR respond to the pwrmgr outputs.
 
-* assert prop 1:
-* assert prop 2:
+More assertions will be added according to the different unit's descriptions above.
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.

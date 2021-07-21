@@ -15,7 +15,13 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
 
   // ext interfaces
   virtual clk_rst_if slow_clk_rst_vif;
-  virtual pwrmgr_if  pwrmgr_vif;
+  virtual pwrmgr_if pwrmgr_vif;
+  virtual pwrmgr_ast_if pwrmgr_ast_vif;
+  virtual pwrmgr_clock_enables_if pwrmgr_clock_enables_vif;
+  virtual pwrmgr_rstmgr_if pwrmgr_rstmgr_vif;
+
+  // The run_phase object, to deal with objections.
+  uvm_phase run_phase;
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
