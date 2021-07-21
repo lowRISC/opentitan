@@ -293,6 +293,7 @@ module keymgr
   /////////////////////////////////////
 
   // The various arrays of inputs for each operation
+  logic rom_digest_vld;
   logic [2**StageWidth-1:0][AdvDataWidth-1:0] adv_matrix;
   logic [2**StageWidth-1:0] adv_dvalid;
   logic [2**StageWidth-1:0][IdDataWidth-1:0] id_matrix;
@@ -338,7 +339,7 @@ module keymgr
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
                                health_state_vld &
-                               rom_digest_i.valid;
+                               rom_digest_vld;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
@@ -389,6 +390,7 @@ module keymgr
   // General module for checking inputs
   logic key_vld;
   keymgr_input_checks u_checks (
+    .rom_digest_i,
     .max_key_versions_i(max_key_versions),
     .stage_sel_i(stage_sel),
     .key_version_i(reg2hw.key_version),
@@ -402,7 +404,8 @@ module keymgr
     .devid_vld_o(devid_vld),
     .health_state_vld_o(health_state_vld),
     .key_version_vld_o(key_version_vld),
-    .key_vld_o(key_vld)
+    .key_vld_o(key_vld),
+    .rom_digest_vld_o(rom_digest_vld)
   );
 
 
