@@ -92,9 +92,9 @@ struct ISSWrapper {
   // is not null, append to it each line that was read.
   bool read_child_response(std::vector<std::string> *dst) const;
 
-  // Send a command to the child and wait for its response. Return
-  // value and dst argument behave as for read_child_response.
-  bool run_command(const std::string &cmd, std::vector<std::string> *dst) const;
+  // Send a command to the child and wait for its response. If no
+  // response, raise a runtime_error.
+  void run_command(const std::string &cmd, std::vector<std::string> *dst) const;
 
   pid_t child_pid;
   FILE *child_write_file;
