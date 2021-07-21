@@ -180,7 +180,7 @@ module keymgr_ctrl import keymgr_pkg::*; (
   for (genvar i = 0; i < Shares; i++) begin : gen_key_out_assign
     assign key_o.key[i] = stage_sel_o == Disable ?
                           {EntropyRounds{entropy_i[i]}} :
-                          key_state_q[cnt[cdi_sel_o]][i];
+                          key_state_q[cdi_sel_o][i];
   end
 
 
@@ -207,7 +207,9 @@ module keymgr_ctrl import keymgr_pkg::*; (
   assign update_sel = wipe_req ? KeyUpdateWipe :
                       init_o   ? KeyUpdateRoot : op_update_sel;
 
-  assign cdi_cnt = cnt[CdiWidth-1:0];
+  // Do not let the count toggle unless an advance operation is
+  // selected
+  assign cdi_cnt = op_req ? cnt[CdiWidth-1:0] : '0;
 
   always_comb begin
     key_state_d = key_state_q;
