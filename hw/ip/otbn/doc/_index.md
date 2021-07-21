@@ -267,7 +267,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
     </tr>
     <tr>
       <td>0xFC0</td>
-      <td>R</td>
+      <td>RO</td>
       <td>RND</td>
       <td>
 An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
@@ -279,7 +279,7 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     </tr>
     <tr>
       <td>0xFC1</td>
-      <td>R</td>
+      <td>RO</td>
       <td>URND</td>
       <td>
 A random number without guaranteed secrecy properties or specific statistical properties.
@@ -343,7 +343,7 @@ This WSR is also visible as CSRs `MOD0` through to `MOD7`.
     </tr>
     <tr>
       <td>0x1</td>
-      <td>R</td>
+      <td>RO</td>
       <td>RND</td>
       <td>
 An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
@@ -355,7 +355,7 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     </tr>
     <tr>
       <td>0x2</td>
-      <td>R</td>
+      <td>RO</td>
       <td>URND</td>
       <td>
 A random number without guaranteed secrecy properties or specific statistical properties.
