@@ -164,7 +164,7 @@ package flash_ctrl_pkg;
   };
 
   // hardware interface memory protection rules
-  parameter int HwInfoRules = 3;
+  parameter int HwInfoRules = 5;
   parameter int HwDataRules = 1;
 
   parameter info_page_cfg_t CfgAllowRead = '{
@@ -201,7 +201,19 @@ package flash_ctrl_pkg;
      },
 
     '{
+       page:  SeedInfoPageSel[CreatorSeedIdx],
+       phase: PhaseRma,
+       cfg:   CfgAllowReadProgErase
+     },
+
+    '{
        page:  SeedInfoPageSel[OwnerSeedIdx],
+       phase: PhaseRma,
+       cfg:   CfgAllowReadProgErase
+     },
+
+    '{
+       page:  IsolatedPageSel,
        phase: PhaseRma,
        cfg:   CfgAllowReadProgErase
      }
@@ -391,13 +403,29 @@ package flash_ctrl_pkg;
   } rma_wipe_entry_t;
 
   // entries to be wiped
-  parameter int WipeEntries = 3;
+  parameter int WipeEntries = 5;
   parameter rma_wipe_entry_t RmaWipeEntries[WipeEntries] = '{
     '{
        bank: SeedBank,
        part: FlashPartInfo,
        info_sel: SeedInfoSel,
+       start_page: {1'b0, CreatorInfoPage},
+       num_pages: 1
+     },
+
+    '{
+       bank: SeedBank,
+       part: FlashPartInfo,
+       info_sel: SeedInfoSel,
        start_page: {1'b0, OwnerInfoPage},
+       num_pages: 1
+     },
+
+    '{
+       bank: SeedBank,
+       part: FlashPartInfo,
+       info_sel: SeedInfoSel,
+       start_page: {1'b0, IsolatedInfoPage},
        num_pages: 1
      },
 
