@@ -156,22 +156,32 @@ class WSRFile:
         self.RND = RandWSR('RND')
         self.ACC = DumbWSR('ACC')
 
-    def _wsr_for_idx(self, idx: int) -> WSR:
-        assert 0 <= idx <= 3
-        return {
+        self._by_idx = {
             0: self.MOD,
             1: self.RND,
             # TODO: Implement 2: URND
             3: self.ACC
-        }[idx]
+        }
+
+    def check_idx(self, idx: int) -> bool:
+        '''Return True if idx is a valid WSR index'''
+        return idx in self._by_idx
 
     def read_at_idx(self, idx: int) -> int:
-        '''Read the WSR at idx as an unsigned 256-bit value'''
-        return self._wsr_for_idx(idx).read_unsigned()
+        '''Read the WSR at idx as an unsigned 256-bit value
+
+        Assumes that idx is a valid index (call check_idx to ensure this).
+
+        '''
+        return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
-        '''Write the WSR at idx as an unsigned 256-bit value'''
-        return self._wsr_for_idx(idx).write_unsigned(value)
+        '''Write the WSR at idx as an unsigned 256-bit value
+
+        Assumes that idx is a valid index (call check_idx to ensure this).
+
+        '''
+        return self._by_idx[idx].write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()
