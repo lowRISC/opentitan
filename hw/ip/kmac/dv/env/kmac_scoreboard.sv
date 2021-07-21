@@ -2529,8 +2529,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // - the expected output length in bytes
     // - if we are using the xof version of kmac
     if (in_kmac_app) begin
-      // KMAC_APP output will always be 256 bits (32 bytes)
-      output_len_bytes = 32;
+      // KMAC_APP output will always be 384 bits (48 bytes)
+      output_len_bytes = AppDigestW / 8;
 
       // xof_en is 1 when the padded output length is 0,
       // but this will never happen in KMAC_APP

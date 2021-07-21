@@ -115,7 +115,12 @@ module kmac_app
 
   localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
 
-  localparam int SelKeySize = (AppDigestW == 128) ? 0 :
+  localparam int SelKeySize = (AppKeyW == 128) ? 0 :
+                              (AppKeyW == 192) ? 1 :
+                              (AppKeyW == 256) ? 2 :
+                              (AppKeyW == 384) ? 3 :
+                              (AppKeyW == 512) ? 4 : 0 ;
+  localparam int SelDigSize = (AppDigestW == 128) ? 0 :
                               (AppDigestW == 192) ? 1 :
                               (AppDigestW == 256) ? 2 :
                               (AppDigestW == 384) ? 3 :
@@ -499,7 +504,7 @@ module kmac_app
   //////////////
 
   // Encoded output length
-  assign encoded_outlen      = EncodedOutLen[SelKeySize];
+  assign encoded_outlen      = EncodedOutLen[SelDigSize];
   assign encoded_outlen_mask = EncodedOutLenMask[SelKeySize];
 
   // Data mux

@@ -181,6 +181,7 @@ package kmac_pkg;
   // MsgWidth : 64
   // MsgStrbW : 8
   parameter int unsigned AppDigestW = 384;
+  parameter int unsigned AppKeyW = 256;
 
   typedef struct packed {
     logic valid;
