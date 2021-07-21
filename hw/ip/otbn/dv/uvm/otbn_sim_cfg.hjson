@@ -80,6 +80,10 @@ name:
     }
   ]
 
+  // The value to pass to the --size parameter for gen-binaries.py. This
+  // controls the number of instructions that are run before ECALL or error.
+  binary_size: 2000
+
   otbn_obj_dir: "{build_dir}/build-out"
   gen_binaries_py: "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py"
   gen_binary: "{gen_binaries_py} --count 1 --obj-dir {otbn_obj_dir}"
@@ -92,7 +96,7 @@ name:
     {
       name: build_otbn_rig_binary_mode
       pre_run_cmds: [
-        "{gen_binary} --no-smoke --seed {seed} {otbn_elf_dir}"
+        "{gen_binary} --no-smoke --seed {seed} --size {binary_size} {otbn_elf_dir}"
       ]
     }
 
@@ -109,7 +113,7 @@ name:
     {
       name: build_otbn_rig_binaries_mode
       pre_run_cmds: [
-        "{gen_binaries} --no-smoke --seed {seed} {otbn_elf_dir}"
+        "{gen_binaries} --no-smoke --seed {seed} --size {binary_size} {otbn_elf_dir}"
       ]
     }
   ]
