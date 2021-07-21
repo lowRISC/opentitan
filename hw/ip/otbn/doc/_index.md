@@ -355,8 +355,8 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
     </tr>
     <tr>
       <td>0x2</td>
-      <td>URND</td>
       <td>R</td>
+      <td>URND</td>
       <td>
 A random number without guaranteed secrecy properties or specific statistical properties.
 Intended for use in masking and blinding schemes.
