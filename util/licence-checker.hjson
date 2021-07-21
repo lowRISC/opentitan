@@ -37,23 +37,6 @@
 
     # Coremark Vendored Files
     'sw/device/benchmarks/coremark/top_earlgrey/*',
-    # Tock Vendored Files
-    'sw/device/tock/chips/opentitan_common/src/uart.rs',
-    'sw/device/tock/chips/opentitan_common/src/lib.rs',
-    'sw/device/tock/chips/opentitan_common/src/gpio.rs'
-    'sw/device/tock/chips/earlgrey/src/uart.rs',
-    'sw/device/tock/chips/earlgrey/src/timer.rs',
-    'sw/device/tock/chips/earlgrey/src/plic.rs',
-    'sw/device/tock/chips/earlgrey/src/lib.rs',
-    'sw/device/tock/chips/earlgrey/src/interrupts.rs',
-    'sw/device/tock/chips/earlgrey/src/gpio.rs',
-    'sw/device/tock/chips/earlgrey/src/chip.rs',
-    'sw/device/tock/boards/opentitan/src/main.rs',
-    'sw/device/tock/boards/opentitan/src/io.rs',
-    'sw/device/tock/boards/opentitan/layout.ld',
-    'sw/device/tock/boards/opentitan/build.rs',
-    'sw/device/tock/**/*.lock',
-    'sw/device/tock/boards/opentitan/rust-toolchain',
 
     ## Other Exclusions
 

@@ -44,7 +44,3 @@ readonly OBJ_DIR="$BUILD_ROOT/build-out"
 export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 export BIN_DIR
-
-# $TOCK_SYMLINK is the symlink used when referencing a local checkout of tock to
-# build from.
-export TOCK_SYMLINK="$REPO_TOP/sw/device/tock/tock_local"

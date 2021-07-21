@@ -140,7 +140,7 @@ Once the DIF is complete enough to cover all existing in-tree uses of the device
 
 The second stage is **Functional**.
 In this stage, the DIF can be used for basic operations, but may not cover all the specified functionality of the device.
-Once the DIF is complete enough to cover all the functionality of the device, in the way the hardware designer envisioned; is used for both DV testing; and can be used Tock, it has completed this stage.
+Once the DIF is complete enough to cover all the functionality of the device, in the way the hardware designer envisioned, and is used for DV testing, it has completed this stage.
 
 The third stage is **Complete**.
 In this stage, no changes to the interface are expected.

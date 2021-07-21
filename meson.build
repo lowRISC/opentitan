@@ -32,7 +32,6 @@ bin_dir = get_option('bin_dir')
 if bin_dir == 'undef'
   error('bin_dir option not set. Please run meson with a valid binary directory option.')
 endif
-tock_local = get_option('tock_local')
 
 # See the comment in `./util/meson-purge-includes.sh` for why this is necessary.
 if not get_option('keep_includes')
