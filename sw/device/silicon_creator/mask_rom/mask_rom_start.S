@@ -252,25 +252,6 @@ _mask_rom_start_boot:
   la   a1, _bss_end
   call crt_section_clear
 
-  // Re-clobber all of the temporary registers (may have been used in calls).
-  li t0, 0x0
-  li t1, 0x0
-  li t2, 0x0
-  li t3, 0x0
-  li t4, 0x0
-  li t5, 0x0
-  li t6, 0x0
-
-  // Re-clobber all of the argument registers (may have been used in calls).
-  li a0, 0x0
-  li a1, 0x0
-  li a2, 0x0
-  li a3, 0x0
-  li a4, 0x0
-  li a5, 0x0
-  li a6, 0x0
-  li a7, 0x0
-
   // Setup global pointer.
   //
   // This requires that we disable linker relaxations, or it will be relaxed to
