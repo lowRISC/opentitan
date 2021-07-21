@@ -9,6 +9,7 @@
 
 // We should also check for input validity
 module keymgr_input_checks import keymgr_pkg::*;(
+  input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
   input [2**StageWidth-1:0][31:0] max_key_versions_i,
   input keymgr_stage_e stage_sel_i,
   input hw_key_req_t key_i,
@@ -22,7 +23,8 @@ module keymgr_input_checks import keymgr_pkg::*;(
   output logic devid_vld_o,
   output logic health_state_vld_o,
   output logic key_version_vld_o,
-  output logic key_vld_o
+  output logic key_vld_o,
+  output logic rom_digest_vld_o
 );
 
   logic [31:0] cur_max_key_version;
@@ -91,6 +93,10 @@ module keymgr_input_checks import keymgr_pkg::*;(
   end
 
   assign key_vld_o = &key_chk;
+
+  // rom digest check
+  assign rom_digest_vld_o = rom_digest_i.valid &
+                            valid_chk(MaxWidth'(rom_digest_i.data));
 
   // checks for all 0's or all 1's of value
   function automatic logic valid_chk (logic [MaxWidth-1:0] value);
