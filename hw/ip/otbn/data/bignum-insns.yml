@@ -734,7 +734,7 @@
       doc: The WSR to read
   doc: |
     Reads a WSR to a WDR.
-    If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
+    If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   encoding:
     scheme: wcsr
     mapping:
@@ -756,7 +756,7 @@
       doc: Source WDR
   doc: |
     Writes a WDR to a WSR.
-    If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
+    If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   encoding:
     scheme: wcsr
     mapping:
