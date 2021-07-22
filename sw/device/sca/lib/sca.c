@@ -5,6 +5,8 @@
 #include "sw/device/sca/lib/sca.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/dif_entropy.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -14,6 +16,9 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 
+#include "clkmgr_regs.h"  // Generated
+#include "csrng_regs.h"   // Generated
+#include "edn_regs.h"     // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
@@ -129,6 +134,47 @@ void sca_init(void) {
   sca_init_uart();
   sca_init_gpio();
   sca_init_timer();
+}
+
+void sca_reduce_noise() {
+  // Disable/stopping functionality not yet provided by EDN and CSRNG DIFs.
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
+                      CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+
+  // Disable entropy source through DIF.
+  const dif_entropy_params_t entropy_params = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+  };
+  dif_entropy_t entropy;
+  IGNORE_RESULT(dif_entropy_init(entropy_params, &entropy) == kDifEntropyOk);
+  IGNORE_RESULT(dif_entropy_disable(&entropy) == kDifEntropyOk);
+
+  // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
+  const dif_clkmgr_params_t clkmgr_params = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
+      .last_gateable_clock = CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
+      .last_hintable_clock = CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT};
+  dif_clkmgr_t clkmgr;
+  IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
+                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
+                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+                    &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
+                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
+                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
+                    &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
+                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
 }
 
 void sca_get_uart(const dif_uart_t **uart_out) { *uart_out = &uart1; }

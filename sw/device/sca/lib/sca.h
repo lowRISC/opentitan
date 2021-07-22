@@ -5,9 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
 #define OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
 
-#include "sw/device/lib/dif/dif_uart.h"
-
 #include <stdint.h>
+
+#include "sw/device/lib/dif/dif_uart.h"
 
 /**
  * @file
@@ -18,6 +18,16 @@
  * Initializes the peripherals (pinmux, uart, gpio, and timer) used by SCA code.
  */
 void sca_init(void);
+
+/**
+ * Disables the entropy complex and clocks of IPs not needed for SCA to reduce
+ * noise in the power traces.
+ *
+ * We can only disable the entropy complex as AES features a parameter to skip
+ * PRNG reseeding for SCA experiments. Without this parameter, AES would simply
+ * get stalled with a disabled entropy complex.
+ */
+void sca_reduce_noise(void);
 
 /**
  * Returns a handle to the intialized UART device.
