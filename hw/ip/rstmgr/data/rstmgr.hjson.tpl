@@ -229,7 +229,7 @@
     { name: "${dump_src.upper()}_INFO",
       desc: '''
               ${dump_src.capitalize()} dump information prior to last reset.
-              Which value read is controlled by the !${dump_src.upper()}_INFO_CTRL register.
+              Which value read is controlled by the !!${dump_src.upper()}_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -256,8 +256,8 @@
         name:  "SW_RST_REGEN",
         desc:  '''
           Register write enable for software controllable resets.
-          When a particular bit value is 0, the corresponding value in !SW_RST_CTRL can no longer be changed.
-          When a particular bit value is 1, the corresponding value in !SW_RST_CTRL can be changed.
+          When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.
+          When a particular bit value is 1, the corresponding value in !!SW_RST_CTRL_N can be changed.
         ''',
         count: "NumSwResets",
         swaccess: "rw0c",
