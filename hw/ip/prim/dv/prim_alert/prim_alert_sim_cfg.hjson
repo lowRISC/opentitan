@@ -1,0 +1,66 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_alert
+
+  // Top level dut name (sv module).
+  dut: prim_alert
+
+  // Top level testbench name (sv module).
+  tb: prim_alert_tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_alert_sim:0.1
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 1
+
+  build_modes: [
+    {
+      name: sync_alert
+      build_opts: ["+define+IS_SYNC"]
+    }
+    {
+      name: fatal_alert
+      build_opts: ["+define+IS_FATAL"]
+    }
+    {
+      name: sync_fatal_alert
+      build_opts: ["+define+IS_FATAL", "+define+IS_SYNC"]
+    }
+  ]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: prim_alert_smoke
+    }
+    {
+      name: prim_fatal_alert
+      build_mode: fatal_alert
+    }
+    {
+      name: prim_sync_alert
+      build_mode: sync_alert
+    }
+    {
+      name: prim_sync_fatal_alert
+      build_mode: sync_fatal_alert
+    }
+  ]
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["prim_alert_smoke"]
+    }
+  ]
+}

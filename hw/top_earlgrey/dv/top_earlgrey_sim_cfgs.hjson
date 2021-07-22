@@ -35,6 +35,7 @@
              "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
              "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/pattgen/dv/pattgen_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",

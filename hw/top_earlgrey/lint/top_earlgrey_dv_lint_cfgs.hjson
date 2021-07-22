@@ -105,6 +105,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/pattgen/dv/lint/{tool}"
              },
+             {    name: prim_alert
+                  fusesoc_core: lowrisc:dv:prim_alert_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_alert/lint/{tool}"
+             },
              {    name: prim_lfsr
                   fusesoc_core: lowrisc:dv:prim_lfsr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
