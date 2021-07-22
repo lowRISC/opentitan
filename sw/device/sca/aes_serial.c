@@ -205,6 +205,9 @@ int main(void) {
 
   LOG_INFO("Running AES serial");
 
+  LOG_INFO("Disabling entropy complex and unneeded clocks to reduce noise.");
+  sca_reduce_noise();
+
   LOG_INFO("Initializing simple serial interface to capture board.");
   simple_serial_init(uart1);
   simple_serial_register_handler('k', aes_serial_set_key);

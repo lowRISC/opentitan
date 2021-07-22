@@ -1060,6 +1060,9 @@ module chip_${top["name"]}_${target["name"]} (
 % if target["name"] == "cw310":
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesStartTriggerDelay(40),
+    .SecAesAllowForcingMasks(1'b1),
+    .SecAesSkipPRNGReseeding(1'b1),
     .KmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
