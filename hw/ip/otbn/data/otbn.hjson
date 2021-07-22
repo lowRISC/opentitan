@@ -224,15 +224,15 @@
         }
         { bits: "5",
           name: "fatal_imem"
-          desc: "A fatal failure was seen on an instruction fetch."
+          desc: "A fatal error was seen on an instruction fetch."
         }
         { bits: "6",
           name: "fatal_dmem"
-          desc: "A fatal failure was seen on a DMEM read."
+          desc: "A fatal error was seen on a DMEM read."
         }
         { bits: "7",
           name: "fatal_reg"
-          desc: "A fatal failure was seen on a GPR or WDR read."
+          desc: "A fatal error was seen on a GPR or WDR read."
         }
       ]
     } // register : err_bits
