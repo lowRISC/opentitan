@@ -822,14 +822,16 @@ Passing data between the host CPU and OTBN is done through the data memory (DMEM
 No standard or required calling convention exists, every application is free to pass data in and out of OTBN in whatever format it finds convenient.
 All data passing must be done when OTBN is not running, as indicated by the {{< regref "STATUS.busy" >}} bit; during the OTBN operation both the instruction and the data memory are inaccessible from the host CPU.
 
-## Returning from an application
+## Returning from an application {#writing-otbn-applications-ecall}
 
 The software running on OTBN signals completion by executing the {{< otbnInsnRef "ECALL" >}} instruction.
 
-When it executes this instruction, OTBN:
-- Stops fetching and executing instructions.
-- Sets {{< regref "INTR_STATE.done" >}} and clears {{< regref "STATUS.busy" >}}, marking the operation as completed.
-- Writes zero to {{< regref "ERR_BITS" >}}.
+Once OTBN has executed the {{< otbnInsnRef "ECALL" >}} instruction, the following things happen:
+
+- No more instructions are fetched or executed.
+- A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
+- The {{< regref "ERR_BITS" >}} register is set to 0, indicating a successful operation.
+- The current operation is marked as completed by setting {{< regref "INTR_STATE.done" >}} and clearing {{< regref "STATUS.busy" >}}.
 
 The DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
 Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.
