@@ -521,45 +521,65 @@ The LFSR state is advanced every cycle when OTBN is running.
 
 ### Error Handling and Reporting {#design-details-error-handling-and-reporting}
 
-By design, OTBN is a simple processor and provides no error handling support to code that runs on it.
+OTBN is able to detect a range of errors.
+Whenever an error is detected, OTBN reacts locally, and informs the OpenTitan system about it by raising an alert.
+OTBN generally does not try to recover from errors, and provides no error handling support to code that runs on it.
 
-Whenever OTBN observes an error, it will generate an alert.
-This gets sent to the alert manager.
-The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "#alerts" >}}) and {{< regref "ERR_BITS" >}} below for details.
+OTBN classifies errors as either *recoverable* or *fatal*.
+Errors which could be caused by a programmer's mistake are typically considered recoverable, while errors which are unlikely or impossible to result from a programmer's mistake are considered fatal.
+The description of the {{< regref "ERR_BITS" >}} register lists all possible error causes; those prefixed with `fatal_` are fatal errors.
 
-If OTBN was running when the alert occurred (this is true whenever {{< regref "STATUS.busy" >}} is high), it will also:
-- Immediately stop fetching and executing instructions.
-- Set {{< regref "INTR_STATE.done" >}} and clear {{< regref "STATUS.busy" >}}, marking the operation as completed.
-- Set the {{< regref "ERR_BITS" >}} register to a non-zero value describing the error.
+Recoverable errors terminate the currently active OTBN operation and return control to the host CPU.
+Fatal errors render OTBN unusable until it is reset.
+
+### Recoverable Errors {#design-details-recoverable-errors}
+
+Recoverable errors can be the result of a programming error in OTBN software.
+Recoverable errors can only occur during the execution of software on OTBN, and not in other situations in which OTBN might be busy.
+
+The following actions are taken when OTBN detects a recoverable error:
+
+1. The currently running operation is terminated, similar to the way an {{< otbnInsnRef "ECALL" >}} instruction [is executed](#writing-otbn-applications-ecall):
+   - No more instructions are fetched or executed.
+   - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
+   - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
+   - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}} and clearing {{< regref "STATUS.busy" >}}.
+2. A [recoverable alert]({{< relref "#alerts" >}}) is raised.
+
+The host software can start another operation on OTBN after a recoverable error was detected.
+
+### Fatal Errors {#design-details-fatal-errors}
+
+Fatal errors are generally seen as a sign of an intrusion, resulting in more drastic measures to protect the secrets stored within OTBN.
+Fatal errors can occur at any time, even when an OTBN operation isn't in progress.
+
+The following actions are taken when OTBN detects a fatal error:
+
+1. A [secure wipe of the data memory](#design-details-secure-wipe-dmem) and a [secure wipe of the instruction memory](#design-details-secure-wipe-imem) is initiated.
+2. If OTBN is busy, as indicated by {{< regref "STATUS.busy" >}}, then the currently running operation is terminated, similarly to how an operation ends after an {{< otbnInsnRef "ECALL" >}} instruction [is executed](#writing-otbn-applications-ecall):
+   - No more instructions are fetched or executed.
+   - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
+   - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
+   - The current operation is marked as completed by setting {{< regref "INTR_STATE.done" >}} and clearing {{< regref "STATUS.busy" >}}.
+3. A [fatal alert]({{< relref "#alerts" >}}) is raised.
 
 Note that OTBN can detect some errors even when it isn't running.
 One example of this is an error caused by an integrity error when reading or writing OTBN's memories over the bus.
 In this case, the {{< regref "ERR_BITS" >}} register will not change.
 This avoids race conditions with the host processor's error handling software.
-However, every error that OTBN detects when it isn't running causes a fatal alert.
+However, every error that OTBN detects when it isn't running is fatal.
 This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "#alerts" >}}).
 This way, no alert is generated without setting an error code somewhere.
-
-<div class="bd-callout bd-callout-warning">
-  <h5>TODO</h5>
-
-  When the implementation is finished, document more precisely how OTBN stops on error.
-  Can we claim to cancel all register and memory writes in that cycle?
-  Is there a way for that to make sense for errors that aren't related to a particular instruction (e.g. shadow register mis-matches; FSM glitches)?
-
-  Also, once it is decided, document behaviour on a bus access when OTBN is running.
-</div>
 
 ### Alerts
 
 OTBN has two alerts, one recoverable and one fatal.
 The {{< regref "ERR_BITS" >}} register documentation has a detailed list of error conditions, those with 'fatal' in the name raise a **fatal alert**, otherwise they raise a **recoverable alert**.
 
-A **recoverable alert** is a one-time triggered alert for recoverable error conditions.
-Recoverable alerts are only triggered when OTBN is running, so will always imply a write to {{< regref "ERR_BITS" >}}.
+A **recoverable alert** is a one-time triggered alert caused by [recoverable errors](#design-details-recoverable-errors).
 The error that caused the alert can be determined by reading the {{< regref "ERR_BITS" >}} register.
 
-A **fatal alert** is a continuously triggered alert after unrecoverable error conditions.
+A **fatal alert** is a continuously triggered alert caused by [fatal errors](#design-details-fatal-errors).
 The error that caused the alert can be determined by reading the {{< regref "FATAL_ALERT_CAUSE" >}} register.
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
@@ -684,6 +704,8 @@ Detected integrity violations in the data memory raise a fatal `imem_error`.
 The entire OTBN state, including the contents of instruction and data memories, can be securely deleted on demand from a host software.
 In addition, full or partial secure wipe is triggered automatically by the OTBN in certain situations.
 
+OTBN does not signal any error while a secure wipe operation is in progress.
+
 #### Triggering Secure Wipe
 
 In the following situations OTBN itself initiates a full secure wipe:
@@ -712,7 +734,7 @@ The key replacement is a two-step process:
   The request takes multiple cycles to complete.
 
 Host software can initiate a data memory secure wipe by writing 1 to the {{< regref "SEC_WIPE.dmem">}} register field.
-The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
+If a secure wipe was triggered in this way, [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signaled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
 
 #### Instruction Memory (IMEM) Secure Wipe {#design-details-secure-wipe-imem}
 
@@ -725,7 +747,7 @@ The key replacement is a two-step process:
   The request takes multiple cycles to complete.
 
 Host software can initiate an instruction memory secure wipe by writing 1 to the {{< regref "SEC_WIPE.imem">}} register field.
-The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
+If a secure wipe was triggered in this way, [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signaled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
 
 #### Internal State Secure Wipe {#design-details-secure-wipe-internal}
 
@@ -744,7 +766,7 @@ The wiping procedure is a two-step process:
 Loop and call stack pointers are reset.
 
 Host software can initiate an internal state secure wipe by writing 1 to the {{< regref "SEC_WIPE.internal">}} register field.
-The [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signalled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
+If a secure wipe was triggered in this way, [completion]({{<relref "#design-details-secure-wipe-completion">}}) is signaled by raising an {{< regref "INTR_STATE.done" >}} interrupt.
 
 # Running applications on OTBN
 
@@ -845,7 +867,7 @@ To avoid polluting the loop stack and avoid surprising behaviour, the programmer
 * Nested loops have distinct end addresses.
 * The end instruction of an outer loop is not executed before an inner loop finishes.
 
-OTBN does not detect these conditions being violated, so no error will be signalled should they occur.
+OTBN does not detect these conditions being violated, so no error will be signaled should they occur.
 
 (Note indentation in the code examples is for clarity and has no functional impact.)
 
