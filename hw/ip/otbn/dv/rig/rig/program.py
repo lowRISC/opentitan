@@ -5,7 +5,7 @@
 import random
 from typing import Dict, List, Optional, TextIO, Tuple
 
-from shared.insn_yaml import Insn, InsnsFile
+from shared.insn_yaml import DummyInsn, Insn, InsnsFile
 
 
 class ProgInsn:
@@ -62,9 +62,22 @@ class ProgInsn:
         error messages.
 
         '''
-        if not (isinstance(json, list) and len(json) == 3):
-            raise ValueError('{}, top-level data is not a triple.'
-                             .format(where))
+        if not isinstance(json, list):
+            raise ValueError(f'{where}, top-level data is not a list.')
+
+        if len(json) == 2:
+            # A 2-term entry is only valid if it's a dummy instruction.
+            mnemonic, raw_val = json
+            if mnemonic != 'dummy-insn':
+                raise ValueError('{}, top-level data is a pair but the '
+                                 'mnemonic is {!r}, not "dummy-insn".'
+                                 .format(where, mnemonic))
+
+            return DummyProgInsn.from_json(insns_file, where, raw_val)
+
+        if len(json) != 3:
+            raise ValueError(f'{where}, top-level data is neither a pair nor '
+                             f'a triple.')
 
         mnemonic, operands, json_lsu_info = json
 
@@ -137,6 +150,31 @@ class ProgInsn:
                              .format(where, mnemonic))
 
         return ProgInsn(insn, op_vals, lsu_info)
+
+
+class DummyProgInsn(ProgInsn):
+    def __init__(self, raw: int):
+        super().__init__(DummyInsn(), [], None)
+        self.raw = raw
+
+    def to_asm(self, cur_pc: int) -> str:
+        return '.word {:#08x}'.format(self.raw)
+
+    def to_json(self) -> object:
+        return ('dummy-insn', self.raw)
+
+    @staticmethod
+    def from_json(insns_file: InsnsFile,
+                  where: str,
+                  json: object) -> 'DummyProgInsn':
+        if not isinstance(json, int):
+            raise ValueError(f'{where}, the raw data for a dummy instruction '
+                             f'is not an integer')
+        if not (0 <= json < (1 << 32)):
+            raise ValueError(f'{where}, the raw data for a dummy instruction '
+                             f'is {json}, which is out of range for a 32-bit '
+                             f'unsigned integer.')
+        return DummyProgInsn(json)
 
 
 class Program:

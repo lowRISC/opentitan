@@ -25,7 +25,7 @@ from .snippet import Snippet
 # which case it still points at the ECALL.
 GenRet = Tuple[Snippet, bool, Model]
 
-# An "internal" return type for generators that never generate ECALLs.
+# An "internal" return type for generators that never cause termination.
 # (Essentially the same as GenRet, but with done = False)
 SimpleGenRet = Tuple[Snippet, Model]
 

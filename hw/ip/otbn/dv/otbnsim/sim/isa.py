@@ -5,7 +5,7 @@
 import sys
 from typing import Dict, Optional, Tuple
 
-from shared.insn_yaml import Insn, load_insns_yaml
+from shared.insn_yaml import Insn, DummyInsn, load_insns_yaml
 
 from .state import OTBNState
 
@@ -28,19 +28,6 @@ class DecodeError(Exception):
 
     def __str__(self) -> str:
         return 'DecodeError: {}'.format(self.msg)
-
-
-class DummyInsn(Insn):
-    '''A dummy instruction that will never be decoded. Used for the insn class
-    variable in the OTBNInsn base class.
-
-    '''
-    def __init__(self) -> None:
-        fake_yml = {
-            'mnemonic': 'dummy-insn',
-            'operands': []
-        }
-        super().__init__(fake_yml, None)
 
 
 def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:

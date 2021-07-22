@@ -19,15 +19,19 @@ from .gens.jump import Jump
 from .gens.loop import Loop
 from .gens.straight_line_insn import StraightLineInsn
 
+from .gens.bad_insn import BadInsn
+
 
 class SnippetGens:
     '''A collection of snippet generators'''
     _CLASSES = [
         Branch,
-        ECall,
         Jump,
         Loop,
-        StraightLineInsn
+        StraightLineInsn,
+
+        ECall,
+        BadInsn
     ]
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
@@ -206,7 +210,7 @@ class SnippetGens:
 
         '''
         snippets, next_model = self._gens(model, program, False)
-        # _gens() only sets next_model to None if ecall is True.
+        # _gens() only sets next_model to None if finish is True.
         assert next_model is not None
         snippet = Snippet.merge_list(snippets) if snippets else None
         return (snippet, next_model)
