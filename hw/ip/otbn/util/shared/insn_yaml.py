@@ -203,6 +203,22 @@ class Insn:
         return mnem + ''.join(hunks).lstrip()
 
 
+class DummyInsn(Insn):
+    '''A dummy instruction that will never be decoded.
+
+    This shouldn't appear in an InsnGroup or InsnsFile, but can be handy when
+    you have an object that wraps an instruction but need to easily handle the
+    case of a bogus encoding.
+
+    '''
+    def __init__(self) -> None:
+        fake_yml = {
+            'mnemonic': 'dummy-insn',
+            'operands': []
+        }
+        super().__init__(fake_yml, None)
+
+
 class InsnGroup:
     def __init__(self,
                  path: str,
