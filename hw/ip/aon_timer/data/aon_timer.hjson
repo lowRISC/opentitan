@@ -40,6 +40,13 @@
     // wakeup and reset request signals
     { struct:  "logic",
       type:    "uni",
+      name:    "nmi_wdog_timer_bark",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
       name:    "aon_timer_wkup_req",
       act:     "req",
       package: "",

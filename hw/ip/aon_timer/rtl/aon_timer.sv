@@ -26,6 +26,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
   output logic                intr_wkup_timer_expired_o,
   output logic                intr_wdog_timer_bark_o,
+  output logic                nmi_wdog_timer_bark_o,
 
   // clk_aon_i domain
   output logic                aon_timer_wkup_req_o,
@@ -244,6 +245,9 @@ module aon_timer import aon_timer_reg_pkg::*;
     .d_i     (intr_out[AON_WDOG]),
     .q_o     (intr_wdog_timer_bark_o)
   );
+
+  // The interrupt line can be routed as nmi as well.
+  assign nmi_wdog_timer_bark_o = intr_wdog_timer_bark_o;
 
   ///////////////////
   // Reset Request //

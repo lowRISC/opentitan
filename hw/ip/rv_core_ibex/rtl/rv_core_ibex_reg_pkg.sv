@@ -67,6 +67,35 @@ package rv_core_ibex_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        q;
+    } alert_en;
+    struct packed {
+      logic        q;
+    } wdog_en;
+  } rv_core_ibex_reg2hw_nmi_enable_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } alert;
+    struct packed {
+      logic        q;
+    } wdog;
+  } rv_core_ibex_reg2hw_nmi_state_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } wdog;
+  } rv_core_ibex_hw2reg_nmi_state_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic        d;
       logic        de;
     } reg_intg_err;
@@ -86,18 +115,21 @@ package rv_core_ibex_reg_pkg;
 
   // Register -> HW type for cfg interface
   typedef struct packed {
-    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [271:264]
-    rv_core_ibex_reg2hw_sw_alert_mreg_t [1:0] sw_alert; // [263:260]
-    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [1:0] ibus_addr_en; // [259:258]
-    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [1:0] ibus_addr_matching; // [257:194]
-    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [1:0] ibus_remap_addr; // [193:130]
-    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [1:0] dbus_addr_en; // [129:128]
-    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [1:0] dbus_addr_matching; // [127:64]
-    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [1:0] dbus_remap_addr; // [63:0]
+    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [275:268]
+    rv_core_ibex_reg2hw_sw_alert_mreg_t [1:0] sw_alert; // [267:264]
+    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [1:0] ibus_addr_en; // [263:262]
+    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [1:0] ibus_addr_matching; // [261:198]
+    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [1:0] ibus_remap_addr; // [197:134]
+    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [1:0] dbus_addr_en; // [133:132]
+    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [1:0] dbus_addr_matching; // [131:68]
+    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [1:0] dbus_remap_addr; // [67:4]
+    rv_core_ibex_reg2hw_nmi_enable_reg_t nmi_enable; // [3:2]
+    rv_core_ibex_reg2hw_nmi_state_reg_t nmi_state; // [1:0]
   } rv_core_ibex_cfg_reg2hw_t;
 
   // HW -> register type for cfg interface
   typedef struct packed {
+    rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [11:8]
     rv_core_ibex_hw2reg_err_status_reg_t err_status; // [7:0]
   } rv_core_ibex_cfg_hw2reg_t;
 
@@ -123,7 +155,9 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET = 7'h 48;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET = 7'h 4c;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET = 7'h 50;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 54;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 7'h 54;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 7'h 58;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 5c;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 4'h 0;
@@ -155,11 +189,13 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_DBUS_ADDR_MATCHING_1,
     RV_CORE_IBEX_DBUS_REMAP_ADDR_0,
     RV_CORE_IBEX_DBUS_REMAP_ADDR_1,
+    RV_CORE_IBEX_NMI_ENABLE,
+    RV_CORE_IBEX_NMI_STATE,
     RV_CORE_IBEX_ERR_STATUS
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [22] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [24] = '{
     4'b 0001, // index[ 0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[ 1] RV_CORE_IBEX_SW_ALERT_REGWEN_0
     4'b 0001, // index[ 2] RV_CORE_IBEX_SW_ALERT_REGWEN_1
@@ -181,7 +217,9 @@ package rv_core_ibex_reg_pkg;
     4'b 1111, // index[18] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1
     4'b 1111, // index[19] RV_CORE_IBEX_DBUS_REMAP_ADDR_0
     4'b 1111, // index[20] RV_CORE_IBEX_DBUS_REMAP_ADDR_1
-    4'b 0011  // index[21] RV_CORE_IBEX_ERR_STATUS
+    4'b 0001, // index[21] RV_CORE_IBEX_NMI_ENABLE
+    4'b 0001, // index[22] RV_CORE_IBEX_NMI_STATE
+    4'b 0011  // index[23] RV_CORE_IBEX_ERR_STATUS
   };
 
 endpackage

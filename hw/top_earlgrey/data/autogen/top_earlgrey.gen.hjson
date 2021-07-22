@@ -3080,6 +3080,20 @@
       inter_signal_list:
       [
         {
+          name: nmi_wdog_timer_bark
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: aon_timer_aon
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: aon_timer_aon_nmi_wdog_timer_bark
+          index: -1
+        }
+        {
           name: aon_timer_wkup_req
           struct: logic
           type: uni
@@ -5985,6 +5999,18 @@
           index: -1
         }
         {
+          name: nmi_wdog
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          package: ""
+          top_signame: aon_timer_aon_nmi_wdog_timer_bark
+          index: -1
+        }
+        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -6496,6 +6522,10 @@
         lc_ctrl.esc_scrap_state0_tx
         lc_ctrl.esc_scrap_state1_tx
         pwrmgr_aon.esc_rst_tx
+      ]
+      aon_timer_aon.nmi_wdog_timer_bark:
+      [
+        rv_core_ibex.nmi_wdog
       ]
       csrng.csrng_cmd:
       [
@@ -14836,6 +14866,20 @@
         index: -1
       }
       {
+        name: nmi_wdog_timer_bark
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: aon_timer_aon
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: aon_timer_aon_nmi_wdog_timer_bark
+        index: -1
+      }
+      {
         name: aon_timer_wkup_req
         struct: logic
         type: uni
@@ -16446,6 +16490,18 @@
         index: -1
       }
       {
+        name: nmi_wdog
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        package: ""
+        top_signame: aon_timer_aon_nmi_wdog_timer_bark
+        index: -1
+      }
+      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -18027,6 +18083,17 @@
         act: req
         suffix: ""
         default: prim_esc_pkg::ESC_TX_DEFAULT
+      }
+      {
+        package: ""
+        struct: logic
+        signame: aon_timer_aon_nmi_wdog_timer_bark
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
       }
       {
         package: csrng_pkg
