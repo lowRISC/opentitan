@@ -7,13 +7,10 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-#define ENTROPY_SRC_CONF_REG_OFFSET 0x18
-#define CSRNG_CTRL_REG_OFFSET 0x14
-#define EDN_CTRL_REG_OFFSET 0x14
 
 // The following plaintext, key and ciphertext are extracted from Appendix C of
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
@@ -71,12 +68,7 @@ bool test_main(void) {
   LOG_INFO("Running AES test");
 
   // First of all, we need to get the entropy complex up and running.
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-                      ENTROPY_SRC_CONF_REG_OFFSET, 0x2);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                      CSRNG_CTRL_REG_OFFSET, 0xaa);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0xaa);
+  entropy_testutils_boot_mode_init();
 
   // Initialise AES.
   dif_aes_params_t params = {
