@@ -440,7 +440,6 @@ The full secure wipe mechanism is split into three parts:
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
-(TODO: Specify reaction to incoming lifecycle escalation event, and a potential lifecycle state dependency, e. g. only wipe in PROD mode.)
 A secure wipe of only the internal state is performed whenever an OTBN operation is completed and after a recoverable error.
 Finally, host software can manually trigger the full or partial secure wipe operations by writing to the {{< regref "SEC_WIPE">}} register.
 
@@ -564,6 +563,12 @@ A **fatal alert** is a continuously triggered alert after unrecoverable error co
 The error that caused the alert can be determined by reading the {{< regref "FATAL_ALERT_CAUSE" >}} register.
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
+
+### Reaction to Life Cycle Escalation Requests
+
+OTBN receives and reacts to escalation signals from the [life cycle controller]({{< relref "/hw/ip/lc_ctrl/doc#security-escalation" >}}).
+
+An escalation request signaled through the `lc_escalate_en_i` signal results in the same action as a [fatal error](#design-details-fatal-errors) but does not raise a fatal alert.
 
 ### Idle
 
