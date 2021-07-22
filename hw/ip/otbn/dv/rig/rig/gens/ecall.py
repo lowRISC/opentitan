@@ -15,6 +15,9 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 class ECall(SnippetGen):
     '''A generator that makes a snippet with a single ECALL instruction'''
+
+    ends_program = True
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
