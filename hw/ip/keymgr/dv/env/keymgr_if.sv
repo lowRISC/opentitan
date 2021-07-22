@@ -6,6 +6,7 @@
 interface keymgr_if(input clk, input rst_n);
 
   import uvm_pkg::*;
+  import keymgr_env_pkg::*;
 
   lc_ctrl_pkg::lc_tx_t            keymgr_en;
   lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
@@ -42,7 +43,10 @@ interface keymgr_if(input clk, input rst_n);
   bit is_kmac_sideload_avail;
   keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
 
-  keymgr_env_pkg::key_shares_t keys_a_array[string][string];
+  // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
+  // or any name at keymgr_key_dest_e
+  keymgr_env_pkg::key_shares_t keys_a_array[keymgr_pkg::keymgr_working_state_e][keymgr_cdi_type_e][
+                               string];
 
   // set this flag when design enters init state, edn req will start periodically
   bit start_edn_req;
@@ -177,15 +181,17 @@ interface keymgr_if(input clk, input rst_n);
 
   // store internal key once it's available and use to compare if future OP is invalid
   function automatic void store_internal_key(keymgr_env_pkg::key_shares_t key_shares,
-                                             keymgr_pkg::keymgr_working_state_e state);
+                                             keymgr_pkg::keymgr_working_state_e state,
+                                             keymgr_cdi_type_e cdi_type);
 
-    keys_a_array[state.name]["Internal"] = key_shares;
+    keys_a_array[state][cdi_type]["Internal"] = key_shares;
   endfunction
 
   // update sideload key for comparison
   // if it's good key, store it to compare for future invalid OP
   function automatic void update_sideload_key(keymgr_env_pkg::key_shares_t key_shares,
                                               keymgr_pkg::keymgr_working_state_e state,
+                                              keymgr_cdi_type_e cdi_type,
                                               keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac,
                                               bit good_key = 1);
     case (dest)
@@ -206,7 +212,7 @@ interface keymgr_if(input clk, input rst_n);
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
-    if (good_key) keys_a_array[state.name][dest.name]  = key_shares;
+    if (good_key) keys_a_array[state][cdi_type][dest.name]  = key_shares;
   endfunction
 
   function automatic bit get_keymgr_en();
@@ -302,9 +308,10 @@ interface keymgr_if(input clk, input rst_n);
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && !is_cmd_err && !is_fsm_err) begin
-      foreach (keys_a_array[i, j]) begin
-        `DV_CHECK_NE({act_key.key[1], act_key.key[0]}, keys_a_array[i][j],
-            $sformatf("%s key at state %s from %s", key_name, i, j), , msg_id)
+      foreach (keys_a_array[state, cdi, dest]) begin
+        `DV_CHECK_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
+            $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
+            msg_id)
       end
     end
   endfunction
@@ -313,12 +320,11 @@ interface keymgr_if(input clk, input rst_n);
     `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || is_cmd_err || \
            is_fsm_err)
 
-  // TODO hack alert
   // These asserts are commented out because the advance operation is now 2-pass and will require
   // updated handling
-  //`KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
-  //
-  //`KM_ASSERT(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
+  `KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
+
+  `KM_ASSERT(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
 
   // TODO update hmac and aes checker later
   //`KM_ASSERT(HmacKeyStable, $stable(hmac_key_exp) |=> $stable(hmac_key))

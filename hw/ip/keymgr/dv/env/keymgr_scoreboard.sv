@@ -57,7 +57,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
-  key_shares_t current_internal_key;
+  key_shares_t current_internal_key[keymgr_cdi_type_e];
+  keymgr_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
@@ -129,13 +130,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_pkg::OpAdvance: begin
-        keymgr_cdi_type_e cdi_type;
-        `downcast(cdi_type, adv_cnt)
 
         case (current_state)
           keymgr_pkg::StInit: begin
             bit is_err = get_hw_invalid_input();
-            compare_adv_creator_data(.cdi_type(cdi_type),
+            compare_adv_creator_data(.cdi_type(current_cdi),
                                      .exp_match(!is_err),
                                      .byte_data_q(item.byte_data_q));
             if (is_err) compare_invalid_data(item.byte_data_q);
@@ -143,13 +142,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           keymgr_pkg::StCreatorRootKey: begin
             bit is_err = get_hw_invalid_input();
 
-            compare_adv_owner_int_data(.cdi_type(cdi_type),
+            compare_adv_owner_int_data(.cdi_type(current_cdi),
                                        .exp_match(!is_err),
                                        .byte_data_q(item.byte_data_q));
             if (is_err) compare_invalid_data(item.byte_data_q);
           end
           keymgr_pkg::StOwnerIntKey: begin
-            compare_adv_owner_data(cdi_type, item.byte_data_q);
+            compare_adv_owner_data(current_cdi, item.byte_data_q);
           end
           keymgr_pkg::StOwnerKey, keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
             compare_invalid_data(item.byte_data_q);
@@ -182,11 +181,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     case (update_result)
       UpdateInternalKey: begin
-        current_internal_key = {item.rsp_digest_share1, item.rsp_digest_share0};
-        cfg.keymgr_vif.store_internal_key(current_internal_key, current_state);
+        current_internal_key[current_cdi] = {item.rsp_digest_share1, item.rsp_digest_share0};
+        cfg.keymgr_vif.store_internal_key(current_internal_key[current_cdi], current_state,
+                                          current_cdi);
 
-        `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for state %s", current_internal_key,
-                                  current_state.name), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for state %s %s",
+             current_internal_key[current_cdi], current_state.name, current_cdi.name), UVM_MEDIUM)
       end
       UpdateSwOut: begin
         bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
@@ -208,7 +208,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             `gmv(ral.control.dest_sel));
 
         if (dest != keymgr_pkg::None) begin
-          cfg.keymgr_vif.update_sideload_key(key_shares, current_state, dest, good_key);
+          cfg.keymgr_vif.update_sideload_key(key_shares, current_state, current_cdi,
+                                             dest, good_key);
           `uvm_info(`gfn, $sformatf("Update sideload key 0x%0h for %s", key_shares, dest.name),
                     UVM_MEDIUM)
         end
@@ -217,6 +218,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     endcase
 
     if (!cfg.keymgr_vif.get_keymgr_en()) current_state = keymgr_pkg::StInvalid;
+
+    if (!(current_state inside {keymgr_pkg::StReset, keymgr_pkg::StInvalid}) &&
+        get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
+      current_cdi = get_adv_cdi_type();
+      if (current_cdi > 0) begin
+        cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
+                                      get_is_kmac_key_correct());
+      end
+    end
   endfunction
 
   // update current_state, current_op_status, err_code, alert and return update_result for updating
@@ -441,9 +451,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             case (current_state)
               keymgr_pkg::StReset: begin
                 if (op == keymgr_pkg::OpAdvance) begin
-                  current_internal_key = {cfg.keymgr_vif.otp_key.key_share1,
-                                          cfg.keymgr_vif.otp_key.key_share0};
-                  cfg.keymgr_vif.store_internal_key(current_internal_key, current_state);
+                  // for advance to OwnerRootSecret, both KDF use same otp_key
+                  current_internal_key[Sealing] = {cfg.keymgr_vif.otp_key.key_share1,
+                                                   cfg.keymgr_vif.otp_key.key_share0};
+                  current_internal_key[Attestation] = current_internal_key[Sealing];
+                  cfg.keymgr_vif.store_internal_key(current_internal_key[Sealing], current_state,
+                                                    current_cdi);
 
                   // expect no EDN request is issued. After this advance is done, will have 2 reqs
                   `DV_CHECK_EQ(edn_fifo.is_empty(), 1)
@@ -462,9 +475,22 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               end
               default: begin // other than StReset and StDisabled
                 bit good_key = get_is_kmac_key_correct();
+                bit skip_clean_kmac_key = 0;
 
+                if (current_state != keymgr_pkg::StReset &&
+                    op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
+                  skip_clean_kmac_key = 1;
+                end
+
+                if (op == keymgr_pkg::OpAdvance) begin
+                  current_cdi = get_adv_cdi_type();
+                end else begin
+                  int cdi_sel = `gmv(ral.control.cdi_sel);
+                  `downcast(current_cdi, cdi_sel)
+                end
                 // update kmac key for check
-                cfg.keymgr_vif.update_kdf_key(current_internal_key, current_state, good_key);
+                cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
+                                              good_key);
               end
             endcase
             // start will be clear after OP is done
@@ -645,8 +671,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function bit get_hw_invalid_input();
     bit is_err;
 
-    if (current_internal_key inside {0, '1} && current_state != keymgr_pkg::StReset) begin
+    if (current_internal_key[current_cdi] inside {0, '1} && current_state != keymgr_pkg::StReset)
+    begin
       is_err = 1;
+      `uvm_info(`gfn, $sformatf("internal key for %s %s is invalid", current_state, current_cdi),
+                UVM_LOW)
     end
 
     if (get_operation() != keymgr_pkg::OpAdvance) return is_err;
@@ -822,9 +851,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     foreach (hw_data_a_array[i]) begin
       `DV_CHECK_NE(act, hw_data_a_array[i], $sformatf("HW data at state %0s", i.name))
     end
-    foreach (cfg.keymgr_vif.keys_a_array[i, j]) begin
-      `DV_CHECK_NE(act, cfg.keymgr_vif.keys_a_array[i][j],
-                   $sformatf("key at state %0s from %0s", i, j))
+    foreach (cfg.keymgr_vif.keys_a_array[state, cdi, dest]) begin
+      `DV_CHECK_NE(act, cfg.keymgr_vif.keys_a_array[state][cdi][dest],
+                   $sformatf("key at state %0s for %s %s", state.name, cdi.name, dest))
     end
   endfunction
 
@@ -887,6 +916,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(act, exp, str)
   endfunction
 
+  virtual function keymgr_cdi_type_e get_adv_cdi_type();
+    `downcast(get_adv_cdi_type, adv_cnt)
+  endfunction
+
   virtual function void get_sw_binding_mirrored_value(
         input keymgr_cdi_type_e cdi_type,
         output bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
@@ -946,12 +979,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     // reset local fifos queues and variables
     current_state         = keymgr_pkg::StReset;
     current_op_status     = keymgr_pkg::OpIdle;
-    current_internal_key  = 0;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
     req_fifo.flush();
     rsp_fifo.flush();
+    current_internal_key.delete;
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
