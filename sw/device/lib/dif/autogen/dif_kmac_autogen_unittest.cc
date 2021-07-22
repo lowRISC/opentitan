@@ -38,7 +38,8 @@ TEST_F(InitTest, Success) {
 class AlertForceTest : public KmacTest {};
 
 TEST_F(AlertForceTest, NullArgs) {
-  EXPECT_EQ(dif_kmac_alert_force(nullptr, kDifKmacAlertFatalFault), kDifBadArg);
+  EXPECT_EQ(dif_kmac_alert_force(nullptr, kDifKmacAlertFatalFaultErr),
+            kDifBadArg);
 }
 
 TEST_F(AlertForceTest, BadAlert) {
@@ -49,8 +50,14 @@ TEST_F(AlertForceTest, BadAlert) {
 TEST_F(AlertForceTest, Success) {
   // Force first alert.
   EXPECT_WRITE32(KMAC_ALERT_TEST_REG_OFFSET,
-                 {{KMAC_ALERT_TEST_FATAL_FAULT_BIT, true}});
-  EXPECT_EQ(dif_kmac_alert_force(&kmac_, kDifKmacAlertFatalFault), kDifOk);
+                 {{KMAC_ALERT_TEST_FATAL_FAULT_ERR_BIT, true}});
+  EXPECT_EQ(dif_kmac_alert_force(&kmac_, kDifKmacAlertFatalFaultErr), kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(KMAC_ALERT_TEST_REG_OFFSET,
+                 {{KMAC_ALERT_TEST_RECOV_OPERATION_ERR_BIT, true}});
+  EXPECT_EQ(dif_kmac_alert_force(&kmac_, kDifKmacAlertRecovOperationErr),
+            kDifOk);
 }
 
 class IrqGetStateTest : public KmacTest {};

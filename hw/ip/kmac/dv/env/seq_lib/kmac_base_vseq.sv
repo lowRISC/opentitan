@@ -273,17 +273,17 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("intr[KmacErr] = %0b", enable_intr[KmacErr]), UVM_HIGH)
 
     // setup CFG csr with default random values
-    ral.cfg.kmac_en.set(kmac_en);
-    ral.cfg.kstrength.set(strength);
-    ral.cfg.mode.set(hash_mode);
-    ral.cfg.msg_endianness.set(msg_endian);
-    ral.cfg.state_endianness.set(state_endian);
-    ral.cfg.sideload.set(en_sideload);
-    ral.cfg.entropy_mode.set(entropy_mode);
-    ral.cfg.entropy_fast_process.set(entropy_fast_process);
-    ral.cfg.entropy_ready.set(entropy_ready);
-    ral.cfg.err_processed.set(1'b0);
-    csr_update(.csr(ral.cfg));
+    ral.cfg_shadowed.kmac_en.set(kmac_en);
+    ral.cfg_shadowed.kstrength.set(strength);
+    ral.cfg_shadowed.mode.set(hash_mode);
+    ral.cfg_shadowed.msg_endianness.set(msg_endian);
+    ral.cfg_shadowed.state_endianness.set(state_endian);
+    ral.cfg_shadowed.sideload.set(en_sideload);
+    ral.cfg_shadowed.entropy_mode.set(entropy_mode);
+    ral.cfg_shadowed.entropy_fast_process.set(entropy_fast_process);
+    ral.cfg_shadowed.entropy_ready.set(entropy_ready);
+    ral.cfg_shadowed.err_processed.set(1'b0);
+    csr_update(.csr(ral.cfg_shadowed));
 
     // setup KEY_LEN csr
     csr_wr(.ptr(ral.key_len), .value(key_len));
@@ -328,19 +328,19 @@ class kmac_base_vseq extends cip_base_vseq #(
         kmac_err_type inside {kmac_pkg::ErrIncorrectEntropyMode,
                               kmac_pkg::ErrWaitTimerExpired}) begin
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
-      ral.cfg.err_processed.set(1);
+      ral.cfg_shadowed.err_processed.set(1);
       if (kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) begin
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(entropy_mode)
-        ral.cfg.entropy_mode.set(entropy_mode);
+        ral.cfg_shadowed.entropy_mode.set(entropy_mode);
       end
-      csr_update(.csr(ral.cfg));
+      csr_update(.csr(ral.cfg_shadowed));
 
       // Need to pulse `entropy_ready` once we signal that SW has finished processing
       // the entropy-related errors, otherwise FSM will be infinitely looping in Reset state
-      csr_wr(.ptr(ral.cfg.entropy_ready), .value(1'b1));
+      csr_wr(.ptr(ral.cfg_shadowed.entropy_ready), .value(1'b1));
     end else if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin
-      ral.cfg.err_processed.set(1);
-      csr_update(.csr(ral.cfg));
+      ral.cfg_shadowed.err_processed.set(1);
+      csr_update(.csr(ral.cfg_shadowed));
     end
     `uvm_info(`gfn, "Finished checking error", UVM_HIGH)
   endtask

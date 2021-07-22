@@ -463,7 +463,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
               StError: begin
 
-                if (`gmv(ral.cfg.err_processed)) begin
+                if (`gmv(ral.cfg_shadowed.err_processed)) begin
                   app_st = StIdle;
                 end else begin
                   app_st = StError;
@@ -1886,7 +1886,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    dv_base_reg check_locked_reg;
+    dv_base_reg dv_base_csr;
 
     string csr_name = "";
 
@@ -1908,7 +1908,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-      `downcast(check_locked_reg, csr)
+      `downcast(dv_base_csr, csr)
 
       csr_name = csr.get_name();
 
@@ -1922,7 +1922,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // - entropy_seed_upper
         // - key_len
         // if writes to these csrs are seen, must check that they are not locked first.
-        if (ral.cfg_regwen.locks_reg_or_fld(check_locked_reg) &&
+        if (ral.cfg_regwen.locks_reg_or_fld(dv_base_csr) &&
             `gmv(ral.cfg_regwen) == 0) return;
 
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
@@ -2003,7 +2003,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "cfg_regwen": begin
         // do nothing
       end
-      "cfg": begin
+      "cfg_shadowed": begin
+        // don't continue if the write is shadow register's first write,
+        // or the second write has update error
+        if (addr_phase_write &&
+            (dv_base_csr.is_staged() || dv_base_csr.get_shadow_update_err())) begin
+          return;
+        end
         if (addr_phase_write) begin
           // don't continue if the KMAC is currently operating
           if (!sha3_idle) begin
@@ -2311,7 +2317,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // This way we can also preserve little-endian ordering.
           for (int i = 0; i < TL_DBW; i++) begin
             if (item.a_mask[i]) begin
-              masked_data = `gmv(ral.cfg.msg_endianness) ? {full_data[i], masked_data} :
+              masked_data = `gmv(ral.cfg_shadowed.msg_endianness) ? {full_data[i], masked_data} :
                                                            {masked_data, full_data[i]};
             end
           end
@@ -2349,7 +2355,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("state read mask: 0b%0b", state_mask), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("digest_word: 0x%0x", digest_word), UVM_HIGH)
 
-        if (`gmv(ral.cfg.state_endianness)) begin
+        if (`gmv(ral.cfg_shadowed.state_endianness)) begin
           digest_word = {<< byte {digest_word}};
           state_mask = {<< bit {state_mask}};
 
@@ -2570,8 +2576,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // sample configuration coverage, as only now do we know which KMAC variant is used
       // (xof/non-xof)
       cov.sample_cfg(kmac_en, xof_en, strength, hash_mode, key_len,
-                     `gmv(ral.cfg.msg_endianness), `gmv(ral.cfg.state_endianness),
-                     `gmv(ral.cfg.sideload), entropy_mode, entropy_fast_process);
+                     `gmv(ral.cfg_shadowed.msg_endianness), `gmv(ral.cfg_shadowed.state_endianness),
+                     `gmv(ral.cfg_shadowed.sideload), entropy_mode, entropy_fast_process);
 
       // sample coverage on the digest length
       if (cfg.en_cov) begin
@@ -2669,7 +2675,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
         if (kmac_en) begin
           // Calculate the unmasked key
-          exp_keys = `gmv(ral.cfg.sideload) ? keymgr_keys : keys;
+          exp_keys = `gmv(ral.cfg_shadowed.sideload) ? keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
             if (cfg.enable_masking) begin
               unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);

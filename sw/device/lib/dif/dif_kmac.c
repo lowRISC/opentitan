@@ -149,14 +149,14 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   bool entropy_ready = false;
   switch (config.entropy_mode) {
     case kDifKmacEntropyModeIdle:
-      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_IDLE_MODE;
+      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_IDLE_MODE;
       break;
     case kDifKmacEntropyModeEdn:
-      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_EDN_MODE;
+      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE;
       entropy_ready = true;
       break;
     case kDifKmacEntropyModeSoftware:
-      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_SW_MODE;
+      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE;
       break;
     default:
       return kDifBadArg;
@@ -169,19 +169,22 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
 
   // Write configuration register.
   uint32_t cfg_reg = 0;
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_MSG_ENDIANNESS_BIT,
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT,
                                  config.message_big_endian);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_STATE_ENDIANNESS_BIT,
-                                 config.output_big_endian);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_ENTROPY_MODE_FIELD,
-                                   entropy_mode_value);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_FAST_PROCESS_BIT,
-                                 config.entropy_fast_process);
   cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SIDELOAD_BIT, config.sideload);
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT,
+                           config.output_big_endian);
+  cfg_reg = bitfield_field32_write(
+      cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD, entropy_mode_value);
   cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_READY_BIT, entropy_ready);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT,
+                           config.entropy_fast_process);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
+                                 config.sideload);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT,
+                                 entropy_ready);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Write entropy period register.
   uint32_t entropy_period_reg = 0;
@@ -232,25 +235,25 @@ dif_result_t dif_kmac_mode_sha3_start(
   uint32_t kstrength;
   switch (mode) {
     case kDifKmacModeSha3Len224:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L224;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L224;
       operation_state->offset = 0;
       operation_state->r = calculate_rate_bits(224) / 32;
       operation_state->d = 224 / 32;
       break;
     case kDifKmacModeSha3Len256:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       operation_state->offset = 0;
       operation_state->r = calculate_rate_bits(256) / 32;
       operation_state->d = 256 / 32;
       break;
     case kDifKmacModeSha3Len384:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L384;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L384;
       operation_state->offset = 0;
       operation_state->r = calculate_rate_bits(384) / 32;
       operation_state->d = 384 / 32;
       break;
     case kDifKmacModeSha3Len512:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L512;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512;
       operation_state->offset = 0;
       operation_state->r = calculate_rate_bits(512) / 32;
       operation_state->d = 512 / 32;
@@ -262,12 +265,14 @@ dif_result_t dif_kmac_mode_sha3_start(
   operation_state->append_d = false;
 
   // Configure SHA-3 mode with the given strength.
-  uint32_t cfg_reg = mmio_region_read32(kmac->base_addr, KMAC_CFG_REG_OFFSET);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
-                                   KMAC_CFG_MODE_VALUE_SHA3);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                   kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_SHA3);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Issue start command.
   uint32_t cmd_reg =
@@ -301,11 +306,11 @@ dif_result_t dif_kmac_mode_shake_start(
   uint32_t kstrength;
   switch (mode) {
     case kDifKmacModeShakeLen128:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
       operation_state->r = calculate_rate_bits(128) / 32;
       break;
     case kDifKmacModeShakeLen256:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       operation_state->r = calculate_rate_bits(256) / 32;
       break;
     default:
@@ -317,12 +322,14 @@ dif_result_t dif_kmac_mode_shake_start(
   operation_state->offset = 0;
 
   // Configure SHAKE mode with the given strength.
-  uint32_t cfg_reg = mmio_region_read32(kmac->base_addr, KMAC_CFG_REG_OFFSET);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
-                                   KMAC_CFG_MODE_VALUE_SHAKE);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                   kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Issue start command.
   uint32_t cmd_reg =
@@ -373,11 +380,11 @@ dif_result_t dif_kmac_mode_cshake_start(
   uint32_t kstrength;
   switch (mode) {
     case kDifKmacModeCshakeLen128:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
       operation_state->r = calculate_rate_bits(128) / 32;
       break;
     case kDifKmacModeCshakeLen256:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       operation_state->r = calculate_rate_bits(256) / 32;
       break;
     default:
@@ -389,12 +396,14 @@ dif_result_t dif_kmac_mode_cshake_start(
   operation_state->offset = 0;
 
   // Configure cSHAKE mode with the given strength.
-  uint32_t cfg_reg = mmio_region_read32(kmac->base_addr, KMAC_CFG_REG_OFFSET);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
-                                   KMAC_CFG_MODE_VALUE_CSHAKE);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                   kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Calculate PREFIX register values.
   uint32_t prefix_regs[11] = {0};
@@ -464,11 +473,11 @@ dif_result_t dif_kmac_mode_kmac_start(
   uint32_t kstrength;
   switch (mode) {
     case kDifKmacModeCshakeLen128:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
       operation_state->r = calculate_rate_bits(128) / 32;
       break;
     case kDifKmacModeCshakeLen256:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       operation_state->r = calculate_rate_bits(256) / 32;
       break;
     default:
@@ -512,13 +521,15 @@ dif_result_t dif_kmac_mode_kmac_start(
   }
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
-  uint32_t cfg_reg = mmio_region_read32(kmac->base_addr, KMAC_CFG_REG_OFFSET);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_KMAC_EN_BIT, true);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
-                                   KMAC_CFG_MODE_VALUE_CSHAKE);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, true);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                   kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Initialize prefix registers with function name ("KMAC") and empty
   // customization string. The empty customization string will be overwritten if

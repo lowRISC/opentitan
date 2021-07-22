@@ -23,10 +23,15 @@
     }
   ]
   alert_list: [
-    { name: "fatal_fault",
+    { name: "fatal_fault_err",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected or the shadow registers storage error occurs.
       '''
+    }
+    { name: "recov_operation_err"
+      desc: '''
+        Alert for KMAC operation error. It occurs when the shadow registers have update errors.
+        '''
     }
   ],
   param_list: [
@@ -159,16 +164,20 @@
              // by software.
              "excl:CsrNonInitTests:CsrExclCheck"]
     } // R : CFG_REGWEN
-    { name: "CFG"
+    { name: "CFG_SHADOWED"
       desc: '''KMAC Configuration register.
 
             This register is  updated when the hashing engine is in Idle.
             If the software updates the register while the engine computes, the
             updated value will be discarded.
             '''
-      regwen: "CFG_REGWEN"
+      regwen:   "CFG_REGWEN"
       swaccess: "rw"
       hwaccess: "hro"
+      shadowed: "true"
+      hwqe:     "true"
+      update_err_alert:  "recov_operation_err"
+      storage_err_alert: "fatal_fault_err"
       fields: [
         { bits: "0"
           name: "kmac_en"
@@ -178,7 +187,9 @@
                 with the secret key.
                 '''
           tags: [// don't enable kmac and sha data paths - we will do that in functional tests
-                 "excl:CsrNonInitTests:CsrExclWrite"]
+                 "excl:CsrNonInitTests:CsrExclWrite",
+                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_kmac_en"
+                 ]
         } // f: kmac_en
         { bits: "3:1"
           name: "kstrength"
@@ -211,6 +222,7 @@
               desc: "512 bit strength. Keccak rate is 576 bit"
             }
           ]
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_kstrength"]
         } // f: strength
         { bits: "5:4"
           name: "mode"
@@ -234,6 +246,7 @@
               desc: "cSHAKE hashing mode. It appends `00` to the end of msg"
             }
           ]
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_mode"]
         } // f: mode
         { bits: "8"
           name: "msg_endianness"
@@ -250,6 +263,7 @@
                 word granularity.
                 '''
           resval: "0"
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_msg_endianness"]
         } // f: msg_endianness
         { bits: "9"
           name: "state_endianness"
@@ -262,6 +276,7 @@
                 This setting does not affect how the state is interpreted
                 during computation.
                 '''
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_state_endianness"]
         } // f: state_endianness
         { bits: "12"
           name: "sideload"
@@ -272,6 +287,7 @@
                 configuration when KeyMgr initiates the KMAC operation for
                 Key Derivation Function (KDF).
                 '''
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_sideload"]
         } // f: sideload
         { bits: "17:16"
           name: entropy_mode
@@ -302,6 +318,7 @@
               interface'''
             }
           ]
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_mode"]
         } // f: entropy_mode
         { bits: "19"
           name: entropy_fast_process
@@ -312,6 +329,7 @@
           expand the entropy when it is consumed. Only it refreshes the
           entropy while processing the secret key block.
           '''
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_fast_process"]
         } // f: entropy_fast_process
         { bits: "24"
           name: entropy_ready
@@ -320,9 +338,9 @@
           Software sets this field to allow the entropy generator in KMAC to
           fetch the entropy and run.
           '''
-          hwaccess: "hrw"
           tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrAllTests:CsrExclWrite"]
+                 "excl:CsrAllTests:CsrExclWrite",
+                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_ready"]
         } // f: entropy_ready
         { bits: "25"
           name: err_processed
@@ -330,10 +348,14 @@
                  Error handling state, SW may process the error based on
                  ERR_CODE, then let FSM back to the reset state
                 '''
-          hwaccess: "hrw"
           tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrNonInitTests:CsrExclCheck"]
+                 "excl:CsrNonInitTests:CsrExclCheck",
+                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_err_processed"]
         } // f: err_processed
+      ]
+      tags: [
+        "excl:CsrNonInitTests:CsrExclWriteCheck",
+        "shadowed_reg_path:u_cfg_reg_shadowed"
       ]
     } // R: CFG
     { name: "CMD"

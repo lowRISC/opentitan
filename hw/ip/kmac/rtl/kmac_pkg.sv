@@ -269,7 +269,10 @@ package kmac_pkg;
     ErrIncorrectFunctionName = 8'h 07,
 
     // ErrSwCmdSequence
-    ErrSwCmdSequence = 8'h 08
+    ErrSwCmdSequence = 8'h 08,
+
+    // Error Shadow register update
+    ErrShadowRegUpdate = 8'h C0
   } err_code_e;
 
   typedef struct packed {

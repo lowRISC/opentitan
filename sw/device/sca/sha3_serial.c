@@ -143,11 +143,11 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   uint32_t kstrength;
   switch (mode) {
     case kDifKmacModeCshakeLen128:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
       kmac_operation_state.r = calculate_rate_bits(128) / 32;
       break;
     case kDifKmacModeCshakeLen256:
-      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       kmac_operation_state.r = calculate_rate_bits(256) / 32;
       break;
     default:
@@ -195,13 +195,15 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   }
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
-  uint32_t cfg_reg = mmio_region_read32(kmac.base_addr, KMAC_CFG_REG_OFFSET);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_KMAC_EN_BIT, true);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
-                                   KMAC_CFG_MODE_VALUE_CSHAKE);
-  mmio_region_write32(kmac.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, true);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                   kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
+  mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
   // Initialize prefix registers with function name ("KMAC") and empty
   // customization string. The empty customization string will be overwritten if

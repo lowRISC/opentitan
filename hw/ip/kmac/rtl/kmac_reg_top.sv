@@ -9,6 +9,7 @@
 module kmac_reg_top (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -181,30 +182,32 @@ module kmac_reg_top (
   logic intr_test_fifo_empty_wd;
   logic intr_test_kmac_err_wd;
   logic alert_test_we;
-  logic alert_test_wd;
+  logic alert_test_fatal_fault_err_wd;
+  logic alert_test_recov_operation_err_wd;
   logic cfg_regwen_re;
   logic cfg_regwen_qs;
-  logic cfg_we;
-  logic cfg_kmac_en_qs;
-  logic cfg_kmac_en_wd;
-  logic [2:0] cfg_kstrength_qs;
-  logic [2:0] cfg_kstrength_wd;
-  logic [1:0] cfg_mode_qs;
-  logic [1:0] cfg_mode_wd;
-  logic cfg_msg_endianness_qs;
-  logic cfg_msg_endianness_wd;
-  logic cfg_state_endianness_qs;
-  logic cfg_state_endianness_wd;
-  logic cfg_sideload_qs;
-  logic cfg_sideload_wd;
-  logic [1:0] cfg_entropy_mode_qs;
-  logic [1:0] cfg_entropy_mode_wd;
-  logic cfg_entropy_fast_process_qs;
-  logic cfg_entropy_fast_process_wd;
-  logic cfg_entropy_ready_qs;
-  logic cfg_entropy_ready_wd;
-  logic cfg_err_processed_qs;
-  logic cfg_err_processed_wd;
+  logic cfg_shadowed_re;
+  logic cfg_shadowed_we;
+  logic cfg_shadowed_kmac_en_qs;
+  logic cfg_shadowed_kmac_en_wd;
+  logic [2:0] cfg_shadowed_kstrength_qs;
+  logic [2:0] cfg_shadowed_kstrength_wd;
+  logic [1:0] cfg_shadowed_mode_qs;
+  logic [1:0] cfg_shadowed_mode_wd;
+  logic cfg_shadowed_msg_endianness_qs;
+  logic cfg_shadowed_msg_endianness_wd;
+  logic cfg_shadowed_state_endianness_qs;
+  logic cfg_shadowed_state_endianness_wd;
+  logic cfg_shadowed_sideload_qs;
+  logic cfg_shadowed_sideload_wd;
+  logic [1:0] cfg_shadowed_entropy_mode_qs;
+  logic [1:0] cfg_shadowed_entropy_mode_wd;
+  logic cfg_shadowed_entropy_fast_process_qs;
+  logic cfg_shadowed_entropy_fast_process_wd;
+  logic cfg_shadowed_entropy_ready_qs;
+  logic cfg_shadowed_entropy_ready_wd;
+  logic cfg_shadowed_err_processed_qs;
+  logic cfg_shadowed_err_processed_wd;
   logic cmd_we;
   logic [3:0] cmd_cmd_wd;
   logic cmd_entropy_req_wd;
@@ -532,16 +535,31 @@ module kmac_reg_top (
 
 
   // R[alert_test]: V(True)
+  //   F[fatal_fault_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_fatal_fault_err (
     .re     (1'b0),
     .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .wd     (alert_test_fatal_fault_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q),
+    .qe     (reg2hw.alert_test.fatal_fault_err.qe),
+    .q      (reg2hw.alert_test.fatal_fault_err.q),
+    .qs     ()
+  );
+
+  //   F[recov_operation_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_operation_err (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_operation_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.recov_operation_err.qe),
+    .q      (reg2hw.alert_test.recov_operation_err.q),
     .qs     ()
   );
 
@@ -561,255 +579,315 @@ module kmac_reg_top (
   );
 
 
-  // R[cfg]: V(False)
+  // R[cfg_shadowed]: V(False)
   //   F[kmac_en]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_kmac_en (
+  ) u_cfg_shadowed_kmac_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_kmac_en_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_kmac_en_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.kmac_en.q),
+    .qe     (reg2hw.cfg_shadowed.kmac_en.qe),
+    .q      (reg2hw.cfg_shadowed.kmac_en.q),
 
     // to register interface (read)
-    .qs     (cfg_kmac_en_qs)
+    .qs     (cfg_shadowed_kmac_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.kmac_en.err_update),
+    .err_storage (reg2hw.cfg_shadowed.kmac_en.err_storage)
   );
 
   //   F[kstrength]: 3:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
-  ) u_cfg_kstrength (
+  ) u_cfg_shadowed_kstrength (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_kstrength_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_kstrength_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.kstrength.q),
+    .qe     (reg2hw.cfg_shadowed.kstrength.qe),
+    .q      (reg2hw.cfg_shadowed.kstrength.q),
 
     // to register interface (read)
-    .qs     (cfg_kstrength_qs)
+    .qs     (cfg_shadowed_kstrength_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.kstrength.err_update),
+    .err_storage (reg2hw.cfg_shadowed.kstrength.err_storage)
   );
 
   //   F[mode]: 5:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
-  ) u_cfg_mode (
+  ) u_cfg_shadowed_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_mode_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.mode.q),
+    .qe     (reg2hw.cfg_shadowed.mode.qe),
+    .q      (reg2hw.cfg_shadowed.mode.q),
 
     // to register interface (read)
-    .qs     (cfg_mode_qs)
+    .qs     (cfg_shadowed_mode_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.mode.err_update),
+    .err_storage (reg2hw.cfg_shadowed.mode.err_storage)
   );
 
   //   F[msg_endianness]: 8:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_msg_endianness (
+  ) u_cfg_shadowed_msg_endianness (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_msg_endianness_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_msg_endianness_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.msg_endianness.q),
+    .qe     (reg2hw.cfg_shadowed.msg_endianness.qe),
+    .q      (reg2hw.cfg_shadowed.msg_endianness.q),
 
     // to register interface (read)
-    .qs     (cfg_msg_endianness_qs)
+    .qs     (cfg_shadowed_msg_endianness_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.msg_endianness.err_update),
+    .err_storage (reg2hw.cfg_shadowed.msg_endianness.err_storage)
   );
 
   //   F[state_endianness]: 9:9
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_state_endianness (
+  ) u_cfg_shadowed_state_endianness (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_state_endianness_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_state_endianness_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.state_endianness.q),
+    .qe     (reg2hw.cfg_shadowed.state_endianness.qe),
+    .q      (reg2hw.cfg_shadowed.state_endianness.q),
 
     // to register interface (read)
-    .qs     (cfg_state_endianness_qs)
+    .qs     (cfg_shadowed_state_endianness_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.state_endianness.err_update),
+    .err_storage (reg2hw.cfg_shadowed.state_endianness.err_storage)
   );
 
   //   F[sideload]: 12:12
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_sideload (
+  ) u_cfg_shadowed_sideload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_sideload_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_sideload_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.sideload.q),
+    .qe     (reg2hw.cfg_shadowed.sideload.qe),
+    .q      (reg2hw.cfg_shadowed.sideload.q),
 
     // to register interface (read)
-    .qs     (cfg_sideload_qs)
+    .qs     (cfg_shadowed_sideload_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.sideload.err_update),
+    .err_storage (reg2hw.cfg_shadowed.sideload.err_storage)
   );
 
   //   F[entropy_mode]: 17:16
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
-  ) u_cfg_entropy_mode (
+  ) u_cfg_shadowed_entropy_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_entropy_mode_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_entropy_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.entropy_mode.q),
+    .qe     (reg2hw.cfg_shadowed.entropy_mode.qe),
+    .q      (reg2hw.cfg_shadowed.entropy_mode.q),
 
     // to register interface (read)
-    .qs     (cfg_entropy_mode_qs)
+    .qs     (cfg_shadowed_entropy_mode_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.entropy_mode.err_update),
+    .err_storage (reg2hw.cfg_shadowed.entropy_mode.err_storage)
   );
 
   //   F[entropy_fast_process]: 19:19
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_entropy_fast_process (
+  ) u_cfg_shadowed_entropy_fast_process (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_entropy_fast_process_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_entropy_fast_process_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.entropy_fast_process.q),
+    .qe     (reg2hw.cfg_shadowed.entropy_fast_process.qe),
+    .q      (reg2hw.cfg_shadowed.entropy_fast_process.q),
 
     // to register interface (read)
-    .qs     (cfg_entropy_fast_process_qs)
+    .qs     (cfg_shadowed_entropy_fast_process_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.entropy_fast_process.err_update),
+    .err_storage (reg2hw.cfg_shadowed.entropy_fast_process.err_storage)
   );
 
   //   F[entropy_ready]: 24:24
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_entropy_ready (
+  ) u_cfg_shadowed_entropy_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_entropy_ready_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_entropy_ready_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.entropy_ready.de),
-    .d      (hw2reg.cfg.entropy_ready.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.entropy_ready.q),
+    .qe     (reg2hw.cfg_shadowed.entropy_ready.qe),
+    .q      (reg2hw.cfg_shadowed.entropy_ready.q),
 
     // to register interface (read)
-    .qs     (cfg_entropy_ready_qs)
+    .qs     (cfg_shadowed_entropy_ready_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.entropy_ready.err_update),
+    .err_storage (reg2hw.cfg_shadowed.entropy_ready.err_storage)
   );
 
   //   F[err_processed]: 25:25
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_cfg_err_processed (
+  ) u_cfg_shadowed_err_processed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (cfg_we & cfg_regwen_qs),
-    .wd     (cfg_err_processed_wd),
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_err_processed_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.err_processed.de),
-    .d      (hw2reg.cfg.err_processed.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.err_processed.q),
+    .qe     (reg2hw.cfg_shadowed.err_processed.qe),
+    .q      (reg2hw.cfg_shadowed.err_processed.q),
 
     // to register interface (read)
-    .qs     (cfg_err_processed_qs)
+    .qs     (cfg_shadowed_err_processed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.err_processed.err_update),
+    .err_storage (reg2hw.cfg_shadowed.err_processed.err_storage)
   );
 
 
@@ -1969,7 +2047,7 @@ module kmac_reg_top (
     addr_hit[ 2] = (reg_addr == KMAC_INTR_TEST_OFFSET);
     addr_hit[ 3] = (reg_addr == KMAC_ALERT_TEST_OFFSET);
     addr_hit[ 4] = (reg_addr == KMAC_CFG_REGWEN_OFFSET);
-    addr_hit[ 5] = (reg_addr == KMAC_CFG_OFFSET);
+    addr_hit[ 5] = (reg_addr == KMAC_CFG_SHADOWED_OFFSET);
     addr_hit[ 6] = (reg_addr == KMAC_CMD_OFFSET);
     addr_hit[ 7] = (reg_addr == KMAC_STATUS_OFFSET);
     addr_hit[ 8] = (reg_addr == KMAC_ENTROPY_PERIOD_OFFSET);
@@ -2109,29 +2187,32 @@ module kmac_reg_top (
   assign intr_test_kmac_err_wd = reg_wdata[2];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_fatal_fault_err_wd = reg_wdata[0];
+
+  assign alert_test_recov_operation_err_wd = reg_wdata[1];
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
-  assign cfg_we = addr_hit[5] & reg_we & !reg_error;
+  assign cfg_shadowed_re = addr_hit[5] & reg_re & !reg_error;
+  assign cfg_shadowed_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign cfg_kmac_en_wd = reg_wdata[0];
+  assign cfg_shadowed_kmac_en_wd = reg_wdata[0];
 
-  assign cfg_kstrength_wd = reg_wdata[3:1];
+  assign cfg_shadowed_kstrength_wd = reg_wdata[3:1];
 
-  assign cfg_mode_wd = reg_wdata[5:4];
+  assign cfg_shadowed_mode_wd = reg_wdata[5:4];
 
-  assign cfg_msg_endianness_wd = reg_wdata[8];
+  assign cfg_shadowed_msg_endianness_wd = reg_wdata[8];
 
-  assign cfg_state_endianness_wd = reg_wdata[9];
+  assign cfg_shadowed_state_endianness_wd = reg_wdata[9];
 
-  assign cfg_sideload_wd = reg_wdata[12];
+  assign cfg_shadowed_sideload_wd = reg_wdata[12];
 
-  assign cfg_entropy_mode_wd = reg_wdata[17:16];
+  assign cfg_shadowed_entropy_mode_wd = reg_wdata[17:16];
 
-  assign cfg_entropy_fast_process_wd = reg_wdata[19];
+  assign cfg_shadowed_entropy_fast_process_wd = reg_wdata[19];
 
-  assign cfg_entropy_ready_wd = reg_wdata[24];
+  assign cfg_shadowed_entropy_ready_wd = reg_wdata[24];
 
-  assign cfg_err_processed_wd = reg_wdata[25];
+  assign cfg_shadowed_err_processed_wd = reg_wdata[25];
   assign cmd_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cmd_cmd_wd = reg_wdata[3:0];
@@ -2311,6 +2392,7 @@ module kmac_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[4]: begin
@@ -2318,16 +2400,16 @@ module kmac_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = cfg_kmac_en_qs;
-        reg_rdata_next[3:1] = cfg_kstrength_qs;
-        reg_rdata_next[5:4] = cfg_mode_qs;
-        reg_rdata_next[8] = cfg_msg_endianness_qs;
-        reg_rdata_next[9] = cfg_state_endianness_qs;
-        reg_rdata_next[12] = cfg_sideload_qs;
-        reg_rdata_next[17:16] = cfg_entropy_mode_qs;
-        reg_rdata_next[19] = cfg_entropy_fast_process_qs;
-        reg_rdata_next[24] = cfg_entropy_ready_qs;
-        reg_rdata_next[25] = cfg_err_processed_qs;
+        reg_rdata_next[0] = cfg_shadowed_kmac_en_qs;
+        reg_rdata_next[3:1] = cfg_shadowed_kstrength_qs;
+        reg_rdata_next[5:4] = cfg_shadowed_mode_qs;
+        reg_rdata_next[8] = cfg_shadowed_msg_endianness_qs;
+        reg_rdata_next[9] = cfg_shadowed_state_endianness_qs;
+        reg_rdata_next[12] = cfg_shadowed_sideload_qs;
+        reg_rdata_next[17:16] = cfg_shadowed_entropy_mode_qs;
+        reg_rdata_next[19] = cfg_shadowed_entropy_fast_process_qs;
+        reg_rdata_next[24] = cfg_shadowed_entropy_ready_qs;
+        reg_rdata_next[25] = cfg_shadowed_err_processed_qs;
       end
 
       addr_hit[6]: begin
@@ -2551,7 +2633,26 @@ module kmac_reg_top (
 
   // shadow busy
   logic shadow_busy;
-  assign shadow_busy = 1'b0;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
 
   // register busy
   logic reg_busy_sel;

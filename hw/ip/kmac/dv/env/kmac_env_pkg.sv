@@ -63,8 +63,8 @@ package kmac_env_pkg;
   parameter int MAX_ENCODE_WIDTH = 2040;
 
   // alerts
-  parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault_err", "recov_operation_err"};
 
   parameter uint NUM_EDN = 1;
 

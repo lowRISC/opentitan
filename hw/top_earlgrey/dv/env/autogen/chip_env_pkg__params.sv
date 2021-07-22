@@ -44,7 +44,8 @@ parameter string LIST_OF_ALERTS[] = {
   "aes_recov_ctrl_update_err",
   "aes_fatal_fault",
   "hmac_fatal_fault",
-  "kmac_fatal_fault",
+  "kmac_fatal_fault_err",
+  "kmac_recov_operation_err",
   "otbn_fatal",
   "otbn_recov",
   "keymgr_fatal_fault_err",
@@ -65,4 +66,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 58;
+parameter uint NUM_ALERTS = 59;

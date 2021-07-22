@@ -13601,7 +13601,16 @@
       lpg_idx: 18
     }
     {
-      name: kmac_fatal_fault
+      name: kmac_fatal_fault_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: kmac
+      lpg_name: trans_sys_0
+      lpg_idx: 18
+    }
+    {
+      name: kmac_recov_operation_err
       width: 1
       type: alert
       async: "1"
