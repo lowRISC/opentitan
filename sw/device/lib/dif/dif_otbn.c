@@ -214,8 +214,8 @@ dif_otbn_result_t dif_otbn_irq_force(const dif_otbn_t *otbn,
   return kDifOtbnOk;
 }
 
-dif_otbn_result_t dif_otbn_start(const dif_otbn_t *otbn,
-                                 unsigned int start_addr) {
+dif_otbn_result_t dif_otbn_set_start_addr(const dif_otbn_t *otbn,
+                                          unsigned int start_addr) {
   if (otbn == NULL || start_addr % sizeof(uint32_t) != 0 ||
       start_addr >= OTBN_IMEM_SIZE_BYTES) {
     return kDifOtbnBadArg;
@@ -223,20 +223,27 @@ dif_otbn_result_t dif_otbn_start(const dif_otbn_t *otbn,
 
   mmio_region_write32(otbn->base_addr, OTBN_START_ADDR_REG_OFFSET, start_addr);
 
-  uint32_t cmd_reg_val = 0x0u;
-  cmd_reg_val = bitfield_bit32_write(cmd_reg_val, OTBN_CMD_START_BIT, true);
-  mmio_region_write32(otbn->base_addr, OTBN_CMD_REG_OFFSET, cmd_reg_val);
+  return kDifOtbnOk;
+}
+
+dif_otbn_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn,
+                                     dif_otbn_cmd_t cmd) {
+  if (otbn == NULL) {
+    return kDifOtbnBadArg;
+  }
+
+  mmio_region_write32(otbn->base_addr, OTBN_CMD_REG_OFFSET, cmd);
 
   return kDifOtbnOk;
 }
 
-dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy) {
-  if (otbn == NULL || busy == NULL) {
+dif_otbn_result_t dif_otbn_get_status(const dif_otbn_t *otbn,
+                                      dif_otbn_status_t *status) {
+  if (otbn == NULL || status == NULL) {
     return kDifOtbnBadArg;
   }
 
-  uint32_t status = mmio_region_read32(otbn->base_addr, OTBN_STATUS_REG_OFFSET);
-  *busy = bitfield_bit32_read(status, OTBN_STATUS_BUSY_BIT);
+  *status = mmio_region_read32(otbn->base_addr, OTBN_STATUS_REG_OFFSET);
 
   return kDifOtbnOk;
 }

@@ -62,16 +62,14 @@ rom_error_t otbn_start(uint32_t start_addr) {
   }
 
   abs_mmio_write32(kBase + OTBN_START_ADDR_REG_OFFSET, start_addr);
-
-  uint32_t cmd_reg_val = bitfield_bit32_write(0, OTBN_CMD_START_BIT, true);
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, cmd_reg_val);
+  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
 
   return kErrorOk;
 }
 
 bool otbn_is_busy() {
   uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
-  return bitfield_bit32_read(status, OTBN_STATUS_BUSY_BIT);
+  return status != kOtbnStatusIdle;
 }
 
 void otbn_get_err_bits(otbn_err_bits_t *err_bits) {

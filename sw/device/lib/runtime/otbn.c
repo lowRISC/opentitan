@@ -43,9 +43,11 @@ otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
 otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
   bool busy = true;
   while (busy) {
-    if (dif_otbn_is_busy(&ctx->dif, &busy) != kDifOtbnOk) {
+    dif_otbn_status_t status;
+    if (dif_otbn_get_status(&ctx->dif, &status) != kDifOtbnOk) {
       return kOtbnError;
     }
+    busy = status != kDifOtbnStatusIdle;
   }
 
   dif_otbn_err_bits_t err_bits;
@@ -53,7 +55,7 @@ otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
     return kOtbnError;
   }
   if (err_bits != kDifOtbnErrBitsNoError) {
-    return kOtbnExecutionFailed;
+    return kOtbnOperationFailed;
   }
   return kOtbnOk;
 }
@@ -115,7 +117,11 @@ otbn_result_t otbn_call_function(otbn_t *ctx, otbn_ptr_t func) {
     return result;
   }
 
-  if (dif_otbn_start(&ctx->dif, func_imem_addr) != kDifOtbnOk) {
+  if (dif_otbn_set_start_addr(&ctx->dif, func_imem_addr) != kDifOtbnOk) {
+    return kOtbnError;
+  }
+
+  if (dif_otbn_write_cmd(&ctx->dif, kDifOtbnCmdExecute) != kDifOtbnOk) {
     return kOtbnError;
   }
 

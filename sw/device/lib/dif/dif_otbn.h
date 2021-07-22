@@ -66,6 +66,25 @@ typedef enum dif_otbn_result {
 } dif_otbn_result_t;
 
 /**
+ * OTBN commands
+ */
+typedef enum dif_otbn_cmd {
+  kDifOtbnCmdExecute = 0x01,
+  kDifOtbnCmdSecWipeDmem = 0x02,
+  kDifOtbnCmdSecWipeImem = 0x03,
+} dif_otbn_cmd_t;
+
+/**
+ * OTBN status
+ */
+typedef enum dif_otbn_status {
+  kDifOtbnStatusIdle = 0x00,
+  kDifOtbnStatusBusyExecute = 0x01,
+  kDifOtbnStatusBusySecWipeDmem = 0x02,
+  kDifOtbnStatusBusySecWipeImem = 0x03,
+} dif_otbn_status_t;
+
+/**
  * OTBN Errors
  *
  * OTBN uses a bitfield to indicate which errors have been seen. Multiple errors
@@ -232,25 +251,36 @@ dif_otbn_result_t dif_otbn_irq_force(const dif_otbn_t *otbn,
                                      dif_otbn_interrupt_t irq_type);
 
 /**
- * Start the execution of the application loaded into OTBN at the start address.
+ * Set the start address of the execution.
  *
- * @param otbn OTBN instance
+ * @param otbn OTBN instance.
  * @param start_addr The IMEM byte address to start the execution at.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL` or `start_addr` is invalid,
  *         `kDifOtbnOk` otherwise.
  */
-dif_otbn_result_t dif_otbn_start(const dif_otbn_t *otbn,
-                                 unsigned int start_addr);
+dif_otbn_result_t dif_otbn_set_start_addr(const dif_otbn_t *otbn,
+                                          unsigned int start_addr);
 
 /**
- * Is OTBN busy executing an application?
+ * Start an operation by issuing a command.
+ *
+ * @param otbn OTBN instance.
+ * @param cmd The command.
+ * @return `kDifOtbnBadArg` if `otbn` is `NULL`, `kDifOtbnOk` otherwise.
+ */
+dif_otbn_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn,
+                                     dif_otbn_cmd_t cmd);
+
+/**
+ * Gets the current status of OTBN.
  *
  * @param otbn OTBN instance
- * @param[out] busy OTBN is busy
- * @return `kDifOtbnBadArg` if `otbn` or `busy` is `NULL`,
+ * @param[out] status OTBN status
+ * @return `kDifOtbnBadArg` if `otbn` or `status` is `NULL`,
  *         `kDifOtbnOk` otherwise.
  */
-dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy);
+dif_otbn_result_t dif_otbn_get_status(const dif_otbn_t *otbn,
+                                      dif_otbn_status_t *status);
 
 /**
  * Get the error bits set by the device if the operation failed.

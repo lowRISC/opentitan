@@ -199,75 +199,77 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_EQ(dif_otbn_irq_force(&dif_otbn_, kDifOtbnInterruptDone), kDifOtbnOk);
 }
 
-class StartTest : public OtbnTest {};
+class SetStartAddrTest : public OtbnTest {};
 
-TEST_F(StartTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_start(nullptr, 0), kDifOtbnBadArg);
+TEST_F(SetStartAddrTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_set_start_addr(nullptr, 0), kDifOtbnBadArg);
 }
 
-TEST_F(StartTest, BadStartAddress) {
+TEST_F(SetStartAddrTest, BadStartAddress) {
   // Must be 4-byte aligned.
-  EXPECT_EQ(dif_otbn_start(&dif_otbn_, 1), kDifOtbnBadArg);
+  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 1), kDifOtbnBadArg);
 
-  EXPECT_EQ(dif_otbn_start(&dif_otbn_, 2), kDifOtbnBadArg);
+  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 2), kDifOtbnBadArg);
 
   // Valid addresses (ignoring alignment): 0 .. (OTBN_IMEM_SIZE_BYTES - 1)
-  EXPECT_EQ(dif_otbn_start(&dif_otbn_, OTBN_IMEM_SIZE_BYTES), kDifOtbnBadArg);
+  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, OTBN_IMEM_SIZE_BYTES),
+            kDifOtbnBadArg);
 
-  EXPECT_EQ(dif_otbn_start(&dif_otbn_, OTBN_IMEM_SIZE_BYTES + 32),
+  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, OTBN_IMEM_SIZE_BYTES + 32),
             kDifOtbnBadArg);
 }
 
-TEST_F(StartTest, Success) {
+TEST_F(SetStartAddrTest, Success) {
   // Test assumption.
   ASSERT_GE(OTBN_IMEM_SIZE_BYTES, 8);
 
   // Write start address.
   EXPECT_WRITE32(OTBN_START_ADDR_REG_OFFSET, 4);
 
-  // Set start command bit.
-  EXPECT_WRITE32(OTBN_CMD_REG_OFFSET, {{OTBN_CMD_START_BIT, 1}});
-
-  EXPECT_EQ(dif_otbn_start(&dif_otbn_, 4), kDifOtbnOk);
+  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 4), kDifOtbnOk);
 }
 
-class IsBusyTest : public OtbnTest {};
+class WriteCmdTest : public OtbnTest {};
 
-TEST_F(IsBusyTest, NullArgs) {
-  bool busy;
-
-  EXPECT_EQ(dif_otbn_is_busy(nullptr, nullptr), kDifOtbnBadArg);
-
-  EXPECT_EQ(dif_otbn_is_busy(&dif_otbn_, nullptr), kDifOtbnBadArg);
-
-  // Also check for freedom from side effects in `busy`.
-  busy = false;
-  EXPECT_EQ(dif_otbn_is_busy(nullptr, &busy), kDifOtbnBadArg);
-  EXPECT_EQ(busy, false);
-
-  busy = true;
-  EXPECT_EQ(dif_otbn_is_busy(nullptr, &busy), kDifOtbnBadArg);
-  EXPECT_EQ(busy, true);
+TEST_F(WriteCmdTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_write_cmd(nullptr, kDifOtbnCmdExecute), kDifOtbnBadArg);
 }
 
-TEST_F(IsBusyTest, Success) {
-  EXPECT_READ32(OTBN_STATUS_REG_OFFSET, {{OTBN_STATUS_BUSY_BIT, true}});
+TEST_F(WriteCmdTest, Success) {
+  // Set EXECUTE command.
+  EXPECT_WRITE32(OTBN_CMD_REG_OFFSET, kDifOtbnCmdExecute);
 
-  bool busy = false;
-  EXPECT_EQ(dif_otbn_is_busy(&dif_otbn_, &busy), kDifOtbnOk);
-  EXPECT_EQ(busy, true);
+  EXPECT_EQ(dif_otbn_write_cmd(&dif_otbn_, kDifOtbnCmdExecute), kDifOtbnOk);
+}
+
+class GetStatusTest : public OtbnTest {};
+
+TEST_F(GetStatusTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_get_status(nullptr, nullptr), kDifOtbnBadArg);
+
+  EXPECT_EQ(dif_otbn_get_status(&dif_otbn_, nullptr), kDifOtbnBadArg);
+
+  dif_otbn_status_t status = kDifOtbnStatusBusySecWipeDmem;
+  EXPECT_EQ(dif_otbn_get_status(nullptr, &status), kDifOtbnBadArg);
+  EXPECT_EQ(status, kDifOtbnStatusBusySecWipeDmem);
+}
+
+TEST_F(GetStatusTest, Success) {
+  EXPECT_READ32(OTBN_STATUS_REG_OFFSET, kDifOtbnStatusBusyExecute);
+
+  dif_otbn_status_t status;
+  EXPECT_EQ(dif_otbn_get_status(&dif_otbn_, &status), kDifOtbnOk);
+  EXPECT_EQ(status, kDifOtbnStatusBusyExecute);
 }
 
 class GetErrBitsTest : public OtbnTest {};
 
 TEST_F(GetErrBitsTest, NullArgs) {
-  dif_otbn_err_bits_t err_bits;
-
   EXPECT_EQ(dif_otbn_get_err_bits(nullptr, nullptr), kDifOtbnBadArg);
 
   EXPECT_EQ(dif_otbn_get_err_bits(&dif_otbn_, nullptr), kDifOtbnBadArg);
 
-  err_bits = kDifOtbnErrBitsBadDataAddr;
+  dif_otbn_err_bits_t err_bits = kDifOtbnErrBitsBadDataAddr;
   EXPECT_EQ(dif_otbn_get_err_bits(nullptr, &err_bits), kDifOtbnBadArg);
   EXPECT_EQ(err_bits, kDifOtbnErrBitsBadDataAddr);
 }

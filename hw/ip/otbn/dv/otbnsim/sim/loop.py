@@ -4,7 +4,7 @@
 
 from typing import List, Optional
 
-from . import err_bits
+from .constants import ErrBits
 from .trace import Trace
 
 
@@ -140,7 +140,7 @@ class LoopStack:
         return None
 
     def err_bits(self) -> int:
-        return err_bits.LOOP if self.err_flag else 0
+        return ErrBits.LOOP if self.err_flag else 0
 
     def changes(self) -> List[Trace]:
         return self.trace
