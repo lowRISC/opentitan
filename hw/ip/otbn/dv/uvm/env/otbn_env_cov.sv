@@ -71,6 +71,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_MNEM(mnem_bn_movr,       "bn.movr");
   `DEF_MNEM(mnem_bn_wsrr,       "bn.wsrr");
   `DEF_MNEM(mnem_bn_wsrw,       "bn.wsrw");
+  // A fake mnemonic, used for bits that don't decode to a real instruction
+  `DEF_MNEM(mnem_dummy,         "dummy-insn");
 `undef DEF_MNEM
 
   // A macro used for coverpoints for mnemonics. This expands to entries like
@@ -1617,6 +1619,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_bn_movr]       = "bnmovr";
     insn_encodings[mnem_bn_wsrr]       = "wcsr";
     insn_encodings[mnem_bn_wsrw]       = "wcsr";
+    insn_encodings[mnem_dummy]         = "dummy";
   endfunction
 
   // Handle coverage for an instruction that was executed
@@ -1724,6 +1727,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_u_cg.sample(mnem, insn_data);
       "wcsr":
         enc_wcsr_cg.sample(mnem, insn_data);
+      "dummy":
+        // Bad instruction: no encoding-level coverage.
+        ;
       default: `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
                          `gfn)
     endcase
