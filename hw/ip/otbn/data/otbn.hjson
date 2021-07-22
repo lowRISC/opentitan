@@ -196,10 +196,6 @@
             <ul>
               <li>An instruction being excuted had an invalid encoding.</li>
               <li>An access occurred for an invalid CSR or WSR.</li>
-              <li>
-                A CSR or WSR access occurred that is not permitted (e.g. writing
-                to a read-only CSR or WSR).
-              </li>
             </ul>
           '''
         }
