@@ -129,6 +129,13 @@
       package: "pwrmgr_pkg",
     },
 
+    { struct:  "logic",
+      type:    "uni",
+      name:    "nmi_wdog",
+      act:     "rcv",
+      package: "",
+    },
+
   ],
   param_list: [
     { name:    "PMPEnable"
@@ -411,12 +418,15 @@
                   For example, if the intended matching region is 0x8000_0000 to 0x8000_FFFF, the value programmed is 0x8000_7FFF.
 
                   The value programmed can be determined from the translation granule.
-                  Assume the user wishes to translate a specific 64KB block to a different address.
+                  Assume the user wishes to translate a specific 64KB block to a different address:
                   64KB has a hex value of 0x10000.
                   Subtract 1 from this value and then right shift by one to obtain 0x7FFF.
-                  This value OR'd with the upper matching address bits that select which 64KB block to translate would then be programmed.
+                  This value is then logically OR'd with the upper address bits that would select which 64KB to translate.
 
-                  Given a value of 0x8000_7FFF, it specifies that the 0x8000-th 64KB block is the translation target.
+                  In this exampole, the user wishes to translate the 0x8000-th 64KB block.
+                  The value programmed is then 0x8000_7FFF.
+
+                  If the user were to translate the 0x8001-th 64KB block, the value programmed would be 0x8001_7FFF.
           ''',
           count: "NumRegions",
           compact: false,
@@ -444,9 +454,9 @@
                   The remap bits apply only to top portion of address bits not covered by the matching region.
 
                   For example, if the translation region is 64KB, the remapped address applies only to the upper
-                                                                      address bits that select which 64KB to be translated.
-                                                                      ''',
-                                                                      count: "NumRegions",
+                  address bits that select which 64KB to be translated.
+                ''',
+          count: "NumRegions",
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
@@ -566,6 +576,46 @@
         },
       },
 
+      { name: "NMI_ENABLE",
+        desc: '''
+          Enable mask for NMI.
+          Once an enable mask is set, it cannot be disabled.
+        ''',
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "ALERT_EN",
+            resval: "0x0",
+            desc: "Enable mask for alert NMI"
+          },
+          { bits: "1",
+            name: "WDOG_EN",
+            resval: "0x0",
+            desc: "Enable mask for watchdog NMI"
+          },
+        ]
+      },
+
+      { name: "NMI_STATE",
+        desc: '''
+          Current NMI state
+        ''',
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "ALERT",
+            resval: "0x0",
+            desc: "Current state for alert NMI"
+          },
+          { bits: "1",
+            name: "WDOG",
+            resval: "0x0",
+            desc: "Current state for watchdog NMI"
+          },
+        ]
+      },
 
       { name: "ERR_STATUS",
         desc: "error status",
@@ -575,30 +625,30 @@
           { bits: "0",
             name: "REG_INTG_ERR",
             resval: "0x0"
-                      desc: '''
-                              rv_core_ibex_peri detected a register transmission integrity error
-                              '''
+            desc: '''
+              rv_core_ibex_peri detected a register transmission integrity error
+            '''
           },
           { bits: "8",
             name: "FATAL_INTG_ERR",
             resval: "0x0"
-                      desc: '''
-                              rv_core_ibex detected a response integrity error
-                              '''
+            desc: '''
+              rv_core_ibex detected a response integrity error
+            '''
           },
           { bits: "9",
             name: "FATAL_CORE_ERR",
             resval: "0x0"
-                      desc: '''
-                              rv_core_ibex detected a fatal internal error
-                              '''
+            desc: '''
+              rv_core_ibex detected a fatal internal error
+            '''
           },
           { bits: "10",
             name: "RECOV_CORE_ERR",
             resval: "0x0"
-                      desc: '''
-                              rv_core_ibex detected a recoverable internal error
-                              '''
+            desc: '''
+              rv_core_ibex detected a recoverable internal error
+            '''
           },
         ]
       },

@@ -169,6 +169,16 @@ module rv_core_ibex_cfg_reg_top (
   logic dbus_remap_addr_1_we;
   logic [31:0] dbus_remap_addr_1_qs;
   logic [31:0] dbus_remap_addr_1_wd;
+  logic nmi_enable_we;
+  logic nmi_enable_alert_en_qs;
+  logic nmi_enable_alert_en_wd;
+  logic nmi_enable_wdog_en_qs;
+  logic nmi_enable_wdog_en_wd;
+  logic nmi_state_we;
+  logic nmi_state_alert_qs;
+  logic nmi_state_alert_wd;
+  logic nmi_state_wdog_qs;
+  logic nmi_state_wdog_wd;
   logic err_status_we;
   logic err_status_reg_intg_err_qs;
   logic err_status_reg_intg_err_wd;
@@ -802,6 +812,114 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[nmi_enable]: V(False)
+
+  //   F[alert_en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1S"),
+    .RESVAL  (1'h0)
+  ) u_nmi_enable_alert_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (nmi_enable_we),
+    .wd     (nmi_enable_alert_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.nmi_enable.alert_en.q),
+
+    // to register interface (read)
+    .qs     (nmi_enable_alert_en_qs)
+  );
+
+
+  //   F[wdog_en]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1S"),
+    .RESVAL  (1'h0)
+  ) u_nmi_enable_wdog_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (nmi_enable_we),
+    .wd     (nmi_enable_wdog_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.nmi_enable.wdog_en.q),
+
+    // to register interface (read)
+    .qs     (nmi_enable_wdog_en_qs)
+  );
+
+
+  // R[nmi_state]: V(False)
+
+  //   F[alert]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_nmi_state_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (nmi_state_we),
+    .wd     (nmi_state_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.nmi_state.alert.de),
+    .d      (hw2reg.nmi_state.alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.nmi_state.alert.q),
+
+    // to register interface (read)
+    .qs     (nmi_state_alert_qs)
+  );
+
+
+  //   F[wdog]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_nmi_state_wdog (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (nmi_state_we),
+    .wd     (nmi_state_wdog_wd),
+
+    // from internal hardware
+    .de     (hw2reg.nmi_state.wdog.de),
+    .d      (hw2reg.nmi_state.wdog.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.nmi_state.wdog.q),
+
+    // to register interface (read)
+    .qs     (nmi_state_wdog_qs)
+  );
+
+
   // R[err_status]: V(False)
 
   //   F[reg_intg_err]: 0:0
@@ -910,7 +1028,7 @@ module rv_core_ibex_cfg_reg_top (
 
 
 
-  logic [21:0] addr_hit;
+  logic [23:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
@@ -934,7 +1052,9 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[18] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET);
     addr_hit[19] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET);
     addr_hit[20] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET);
-    addr_hit[21] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
+    addr_hit[21] = (reg_addr == RV_CORE_IBEX_NMI_ENABLE_OFFSET);
+    addr_hit[22] = (reg_addr == RV_CORE_IBEX_NMI_STATE_OFFSET);
+    addr_hit[23] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -963,7 +1083,9 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[18] & (|(RV_CORE_IBEX_CFG_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(RV_CORE_IBEX_CFG_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(RV_CORE_IBEX_CFG_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(RV_CORE_IBEX_CFG_PERMIT[21] & ~reg_be)))));
+               (addr_hit[21] & (|(RV_CORE_IBEX_CFG_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(RV_CORE_IBEX_CFG_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1034,7 +1156,17 @@ module rv_core_ibex_cfg_reg_top (
   assign dbus_remap_addr_1_we = addr_hit[20] & reg_we & !reg_error;
 
   assign dbus_remap_addr_1_wd = reg_wdata[31:0];
-  assign err_status_we = addr_hit[21] & reg_we & !reg_error;
+  assign nmi_enable_we = addr_hit[21] & reg_we & !reg_error;
+
+  assign nmi_enable_alert_en_wd = reg_wdata[0];
+
+  assign nmi_enable_wdog_en_wd = reg_wdata[1];
+  assign nmi_state_we = addr_hit[22] & reg_we & !reg_error;
+
+  assign nmi_state_alert_wd = reg_wdata[0];
+
+  assign nmi_state_wdog_wd = reg_wdata[1];
+  assign err_status_we = addr_hit[23] & reg_we & !reg_error;
 
   assign err_status_reg_intg_err_wd = reg_wdata[0];
 
@@ -1136,6 +1268,16 @@ module rv_core_ibex_cfg_reg_top (
       end
 
       addr_hit[21]: begin
+        reg_rdata_next[0] = nmi_enable_alert_en_qs;
+        reg_rdata_next[1] = nmi_enable_wdog_en_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[0] = nmi_state_alert_qs;
+        reg_rdata_next[1] = nmi_state_wdog_qs;
+      end
+
+      addr_hit[23]: begin
         reg_rdata_next[0] = err_status_reg_intg_err_qs;
         reg_rdata_next[8] = err_status_fatal_intg_err_qs;
         reg_rdata_next[9] = err_status_fatal_core_err_qs;

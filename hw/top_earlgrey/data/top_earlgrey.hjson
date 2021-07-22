@@ -839,6 +839,7 @@
                                    'lc_ctrl.esc_scrap_state0_tx',
                                    'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
+      'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],

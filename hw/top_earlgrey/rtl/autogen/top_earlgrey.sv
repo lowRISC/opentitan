@@ -511,6 +511,7 @@ module top_earlgrey #(
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
+  logic       aon_timer_aon_nmi_wdog_timer_bark;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
@@ -1982,6 +1983,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[27:27] ),
 
       // Inter-module signals
+      .nmi_wdog_timer_bark_o(aon_timer_aon_nmi_wdog_timer_bark),
       .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
@@ -2573,6 +2575,7 @@ module top_earlgrey #(
       .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
+      .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
       .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
       .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
       .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),

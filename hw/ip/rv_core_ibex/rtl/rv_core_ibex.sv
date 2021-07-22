@@ -64,6 +64,9 @@ module rv_core_ibex
   input  prim_esc_pkg::esc_tx_t esc_tx_i,
   output prim_esc_pkg::esc_rx_t esc_rx_o,
 
+  // watchdog NMI input
+  input logic nmi_wdog_i,
+
   // Debug Interface
   input  logic        debug_req_i,
 
@@ -193,15 +196,33 @@ module rv_core_ibex
   );
 
   // Synchronize to fast Ibex clock domain.
-  logic irq_nm;
+  logic alert_irq_nm;
   prim_flop_2sync #(
     .Width(1)
-  ) u_prim_flop_2sync (
+  ) u_alert_nmi_sync (
     .clk_i,
     .rst_ni,
     .d_i(esc_irq_nm),
-    .q_o(irq_nm)
+    .q_o(alert_irq_nm)
   );
+
+  logic wdog_irq_nm;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_wdog_nmi_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(nmi_wdog_i),
+    .q_o(wdog_irq_nm)
+  );
+
+  assign hw2reg.nmi_state.alert.d  = 1'b1;
+  assign hw2reg.nmi_state.alert.de = alert_irq_nm;
+  assign hw2reg.nmi_state.wdog.d   = 1'b1;
+  assign hw2reg.nmi_state.wdog.de  = wdog_irq_nm;
+
+  logic irq_nm;
+  assign irq_nm = |(reg2hw.nmi_state & reg2hw.nmi_enable);
 
   lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
   prim_lc_sync u_lc_sync (
