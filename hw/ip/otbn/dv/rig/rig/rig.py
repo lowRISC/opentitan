@@ -58,5 +58,5 @@ def gen_program(config: Config,
         raise RuntimeError('Failed to initialise snippet generators: {}'
                            .format(err)) from None
 
-    snippet, end_addr = gens.gen_rest(model, program)
+    snippet, end_addr = gens.gen_program(model, program)
     return init_data, snippet, end_addr

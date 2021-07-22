@@ -45,6 +45,10 @@ class SnippetGen:
     binary.
 
     '''
+    # A class-level variable that is set for generators that will end the
+    # program (with an ECALL or an error)
+    ends_program: bool = False
+
     def __init__(self) -> None:
         self.disabled = False
 
