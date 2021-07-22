@@ -134,23 +134,64 @@
   registers: [
     { name: "CMD"
       desc: "command register",
-      swaccess: "r0w1c",
+      swaccess: "wo",
       hwaccess: "hro",
       hwext: "true",
       hwqe:  "true",
       fields: [
-        { bits: "0"
-          name: "start"
+        { bits: "7:0"
+          name: "cmd"
+          resval: 0,
           desc: '''
-            Start the operation
+            Initiates an OTBN operation.
 
-            The completion is signalled by the done interrupt.
+            A command starts an OTBN operation. While performing the operation,
+            OTBN is busy; the !!STATUS register reflects that.
+
+            All operations signal their completion by raising the done
+            interrupt; alternatively, software may poll the !!STATUS register.
+
+            New commands are only accepted while OTBN is idle, as indicated
+            by the !!STATUS register. Writes while !!STATUS is not IDLE are
+            ignored.
+
+            Unrecognized commands are ignored.
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Value</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0x01</td>
+                  <td>EXECUTE</td>
+                  <td>
+                    Start the execution of the program stored in the
+                    instruction memory, starting at address !!START_ADDR.
+                  </td>
+                </tr>
+                <tr>
+                  <td>0x02</td>
+                  <td>SEC_WIPE_DMEM</td>
+                  <td>Securely remove all contents from the data memory.</td>
+                </tr>
+                <tr>
+                  <td>0x03</td>
+                  <td>SEC_WIPE_IMEM</td>
+                  <td>
+                    Securely remove all contents from the instruction memory.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           '''
           tags: [
-            // Don't write this field in the automated CSR tests. Doing so will
-            // start OTBN, but we won't have initialised its memory with any
-            // code, so we'll get Xs on its interfaces and everything will be
-            // a bit of a mess!
+            // Don't write this field in the automated CSR tests; the commands
+            // are tested in more controlled form.
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
@@ -162,9 +203,49 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "0",
-          name: "busy",
-          desc: "OTBN is performing an operation."
+        { bits: "7:0",
+          name: "status",
+          resval: 0,
+          // Note: Keep the list of status codes in sync with status_e in
+          // otbn_pkg.sv.
+          desc: '''
+            Indicates the current state OTBN is in.
+
+            All BUSY flags represent an operation started by a write to the
+            !!CMD register.
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Value</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0x00</td>
+                  <td>IDLE</td>
+                  <td>OTBN is not performing any action.</td>
+                </tr>
+                <tr>
+                  <td>0x01</td>
+                  <td>BUSY_EXECUTE</td>
+                  <td>OTBN is executing software.</td>
+                </tr>
+                <tr>
+                  <td>0x02</td>
+                  <td>BUSY_SEC_WIPE_DMEM</td>
+                  <td>OTBN is securely wiping the data memory.</td>
+                </tr>
+                <tr>
+                  <td>0x03</td>
+                  <td>BUSY_SEC_WIPE_IMEM</td>
+                  <td>OTBN is securely wiping the instruction memory.</td>
+                </tr>
+              </tbody>
+            </table>
+          '''
         }
       ]
     } // register : status
@@ -267,7 +348,7 @@
           resval: 0,
           desc: '''
             Byte address in the instruction memory OTBN starts to execute from
-            when instructed to do so with the !!CMD.start .
+            when instructed to do so by issuing the EXECUTE command.
           '''
         }
       ]
@@ -321,28 +402,6 @@
         }
       ]
     } // register : fatal_alert_cause
-    { name: "SEC_WIPE",
-      desc: '''
-        Trigger a secure wipe operation.
-
-        This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
-        Access attempts while OTBN is busy are ignored.
-      '''
-      swaccess: "wo",
-      hwaccess: "hro",
-      fields: [
-        { bits: "0",
-          name: "dmem",
-          resval: 0,
-          desc: "Write 1 to securely wipe data memory."
-        }
-        { bits: "1",
-          name: "imem",
-          resval: 0,
-          desc: "Write 1 to securely wipe instruction memory."
-        }
-      ]
-    } // register : sec_wipe
     { name: "INSN_CNT",
       desc: "Instruction Counter",
       hwext: "true",
@@ -375,7 +434,7 @@
         desc: '''
           Instruction Memory.
 
-          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          The instruction memory may only be accessed through this register while OTBN is idle, as indicated by the !!STATUS register.
           Accesses while OTBN is not idle result in a fatal error, setting the fatal_illegal_bus_access error bit.
         '''
       }
@@ -393,7 +452,7 @@
         desc: '''
           Data Memory.
 
-          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          The data memory may only be accessed through this register while OTBN is idle, as indicated by the !!STATUS register.
           Accesses while OTBN is not idle result in a fatal error, setting the fatal_illegal_bus_access error bit.
         '''
       }

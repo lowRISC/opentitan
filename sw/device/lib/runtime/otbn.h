@@ -67,12 +67,12 @@ typedef enum otbn_result {
    */
   kOtbnBadArg = 2,
   /**
-   * The execution of the application on OTBN failed.
+   * The operation performed on OTBN failed.
    *
    * More specific error information can be obtained with
    * `dif_otbn_get_err_code()`.
    */
-  kOtbnExecutionFailed = 3,
+  kOtbnOperationFailed = 3,
 } otbn_result_t;
 
 /**
@@ -191,7 +191,9 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 otbn_result_t otbn_call_function(otbn_t *ctx, otbn_ptr_t func);
 
 /**
- * Busy waits for OTBN to be done with its operation.
+ * Busy waits for OTBN to be done with the current operation.
+ *
+ * After an operation, triggered by a command, OTBN is back in idle state.
  *
  * @param ctx The context object.
  * @return The result of the operation.

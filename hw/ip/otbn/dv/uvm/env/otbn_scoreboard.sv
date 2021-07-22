@@ -123,8 +123,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       case (csr.get_name())
         // Spot writes to the "cmd" register, which tell us to start
         "cmd": begin
-          // We start when we see a write that sets the "start" field of the register.
-          if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
+          // We start the execution when we see a write of the START command.
+          if (item.a_data == 8'h01) begin
             saw_start_tl_trans = 1'b1;
           end
         end

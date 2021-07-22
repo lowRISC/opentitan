@@ -137,7 +137,7 @@ static void test_err_test(otbn_t *otbn_ctx) {
   CHECK(otbn_load_app(otbn_ctx, kAppErrTest) == kOtbnOk);
 
   CHECK(otbn_call_function(otbn_ctx, kFuncWrapErrTest) == kOtbnOk);
-  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnExecutionFailed);
+  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOperationFailed);
 
   check_otbn_err_bits(otbn_ctx, kDifOtbnErrBitsBadDataAddr);
 

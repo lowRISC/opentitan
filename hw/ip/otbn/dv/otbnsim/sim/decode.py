@@ -7,7 +7,7 @@
 import struct
 from typing import List, Optional, Iterator
 
-from .err_bits import ILLEGAL_INSN
+from .constants import ErrBits
 from .isa import INSNS_FILE, OTBNInsn
 from .insn import INSN_CLASSES
 from .state import OTBNState
@@ -36,7 +36,7 @@ class IllegalInsn(OTBNInsn):
         self._disasm = (pc, '?? 0x{:08x}'.format(raw))
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
-        state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
         return None
 
 

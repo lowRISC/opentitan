@@ -4,7 +4,7 @@
 
 from typing import List
 
-from .err_bits import CALL_STACK
+from .constants import ErrBits
 from .reg import Reg, RegFile
 
 
@@ -94,7 +94,7 @@ class GPRs(RegFile):
         return self._x1.post_insn()
 
     def err_bits(self) -> int:
-        return CALL_STACK if self.err_flag else 0
+        return ErrBits.CALL_STACK if self.err_flag else 0
 
     def commit(self) -> None:
         super().commit()

@@ -8,7 +8,7 @@ from shared.mem_layout import get_memory_layout
 
 from .csr import CSRFile
 from .dmem import Dmem
-from .err_bits import BAD_INSN_ADDR
+from .constants import ErrBits, Status
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
@@ -155,7 +155,7 @@ class OTBNState:
 
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag; perform state init'''
-        self.ext_regs.set_bits('STATUS', 1 << 0)
+        self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
         self.ext_regs.write('INSN_CNT', 0, True)
         self.running = True
         self._start_stall = True
@@ -203,8 +203,8 @@ class OTBNState:
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
-        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
-        self.ext_regs.clear_bits('STATUS', 1 << 0)
+        # STATUS is a status register. Return to idle.
+        self.ext_regs.write('STATUS', Status.IDLE, True)
 
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
@@ -262,7 +262,7 @@ class OTBNState:
         # we've just checked for would squash the "next PC" check.
         if not self.pending_halt:
             if not self.is_next_pc_valid():
-                self._err_bits |= BAD_INSN_ADDR
+                self._err_bits |= ErrBits.BAD_INSN_ADDR
                 self.pending_halt = True
 
     def read_csr(self, idx: int) -> int:

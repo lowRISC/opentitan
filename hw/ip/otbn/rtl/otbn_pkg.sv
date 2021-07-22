@@ -50,6 +50,21 @@ package otbn_pkg;
     RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
   } regfile_e;
 
+  // Command to execute. See the CMD register description in otbn.hjson for details.
+  typedef enum logic [7:0] {
+    CmdExecute     = 8'h01,
+    CmdSecWipeDmem = 8'h02,
+    CmdSecWipeImem = 8'h03
+  } cmd_e;
+
+  // Status register values. See the STATUS register description in otbn.hjson for details.
+  typedef enum logic [7:0] {
+    StatusIdle            = 8'h00,
+    StatusBusyExecute     = 8'h01,
+    StatusBusySecWipeDmem = 8'h02,
+    StatusBusySecWipeImem = 8'h03
+  } status_e;
+
   // Error bits
   //
   // Note: These errors are duplicated in other places. If updating them here, update those too.

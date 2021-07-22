@@ -86,7 +86,7 @@ module otbn
   `ASSERT_INIT(DmemSizePowerOfTwo, 2**DmemAddrWidth == DmemSizeByte)
 
   logic start_d, start_q;
-  logic busy_d, busy_q;
+  logic busy_execute_d, busy_execute_q;
   logic done;
   logic illegal_bus_access_d, illegal_bus_access_q;
 
@@ -96,10 +96,6 @@ module otbn
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
-
-  // TODO: Connect up sec_wipe signals
-  logic unused_sec_wipe;
-  assign unused_sec_wipe = ^{reg2hw.sec_wipe};
 
   // Bus device windows, as specified in otbn.hjson
   typedef enum logic {
@@ -113,9 +109,8 @@ module otbn
 
   // Inter-module signals ======================================================
 
-  // TODO: Better define what "idle" means -- only the core, or also the
-  // register interface?
-  assign idle_o = ~busy_q;
+  // TODO: Use STATUS == IDLE here.
+  assign idle_o = ~busy_execute_q;
 
   // TODO: These two signals aren't technically in the same clock domain. Sort out how we do the
   // signalling properly.
@@ -317,7 +312,7 @@ module otbn
 
 
   // Mux core and bus access into IMEM
-  assign imem_access_core = busy_q | start_q;
+  assign imem_access_core = busy_execute_q | start_q;
 
   assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
@@ -514,7 +509,7 @@ module otbn
   );
 
   // Mux core and bus access into dmem
-  assign dmem_access_core = busy_q;
+  assign dmem_access_core = busy_execute_q;
 
   assign dmem_req   = dmem_access_core ? dmem_req_core   : dmem_req_bus;
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
@@ -577,9 +572,8 @@ module otbn
                                 reg_bus_integrity_error);
 
   // CMD register
-  // CMD.start ("start" is omitted by reggen since it is the only field).
   // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
-  assign start_d = reg2hw.cmd.qe & reg2hw.cmd.q;
+  assign start_d = reg2hw.cmd.qe & (reg2hw.cmd.q == CmdExecute);
   assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
   // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
@@ -595,8 +589,13 @@ module otbn
   end
 
   // STATUS register
-  // STATUS.busy ("busy" is omitted by reggen since since it is the only field)
-  assign hw2reg.status.d = busy_q;
+  always_comb begin
+    unique case (1'b1)
+      busy_execute_q: hw2reg.status.d = StatusBusyExecute;
+      // TODO: Add other busy flags, and assert onehot encoding.
+      default: hw2reg.status.d = StatusIdle;
+    endcase
+  end
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
@@ -735,12 +734,12 @@ module otbn
 
   always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
-      busy_q <= 1'b0;
+      busy_execute_q <= 1'b0;
     end else begin
-      busy_q <= busy_d;
+      busy_execute_q <= busy_execute_d;
     end
   end
-  assign busy_d = (busy_q | start_d) & ~done;
+  assign busy_execute_d = (busy_execute_q | start_d) & ~done;
 
   `ifdef OTBN_BUILD_MODEL
     // Build both model and RTL implementation into the design, and switch at runtime through a

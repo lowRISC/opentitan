@@ -26,6 +26,25 @@ extern const size_t kOtbnDMemSizeBytes;
 extern const size_t kOtbnIMemSizeBytes;
 
 /**
+ * OTBN commands
+ */
+typedef enum dif_otbn_cmd {
+  kOtbnCmdExecute = 0x01,
+  kOtbnCmdSecWipeDmem = 0x02,
+  kOtbnCmdSecWipeImem = 0x03,
+} otbn_cmd_t;
+
+/**
+ * OTBN status
+ */
+typedef enum otbn_status {
+  kOtbnStatusIdle = 0x00,
+  kOtbnStatusBusyExecute = 0x01,
+  kOtbnStatusBusySecWipeDmem = 0x02,
+  kOtbnStatusBusySecWipeImem = 0x03,
+} otbn_status_t;
+
+/**
  * Start the execution of the application loaded into OTBN at the start address.
  *
  * @param start_addr The IMEM byte address to start the execution at.

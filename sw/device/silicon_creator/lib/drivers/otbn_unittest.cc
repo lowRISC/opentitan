@@ -43,8 +43,8 @@ TEST_F(StartTest, Success) {
   // Write start address.
   EXPECT_ABS_WRITE32(base_ + OTBN_START_ADDR_REG_OFFSET, 4);
 
-  // Set start command bit.
-  EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, {{OTBN_CMD_START_BIT, 1}});
+  // Set EXECUTE command.
+  EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
 
   EXPECT_EQ(otbn_start(4), kErrorOk);
 }
@@ -52,8 +52,7 @@ TEST_F(StartTest, Success) {
 class IsBusyTest : public OtbnTest {};
 
 TEST_F(IsBusyTest, Success) {
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
-                    {{OTBN_STATUS_BUSY_BIT, true}});
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
 
   EXPECT_EQ(otbn_is_busy(), true);
 }

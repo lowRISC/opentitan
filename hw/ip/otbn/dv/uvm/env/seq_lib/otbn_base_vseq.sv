@@ -116,16 +116,13 @@ class otbn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_FATAL(!running_)
     running_ = 1'b1;
 
-    // Set the "start" bit in cmd_val and write it to the "cmd" register to start OTBN.
-    `DV_CHECK_FATAL(ral.cmd.start.get_n_bits == 1);
-    cmd_val = 1 << ral.cmd.start.get_lsb_pos();
-
+    // Start OTBN by writing EXECUTE to the CMD register.
     `uvm_info(`gfn, $sformatf("\n\t ----| Starting OTBN"), UVM_MEDIUM)
-    csr_utils_pkg::csr_wr(ral.cmd, cmd_val);
+    csr_utils_pkg::csr_wr(ral.cmd, otbn_pkg::CmdExecute);
 
     // Now wait until OTBN has finished
     `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
-    csr_utils_pkg::csr_spinwait(.ptr(ral.status.busy), .exp_data(1'b0));
+    csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(otbn_pkg::StatusIdle));
 
     `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
 

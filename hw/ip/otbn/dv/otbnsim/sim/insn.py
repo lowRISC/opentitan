@@ -4,13 +4,12 @@
 
 from typing import Dict, Iterator, Optional
 
-from sim import err_bits
+from .constants import ErrBits
 from .flags import FlagReg
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
                   extract_quarter_word)
 from .state import OTBNState
-from .err_bits import BAD_DATA_ADDR, ILLEGAL_INSN
 
 
 class ADD(RV32RegReg):
@@ -192,7 +191,7 @@ class LW(OTBNInsn):
         addr = (base + self.offset) & ((1 << 32) - 1)
 
         if not state.dmem.is_valid_32b_addr(addr):
-            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+            state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             return
 
         result = state.dmem.load_u32(addr)
@@ -218,7 +217,7 @@ class SW(OTBNInsn):
         value = state.gprs.get_reg(self.grs2).read_unsigned()
 
         if not state.dmem.is_valid_32b_addr(addr):
-            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+            state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             return
 
         state.dmem.store_u32(addr, value)
@@ -304,7 +303,7 @@ class CSRRS(OTBNInsn):
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -337,7 +336,7 @@ class CSRRW(OTBNInsn):
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -380,7 +379,7 @@ class LOOP(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
         if num_iters == 0:
-            state.stop_at_end_of_cycle(err_bits.LOOP)
+            state.stop_at_end_of_cycle(ErrBits.LOOP)
         else:
             state.loop_start(num_iters, self.bodysize)
 
@@ -396,7 +395,7 @@ class LOOPI(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         if self.iterations == 0:
-            state.stop_at_end_of_cycle(err_bits.LOOP)
+            state.stop_at_end_of_cycle(ErrBits.LOOP)
         else:
             state.loop_start(self.iterations, self.bodysize)
 
@@ -924,18 +923,18 @@ class BNLID(OTBNInsn):
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
 
         if grd_val > 31:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if not state.dmem.is_valid_256b_addr(addr):
-            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+            state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             return
 
         wrd = grd_val & 0x1f
         value = state.dmem.load_u256(addr)
 
         if self.grs1_inc and self.grd_inc:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if self.grd_inc:
@@ -970,15 +969,15 @@ class BNSID(OTBNInsn):
         grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
 
         if self.grs1_inc and self.grs2_inc:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if grs2_val > 31:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if not state.dmem.is_valid_256b_addr(addr):
-            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+            state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             return
 
         wrs = grs2_val & 0x1f
@@ -1023,13 +1022,13 @@ class BNMOVR(OTBNInsn):
         grs_val = state.gprs.get_reg(self.grs).read_unsigned()
 
         if self.grs_inc and self.grd_inc:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if grd_val > 31:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
         elif grs_val > 31:
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
         else:
             wrd = grd_val & 0x1f
             wrs = grs_val & 0x1f
@@ -1058,7 +1057,7 @@ class BNWSRR(OTBNInsn):
         # The first, and possibly only, cycle of execution.
         if not state.wsrs.check_idx(self.wsr):
             # Invalid WSR index. Stop with an illegal instruction error.
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
         if self.wsr == 0x1:
