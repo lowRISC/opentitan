@@ -94,16 +94,6 @@ class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
     extclk_cg = new();
   endfunction : new
 
-  function void update_peri_cgs(logic [clkmgr_env_pkg::NUM_PERI-1:0] enables, logic ip_clk_en,
-                                logic scanmode);
-    foreach (peri_cg_wrap[i]) peri_cg_wrap[i].sample(enables[i], ip_clk_en, scanmode);
-  endfunction
-
-  function void update_trans_cgs(logic [clkmgr_env_pkg::NUM_TRANS-1:0] hints, logic ip_clk_en,
-                                 logic scanmode, logic [clkmgr_env_pkg::NUM_TRANS-1:0] idle);
-    foreach (trans_cg_wrap[i]) trans_cg_wrap[i].sample(hints[i], ip_clk_en, scanmode, idle[i]);
-  endfunction
-
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     // [or instantiate covergroups here]
