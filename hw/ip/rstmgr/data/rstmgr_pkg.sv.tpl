@@ -26,7 +26,10 @@ package rstmgr_pkg;
   // This should be templatized and generated
   typedef struct packed {
 % for rst in output_rsts:
-    logic [PowerDomains-1:0] rst_${rst}_n;
+  % if rst.shadowed:
+    logic [PowerDomains-1:0] rst_${rst.name}_shadowed_n;
+  % endif
+    logic [PowerDomains-1:0] rst_${rst.name}_n;
 % endfor
   } rstmgr_out_t;
 

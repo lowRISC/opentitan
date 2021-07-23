@@ -43,6 +43,7 @@ module tb;
   keymgr dut (
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
+    .rst_shadowed_ni      (rst_n      ),
     .clk_edn_i            (edn_clk    ),
     .rst_edn_ni           (edn_rst_n  ),
     .aes_key_o            (keymgr_if.aes_key),

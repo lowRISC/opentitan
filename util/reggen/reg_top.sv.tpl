@@ -61,11 +61,13 @@
 module ${mod_name} (
   input clk_i,
   input rst_ni,
+% if rb.has_internal_shadowed_reg():
+  input rst_shadowed_ni,
+% endif
 % for clock in rb.clocks.values():
   input ${clock.clock},
   input ${clock.reset},
 % endfor
-
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 % if num_wins != 0:
@@ -460,21 +462,50 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  % if rb.has_internal_shadowed_reg():
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
+  % else:
+  assign shadow_busy = 1'b0;
+  % endif
+
   // register busy
   % if rb.async_if:
-  assign reg_busy = '0;
+  assign reg_busy = shadow_busy;
   % else:
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       % for i, r in enumerate(regs_flat):
         % if r.async_clk and len(r.fields) == 1:
       addr_hit[${i}]: begin
-        reg_busy = ${r.name.lower() + "_busy"};
+        reg_busy_sel = ${r.name.lower() + "_busy"};
       end
         % elif r.async_clk:
       addr_hit[${i}]: begin
-        reg_busy =
+        reg_busy_sel =
           % for f in r.fields:
           ${r.name.lower() + "_" + f.name.lower() + "_busy"}${";" if loop.last else " |"}
           % endfor
@@ -482,10 +513,11 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
         % endif
       % endfor
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
   % endif
 
 % endif
@@ -662,6 +694,9 @@ ${bits.msb}\
   ) u_${finst_name} (
     .clk_i   (${reg_clk_expr}),
     .rst_ni  (${reg_rst_expr}),
+      % if reg.shadowed and not reg.hwext:
+    .rst_shadowed_ni (rst_shadowed_ni),
+      % endif
 
     // from register interface
       % if reg.shadowed:

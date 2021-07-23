@@ -7,6 +7,7 @@
 module alert_handler_reg_wrap import alert_pkg::*; (
   input                                   clk_i,
   input                                   rst_ni,
+  input                                   rst_shadowed_ni,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t               tl_i,
   output tlul_pkg::tl_d2h_t               tl_o,
@@ -34,6 +35,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   alert_handler_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .tl_i,
     .tl_o,
     .reg2hw,

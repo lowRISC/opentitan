@@ -289,10 +289,28 @@ def get_clk_name(clk):
         return "clk_{}_i".format(clk)
 
 
-def get_reset_path(reset, domain, top):
+def is_shadowed_port(block: IpBlock, port: str) -> bool:
+    """Return boolean indication whether a port is a shadow reset port
+    """
+    shadowed_port = block.clocking.primary.reset if block.has_shadowed_reg() \
+        else None
+
+    return port == shadowed_port
+
+def shadow_name(name: str) -> str:
+    """Return the appropriate shadow reset name based on port name
+    """
+    match = re.match(r'^rst_([A-Za-z0-9_]+)_ni?', name)
+    if match:
+        return f'rst_{match.group(1)}_shadowed_ni'
+    else:
+        return 'rst_shadowed_ni'
+
+
+def get_reset_path(top: object, reset: str, domain: str, shadow_sel = False):
     """Return the appropriate reset path given name
     """
-    return top['resets'].get_path(reset, domain)
+    return top['resets'].get_path(reset, domain, shadow_sel)
 
 
 def get_unused_resets(top):

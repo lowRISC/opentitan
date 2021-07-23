@@ -71,6 +71,7 @@ module tb;
   alert_handler dut (
     .clk_i                ( clk           ),
     .rst_ni               ( rst_n         ),
+    .rst_shadowed_ni      ( rst_n         ),
     .clk_edn_i            ( edn_clk       ),
     .rst_edn_ni           ( edn_rst_n     ),
     .tl_i                 ( tl_if.h2d     ),

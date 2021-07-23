@@ -28,6 +28,7 @@ module aes_core
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
+  input  logic                        rst_shadowed_ni,
 
   // Entropy request interfaces for clearing and masking PRNGs
   output logic                        entropy_clearing_req_o,
@@ -454,6 +455,7 @@ module aes_core
   ) u_ctrl_reg_shadowed (
     .clk_i              ( clk_i                ),
     .rst_ni             ( rst_ni               ),
+    .rst_shadowed_ni    ( rst_shadowed_ni      ),
     .qe_o               ( ctrl_qe              ),
     .we_i               ( ctrl_we              ),
     .operation_o        ( aes_op_q             ),
