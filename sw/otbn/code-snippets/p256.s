@@ -1753,50 +1753,57 @@ p256_scalar_mult:
 
 .section .data
 
-.balign 4
-
 /* pointer to k (dptr_k) */
 .globl dptr_k
+.balign 4
 dptr_k:
   .zero 4
 
 /* pointer to rnd (dptr_rnd) */
 .globl dptr_rnd
+.balign 4
 dptr_rnd:
   .zero 4
 
 /* pointer to msg (dptr_msg) */
 .globl dptr_msg
+.balign 4
 dptr_msg:
   .zero 4
 
 /* pointer to R (dptr_r) */
 .globl dptr_r
+.balign 4
 dptr_r:
   .zero 4
 
 /* pointer to S (dptr_s) */
 .globl dptr_s
+.balign 4
 dptr_s:
   .zero 4
 
 /* pointer to X (dptr_x) */
 .globl dptr_x
+.balign 4
 dptr_x:
   .zero 4
 
 /* pointer to Y (dptr_y) */
 .globl dptr_y
+.balign 4
 dptr_y:
   .zero 4
 
 /* pointer to D (dptr_d) */
 .globl dptr_d
+.balign 4
 dptr_d:
   .zero 4
 
 /* P-256 domain parameter b */
 .globl p256_b
+.balign 32
 p256_b:
   .word 0x27d2604b
   .word 0x3bce3c3e
@@ -1809,6 +1816,7 @@ p256_b:
 
 /* P-256 domain parameter p (modulus) */
 .globl p256_p
+.balign 32
 p256_p:
   .word 0xffffffff
   .word 0xffffffff
@@ -1821,6 +1829,7 @@ p256_p:
 
 /* Barrett constant u for modulus p */
 .globl p256_u_p
+.balign 32
 p256_u_p:
   .word 0x00000003
   .word 0x00000000
@@ -1833,6 +1842,7 @@ p256_u_p:
 
 /* P-256 domain parameter n (order of base point) */
 .globl p256_n
+.balign 32
 p256_n:
   .word 0xfc632551
   .word 0xf3b9cac2
@@ -1845,6 +1855,7 @@ p256_n:
 
 /* Barrett constant u for n */
 .globl p256_u_n
+.balign 32
 p256_u_n:
   .word 0xeedf9bfe
   .word 0x012ffd85
@@ -1857,6 +1868,7 @@ p256_u_n:
 
 /* P-256 basepoint G affine x-coordinate */
 .globl p256_gx
+.balign 32
 p256_gx:
   .word 0xd898c296
   .word 0xf4a13945
@@ -1869,6 +1881,7 @@ p256_gx:
 
 /* P-256 basepoint G affine y-coordinate */
 .globl p256_gy
+.balign 32
 p256_gy:
   .word 0x37bf51f5
   .word 0xcbb64068
