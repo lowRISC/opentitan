@@ -328,12 +328,11 @@ module otbn_decoder
         rf_we_base       = 1'b1;
 
         unique case (insn[14:12])
-          3'b000,
-          3'b010,
-          3'b011,
-          3'b100,
-          3'b110,
-          3'b111: illegal_insn = 1'b0;
+          3'b000,  // addi
+          3'b100,  // xori
+          3'b110,  // ori
+          3'b111:  // andi
+            illegal_insn = 1'b0;
 
           3'b001: begin
             unique case (insn[31:27])
