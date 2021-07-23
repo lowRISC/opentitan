@@ -9,9 +9,8 @@
  * Coordinates of the public key, the message digest and R and S of the
  * signature are provided in the .data section below.
  *
- * Signature verification was successful, if the return values in the rnd and R
- * location are identical. The return values are copied to wide registers. See
- * comment at the end of the file for expected values for this example.
+ * The signature verification was successful if the return value in rnd and R
+ * are identical.
  */
 
 .text
@@ -115,6 +114,6 @@ pub_y:
 sig_xres:
   .zero 32
 
-/* Expected values wide register file (w0=rnd, w1=R):
+/* Expected values wide register file (w0=rnd == R):
 w0 = 0x815215ad7dd27f336b35843cbe064de299504edd0c7d87dd1147ea5680a9674a
 */
