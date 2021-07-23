@@ -51,15 +51,15 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].en_0, data, region_cfg.en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en_0, data, region_cfg.read_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en_0, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data, region_cfg.en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data, region_cfg.read_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
                                        region_cfg.program_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en_0, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
                                        region_cfg.erase_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].base_0, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].base, data,
                                        region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].size_0, data, region_cfg.num_pages);
+        get_csr_val_with_updated_field(ral.mp_region_cfg[index].size, data, region_cfg.num_pages);
     csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
   endtask
 
@@ -88,11 +88,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     csr = ral.get_reg_by_name(csr_name);
     data =
-        get_csr_val_with_updated_field(csr.get_field_by_name("en_0"), data, page_cfg.en) |
-        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en_0"), data, page_cfg.read_en) |
-        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en_0"), data,
+        get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data,
                                        page_cfg.program_en) |
-        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en_0"), data,
+        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
                                        page_cfg.erase_en);
     csr_wr(.ptr(csr), .value(data));
   endtask
