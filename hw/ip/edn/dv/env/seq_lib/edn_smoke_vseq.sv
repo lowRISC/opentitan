@@ -12,10 +12,6 @@ class edn_smoke_vseq extends edn_base_vseq;
   task body();
     super.body();
 
-    // Enable edn
-    // TODO: determine if below muxing for field updates is the best way
-    csr_wr(.ptr(ral.ctrl), .value({(cfg.boot_req_mode ? 4'ha : 4'h0), (cfg.enable ? 4'ha : 4'h0)}));
-
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
     m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[edn_env_pkg::NUM_ENDPOINTS-1]);
