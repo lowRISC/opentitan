@@ -162,6 +162,7 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
  *
  * @param otbn_ctx            The OTBN context object.
  * @param msg                 The message to sign (32B).
+ * @param blinding_rnd        A random number for blinding (32B).
  * @param secret_random_int_k The secret random integer (32B).
  * @param private_key_d       The private key (32B).
  * @param[out] signature_r    Signature component r (the x-coordinate of R).
@@ -170,6 +171,7 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
  *                            Provide a pre-allocated 32B buffer.
  */
 static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
+                            const uint8_t *blinding_rnd,
                             const uint8_t *secret_random_int_k,
                             const uint8_t *private_key_d, uint8_t *signature_r,
                             uint8_t *signature_s) {
@@ -181,6 +183,8 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   // Write input arguments.
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==
         kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, blinding_rnd,
+                               kOtbnVarRnd) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, secret_random_int_k,
                                kOtbnVarK) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, private_key_d,
@@ -250,6 +254,12 @@ static void test_ecdsa_p256_roundtrip(void) {
   // Message
   static const uint8_t kIn[32] = {"Hello OTBN."};
 
+  // "Random" number for blinding
+  static const uint8_t kBlindingRnd[32] = {
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a,
+      0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29};
+
   // Public key x-coordinate (Q.x)
   static const uint8_t kPublicKeyQx[32] = {
       0x4e, 0xb2, 0x8b, 0x55, 0xeb, 0x88, 0x62, 0x24, 0xf2, 0xbf, 0x1b,
@@ -302,8 +312,8 @@ static void test_ecdsa_p256_roundtrip(void) {
 
   LOG_INFO("Signing");
   uint64_t t_start_sign = profile_start();
-  p256_ecdsa_sign(&otbn_ctx, kIn, kSecretRandomIntK, kPrivateKeyD, signature_r,
-                  signature_s);
+  p256_ecdsa_sign(&otbn_ctx, kIn, kBlindingRnd, kSecretRandomIntK, kPrivateKeyD,
+                  signature_r, signature_s);
   profile_end(t_start_sign, "Sign");
   check_data("signature_r", signature_r, kExpectedSignatureR, 32);
   check_data("signature_s", signature_s, kExpectedSignatureS, 32);
