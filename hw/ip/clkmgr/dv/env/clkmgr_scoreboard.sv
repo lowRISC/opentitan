@@ -140,80 +140,67 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
   task monitor_div4_peri_clock();
     forever @cfg.clkmgr_vif.peri_div4_cb begin
-      logic gated_clock;
-      logic gating_condition = cfg.clkmgr_vif.peri_div4_cb.clk_enable &&
-            cfg.clkmgr_vif.peri_div4_cb.ip_clk_en ||
-            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      logic enable = cfg.clkmgr_vif.peri_div4_cb.clk_enable;
+      logic clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
+      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      logic gating_condition = enable && clk_en || scan_en;
       #0;
-      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div4_peri;
-      check_clock("div4", gating_condition, gated_clock);
+      check_clock("div4", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_peri);
       if (cfg.en_cov) begin
-        cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
-                                          cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                          cfg.clkmgr_vif.scanmode_i);
+        cov.peri_cg_wrap[PeriDiv4].sample(enable, clk_en, scan_en);
       end
     end
   endtask
 
   task monitor_div2_peri_clock();
     forever @cfg.clkmgr_vif.peri_div2_cb begin
-      logic gated_clock;
-      logic gating_condition = cfg.clkmgr_vif.peri_div2_cb.clk_enable &&
-            cfg.clkmgr_vif.peri_div2_cb.ip_clk_en ||
-            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      logic enable = cfg.clkmgr_vif.peri_div2_cb.clk_enable;
+      logic clk_en = cfg.clkmgr_vif.peri_div2_cb.ip_clk_en;
+      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      logic gating_condition = enable && clk_en || scan_en;
       #0;
-      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div2_peri;
-      check_clock("div2", gating_condition, gated_clock);
+      check_clock("div2", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div2_peri);
       if (cfg.en_cov) begin
-        cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
-                                          cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                          cfg.clkmgr_vif.scanmode_i);
+        cov.peri_cg_wrap[PeriDiv2].sample(enable, clk_en, scan_en);
       end
     end
   endtask
 
   task monitor_io_peri_clock();
     forever @cfg.clkmgr_vif.peri_io_cb begin
-      logic gated_clock;
-      logic gating_condition = cfg.clkmgr_vif.peri_io_cb.clk_enable &&
-            cfg.clkmgr_vif.peri_io_cb.ip_clk_en ||
-            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      logic enable = cfg.clkmgr_vif.peri_io_cb.clk_enable;
+      logic clk_en = cfg.clkmgr_vif.peri_io_cb.ip_clk_en;
+      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      logic gating_condition = enable && clk_en || scan_en;
       #0;
-      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_peri;
-      check_clock("io", gating_condition, gated_clock);
+      check_clock("io", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_peri);
       if (cfg.en_cov) begin
-        cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
-                                        cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                        cfg.clkmgr_vif.scanmode_i);
+        cov.peri_cg_wrap[PeriIo].sample(enable, clk_en, scan_en);
       end
     end
   endtask
 
   task monitor_usb_peri_clock();
     forever @cfg.clkmgr_vif.peri_usb_cb begin
-      logic gated_clock;
-      logic gating_condition = cfg.clkmgr_vif.peri_usb_cb.clk_enable &&
-            cfg.clkmgr_vif.peri_usb_cb.ip_clk_en ||
-            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      logic enable = cfg.clkmgr_vif.peri_usb_cb.clk_enable;
+      logic clk_en = cfg.clkmgr_vif.peri_usb_cb.ip_clk_en;
+      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      logic gating_condition = enable && clk_en || scan_en;
       #0;
-      gated_clock = cfg.clkmgr_vif.clocks_o.clk_usb_peri;
-      check_clock("usb", gating_condition, gated_clock);
+      check_clock("usb", gating_condition, cfg.clkmgr_vif.clocks_o.clk_usb_peri);
       if (cfg.en_cov) begin
-        cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
-                                         cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                         cfg.clkmgr_vif.scanmode_i);
+        cov.peri_cg_wrap[PeriUsb].sample(enable, clk_en, scan_en);
       end
     end
   endtask
 
   task monitor_trans_clock(int trans_index);
     forever @cfg.clkmgr_vif.trans_cb begin
-      logic gated_clock;
-      logic gating_condition =
-            (cfg.clkmgr_vif.trans_cb.clk_hints[trans_index] ||
-             !cfg.clkmgr_vif.trans_cb.idle_i[trans_index]) &&
-            cfg.clkmgr_vif.trans_cb.ip_clk_en ||
-            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      logic hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
+      logic idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
+      logic clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
+      logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+      logic gating_condition = (hint || !idle) && clk_en || scan_en;
       trans_e trans = trans_e'(trans_index);
       #0;
       case (trans)
@@ -231,8 +218,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
       endcase
       if (cfg.en_cov) begin
-        cov.update_trans_cgs(cfg.clkmgr_vif.trans_cb.clk_hints, cfg.clkmgr_vif.trans_cb.ip_clk_en,
-                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.trans_cb.idle_i);
+        cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
       end
     end
   endtask
