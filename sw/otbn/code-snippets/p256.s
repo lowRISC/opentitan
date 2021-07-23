@@ -1444,13 +1444,13 @@ mod_inv_var:
  * host side. The signature is valid if x1 == r.
  * This routine runs in variable time.
  *
- * @param[in]  dmem[4]: dptr_x1, pointer to dmem location where the reduced
- *                           affine x1-coordinate will be stored
  * @param[in]  dmem[8]: dptr_msg, pointer to the message to be verified in dmem
  * @param[in]  dmem[12]: dptr_r, pointer to s of signature in dmem
  * @param[in]  dmem[16]: dptr_s, pointer to r of signature in dmem
  * @param[in]  dmem[20]: dptr_x, pointer to x-coordinate of public key in dmem
  * @param[in]  dmem[20]: dptr_y, pointer to y-coordinate of public key in dmem
+ * @param[in]  dmem[32]: dptr_x_r, pointer to dmem location where the reduced
+ *                           affine x_r-coordinate will be stored (aka x_1)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1468,8 +1468,8 @@ p256_verify:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load dmem pointer to x1 (result) from dmem: x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
+  /* load dmem pointer to x_r (result) from dmem: x17 <= dptr_x_r = dmem[32] */
+  la        x17, dptr_x_r
   lw        x17, 0(x17)
 
   /* load dmem pointer to message msg in dmem: x18 <= dptr_msg = dmem[8] */
@@ -1679,7 +1679,7 @@ p256_verify:
   bn.subm   w24, w19, w31
 
   fail:
-  /* store affine x-coordinate in dmem: dmem[dptr_x1] = w24 = x1 */
+  /* store affine x-coordinate in dmem: dmem[dptr_x_r] = w24 = x_r */
   li        x2, 24
   bn.sid    x2, 0(x17)
 
@@ -1799,6 +1799,12 @@ dptr_y:
 .globl dptr_d
 .balign 4
 dptr_d:
+  .zero 4
+
+/* pointer to verification result x_r aka x_1 (dptr_x_r) */
+.globl dptr_x_r
+.balign 4
+dptr_x_r:
   .zero 4
 
 /* P-256 domain parameter b */

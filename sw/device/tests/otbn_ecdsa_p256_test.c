@@ -44,6 +44,7 @@ OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_s);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_y);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_d);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x_r);
 
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, k);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, rnd);
@@ -53,6 +54,7 @@ OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, s);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, x);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, y);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, d);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa);
 static const otbn_ptr_t kOtbnAppP256EcdsaFuncSign =
@@ -68,6 +70,7 @@ static const otbn_ptr_t kOtbnVarDptrS = OTBN_PTR_T_INIT(p256_ecdsa, dptr_s);
 static const otbn_ptr_t kOtbnVarDptrX = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x);
 static const otbn_ptr_t kOtbnVarDptrY = OTBN_PTR_T_INIT(p256_ecdsa, dptr_y);
 static const otbn_ptr_t kOtbnVarDptrD = OTBN_PTR_T_INIT(p256_ecdsa, dptr_d);
+static const otbn_ptr_t kOtbnVarDptrXR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x_r);
 
 static const otbn_ptr_t kOtbnVarK = OTBN_PTR_T_INIT(p256_ecdsa, k);
 static const otbn_ptr_t kOtbnVarRnd = OTBN_PTR_T_INIT(p256_ecdsa, rnd);
@@ -77,6 +80,7 @@ static const otbn_ptr_t kOtbnVarS = OTBN_PTR_T_INIT(p256_ecdsa, s);
 static const otbn_ptr_t kOtbnVarX = OTBN_PTR_T_INIT(p256_ecdsa, x);
 static const otbn_ptr_t kOtbnVarY = OTBN_PTR_T_INIT(p256_ecdsa, y);
 static const otbn_ptr_t kOtbnVarD = OTBN_PTR_T_INIT(p256_ecdsa, d);
+static const otbn_ptr_t kOtbnVarXR = OTBN_PTR_T_INIT(p256_ecdsa, x_r);
 
 const test_config_t kTestConfig;
 
@@ -155,6 +159,7 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
   setup_data_pointer(otbn_ctx, kOtbnVarDptrX, kOtbnVarX);
   setup_data_pointer(otbn_ctx, kOtbnVarDptrY, kOtbnVarY);
   setup_data_pointer(otbn_ctx, kOtbnVarDptrD, kOtbnVarD);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrXR, kOtbnVarXR);
 }
 
 /**
@@ -210,7 +215,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  * @param signature_s          The signature component s (the proof) (32B).
  * @param public_key_x         The public key x-coordinate (32B).
  * @param public_key_y         The public key y-coordinate (32B).
- * @param[out] signature_r_out Recovered point r' (== R'.x). Provide a
+ * @param[out] signature_x_r   Recovered point x_r (== R'.x). Provide a
  *                             pre-allocated 32B buffer.
  */
 static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
@@ -218,7 +223,7 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
                               const uint8_t *signature_s,
                               const uint8_t *public_key_x,
                               const uint8_t *public_key_y,
-                              uint8_t *signature_r_out) {
+                              uint8_t *signature_x_r) {
   CHECK(otbn_ctx != NULL);
 
   // Set pointers to input arguments.
@@ -241,8 +246,8 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
-  CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarRnd,
-                                 signature_r_out) == kOtbnOk);
+  CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarXR,
+                                 signature_x_r) == kOtbnOk);
 }
 
 /**
@@ -324,17 +329,17 @@ static void test_ecdsa_p256_roundtrip(void) {
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
 
   // Verify
-  uint8_t signature_r_out[32] = {0};
+  uint8_t signature_x_r[32] = {0};
 
   LOG_INFO("Verifying");
   uint64_t t_start_verify = profile_start();
   p256_ecdsa_verify(&otbn_ctx, kIn, signature_r, signature_s, kPublicKeyQx,
-                    kPublicKeyQy, signature_r_out);
+                    kPublicKeyQy, signature_x_r);
 
-  // Include the r =? r' comparison in the profiling as this is something
+  // Include the r =? x_r comparison in the profiling as this is something
   // either OTBN or the host CPU needs to do as part of the signature
   // verification.
-  check_data("signature_r_out", signature_r_out, signature_r, 32);
+  check_data("signature_x_r", signature_x_r, signature_r, 32);
   profile_end(t_start_verify, "Verify");
 
   // Clear OTBN memory
