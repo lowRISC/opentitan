@@ -57,19 +57,19 @@ ${make_ral_pkg_hdr(dv_base_prefix, [])}
 ${make_ral_pkg_fwd_decls(esc_if_name, rb.type_regs, rb.windows)}
 % for r in rb.all_regs:
 <%
+    mr = None
     if isinstance(r, MultiRegister):
-      reg = r.reg
+      mr = r
       if r.dv_compact:
-        reg.fields = r.regs[0].fields
-        regs = [reg]
+        regs = [r.reg]
       else:
         regs = r.regs
     else:
       regs = [r]
 %>\
-  % for reg in regs:
+  % for idx, reg in enumerate(regs):
 
-${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)}
+${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg, mr, idx)}
   % endfor
 % endfor
 % for window in rb.windows:
@@ -245,8 +245,14 @@ endpackage
 ##
 ##    reg_block_path   as for make_ral_pkg
 ##
-##    reg              a Register or MultiRegister object
-<%def name="make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)">\
+##    reg              a Register object
+##
+##    mr               a MultiRegister object if this reg is from a MultiRegister
+##
+##    reg_idx          the index location of this reg if this reg is from a MultiRegister,
+##                     or zero if not
+<%def name="make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path,
+reg, mr, reg_idx)">\
 <%
   reg_name = reg.name.lower()
 
@@ -261,9 +267,50 @@ endpackage
 %>\
   class ${class_name} extends ${dv_base_prefix}_reg;
     // fields
-% for f in reg.fields:
+<%
+  suffix = ""
+  start_idx = 0
+  add_style_waive = False
+  compact_field_inst_name = ""
+  if mr is None:
+      fields = reg.fields
+  else:
+    if not mr.compact:
+      fields = mr.reg.fields
+    else:
+      fields = mr.regs[reg_idx].fields
+      compact_field_inst_name = mr.reg.fields[0].name.lower()
+      if mr.dv_compact:
+        # The dv_compact flag means that the fields of the multi-reg divide equally into registers.
+        # In this case, there's an array of registers and make_ral_pkg_reg_class() gets called once
+        # to define that array's type, using the fields of the first register in the replication.
+        assert reg_idx == 0
+        if len(fields) > 1:
+          suffix = f'[{len(fields)}]'
+      else:
+        # In this case, the multi-register is "compact", so there might be multiple copies of its
+        # single field in each generated register. But dv_compact is false, which probably means
+        # that the fields didn't divide equally into a whole number of registers. In this case, we
+        # are generating a different class for each output register and should spit out fields
+        # accordingly. Note that we generate an array, even if len(fields) = 1. If that happens, we
+        # know we're on the last generated register, so want to keep everything uniform.
+        num_fields_per_reg = 32 // fields[0].bits.width()
+        start_idx = num_fields_per_reg * reg_idx
+        end_idx = start_idx + len(fields) - 1
+        suffix = f'[{start_idx}:{end_idx}]'
+        if start_idx == 0:
+          add_style_waive = True
+%>\
+% if add_style_waive:
+    // verilog_lint: waive unpacked-dimensions-range-ordering
+% endif
+% if compact_field_inst_name:
+    rand ${dv_base_prefix}_reg_field ${compact_field_inst_name}${suffix};
+% else:
+%   for f in fields:
     rand ${dv_base_prefix}_reg_field ${f.name.lower()};
-% endfor
+%   endfor
+% endif
 
     `uvm_object_utils(${class_name})
 
@@ -275,12 +322,14 @@ endpackage
 
     virtual function void build(csr_excl_item csr_excl = null);
       // create fields
-% for field in reg.fields:
+% for idx, field in enumerate(fields):
 <%
-    if len(reg.fields) == 1:
-      reg_field_name = reg_name
+    if compact_field_inst_name:
+      reg_field_name = compact_field_inst_name
+      if len(fields) > 1:
+        reg_field_name = reg_field_name + f'[{idx + start_idx}]'
     else:
-      reg_field_name = reg_name + "_" + field.name.lower()
+      reg_field_name = field.name.lower()
 %>\
 ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg.hwext, reg_field_name, field)}
 % endfor
@@ -322,11 +371,11 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
     field_volatile = 1
   field_tags = field.tags
 
-  fname = field.name.lower()
+  fname = reg_field_name
   type_id_indent = ' ' * (len(fname) + 4)
 %>\
       ${fname} = (${dv_base_prefix}_reg_field::
-      ${type_id_indent}type_id::create("${fname}"));
+      ${type_id_indent}type_id::create("${field.name.lower()}"));
       ${fname}.configure(
         .parent(this),
         .size(${field_size}),
@@ -346,7 +395,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
   tag = field_tag.split(":")
 %>\
 %       if tag[0] == "excl":
-      csr_excl.add_excl(${field.name.lower()}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${fname}.get_full_name(), ${tag[2]}, ${tag[1]});
 %       endif
 %     endfor
 %   endif

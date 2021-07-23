@@ -626,7 +626,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   // Check if write has any write_blank_error, then potentially read might have ECC
                   // error.
                   bit [TL_DW-1:0] err_code = `gmv(ral.err_code);
-                  if (get_field_val(ral.err_code.err_code_7, err_code) == OtpMacroWriteBlankError ||
+                  if (get_field_val(ral.err_code.err_code[7], err_code) == OtpMacroWriteBlankError ||
                       cfg.ecc_err != OtpNoEccErr) begin
                     bit [TL_DW-1:0] read_out;
                     int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
