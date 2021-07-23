@@ -186,6 +186,11 @@ module rstmgr_reg_top (
   logic sw_rst_ctrl_n_val_8_wd;
   logic sw_rst_ctrl_n_val_9_qs;
   logic sw_rst_ctrl_n_val_9_wd;
+  logic err_code_we;
+  logic err_code_reg_intg_err_qs;
+  logic err_code_reg_intg_err_wd;
+  logic err_code_reset_consistency_err_qs;
+  logic err_code_reset_consistency_err_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -917,8 +922,60 @@ module rstmgr_reg_top (
   );
 
 
+  // R[err_code]: V(False)
+  //   F[reg_intg_err]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_reg_intg_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [11:0] addr_hit;
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_reg_intg_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.reg_intg_err.de),
+    .d      (hw2reg.err_code.reg_intg_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_reg_intg_err_qs)
+  );
+
+  //   F[reset_consistency_err]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_reset_consistency_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_reset_consistency_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.reset_consistency_err.de),
+    .d      (hw2reg.err_code.reset_consistency_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_reset_consistency_err_qs)
+  );
+
+
+
+  logic [12:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
@@ -933,6 +990,7 @@ module rstmgr_reg_top (
     addr_hit[ 9] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
     addr_hit[10] = (reg_addr == RSTMGR_SW_RST_REGWEN_OFFSET);
     addr_hit[11] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
+    addr_hit[12] = (reg_addr == RSTMGR_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -951,7 +1009,8 @@ module rstmgr_reg_top (
                (addr_hit[ 8] & (|(RSTMGR_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(RSTMGR_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(RSTMGR_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(RSTMGR_PERMIT[11] & ~reg_be)))));
+               (addr_hit[11] & (|(RSTMGR_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(RSTMGR_PERMIT[12] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1028,6 +1087,11 @@ module rstmgr_reg_top (
   assign sw_rst_ctrl_n_val_8_wd = reg_wdata[8];
 
   assign sw_rst_ctrl_n_val_9_wd = reg_wdata[9];
+  assign err_code_we = addr_hit[12] & reg_we & !reg_error;
+
+  assign err_code_reg_intg_err_wd = reg_wdata[0];
+
+  assign err_code_reset_consistency_err_wd = reg_wdata[1];
 
   // Read data return
   always_comb begin
@@ -1102,6 +1166,11 @@ module rstmgr_reg_top (
         reg_rdata_next[7] = sw_rst_ctrl_n_val_7_qs;
         reg_rdata_next[8] = sw_rst_ctrl_n_val_8_qs;
         reg_rdata_next[9] = sw_rst_ctrl_n_val_9_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[0] = err_code_reg_intg_err_qs;
+        reg_rdata_next[1] = err_code_reset_consistency_err_qs;
       end
 
       default: begin

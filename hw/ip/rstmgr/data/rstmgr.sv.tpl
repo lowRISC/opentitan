@@ -137,10 +137,10 @@ module rstmgr
   // Register Interface                             //
   ////////////////////////////////////////////////////
 
-  logic [NumAlerts-1:0] alert_test, alerts;
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
+  logic reg_intg_err;
   rstmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -148,13 +148,34 @@ module rstmgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(alerts[0]),
+    .intg_err_o(reg_intg_err),
     .devmode_i(1'b1)
   );
+
+
+  ////////////////////////////////////////////////////
+  // Errors                                         //
+  ////////////////////////////////////////////////////
+
+  // consistency check errors
+  logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+
+  assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
+  assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
+  assign hw2reg.err_code.reset_consistency_err.d  = 1'b1;
+  assign hw2reg.err_code.reset_consistency_err.de = |cnsty_chk_errs |
+                                                    |shadow_cnsty_chk_errs;
 
   ////////////////////////////////////////////////////
   // Alerts                                         //
   ////////////////////////////////////////////////////
+  logic [NumAlerts-1:0] alert_test, alerts;
+
+  // All of these are fatal alerts
+  assign alerts[0] = reg_intg_err |
+                     |cnsty_chk_errs |
+                     |shadow_cnsty_chk_errs;
 
   assign alert_test = {
     reg2hw.alert_test.q &
@@ -290,55 +311,45 @@ module rstmgr
 % for i, rst in enumerate(leaf_rsts):
 <%
   names = [rst.name]
+  err_prefix = [""]
   if rst.shadowed:
     names.append(f'{rst.name}_shadowed')
+    err_prefix.append('shadow_')
 %>\
   // Generating resets for ${rst.name}
   // Power Domains: ${rst.domains}
   // Shadowed: ${rst.shadowed}
-  % for name in names:
-  logic [PowerDomains-1:0] rst_${name}_n;
+  % for j, name in enumerate(names):
     % for domain in power_domains:
        % if domain in rst.domains:
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_${domain.lower()}_${name} (
-    .clk_i(clk_${rst.clock.name}_i),
-    .rst_ni(rst_${rst.parent}_n[Domain${domain}Sel]),
-        % if rst.sw:
-    .d_i(sw_rst_ctrl_n[${rst.name.upper()}]),
-        % else:
-    .d_i(1'b1),
-        % endif
-    .q_o(rst_${name}_n[Domain${domain}Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_${domain.lower()}_${name}_mux (
-    .clk0_i(rst_${name}_n[Domain${domain}Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_${name}_n[Domain${domain}Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_${name}_domain_${domain.lower()} (
-    .clk_i(clk_${rst.clock.name}_i),
-    .rst_ni(rst_${name}_n[Domain${domain}Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_${name}[Domain${domain}Sel])
+  rstmgr_leaf_rst u_d${domain.lower()}_${name} (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_${rst.clock.name}_i),
+    .parent_rst_ni(rst_${rst.parent}_n[Domain${domain}Sel]),
+         % if rst.sw:
+    .sw_rst_req_ni(sw_rst_ctrl_n[${rst.name.upper()}]),
+         % else:
+    .sw_rst_req_ni(1'b1),
+         % endif
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_${name}[Domain${domain}Sel]),
+    .leaf_rst_o(resets_o.rst_${name}_n[Domain${domain}Sel]),
+    .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel])
   );
       % else:
-  assign rst_${name}_n[Domain${domain}Sel] = 1'b0;
-  assign resets_o.rst_${name}_n[Domain${domain}Sel] = rst_${name}_n[Domain${domain}Sel];
+  assign resets_o.rst_${name}_n[Domain${domain}Sel] = '0;
+  assign ${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel] = '0;
   assign rst_en_o.rst_${name}[Domain${domain}Sel] = lc_ctrl_pkg::On;
       % endif
     % endfor
+    % if len(names) == 1:
+  assign shadow_cnsty_chk_errs[${i}] = '0;
+    % endif
   % endfor
+
 % endfor
 
   ////////////////////////////////////////////////////

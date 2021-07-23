@@ -391,5 +391,31 @@
                "excl:CsrAllTests:CsrExclWrite"]
       }
     }
+
+    { name: "ERR_CODE",
+      desc: '''
+        A bit vector of all the errors that have occurred in reset manager
+      ''',
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "REG_INTG_ERR",
+          desc: '''
+            The register file has experienced an integrity error.
+          '''
+          resval: "0"
+        },
+
+        { bits: "1",
+          name: "RESET_CONSISTENCY_ERR",
+          desc: '''
+            A inconsistent parent / child reset was observed.
+          '''
+          resval: "0"
+        },
+
+      ]
+    },
   ]
 }
