@@ -133,7 +133,7 @@ CreatorRootKey = KM_DERIVE(RootKey,
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td>RootKey</td>
+    <td id="root-key">RootKey</td>
     <td>OTP</td>
     <td>
 Device root key. Provisioned at manufacturing time by the Silicon Creator.
@@ -142,7 +142,7 @@ Hidden from software once personalization is complete.
     </td>
   </tr>
   <tr>
-    <td>DiversificationKey</td>
+    <td id="diversification-key">DiversificationKey</td>
     <td>Flash</td>
     <td>
 Additional diversification key stored in flash. Provisioned at
@@ -274,7 +274,7 @@ OwnerIntermediateKey =
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td>OwnerRootSecret</td>
+    <td id="owner-root-secret">OwnerRootSecret</td>
     <td>Flash</td>
     <td>
 Used as a diversification constant with acceptable entropy. Provisioned at
