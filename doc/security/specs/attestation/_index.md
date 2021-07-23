@@ -505,7 +505,7 @@ wrapped_key = AES_256_CTR(wrapping_key, iv, private_key)
 
 Certificates stored in the device adhere to standard X.509 format, meeting the
 profile specification requirements from
-[RFC 5280](https://tools.ietf.org/html/rfc5280), and the Google DICE profile
+[RFC 5280](https://tools.ietf.org/html/rfc5280), and the [Open DICE][open-dice] profile
 specification.
 
 ### Public Key Identifiers
@@ -618,7 +618,7 @@ as defined in [rfc5480](https://tools.ietf.org/html/rfc5480#section-2).
   <tr>
     <td>Extensions</td>
     <td>
-Extensions for compatibility with Google DICE profile:
+Extensions for compatibility with [Open DICE][open-dice] profile:
 
 *   `subjectKeyIdentifier` (non-critical). Used to identify certificates that
     contain a particular public key. Set to the creator public key identifier
@@ -782,7 +782,7 @@ as defined in [rfc5480](https://tools.ietf.org/html/rfc5480#section-2).
   <tr>
     <td>Extensions</td>
     <td>
-Extensions for compatibility with Google DICE profile:
+Extensions for compatibility with [Open DICE][open-dice] profile:
 
 *   `authorityKeyIdentifier` (non-critical). Used to identify certificates that
     contain a particular public key.
@@ -863,7 +863,6 @@ implementation to bind the OpenTitan attestation to any application level
 attestation flows without precluding the implementation of additional privacy
 measures at the application level.
 
-
 <!-- Footnotes themselves at the bottom. -->
 ## Notes
 
@@ -874,3 +873,6 @@ provided by the current owner to verify the authenticity of the device.
 
 [^2]: The Creator Identity is referred to as the Unique Device Secret (UDS) in
 DICE terminology.
+
+<!-- References -->
+[open-dice]: https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md
