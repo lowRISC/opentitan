@@ -86,7 +86,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       es_enable_early;
   logic       es_enable_lfsr;
   logic       es_enable_rng;
-  logic       es_rng_rdy;
   logic       rng_bit_en;
   logic [1:0] rng_bit_sel;
   logic       lfsr_incr;
@@ -384,7 +383,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [1:0]  es_enable_q, es_enable_d;
-  logic        rng_rdy_q, rng_rdy_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -402,7 +400,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
       es_enable_q           <= '0;
-      rng_rdy_q             <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -418,7 +415,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
       es_enable_q           <= es_enable_d;
-      rng_rdy_q             <= rng_rdy_d;
     end
 
   assign es_enable_d = reg2hw.conf.enable.q;
@@ -438,7 +434,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fw_ov_fifo_wr_pulse = reg2hw.fw_ov_wr_data.qe;
   assign fw_ov_wr_data = reg2hw.fw_ov_wr_data.q;
 
-  assign entropy_src_rng_o.rng_enable = es_enable_rng && es_rng_rdy;
+  assign entropy_src_rng_o.rng_enable = es_enable_rng;
 
   assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
   assign es_rng_bus = entropy_src_rng_i.rng_b;
@@ -683,7 +679,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
-  assign sfifo_esrng_push = (es_enable_rng && es_rng_src_valid && es_rng_rdy);
+  assign sfifo_esrng_push = (es_enable_rng && es_rng_src_valid);
 
   assign sfifo_esrng_clr  = !es_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
@@ -694,12 +690,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
          {1'b0,
          (sfifo_esrng_pop && !sfifo_esrng_not_empty),
          (sfifo_esrng_full && !sfifo_esrng_not_empty)};
-
-
-  // rng pacer for back-to-back streams of input
-  assign rng_rdy_d = !sfifo_esrng_push;
-
-  assign es_rng_rdy = rng_rdy_q;
 
 
   // pack esrng bus into signal bit packer
