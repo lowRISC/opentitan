@@ -71,8 +71,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
+      // TODO: Remove exclusion
       tags: [ // Exclude from writes to these bits since hardware actions will start.
-              "excl:CsrAllTests:CsrExclWrite"]
+              "excl:CsrAllTests:CsrExclAll"]
       fields: [
         { bits: "3:0",
           name: "EDN_ENABLE",

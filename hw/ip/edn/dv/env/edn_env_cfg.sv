@@ -19,20 +19,24 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   `uvm_object_new
 
   // Knobs & Weights
-  uint                 enable_pct, boot_req_mode_pct, auto_req_mode_pct;
+  uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct;
 
-  // TODO: confirm that modes are a signle bit below
-  rand bit       enable;
-  rand bit       boot_req_mode;
-  rand bit       auto_req_mode;
+  rand bit[3:0]   enable;
+  rand bit[3:0]   boot_req_mode;
+  rand bit[3:0]   auto_req_mode;
 
   // Constraints
-  constraint c_enable {enable dist { 1 :/ enable_pct, 0:/ (100 - enable_pct) };}
-
-  constraint c_boot_req_mode {boot_req_mode dist { 1 :/ boot_req_mode_pct,
-                                                  0 :/ (100 - boot_req_mode_pct) };}
-  constraint c_auto_req_mode {auto_req_mode dist { 1 :/ auto_req_mode_pct,
-                                                  0 :/ (100 - auto_req_mode_pct) };}
+  constraint c_enable {enable dist {
+                       edn_pkg::EDN_FIELD_ON         :/ enable_pct,
+                       [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - enable_pct)/2,
+                       [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - enable_pct)/2 };}
+  constraint c_boot_req_mode {boot_req_mode dist {
+                              edn_pkg::EDN_FIELD_ON :/ boot_req_mode_pct,
+                              [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - boot_req_mode_pct)/2,
+                              [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - boot_req_mode_pct)/2 };}
+  constraint c_auto_req_mode {auto_req_mode dist {
+                              [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - auto_req_mode_pct)/2,
+                              [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - auto_req_mode_pct)/2 };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;

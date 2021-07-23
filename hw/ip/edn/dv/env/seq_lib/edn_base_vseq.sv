@@ -32,6 +32,13 @@ class edn_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+
+    // Enable edn, set modes
+    ral.ctrl.edn_enable.set(cfg.enable);
+    ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
+    ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
+    csr_update(.csr(ral.ctrl));
+
   endtask
 
   virtual task dut_shutdown();
