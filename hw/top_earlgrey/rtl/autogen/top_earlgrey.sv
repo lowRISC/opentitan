@@ -766,7 +766,7 @@ module top_earlgrey #(
     otp_ctrl_otp_hw_cfg.data.unallocated
   };
 
-  // Unused reset signals
+  // certain resets are unused
   logic unused_d0_rst_por_aon;
   logic unused_d0_rst_por;
   logic unused_d0_rst_por_io;
@@ -775,6 +775,7 @@ module top_earlgrey #(
   logic unused_d0_rst_por_usb;
   logic unused_daon_rst_lc;
   logic unused_daon_rst_sys;
+  logic unused_daon_rst_sys_shadowed;
   logic unused_daon_rst_spi_device;
   logic unused_daon_rst_spi_host0;
   logic unused_daon_rst_spi_host1;
@@ -790,6 +791,7 @@ module top_earlgrey #(
   assign unused_d0_rst_por_usb = rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel];
   assign unused_daon_rst_lc = rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_sys = rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainAonSel];
+  assign unused_daon_rst_sys_shadowed = rstmgr_aon_resets.rst_sys_shadowed_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_device = rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_host0 = rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_host1 = rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::DomainAonSel];
@@ -1552,6 +1554,7 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_timers),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_sys_io_div4_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
@@ -2056,6 +2059,7 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_aes),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_aes),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_sys_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
@@ -2161,6 +2165,7 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_secure),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_sys_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );

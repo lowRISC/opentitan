@@ -11,7 +11,6 @@ module pinmux_reg_top (
   input rst_ni,
   input clk_aon_i,
   input rst_aon_ni,
-
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -17909,108 +17908,114 @@ module pinmux_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  assign shadow_busy = 1'b0;
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[381]: begin
-        reg_busy = wkup_detector_en_0_busy;
+        reg_busy_sel = wkup_detector_en_0_busy;
       end
       addr_hit[382]: begin
-        reg_busy = wkup_detector_en_1_busy;
+        reg_busy_sel = wkup_detector_en_1_busy;
       end
       addr_hit[383]: begin
-        reg_busy = wkup_detector_en_2_busy;
+        reg_busy_sel = wkup_detector_en_2_busy;
       end
       addr_hit[384]: begin
-        reg_busy = wkup_detector_en_3_busy;
+        reg_busy_sel = wkup_detector_en_3_busy;
       end
       addr_hit[385]: begin
-        reg_busy = wkup_detector_en_4_busy;
+        reg_busy_sel = wkup_detector_en_4_busy;
       end
       addr_hit[386]: begin
-        reg_busy = wkup_detector_en_5_busy;
+        reg_busy_sel = wkup_detector_en_5_busy;
       end
       addr_hit[387]: begin
-        reg_busy = wkup_detector_en_6_busy;
+        reg_busy_sel = wkup_detector_en_6_busy;
       end
       addr_hit[388]: begin
-        reg_busy = wkup_detector_en_7_busy;
+        reg_busy_sel = wkup_detector_en_7_busy;
       end
       addr_hit[389]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_0_mode_0_busy |
           wkup_detector_0_filter_0_busy |
           wkup_detector_0_miodio_0_busy;
       end
       addr_hit[390]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_1_mode_1_busy |
           wkup_detector_1_filter_1_busy |
           wkup_detector_1_miodio_1_busy;
       end
       addr_hit[391]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_2_mode_2_busy |
           wkup_detector_2_filter_2_busy |
           wkup_detector_2_miodio_2_busy;
       end
       addr_hit[392]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_3_mode_3_busy |
           wkup_detector_3_filter_3_busy |
           wkup_detector_3_miodio_3_busy;
       end
       addr_hit[393]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_4_mode_4_busy |
           wkup_detector_4_filter_4_busy |
           wkup_detector_4_miodio_4_busy;
       end
       addr_hit[394]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_5_mode_5_busy |
           wkup_detector_5_filter_5_busy |
           wkup_detector_5_miodio_5_busy;
       end
       addr_hit[395]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_6_mode_6_busy |
           wkup_detector_6_filter_6_busy |
           wkup_detector_6_miodio_6_busy;
       end
       addr_hit[396]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_detector_7_mode_7_busy |
           wkup_detector_7_filter_7_busy |
           wkup_detector_7_miodio_7_busy;
       end
       addr_hit[397]: begin
-        reg_busy = wkup_detector_cnt_th_0_busy;
+        reg_busy_sel = wkup_detector_cnt_th_0_busy;
       end
       addr_hit[398]: begin
-        reg_busy = wkup_detector_cnt_th_1_busy;
+        reg_busy_sel = wkup_detector_cnt_th_1_busy;
       end
       addr_hit[399]: begin
-        reg_busy = wkup_detector_cnt_th_2_busy;
+        reg_busy_sel = wkup_detector_cnt_th_2_busy;
       end
       addr_hit[400]: begin
-        reg_busy = wkup_detector_cnt_th_3_busy;
+        reg_busy_sel = wkup_detector_cnt_th_3_busy;
       end
       addr_hit[401]: begin
-        reg_busy = wkup_detector_cnt_th_4_busy;
+        reg_busy_sel = wkup_detector_cnt_th_4_busy;
       end
       addr_hit[402]: begin
-        reg_busy = wkup_detector_cnt_th_5_busy;
+        reg_busy_sel = wkup_detector_cnt_th_5_busy;
       end
       addr_hit[403]: begin
-        reg_busy = wkup_detector_cnt_th_6_busy;
+        reg_busy_sel = wkup_detector_cnt_th_6_busy;
       end
       addr_hit[404]: begin
-        reg_busy = wkup_detector_cnt_th_7_busy;
+        reg_busy_sel = wkup_detector_cnt_th_7_busy;
       end
       addr_hit[413]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_cause_cause_0_busy |
           wkup_cause_cause_1_busy |
           wkup_cause_cause_2_busy |
@@ -18021,10 +18026,11 @@ module pinmux_reg_top (
           wkup_cause_cause_7_busy;
       end
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff

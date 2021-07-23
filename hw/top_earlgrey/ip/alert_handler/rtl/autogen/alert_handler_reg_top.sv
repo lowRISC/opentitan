@@ -9,7 +9,7 @@
 module alert_handler_reg_top (
   input clk_i,
   input rst_ni,
-
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -1759,6 +1759,7 @@ module alert_handler_reg_top (
   ) u_ping_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (ping_timeout_cyc_shadowed_re),
@@ -1791,6 +1792,7 @@ module alert_handler_reg_top (
   ) u_ping_timer_en_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (ping_timer_en_shadowed_re),
@@ -3690,6 +3692,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_0_re),
@@ -3722,6 +3725,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_1_re),
@@ -3754,6 +3758,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_2_re),
@@ -3786,6 +3791,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_3_re),
@@ -3818,6 +3824,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_4_re),
@@ -3850,6 +3857,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_5_re),
@@ -3882,6 +3890,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_6_re),
@@ -3914,6 +3923,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_7_re),
@@ -3946,6 +3956,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_8_re),
@@ -3978,6 +3989,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_9_re),
@@ -4010,6 +4022,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_10_re),
@@ -4042,6 +4055,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_11_re),
@@ -4074,6 +4088,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_12_re),
@@ -4106,6 +4121,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_13_re),
@@ -4138,6 +4154,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_14_re),
@@ -4170,6 +4187,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_15_re),
@@ -4202,6 +4220,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_16_re),
@@ -4234,6 +4253,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_17_re),
@@ -4266,6 +4286,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_18_re),
@@ -4298,6 +4319,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_19_re),
@@ -4330,6 +4352,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_20_re),
@@ -4362,6 +4385,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_21_re),
@@ -4394,6 +4418,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_22_re),
@@ -4426,6 +4451,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_23_re),
@@ -4458,6 +4484,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_24_re),
@@ -4490,6 +4517,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_25_re),
@@ -4522,6 +4550,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_26_re),
@@ -4554,6 +4583,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_27_re),
@@ -4586,6 +4616,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_28_re),
@@ -4618,6 +4649,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_29_re),
@@ -4650,6 +4682,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_30_re),
@@ -4682,6 +4715,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_31_re),
@@ -4714,6 +4748,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_32_re),
@@ -4746,6 +4781,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_33_re),
@@ -4778,6 +4814,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_34_re),
@@ -4810,6 +4847,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_35_re),
@@ -4842,6 +4880,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_36_re),
@@ -4874,6 +4913,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_37_re),
@@ -4906,6 +4946,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_38_re),
@@ -4938,6 +4979,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_39_re),
@@ -4970,6 +5012,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_40_re),
@@ -5002,6 +5045,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_41_re),
@@ -5034,6 +5078,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_42_re),
@@ -5066,6 +5111,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_43_re),
@@ -5098,6 +5144,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_44_re),
@@ -5130,6 +5177,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_45_re),
@@ -5162,6 +5210,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_46_re),
@@ -5194,6 +5243,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_47_re),
@@ -5226,6 +5276,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_48_re),
@@ -5258,6 +5309,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_49_re),
@@ -5290,6 +5342,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_50_re),
@@ -5322,6 +5375,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_51_re),
@@ -5354,6 +5408,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_52_re),
@@ -5386,6 +5441,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_53_re),
@@ -5418,6 +5474,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_54_re),
@@ -5450,6 +5507,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_55_re),
@@ -5482,6 +5540,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_56_re),
@@ -5514,6 +5573,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_57_re),
@@ -5546,6 +5606,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_58_re),
@@ -5578,6 +5639,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_59_re),
@@ -5610,6 +5672,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_60_re),
@@ -5642,6 +5705,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_61_re),
@@ -5674,6 +5738,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_62_re),
@@ -5706,6 +5771,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_63_re),
@@ -5738,6 +5804,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_64_re),
@@ -5770,6 +5837,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_65_re),
@@ -5802,6 +5870,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_66_re),
@@ -5834,6 +5903,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_67_re),
@@ -5866,6 +5936,7 @@ module alert_handler_reg_top (
   ) u_alert_en_shadowed_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_en_shadowed_68_re),
@@ -5900,6 +5971,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_0_re),
@@ -5932,6 +6004,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_1_re),
@@ -5964,6 +6037,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_2_re),
@@ -5996,6 +6070,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_3_re),
@@ -6028,6 +6103,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_4_re),
@@ -6060,6 +6136,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_5_re),
@@ -6092,6 +6169,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_6_re),
@@ -6124,6 +6202,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_7_re),
@@ -6156,6 +6235,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_8_re),
@@ -6188,6 +6268,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_9_re),
@@ -6220,6 +6301,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_10_re),
@@ -6252,6 +6334,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_11_re),
@@ -6284,6 +6367,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_12_re),
@@ -6316,6 +6400,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_13_re),
@@ -6348,6 +6433,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_14_re),
@@ -6380,6 +6466,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_15_re),
@@ -6412,6 +6499,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_16_re),
@@ -6444,6 +6532,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_17_re),
@@ -6476,6 +6565,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_18_re),
@@ -6508,6 +6598,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_19_re),
@@ -6540,6 +6631,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_20_re),
@@ -6572,6 +6664,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_21_re),
@@ -6604,6 +6697,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_22_re),
@@ -6636,6 +6730,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_23_re),
@@ -6668,6 +6763,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_24_re),
@@ -6700,6 +6796,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_25_re),
@@ -6732,6 +6829,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_26_re),
@@ -6764,6 +6862,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_27_re),
@@ -6796,6 +6895,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_28_re),
@@ -6828,6 +6928,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_29_re),
@@ -6860,6 +6961,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_30_re),
@@ -6892,6 +6994,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_31_re),
@@ -6924,6 +7027,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_32_re),
@@ -6956,6 +7060,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_33_re),
@@ -6988,6 +7093,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_34_re),
@@ -7020,6 +7126,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_35_re),
@@ -7052,6 +7159,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_36_re),
@@ -7084,6 +7192,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_37_re),
@@ -7116,6 +7225,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_38_re),
@@ -7148,6 +7258,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_39_re),
@@ -7180,6 +7291,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_40_re),
@@ -7212,6 +7324,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_41_re),
@@ -7244,6 +7357,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_42_re),
@@ -7276,6 +7390,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_43_re),
@@ -7308,6 +7423,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_44_re),
@@ -7340,6 +7456,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_45_re),
@@ -7372,6 +7489,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_46_re),
@@ -7404,6 +7522,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_47_re),
@@ -7436,6 +7555,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_48_re),
@@ -7468,6 +7588,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_49_re),
@@ -7500,6 +7621,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_50_re),
@@ -7532,6 +7654,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_51_re),
@@ -7564,6 +7687,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_52_re),
@@ -7596,6 +7720,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_53_re),
@@ -7628,6 +7753,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_54_re),
@@ -7660,6 +7786,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_55_re),
@@ -7692,6 +7819,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_56_re),
@@ -7724,6 +7852,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_57_re),
@@ -7756,6 +7885,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_58_re),
@@ -7788,6 +7918,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_59_re),
@@ -7820,6 +7951,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_60_re),
@@ -7852,6 +7984,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_61_re),
@@ -7884,6 +8017,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_62_re),
@@ -7916,6 +8050,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_63_re),
@@ -7948,6 +8083,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_64_re),
@@ -7980,6 +8116,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_65_re),
@@ -8012,6 +8149,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_66_re),
@@ -8044,6 +8182,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_67_re),
@@ -8076,6 +8215,7 @@ module alert_handler_reg_top (
   ) u_alert_class_shadowed_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (alert_class_shadowed_68_re),
@@ -10166,6 +10306,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_0_re),
@@ -10198,6 +10339,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_1_re),
@@ -10230,6 +10372,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_2_re),
@@ -10262,6 +10405,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_3_re),
@@ -10294,6 +10438,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_4_re),
@@ -10326,6 +10471,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_5_re),
@@ -10358,6 +10504,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_en_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_en_shadowed_6_re),
@@ -10392,6 +10539,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_0_re),
@@ -10424,6 +10572,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_1_re),
@@ -10456,6 +10605,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_2_re),
@@ -10488,6 +10638,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_3_re),
@@ -10520,6 +10671,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_4_re),
@@ -10552,6 +10704,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_5_re),
@@ -10584,6 +10737,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_class_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (loc_alert_class_shadowed_6_re),
@@ -10835,6 +10989,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -10866,6 +11021,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -10897,6 +11053,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -10928,6 +11085,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -10959,6 +11117,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -10990,6 +11149,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -11021,6 +11181,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -11052,6 +11213,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -11083,6 +11245,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -11114,6 +11277,7 @@ module alert_handler_reg_top (
   ) u_classa_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
@@ -11216,6 +11380,7 @@ module alert_handler_reg_top (
   ) u_classa_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_accum_thresh_shadowed_re),
@@ -11248,6 +11413,7 @@ module alert_handler_reg_top (
   ) u_classa_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_timeout_cyc_shadowed_re),
@@ -11280,6 +11446,7 @@ module alert_handler_reg_top (
   ) u_classa_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_phase0_cyc_shadowed_re),
@@ -11312,6 +11479,7 @@ module alert_handler_reg_top (
   ) u_classa_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_phase1_cyc_shadowed_re),
@@ -11344,6 +11512,7 @@ module alert_handler_reg_top (
   ) u_classa_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_phase2_cyc_shadowed_re),
@@ -11376,6 +11545,7 @@ module alert_handler_reg_top (
   ) u_classa_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classa_phase3_cyc_shadowed_re),
@@ -11468,6 +11638,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11499,6 +11670,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11530,6 +11702,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11561,6 +11734,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11592,6 +11766,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11623,6 +11798,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11654,6 +11830,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11685,6 +11862,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11716,6 +11894,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11747,6 +11926,7 @@ module alert_handler_reg_top (
   ) u_classb_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
@@ -11849,6 +12029,7 @@ module alert_handler_reg_top (
   ) u_classb_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_accum_thresh_shadowed_re),
@@ -11881,6 +12062,7 @@ module alert_handler_reg_top (
   ) u_classb_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_timeout_cyc_shadowed_re),
@@ -11913,6 +12095,7 @@ module alert_handler_reg_top (
   ) u_classb_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_phase0_cyc_shadowed_re),
@@ -11945,6 +12128,7 @@ module alert_handler_reg_top (
   ) u_classb_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_phase1_cyc_shadowed_re),
@@ -11977,6 +12161,7 @@ module alert_handler_reg_top (
   ) u_classb_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_phase2_cyc_shadowed_re),
@@ -12009,6 +12194,7 @@ module alert_handler_reg_top (
   ) u_classb_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classb_phase3_cyc_shadowed_re),
@@ -12101,6 +12287,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12132,6 +12319,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12163,6 +12351,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12194,6 +12383,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12225,6 +12415,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12256,6 +12447,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12287,6 +12479,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12318,6 +12511,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12349,6 +12543,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12380,6 +12575,7 @@ module alert_handler_reg_top (
   ) u_classc_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
@@ -12482,6 +12678,7 @@ module alert_handler_reg_top (
   ) u_classc_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_accum_thresh_shadowed_re),
@@ -12514,6 +12711,7 @@ module alert_handler_reg_top (
   ) u_classc_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_timeout_cyc_shadowed_re),
@@ -12546,6 +12744,7 @@ module alert_handler_reg_top (
   ) u_classc_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_phase0_cyc_shadowed_re),
@@ -12578,6 +12777,7 @@ module alert_handler_reg_top (
   ) u_classc_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_phase1_cyc_shadowed_re),
@@ -12610,6 +12810,7 @@ module alert_handler_reg_top (
   ) u_classc_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_phase2_cyc_shadowed_re),
@@ -12642,6 +12843,7 @@ module alert_handler_reg_top (
   ) u_classc_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classc_phase3_cyc_shadowed_re),
@@ -12734,6 +12936,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12765,6 +12968,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12796,6 +13000,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12827,6 +13032,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12858,6 +13064,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12889,6 +13096,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12920,6 +13128,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12951,6 +13160,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -12982,6 +13192,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -13013,6 +13224,7 @@ module alert_handler_reg_top (
   ) u_classd_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
@@ -13115,6 +13327,7 @@ module alert_handler_reg_top (
   ) u_classd_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_accum_thresh_shadowed_re),
@@ -13147,6 +13360,7 @@ module alert_handler_reg_top (
   ) u_classd_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_timeout_cyc_shadowed_re),
@@ -13179,6 +13393,7 @@ module alert_handler_reg_top (
   ) u_classd_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_phase0_cyc_shadowed_re),
@@ -13211,6 +13426,7 @@ module alert_handler_reg_top (
   ) u_classd_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_phase1_cyc_shadowed_re),
@@ -13243,6 +13459,7 @@ module alert_handler_reg_top (
   ) u_classd_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_phase2_cyc_shadowed_re),
@@ -13275,6 +13492,7 @@ module alert_handler_reg_top (
   ) u_classd_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (classd_phase3_cyc_shadowed_re),
@@ -16905,15 +17123,41 @@ module alert_handler_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff

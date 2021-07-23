@@ -11,7 +11,6 @@ module aon_timer_reg_top (
   input rst_ni,
   input clk_aon_i,
   input rst_aon_ni,
-
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -676,43 +675,50 @@ module aon_timer_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  assign shadow_busy = 1'b0;
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[1]: begin
-        reg_busy =
+        reg_busy_sel =
           wkup_ctrl_enable_busy |
           wkup_ctrl_prescaler_busy;
       end
       addr_hit[2]: begin
-        reg_busy = wkup_thold_busy;
+        reg_busy_sel = wkup_thold_busy;
       end
       addr_hit[3]: begin
-        reg_busy = wkup_count_busy;
+        reg_busy_sel = wkup_count_busy;
       end
       addr_hit[5]: begin
-        reg_busy =
+        reg_busy_sel =
           wdog_ctrl_enable_busy |
           wdog_ctrl_pause_in_sleep_busy;
       end
       addr_hit[6]: begin
-        reg_busy = wdog_bark_thold_busy;
+        reg_busy_sel = wdog_bark_thold_busy;
       end
       addr_hit[7]: begin
-        reg_busy = wdog_bite_thold_busy;
+        reg_busy_sel = wdog_bite_thold_busy;
       end
       addr_hit[8]: begin
-        reg_busy = wdog_count_busy;
+        reg_busy_sel = wdog_count_busy;
       end
       addr_hit[11]: begin
-        reg_busy = wkup_cause_busy;
+        reg_busy_sel = wkup_cause_busy;
       end
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff
