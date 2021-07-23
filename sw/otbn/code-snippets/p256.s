@@ -1156,6 +1156,10 @@ p256_sign:
   li        x2, 0
   bn.lid    x2, 0(x16)
 
+  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  li        x2, 1
+  bn.lid    x2, 0(x17)
+
   /* scalar multiplication with base point
      (x_1, y_1) = (w11, w12) <= d*G = w0*(dmem[dptr_x], dmem[dptr_y]) */
   la        x21, p256_gx
@@ -1248,7 +1252,6 @@ p256_base_mult:
   /* load scalar d: w0 <= d = dmem[dptr_d] */
   la        x16, dptr_d
   lw        x16, 0(x16)
-  bn.lid    x0, 0(x16)
 
   /* load dmem pointer to random number for blinding rnd in dmem:
      x17 <= dptr_rnd = dmem[4] */
@@ -1258,6 +1261,14 @@ p256_base_mult:
   /* set dmem pointers to base point coordinates */
   la        x21, p256_gx
   la        x22, p256_gy
+
+  /* load private key d from dmem: w0 = dmem[dptr_d] */
+  li        x2, 0
+  bn.lid    x2, 0(x16)
+
+  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  li        x2, 1
+  bn.lid    x2, 0(x17)
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */
@@ -1705,7 +1716,6 @@ p256_scalar_mult:
   /* load dmem pointer to scalar k: x16 <= dptr_k = dmem[0] */
   la        x16, dptr_k
   lw        x16, 0(x16)
-  bn.lid    x0, 0(x16)
 
   /* load dmem pointer to random number for blinding rnd in dmem:
      x17 <= dptr_rnd = dmem[4] */
@@ -1719,6 +1729,14 @@ p256_scalar_mult:
   /* set dmem pointer to point y-coordinate */
   la        x22, dptr_y
   lw        x22, 0(x22)
+
+  /* load private key d from dmem: w0 = dmem[dptr_d] */
+  li        x2, 0
+  bn.lid    x2, 0(x16)
+
+  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  li        x2, 1
+  bn.lid    x2, 0(x17)
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */

@@ -32,6 +32,7 @@ p256_ecdsa_verify:
 k:
   .zero 32
 
+/* randomness for blinding */
 .globl rnd
 .balign 32
 rnd:
