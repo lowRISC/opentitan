@@ -1,0 +1,41 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_esc
+
+  // Top level dut name (sv module).
+  dut: prim_esc
+
+  // Top level testbench name (sv module).
+  tb: prim_esc_tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_esc_sim:0.1
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 1
+
+  // List of test specifications.
+  tests: [
+    {
+      name: prim_esc_test
+      run_opts: ["+test_timeout_ns=1_000"]
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["prim_esc_test"]
+    }
+  ]
+}
