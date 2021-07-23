@@ -22,7 +22,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'verilator': {
-        'min_version': '4.104',
+        'min_version': '4.210',
         'as_needed': True
     },
     'hugo_extended': {
