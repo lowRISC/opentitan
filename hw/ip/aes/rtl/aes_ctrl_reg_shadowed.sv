@@ -22,7 +22,7 @@ module aes_ctrl_reg_shadowed
 ) (
   input  logic clk_i,
   input  logic rst_ni,
-
+  input  logic rst_shadowed_ni,
   // Main control
   output logic      qe_o, // software wants to write
   input  logic      we_i, // hardware grants software write
@@ -105,6 +105,7 @@ module aes_ctrl_reg_shadowed
   ) u_ctrl_reg_shadowed_operation (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.operation.re),
     .we         (we_i),
     .wd         (ctrl_wd.operation),
@@ -124,6 +125,7 @@ module aes_ctrl_reg_shadowed
   ) u_ctrl_reg_shadowed_mode (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.mode.re),
     .we         (we_i),
     .wd         ({ctrl_wd.mode}),
@@ -143,6 +145,7 @@ module aes_ctrl_reg_shadowed
   ) u_ctrl_reg_shadowed_key_len (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.key_len.re),
     .we         (we_i),
     .wd         ({ctrl_wd.key_len}),
@@ -162,6 +165,7 @@ module aes_ctrl_reg_shadowed
   ) u_ctrl_reg_shadowed_manual_operation (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.manual_operation.re),
     .we         (we_i),
     .wd         (ctrl_wd.manual_operation),
@@ -181,6 +185,7 @@ module aes_ctrl_reg_shadowed
   ) u_ctrl_reg_shadowed_force_zero_masks (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.force_zero_masks.re),
     .we         (we_i),
     .wd         (ctrl_wd.force_zero_masks),

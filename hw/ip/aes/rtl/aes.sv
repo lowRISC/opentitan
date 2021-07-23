@@ -38,6 +38,7 @@ module aes
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
+  input  logic                                      rst_shadowed_ni,
 
   // Idle indicator for clock manager
   output logic                                      idle_o,
@@ -157,7 +158,7 @@ module aes
   ) u_aes_core (
     .clk_i                  ( clk_i                ),
     .rst_ni                 ( rst_ni               ),
-
+    .rst_shadowed_ni        ( rst_shadowed_ni      ),
     .entropy_clearing_req_o ( entropy_clearing_req ),
     .entropy_clearing_ack_i ( entropy_clearing_ack ),
     .entropy_clearing_i     ( edn_data             ),

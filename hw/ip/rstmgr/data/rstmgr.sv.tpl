@@ -248,38 +248,47 @@ module rstmgr
  );
 
 % for i, rst in enumerate(leaf_rsts):
-  logic [PowerDomains-1:0] rst_${rst['name']}_n;
-  % for domain in power_domains:
-     % if domain in reset_obj.get_reset_domains(rst['name']):
+<%
+  names = [rst.name]
+  if rst.shadowed:
+    names.append(f'{rst.name}_shadowed')
+%>\
+  // Generating resets for ${rst.name}
+  // Power Domains: ${rst.domains}
+  // Shadowed: ${rst.shadowed}
+  % for name in names:
+  logic [PowerDomains-1:0] rst_${name}_n;
+    % for domain in power_domains:
+       % if domain in rst.domains:
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_${domain.lower()}_${rst['name']} (
-    .clk_i(clk_${rst['clk']}_i),
-    .rst_ni(rst_${rst['parent']}_n[Domain${domain}Sel]),
-      % if rst["sw"]:
-    .d_i(sw_rst_ctrl_n[${rst['name'].upper()}]),
-      % else:
+  ) u_${domain.lower()}_${name} (
+    .clk_i(clk_${rst.clock.name}_i),
+    .rst_ni(rst_${rst.parent}_n[Domain${domain}Sel]),
+        % if rst.sw:
+    .d_i(sw_rst_ctrl_n[${rst.name.upper()}]),
+        % else:
     .d_i(1'b1),
-      % endif
-    .q_o(rst_${rst['name']}_n[Domain${domain}Sel])
+        % endif
+    .q_o(rst_${name}_n[Domain${domain}Sel])
   );
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
-  ) u_${domain.lower()}_${rst['name']}_mux (
-    .clk0_i(rst_${rst['name']}_n[Domain${domain}Sel]),
+  ) u_${domain.lower()}_${name}_mux (
+    .clk0_i(rst_${name}_n[Domain${domain}Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_${rst['name']}_n[Domain${domain}Sel])
+    .clk_o(resets_o.rst_${name}_n[Domain${domain}Sel])
   );
 
-    % else:
-  assign rst_${rst['name']}_n[Domain${domain}Sel] = 1'b0;
-  assign resets_o.rst_${rst['name']}_n[Domain${domain}Sel] = rst_${rst['name']}_n[Domain${domain}Sel];
+      % else:
+  assign rst_${name}_n[Domain${domain}Sel] = 1'b0;
+  assign resets_o.rst_${name}_n[Domain${domain}Sel] = rst_${name}_n[Domain${domain}Sel];
 
-
-    % endif
+      % endif
+    % endfor
   % endfor
 % endfor
 

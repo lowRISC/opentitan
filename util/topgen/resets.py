@@ -22,6 +22,10 @@ class ResetItem:
         elif self.rst_type == 'ext':
             self.path = f"{hier['ext']}{self.name}"
 
+        self.shadow_path = ""
+        if self.rst_type == 'top':
+            self.shadow_path = f"{hier['top']}rst_{self.name}_shadowed_n"
+
         # to be constructed later
         self.domains = []
         self.shadowed = False
@@ -109,27 +113,18 @@ class Resets:
 
         return clocks.keys()
 
-    def get_generated_resets(self) -> Dict[str, object]:
-        '''Get generated resets and return dict with
-           with related clock
+    def get_generated_resets(self) -> list:
+        '''Get generated resets and return reset object
         '''
+        return [reset
+                for reset in self.nodes.values()
+                if reset.gen]
 
-        ret = []
-        for reset in self.nodes.values():
-            if reset.gen:
-                entry = {}
-                entry['name'] = reset.name
-                entry['clk'] = reset.clock.name
-                entry['parent'] = reset.parent
-                entry['sw'] = reset.sw
-                ret.append(entry)
-
-        return ret
 
     def get_top_resets(self) -> list:
         '''Get resets pushed to the top level'''
 
-        return [reset.name
+        return [reset
                 for reset in self.nodes.values()
                 if reset.rst_type == 'top']
 
@@ -140,7 +135,7 @@ class Resets:
                 for reset in self.nodes.values()
                 if reset.sw]
 
-    def get_path(self, name: str, domain: Optional[str]) -> str:
+    def get_path(self, name: str, domain: Optional[str], shadow = False) -> str:
         '''Get path to reset'''
 
         reset = self.get_reset_by_name(name)
@@ -150,11 +145,17 @@ class Resets:
         if reset.rst_type == 'ext':
             return reset.path
 
-        # if a generated reset
-        if domain:
-            return f'{reset.path}[rstmgr_pkg::Domain{domain}Sel]'
+
+        if shadow:
+            path = reset.shadow_path
         else:
-            return reset.path
+            path = reset.path
+
+        if domain:
+            path += f'[rstmgr_pkg::Domain{domain}Sel]'
+
+        return path
+
 
     def get_unused_resets(self, domains: list) -> Dict[str, str]:
         '''Get unused resets'''
@@ -167,7 +168,13 @@ class Resets:
         for reset in top_resets:
             for dom in domains:
                 if dom not in reset.domains:
-                    ret[reset.name] = dom
+                    doml = dom.lower()
+                    ret[f'unused_d{doml}_rst_{reset.name}'] = \
+                        f'{reset.path}[rstmgr_pkg::Domain{dom}Sel]'
+
+                    if reset.shadowed:
+                        ret[f'unused_d{doml}_rst_{reset.name}_shadowed'] = \
+                            f'{reset.shadow_path}[rstmgr_pkg::Domain{dom}Sel]'
 
         return ret
 
@@ -180,3 +187,12 @@ class Resets:
         if reset.rst_type == 'top':
             if domain not in reset.domains:
                 reset.domains.append(domain)
+
+    def has_shadowed_reset(self) -> bool:
+        '''Do any generated resets have a shadow version?'''
+
+        for reset in self.nodes.values():
+            if reset.shadowed:
+                return True
+
+        return False

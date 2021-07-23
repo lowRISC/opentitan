@@ -37,6 +37,7 @@ module tb;
   ) dut (
     .clk_i            ( clk                           ),
     .rst_ni           ( rst_n                         ),
+    .rst_shadowed_ni  ( rst_n                         ),
 
     .idle_o           (                               ),
     .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),

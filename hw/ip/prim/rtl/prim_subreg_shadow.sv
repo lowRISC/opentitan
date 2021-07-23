@@ -13,6 +13,7 @@ module prim_subreg_shadow
 ) (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
 
   // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
   // SW reads clear phase unless SwAccess is RO.
@@ -123,15 +124,15 @@ module prim_subreg_shadow
     .SwAccess ( InvertedSwAccess ),
     .RESVAL   ( ~RESVAL          )
   ) shadow_reg (
-    .clk_i    ( clk_i     ),
-    .rst_ni   ( rst_ni    ),
-    .we       ( shadow_we ),
-    .wd       ( staged_q  ),
-    .de       ( shadow_de ),
-    .d        ( staged_q  ),
-    .qe       ( shadow_qe ),
-    .q        ( shadow_q  ),
-    .qs       (           )
+    .clk_i    ( clk_i           ),
+    .rst_ni   ( rst_shadowed_ni ),
+    .we       ( shadow_we       ),
+    .wd       ( staged_q        ),
+    .de       ( shadow_de       ),
+    .d        ( staged_q        ),
+    .qe       ( shadow_qe       ),
+    .q        ( shadow_q        ),
+    .qs       (                 )
   );
 
   // The committed register:

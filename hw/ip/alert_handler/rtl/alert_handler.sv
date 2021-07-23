@@ -21,6 +21,7 @@ module alert_handler
 ) (
   input                           clk_i,
   input                           rst_ni,
+  input                           rst_shadowed_ni,
   input                           clk_edn_i,
   input                           rst_edn_ni,
   // Bus Interface (device)
@@ -61,6 +62,7 @@ module alert_handler
   alert_handler_reg_wrap u_reg_wrap (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .tl_i,
     .tl_o,
     .irq_o ( irq ),

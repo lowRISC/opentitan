@@ -497,3 +497,13 @@ class RegBlock:
                 return True
 
         return False
+
+    def has_internal_shadowed_reg(self) -> bool:
+        '''Return boolean indication whether reg block contains shadowed reigsters in
+           internal registers
+        '''
+        for r in self.flat_regs:
+            if r.shadowed and not r.hwext:
+                return True
+
+        return False

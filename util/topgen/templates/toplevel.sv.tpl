@@ -256,12 +256,12 @@ module top_${top["name"]} #(
   % endif
 % endfor
 
-  // Unused reset signals
-% for k, v in unused_resets.items():
-  logic unused_d${v.lower()}_rst_${k};
+  // certain resets are unused
+% for k in unused_resets.keys():
+  logic ${k};
 % endfor
 % for k, v in unused_resets.items():
-  assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top)};
+  assign ${k} = ${v};
 % endfor
 
   // ibex specific assignments
@@ -321,7 +321,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}),
     % endfor
     % for port, reset in resets.items():
-    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
+    .${port}   (${lib.get_reset_path(top, reset, m['domain'])}),
     % endfor
 
     .tl_i        (${m["name"]}_tl_req),
@@ -345,7 +345,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}),
     % endfor
     % for port, reset in resets.items():
-    .${port}   (${lib.get_reset_path(reset, m['domain'], top)}),
+    .${port}   (${lib.get_reset_path(top, reset, m['domain'])}),
     % endfor
     .host_req_i        (flash_host_req),
     .host_intg_err_i   (flash_host_intg_err),
@@ -497,7 +497,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .${k} (${v}),
     % endfor
     % for port, reset in m["reset_connections"].items():
-      .${port} (${lib.get_reset_path(reset, m['domain'], top)})${"," if not loop.last else ""}
+      % if lib.is_shadowed_port(block, port):
+      .${lib.shadow_name(port)} (${lib.get_reset_path(top, reset, m['domain'], True)}),
+      % endif:
+      .${port} (${lib.get_reset_path(top, reset, m['domain'])})${"," if not loop.last else ""}
     % endfor
   );
 
@@ -522,7 +525,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${v}),
   % endfor
   % for port, reset in xbar["reset_connections"].items():
-    .${port} (${lib.get_reset_path(reset, xbar["domain"], top)}),
+    .${port} (${lib.get_reset_path(top, reset, xbar["domain"])}),
   % endfor
 
   ## Inter-module signal
