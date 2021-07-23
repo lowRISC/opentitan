@@ -11,7 +11,6 @@ module adc_ctrl_reg_top (
   input rst_ni,
   input clk_aon_i,
   input rst_aon_ni,
-
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -3117,167 +3116,174 @@ module adc_ctrl_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  assign shadow_busy = 1'b0;
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[4]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_en_ctl_adc_enable_busy |
           adc_en_ctl_oneshot_mode_busy;
       end
       addr_hit[5]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_pd_ctl_lp_mode_busy |
           adc_pd_ctl_pwrup_time_busy |
           adc_pd_ctl_wakeup_time_busy;
       end
       addr_hit[6]: begin
-        reg_busy = adc_lp_sample_ctl_busy;
+        reg_busy_sel = adc_lp_sample_ctl_busy;
       end
       addr_hit[7]: begin
-        reg_busy = adc_sample_ctl_busy;
+        reg_busy_sel = adc_sample_ctl_busy;
       end
       addr_hit[8]: begin
-        reg_busy = adc_fsm_rst_busy;
+        reg_busy_sel = adc_fsm_rst_busy;
       end
       addr_hit[9]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_0_min_v_0_busy |
           adc_chn0_filter_ctl_0_cond_0_busy |
           adc_chn0_filter_ctl_0_max_v_0_busy |
           adc_chn0_filter_ctl_0_en_0_busy;
       end
       addr_hit[10]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_1_min_v_1_busy |
           adc_chn0_filter_ctl_1_cond_1_busy |
           adc_chn0_filter_ctl_1_max_v_1_busy |
           adc_chn0_filter_ctl_1_en_1_busy;
       end
       addr_hit[11]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_2_min_v_2_busy |
           adc_chn0_filter_ctl_2_cond_2_busy |
           adc_chn0_filter_ctl_2_max_v_2_busy |
           adc_chn0_filter_ctl_2_en_2_busy;
       end
       addr_hit[12]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_3_min_v_3_busy |
           adc_chn0_filter_ctl_3_cond_3_busy |
           adc_chn0_filter_ctl_3_max_v_3_busy |
           adc_chn0_filter_ctl_3_en_3_busy;
       end
       addr_hit[13]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_4_min_v_4_busy |
           adc_chn0_filter_ctl_4_cond_4_busy |
           adc_chn0_filter_ctl_4_max_v_4_busy |
           adc_chn0_filter_ctl_4_en_4_busy;
       end
       addr_hit[14]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_5_min_v_5_busy |
           adc_chn0_filter_ctl_5_cond_5_busy |
           adc_chn0_filter_ctl_5_max_v_5_busy |
           adc_chn0_filter_ctl_5_en_5_busy;
       end
       addr_hit[15]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_6_min_v_6_busy |
           adc_chn0_filter_ctl_6_cond_6_busy |
           adc_chn0_filter_ctl_6_max_v_6_busy |
           adc_chn0_filter_ctl_6_en_6_busy;
       end
       addr_hit[16]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn0_filter_ctl_7_min_v_7_busy |
           adc_chn0_filter_ctl_7_cond_7_busy |
           adc_chn0_filter_ctl_7_max_v_7_busy |
           adc_chn0_filter_ctl_7_en_7_busy;
       end
       addr_hit[17]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_0_min_v_0_busy |
           adc_chn1_filter_ctl_0_cond_0_busy |
           adc_chn1_filter_ctl_0_max_v_0_busy |
           adc_chn1_filter_ctl_0_en_0_busy;
       end
       addr_hit[18]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_1_min_v_1_busy |
           adc_chn1_filter_ctl_1_cond_1_busy |
           adc_chn1_filter_ctl_1_max_v_1_busy |
           adc_chn1_filter_ctl_1_en_1_busy;
       end
       addr_hit[19]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_2_min_v_2_busy |
           adc_chn1_filter_ctl_2_cond_2_busy |
           adc_chn1_filter_ctl_2_max_v_2_busy |
           adc_chn1_filter_ctl_2_en_2_busy;
       end
       addr_hit[20]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_3_min_v_3_busy |
           adc_chn1_filter_ctl_3_cond_3_busy |
           adc_chn1_filter_ctl_3_max_v_3_busy |
           adc_chn1_filter_ctl_3_en_3_busy;
       end
       addr_hit[21]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_4_min_v_4_busy |
           adc_chn1_filter_ctl_4_cond_4_busy |
           adc_chn1_filter_ctl_4_max_v_4_busy |
           adc_chn1_filter_ctl_4_en_4_busy;
       end
       addr_hit[22]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_5_min_v_5_busy |
           adc_chn1_filter_ctl_5_cond_5_busy |
           adc_chn1_filter_ctl_5_max_v_5_busy |
           adc_chn1_filter_ctl_5_en_5_busy;
       end
       addr_hit[23]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_6_min_v_6_busy |
           adc_chn1_filter_ctl_6_cond_6_busy |
           adc_chn1_filter_ctl_6_max_v_6_busy |
           adc_chn1_filter_ctl_6_en_6_busy;
       end
       addr_hit[24]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn1_filter_ctl_7_min_v_7_busy |
           adc_chn1_filter_ctl_7_cond_7_busy |
           adc_chn1_filter_ctl_7_max_v_7_busy |
           adc_chn1_filter_ctl_7_en_7_busy;
       end
       addr_hit[25]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn_val_0_adc_chn_value_ext_0_busy |
           adc_chn_val_0_adc_chn_value_0_busy |
           adc_chn_val_0_adc_chn_value_intr_ext_0_busy |
           adc_chn_val_0_adc_chn_value_intr_0_busy;
       end
       addr_hit[26]: begin
-        reg_busy =
+        reg_busy_sel =
           adc_chn_val_1_adc_chn_value_ext_1_busy |
           adc_chn_val_1_adc_chn_value_1_busy |
           adc_chn_val_1_adc_chn_value_intr_ext_1_busy |
           adc_chn_val_1_adc_chn_value_intr_1_busy;
       end
       addr_hit[27]: begin
-        reg_busy = adc_wakeup_ctl_busy;
+        reg_busy_sel = adc_wakeup_ctl_busy;
       end
       addr_hit[28]: begin
-        reg_busy = filter_status_busy;
+        reg_busy_sel = filter_status_busy;
       end
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff

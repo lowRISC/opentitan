@@ -9,7 +9,7 @@
 module keymgr_reg_top (
   input clk_i,
   input rst_ni,
-
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -570,6 +570,7 @@ module keymgr_reg_top (
   ) u_reseed_interval_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (reseed_interval_shadowed_re),
@@ -1328,6 +1329,7 @@ module keymgr_reg_top (
   ) u_max_creator_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (max_creator_key_ver_shadowed_re),
@@ -1387,6 +1389,7 @@ module keymgr_reg_top (
   ) u_max_owner_int_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (max_owner_int_key_ver_shadowed_re),
@@ -1446,6 +1449,7 @@ module keymgr_reg_top (
   ) u_max_owner_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
     .re     (max_owner_key_ver_shadowed_re),
@@ -2866,15 +2870,41 @@ module keymgr_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff

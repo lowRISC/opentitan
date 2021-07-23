@@ -254,6 +254,9 @@ module rstmgr
     .lc_en_o(leaf_rst_scanmode)
  );
 
+  // Generating resets for por
+  // Power Domains: ['Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_por_n;
   prim_flop_2sync #(
     .Width(1),
@@ -277,7 +280,9 @@ module rstmgr
   assign rst_por_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_n[Domain0Sel] = rst_por_n[Domain0Sel];
 
-
+  // Generating resets for por_io
+  // Power Domains: ['Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_por_io_n;
   prim_flop_2sync #(
     .Width(1),
@@ -301,7 +306,9 @@ module rstmgr
   assign rst_por_io_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_io_n[Domain0Sel] = rst_por_io_n[Domain0Sel];
 
-
+  // Generating resets for por_io_div2
+  // Power Domains: ['Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_por_io_div2_n;
   prim_flop_2sync #(
     .Width(1),
@@ -325,7 +332,9 @@ module rstmgr
   assign rst_por_io_div2_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_io_div2_n[Domain0Sel] = rst_por_io_div2_n[Domain0Sel];
 
-
+  // Generating resets for por_io_div4
+  // Power Domains: ['Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_por_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
@@ -349,7 +358,9 @@ module rstmgr
   assign rst_por_io_div4_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_io_div4_n[Domain0Sel] = rst_por_io_div4_n[Domain0Sel];
 
-
+  // Generating resets for por_usb
+  // Power Domains: ['Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_por_usb_n;
   prim_flop_2sync #(
     .Width(1),
@@ -373,11 +384,12 @@ module rstmgr
   assign rst_por_usb_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_usb_n[Domain0Sel] = rst_por_usb_n[Domain0Sel];
 
-
+  // Generating resets for lc
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_lc_n;
   assign rst_lc_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -398,6 +410,9 @@ module rstmgr
     .clk_o(resets_o.rst_lc_n[Domain0Sel])
   );
 
+  // Generating resets for lc_io_div4
+  // Power Domains: ['0', 'Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_lc_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
@@ -437,10 +452,12 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
   );
 
+  // Generating resets for sys
+  // Power Domains: ['0']
+  // Shadowed: True
   logic [PowerDomains-1:0] rst_sys_n;
   assign rst_sys_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_sys_n[DomainAonSel] = rst_sys_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -461,6 +478,32 @@ module rstmgr
     .clk_o(resets_o.rst_sys_n[Domain0Sel])
   );
 
+  logic [PowerDomains-1:0] rst_sys_shadowed_n;
+  assign rst_sys_shadowed_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_sys_shadowed_n[DomainAonSel] = rst_sys_shadowed_n[DomainAonSel];
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_sys_shadowed (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_sys_shadowed_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_sys_shadowed_mux (
+    .clk0_i(rst_sys_shadowed_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_sys_shadowed_n[Domain0Sel])
+  );
+
+  // Generating resets for sys_io_div4
+  // Power Domains: ['0', 'Aon']
+  // Shadowed: True
   logic [PowerDomains-1:0] rst_sys_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
@@ -500,6 +543,48 @@ module rstmgr
     .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
   );
 
+  logic [PowerDomains-1:0] rst_sys_io_div4_shadowed_n;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_sys_io_div4_shadowed (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_src_n[DomainAonSel]),
+    .d_i(1'b1),
+    .q_o(rst_sys_io_div4_shadowed_n[DomainAonSel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_sys_io_div4_shadowed_mux (
+    .clk0_i(rst_sys_io_div4_shadowed_n[DomainAonSel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_sys_io_div4_shadowed_n[DomainAonSel])
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_sys_io_div4_shadowed (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_sys_io_div4_shadowed_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_sys_io_div4_shadowed_mux (
+    .clk0_i(rst_sys_io_div4_shadowed_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_sys_io_div4_shadowed_n[Domain0Sel])
+  );
+
+  // Generating resets for sys_aon
+  // Power Domains: ['0', 'Aon']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_sys_aon_n;
   prim_flop_2sync #(
     .Width(1),
@@ -539,10 +624,12 @@ module rstmgr
     .clk_o(resets_o.rst_sys_aon_n[Domain0Sel])
   );
 
+  // Generating resets for spi_device
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_device_n;
   assign rst_spi_device_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_device_n[DomainAonSel] = rst_spi_device_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -563,10 +650,12 @@ module rstmgr
     .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
   );
 
+  // Generating resets for spi_host0
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host0_n;
   assign rst_spi_host0_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host0_n[DomainAonSel] = rst_spi_host0_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -587,10 +676,12 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host0_n[Domain0Sel])
   );
 
+  // Generating resets for spi_host1
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host1_n;
   assign rst_spi_host1_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host1_n[DomainAonSel] = rst_spi_host1_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -611,10 +702,12 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host1_n[Domain0Sel])
   );
 
+  // Generating resets for usb
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_usb_n;
   assign rst_usb_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_usb_n[DomainAonSel] = rst_usb_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -635,10 +728,12 @@ module rstmgr
     .clk_o(resets_o.rst_usb_n[Domain0Sel])
   );
 
+  // Generating resets for i2c0
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c0_n;
   assign rst_i2c0_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c0_n[DomainAonSel] = rst_i2c0_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -659,10 +754,12 @@ module rstmgr
     .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
   );
 
+  // Generating resets for i2c1
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c1_n;
   assign rst_i2c1_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c1_n[DomainAonSel] = rst_i2c1_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),
@@ -683,10 +780,12 @@ module rstmgr
     .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
   );
 
+  // Generating resets for i2c2
+  // Power Domains: ['0']
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c2_n;
   assign rst_i2c2_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c2_n[DomainAonSel] = rst_i2c2_n[DomainAonSel];
-
 
   prim_flop_2sync #(
     .Width(1),

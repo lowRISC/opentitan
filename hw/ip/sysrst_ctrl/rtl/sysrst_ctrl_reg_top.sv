@@ -11,7 +11,6 @@ module sysrst_ctrl_reg_top (
   input rst_ni,
   input clk_aon_i,
   input rst_aon_ni,
-
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -4367,33 +4366,39 @@ module sysrst_ctrl_reg_top (
     endcase
   end
 
+  // shadow busy
+  logic shadow_busy;
+  assign shadow_busy = 1'b0;
+
   // register busy
+  logic reg_busy_sel;
+  assign reg_busy = reg_busy_sel | shadow_busy;
   always_comb begin
-    reg_busy = '0;
+    reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[5]: begin
-        reg_busy = ec_rst_ctl_busy;
+        reg_busy_sel = ec_rst_ctl_busy;
       end
       addr_hit[6]: begin
-        reg_busy = ulp_ac_debounce_ctl_busy;
+        reg_busy_sel = ulp_ac_debounce_ctl_busy;
       end
       addr_hit[7]: begin
-        reg_busy = ulp_lid_debounce_ctl_busy;
+        reg_busy_sel = ulp_lid_debounce_ctl_busy;
       end
       addr_hit[8]: begin
-        reg_busy = ulp_pwrb_debounce_ctl_busy;
+        reg_busy_sel = ulp_pwrb_debounce_ctl_busy;
       end
       addr_hit[9]: begin
-        reg_busy = ulp_ctl_busy;
+        reg_busy_sel = ulp_ctl_busy;
       end
       addr_hit[10]: begin
-        reg_busy = ulp_status_busy;
+        reg_busy_sel = ulp_status_busy;
       end
       addr_hit[11]: begin
-        reg_busy = wkup_status_busy;
+        reg_busy_sel = wkup_status_busy;
       end
       addr_hit[12]: begin
-        reg_busy =
+        reg_busy_sel =
           key_invert_ctl_key0_in_busy |
           key_invert_ctl_key0_out_busy |
           key_invert_ctl_key1_in_busy |
@@ -4408,7 +4413,7 @@ module sysrst_ctrl_reg_top (
           key_invert_ctl_z3_wakeup_busy;
       end
       addr_hit[13]: begin
-        reg_busy =
+        reg_busy_sel =
           pin_allowed_ctl_bat_disable_0_busy |
           pin_allowed_ctl_ec_rst_l_0_busy |
           pin_allowed_ctl_pwrb_out_0_busy |
@@ -4427,7 +4432,7 @@ module sysrst_ctrl_reg_top (
           pin_allowed_ctl_flash_wp_l_1_busy;
       end
       addr_hit[14]: begin
-        reg_busy =
+        reg_busy_sel =
           pin_out_ctl_bat_disable_busy |
           pin_out_ctl_ec_rst_l_busy |
           pin_out_ctl_pwrb_out_busy |
@@ -4438,7 +4443,7 @@ module sysrst_ctrl_reg_top (
           pin_out_ctl_flash_wp_l_busy;
       end
       addr_hit[15]: begin
-        reg_busy =
+        reg_busy_sel =
           pin_out_value_bat_disable_busy |
           pin_out_value_ec_rst_l_busy |
           pin_out_value_pwrb_out_busy |
@@ -4449,7 +4454,7 @@ module sysrst_ctrl_reg_top (
           pin_out_value_flash_wp_l_busy;
       end
       addr_hit[17]: begin
-        reg_busy =
+        reg_busy_sel =
           key_intr_ctl_pwrb_in_h2l_busy |
           key_intr_ctl_key0_in_h2l_busy |
           key_intr_ctl_key1_in_h2l_busy |
@@ -4464,15 +4469,15 @@ module sysrst_ctrl_reg_top (
           key_intr_ctl_ec_rst_l_l2h_busy;
       end
       addr_hit[18]: begin
-        reg_busy = key_intr_debounce_ctl_busy;
+        reg_busy_sel = key_intr_debounce_ctl_busy;
       end
       addr_hit[19]: begin
-        reg_busy =
+        reg_busy_sel =
           auto_block_debounce_ctl_debounce_timer_busy |
           auto_block_debounce_ctl_auto_block_enable_busy;
       end
       addr_hit[20]: begin
-        reg_busy =
+        reg_busy_sel =
           auto_block_out_ctl_key0_out_sel_busy |
           auto_block_out_ctl_key1_out_sel_busy |
           auto_block_out_ctl_key2_out_sel_busy |
@@ -4481,7 +4486,7 @@ module sysrst_ctrl_reg_top (
           auto_block_out_ctl_key2_out_value_busy;
       end
       addr_hit[21]: begin
-        reg_busy =
+        reg_busy_sel =
           com_sel_ctl_0_key0_in_sel_0_busy |
           com_sel_ctl_0_key1_in_sel_0_busy |
           com_sel_ctl_0_key2_in_sel_0_busy |
@@ -4489,7 +4494,7 @@ module sysrst_ctrl_reg_top (
           com_sel_ctl_0_ac_present_sel_0_busy;
       end
       addr_hit[22]: begin
-        reg_busy =
+        reg_busy_sel =
           com_sel_ctl_1_key0_in_sel_1_busy |
           com_sel_ctl_1_key1_in_sel_1_busy |
           com_sel_ctl_1_key2_in_sel_1_busy |
@@ -4497,7 +4502,7 @@ module sysrst_ctrl_reg_top (
           com_sel_ctl_1_ac_present_sel_1_busy;
       end
       addr_hit[23]: begin
-        reg_busy =
+        reg_busy_sel =
           com_sel_ctl_2_key0_in_sel_2_busy |
           com_sel_ctl_2_key1_in_sel_2_busy |
           com_sel_ctl_2_key2_in_sel_2_busy |
@@ -4505,7 +4510,7 @@ module sysrst_ctrl_reg_top (
           com_sel_ctl_2_ac_present_sel_2_busy;
       end
       addr_hit[24]: begin
-        reg_busy =
+        reg_busy_sel =
           com_sel_ctl_3_key0_in_sel_3_busy |
           com_sel_ctl_3_key1_in_sel_3_busy |
           com_sel_ctl_3_key2_in_sel_3_busy |
@@ -4513,54 +4518,54 @@ module sysrst_ctrl_reg_top (
           com_sel_ctl_3_ac_present_sel_3_busy;
       end
       addr_hit[25]: begin
-        reg_busy = com_det_ctl_0_busy;
+        reg_busy_sel = com_det_ctl_0_busy;
       end
       addr_hit[26]: begin
-        reg_busy = com_det_ctl_1_busy;
+        reg_busy_sel = com_det_ctl_1_busy;
       end
       addr_hit[27]: begin
-        reg_busy = com_det_ctl_2_busy;
+        reg_busy_sel = com_det_ctl_2_busy;
       end
       addr_hit[28]: begin
-        reg_busy = com_det_ctl_3_busy;
+        reg_busy_sel = com_det_ctl_3_busy;
       end
       addr_hit[29]: begin
-        reg_busy =
+        reg_busy_sel =
           com_out_ctl_0_bat_disable_0_busy |
           com_out_ctl_0_interrupt_0_busy |
           com_out_ctl_0_ec_rst_0_busy |
           com_out_ctl_0_rst_req_0_busy;
       end
       addr_hit[30]: begin
-        reg_busy =
+        reg_busy_sel =
           com_out_ctl_1_bat_disable_1_busy |
           com_out_ctl_1_interrupt_1_busy |
           com_out_ctl_1_ec_rst_1_busy |
           com_out_ctl_1_rst_req_1_busy;
       end
       addr_hit[31]: begin
-        reg_busy =
+        reg_busy_sel =
           com_out_ctl_2_bat_disable_2_busy |
           com_out_ctl_2_interrupt_2_busy |
           com_out_ctl_2_ec_rst_2_busy |
           com_out_ctl_2_rst_req_2_busy;
       end
       addr_hit[32]: begin
-        reg_busy =
+        reg_busy_sel =
           com_out_ctl_3_bat_disable_3_busy |
           com_out_ctl_3_interrupt_3_busy |
           com_out_ctl_3_ec_rst_3_busy |
           com_out_ctl_3_rst_req_3_busy;
       end
       addr_hit[33]: begin
-        reg_busy =
+        reg_busy_sel =
           combo_intr_status_combo0_h2l_busy |
           combo_intr_status_combo1_h2l_busy |
           combo_intr_status_combo2_h2l_busy |
           combo_intr_status_combo3_h2l_busy;
       end
       addr_hit[34]: begin
-        reg_busy =
+        reg_busy_sel =
           key_intr_status_pwrb_h2l_busy |
           key_intr_status_key0_in_h2l_busy |
           key_intr_status_key1_in_h2l_busy |
@@ -4575,10 +4580,11 @@ module sysrst_ctrl_reg_top (
           key_intr_status_ec_rst_l_l2h_busy;
       end
       default: begin
-        reg_busy  = '0;
+        reg_busy_sel  = '0;
       end
     endcase
   end
+
 
 
   // Unused signal tieoff
