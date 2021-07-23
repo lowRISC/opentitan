@@ -24,6 +24,8 @@ class entropy_src_env extends cip_base_env #(
                   (this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
     cfg.m_rng_agent_cfg.agent_type = push_pull_agent_pkg::PushAgent;
     cfg.m_rng_agent_cfg.if_mode    = dv_utils_pkg::Host;
+    cfg.m_rng_agent_cfg.host_delay_min = 6;
+    cfg.m_rng_agent_cfg.host_delay_max = 12;
 
     m_csrng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::type_id::
                     create("m_csrng_agent", this);
