@@ -73,3 +73,9 @@ y:
 .balign 32
 d:
   .zero 32
+
+/* verification result x_r (aka x_1) */
+.globl x_r
+.balign 32
+x_r:
+  .zero 32
