@@ -122,18 +122,17 @@ The reset topology also contains additional properties:
 
 ## Reset Manager
 
-The reset manager handles the reset of the core domain, and also holds relevant reset time information such as [reset reason]({{< regref "RESET_INFO" >}}) and [alert_reason]({{< regref "" >}}).
-*  Reset reason indicates why the system was reset.
-*  Alert reason indicates the recorded alert status prior to system reset.
-   *  This is useful in case the reset was triggered by an alert escalation.
+The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
-There is another TBD feature for recording [last host state](https://docs.google.com/document/d/1KnmIt7vj8vkfqgAIcx6HJo8KH6zirFNF1TxlL5K6Aso/edit?usp=sharing).
-*  Last host state indicates approximately what the host was doing prior to system reset.
+*  {{< regref "RESET_INFO" >}} indicates why the system was reset.
+*  {{< regref "ALERT_INFO" >}} contains the recorded alert status prior to system reset.
+   *  This is useful in case the reset was triggered by an alert escalation.
+*  {{< regref "CPU_INFO" >}} contains recorded CPU state prior to system reset.
    *  This is useful in case the reset was triggered by a watchdog where the host hung on a particular bus transaction.
 
 Additionally, the reset manager, along with the power manager, accepts requests from the system and asserts resets for the appropriate clock trees.
 These requests primarily come from the following sources:
-*  Peripherals capable of reset requests: such as [rbox]() and [always on timers ]().
+*  Peripherals capable of reset requests: such as [sysrst_ctrl]({{< relref "hw/ip/sysrst_ctrl/doc/_index.md" >}}) and [always on timers ]({{< relref "hw/ip/aon_timer/doc/_index.md" >}}).
 *  Debug modules such as `rv_dm`.
 *  Power manager request for low power entry and exit.
 
@@ -305,16 +304,16 @@ The enable for such debug capture can be locked such that it never captures.
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
 
-The [alert_info_attr]({{< regref "ALERT_INFO_ATTR" >}}) register indicates how many 32-bit data segments must be read.
-Software then simply needs to pick the segment it wishes to read and then read out the [alert_info]({{< regref "ALERT_INFO" >}}) register.
+The {{< regref "ALERT_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
+Software then simply needs to write in {{< regref "ALERT_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "ALERT_INFO" >}} register.
 
 ### CPU Information
 
 The cpu information register contains the value of the cpu state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
 
-The [cpu_info_attr]({{< regref "CPU_INFO_ATTR" >}}) register indicates how many 32-bit data segments must be read.
-Software then simply needs to pick the segment it wishes to read and then read out the [cpu_info]({{< regref "CPU_INFO" >}}) register.
+The {{< regref "CPU_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
+Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "CPU_INFO" >}} register.
 
 # Programmers Guide
 
