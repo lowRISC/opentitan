@@ -394,8 +394,8 @@ store_proj:
  * @param[in]  dmem[4]: dptr_rnd, pointer to dmem location where the reduced
  *                           affine x1-coordinate will be stored
  * @param[in]  dmem[8]: dptr_msg, pointer to the message to be verified in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to s of signature in dmem
- * @param[in]  dmem[16]: dptr_s, pointer to r of signature in dmem
+ * @param[in]  dmem[12]: dptr_r, pointer to r of signature in dmem
+ * @param[in]  dmem[16]: dptr_s, pointer to s of signature in dmem
  * @param[in]  dmem[20]: dptr_x, pointer to x-coordinate of public key in dmem
  * @param[in]  dmem[20]: dptr_y, pointer to y-coordinate of public key in dmem
  *
