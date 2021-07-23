@@ -20,7 +20,9 @@ filesets:
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
+      - rtl/rstmgr_cnsty_chk.sv
       - rtl/rstmgr_crash_info.sv
+      - rtl/rstmgr_leaf_rst.sv
       - "fileset_ip ? (rtl/rstmgr.sv)"
     file_type: systemVerilogSource
 

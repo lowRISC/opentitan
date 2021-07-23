@@ -16,6 +16,7 @@ This document describes the functionality of the reset controller and its intera
 *   Always-on reset information register.
 *   Always-on alert crash dump register.
 *   Always-on cpu crash dump register.
+*   Reset consistency checks.
 
 # Theory of Operation
 
@@ -143,7 +144,28 @@ These are registers stored in two-or-more constantly checking copies to ensure t
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targetted attack on the reset line cannot easily defeat shadow registers.
 
-Shadow resets have not been implemented yet.
+### Reset Consistency Checks
+
+The reset manager implements reset consistency checks to ensure that triggered resets are supposed to happen and not due to some fault in the system.
+Every leaf reset in the system has an associated consistency checker.
+
+The consistency check ensures that when a leaf reset asserts, either its parent reset must have asserted, or the software request, if available, has asserted.
+While this sounds simple in principle, the check itself crosses up to 3 clock domains and must be carefully managed.
+
+First, the parent and leaf resets are used to asynchronously assert a flag indication.
+This flag indication is then synchronized into the reset manager's local clock domain.
+
+The reset manager then checks as follows:
+- If a leaf reset has asserted, check to see either its parent or software request (synchronous to the local domain) has asserted.
+
+- If the condition is not true, it is possible the parent reset indication is still being synchronized, thus we wait for the parent indication.
+
+- It is also possible the parent indication was seen first, but the leaf condition was not, in this case, we wait for the leaf indication.
+
+- A timeout period corresponding to the maximum synchronization delay is used to cover both waits.
+  - If the appropriate pairing is not seen in the given amount of time, signal an error, as the leaf reset asserted without cause.
+
+- If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
 ## Hardware Interfaces
 

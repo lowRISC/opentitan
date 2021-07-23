@@ -143,10 +143,10 @@ module rstmgr
   // Register Interface                             //
   ////////////////////////////////////////////////////
 
-  logic [NumAlerts-1:0] alert_test, alerts;
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
+  logic reg_intg_err;
   rstmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -154,13 +154,34 @@ module rstmgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(alerts[0]),
+    .intg_err_o(reg_intg_err),
     .devmode_i(1'b1)
   );
+
+
+  ////////////////////////////////////////////////////
+  // Errors                                         //
+  ////////////////////////////////////////////////////
+
+  // consistency check errors
+  logic [20:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [20:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+
+  assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
+  assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
+  assign hw2reg.err_code.reset_consistency_err.d  = 1'b1;
+  assign hw2reg.err_code.reset_consistency_err.de = |cnsty_chk_errs |
+                                                    |shadow_cnsty_chk_errs;
 
   ////////////////////////////////////////////////////
   // Alerts                                         //
   ////////////////////////////////////////////////////
+  logic [NumAlerts-1:0] alert_test, alerts;
+
+  // All of these are fatal alerts
+  assign alerts[0] = reg_intg_err |
+                     |cnsty_chk_errs |
+                     |shadow_cnsty_chk_errs;
 
   assign alert_test = {
     reg2hw.alert_test.q &
@@ -296,959 +317,539 @@ module rstmgr
   // Generating resets for por
   // Power Domains: ['Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_por_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_por (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_por_aon_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_por_n[DomainAonSel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_por_mux (
-    .clk0_i(rst_por_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[0] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_n[DomainAonSel])
+  rstmgr_leaf_rst u_daon_por (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_main_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[0] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[0][DomainAonSel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_domain_aon (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_por_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por[DomainAonSel])
-  );
-  assign rst_por_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_por_n[Domain0Sel] = rst_por_n[Domain0Sel];
+  assign resets_o.rst_por_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[0][Domain0Sel] = '0;
   assign rst_en_o.rst_por[Domain0Sel] = lc_ctrl_pkg::On;
+  assign shadow_cnsty_chk_errs[0] = '0;
+
   // Generating resets for por_io
   // Power Domains: ['Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_por_io_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_por_io (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_por_aon_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_por_io_n[DomainAonSel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_por_io_mux (
-    .clk0_i(rst_por_io_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[1] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_io_n[DomainAonSel])
+  rstmgr_leaf_rst u_daon_por_io (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[1] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por_io[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_io_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[1][DomainAonSel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_io_domain_aon (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_por_io_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por_io[DomainAonSel])
-  );
-  assign rst_por_io_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_por_io_n[Domain0Sel] = rst_por_io_n[Domain0Sel];
+  assign resets_o.rst_por_io_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[1][Domain0Sel] = '0;
   assign rst_en_o.rst_por_io[Domain0Sel] = lc_ctrl_pkg::On;
+  assign shadow_cnsty_chk_errs[1] = '0;
+
   // Generating resets for por_io_div2
   // Power Domains: ['Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_por_io_div2_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_por_io_div2 (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_por_aon_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_por_io_div2_n[DomainAonSel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_por_io_div2_mux (
-    .clk0_i(rst_por_io_div2_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[2] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_io_div2_n[DomainAonSel])
+  rstmgr_leaf_rst u_daon_por_io_div2 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div2_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[2] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por_io_div2[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_io_div2_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[2][DomainAonSel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_io_div2_domain_aon (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_por_io_div2_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por_io_div2[DomainAonSel])
-  );
-  assign rst_por_io_div2_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_por_io_div2_n[Domain0Sel] = rst_por_io_div2_n[Domain0Sel];
+  assign resets_o.rst_por_io_div2_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[2][Domain0Sel] = '0;
   assign rst_en_o.rst_por_io_div2[Domain0Sel] = lc_ctrl_pkg::On;
+  assign shadow_cnsty_chk_errs[2] = '0;
+
   // Generating resets for por_io_div4
   // Power Domains: ['Aon', '0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_por_io_div4_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_por_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_por_aon_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_por_io_div4_n[DomainAonSel])
+
+  rstmgr_leaf_rst u_daon_por_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por_io_div4[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_io_div4_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[3][DomainAonSel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_por_io_div4_mux (
-    .clk0_i(rst_por_io_div4_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_io_div4_n[DomainAonSel])
+  rstmgr_leaf_rst u_d0_por_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_por_aon_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por_io_div4[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_por_io_div4_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[3][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[3] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_io_div4_domain_aon (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_por_io_div4_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por_io_div4[DomainAonSel])
-  );
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_por_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_por_aon_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_por_io_div4_n[Domain0Sel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_por_io_div4_mux (
-    .clk0_i(rst_por_io_div4_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_io_div4_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_io_div4_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_por_io_div4_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por_io_div4[Domain0Sel])
-  );
   // Generating resets for por_usb
   // Power Domains: ['Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_por_usb_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_por_usb (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_por_aon_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_por_usb_n[DomainAonSel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_por_usb_mux (
-    .clk0_i(rst_por_usb_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[4] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_por_usb_n[DomainAonSel])
+  rstmgr_leaf_rst u_daon_por_usb (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_usb_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[4] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_por_usb[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_usb_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[4][DomainAonSel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_por_usb_domain_aon (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_por_usb_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_por_usb[DomainAonSel])
-  );
-  assign rst_por_usb_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_por_usb_n[Domain0Sel] = rst_por_usb_n[Domain0Sel];
+  assign resets_o.rst_por_usb_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[4][Domain0Sel] = '0;
   assign rst_en_o.rst_por_usb[Domain0Sel] = lc_ctrl_pkg::On;
+  assign shadow_cnsty_chk_errs[4] = '0;
+
   // Generating resets for lc
   // Power Domains: ['0']
   // Shadowed: True
-  logic [PowerDomains-1:0] rst_lc_n;
-  assign rst_lc_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
+  assign resets_o.rst_lc_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[5][DomainAonSel] = '0;
   assign rst_en_o.rst_lc[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_lc (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_lc_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_lc_mux (
-    .clk0_i(rst_lc_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_lc (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_main_i),
+    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_lc_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[5][Domain0Sel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_domain_0 (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_lc_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc[Domain0Sel])
-  );
-  logic [PowerDomains-1:0] rst_lc_shadowed_n;
-  assign rst_lc_shadowed_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_lc_shadowed_n[DomainAonSel] = rst_lc_shadowed_n[DomainAonSel];
+  assign resets_o.rst_lc_shadowed_n[DomainAonSel] = '0;
+  assign shadow_cnsty_chk_errs[5][DomainAonSel] = '0;
   assign rst_en_o.rst_lc_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_lc_shadowed (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_lc_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_shadowed_n[Domain0Sel])
+
+  rstmgr_leaf_rst u_d0_lc_shadowed (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_main_i),
+    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_shadowed[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_lc_shadowed_n[Domain0Sel]),
+    .err_o(shadow_cnsty_chk_errs[5][Domain0Sel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_lc_shadowed_mux (
-    .clk0_i(rst_lc_shadowed_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_shadowed_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_shadowed_domain_0 (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_lc_shadowed_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_shadowed[Domain0Sel])
-  );
   // Generating resets for lc_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: True
-  logic [PowerDomains-1:0] rst_lc_io_div4_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_lc_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_io_div4_n[DomainAonSel])
+
+  rstmgr_leaf_rst u_daon_lc_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_lc_src_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_io_div4[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_lc_io_div4_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[6][DomainAonSel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_lc_io_div4_mux (
-    .clk0_i(rst_lc_io_div4_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_io_div4_n[DomainAonSel])
+  rstmgr_leaf_rst u_d0_lc_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_io_div4[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_lc_io_div4_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[6][Domain0Sel])
   );
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_io_div4_domain_aon (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_io_div4_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_io_div4[DomainAonSel])
-  );
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_lc_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_io_div4_n[Domain0Sel])
+  rstmgr_leaf_rst u_daon_lc_io_div4_shadowed (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_lc_src_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_io_div4_shadowed[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_lc_io_div4_shadowed_n[DomainAonSel]),
+    .err_o(shadow_cnsty_chk_errs[6][DomainAonSel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_lc_io_div4_mux (
-    .clk0_i(rst_lc_io_div4_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_lc_io_div4_shadowed (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_io_div4_shadowed[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_lc_io_div4_shadowed_n[Domain0Sel]),
+    .err_o(shadow_cnsty_chk_errs[6][Domain0Sel])
   );
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_io_div4_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_io_div4_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_io_div4[Domain0Sel])
-  );
-  logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_lc_io_div4_shadowed (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_io_div4_shadowed_n[DomainAonSel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_lc_io_div4_shadowed_mux (
-    .clk0_i(rst_lc_io_div4_shadowed_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_io_div4_shadowed_n[DomainAonSel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_io_div4_shadowed_domain_aon (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_io_div4_shadowed_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_io_div4_shadowed[DomainAonSel])
-  );
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_lc_io_div4_shadowed (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_io_div4_shadowed_n[Domain0Sel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_lc_io_div4_shadowed_mux (
-    .clk0_i(rst_lc_io_div4_shadowed_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_io_div4_shadowed_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_io_div4_shadowed_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_io_div4_shadowed_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_io_div4_shadowed[Domain0Sel])
-  );
   // Generating resets for lc_aon
   // Power Domains: ['Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_lc_aon_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_lc_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_lc_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_lc_aon_n[DomainAonSel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_lc_aon_mux (
-    .clk0_i(rst_lc_aon_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_lc_aon_n[DomainAonSel])
+  rstmgr_leaf_rst u_daon_lc_aon (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_aon_i),
+    .parent_rst_ni(rst_lc_src_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_lc_aon[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_lc_aon_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[7][DomainAonSel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_lc_aon_domain_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_lc_aon_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_lc_aon[DomainAonSel])
-  );
-  assign rst_lc_aon_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_lc_aon_n[Domain0Sel] = rst_lc_aon_n[Domain0Sel];
+  assign resets_o.rst_lc_aon_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[7][Domain0Sel] = '0;
   assign rst_en_o.rst_lc_aon[Domain0Sel] = lc_ctrl_pkg::On;
+  assign shadow_cnsty_chk_errs[7] = '0;
+
   // Generating resets for sys
   // Power Domains: ['0']
   // Shadowed: True
-  logic [PowerDomains-1:0] rst_sys_n;
-  assign rst_sys_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_sys_n[DomainAonSel] = rst_sys_n[DomainAonSel];
+  assign resets_o.rst_sys_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[8][DomainAonSel] = '0;
   assign rst_en_o.rst_sys[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_sys (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_sys_mux (
-    .clk0_i(rst_sys_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_sys (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_main_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_sys_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[8][Domain0Sel])
   );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_domain_0 (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_sys_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys[Domain0Sel])
-  );
-  logic [PowerDomains-1:0] rst_sys_shadowed_n;
-  assign rst_sys_shadowed_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_sys_shadowed_n[DomainAonSel] = rst_sys_shadowed_n[DomainAonSel];
+  assign resets_o.rst_sys_shadowed_n[DomainAonSel] = '0;
+  assign shadow_cnsty_chk_errs[8][DomainAonSel] = '0;
   assign rst_en_o.rst_sys_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_sys_shadowed (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_shadowed_n[Domain0Sel])
+
+  rstmgr_leaf_rst u_d0_sys_shadowed (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_main_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys_shadowed[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_sys_shadowed_n[Domain0Sel]),
+    .err_o(shadow_cnsty_chk_errs[8][Domain0Sel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_sys_shadowed_mux (
-    .clk0_i(rst_sys_shadowed_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_shadowed_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_shadowed_domain_0 (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_sys_shadowed_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys_shadowed[Domain0Sel])
-  );
   // Generating resets for sys_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_sys_io_div4_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_sys_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_io_div4_n[DomainAonSel])
+
+  rstmgr_leaf_rst u_daon_sys_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys_io_div4[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_sys_io_div4_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[9][DomainAonSel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_sys_io_div4_mux (
-    .clk0_i(rst_sys_io_div4_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
+  rstmgr_leaf_rst u_d0_sys_io_div4 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys_io_div4[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_sys_io_div4_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[9][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[9] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_io_div4_domain_aon (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_io_div4_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys_io_div4[DomainAonSel])
-  );
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_sys_io_div4 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_io_div4_n[Domain0Sel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_sys_io_div4_mux (
-    .clk0_i(rst_sys_io_div4_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_io_div4_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_io_div4_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys_io_div4[Domain0Sel])
-  );
   // Generating resets for sys_aon
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_sys_aon_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_sys_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_sys_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_aon_n[DomainAonSel])
+
+  rstmgr_leaf_rst u_daon_sys_aon (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_aon_i),
+    .parent_rst_ni(rst_sys_src_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys_aon[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_sys_aon_n[DomainAonSel]),
+    .err_o(cnsty_chk_errs[10][DomainAonSel])
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_sys_aon_mux (
-    .clk0_i(rst_sys_aon_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_aon_n[DomainAonSel])
+  rstmgr_leaf_rst u_d0_sys_aon (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_aon_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_sys_aon[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_sys_aon_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[10][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[10] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_aon_domain_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_sys_aon_n[DomainAonSel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys_aon[DomainAonSel])
-  );
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_sys_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_aon_n[Domain0Sel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_sys_aon_mux (
-    .clk0_i(rst_sys_aon_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_aon_n[Domain0Sel])
-  );
-
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_sys_aon_domain_0 (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_sys_aon_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_sys_aon[Domain0Sel])
-  );
   // Generating resets for spi_device
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_spi_device_n;
-  assign rst_spi_device_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_spi_device_n[DomainAonSel] = rst_spi_device_n[DomainAonSel];
+  assign resets_o.rst_spi_device_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[11][DomainAonSel] = '0;
   assign rst_en_o.rst_spi_device[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_spi_device (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[SPI_DEVICE]),
-    .q_o(rst_spi_device_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_spi_device_mux (
-    .clk0_i(rst_spi_device_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_spi_device (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_DEVICE]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_spi_device[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_spi_device_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[11][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[11] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_spi_device_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_spi_device_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_spi_device[Domain0Sel])
-  );
   // Generating resets for spi_host0
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_spi_host0_n;
-  assign rst_spi_host0_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_spi_host0_n[DomainAonSel] = rst_spi_host0_n[DomainAonSel];
+  assign resets_o.rst_spi_host0_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[12][DomainAonSel] = '0;
   assign rst_en_o.rst_spi_host0[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_spi_host0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[SPI_HOST0]),
-    .q_o(rst_spi_host0_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_spi_host0_mux (
-    .clk0_i(rst_spi_host0_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_spi_host0_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_spi_host0 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_spi_host0[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_spi_host0_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[12][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[12] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_spi_host0_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_spi_host0_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_spi_host0[Domain0Sel])
-  );
   // Generating resets for spi_host0_core
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_spi_host0_core_n;
-  assign rst_spi_host0_core_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_spi_host0_core_n[DomainAonSel] = rst_spi_host0_core_n[DomainAonSel];
+  assign resets_o.rst_spi_host0_core_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[13][DomainAonSel] = '0;
   assign rst_en_o.rst_spi_host0_core[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_spi_host0_core (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[SPI_HOST0_CORE]),
-    .q_o(rst_spi_host0_core_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_spi_host0_core_mux (
-    .clk0_i(rst_spi_host0_core_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_spi_host0_core_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_spi_host0_core (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0_CORE]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_spi_host0_core[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_spi_host0_core_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[13][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[13] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_spi_host0_core_domain_0 (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_spi_host0_core_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_spi_host0_core[Domain0Sel])
-  );
   // Generating resets for spi_host1
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_spi_host1_n;
-  assign rst_spi_host1_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_spi_host1_n[DomainAonSel] = rst_spi_host1_n[DomainAonSel];
+  assign resets_o.rst_spi_host1_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[14][DomainAonSel] = '0;
   assign rst_en_o.rst_spi_host1[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_spi_host1 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[SPI_HOST1]),
-    .q_o(rst_spi_host1_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_spi_host1_mux (
-    .clk0_i(rst_spi_host1_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_spi_host1_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_spi_host1 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_spi_host1[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_spi_host1_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[14][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[14] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_spi_host1_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_spi_host1_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_spi_host1[Domain0Sel])
-  );
   // Generating resets for spi_host1_core
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_spi_host1_core_n;
-  assign rst_spi_host1_core_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_spi_host1_core_n[DomainAonSel] = rst_spi_host1_core_n[DomainAonSel];
+  assign resets_o.rst_spi_host1_core_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[15][DomainAonSel] = '0;
   assign rst_en_o.rst_spi_host1_core[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_spi_host1_core (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[SPI_HOST1_CORE]),
-    .q_o(rst_spi_host1_core_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_spi_host1_core_mux (
-    .clk0_i(rst_spi_host1_core_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_spi_host1_core_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_spi_host1_core (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div2_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1_CORE]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_spi_host1_core[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_spi_host1_core_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[15][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[15] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_spi_host1_core_domain_0 (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_spi_host1_core_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_spi_host1_core[Domain0Sel])
-  );
   // Generating resets for usb
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_usb_n;
-  assign rst_usb_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_usb_n[DomainAonSel] = rst_usb_n[DomainAonSel];
+  assign resets_o.rst_usb_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[16][DomainAonSel] = '0;
   assign rst_en_o.rst_usb[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_usb (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[USB]),
-    .q_o(rst_usb_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_usb_mux (
-    .clk0_i(rst_usb_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_usb_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_usb (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[USB]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_usb[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_usb_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[16][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[16] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_usb_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_usb_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_usb[Domain0Sel])
-  );
   // Generating resets for usbif
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_usbif_n;
-  assign rst_usbif_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_usbif_n[DomainAonSel] = rst_usbif_n[DomainAonSel];
+  assign resets_o.rst_usbif_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[17][DomainAonSel] = '0;
   assign rst_en_o.rst_usbif[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_usbif (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[USBIF]),
-    .q_o(rst_usbif_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_usbif_mux (
-    .clk0_i(rst_usbif_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_usbif_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_usbif (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_usb_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[USBIF]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_usbif[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_usbif_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[17][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[17] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_usbif_domain_0 (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_usbif_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_usbif[Domain0Sel])
-  );
   // Generating resets for i2c0
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_i2c0_n;
-  assign rst_i2c0_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_i2c0_n[DomainAonSel] = rst_i2c0_n[DomainAonSel];
+  assign resets_o.rst_i2c0_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[18][DomainAonSel] = '0;
   assign rst_en_o.rst_i2c0[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_i2c0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[I2C0]),
-    .q_o(rst_i2c0_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_i2c0_mux (
-    .clk0_i(rst_i2c0_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_i2c0 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[I2C0]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_i2c0[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_i2c0_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[18][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[18] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_i2c0_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_i2c0_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_i2c0[Domain0Sel])
-  );
   // Generating resets for i2c1
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_i2c1_n;
-  assign rst_i2c1_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_i2c1_n[DomainAonSel] = rst_i2c1_n[DomainAonSel];
+  assign resets_o.rst_i2c1_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[19][DomainAonSel] = '0;
   assign rst_en_o.rst_i2c1[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_i2c1 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[I2C1]),
-    .q_o(rst_i2c1_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_i2c1_mux (
-    .clk0_i(rst_i2c1_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[19] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_i2c1 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[I2C1]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[19] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_i2c1[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_i2c1_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[19][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[19] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_i2c1_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_i2c1_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_i2c1[Domain0Sel])
-  );
   // Generating resets for i2c2
   // Power Domains: ['0']
   // Shadowed: False
-  logic [PowerDomains-1:0] rst_i2c2_n;
-  assign rst_i2c2_n[DomainAonSel] = 1'b0;
-  assign resets_o.rst_i2c2_n[DomainAonSel] = rst_i2c2_n[DomainAonSel];
+  assign resets_o.rst_i2c2_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[20][DomainAonSel] = '0;
   assign rst_en_o.rst_i2c2[DomainAonSel] = lc_ctrl_pkg::On;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_i2c2 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(sw_rst_ctrl_n[I2C2]),
-    .q_o(rst_i2c2_n[Domain0Sel])
-  );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_i2c2_mux (
-    .clk0_i(rst_i2c2_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[20] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_i2c2_n[Domain0Sel])
+  rstmgr_leaf_rst u_d0_i2c2 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .sw_rst_req_ni(sw_rst_ctrl_n[I2C2]),
+    .scan_rst_ni,
+    .scan_sel(leaf_rst_scanmode[20] == lc_ctrl_pkg::On),
+    .rst_en_o(rst_en_o.rst_i2c2[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_i2c2_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[20][Domain0Sel])
   );
+  assign shadow_cnsty_chk_errs[20] = '0;
 
-  // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_i2c2_domain_0 (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_i2c2_n[Domain0Sel]),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o.rst_i2c2[Domain0Sel])
-  );
 
   ////////////////////////////////////////////////////
   // Reset info construction                        //
