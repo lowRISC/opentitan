@@ -16,7 +16,7 @@
 
 p256_proj_add_test:
 
-  /* load curver points to w8..w13 */
+  /* load curve points to w8..w13 */
   li       x2, 8
   la       x3, p1_x
   bn.lid   x2++, 0(x3)
@@ -62,7 +62,7 @@ p256_proj_add_test:
 
 .data
 
-/* point 1 x-cooridante p1_x*/
+/* point 1 x-coordinate p1_x */
 p1_x:
   .word 0xd898c296
   .word 0xf4a13945
@@ -73,7 +73,7 @@ p1_x:
   .word 0xe12c4247
   .word 0x6b17d1f2
 
-/* point 1 y-cooridante p1_y*/
+/* point 1 y-coordinate p1_y */
 p1_y:
   .word 0x37bf51f5
   .word 0xcbb64068
@@ -84,7 +84,7 @@ p1_y:
   .word 0xfe1a7f9b
   .word 0x4fe342e2
 
-/* point 1 z-cooridante p1_z*/
+/* point 1 z-coordinate p1_z */
 p1_z:
   .word 0x00000001
   .word 0x00000000
@@ -95,7 +95,7 @@ p1_z:
   .word 0x00000000
   .word 0x00000000
 
-/* point 2 x-cooridante p2_x*/
+/* point 2 x-coordinate p2_x */
 p2_x:
   .word 0xbfa8c334
   .word 0x9773b7b3
@@ -106,7 +106,7 @@ p2_x:
   .word 0xfacdc546
   .word 0xb5511a6a
 
-/* point 2 y-cooridante p2_y*/
+/* point 2 y-coordinate p2_y */
 p2_y:
   .word 0x9e008c2e
   .word 0xa8707058
@@ -117,7 +117,7 @@ p2_y:
   .word 0x1f31c143
   .word 0x42a1c697
 
-/* point 2 z-cooridante p2_z*/
+/* point 2 z-coordinate p2_z */
 p2_z:
   .word 0x00000001
   .word 0x00000000
@@ -128,7 +128,7 @@ p2_z:
   .word 0x00000000
   .word 0x00000000
 
-/* Expected values wide register file (x-, y-, z-coordinates of result):
+/* Expected values wide register file (x-, y-, z-coordinate of result):
  w11 = 0x592e1828fe28da49f90aede1688474f4f4c68bc0c51666812bf63ea329945969
  w12 = 0x3c57a35821690579a8e27ec0be7a3f100403f120312cf5b879e2f76f790331d7
  w13 = 0x20ee7815f61cb7b460e062016694a5411f852e298f26d449f355e47a9f192e78

@@ -918,7 +918,7 @@ proj_double:
  *         with R, P being valid P-256 curve points in affine coordinates
  *              k being a 256 bit scalar
  *
- * This routines performs scalar multiplication based on the group laws
+ * This routine performs scalar multiplication based on the group laws
  * of Weierstrass curves.
  * A constant time double-and-add algorithm (sometimes referred to as
  * double-and-add-always) is used.
