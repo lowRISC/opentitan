@@ -95,9 +95,6 @@ module top_earlgrey #(
       tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0],
   parameter bit RvCoreIbexPipeLine = 0
 ) (
-  // Reset, clocks defined as part of intermodule
-  input               rst_ni,
-
   // Multiplexed I/O
   input        [46:0] mio_in_i,
   output logic [46:0] mio_out_o,
@@ -144,6 +141,7 @@ module top_earlgrey #(
   output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
   output ast_pkg::ast_dif_t       otp_alert_o,
+  input  logic       por_n_i,
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
@@ -1761,6 +1759,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[21:21] ),
 
       // Inter-module signals
+      .por_n_i(por_n_i),
       .pwr_i(pwrmgr_aon_pwr_rst_req),
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
@@ -1782,7 +1781,7 @@ module top_earlgrey #(
       .clk_usb_i (clkmgr_aon_clocks.clk_usb_powerup),
       .clk_io_div2_i (clkmgr_aon_clocks.clk_io_div2_powerup),
       .clk_io_div4_i (clkmgr_aon_clocks.clk_io_div4_powerup),
-      .rst_ni (rst_ni)
+      .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
   clkmgr #(

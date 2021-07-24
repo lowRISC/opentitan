@@ -21,13 +21,16 @@ module rstmgr
 ) (
   // Primary module clocks
   input clk_i,
-  input rst_ni, // this is connected to the top level reset
+  input rst_ni,
   input clk_aon_i,
   input clk_io_div4_i,
   input clk_main_i,
   input clk_io_i,
   input clk_io_div2_i,
   input clk_usb_i,
+
+  // POR input
+  input por_n_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -84,7 +87,7 @@ module rstmgr
 
       rstmgr_por u_rst_por_aon (
         .clk_i(clk_aon_i),
-        .rst_ni, // this is the only use of rst_ni in this module
+        .rst_ni(por_n_i),
         .scan_rst_ni,
         .scanmode_i(por_aon_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
@@ -101,17 +104,13 @@ module rstmgr
   // Register Interface                             //
   ////////////////////////////////////////////////////
 
-  // local_rst_n is the reset used by the rstmgr for its internal logic
-  logic local_rst_n;
-  assign local_rst_n = resets_o.rst_por_io_div2_n[DomainAonSel];
-
   logic [NumAlerts-1:0] alert_test, alerts;
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
   rstmgr_reg_top u_reg (
     .clk_i,
-    .rst_ni(local_rst_n),
+    .rst_ni,
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -157,7 +156,7 @@ module rstmgr
     .ResetValue('0)
   ) u_sync (
     .clk_i,
-    .rst_ni(local_rst_n),
+    .rst_ni,
     .d_i(ndmreset_req_i),
     .q_o(ndmreset_req_q)
   );
@@ -193,7 +192,7 @@ module rstmgr
     .clk_i,
     .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
     .scan_rst_ni,
-    .rst_ni(local_rst_n),
+    .rst_ni,
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -204,7 +203,7 @@ module rstmgr
     .clk_i,
     .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
     .scan_rst_ni,
-    .rst_ni(local_rst_n),
+    .rst_ni,
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -226,7 +225,7 @@ module rstmgr
       .RESVAL(1)
     ) u_rst_sw_ctrl_reg (
       .clk_i,
-      .rst_ni(local_rst_n),
+      .rst_ni,
       .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
       .wd(reg2hw.sw_rst_ctrl_n[i].q),
       .de('0),
@@ -737,14 +736,14 @@ module rstmgr
     .ResetValue('0)
   ) u_cpu_reset_synced (
     .clk_i,
-    .rst_ni(local_rst_n),
+    .rst_ni,
     .d_i(rst_cpu_n_i),
     .q_o(rst_cpu_nq)
   );
 
   // first reset is a flag that blocks reset recording until first de-assertion
-  always_ff @(posedge clk_i or negedge local_rst_n) begin
-    if (!local_rst_n) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       first_reset <= 1'b1;
     end else if (rst_cpu_nq) begin
       first_reset <= 1'b0;
