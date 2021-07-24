@@ -737,9 +737,6 @@ def amend_resets(top, name_to_block):
     # reset class objects
     top["resets"] = top_resets
 
-    # The original resets dict is transformed to the reset class
-    assert isinstance(top["resets"], Resets)
-
 
 def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     '''Populate top['interrupt_module'] if necessary

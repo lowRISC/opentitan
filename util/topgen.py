@@ -33,6 +33,7 @@ from topgen.gen_dv import gen_dv
 from topgen.top import Top
 from topgen.clocks import Clocks
 from topgen.merge import extract_clocks, connect_clocks
+from topgen.resets import Resets
 
 # Common header for generated files
 warnhdr = '''//
@@ -514,6 +515,9 @@ def generate_rstmgr(topcfg, out_path):
 
     # Parameters needed for generation
     reset_obj = topcfg['resets']
+
+    # The original resets dict is transformed to the reset class
+    assert isinstance(reset_obj, Resets)
 
     # unique clocks
     clks = reset_obj.get_clocks()
