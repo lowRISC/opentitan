@@ -91,7 +91,8 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   tl_h2d_t tl_i_int;
   tl_d2h_t tl_o_int;
   tlul_sram_byte #(
-    .EnableIntg(ByteAccess & CmdIntgCheck & !ErrOnWrite)
+    .EnableIntg(ByteAccess & CmdIntgCheck & !ErrOnWrite),
+    .Outstanding(Outstanding)
   ) u_sram_byte (
     .clk_i,
     .rst_ni,
@@ -269,11 +270,6 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     end
   end
 
-  // TODO: The logic below is incomplete.  If the adapter detects a write is NOT
-  // the full word, it must read back the other parts of the data from memory and
-  // re-generate the integrity.
-  // Since that will cause back-pressure to the upstream agent and likely substantial
-  // change into this module, it is left to a different PR.
   always_comb begin
     wmask_intg  = '0;
     wdata_intg  = '0;
