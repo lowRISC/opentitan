@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "alert_handler_regs.h"
@@ -35,13 +36,6 @@ int base_printf(const char *fmt, ...) { return 0; }
 
 // TODO(lowRISC/opentitan#7148): Refactor mocks into their own headers.
 namespace internal {
-// Create a mock for reading OTP words.
-class MockOtp : public ::mask_rom_test::GlobalMock<MockOtp> {
- public:
-  MOCK_METHOD(uint32_t, otp_read32, (uint32_t));
-  virtual ~MockOtp() {}
-};
-
 // Create a mock for shutdown functions.
 class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
  public:
@@ -52,14 +46,8 @@ class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
 };
 
 }  // namespace internal
-// Use NiceMock because we aren't interested in the specifics of OTP reads,
-// but we want to mock out calls to otp_read32.
-using MockOtp = testing::NiceMock<internal::MockOtp>;
 using MockShutdown = testing::StrictMock<internal::MockShutdown>;
 extern "C" {
-uint32_t otp_read32(uint32_t address) {
-  return MockOtp::Instance().otp_read32(address);
-}
 
 void shutdown_software_escalate(void) {
   return MockShutdown::Instance().shutdown_software_escalate();
@@ -283,7 +271,7 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
 
   void SetupOtpReads() {
     // Make OTP reads retrieve their values from `otp_config_`.
-    ON_CALL(otp_, otp_read32(::testing::_))
+    ON_CALL(otp_, read32(::testing::_))
         .WillByDefault([this](uint32_t address) {
           // Must be aligned and in the SW_CFG partition.
           EXPECT_EQ(address % 4, 0);
@@ -330,7 +318,9 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
   }
 
   OtpConfiguration otp_config_ = kOtpConfig;
-  MockOtp otp_;
+  // Use NiceMock because we aren't interested in the specifics of OTP reads,
+  // but we want to mock out calls to otp_read32.
+  mask_rom_test::NiceMockOtp otp_;
   MockShutdown shutdown_;
   mask_rom_test::MockAlert alert_;
 };
