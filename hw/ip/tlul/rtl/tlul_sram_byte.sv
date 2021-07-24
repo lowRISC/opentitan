@@ -16,7 +16,8 @@
  * incoming tlul transaction is directly muxed out.
  */
 module tlul_sram_byte import tlul_pkg::*; #(
-  parameter bit EnableIntg  = 0  // Enable integrity handling at byte level
+  parameter bit EnableIntg  = 0,  // Enable integrity handling at byte level
+  parameter int Outstanding = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -37,7 +38,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
   typedef enum logic [1:0] {
     StPassThru,
     StWaitRd,
-    StWriteCmd
+    StWriteCmd,
+    StWait
   } state_e;
 
   // signal select enumeration
@@ -49,7 +51,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
   // state and selection
   sel_sig_e sel_int;
   logic stall_host;
-  logic wr_phase;
+  logic wr_phase, rd_wait;
   state_e state_d, state_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -87,6 +89,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
   always_comb begin
     stall_host = 1'b0;
     wr_phase = 1'b0;
+    rd_wait = 1'b0;
     state_d = state_q;
 
     unique case (state_q)
@@ -99,6 +102,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
       StWaitRd: begin
         stall_host = 1'b1;
+        rd_wait = 1'b1; // TODO(#7461): remove this signal, once this issue has been addressed.
 
         if (sram_d_ack) begin
           state_d = StWriteCmd;
@@ -110,8 +114,14 @@ module tlul_sram_byte import tlul_pkg::*; #(
         wr_phase = 1'b1;
 
         if (sram_a_ack) begin
-          state_d = StPassThru;
+          state_d = StWait;
         end
+      end
+
+      // TODO(#7461): remove this once all RAW corner cases are handled in DV.
+      StWait: begin
+        stall_host = 1'b1;
+        state_d = StPassThru;
       end
 
       default:;
@@ -189,20 +199,30 @@ module tlul_sram_byte import tlul_pkg::*; #(
     end
   end
 
+  // Since we are performing a read-modify-write operation,
+  // we always access the entire word.
+  localparam int AccessSize = $clog2(top_pkg::TL_DBW);
   assign tl_h2d_int = '{
     // use incoming valid as long as we are not stalling the host
     // otherwise look at whether there is a pending write.
     a_valid:   (tl_i.a_valid & ~stall_host) | wr_phase,
     a_opcode:  wr_phase ? PutFullData         : Get,
     a_param:   wr_phase ? held_data.a_param   : tl_i.a_param,  // registered param
-    a_size:    wr_phase ? held_data.a_size    : tl_i.a_size,   // registered size
+    a_size:    top_pkg::TL_SZW'(AccessSize),                   // we always access all bytes
     a_source:  wr_phase ? held_data.a_source  : tl_i.a_source, // registered source
-    a_address: wr_phase ? held_data.a_address : tl_i.a_address,// registered address
+    // registered address, need to use word aligned addresses here.
+    a_address: wr_phase ? {held_data.a_address[top_pkg::TL_AW-1:AccessSize], {AccessSize{1'b0}}} :
+                          {tl_i.a_address[top_pkg::TL_AW-1:AccessSize], {AccessSize{1'b0}}},
     a_mask:    '{default: '1},
     a_data:    wr_phase ? combined_data       : tl_i.a_data,   // registered data
     a_user:    wr_phase ? held_data.a_user    : tl_i.a_user,   // registered user
-    d_ready:   1'b1
+    // TODO(#7461): this can be set constantly to 1'b1, once this issue has been addressed.
+    d_ready:   tl_i.d_ready | rd_wait
   };
+
+  logic unused_held_data;
+  assign unused_held_data = ^{held_data.a_address[AccessSize-1:0],
+                              held_data.a_size};
 
   // outgoing tlul transactions
   tlul_cmd_intg_gen #(
@@ -215,6 +235,26 @@ module tlul_sram_byte import tlul_pkg::*; #(
   if (EnableIntg) begin : gen_intg_hookup
     assign tl_sram_o = (sel_int == SelInt) ? tl_h2d_intg : tl_i;
 
+    logic [top_pkg::TL_SZW-1:0] a_size;
+    prim_fifo_sync #(
+      .Width(top_pkg::TL_SZW),
+      .Pass(1'b0),
+      .Depth(Outstanding),
+      .OutputZeroIfEmpty(1'b0)
+    ) u_sync_fifo_a_size (
+      .clk_i,
+      .rst_ni,
+      .clr_i(1'b0),
+      .wvalid_i(a_ack),
+      .wready_o(),
+      .wdata_i(tl_i.a_size),
+      .rvalid_o(),
+      .rready_i(tl_o.d_valid & tl_i.d_ready),
+      .rdata_o(a_size),
+      .full_o(),
+      .depth_o()
+    );
+
     always_comb begin
       tl_o = tl_sram_i;
 
@@ -223,12 +263,23 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
       // when internal logic has taken over, do not show response to host during
       // read phase.  During write phase, allow the host to see the completion.
-      tl_o.d_valid = tl_sram_i.d_valid & ~stall_host;
+      // TODO(#7461): change rd_wait back to stall_host once the issue is resolved.
+      tl_o.d_valid = tl_sram_i.d_valid & ~rd_wait;
+
+      // the size returned by tl_sram_i does not always correspond to the actual
+      // transaction size in cases where a read modify write operation is
+      // performed. Hence, we always return the registered size here.
+      tl_o.d_size  = (tl_o.d_valid) ? a_size : '0;
     end
 
   end else begin : gen_tieoffs
     logic unused_sigs;
-    assign unused_sigs = |tl_h2d_intg ^ |sel_int ^ fifo_rdy ^ byte_req_ack ^ wr_txn ^ error_i;
+    assign unused_sigs = ^{tl_h2d_intg,
+                           sel_int,
+                           fifo_rdy,
+                           byte_req_ack,
+                           wr_txn,
+                           error_i};
     assign tl_sram_o = tl_i;
     assign tl_o = tl_sram_i;
   end
