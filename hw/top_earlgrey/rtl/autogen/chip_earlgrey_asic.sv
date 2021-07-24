@@ -1077,8 +1077,8 @@ module chip_earlgrey_asic (
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    .rst_ni                       ( aon_pok                    ),
     // ast connections
+    .por_n_i                      ( aon_pok                    ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
