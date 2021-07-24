@@ -65,9 +65,6 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 ) (
-  // Reset, clocks defined as part of intermodule
-  input               rst_ni,
-
 % if num_mio_pads != 0:
   // Multiplexed I/O
   input        ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_in_i,

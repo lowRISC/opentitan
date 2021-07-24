@@ -925,8 +925,8 @@ module chip_${top["name"]}_${target["name"]} (
   top_${top["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
-    .rst_ni                       ( aon_pok                    ),
     // ast connections
+    .por_n_i                      ( aon_pok                    ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
@@ -1097,7 +1097,7 @@ module chip_${top["name"]}_${target["name"]} (
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
-    .rst_ni                       ( rst_n            ),
+    .por_n_i                      ( rst_n            ),
     .clk_main_i                   ( clk_main         ),
     .clk_io_i                     ( clk_main         ),
     .clk_usb_i                    ( clk_usb_48mhz    ),
