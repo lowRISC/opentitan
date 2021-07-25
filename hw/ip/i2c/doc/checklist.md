@@ -37,25 +37,25 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started | Consider to add loopback test
-RTL           | [AREA_CHECK][]          | Not Started | Think about FIFO size, there will be multiple I2C in top_earlgrey
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Documentation | [NEW_FEATURES][]        | Done        | Added transaction complete interrupt (Issue #1921, PR #2662) and target mode (Issue #3858, PR #2746, #4646, #4969, #6807)
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | N/A         |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        | 
+RTL           | [AREA_CHECK][]          | Done        | Area check done on FPGA
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Done        | Added loop back test (issue #5753); FIFO size reviewed (issue #5112)
+RTL           | [STYLE_X][]             | Done        | No assignment of X
+Code Quality  | [LINT_PASS][]           | Done        | Lint passes
+Code Quality  | [CDC_SETUP][]           | N/A         | No CDC path
+Code Quality  | [FPGA_TIMING][]         | Done        | Block is integrated into the top; no timing problems in CI
+Code Quality  | [CDC_SYNCMACRO][]       | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
