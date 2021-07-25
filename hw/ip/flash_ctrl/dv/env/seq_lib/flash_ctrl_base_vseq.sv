@@ -162,13 +162,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     csr_wr(.ptr(ral.addr), .value(flash_op.addr));
 
-    // flash_op.partition -> partition_sel  ,    info_sel         |
-    //  (flash_dv_part_e) | (flash_part_e)  | bit[InfoTypesWidth] |
-    // -------------------|-----------------|---------------------|
-    //  FlashPartData = 0 | FlashPartData=0 |         0           |
-    //  FlashPartInfo = 1 | FlashPartInfo=1 |         0           |
-    //  FlashPartInfo1= 2 | FlashPartInfo=1 |         1           |
-    //  FlashPartRed  = 4 | FlashPartInfo=1 |         2           |
+    //    flash_op.partition     -> partition_sel  ,    info_sel         |
+    //     (flash_dv_part_e)     | (flash_part_e)  | bit[InfoTypesWidth] |
+    // --------------------------|-----------------|---------------------|
+    //  FlashPartData        = 0 | FlashPartData=0 |         0           |
+    //  FlashPartInfo        = 1 | FlashPartInfo=1 |         0           |
+    //  FlashPartInfo1       = 2 | FlashPartInfo=1 |         1           |
+    //  FlashPartRedundancy  = 4 | FlashPartInfo=1 |         2           |
     partition_sel = |flash_op.partition;
     info_sel = flash_op.partition >> 1;
 
