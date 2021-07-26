@@ -36,28 +36,26 @@ int base_printf(const char *fmt, ...) { return 0; }
 // TODO(lowRISC/opentitan#7148): Refactor mocks into their own headers.
 namespace internal {
 // Create a mock for reading OTP words.
-class MockOtp {
+class MockOtp : public ::mask_rom_test::GlobalMock<MockOtp> {
  public:
   MOCK_METHOD(uint32_t, otp_read32, (uint32_t));
   virtual ~MockOtp() {}
 };
 
 // Create a mock for shutdown functions.
-class MockShutdown {
+class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
  public:
   MOCK_METHOD(void, shutdown_software_escalate, ());
   MOCK_METHOD(void, shutdown_keymgr_kill, ());
   MOCK_METHOD(void, shutdown_flash_kill, ());
   MOCK_METHOD(void, shutdown_hang, ());
-  virtual ~MockShutdown() {}
 };
 
 }  // namespace internal
 // Use NiceMock because we aren't interested in the specifics of OTP reads,
 // but we want to mock out calls to otp_read32.
-using MockOtp = mask_rom_test::GlobalMock<testing::NiceMock<internal::MockOtp>>;
-using MockShutdown =
-    mask_rom_test::GlobalMock<testing::StrictMock<internal::MockShutdown>>;
+using MockOtp = testing::NiceMock<internal::MockOtp>;
+using MockShutdown = testing::StrictMock<internal::MockShutdown>;
 extern "C" {
 uint32_t otp_read32(uint32_t address) {
   return MockOtp::Instance().otp_read32(address);

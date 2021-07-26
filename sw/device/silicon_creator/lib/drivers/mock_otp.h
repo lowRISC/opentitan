@@ -14,19 +14,26 @@ namespace internal {
 /**
  * Mock class for otp.c.
  */
-class MockOtp {
+class MockOtp : public GlobalMock<MockOtp> {
  public:
   MOCK_METHOD(uint32_t, read32, (uint32_t address));
   MOCK_METHOD(uint32_t, read64, (uint32_t address));
   MOCK_METHOD(void, read, (uint32_t address, uint32_t *data, size_t num_words));
-  virtual ~MockOtp() {}
 };
 
 }  // namespace internal
 
-using MockOtp = GlobalMock<testing::StrictMock<internal::MockOtp>>;
+// Nice mock for shutdown unit tests.
+using NiceMockOtp = testing::NiceMock<internal::MockOtp>;
+// Strict mock for other unit tests.
+using MockOtp = testing::StrictMock<internal::MockOtp>;
 
 extern "C" {
+
+// Note: In the functions below, we use `MockOtp` only for conciseness. The
+// static `Instance()` method returns a reference to the same
+// `internal::MockOtp` instance regardless if we use `MockOtp`, `NiceMockOtp`,
+// or `internal::MockOtp`.
 
 uint32_t otp_read32(uint32_t address) {
   return MockOtp::Instance().read32(address);
