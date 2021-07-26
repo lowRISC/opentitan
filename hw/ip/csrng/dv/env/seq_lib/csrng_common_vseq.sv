@@ -10,6 +10,12 @@ class csrng_common_vseq extends csrng_base_vseq;
   }
   `uvm_object_new
 
+  virtual task pre_start();
+    do_csrng_init = 1'b0;
+
+    super.pre_start();
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body

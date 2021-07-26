@@ -103,8 +103,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      tags: [// Exclude from writes to these bits since hardware actions will start.
-             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "3:0",
