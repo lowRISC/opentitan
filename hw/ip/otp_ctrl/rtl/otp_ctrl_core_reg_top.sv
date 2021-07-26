@@ -270,7 +270,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_operation_done (
     .clk_i   (clk_i),
@@ -296,7 +296,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_error (
     .clk_i   (clk_i),
@@ -324,7 +324,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_operation_done (
     .clk_i   (clk_i),
@@ -350,7 +350,7 @@ module otp_ctrl_core_reg_top (
   //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_error (
     .clk_i   (clk_i),
@@ -901,7 +901,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (11),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (11'h0)
   ) u_direct_access_address (
     .clk_i   (clk_i),
@@ -930,7 +930,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_0 (
     .clk_i   (clk_i),
@@ -957,7 +957,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_1 (
     .clk_i   (clk_i),
@@ -1018,7 +1018,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_check_trigger_regwen (
     .clk_i   (clk_i),
@@ -1077,7 +1077,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_check_regwen (
     .clk_i   (clk_i),
@@ -1104,7 +1104,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_check_timeout (
     .clk_i   (clk_i),
@@ -1131,7 +1131,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_integrity_check_period (
     .clk_i   (clk_i),
@@ -1158,7 +1158,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_consistency_check_period (
     .clk_i   (clk_i),
@@ -1185,7 +1185,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_creator_sw_cfg_read_lock (
     .clk_i   (clk_i),
@@ -1212,7 +1212,7 @@ module otp_ctrl_core_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_owner_sw_cfg_read_lock (
     .clk_i   (clk_i),

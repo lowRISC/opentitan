@@ -553,7 +553,7 @@ module aes_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_0 (
     .clk_i   (clk_i),
@@ -580,7 +580,7 @@ module aes_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_1 (
     .clk_i   (clk_i),
@@ -607,7 +607,7 @@ module aes_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_2 (
     .clk_i   (clk_i),
@@ -634,7 +634,7 @@ module aes_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_3 (
     .clk_i   (clk_i),
@@ -805,7 +805,7 @@ module aes_reg_top (
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_trigger_start (
     .clk_i   (clk_i),
@@ -831,7 +831,7 @@ module aes_reg_top (
   //   F[key_iv_data_in_clear]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_key_iv_data_in_clear (
     .clk_i   (clk_i),
@@ -857,7 +857,7 @@ module aes_reg_top (
   //   F[data_out_clear]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i),
@@ -883,7 +883,7 @@ module aes_reg_top (
   //   F[prng_reseed]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_prng_reseed (
     .clk_i   (clk_i),
@@ -911,7 +911,7 @@ module aes_reg_top (
   //   F[idle]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_idle (
     .clk_i   (clk_i),
@@ -937,7 +937,7 @@ module aes_reg_top (
   //   F[stall]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_stall (
     .clk_i   (clk_i),
@@ -963,7 +963,7 @@ module aes_reg_top (
   //   F[output_lost]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_output_lost (
     .clk_i   (clk_i),
@@ -989,7 +989,7 @@ module aes_reg_top (
   //   F[output_valid]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_output_valid (
     .clk_i   (clk_i),
@@ -1015,7 +1015,7 @@ module aes_reg_top (
   //   F[input_ready]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_input_ready (
     .clk_i   (clk_i),
@@ -1041,7 +1041,7 @@ module aes_reg_top (
   //   F[alert_recov_ctrl_update_err]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_alert_recov_ctrl_update_err (
     .clk_i   (clk_i),
@@ -1067,7 +1067,7 @@ module aes_reg_top (
   //   F[alert_fatal_fault]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_alert_fatal_fault (
     .clk_i   (clk_i),

@@ -332,7 +332,7 @@ module entropy_src_reg_top (
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_entropy_valid (
     .clk_i   (clk_i),
@@ -358,7 +358,7 @@ module entropy_src_reg_top (
   //   F[es_health_test_failed]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_health_test_failed (
     .clk_i   (clk_i),
@@ -384,7 +384,7 @@ module entropy_src_reg_top (
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_observe_fifo_ready (
     .clk_i   (clk_i),
@@ -410,7 +410,7 @@ module entropy_src_reg_top (
   //   F[es_fatal_err]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_fatal_err (
     .clk_i   (clk_i),
@@ -438,7 +438,7 @@ module entropy_src_reg_top (
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_entropy_valid (
     .clk_i   (clk_i),
@@ -464,7 +464,7 @@ module entropy_src_reg_top (
   //   F[es_health_test_failed]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_health_test_failed (
     .clk_i   (clk_i),
@@ -490,7 +490,7 @@ module entropy_src_reg_top (
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_observe_fifo_ready (
     .clk_i   (clk_i),
@@ -516,7 +516,7 @@ module entropy_src_reg_top (
   //   F[es_fatal_err]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_fatal_err (
     .clk_i   (clk_i),
@@ -671,7 +671,7 @@ module entropy_src_reg_top (
   //   F[enable]: 1:0
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_conf_enable (
     .clk_i   (clk_i),
@@ -697,7 +697,7 @@ module entropy_src_reg_top (
   //   F[boot_bypass_disable]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_boot_bypass_disable (
     .clk_i   (clk_i),
@@ -723,7 +723,7 @@ module entropy_src_reg_top (
   //   F[repcnt_disable]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_repcnt_disable (
     .clk_i   (clk_i),
@@ -749,7 +749,7 @@ module entropy_src_reg_top (
   //   F[adaptp_disable]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_adaptp_disable (
     .clk_i   (clk_i),
@@ -775,7 +775,7 @@ module entropy_src_reg_top (
   //   F[bucket_disable]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_bucket_disable (
     .clk_i   (clk_i),
@@ -801,7 +801,7 @@ module entropy_src_reg_top (
   //   F[markov_disable]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_markov_disable (
     .clk_i   (clk_i),
@@ -827,7 +827,7 @@ module entropy_src_reg_top (
   //   F[health_test_clr]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_health_test_clr (
     .clk_i   (clk_i),
@@ -853,7 +853,7 @@ module entropy_src_reg_top (
   //   F[rng_bit_en]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_rng_bit_en (
     .clk_i   (clk_i),
@@ -879,7 +879,7 @@ module entropy_src_reg_top (
   //   F[rng_bit_sel]: 11:10
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_conf_rng_bit_sel (
     .clk_i   (clk_i),
@@ -905,7 +905,7 @@ module entropy_src_reg_top (
   //   F[extht_enable]: 12:12
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_extht_enable (
     .clk_i   (clk_i),
@@ -931,7 +931,7 @@ module entropy_src_reg_top (
   //   F[repcnts_disable]: 13:13
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_conf_repcnts_disable (
     .clk_i   (clk_i),
@@ -958,7 +958,7 @@ module entropy_src_reg_top (
 
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h4)
   ) u_rate (
     .clk_i   (clk_i),
@@ -986,7 +986,7 @@ module entropy_src_reg_top (
   //   F[es_route]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
@@ -1012,7 +1012,7 @@ module entropy_src_reg_top (
   //   F[es_type]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
@@ -1056,7 +1056,7 @@ module entropy_src_reg_top (
   //   F[fips_window]: 15:0
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h200)
   ) u_health_test_windows_fips_window (
     .clk_i   (clk_i),
@@ -1082,7 +1082,7 @@ module entropy_src_reg_top (
   //   F[bypass_window]: 31:16
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h60)
   ) u_health_test_windows_bypass_window (
     .clk_i   (clk_i),
@@ -1830,7 +1830,7 @@ module entropy_src_reg_top (
   //   F[alert_threshold]: 15:0
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h2)
   ) u_alert_threshold_alert_threshold (
     .clk_i   (clk_i),
@@ -1856,7 +1856,7 @@ module entropy_src_reg_top (
   //   F[alert_threshold_inv]: 31:16
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'hfffd)
   ) u_alert_threshold_alert_threshold_inv (
     .clk_i   (clk_i),
@@ -2039,7 +2039,7 @@ module entropy_src_reg_top (
   //   F[fw_ov_mode]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
@@ -2065,7 +2065,7 @@ module entropy_src_reg_top (
   //   F[fw_ov_entropy_insert]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
@@ -2124,7 +2124,7 @@ module entropy_src_reg_top (
 
   prim_subreg #(
     .DW      (7),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h20)
   ) u_observe_fifo_thresh (
     .clk_i   (clk_i),
@@ -2273,7 +2273,7 @@ module entropy_src_reg_top (
 
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'hb)
   ) u_seed (
     .clk_i   (clk_i),
@@ -2301,7 +2301,7 @@ module entropy_src_reg_top (
   //   F[sfifo_esrng_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esrng_err (
     .clk_i   (clk_i),
@@ -2327,7 +2327,7 @@ module entropy_src_reg_top (
   //   F[sfifo_observe_err]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_observe_err (
     .clk_i   (clk_i),
@@ -2353,7 +2353,7 @@ module entropy_src_reg_top (
   //   F[sfifo_esfinal_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esfinal_err (
     .clk_i   (clk_i),
@@ -2379,7 +2379,7 @@ module entropy_src_reg_top (
   //   F[es_ack_sm_err]: 20:20
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_es_ack_sm_err (
     .clk_i   (clk_i),
@@ -2405,7 +2405,7 @@ module entropy_src_reg_top (
   //   F[es_main_sm_err]: 21:21
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_es_main_sm_err (
     .clk_i   (clk_i),
@@ -2431,7 +2431,7 @@ module entropy_src_reg_top (
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
@@ -2457,7 +2457,7 @@ module entropy_src_reg_top (
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
@@ -2483,7 +2483,7 @@ module entropy_src_reg_top (
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
@@ -2510,7 +2510,7 @@ module entropy_src_reg_top (
 
   prim_subreg #(
     .DW      (5),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_err_code_test (
     .clk_i   (clk_i),

@@ -228,7 +228,7 @@ module sram_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_exec_regwen (
     .clk_i   (clk_i),
@@ -255,7 +255,7 @@ module sram_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (3),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_exec (
     .clk_i   (clk_i),
@@ -282,7 +282,7 @@ module sram_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ctrl_regwen (
     .clk_i   (clk_i),
@@ -341,7 +341,7 @@ module sram_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0)
   ) u_error_address (
     .clk_i   (clk_i),

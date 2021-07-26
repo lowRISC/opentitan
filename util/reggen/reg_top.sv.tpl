@@ -530,7 +530,7 @@ ${bits.msb}\
     % else:
   ${subreg_block} #(
     .DW      (${field.bits.width()}),
-    .SWACCESS("${field.swaccess.value[1].name.upper()}"),
+    .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
     .RESVAL  (${resval_expr})
   ) u_${finst_name} (
     .clk_i   (clk_i),

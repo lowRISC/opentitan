@@ -8,6 +8,7 @@ description: "Register slices"
 filesets:
   files_rtl:
     files:
+      - rtl/prim_subreg_pkg.sv
       - rtl/prim_subreg_arb.sv
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_ext.sv

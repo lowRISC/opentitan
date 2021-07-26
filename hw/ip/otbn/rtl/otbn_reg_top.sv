@@ -198,7 +198,7 @@ module otbn_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state (
     .clk_i   (clk_i),
@@ -225,7 +225,7 @@ module otbn_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable (
     .clk_i   (clk_i),
@@ -333,7 +333,7 @@ module otbn_reg_top (
   //   F[bad_data_addr]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_bad_data_addr (
     .clk_i   (clk_i),
@@ -359,7 +359,7 @@ module otbn_reg_top (
   //   F[bad_insn_addr]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_bad_insn_addr (
     .clk_i   (clk_i),
@@ -385,7 +385,7 @@ module otbn_reg_top (
   //   F[call_stack]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_call_stack (
     .clk_i   (clk_i),
@@ -411,7 +411,7 @@ module otbn_reg_top (
   //   F[illegal_insn]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_illegal_insn (
     .clk_i   (clk_i),
@@ -437,7 +437,7 @@ module otbn_reg_top (
   //   F[loop]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_loop (
     .clk_i   (clk_i),
@@ -463,7 +463,7 @@ module otbn_reg_top (
   //   F[fatal_imem]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_imem (
     .clk_i   (clk_i),
@@ -489,7 +489,7 @@ module otbn_reg_top (
   //   F[fatal_dmem]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_dmem (
     .clk_i   (clk_i),
@@ -515,7 +515,7 @@ module otbn_reg_top (
   //   F[fatal_reg]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_reg (
     .clk_i   (clk_i),
@@ -542,7 +542,7 @@ module otbn_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_start_addr (
     .clk_i   (clk_i),
@@ -570,7 +570,7 @@ module otbn_reg_top (
   //   F[bus_integrity_error]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_bus_integrity_error (
     .clk_i   (clk_i),
@@ -596,7 +596,7 @@ module otbn_reg_top (
   //   F[imem_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_imem_error (
     .clk_i   (clk_i),
@@ -622,7 +622,7 @@ module otbn_reg_top (
   //   F[dmem_error]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_dmem_error (
     .clk_i   (clk_i),
@@ -648,7 +648,7 @@ module otbn_reg_top (
   //   F[reg_error]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_reg_error (
     .clk_i   (clk_i),
@@ -676,7 +676,7 @@ module otbn_reg_top (
   //   F[dmem]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_sec_wipe_dmem (
     .clk_i   (clk_i),
@@ -702,7 +702,7 @@ module otbn_reg_top (
   //   F[imem]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_sec_wipe_imem (
     .clk_i   (clk_i),
@@ -728,7 +728,7 @@ module otbn_reg_top (
   //   F[internal]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_sec_wipe_internal (
     .clk_i   (clk_i),

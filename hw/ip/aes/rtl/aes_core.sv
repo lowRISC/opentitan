@@ -496,9 +496,9 @@ module aes_core
 
   // Shadowed register primitve
   prim_subreg_shadow #(
-    .DW       ( $bits(ctrl_reg_t) ),
-    .SWACCESS ( "WO"              ),
-    .RESVAL   ( CTRL_RESET        )
+    .DW       ( $bits(ctrl_reg_t)           ),
+    .SwAccess ( prim_subreg_pkg::SwAccessWO ),
+    .RESVAL   ( CTRL_RESET                  )
   ) u_ctrl_reg_shadowed (
     .clk_i       ( clk_i              ),
     .rst_ni      ( rst_ni             ),

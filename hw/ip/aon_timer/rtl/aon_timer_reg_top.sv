@@ -168,7 +168,7 @@ module aon_timer_reg_top (
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_ctrl_enable (
     .clk_i   (clk_i),
@@ -194,7 +194,7 @@ module aon_timer_reg_top (
   //   F[prescaler]: 12:1
   prim_subreg #(
     .DW      (12),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (12'h0)
   ) u_wkup_ctrl_prescaler (
     .clk_i   (clk_i),
@@ -221,7 +221,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_wkup_thold (
     .clk_i   (clk_i),
@@ -248,7 +248,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_wkup_count (
     .clk_i   (clk_i),
@@ -275,7 +275,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_wdog_regwen (
     .clk_i   (clk_i),
@@ -303,7 +303,7 @@ module aon_timer_reg_top (
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wdog_ctrl_enable (
     .clk_i   (clk_i),
@@ -329,7 +329,7 @@ module aon_timer_reg_top (
   //   F[pause_in_sleep]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wdog_ctrl_pause_in_sleep (
     .clk_i   (clk_i),
@@ -356,7 +356,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_wdog_bark_thold (
     .clk_i   (clk_i),
@@ -383,7 +383,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_wdog_bite_thold (
     .clk_i   (clk_i),
@@ -410,7 +410,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_wdog_count (
     .clk_i   (clk_i),
@@ -438,7 +438,7 @@ module aon_timer_reg_top (
   //   F[wkup_timer_expired]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_wkup_timer_expired (
     .clk_i   (clk_i),
@@ -464,7 +464,7 @@ module aon_timer_reg_top (
   //   F[wdog_timer_expired]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_wdog_timer_expired (
     .clk_i   (clk_i),
@@ -523,7 +523,7 @@ module aon_timer_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_wkup_cause (
     .clk_i   (clk_i),

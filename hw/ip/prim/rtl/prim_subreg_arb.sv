@@ -4,9 +4,11 @@
 //
 // Write enable and data arbitration logic for register slice conforming to Comportibility guide.
 
-module prim_subreg_arb #(
-  parameter int DW       = 32  ,
-  parameter     SWACCESS = "RW"  // {RW, RO, WO, W1C, W1S, W0C, RC}
+module prim_subreg_arb
+  import prim_subreg_pkg::*;
+#(
+  parameter int         DW       = 32,
+  parameter sw_access_e SwAccess = SwAccessRW
 ) (
   // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
   // In case of RC, top connects read pulse to we.
@@ -25,13 +27,13 @@ module prim_subreg_arb #(
   output logic [DW-1:0] wr_data
 );
 
-  if ((SWACCESS == "RW") || (SWACCESS == "WO")) begin : gen_w
+  if (SwAccess inside {SwAccessRW, SwAccessWO}) begin : gen_w
     assign wr_en   = we | de;
     assign wr_data = (we == 1'b1) ? wd : d; // SW higher priority
     // Unused q - Prevent lint errors.
     logic [DW-1:0] unused_q;
     assign unused_q = q;
-  end else if (SWACCESS == "RO") begin : gen_ro
+  end else if (SwAccess == SwAccessRO) begin : gen_ro
     assign wr_en   = de;
     assign wr_data = d;
     // Unused we, wd, q - Prevent lint errors.
@@ -41,22 +43,22 @@ module prim_subreg_arb #(
     assign unused_we = we;
     assign unused_wd = wd;
     assign unused_q  = q;
-  end else if (SWACCESS == "W1S") begin : gen_w1s
-    // If SWACCESS is W1S, then assume hw tries to clear.
+  end else if (SwAccess == SwAccessW1S) begin : gen_w1s
+    // If SwAccess is W1S, then assume hw tries to clear.
     // So, give a chance HW to clear when SW tries to set.
     // If both try to set/clr at the same bit pos, SW wins.
     assign wr_en   = we | de;
     assign wr_data = (de ? d : q) | (we ? wd : '0);
-  end else if (SWACCESS == "W1C") begin : gen_w1c
-    // If SWACCESS is W1C, then assume hw tries to set.
+  end else if (SwAccess == SwAccessW1C) begin : gen_w1c
+    // If SwAccess is W1C, then assume hw tries to set.
     // So, give a chance HW to set when SW tries to clear.
     // If both try to set/clr at the same bit pos, SW wins.
     assign wr_en   = we | de;
     assign wr_data = (de ? d : q) & (we ? ~wd : '1);
-  end else if (SWACCESS == "W0C") begin : gen_w0c
+  end else if (SwAccess == SwAccessW0C) begin : gen_w0c
     assign wr_en   = we | de;
     assign wr_data = (de ? d : q) & (we ? wd : '1);
-  end else if (SWACCESS == "RC") begin : gen_rc
+  end else if (SwAccess == SwAccessRC) begin : gen_rc
     // This swtype is not recommended but exists for compatibility.
     // WARN: we signal is actually read signal not write enable.
     assign wr_en  = we | de;

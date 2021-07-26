@@ -4,16 +4,18 @@
 //
 // Shadowed register slice conforming to Comportibility guide.
 
-module prim_subreg_shadow #(
-  parameter int            DW       = 32  ,
-  parameter                SWACCESS = "RW", // {RW, RO, WO, W1C, W1S, W0C, RC}
+module prim_subreg_shadow
+  import prim_subreg_pkg::*;
+#(
+  parameter int            DW       = 32,
+  parameter sw_access_e    SwAccess = SwAccessRW,
   parameter logic [DW-1:0] RESVAL   = '0    // reset value
 ) (
   input clk_i,
   input rst_ni,
 
   // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
-  // SW reads clear phase unless SWACCESS is RO.
+  // SW reads clear phase unless SwAccess is RO.
   input          re,
   // In case of RC, top connects read pulse to we.
   input          we,
@@ -36,9 +38,10 @@ module prim_subreg_shadow #(
   // Since the shadow and staging registers work with the 1's complement value,
   // we need to invert the polarity of the SW access if it is either "W1S" or "W0C".
   // W1C is forbidden since the W0S complement is not implemented.
-  `ASSERT_INIT(CheckSwAccessIsLegal_A, SWACCESS inside {"RW", "RO", "WO", "W1S", "W0C", "RC"})
-  parameter bit [3*8-1:0] INVERTED_SWACCESS = (SWACCESS == "W1S") ? "W0C" :
-                                              (SWACCESS == "W0C") ? "W1S" : SWACCESS;
+  `ASSERT_INIT(CheckSwAccessIsLegal_A,
+      SwAccess inside {SwAccessRW, SwAccessRO, SwAccessWO, SwAccessW1S, SwAccessW0C, SwAccessRC})
+  parameter sw_access_e InvertedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessW0C :
+                                           (SwAccess == SwAccessW0C) ? SwAccessW1S : SwAccess;
 
   // Subreg control signals
   logic          phase_clear;
@@ -52,13 +55,13 @@ module prim_subreg_shadow #(
   logic [DW-1:0] committed_qs;
 
   // Effective write enable and write data signals.
-  // These depend on we, de and wd, d, q as well as SWACCESS.
+  // These depend on we, de and wd, d, q as well as SwAccess.
   logic          wr_en;
   logic [DW-1:0] wr_data;
 
   prim_subreg_arb #(
     .DW       ( DW       ),
-    .SWACCESS ( SWACCESS )
+    .SwAccess ( SwAccess )
   ) wr_en_data_arb (
     .we      ( we      ),
     .wd      ( wd      ),
@@ -70,9 +73,9 @@ module prim_subreg_shadow #(
   );
 
   // Phase clearing:
-  // - SW reads clear phase unless SWACCESS is RO.
+  // - SW reads clear phase unless SwAccess is RO.
   // - In case of RO, SW should not interfere with update process.
-  assign phase_clear = (SWACCESS == "RO") ? 1'b0 : re;
+  assign phase_clear = (SwAccess == SwAccessRO) ? 1'b0 : re;
 
   // Phase tracker:
   // - Reads from SW clear the phase back to 0.
@@ -93,9 +96,9 @@ module prim_subreg_shadow #(
   assign staged_we = we & ~phase_q;
   assign staged_de = de & ~phase_q;
   prim_subreg #(
-    .DW       ( DW                ),
-    .SWACCESS ( INVERTED_SWACCESS ),
-    .RESVAL   ( ~RESVAL           )
+    .DW       ( DW               ),
+    .SwAccess ( InvertedSwAccess ),
+    .RESVAL   ( ~RESVAL          )
   ) staged_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
@@ -116,9 +119,9 @@ module prim_subreg_shadow #(
   assign shadow_we = we & phase_q & ~err_update;
   assign shadow_de = de & phase_q & ~err_update;
   prim_subreg #(
-    .DW       ( DW                ),
-    .SWACCESS ( INVERTED_SWACCESS ),
-    .RESVAL   ( ~RESVAL           )
+    .DW       ( DW               ),
+    .SwAccess ( InvertedSwAccess ),
+    .RESVAL   ( ~RESVAL          )
   ) shadow_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
@@ -138,7 +141,7 @@ module prim_subreg_shadow #(
   assign committed_de = shadow_de;
   prim_subreg #(
     .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
+    .SwAccess ( SwAccess ),
     .RESVAL   ( RESVAL   )
   ) committed_reg (
     .clk_i    ( clk_i        ),
