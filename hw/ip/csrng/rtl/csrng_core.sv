@@ -74,6 +74,7 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_fatal_err;
   logic       cs_enable;
   logic       sw_app_enable;
+  logic       read_int_state;
   logic       acmd_avail;
   logic       acmd_sop;
   logic       acmd_mop;
@@ -308,6 +309,7 @@ module csrng_core import csrng_pkg::*; #(
 
   logic [14:0]             hw_exception_sts;
   logic                    lc_hw_debug_on;
+  logic                    state_db_is_dump_en;
   logic                    state_db_reg_rd_sel;
   logic                    state_db_reg_rd_id_pulse;
   logic [StateId-1:0]      state_db_reg_rd_id;
@@ -655,6 +657,7 @@ module csrng_core import csrng_pkg::*; #(
   // master module enable
   assign cs_enable = (cs_enb_e'(reg2hw.ctrl.enable.q) == CS_FIELD_ON);
   assign sw_app_enable = (cs_enb_e'(reg2hw.ctrl.sw_app_enable.q) == CS_FIELD_ON);
+  assign read_int_state = (cs_enb_e'(reg2hw.ctrl.read_int_state.q) == CS_FIELD_ON);
 
   //------------------------------------------
   // application interface
@@ -926,6 +929,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_reg_rd_id = reg2hw.int_state_num.q;
   assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
   assign hw2reg.int_state_val.d = state_db_reg_rd_val;
+  assign state_db_is_dump_en = cs_enable && read_int_state && efuse_sw_app_enable_i;
 
 
   csrng_state_db #(
@@ -956,7 +960,7 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_res_ctr_i(state_db_wr_rc),
     .state_db_wr_sts_i(state_db_wr_sts),
 
-    .state_db_is_dump_en_i(cs_enable), // TODO: add efuse and new config bit
+    .state_db_is_dump_en_i(state_db_is_dump_en),
     .state_db_reg_rd_sel_i(state_db_reg_rd_sel),
     .state_db_reg_rd_id_pulse_i(state_db_reg_rd_id_pulse),
     .state_db_reg_rd_id_i(state_db_reg_rd_id),

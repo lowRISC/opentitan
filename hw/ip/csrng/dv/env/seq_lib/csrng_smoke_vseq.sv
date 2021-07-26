@@ -9,6 +9,7 @@ class csrng_smoke_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   task body();
+    ral.ctrl.read_int_state.set(4'hA);
     // Wait for CSRNG cmd_rdy
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
 

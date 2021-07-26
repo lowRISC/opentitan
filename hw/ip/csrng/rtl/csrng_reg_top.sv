@@ -141,6 +141,8 @@ module csrng_reg_top (
   logic [3:0] ctrl_enable_wd;
   logic [3:0] ctrl_sw_app_enable_qs;
   logic [3:0] ctrl_sw_app_enable_wd;
+  logic [3:0] ctrl_read_int_state_qs;
+  logic [3:0] ctrl_read_int_state_wd;
   logic cmd_req_we;
   logic [31:0] cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
@@ -562,6 +564,32 @@ module csrng_reg_top (
 
     // to register interface (read)
     .qs     (ctrl_sw_app_enable_qs)
+  );
+
+
+  //   F[read_int_state]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h5)
+  ) u_ctrl_read_int_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we & regwen_qs),
+    .wd     (ctrl_read_int_state_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.read_int_state.q),
+
+    // to register interface (read)
+    .qs     (ctrl_read_int_state_qs)
   );
 
 
@@ -1661,6 +1689,8 @@ module csrng_reg_top (
   assign ctrl_enable_wd = reg_wdata[3:0];
 
   assign ctrl_sw_app_enable_wd = reg_wdata[7:4];
+
+  assign ctrl_read_int_state_wd = reg_wdata[11:8];
   assign cmd_req_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cmd_req_wd = reg_wdata[31:0];
@@ -1716,6 +1746,7 @@ module csrng_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[3:0] = ctrl_enable_qs;
         reg_rdata_next[7:4] = ctrl_sw_app_enable_qs;
+        reg_rdata_next[11:8] = ctrl_read_int_state_qs;
       end
 
       addr_hit[6]: begin
