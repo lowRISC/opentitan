@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_status.h"
@@ -43,6 +44,32 @@
          or not this is a test.*/                         \
       test_status_set(kTestStatusFailed);                 \
     }                                                     \
+  } while (false)
+
+/**
+ * Compare `num_items_` of `actual_` against `expected_` buffer.
+ *
+ * Prints differences between `actual_` and `expected_` before assiging the
+ * comparison `result_` value.
+ *
+ * @param[out] result_ Result of the comparison.
+ * @param actual_ Buffer containing actual values.
+ * @param expected_ Buffer containing expected values.
+ * @param num_items_ Number of items to compare.
+ */
+#define CHECK_BUFFER(result_, actual_, expected_, num_items_)                 \
+  do {                                                                        \
+    /* `sizeof(actual_[0])` is used to determine the size of each item in the \
+     * buffer. */                                                             \
+    if (memcmp(actual_, expected_, num_items_ * sizeof(actual_[0])) != 0) {   \
+      for (size_t i = 0; i < num_items_; ++i) {                               \
+        LOG_ERROR("[%d] actual = 0x%x; expected = 0x%x", i, actual_[i],       \
+                  expected_[i]);                                              \
+      }                                                                       \
+      result_ = false;                                                        \
+    } else {                                                                  \
+      result_ true;                                                           \
+    }                                                                         \
   } while (false)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
