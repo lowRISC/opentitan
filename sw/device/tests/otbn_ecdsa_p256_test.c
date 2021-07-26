@@ -36,8 +36,6 @@ OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, p256_ecdsa_sign);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, p256_ecdsa_verify);
 
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_k);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_rnd);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_msg);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_r);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_s);
@@ -46,8 +44,6 @@ OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_y);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_d);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x_r);
 
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, k);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, rnd);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, msg);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, r);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, s);
@@ -62,8 +58,6 @@ static const otbn_ptr_t kOtbnAppP256EcdsaFuncSign =
 static const otbn_ptr_t kOtbnAppP256EcdsaFuncVerify =
     OTBN_PTR_T_INIT(p256_ecdsa, p256_ecdsa_verify);
 
-static const otbn_ptr_t kOtbnVarDptrK = OTBN_PTR_T_INIT(p256_ecdsa, dptr_k);
-static const otbn_ptr_t kOtbnVarDptrRnd = OTBN_PTR_T_INIT(p256_ecdsa, dptr_rnd);
 static const otbn_ptr_t kOtbnVarDptrMsg = OTBN_PTR_T_INIT(p256_ecdsa, dptr_msg);
 static const otbn_ptr_t kOtbnVarDptrR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_r);
 static const otbn_ptr_t kOtbnVarDptrS = OTBN_PTR_T_INIT(p256_ecdsa, dptr_s);
@@ -72,8 +66,6 @@ static const otbn_ptr_t kOtbnVarDptrY = OTBN_PTR_T_INIT(p256_ecdsa, dptr_y);
 static const otbn_ptr_t kOtbnVarDptrD = OTBN_PTR_T_INIT(p256_ecdsa, dptr_d);
 static const otbn_ptr_t kOtbnVarDptrXR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x_r);
 
-static const otbn_ptr_t kOtbnVarK = OTBN_PTR_T_INIT(p256_ecdsa, k);
-static const otbn_ptr_t kOtbnVarRnd = OTBN_PTR_T_INIT(p256_ecdsa, rnd);
 static const otbn_ptr_t kOtbnVarMsg = OTBN_PTR_T_INIT(p256_ecdsa, msg);
 static const otbn_ptr_t kOtbnVarR = OTBN_PTR_T_INIT(p256_ecdsa, r);
 static const otbn_ptr_t kOtbnVarS = OTBN_PTR_T_INIT(p256_ecdsa, s);
@@ -151,8 +143,6 @@ static void setup_data_pointer(otbn_t *otbn_ctx, const otbn_ptr_t dptr,
  * regions to store the actual values.
  */
 static void setup_data_pointers(otbn_t *otbn_ctx) {
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrK, kOtbnVarK);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrRnd, kOtbnVarRnd);
   setup_data_pointer(otbn_ctx, kOtbnVarDptrMsg, kOtbnVarMsg);
   setup_data_pointer(otbn_ctx, kOtbnVarDptrR, kOtbnVarR);
   setup_data_pointer(otbn_ctx, kOtbnVarDptrS, kOtbnVarS);
@@ -167,8 +157,6 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
  *
  * @param otbn_ctx            The OTBN context object.
  * @param msg                 The message to sign (32B).
- * @param blinding_rnd        A random number for blinding (32B).
- * @param secret_random_int_k The secret random integer (32B).
  * @param private_key_d       The private key (32B).
  * @param[out] signature_r    Signature component r (the x-coordinate of R).
  *                            Provide a pre-allocated 32B buffer.
@@ -176,8 +164,6 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
  *                            Provide a pre-allocated 32B buffer.
  */
 static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
-                            const uint8_t *blinding_rnd,
-                            const uint8_t *secret_random_int_k,
                             const uint8_t *private_key_d, uint8_t *signature_r,
                             uint8_t *signature_s) {
   CHECK(otbn_ctx != NULL);
@@ -188,10 +174,6 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   // Write input arguments.
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==
         kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, blinding_rnd,
-                               kOtbnVarRnd) == kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, secret_random_int_k,
-                               kOtbnVarK) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, private_key_d,
                                kOtbnVarD) == kOtbnOk);
 
@@ -259,12 +241,6 @@ static void test_ecdsa_p256_roundtrip(void) {
   // Message
   static const uint8_t kIn[32] = {"Hello OTBN."};
 
-  // "Random" number for blinding
-  static const uint8_t kBlindingRnd[32] = {
-      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
-      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a,
-      0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29};
-
   // Public key x-coordinate (Q.x)
   static const uint8_t kPublicKeyQx[32] = {
       0x4e, 0xb2, 0x8b, 0x55, 0xeb, 0x88, 0x62, 0x24, 0xf2, 0xbf, 0x1b,
@@ -283,24 +259,6 @@ static void test_ecdsa_p256_roundtrip(void) {
       0x8b, 0xe9, 0x93, 0x3e, 0x28, 0x0c, 0xf0, 0x18, 0x0d, 0xf4, 0x6c,
       0x0b, 0xda, 0x7a, 0xbb, 0xe6, 0x8f, 0xb7, 0xa0, 0x45, 0x55};
 
-  // Secret random integer (k)
-  static const uint8_t kSecretRandomIntK[32] = {
-      0x7d, 0x07, 0x40, 0x6b, 0x57, 0x4f, 0xc1, 0xfe, 0x0a, 0x56, 0x3e,
-      0x81, 0xd4, 0x10, 0x75, 0x6a, 0x86, 0x8e, 0x1d, 0x07, 0x42, 0x25,
-      0xc9, 0xeb, 0x89, 0xae, 0x7b, 0x02, 0x49, 0x87, 0x65, 0x4d};
-
-  // Signature component r
-  static const uint8_t kExpectedSignatureR[32] = {
-      0xb2, 0x9c, 0x5e, 0xc1, 0xff, 0x9c, 0xa9, 0x70, 0xb8, 0xd7, 0x7d,
-      0x90, 0xbb, 0x29, 0x8d, 0x5f, 0x8f, 0x96, 0x42, 0x66, 0x5f, 0xe8,
-      0x49, 0x59, 0xf7, 0x43, 0xb8, 0x03, 0x5b, 0xf7, 0x89, 0x04};
-
-  // Signature component s
-  static const uint8_t kExpectedSignatureS[32] = {
-      0xdd, 0x33, 0x60, 0x07, 0x1e, 0x60, 0x06, 0xa4, 0xe2, 0xfa, 0x41,
-      0xf9, 0xf1, 0x69, 0xa5, 0x79, 0x38, 0x0c, 0xcd, 0x66, 0x88, 0xda,
-      0x25, 0x2e, 0x23, 0x56, 0x81, 0x62, 0x28, 0xf8, 0x6b, 0xd1};
-
   // Initialize
   otbn_t otbn_ctx;
   dif_otbn_config_t otbn_config = {
@@ -317,11 +275,8 @@ static void test_ecdsa_p256_roundtrip(void) {
 
   LOG_INFO("Signing");
   uint64_t t_start_sign = profile_start();
-  p256_ecdsa_sign(&otbn_ctx, kIn, kBlindingRnd, kSecretRandomIntK, kPrivateKeyD,
-                  signature_r, signature_s);
+  p256_ecdsa_sign(&otbn_ctx, kIn, kPrivateKeyD, signature_r, signature_s);
   profile_end(t_start_sign, "Sign");
-  check_data("signature_r", signature_r, kExpectedSignatureR, 32);
-  check_data("signature_s", signature_s, kExpectedSignatureS, 32);
 
   // Clear OTBN memory and reload app
   LOG_INFO("Clearing OTBN memory and reloading app");
@@ -339,7 +294,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   // Include the r =? x_r comparison in the profiling as this is something
   // either OTBN or the host CPU needs to do as part of the signature
   // verification.
-  check_data("signature_x_r", signature_x_r, signature_r, 32);
+  check_data("signature_x_r", signature_r, signature_x_r, 32);
   profile_end(t_start_verify, "Verify");
 
   // Clear OTBN memory
