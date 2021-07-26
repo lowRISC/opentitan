@@ -163,7 +163,7 @@ module rstmgr import rstmgr_pkg::*; (
   for (genvar i=0; i < NumSwResets; i++) begin : gen_sw_rst_ext_regs
     prim_subreg #(
       .DW(1),
-      .SWACCESS("RW"),
+      .SwAccess(prim_subreg_pkg::SwAccessRW),
       .RESVAL(1)
     ) u_rst_sw_ctrl_reg (
       .clk_i,

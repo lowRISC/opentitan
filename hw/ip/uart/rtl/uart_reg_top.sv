@@ -208,7 +208,7 @@ module uart_reg_top (
   //   F[tx_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_watermark (
     .clk_i   (clk_i),
@@ -234,7 +234,7 @@ module uart_reg_top (
   //   F[rx_watermark]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_watermark (
     .clk_i   (clk_i),
@@ -260,7 +260,7 @@ module uart_reg_top (
   //   F[tx_empty]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_empty (
     .clk_i   (clk_i),
@@ -286,7 +286,7 @@ module uart_reg_top (
   //   F[rx_overflow]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_overflow (
     .clk_i   (clk_i),
@@ -312,7 +312,7 @@ module uart_reg_top (
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_frame_err (
     .clk_i   (clk_i),
@@ -338,7 +338,7 @@ module uart_reg_top (
   //   F[rx_break_err]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_break_err (
     .clk_i   (clk_i),
@@ -364,7 +364,7 @@ module uart_reg_top (
   //   F[rx_timeout]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_timeout (
     .clk_i   (clk_i),
@@ -390,7 +390,7 @@ module uart_reg_top (
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_parity_err (
     .clk_i   (clk_i),
@@ -418,7 +418,7 @@ module uart_reg_top (
   //   F[tx_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_tx_watermark (
     .clk_i   (clk_i),
@@ -444,7 +444,7 @@ module uart_reg_top (
   //   F[rx_watermark]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_watermark (
     .clk_i   (clk_i),
@@ -470,7 +470,7 @@ module uart_reg_top (
   //   F[tx_empty]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_tx_empty (
     .clk_i   (clk_i),
@@ -496,7 +496,7 @@ module uart_reg_top (
   //   F[rx_overflow]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_overflow (
     .clk_i   (clk_i),
@@ -522,7 +522,7 @@ module uart_reg_top (
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_frame_err (
     .clk_i   (clk_i),
@@ -548,7 +548,7 @@ module uart_reg_top (
   //   F[rx_break_err]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_break_err (
     .clk_i   (clk_i),
@@ -574,7 +574,7 @@ module uart_reg_top (
   //   F[rx_timeout]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_timeout (
     .clk_i   (clk_i),
@@ -600,7 +600,7 @@ module uart_reg_top (
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_parity_err (
     .clk_i   (clk_i),
@@ -766,7 +766,7 @@ module uart_reg_top (
   //   F[tx]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_tx (
     .clk_i   (clk_i),
@@ -792,7 +792,7 @@ module uart_reg_top (
   //   F[rx]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_rx (
     .clk_i   (clk_i),
@@ -818,7 +818,7 @@ module uart_reg_top (
   //   F[nf]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_nf (
     .clk_i   (clk_i),
@@ -844,7 +844,7 @@ module uart_reg_top (
   //   F[slpbk]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_slpbk (
     .clk_i   (clk_i),
@@ -870,7 +870,7 @@ module uart_reg_top (
   //   F[llpbk]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_llpbk (
     .clk_i   (clk_i),
@@ -896,7 +896,7 @@ module uart_reg_top (
   //   F[parity_en]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_parity_en (
     .clk_i   (clk_i),
@@ -922,7 +922,7 @@ module uart_reg_top (
   //   F[parity_odd]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_parity_odd (
     .clk_i   (clk_i),
@@ -948,7 +948,7 @@ module uart_reg_top (
   //   F[rxblvl]: 9:8
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_ctrl_rxblvl (
     .clk_i   (clk_i),
@@ -974,7 +974,7 @@ module uart_reg_top (
   //   F[nco]: 31:16
   prim_subreg #(
     .DW      (16),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_ctrl_nco (
     .clk_i   (clk_i),
@@ -1109,7 +1109,7 @@ module uart_reg_top (
 
   prim_subreg #(
     .DW      (8),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (8'h0)
   ) u_wdata (
     .clk_i   (clk_i),
@@ -1137,7 +1137,7 @@ module uart_reg_top (
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_rxrst (
     .clk_i   (clk_i),
@@ -1163,7 +1163,7 @@ module uart_reg_top (
   //   F[txrst]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_txrst (
     .clk_i   (clk_i),
@@ -1189,7 +1189,7 @@ module uart_reg_top (
   //   F[rxilvl]: 4:2
   prim_subreg #(
     .DW      (3),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_fifo_ctrl_rxilvl (
     .clk_i   (clk_i),
@@ -1215,7 +1215,7 @@ module uart_reg_top (
   //   F[txilvl]: 6:5
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_fifo_ctrl_txilvl (
     .clk_i   (clk_i),
@@ -1275,7 +1275,7 @@ module uart_reg_top (
   //   F[txen]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ovrd_txen (
     .clk_i   (clk_i),
@@ -1301,7 +1301,7 @@ module uart_reg_top (
   //   F[txval]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ovrd_txval (
     .clk_i   (clk_i),
@@ -1345,7 +1345,7 @@ module uart_reg_top (
   //   F[val]: 23:0
   prim_subreg #(
     .DW      (24),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (24'h0)
   ) u_timeout_ctrl_val (
     .clk_i   (clk_i),
@@ -1371,7 +1371,7 @@ module uart_reg_top (
   //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_timeout_ctrl_en (
     .clk_i   (clk_i),

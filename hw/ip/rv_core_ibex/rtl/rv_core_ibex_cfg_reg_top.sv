@@ -258,7 +258,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_alert_regwen_0 (
     .clk_i   (clk_i),
@@ -285,7 +285,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_alert_regwen_1 (
     .clk_i   (clk_i),
@@ -314,7 +314,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1)
   ) u_sw_alert_0 (
     .clk_i   (clk_i),
@@ -341,7 +341,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1)
   ) u_sw_alert_1 (
     .clk_i   (clk_i),
@@ -370,7 +370,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ibus_regwen_0 (
     .clk_i   (clk_i),
@@ -397,7 +397,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ibus_regwen_1 (
     .clk_i   (clk_i),
@@ -426,7 +426,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ibus_addr_en_0 (
     .clk_i   (clk_i),
@@ -453,7 +453,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ibus_addr_en_1 (
     .clk_i   (clk_i),
@@ -482,7 +482,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_addr_matching_0 (
     .clk_i   (clk_i),
@@ -509,7 +509,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_addr_matching_1 (
     .clk_i   (clk_i),
@@ -538,7 +538,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_remap_addr_0 (
     .clk_i   (clk_i),
@@ -565,7 +565,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_remap_addr_1 (
     .clk_i   (clk_i),
@@ -594,7 +594,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_dbus_regwen_0 (
     .clk_i   (clk_i),
@@ -621,7 +621,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_dbus_regwen_1 (
     .clk_i   (clk_i),
@@ -650,7 +650,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_dbus_addr_en_0 (
     .clk_i   (clk_i),
@@ -677,7 +677,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_dbus_addr_en_1 (
     .clk_i   (clk_i),
@@ -706,7 +706,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_addr_matching_0 (
     .clk_i   (clk_i),
@@ -733,7 +733,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_addr_matching_1 (
     .clk_i   (clk_i),
@@ -762,7 +762,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_remap_addr_0 (
     .clk_i   (clk_i),
@@ -789,7 +789,7 @@ module rv_core_ibex_cfg_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_remap_addr_1 (
     .clk_i   (clk_i),
@@ -817,7 +817,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[alert_en]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1S"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0)
   ) u_nmi_enable_alert_en (
     .clk_i   (clk_i),
@@ -843,7 +843,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[wdog_en]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1S"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0)
   ) u_nmi_enable_wdog_en (
     .clk_i   (clk_i),
@@ -871,7 +871,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[alert]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_nmi_state_alert (
     .clk_i   (clk_i),
@@ -897,7 +897,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[wdog]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_nmi_state_wdog (
     .clk_i   (clk_i),
@@ -925,7 +925,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[reg_intg_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_reg_intg_err (
     .clk_i   (clk_i),
@@ -951,7 +951,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[fatal_intg_err]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_fatal_intg_err (
     .clk_i   (clk_i),
@@ -977,7 +977,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[fatal_core_err]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_fatal_core_err (
     .clk_i   (clk_i),
@@ -1003,7 +1003,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[recov_core_err]: 10:10
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_recov_core_err (
     .clk_i   (clk_i),

@@ -162,7 +162,7 @@ module pattgen_reg_top (
   //   F[done_ch0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_done_ch0 (
     .clk_i   (clk_i),
@@ -188,7 +188,7 @@ module pattgen_reg_top (
   //   F[done_ch1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_done_ch1 (
     .clk_i   (clk_i),
@@ -216,7 +216,7 @@ module pattgen_reg_top (
   //   F[done_ch0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_done_ch0 (
     .clk_i   (clk_i),
@@ -242,7 +242,7 @@ module pattgen_reg_top (
   //   F[done_ch1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_done_ch1 (
     .clk_i   (clk_i),
@@ -318,7 +318,7 @@ module pattgen_reg_top (
   //   F[enable_ch0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_enable_ch0 (
     .clk_i   (clk_i),
@@ -344,7 +344,7 @@ module pattgen_reg_top (
   //   F[enable_ch1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_enable_ch1 (
     .clk_i   (clk_i),
@@ -370,7 +370,7 @@ module pattgen_reg_top (
   //   F[polarity_ch0]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_polarity_ch0 (
     .clk_i   (clk_i),
@@ -396,7 +396,7 @@ module pattgen_reg_top (
   //   F[polarity_ch1]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_polarity_ch1 (
     .clk_i   (clk_i),
@@ -423,7 +423,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_prediv_ch0 (
     .clk_i   (clk_i),
@@ -450,7 +450,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_prediv_ch1 (
     .clk_i   (clk_i),
@@ -479,7 +479,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_data_ch0_0 (
     .clk_i   (clk_i),
@@ -506,7 +506,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_data_ch0_1 (
     .clk_i   (clk_i),
@@ -535,7 +535,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_data_ch1_0 (
     .clk_i   (clk_i),
@@ -562,7 +562,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_data_ch1_1 (
     .clk_i   (clk_i),
@@ -590,7 +590,7 @@ module pattgen_reg_top (
   //   F[len_ch0]: 5:0
   prim_subreg #(
     .DW      (6),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h0)
   ) u_size_len_ch0 (
     .clk_i   (clk_i),
@@ -616,7 +616,7 @@ module pattgen_reg_top (
   //   F[reps_ch0]: 15:6
   prim_subreg #(
     .DW      (10),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_size_reps_ch0 (
     .clk_i   (clk_i),
@@ -642,7 +642,7 @@ module pattgen_reg_top (
   //   F[len_ch1]: 21:16
   prim_subreg #(
     .DW      (6),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h0)
   ) u_size_len_ch1 (
     .clk_i   (clk_i),
@@ -668,7 +668,7 @@ module pattgen_reg_top (
   //   F[reps_ch1]: 31:22
   prim_subreg #(
     .DW      (10),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_size_reps_ch1 (
     .clk_i   (clk_i),

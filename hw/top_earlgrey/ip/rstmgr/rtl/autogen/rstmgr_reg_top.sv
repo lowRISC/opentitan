@@ -193,7 +193,7 @@ module rstmgr_reg_top (
   //   F[por]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
     .clk_i   (clk_i),
@@ -219,7 +219,7 @@ module rstmgr_reg_top (
   //   F[low_power_exit]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
     .clk_i   (clk_i),
@@ -245,7 +245,7 @@ module rstmgr_reg_top (
   //   F[ndm_reset]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_ndm_reset (
     .clk_i   (clk_i),
@@ -271,7 +271,7 @@ module rstmgr_reg_top (
   //   F[hw_req]: 5:3
   prim_subreg #(
     .DW      (3),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (3'h0)
   ) u_reset_info_hw_req (
     .clk_i   (clk_i),
@@ -298,7 +298,7 @@ module rstmgr_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_alert_regwen (
     .clk_i   (clk_i),
@@ -326,7 +326,7 @@ module rstmgr_reg_top (
   //   F[en]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
     .clk_i   (clk_i),
@@ -352,7 +352,7 @@ module rstmgr_reg_top (
   //   F[index]: 7:4
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
     .clk_i   (clk_i),
@@ -411,7 +411,7 @@ module rstmgr_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_cpu_regwen (
     .clk_i   (clk_i),
@@ -439,7 +439,7 @@ module rstmgr_reg_top (
   //   F[en]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_cpu_info_ctrl_en (
     .clk_i   (clk_i),
@@ -465,7 +465,7 @@ module rstmgr_reg_top (
   //   F[index]: 7:4
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_cpu_info_ctrl_index (
     .clk_i   (clk_i),
@@ -527,7 +527,7 @@ module rstmgr_reg_top (
   // F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_0 (
     .clk_i   (clk_i),
@@ -553,7 +553,7 @@ module rstmgr_reg_top (
   // F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_1 (
     .clk_i   (clk_i),
@@ -579,7 +579,7 @@ module rstmgr_reg_top (
   // F[en_2]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_2 (
     .clk_i   (clk_i),
@@ -605,7 +605,7 @@ module rstmgr_reg_top (
   // F[en_3]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_3 (
     .clk_i   (clk_i),
@@ -631,7 +631,7 @@ module rstmgr_reg_top (
   // F[en_4]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_4 (
     .clk_i   (clk_i),
@@ -657,7 +657,7 @@ module rstmgr_reg_top (
   // F[en_5]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_5 (
     .clk_i   (clk_i),
@@ -683,7 +683,7 @@ module rstmgr_reg_top (
   // F[en_6]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_6 (
     .clk_i   (clk_i),

@@ -233,7 +233,7 @@ module hmac_reg_top (
   //   F[hmac_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_hmac_done (
     .clk_i   (clk_i),
@@ -259,7 +259,7 @@ module hmac_reg_top (
   //   F[fifo_empty]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
@@ -285,7 +285,7 @@ module hmac_reg_top (
   //   F[hmac_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_hmac_err (
     .clk_i   (clk_i),
@@ -313,7 +313,7 @@ module hmac_reg_top (
   //   F[hmac_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_hmac_done (
     .clk_i   (clk_i),
@@ -339,7 +339,7 @@ module hmac_reg_top (
   //   F[fifo_empty]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
@@ -365,7 +365,7 @@ module hmac_reg_top (
   //   F[hmac_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_hmac_err (
     .clk_i   (clk_i),
@@ -596,7 +596,7 @@ module hmac_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0)
   ) u_err_code (
     .clk_i   (clk_i),
@@ -899,7 +899,7 @@ module hmac_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0)
   ) u_msg_length_lower (
     .clk_i   (clk_i),
@@ -926,7 +926,7 @@ module hmac_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0)
   ) u_msg_length_upper (
     .clk_i   (clk_i),

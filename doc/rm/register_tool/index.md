@@ -284,7 +284,7 @@ In the middle are the collections of registers, which are a function of the `hjs
 These are instantiations of the primitives `prim_subreg`, `prim_subreg_ext` and `prim_subreg_shadow` found in the lowRISC primitive library (lowrisc:prim:all).
 These take as inputs the write requests from the bus as well as the hardware struct inputs associated with that register.
 They create as output the current state of the register and a potential write enable.
-The `prim_subreg` module takes a parameter `SWACCESS` that is used to adjust the implementation to the access type required.
+The `prim_subreg` module takes a parameter `SwAccess` that is used to adjust the implementation to the access type required.
 
 On the right are the typedef structs that gather the `q` and `qe`s into one output bundle, and receive the bundled `d` and `de` inputs.
 
@@ -326,7 +326,7 @@ For example, if the termination of the TL-UL bus is a memory that handles byte a
 The definition of what exactly is in each register type is described in this section.
 As shown above, the maximally featured register has inputs and outputs to/from both the bus interface side of the design as well as the hardware interface side.
 Some register types don't require all of these inputs and outputs.
-For instance, a read-only register does not require write data from the bus interface (this is configured by the `SWACCESS` parameter to the `prim_subreg` module).
+For instance, a read-only register does not require write data from the bus interface (this is configured by the `SwAccess` parameter to the `prim_subreg` module).
 The maximally defined inputs to this register block (termed the `subreg` from here forward) are given in the table below.
 Note that these are instantiated per field, not per register, so the width is the width of the field.
 The direction is the Verilog signal definition of `subreg` for that type.

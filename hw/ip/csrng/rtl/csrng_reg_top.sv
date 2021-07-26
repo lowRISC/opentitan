@@ -195,7 +195,7 @@ module csrng_reg_top (
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_cs_cmd_req_done (
     .clk_i   (clk_i),
@@ -221,7 +221,7 @@ module csrng_reg_top (
   //   F[cs_entropy_req]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_cs_entropy_req (
     .clk_i   (clk_i),
@@ -247,7 +247,7 @@ module csrng_reg_top (
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_cs_hw_inst_exc (
     .clk_i   (clk_i),
@@ -273,7 +273,7 @@ module csrng_reg_top (
   //   F[cs_fatal_err]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_cs_fatal_err (
     .clk_i   (clk_i),
@@ -301,7 +301,7 @@ module csrng_reg_top (
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_cs_cmd_req_done (
     .clk_i   (clk_i),
@@ -327,7 +327,7 @@ module csrng_reg_top (
   //   F[cs_entropy_req]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_cs_entropy_req (
     .clk_i   (clk_i),
@@ -353,7 +353,7 @@ module csrng_reg_top (
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_cs_hw_inst_exc (
     .clk_i   (clk_i),
@@ -379,7 +379,7 @@ module csrng_reg_top (
   //   F[cs_fatal_err]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_cs_fatal_err (
     .clk_i   (clk_i),
@@ -484,7 +484,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W0C"),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_regwen (
     .clk_i   (clk_i),
@@ -512,7 +512,7 @@ module csrng_reg_top (
   //   F[enable]: 3:0
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
   ) u_ctrl_enable (
     .clk_i   (clk_i),
@@ -538,7 +538,7 @@ module csrng_reg_top (
   //   F[sw_app_enable]: 7:4
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
   ) u_ctrl_sw_app_enable (
     .clk_i   (clk_i),
@@ -565,7 +565,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_cmd_req (
     .clk_i   (clk_i),
@@ -593,7 +593,7 @@ module csrng_reg_top (
   //   F[cmd_rdy]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1)
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i),
@@ -619,7 +619,7 @@ module csrng_reg_top (
   //   F[cmd_sts]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
@@ -694,7 +694,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_int_state_num (
     .clk_i   (clk_i),
@@ -737,7 +737,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (15),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (15'h0)
   ) u_hw_exc_sts (
     .clk_i   (clk_i),
@@ -765,7 +765,7 @@ module csrng_reg_top (
   //   F[sfifo_cmd_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_cmd_err (
     .clk_i   (clk_i),
@@ -791,7 +791,7 @@ module csrng_reg_top (
   //   F[sfifo_genbits_err]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_genbits_err (
     .clk_i   (clk_i),
@@ -817,7 +817,7 @@ module csrng_reg_top (
   //   F[sfifo_cmdreq_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_cmdreq_err (
     .clk_i   (clk_i),
@@ -843,7 +843,7 @@ module csrng_reg_top (
   //   F[sfifo_rcstage_err]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_rcstage_err (
     .clk_i   (clk_i),
@@ -869,7 +869,7 @@ module csrng_reg_top (
   //   F[sfifo_keyvrc_err]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_keyvrc_err (
     .clk_i   (clk_i),
@@ -895,7 +895,7 @@ module csrng_reg_top (
   //   F[sfifo_updreq_err]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_updreq_err (
     .clk_i   (clk_i),
@@ -921,7 +921,7 @@ module csrng_reg_top (
   //   F[sfifo_bencreq_err]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_bencreq_err (
     .clk_i   (clk_i),
@@ -947,7 +947,7 @@ module csrng_reg_top (
   //   F[sfifo_bencack_err]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_bencack_err (
     .clk_i   (clk_i),
@@ -973,7 +973,7 @@ module csrng_reg_top (
   //   F[sfifo_pdata_err]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_pdata_err (
     .clk_i   (clk_i),
@@ -999,7 +999,7 @@ module csrng_reg_top (
   //   F[sfifo_final_err]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_final_err (
     .clk_i   (clk_i),
@@ -1025,7 +1025,7 @@ module csrng_reg_top (
   //   F[sfifo_gbencack_err]: 10:10
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_gbencack_err (
     .clk_i   (clk_i),
@@ -1051,7 +1051,7 @@ module csrng_reg_top (
   //   F[sfifo_grcstage_err]: 11:11
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_grcstage_err (
     .clk_i   (clk_i),
@@ -1077,7 +1077,7 @@ module csrng_reg_top (
   //   F[sfifo_ggenreq_err]: 12:12
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_ggenreq_err (
     .clk_i   (clk_i),
@@ -1103,7 +1103,7 @@ module csrng_reg_top (
   //   F[sfifo_gadstage_err]: 13:13
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_gadstage_err (
     .clk_i   (clk_i),
@@ -1129,7 +1129,7 @@ module csrng_reg_top (
   //   F[sfifo_ggenbits_err]: 14:14
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_ggenbits_err (
     .clk_i   (clk_i),
@@ -1155,7 +1155,7 @@ module csrng_reg_top (
   //   F[sfifo_blkenc_err]: 15:15
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_blkenc_err (
     .clk_i   (clk_i),
@@ -1181,7 +1181,7 @@ module csrng_reg_top (
   //   F[cmd_stage_sm_err]: 20:20
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_cmd_stage_sm_err (
     .clk_i   (clk_i),
@@ -1207,7 +1207,7 @@ module csrng_reg_top (
   //   F[main_sm_err]: 21:21
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_main_sm_err (
     .clk_i   (clk_i),
@@ -1233,7 +1233,7 @@ module csrng_reg_top (
   //   F[drbg_gen_sm_err]: 22:22
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_drbg_gen_sm_err (
     .clk_i   (clk_i),
@@ -1259,7 +1259,7 @@ module csrng_reg_top (
   //   F[drbg_updbe_sm_err]: 23:23
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_drbg_updbe_sm_err (
     .clk_i   (clk_i),
@@ -1285,7 +1285,7 @@ module csrng_reg_top (
   //   F[drbg_updob_sm_err]: 24:24
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_drbg_updob_sm_err (
     .clk_i   (clk_i),
@@ -1311,7 +1311,7 @@ module csrng_reg_top (
   //   F[aes_cipher_sm_err]: 25:25
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_aes_cipher_sm_err (
     .clk_i   (clk_i),
@@ -1337,7 +1337,7 @@ module csrng_reg_top (
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
@@ -1363,7 +1363,7 @@ module csrng_reg_top (
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
@@ -1389,7 +1389,7 @@ module csrng_reg_top (
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
@@ -1416,7 +1416,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (5),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_err_code_test (
     .clk_i   (clk_i),
@@ -1443,7 +1443,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("WO"),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (2'h0)
   ) u_sel_tracking_sm (
     .clk_i   (clk_i),
@@ -1471,7 +1471,7 @@ module csrng_reg_top (
   //   F[tracking_sm_obs0]: 7:0
   prim_subreg #(
     .DW      (8),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_tracking_sm_obs_tracking_sm_obs0 (
     .clk_i   (clk_i),
@@ -1497,7 +1497,7 @@ module csrng_reg_top (
   //   F[tracking_sm_obs1]: 15:8
   prim_subreg #(
     .DW      (8),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_tracking_sm_obs_tracking_sm_obs1 (
     .clk_i   (clk_i),
@@ -1523,7 +1523,7 @@ module csrng_reg_top (
   //   F[tracking_sm_obs2]: 23:16
   prim_subreg #(
     .DW      (8),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_tracking_sm_obs_tracking_sm_obs2 (
     .clk_i   (clk_i),
@@ -1549,7 +1549,7 @@ module csrng_reg_top (
   //   F[tracking_sm_obs3]: 31:24
   prim_subreg #(
     .DW      (8),
-    .SWACCESS("RO"),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_tracking_sm_obs_tracking_sm_obs3 (
     .clk_i   (clk_i),
