@@ -9815,6 +9815,14 @@
         attr: ""
       }
       {
+        instance: otp_ctrl
+        port: test[0]
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
         instance: sysrst_ctrl_aon
         port: ac_present
         connection: muxed
@@ -10972,6 +10980,16 @@
         glob_idx: 67
       }
       {
+        name: otp_ctrl_test
+        width: 8
+        type: output
+        idx: 0
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 68
+      }
+      {
         name: sysrst_ctrl_aon_bat_disable
         width: 1
         type: output
@@ -10979,7 +10997,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 68
+        glob_idx: 69
       }
       {
         name: sysrst_ctrl_aon_ec_rst_out_l
@@ -10999,7 +11017,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 69
+        glob_idx: 70
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -11009,7 +11027,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 70
+        glob_idx: 71
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -11019,7 +11037,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 71
+        glob_idx: 72
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -11039,7 +11057,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 72
+        glob_idx: 73
       }
     ]
     io_counts:
@@ -11055,7 +11073,7 @@
       {
         inouts: 42
         inputs: 14
-        outputs: 31
+        outputs: 32
         pads: 47
       }
     }

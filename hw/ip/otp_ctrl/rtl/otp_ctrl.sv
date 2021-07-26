@@ -74,7 +74,10 @@ module otp_ctrl
   // Scan
   input                                              scan_en_i,
   input                                              scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t                         scanmode_i
+  input lc_ctrl_pkg::lc_tx_t                         scanmode_i,
+  // Test-related GPIO output
+  output logic [OtpTestCtrlWidth-1:0]                cio_test_o,
+  output logic [OtpTestCtrlWidth-1:0]                cio_test_en_o
 );
 
   import prim_util_pkg::vbits;
@@ -127,7 +130,7 @@ module otp_ctrl
   ///////////////////////////////////////
 
   lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t [2:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
   // Single wire for gating assertions in arbitration and CDC primitives.
@@ -161,7 +164,7 @@ module otp_ctrl
   );
 
   prim_lc_sync #(
-    .NumCopies(2)
+    .NumCopies(3)
   ) u_prim_lc_sync_dft_en (
     .clk_i,
     .rst_ni,
@@ -654,6 +657,11 @@ module otp_ctrl
   assign prim_tl_o         = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                              prim_tl_d2h_gated : '0;
 
+  // Test-related GPIOs.
+  logic [OtpTestCtrlWidth-1:0] otp_test_vect;
+  assign cio_test_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? otp_test_vect : '0;
+  assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestCtrlWidth{1'b1}} : '0;
+
   prim_otp #(
     .Width         ( OtpWidth            ),
     .Depth         ( OtpDepth            ),
@@ -671,6 +679,7 @@ module otp_ctrl
     .ext_voltage_io   ( otp_ext_voltage_h_io           ),
     // Test interface
     .test_ctrl_i      ( lc_otp_program_i.otp_test_ctrl ),
+    .test_vect_o      ( otp_test_vect                  ),
     .test_tl_i        ( prim_tl_h2d_gated              ),
     .test_tl_o        ( prim_tl_d2h_gated              ),
     // Other DFT signals
