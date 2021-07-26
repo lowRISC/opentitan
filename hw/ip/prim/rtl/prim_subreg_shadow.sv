@@ -40,8 +40,8 @@ module prim_subreg_shadow
   // W1C is forbidden since the W0S complement is not implemented.
   `ASSERT_INIT(CheckSwAccessIsLegal_A,
       SwAccess inside {SwAccessRW, SwAccessRO, SwAccessWO, SwAccessW1S, SwAccessW0C, SwAccessRC})
-  parameter sw_access_e InvertedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessW0C :
-                                           (SwAccess == SwAccessW0C) ? SwAccessW1S : SwAccess;
+  localparam sw_access_e InvertedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessW0C :
+                                            (SwAccess == SwAccessW0C) ? SwAccessW1S : SwAccess;
 
   // Subreg control signals
   logic          phase_clear;
