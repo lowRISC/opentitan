@@ -122,6 +122,16 @@
                   '''
           resval: "0x5"
         },
+        {
+            bits: "11:8",
+            name: "READ_INT_STATE",
+            desc: '''
+                  Setting this field to 0xA will enable reading from the INT_STATE_VAL register.
+                  Reading the internal state of the enable instances will be enabled
+                  only if the efuse_sw_app_enable input is set.
+                  '''
+          resval: "0x5"
+        },
       ]
     },
     {

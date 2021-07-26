@@ -77,6 +77,9 @@ package csrng_reg_pkg;
     struct packed {
       logic [3:0]  q;
     } sw_app_enable;
+    struct packed {
+      logic [3:0]  q;
+    } read_int_state;
   } csrng_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -284,11 +287,11 @@ package csrng_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [137:134]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [133:130]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [129:122]
-    csrng_reg2hw_alert_test_reg_t alert_test; // [121:120]
-    csrng_reg2hw_ctrl_reg_t ctrl; // [119:112]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [141:138]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [137:134]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [133:126]
+    csrng_reg2hw_alert_test_reg_t alert_test; // [125:124]
+    csrng_reg2hw_ctrl_reg_t ctrl; // [123:112]
     csrng_reg2hw_cmd_req_reg_t cmd_req; // [111:79]
     csrng_reg2hw_genbits_reg_t genbits; // [78:46]
     csrng_reg2hw_int_state_num_reg_t int_state_num; // [45:41]
@@ -368,7 +371,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
     4'b 0001, // index[ 3] CSRNG_ALERT_TEST
     4'b 0001, // index[ 4] CSRNG_REGWEN
-    4'b 0001, // index[ 5] CSRNG_CTRL
+    4'b 0011, // index[ 5] CSRNG_CTRL
     4'b 1111, // index[ 6] CSRNG_CMD_REQ
     4'b 0001, // index[ 7] CSRNG_SW_CMD_STS
     4'b 0001, // index[ 8] CSRNG_GENBITS_VLD

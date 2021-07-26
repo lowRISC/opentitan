@@ -142,8 +142,8 @@ The table below lists other CSRNG signals.
 
 Signal                       | Direction        | Type                        | Description
 -----------------------------|------------------|-----------------------------|---------------
-`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST ctr_drbg internal state through registers.
-`lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will allow disabling of the AES encryption block, to be used for debug only.
+`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST ctr_drbg internal state and genbits through registers.
+`lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will select which diversification value is used for xoring with the seed from ENTROPY_SRC.
 `entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
 `entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
 `cs_aes_halt_i`              | `input`          | `cs_aes_halt_req_t`         | Request to CSRNG from ENTROPY_SRC to halt requests to the AES block for power leveling purposes.
