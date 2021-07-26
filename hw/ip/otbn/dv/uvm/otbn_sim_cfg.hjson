@@ -158,5 +158,10 @@ name:
       name: smoke
       tests: ["otbn_smoke"]
     }
+
+    {
+      name: "core",
+      tests: ["otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset"]
+    }
   ]
 }
