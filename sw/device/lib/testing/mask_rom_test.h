@@ -11,44 +11,50 @@
 namespace mask_rom_test {
 
 /**
- * Mixin for global mocks.
+ * Base class for mocks used in Mask ROM unit tests.
  *
- * `GlobalMock<T>` is a derived class of `T` that can have at most one instance
- * at a time (checked at runtime) and makes this instance globally accessible
- * via the static `GlobalMock<T> &Instance()` method.
+ * If a class `Mock` derives from `GlobalMock<Mock>`, `GlobalMock<Mock>`
+ * ensures that there is at most one instance of `Mock` at a time (checked at
+ * runtime) and makes this instance globally accessible via the static `Mock
+ * &Instance()` method.
  *
- * Mock classes used in tests should be of this type so that mock functions can
- * access their instances during tests. Since we prefer using strict mocks,
- * mock classes should also be of type `testing::StrictMock`. Mock classes that
- * satisfy both requirements can be defined using a type alias as follows:
+ * Mock classes should be globally accessible so that mock functions can call
+ * their methods during tests. They can also be strict or nice depending on
+ * tests' needs. Mock classes that satisfy both requirements can be defined as
+ * follows:
  *
  *     namespace mask_rom_test {
  *     namespace internal {
- *     class MockFoo {
+ *     class MockFoo : public GlobalMock<MockFoo> {
  *       ...
  *     };
  *     }  // namespace internal
- *     // Type alias for making `internal::MockFoo` a global and strict mock.
- *     using MockFoo = GlobalMock<testing::StrictMock<internal::MockFoo>>;
+ *     // Type alias for making `internal::MockFoo` a strict mock.
+ *     using MockFoo = testing::StrictMock<internal::MockFoo>;
+ *     // Type alias for making `internal::MockFoo` a nice mock if needed.
+ *     using NiceMockFoo = testing::NiceMock<internal::MockFoo>;
  *     ...
  *     }  // namespace mask_rom_test
+ *
+ * This construction also ensures that we cannot have `MockFoo` and
+ * `NiceMockFoo` instantiated at the same time since they both derive from the
+ * same class, i.e. `GlobalMock<internal::MockFoo>`.
  */
-template <typename T>
-class GlobalMock : public T {
+template <typename Mock>
+class GlobalMock {
  public:
-  template <typename... Args>
-  GlobalMock(Args &&... args) : T(std::forward(args)...) {
+  GlobalMock() {
     if (instance_ != nullptr) {
       throw std::runtime_error("Mock is already instantiated.");
     }
-    instance_ = this;
+    instance_ = static_cast<Mock *>(this);
   }
 
-  static_assert(std::has_virtual_destructor<T>::value,
-                "Mock class must have a virtual destructor.");
+  // Note: Destructors of mock classes must be virtual for `testing::StrictMock`
+  // and `testing::NiceMock` to work correctly.
   virtual ~GlobalMock() { instance_ = nullptr; }
 
-  static GlobalMock<T> &Instance() {
+  static Mock &Instance() {
     if (instance_ == nullptr) {
       throw std::runtime_error("Mock is not instantiated yet.");
     }
@@ -61,10 +67,10 @@ class GlobalMock : public T {
   GlobalMock &operator=(GlobalMock &&) = delete;
 
  private:
-  static GlobalMock<T> *instance_;
+  static Mock *instance_;
 };
-template <typename T>
-GlobalMock<T> *GlobalMock<T>::instance_ = nullptr;
+template <typename Mock>
+Mock *GlobalMock<Mock>::instance_ = nullptr;
 
 /**
  * Test fixture for mask ROM tests.

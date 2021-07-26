@@ -14,18 +14,16 @@ namespace internal {
 /**
  * Mock class for abs_mmio.c.
  */
-class MockAbsMmio {
+class MockAbsMmio : public GlobalMock<MockAbsMmio> {
  public:
   MOCK_METHOD(uint8_t, Read8, (uint32_t addr));
   MOCK_METHOD(void, Write8, (uint32_t addr, uint8_t value));
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
-
-  virtual ~MockAbsMmio() {}
 };
 }  // namespace internal
 
-using MockAbsMmio = GlobalMock<testing::StrictMock<internal::MockAbsMmio>>;
+using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
 
 /**
  * Expect a read to the device `dev` at the given offset, returning the given

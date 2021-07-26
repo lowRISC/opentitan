@@ -14,18 +14,15 @@ namespace internal {
 /**
  * Mock class for romextimage_ptrs.h
  */
-class MockRomextimagePtrs {
+class MockRomextimagePtrs : public GlobalMock<MockRomextimagePtrs> {
  public:
   MOCK_METHOD(const manifest_t *, slot_a_manifest_ptr_get, ());
   MOCK_METHOD(const manifest_t *, slot_b_manifest_ptr_get, ());
-
-  virtual ~MockRomextimagePtrs() {}
 };
 
 }  // namespace internal
 
-using MockRomextimagePtrs =
-    GlobalMock<testing::StrictMock<internal::MockRomextimagePtrs>>;
+using MockRomextimagePtrs = testing::StrictMock<internal::MockRomextimagePtrs>;
 
 extern "C" {
 

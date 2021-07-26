@@ -14,7 +14,7 @@ namespace internal {
 /**
  * Mock class for abs_mmio.c.
  */
-class MockSecMmio {
+class MockSecMmio : public GlobalMock<MockSecMmio> {
  public:
   MOCK_METHOD(void, Init, (sec_mmio_shutdown_handler callee));
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
@@ -22,12 +22,10 @@ class MockSecMmio {
   MOCK_METHOD(void, WriteIncrement, (uint32_t value));
   MOCK_METHOD(void, CheckValues, (uint32_t rnd_offset));
   MOCK_METHOD(void, CheckCounters, (uint32_t expected_check_count));
-
-  virtual ~MockSecMmio() {}
 };
 }  // namespace internal
 
-using MockSecMmio = GlobalMock<testing::StrictMock<internal::MockSecMmio>>;
+using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
 
 /**
  * Expect a read to the device `dev` at the given offset, returning the given

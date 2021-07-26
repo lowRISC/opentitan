@@ -14,7 +14,7 @@ namespace internal {
 /**
  * Mock class for alert.c.
  */
-class MockAlert {
+class MockAlert : public GlobalMock<MockAlert> {
  public:
   MOCK_METHOD(rom_error_t, alert_configure,
               (size_t, alert_class_t, alert_enable_t));
@@ -23,12 +23,11 @@ class MockAlert {
   MOCK_METHOD(rom_error_t, alert_class_configure,
               (alert_class_t, const alert_class_config_t *));
   MOCK_METHOD(rom_error_t, alert_ping_enable, ());
-  virtual ~MockAlert() {}
 };
 
 }  // namespace internal
 
-using MockAlert = GlobalMock<testing::StrictMock<internal::MockAlert>>;
+using MockAlert = testing::StrictMock<internal::MockAlert>;
 
 extern "C" {
 

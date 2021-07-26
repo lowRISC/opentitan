@@ -14,17 +14,16 @@ namespace internal {
 /**
  * Mock class for hmac.c.
  */
-class MockHmac {
+class MockHmac : public GlobalMock<MockHmac> {
  public:
   MOCK_METHOD(void, sha256_init, ());
   MOCK_METHOD(rom_error_t, sha256_update, (const void *, size_t));
   MOCK_METHOD(rom_error_t, sha256_final, (hmac_digest_t *));
-  virtual ~MockHmac() {}
 };
 
 }  // namespace internal
 
-using MockHmac = GlobalMock<testing::StrictMock<internal::MockHmac>>;
+using MockHmac = testing::StrictMock<internal::MockHmac>;
 
 extern "C" {
 

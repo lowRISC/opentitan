@@ -14,18 +14,16 @@ namespace mock_csr {
 
 namespace internal {
 
-class MockCsr {
+class MockCsr : public ::mask_rom_test::GlobalMock<MockCsr> {
  public:
   MOCK_METHOD(uint32_t, Read, (uint32_t csr));
   MOCK_METHOD(void, Write, (uint32_t csr, uint32_t value));
   MOCK_METHOD(void, SetBits, (uint32_t csr, uint32_t mask));
   MOCK_METHOD(void, ClearBits, (uint32_t csr, uint32_t mask));
-  virtual ~MockCsr() {}
 };
 }  // namespace internal
 
-using MockCsr =
-    ::mask_rom_test::GlobalMock<testing::StrictMock<internal::MockCsr>>;
+using MockCsr = testing::StrictMock<internal::MockCsr>;
 
 /**
  * Conveninence fixture for creating CSR tests.

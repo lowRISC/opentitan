@@ -14,18 +14,17 @@ namespace internal {
 /**
  * Mock class for sigverify_mod_exp_otbn.c
  */
-class MockSigverifyModExpOtbn {
+class MockSigverifyModExpOtbn : public GlobalMock<MockSigverifyModExpOtbn> {
  public:
   MOCK_METHOD(rom_error_t, mod_exp,
               (const sigverify_rsa_key_t *, const sigverify_rsa_buffer_t *,
                sigverify_rsa_buffer_t *));
-  virtual ~MockSigverifyModExpOtbn() {}
 };
 
 }  // namespace internal
 
 using MockSigverifyModExpOtbn =
-    GlobalMock<testing::StrictMock<internal::MockSigverifyModExpOtbn>>;
+    testing::StrictMock<internal::MockSigverifyModExpOtbn>;
 
 extern "C" {
 
