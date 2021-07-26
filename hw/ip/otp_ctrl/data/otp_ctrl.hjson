@@ -21,6 +21,13 @@
     { protocol: "tlul", direction: "device", name: "prim" }
   ],
 
+  available_output_list: [
+    { name: "test",
+      width: 8,
+      desc: "Test-related GPIOs. Only active in DFT-enabled life cycle states."
+    }
+  ],
+
   ///////////////////////////
   // Interrupts and Alerts //
   ///////////////////////////

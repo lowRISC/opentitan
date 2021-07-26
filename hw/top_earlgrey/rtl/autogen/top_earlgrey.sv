@@ -187,8 +187,8 @@ module top_earlgrey #(
 
   // Signals
   logic [55:0] mio_p2d;
-  logic [72:0] mio_d2p;
-  logic [72:0] mio_en_d2p;
+  logic [73:0] mio_d2p;
+  logic [73:0] mio_en_d2p;
   logic [23:0] dio_p2d;
   logic [23:0] dio_d2p;
   logic [23:0] dio_en_d2p;
@@ -289,6 +289,8 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
   // otp_ctrl
+  logic [7:0]  cio_otp_ctrl_test_d2p;
+  logic [7:0]  cio_otp_ctrl_test_en_d2p;
   // lc_ctrl
   // alert_handler
   // pwrmgr_aon
@@ -1574,6 +1576,10 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm)
   ) u_otp_ctrl (
+
+      // Output
+      .cio_test_o    (cio_otp_ctrl_test_d2p),
+      .cio_test_en_o (cio_otp_ctrl_test_en_d2p),
 
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
@@ -3114,6 +3120,7 @@ module top_earlgrey #(
   assign mio_d2p[MioOutPwmAonPwm3] = cio_pwm_aon_pwm_d2p[3];
   assign mio_d2p[MioOutPwmAonPwm4] = cio_pwm_aon_pwm_d2p[4];
   assign mio_d2p[MioOutPwmAonPwm5] = cio_pwm_aon_pwm_d2p[5];
+  assign mio_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_d2p[0];
   assign mio_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_d2p;
@@ -3189,6 +3196,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutPwmAonPwm3] = cio_pwm_aon_pwm_en_d2p[3];
   assign mio_en_d2p[MioOutPwmAonPwm4] = cio_pwm_aon_pwm_en_d2p[4];
   assign mio_en_d2p[MioOutPwmAonPwm5] = cio_pwm_aon_pwm_en_d2p[5];
+  assign mio_en_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_en_d2p[0];
   assign mio_en_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_en_d2p;
