@@ -19,7 +19,7 @@ class csrng_base_vseq extends cip_base_vseq #(
   push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)                m_edn_push_seq[NUM_HW_APPS];
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    super.dut_init(reset_kind);
     if (do_csrng_init) csrng_init();
   endtask
 
@@ -31,6 +31,11 @@ class csrng_base_vseq extends cip_base_vseq #(
   // setup basic csrng features
   virtual task csrng_init();
     cfg.efuse_sw_app_enable_vif.drive_pin(.idx(0), .val(cfg.efuse_sw_app_enable));
+
+    // Enables
+    ral.ctrl.enable.set(cfg.enable);
+    ral.ctrl.sw_app_enable.set(cfg.sw_app_enable);
+    csr_update(.csr(ral.ctrl));
   endtask
 
   // write csrng command request register

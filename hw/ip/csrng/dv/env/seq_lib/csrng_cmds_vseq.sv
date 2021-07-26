@@ -15,10 +15,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
 
   task body();
-    ral.ctrl.enable.set(4'hA);
-    ral.ctrl.sw_app_enable.set(4'hA);
-    csr_update(.csr(ral.ctrl));
-
     // TODO: Create/start entropy_src device sequence still under development. Will remove/modify
     // as necessary. Also consider making task if it stays.
     // TODO: Enhance to run all cmds in the queues
