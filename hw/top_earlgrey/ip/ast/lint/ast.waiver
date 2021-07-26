@@ -4,3 +4,90 @@
 #
 # waiver file for ast
 
+waive -rules IFDEF_CODE -location {ast.sv} \
+      -msg {Assignment to 'ast2pad_t0_ao' contained within `else block at ast.sv} \
+      -comment {This ifdef statement is used for analog simulations and is OK.}
+
+waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
+      -msg {Falling edge of clock 'clk' used here, should use rising edge} \
+      -comment {This negedge trigger is done on purpose.}
+
+waive -rules CLOCK_USE -location {ast_dft.sv} \
+      -regexp {('clk_byp'|'clk_osc') is used for some other purpose, and as clock ('clk_ast_ext_i'|'clk_io_osc_i') at ast_dft.sv} \
+      -comment {This message pops up due to a clock OR operation.}
+
+waive -rules RESET_DRIVER -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
+      -msg {'rst_val_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {rng.sv} \
+      -msg {'rst_n' is driven here, and used as an asynchronous reset at rng.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -regexp {('vcaon_pok_h'|'por_rst_n'|'vcmain_pok_por') is driven here, and used as an asynchronous reset} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -msg {'clk_io_osc_val' is driven by instance 'u_io_clk' of module 'io_clk', and used as an asynchronous reset 'rst_clk_osc_n' at ast_dft.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -msg {'clk_src_io_val_o' driven in module 'io_clk' by port 'u_val_sync.q_o[0]' at io_clk.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {ast.sv dev_entropy.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_flop_2sync' by port .* at prim_.*flop_2sync.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -msg {'vcmain_pok_por_sys' is driven by instance 'u_rst_sys_dasrt' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_dev_ni' at dev_entropy.sv} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {dev_entropy.sv} \
+      -msg {'rst_es_dev_nd' is driven by instance 'u_rst_es_n_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n'} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_MUX -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
+      -msg {Asynchronous reset 'rst_val_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_MUX -location {ast.sv} \
+      -msg {Asynchronous reset 'rst_src_sys_n' is driven by a multiplexer here, used as a reset 'rst_dev_ni' at dev_entropy.sv} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_MUX -location {rng.sv} \
+      -msg {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset at rng.sv} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -regexp {('vcore_pok_h_i'|'vcaon_pok') is used for some other purpose, and as asynchronous reset 'vcore_pok_h_i' at (aon_osc.sv|sys_osc.sv)} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set 'rst_ni' at prim_generic_flop.} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set 'rst_ni' at prim_generic_flop.} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -regexp {'rst_(usb|aon|io|sys)_clk_n' is connected to '(usb|aon|io|sys)_clk' port 'rst_(usb|aon|io|sys)_clk_ni', and used as an asynchronous reset or set ('rst_ni'|'vcore_pok_h_i'|'rst_clk_byp_n')} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {io_osc.sv sys_osc.sv usb_osc.sv aon_osc.sv} \
+      -msg {'vcore_pok_h_i' is used for some other purpose, and as asynchronous reset at} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {ast_dft.sv} \
+      -msg {'clk_io_osc_val_i' is used for some other purpose, and as asynchronous reset 'rst_clk_osc_n' at ast_dft.sv} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules {TRI_DRIVER} -location {ast.sv} \
+      -regexp {'ast2pad_(t0|t1)_ao' is driven by a tristate driver} \
+      -comment {This part models a tristate driver.}
+
+waive -rules {Z_USE} -location {ast.sv} \
+      -msg {Constant with 'Z literal value '1'bz' encountered} \
+      -comment {This part models a tristate driver.}
