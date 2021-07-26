@@ -362,18 +362,18 @@ module otbn_decoder
         rf_ren_b_base   = 1'b1;
         rf_we_base      = 1'b1;
         if ({insn[26], insn[13:12]} != {1'b1, 2'b01}) begin
+          // Look at the funct7 and funct3 fields.
           unique case ({insn[31:25], insn[14:12]})
-            // RV32I ALU operations
-            {7'b000_0000, 3'b000},
-            {7'b010_0000, 3'b000},
-            {7'b000_0000, 3'b010},
-            {7'b000_0000, 3'b011},
-            {7'b000_0000, 3'b100},
-            {7'b000_0000, 3'b110},
-            {7'b000_0000, 3'b111},
-            {7'b000_0000, 3'b001},
-            {7'b000_0000, 3'b101},
-            {7'b010_0000, 3'b101}: illegal_insn = 1'b0;
+            {7'b000_0000, 3'b000},  // ADD
+            {7'b010_0000, 3'b000},  // SUB
+            {7'b000_0000, 3'b100},  // XOR
+            {7'b000_0000, 3'b110},  // OR
+            {7'b000_0000, 3'b111},  // AND
+            {7'b000_0000, 3'b001},  // SLL
+            {7'b000_0000, 3'b101},  // SRL
+            {7'b010_0000, 3'b101}:  // SRA
+              illegal_insn = 1'b0;
+
             default: begin
               illegal_insn = 1'b1;
             end
