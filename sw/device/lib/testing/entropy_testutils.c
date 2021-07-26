@@ -38,7 +38,10 @@ static void setup_entropy_src(void) {
       .sample_rate = 2,
       .lfsr_seed = 0,
   };
-  CHECK(dif_entropy_configure(&entropy, config) == kDifEntropyOk);
+  // CHECK(dif_entropy_configure(&entropy, config) == kDifEntropyOk);
+  // TODO: Slamming in init value, clean up once LFSR mode has been removed
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+                      ENTROPY_SRC_CONF_REG_OFFSET, 0xa0a);
 }
 
 static void setup_csrng(void) {
