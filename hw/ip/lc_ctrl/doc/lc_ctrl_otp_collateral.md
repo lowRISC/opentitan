@@ -12,13 +12,13 @@
 <tbody>
 <tr>
 <td>LC_STATE</td>
-<td>192</td>
+<td>320</td>
 <td rowspan="5">Life Cycle Controller</td>
 <td>Life cycle manufacturing state (refer to details <a href="#life-cycle-manufacturing-state-encodings">here</a>).</td>
 </tr>
 <tr>
 <td>LC_TRANSITION_CNT</td>
-<td>256</td>
+<td>384</td>
 <td>Number of total life cycle transition attempts.</td>
 </tr>
 <tr>
