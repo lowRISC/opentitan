@@ -276,7 +276,7 @@ module spi_readcmd
   /////////////
 
   // Address shift & latch
-  logic addr_ready_in_word;
+  logic addr_ready_in_word, addr_ready_in_halfword;
   logic addr_latched;
   logic addr_shift_en;
   logic addr_latch_en;
@@ -320,17 +320,12 @@ module spi_readcmd
   // bit count within a word
   logic bitcnt_update;
   logic bitcnt_dec;
-  logic [4:0] bitcnt; // count down from 31 or partial for first unaligned
+  logic [2:0] bitcnt; // count down from 7 or partial for first unaligned
 
   // FIFO
   logic unused_fifo_rvalid, fifo_pop;
-  sram_data_t fifo_rdata;
+  spi_byte_t fifo_rdata;
 
-  // offset_update: latch addr_d[1:0] into fifo_byteoffset when the statemachine
-  // moves to Output stage.
-  logic       offset_update;
-  logic [1:0] fifo_byteoffset; // the byte position in SRAM word
-  logic [7:0] fifo_byte [4]; // converting word sram data into a SPI byte
   logic [7:0] p2s_byte;
   logic       p2s_valid_inclk;
 
@@ -370,18 +365,23 @@ module spi_readcmd
     if (addr_ready_in_word) begin
       // Return word based address, but should not latch
       addr_d = {addr_q[31:8], s2p_byte_i[5:0], 2'b00};
+    end else if (addr_ready_in_halfword) begin
+      // When addr is a cycle earlier than full addr, sram req sent in
+      // spid_readsram
+      addr_d = {addr_q[31:8], s2p_byte_i[6:0], 1'b 0};
     end else if (addr_shift_en && s2p_valid_i) begin
       // Latch
       addr_d = {addr_q[23:0], s2p_byte_i[7:0]};
       addr_latch_en = 1'b 1;
     end else if (addr_inc) begin
       // Increase the address to next
-      addr_d = {addr_q[31:2] + 1'b1, 2'b00};
+      addr_d = addr_q[31:0] + 1'b1;
       addr_latch_en = 1'b 1;
     end
   end
 
-  assign addr_ready_in_word = (addr_cnt_d == 5'd 2);
+  assign addr_ready_in_word     = (addr_cnt_d == 5'd 2);
+  assign addr_ready_in_halfword = (addr_cnt_d == 5'd 1);
 
   // TODO: Check if addr_cnt_d or addr_cnt_q ?
   assign addr_latched = (addr_cnt_d == 5'd 0);
@@ -406,6 +406,8 @@ module spi_readcmd
       addr_cnt_d = (cmd_info_i.addr_4b_affected && addr_4b_en_i) ? 5'd 30 : 5'd 22;
 
       // TODO: Dual IO/ Quad IO case
+
+      // TODO: Force 4B mode
     end else if (addr_cnt_q == '0) begin
       addr_cnt_d = addr_cnt_q;
     end else if (addr_shift_en) begin
@@ -432,15 +434,19 @@ module spi_readcmd
     if (!rst_ni) begin
       bitcnt <= '0;
     end else if (bitcnt_update) begin
-      unique case (addr_d[1:0])
-        2'b 00: bitcnt <= 5'h 1f;
-        2'b 01: bitcnt <= 5'h 17;
-        2'b 10: bitcnt <= 5'h 0f;
-        2'b 11: bitcnt <= 5'h 07;
-        default: bitcnt <= 5'h 1f;
+      unique case (cmd_info_i.payload_en)
+        4'b 0010: bitcnt <= 3'h 7;
+        4'b 0011: bitcnt <= 3'h 6;
+        4'b 1111: bitcnt <= 3'h 4;
+        default:  bitcnt <= 3'h 7;
       endcase
     end else if (bitcnt_dec) begin
-      bitcnt <= bitcnt - 1'b 1;
+      unique case (cmd_info_i.payload_en)
+        4'b 0010: bitcnt <= bitcnt - 3'h 1;
+        4'b 0011: bitcnt <= bitcnt - 3'h 2;
+        4'b 1111: bitcnt <= bitcnt - 3'h 4;
+        default:  bitcnt <= bitcnt - 3'h 1;
+      endcase
     end
   end
 
@@ -451,7 +457,6 @@ module spi_readcmd
   // Convert into masked address
   localparam int unsigned MailboxAw = $clog2(MailboxDepth);
   localparam logic [31:0] MailboxMask = {{30-MailboxAw{1'b1}}, {2+MailboxAw{1'b0}}};
-  localparam int unsigned SfdpAw = $clog2(SfdpDepth);
 
   assign mailbox_masked_addr = addr_d & MailboxMask;
 
@@ -463,47 +468,10 @@ module spi_readcmd
   // manages the address to follow.
 
   logic sram_req;
-  logic [SramAw-1:0] sram_addr;
-
-  always_comb begin
-    sram_addr = '0;
-    if (sel_dp_i == DpReadSFDP) begin
-      // SFDP Read command. Upper address is swapped to SFDP Base Addr
-      sram_addr = SfdpBaseAddr | sram_addr_t'(addr_d[2+:SfdpAw]);
-    end else if (mailbox_en_i && addr_in_mailbox) begin
-      sram_addr = MailboxBaseAddr | sram_addr_t'(addr_d[2+:MailboxAw]);
-    end else begin
-      // Read Buffer Address
-      // TODO: Double buffering
-      sram_addr = ReadBaseAddr | sram_addr_t'({readbuf_idx, addr_d[2+:$clog2(ReadBufferDepth)]});
-    end
-  end
-
-  assign sram_addr_o = sram_addr;
-
-  assign sram_req_o = sram_req;
-  assign sram_we_o = 1'b 0;    // always read
-  assign sram_wdata_o = '0;    // always read
-
   //- END:   SRAM Datapath ----------------------------------------------------
 
   //= BEGIN: FIFO to P2S datapath =============================================
-  assign fifo_byte = '{fifo_rdata.data[7:0],   fifo_rdata.data[15:8],
-                       fifo_rdata.data[23:16], fifo_rdata.data[31:24]};
-  // TODO: addr_inc should not affect this until it is accepted.
-  assign p2s_byte = fifo_byte[fifo_byteoffset];
-
-  // TODO: fifo_byteoffset
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      fifo_byteoffset <= '0;
-    end else if (offset_update) begin
-      fifo_byteoffset <= addr_d[1:0];
-    end else if (p2s_valid_inclk && bitcnt[2:0] == 0) begin
-      // at the MainOutput state, when it sends a byte, increase offset
-      fifo_byteoffset <= fifo_byteoffset + 1'b 1;
-    end
-  end
+  assign p2s_byte = fifo_rdata;
 
   // outclk latch
   // can't put async fifo. DC constraint should have half clk datapath
@@ -571,8 +539,6 @@ module spi_readcmd
     p2s_valid_inclk = 1'b 0;
     fifo_pop        = 1'b 0;
 
-    offset_update = 1'b 0;
-
     bitcnt_update = 1'b 0;
     bitcnt_dec = 1'b 0;
 
@@ -592,17 +558,15 @@ module spi_readcmd
       MainAddress: begin
         addr_shift_en = 1'b 1;
 
+        // TODO: DualIO/ QuadIO case
         if (addr_ready_in_word) begin
-          // TODO: Send Address request. No need to move the state
+          sram_req = 1'b 1;
         end
 
         if (addr_latched) begin
           // update bitcnt. If input address is not word aligned, bitcnt
           // could be 23, 15, or 7
           bitcnt_update = 1'b 1;
-
-          // latch addr_d[1:0] to fifo_byteoffset;
-          offset_update = 1'b 1;
 
           // Next state:
           //  MByte if mbyte enabled
@@ -666,14 +630,7 @@ module spi_readcmd
           default:  io_mode_o = SingleIO;
         endcase
 
-        // if 2 bits left, increase the address
-        // TODO: Dual or Quad output I/O handling
-        if (bitcnt == 5'h 2) begin
-          addr_inc = 1'b 1;
-          sram_req = 1'b 1;
-        end
-
-        if (bitcnt == 5'h 0) begin
+        if (bitcnt == 3'h 0) begin
           // sent all words
           bitcnt_update = 1'b 1;
           // TODO: FIFO pop here?
@@ -696,50 +653,42 @@ module spi_readcmd
   // Instances //
   ///////////////
 
-  // FIFO for read data from DPSRAM
-  logic unused_full;
-  logic [1:0] unused_depth;
-  prim_fifo_sync #(
-    .Width             ($bits(sram_data_t)),
-    .Pass              (1'b1),
-    .Depth             (2),
-    .OutputZeroIfEmpty (1'b0)
-  ) u_fifo (
+  spid_readsram #(
+    .ReadBaseAddr    (ReadBaseAddr),
+    .ReadBufferDepth (ReadBufferDepth),
+    .MailboxBaseAddr (MailboxBaseAddr),
+    .MailboxDepth    (MailboxDepth),
+    .SfdpBaseAddr    (SfdpBaseAddr),
+    .SfdpDepth       (SfdpDepth)
+  ) u_readsram (
     .clk_i,
     .rst_ni,
 
-    .clr_i   ( 1'b0),
+    .sram_read_req_i   (sram_req),
+    .addr_latched_i    (addr_latched),
+    .current_address_i (addr_d), // TODO: Change it
 
-    .wvalid_i (sram_rvalid_i),
-    .wready_o (), // not used
-    .wdata_i  (sram_rdata_i),
+    .mailbox_en_i,
+    .mailbox_hit_i (addr_in_mailbox),
+    .sfdp_hit_i    (sel_dp_i == DpReadSFDP),
 
-    .rvalid_o (unused_fifo_rvalid),
-    .rready_i (fifo_pop),
-    .rdata_o  (fifo_rdata),
+    .sram_req_o,
+    .sram_we_o,
+    .sram_addr_o,
+    .sram_wdata_o,
+    .sram_rvalid_i,
+    .sram_rdata_i,
+    .sram_rerror_i,
 
-    .full_o   (unused_full),
-    .depth_o  (unused_depth)
+    // FIFO
+    .fifo_rvalid_o (unused_fifo_rvalid),
+    .fifo_rready_i (fifo_pop),
+    .fifo_rdata_o  (fifo_rdata)
   );
 
-  // TODO: Handle SRAM integrity errors
-  sram_err_t unused_sram_rerror;
-  assign unused_sram_rerror = sram_rerror_i;
-
+  ////////////////
   // Assertions //
-  // FIFO should not overflow. The Main state machine shall send request only
-  // when it needs the data within 2 cycles
-  `ASSERT(NotOverflow_A, sram_req_o && !sram_we_o |-> !unused_full)
-
-  // SRAM access always read
-  `ASSERT(SramReadOnly_A, sram_req_o |-> !sram_we_o)
-
-  // SRAM data should return in next cycle
-  `ASSUME(SramDataReturnRequirement_M, sram_req_o && !sram_we_o |=> sram_rvalid_i)
-
-  // TODO: When main state machine returns data to SPI (via p2s), the FIFO shall
-  // not be empty
-  `ASSERT(NotEmpty_A, p2s_valid_inclk |-> (unused_depth != 0))
+  ////////////////
 
   // `addr_inc` should not be asserted in Address phase
   `ASSERT(AddrIncNotAssertInAddressState_A, addr_inc |-> main_st != MainAddress)

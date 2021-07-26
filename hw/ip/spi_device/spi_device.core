@@ -23,6 +23,7 @@ filesets:
       - rtl/spi_fwm_txf_ctrl.sv
       - rtl/spi_fwmode.sv
       - rtl/spi_cmdparse.sv
+      - rtl/spid_readsram.sv
       - rtl/spi_readcmd.sv
       - rtl/spi_passthrough.sv
       - rtl/spi_s2p.sv
