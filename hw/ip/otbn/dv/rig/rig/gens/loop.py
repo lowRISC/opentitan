@@ -56,26 +56,20 @@ class Loop(SnippetGen):
         else:
             self.loopi_prob = loopi_weight / sum_weights
 
-    def _pick_iterations(self,
-                         op_type: OperandType,
-                         bodysize: int,
-                         model: Model) -> Optional[Tuple[int, int]]:
-        '''Pick the number of iterations for the loop
+    def _pick_loop_iterations(self,
+                              max_iters: int,
+                              model: Model) -> Optional[Tuple[int, int]]:
+        '''Pick the number of iterations for a LOOP loop
 
-        If this is a LOOP instruction, op_type will be a RegOperandType. In
-        this case, we pick a register whose value we know and which doesn't
+        To do this, we pick a register whose value we know and which doesn't
         give us a ridiculous number of iterations (checking model.fuel).
-        Otherwise, op_type is an ImmOperandType and we pick a reasonable
-        iteration count.
+        max_iters is the maximum number of iterations possible, given how much
+        fuel we have left.
+
+        Returns the register index, together with the number of iterations that
+        implies.
 
         '''
-        assert bodysize > 0
-        min_fuel_per_iter = 1 if bodysize == 1 else 2
-        # model.fuel - 2 is the fuel after executing the LOOP/LOOPI instruction
-        # and before executing the minimum-length single-instruction
-        # continuation.
-        max_iters = (model.fuel - 2) // min_fuel_per_iter
-
         # Never generate more than 10 iterations (because the instruction
         # sequences would be booooring). Obviously, we'll need to come back to
         # this when filling coverage holes.
@@ -85,40 +79,95 @@ class Loop(SnippetGen):
         # boring).
         max_iters = min(max_iters, 10)
 
-        if isinstance(op_type, RegOperandType):
-            assert op_type.reg_type == 'gpr'
-            # Iterate over the known registers, trying to pick a weight
-            poss_pairs = []  # type: List[Tuple[int, int]]
-            weights = []  # type: List[float]
-            for idx, value in model.regs_with_known_vals('gpr'):
-                if 0 < value <= max_iters:
-                    poss_pairs.append((idx, value))
-                    # Weight higher iteration counts smaller (1 / count)
-                    weights.append(1 / (1 + abs(value - 2)))
-            if not poss_pairs:
-                return None
-            return random.choices(poss_pairs, weights=weights)[0]
+        # Iterate over the known registers, trying to pick a weight
+        poss_pairs = []  # type: List[Tuple[int, int]]
+        weights = []  # type: List[float]
+        for idx, value in model.regs_with_known_vals('gpr'):
+            if 0 < value <= max_iters:
+                poss_pairs.append((idx, value))
+                # Weight higher iteration counts smaller (1 / count)
+                weights.append(1 / (1 + abs(value - 2)))
+        if not poss_pairs:
+            return None
+        return random.choices(poss_pairs, weights=weights)[0]
+
+    def _pick_loopi_iterations(self,
+                               max_iters: int,
+                               op_type: OperandType,
+                               model: Model) -> Optional[Tuple[int, int]]:
+        '''Pick the number of iterations for a LOOPI loop
+
+        max_iters is the maximum number of iterations possible, given how much
+        fuel we have left.
+
+        Returns the encoded and decoded number of iterations.
+
+        '''
 
         assert isinstance(op_type, ImmOperandType)
         iters_range = op_type.get_op_val_range(model.pc)
         assert iters_range is not None
         iters_lo, iters_hi = iters_range
-        if max_iters < max(1, iters_lo):
+
+        # Very occasionally, generate iters_hi iterations (the maximum number
+        # representable) if we've got fuel for it. We don't do this often,
+        # because the instruction sequence will end up just testing loop
+        # handling and be very inefficient for testing anything else.
+        if max_iters >= iters_hi and random.random() < 0.01:
+            enc_val = op_type.op_val_to_enc_val(iters_hi, model.pc)
+            # This should never fail, because iters_hi was encodable.
+            assert enc_val is not None
+            return (enc_val, iters_hi)
+
+        # The rest of the time, we don't usually (95%) generate more than 3
+        # iterations (because the instruction sequences are rather
+        # repetitive!). Also, don't generate 0 iterations here, even though
+        # it's encodable. That causes an error, so we'll do that in a separate
+        # generator.
+        if random.random() < 0.95:
+            iters_hi = min(max_iters, 3)
+        else:
+            iters_hi = max_iters
+        iters_lo = max(iters_lo, 1)
+
+        # If we haven't actually got space for a single loop body, give up!
+        if max_iters < iters_lo:
             return None
 
-        iters_lo = max(iters_lo, 1)
-        iters_hi = min(iters_hi, max_iters)
+        # Otherwise, pick a value uniformly in [iters_lo, iters_hi]. No need
+        # for clever weighting: in the usual case, there are just 3
+        # possibilities!
+        num_iters = random.randint(iters_lo, iters_hi)
+        enc_val = op_type.op_val_to_enc_val(num_iters, model.pc)
+        # This should never fail: the choice should have been in the encodable
+        # range.
+        assert enc_val is not None
+        return (enc_val, num_iters)
 
-        # Pick a value in [iters_lo, iters_hi], weighting lower values more
-        # heavily (1 / count). Since we've made sure that iters_hi <= max_iters
-        # <= 10, we don't need to do any clever maths: we can just use
-        # random.choices with some weights.
-        values = range(iters_lo, 1 + iters_hi)
-        weights = []
-        for value in values:
-            weights.append(1 / (1 + abs(value - 2)))
-        num_iters = random.choices(values, weights=weights)[0]
-        return (num_iters, num_iters)
+    def _pick_iterations(self,
+                         op_type: OperandType,
+                         bodysize: int,
+                         model: Model) -> Optional[Tuple[int, int]]:
+        '''Pick the number of iterations for a loop
+
+        Returns the encoded value (register index or encoded number of
+        iterations), together with the number of iterations that implies.
+
+        '''
+        assert bodysize > 0
+        min_fuel_per_iter = 1 if bodysize == 1 else 2
+
+        # model.fuel - 2 is the fuel after executing the LOOP/LOOPI instruction
+        # and before executing the minimum-length single-instruction
+        # continuation.
+        max_iters = (model.fuel - 2) // min_fuel_per_iter
+
+        if isinstance(op_type, RegOperandType):
+            assert op_type.reg_type == 'gpr'
+            return self._pick_loop_iterations(max_iters, model)
+        else:
+            assert isinstance(op_type, ImmOperandType)
+            return self._pick_loopi_iterations(max_iters, op_type, model)
 
     def _pick_loop_shape(self,
                          op0_type: OperandType,
