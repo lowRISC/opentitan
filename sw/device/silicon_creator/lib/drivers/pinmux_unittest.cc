@@ -60,8 +60,12 @@ class InitTest : public PinmuxTest {
 
 TEST_F(InitTest, Initialize) {
   // The inputs that will be configured.
-  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc10);
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio0),
+                     kTopEarlgreyPinmuxInselIoc0);
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio1),
+                     kTopEarlgreyPinmuxInselIoc1);
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio2),
+                     kTopEarlgreyPinmuxInselIoc2);
 
   // The outputs that will be configured.
   EXPECT_ABS_WRITE32(RegOut(kTopEarlgreyPinmuxMioOutIoc11),

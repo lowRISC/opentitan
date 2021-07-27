@@ -23,10 +23,14 @@ typedef struct pinmux_input {
  */
 static const pinmux_input_t kPinmuxInputs[] = {
     /**
-     * UART
+     * Connect software strap pins to GPIO module.
      */
-    {.periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-     .pad = kTopEarlgreyPinmuxInselIoc10},
+    {.periph = kTopEarlgreyPinmuxPeripheralInGpioGpio0,
+     .pad = kTopEarlgreyPinmuxInselIoc0},
+    {.periph = kTopEarlgreyPinmuxPeripheralInGpioGpio1,
+     .pad = kTopEarlgreyPinmuxInselIoc1},
+    {.periph = kTopEarlgreyPinmuxPeripheralInGpioGpio2,
+     .pad = kTopEarlgreyPinmuxInselIoc2},
 };
 
 /**
