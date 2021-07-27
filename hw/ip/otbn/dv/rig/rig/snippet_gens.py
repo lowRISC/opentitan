@@ -20,6 +20,7 @@ from .gens.loop import Loop
 from .gens.straight_line_insn import StraightLineInsn
 
 from .gens.bad_insn import BadInsn
+from .gens.bad_zero_loop import BadZeroLoop
 
 
 class SnippetGens:
@@ -31,7 +32,8 @@ class SnippetGens:
         StraightLineInsn,
 
         ECall,
-        BadInsn
+        BadInsn,
+        BadZeroLoop
     ]
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
