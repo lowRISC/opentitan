@@ -24,6 +24,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // which is the AON's.
   localparam int DELAY_FOR_RESETS_CONCURRENTLY_PS = 5_000_000;
 
+  // This should exceed the clock cycles needed by the reset stretcher, which is normally 32
+  // AON cycles, but can be extended for tests that introduce reset glitches.
+  localparam int RESET_STRETCHER_TIMEOUT_NS = 4_000_000;
+
   typedef enum {
     LcTxTSelOn,
     LcTxTSelOff,
@@ -64,6 +68,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  local function real freq_mhz_to_period_in_ps(real freq);
+    return 1e12 / (freq * 1_000_000.0);
+  endfunction
+
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = rst_lc_req;
     cfg.rstmgr_vif.pwr_i.rst_sys_req = rst_sys_req;
@@ -85,15 +93,26 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.rstmgr_vif.cpu_i.rst_cpu_n = value;
   endfunction
 
+  function void set_cpu_dump_info(ibex_pkg::crash_dump_t cpu_dump);
+    cfg.rstmgr_vif.cpu_dump_i = cpu_dump;
+  endfunction
+
+  task check_cpu_dump_info(ibex_pkg::crash_dump_t cpu_dump);
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(3));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current_pc),
+                 .err_msg("checking current_pc"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(2));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.next_pc),
+                 .err_msg("checking next_pc"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(1));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.last_data_addr),
+                 .err_msg("checking last_data_addr"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(0));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.exception_addr),
+                 .err_msg("checking exception_addr"));
+  endtask
+
   function void post_randomize();
-    // TODO Some of these should go in rstmgr_ or dut_init.
-    cfg.rstmgr_vif.scanmode_i  = lc_ctrl_pkg::Off;
-    cfg.rstmgr_vif.scan_rst_ni = scan_rst_ni;
-    set_pwrmgr_rst_reqs(1'b0, 1'b0);
-    set_rstreqs('0);
-    set_reset_cause(pwrmgr_pkg::ResetNone);
-    set_ndmreset_req('0);
-    set_rst_cpu_n('1);
   endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -120,21 +139,18 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  local function real freq_mhz_to_ps(real freq);
-    return 1e12 / (freq * 1_000_000.0);
-  endfunction
-
-  // This adds enough delay to cover the stretched delay, which is around 32 AON cycles.
-  local task wait_for_reset_stretcher();
-    cfg.aon_clk_rst_vif.wait_clks(50);
+  // This waits till the outgoing POR reset for the CPU goes inactive.
+  local task wait_for_cpu_out_of_reset();
+    `DV_SPINWAIT(wait (cfg.rstmgr_vif.resets_o.rst_sys_n[1] == 1'b1);,
+                 "timeout waiting for POR reset to cpu output", RESET_STRETCHER_TIMEOUT_NS)
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    `DV_CHECK_LT(freq_mhz_to_ps(AON_FREQ_MHZ) * RESET_CLK_PERIODS, DELAY_FOR_RESETS_CONCURRENTLY_PS,
-                 $sformatf(
+    `DV_CHECK_LT(freq_mhz_to_period_in_ps(AON_FREQ_MHZ) * RESET_CLK_PERIODS,
+                 DELAY_FOR_RESETS_CONCURRENTLY_PS, $sformatf(
                  "apply_resets_concurrently delay (%0d) must exceed slowest reset (%0d)",
                  DELAY_FOR_RESETS_CONCURRENTLY_PS,
-                 freq_mhz_to_ps(
+                 freq_mhz_to_period_in_ps(
                      AON_FREQ_MHZ
                  ) * RESET_CLK_PERIODS
                  ))
@@ -146,7 +162,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
         fork_resets();
       end
     join
-    wait_for_reset_stretcher();
+  endtask
+
+  task post_apply_reset(string kind = "HARD");
+    wait_for_cpu_out_of_reset();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -163,7 +182,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.io_div4_clk_rst_vif.drive_rst_pin(1);
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.usb_clk_rst_vif.drive_rst_pin(1);
-    wait_for_reset_stretcher();
   endtask
 
   // setup basic rstmgr features
@@ -174,6 +192,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
     cfg.usb_clk_rst_vif.set_freq_mhz(USB_FREQ_MHZ);
+    // Initial values for some input pins.
+    cfg.rstmgr_vif.scanmode_i  = lc_ctrl_pkg::Off;
+    cfg.rstmgr_vif.scan_rst_ni = scan_rst_ni;
+    set_pwrmgr_rst_reqs(1'b0, 1'b0);
+    set_rstreqs('0);
+    set_reset_cause(pwrmgr_pkg::ResetNone);
+    set_ndmreset_req('0);
+    set_rst_cpu_n('1);
   endtask
 
 endclass : rstmgr_base_vseq

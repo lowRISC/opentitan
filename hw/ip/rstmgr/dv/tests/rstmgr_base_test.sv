@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class rstmgr_base_test extends cip_base_test #(
-    .CFG_T(rstmgr_env_cfg),
-    .ENV_T(rstmgr_env)
-  );
+  .CFG_T(rstmgr_env_cfg),
+  .ENV_T(rstmgr_env)
+);
 
   `uvm_component_utils(rstmgr_base_test)
   `uvm_component_new

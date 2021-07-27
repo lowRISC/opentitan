@@ -34,12 +34,11 @@ RSTMGR testbench has been constructed based on the [CIP testbench architecture](
 
 ### Top level testbench
 The top level testbench is located at `hw/ip/rstmgr/dv/tb.sv`.
-It instantiates the RSTMGR DUT module `hw/ip/rstmgr/rtl/rstmgr.sv`.
+It instantiates the RSTMGR DUT module `hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-* RSTMGR IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* RSTMGR interface `hw/ip/rstmgr/dv/env/rstmgr_if.sv`
 * Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
@@ -81,13 +80,18 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 [Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
+The following test sequences and covergroupsare described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#dv-plan).
+
 #### Test sequences
 The test sequences reside in `hw/ip/rstmgr/dv/env/seq_lib`.
 All test sequences are extended from `rstmgr_base_vseq`, which is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
+* task `wait_for_cpu_out_of_reset`:
+  Waits for the `resets_o.rst_sys_n[1]` to go high, indicating the CPU is out of reset and CSRs can be accessed.
 * task 2:
+
+The `rstmgr_smoke_vseq` tests the rstmgr through software initiated low power, peripheral reset, ndm reset, and software initiated resets.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
