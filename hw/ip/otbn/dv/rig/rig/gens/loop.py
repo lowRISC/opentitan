@@ -125,19 +125,20 @@ class Loop(SnippetGen):
         # it's encodable. That causes an error, so we'll do that in a separate
         # generator.
         if random.random() < 0.95:
-            iters_hi = min(max_iters, 3)
+            tgt_max_iters = min(max_iters, 3)
         else:
-            iters_hi = max_iters
-        iters_lo = max(iters_lo, 1)
+            tgt_max_iters = 10000
 
-        # If we haven't actually got space for a single loop body, give up!
-        if max_iters < iters_lo:
+        ub = min(iters_hi, max_iters, tgt_max_iters)
+        lb = max(iters_lo, 1)
+
+        if ub < lb:
             return None
 
         # Otherwise, pick a value uniformly in [iters_lo, iters_hi]. No need
         # for clever weighting: in the usual case, there are just 3
         # possibilities!
-        num_iters = random.randint(iters_lo, iters_hi)
+        num_iters = random.randint(lb, ub)
         enc_val = op_type.op_val_to_enc_val(num_iters, model.pc)
         # This should never fail: the choice should have been in the encodable
         # range.
