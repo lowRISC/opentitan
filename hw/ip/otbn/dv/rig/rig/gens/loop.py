@@ -5,7 +5,7 @@
 import random
 from typing import List, Optional, Tuple
 
-from shared.insn_yaml import InsnsFile
+from shared.insn_yaml import Insn, InsnsFile
 from shared.operand import ImmOperandType, RegOperandType, OperandType
 
 from .jump import Jump
@@ -19,6 +19,17 @@ from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
 class Loop(SnippetGen):
     '''A generator that generates a LOOP / LOOPI'''
+
+    # The shape of a loop that's being generated. The triple is (opval,
+    # num_iters, bodysize) where opval is the encoded value for the operand,
+    # num_iters is the number of iterations and bodysize is the size of the
+    # loop body.
+    Shape = Tuple[int, int, int]
+
+    # The individual pieces of a generated loop. The tuple is (shape, hd_insn,
+    # body_snippet, model_afterwards)
+    Pieces = Tuple[Shape, ProgInsn, Snippet, Model]
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
@@ -175,7 +186,7 @@ class Loop(SnippetGen):
                          op1_type: ImmOperandType,
                          space_here: int,
                          model: Model,
-                         program: Program) -> Optional[Tuple[int, int, int]]:
+                         program: Program) -> Optional[Shape]:
         '''Pick the size of loop and number of iterations
 
         op_type is the type of the first operand (either 'grs' for loop or
@@ -399,11 +410,24 @@ class Loop(SnippetGen):
         model.pop_const(const_token)
         return (snippet, model)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def _pick_loop_insn(self) -> Insn:
+        '''Pick either LOOP or LOOPI'''
+        is_loopi = random.random() < self.loopi_prob
+        return self.loopi if is_loopi else self.loop
 
+    def _gen_pieces(self,
+                    cont: GenCont,
+                    model: Model,
+                    program: Program) -> Optional[Pieces]:
+        '''Generate a loop and return its constituent pieces
+
+        This is useful for subclasses that alter the generated loop after the
+        fact.
+
+        As with gen(), if this function succeeds, it will modify program and
+        may modify model.
+
+        '''
         # A loop or loopi sequence has a loop/loopi instruction, at least one
         # body instruction (the last of which must be a straight line
         # instruction) and then needs a following trampoline. That means we
@@ -421,9 +445,7 @@ class Loop(SnippetGen):
         if model.loop_depth == Model.max_loop_depth:
             return None
 
-        # Decide whether to generate LOOP or LOOPI
-        is_loopi = random.random() < self.loopi_prob
-        insn = self.loopi if is_loopi else self.loop
+        insn = self._pick_loop_insn()
 
         # Pick a loop count
         op0_type = insn.operands[0].op_type
@@ -438,7 +460,6 @@ class Loop(SnippetGen):
 
         # Generate the head instruction (which runs once, unconditionally) and
         # clone model and program to add it
-        hd_addr = model.pc
         enc_bodysize = op1_type.op_val_to_enc_val(bodysize, model.pc)
         assert enc_bodysize is not None
         hd_insn = ProgInsn(insn, [iter_opval, enc_bodysize], None)
@@ -481,9 +502,6 @@ class Loop(SnippetGen):
         assert body_fuel > 0
         fuel_afterwards = model.fuel - num_iters * body_fuel
 
-        snippet = LoopSnippet(hd_addr, hd_insn, body_snippet)
-        snippet.insert_into_program(program)
-
         # Update model to take the loop body into account. If we know we have
         # exactly one iteration through the body, we can just take body_model.
         # Otherwise, we merge the two after "teleporting" model to the loop
@@ -500,5 +518,22 @@ class Loop(SnippetGen):
             # between model and body_model, but we actually want it to be what
             # we computed before.
             model.fuel = fuel_afterwards
+
+        return (lshape, hd_insn, body_snippet, model)
+
+    def gen(self,
+            cont: GenCont,
+            model: Model,
+            program: Program) -> Optional[GenRet]:
+
+        hd_addr = model.pc
+        pieces = self._gen_pieces(cont, model, program)
+        if pieces is None:
+            return None
+
+        shape, hd_insn, body_snippet, model = pieces
+
+        snippet = LoopSnippet(hd_addr, hd_insn, body_snippet)
+        snippet.insert_into_program(program)
 
         return (snippet, False, model)
