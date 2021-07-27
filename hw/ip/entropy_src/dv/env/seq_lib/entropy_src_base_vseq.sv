@@ -36,13 +36,23 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.efuse_es_sw_reg_en_vif.drive_pin(.idx(0), .val(cfg.efuse_es_sw_reg_en));
 
     // Set entropy_src controls
-    ral.entropy_control.es_type.set(cfg.type_bypass);
-    ral.entropy_control.es_route.set(cfg.route_software);
+    // TODO: hardcode for now, fix up contraints
+    //    ral.entropy_control.es_type.set(cfg.type_bypass);
+    //    ral.entropy_control.es_route.set(cfg.route_software);
+    //    csr_update(.csr(ral.entropy_control));
+    ral.entropy_control.es_type.set(4'h5);
+    ral.entropy_control.es_route.set(4'ha);
     csr_update(.csr(ral.entropy_control));
 
     // Enable entropy_src in ptrng or lfsr mode
-    ral.conf.enable.set(cfg.mode);
-    ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
+    // TODO: hardcode for now, fix up contraints
+    // ral.conf.enable.set(cfg.mode);
+    // ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
+    ral.entropy_control.es_route.set(4'ha);
+    csr_update(.csr(ral.entropy_control));
+    ral.conf.enable.set(4'ha);
+    ral.conf.entropy_data_reg_enable.set(4'ha);
+    ral.conf.boot_bypass_disable.set(4'h5);
     csr_update(.csr(ral.conf));
 
   endtask

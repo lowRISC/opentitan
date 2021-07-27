@@ -136,7 +136,7 @@ _mask_rom_start_boot:
   // FIXME: Enable entropy complex - this is not the full enable.
   // TODO(#7221): Switch entropy source mode from LFSR to PTRNG.
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li t0, (2 << ENTROPY_SRC_CONF_ENABLE_OFFSET) // LFSR mode.
+  li t0, (0xa0a) // LFSR mode, Enable
   sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
 
   li a0, TOP_EARLGREY_CSRNG_BASE_ADDR

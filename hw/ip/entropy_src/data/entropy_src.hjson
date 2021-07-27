@@ -89,9 +89,8 @@
   registers: [
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "ro", // lock is managed by HW
-      hwaccess: "hwo",
-      hwext: "true",
+      swaccess: "rw0c",
+      hwaccess: "none",
       fields: [
         {
             bits: "0",
@@ -128,48 +127,60 @@
       desc: "Configuration register",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+// TODO: fix up exclusions after env is fixed
+//             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
-        { bits: "1:0",
+        { bits: "3:0",
           name: "ENABLE",
-          desc: '''This field is the module enable for the ENTROPY_SRC entropy generation function.
-                This two bit field determines what source will be used for all processing:
-                0b00: Disabled
-                0b01: PTRNG mode enabled
-                0b10: LFSR mode enabled
-                0b11: Reserved
+          desc: '''
+                Setting this field to 0xA will enable the ENTROPY_SRC module.
                 '''
-          tags: [// Exclude from writes to these bits to avoid Xs from entropy FIFO.
-                 "excl:CsrAllTests:CsrExclWrite"]
-        }
-        { bits: "3",
+          resval: "0x5"
+        },
+        { bits: "7:4",
+          name: "ENTROPY_DATA_REG_ENABLE",
+          desc: '''
+                Setting this field to 0xA will enable reading entropy values from the
+                ENTROPY_DATA register. This function also requires that the efuse_es_sw_reg_en
+                input is set.
+                '''
+          resval: "0x5"
+        },
+        { bits: "11:8",
+          name: "LFSR_ENABLE",
+          desc: '''
+                Setting this field to 0xA will enable the ENTROPY_SRC LFSR mode.
+                '''
+          resval: "0x5"
+        },
+        { bits: "15:12",
           name: "BOOT_BYPASS_DISABLE",
-          desc: "Setting this bit disables the initial generation of non-FIPS entropy."
-        }
-        { bits: "4",
-          name: "REPCNT_DISABLE",
-          desc: "Setting this bit disables the health test called Repetition Count test."
-        }
-        { bits: "5",
-          name: "ADAPTP_DISABLE",
-          desc: "Setting this bit disables the health test called  Adaptive Proportion test."
-        }
-        { bits: "6",
-          name: "BUCKET_DISABLE",
-          desc: "Setting this bit disables the health test called Bucket test."
-        }
-        { bits: "7",
-          name: "MARKOV_DISABLE",
-          desc: "Setting this bit disables the health test called Markov test."
-        }
-        { bits: "8",
+          desc: '''
+                Setting this field to 0xA will disables the initial generation of non-FIPS entropy.
+                '''
+          resval: "0x5"
+        },
+        { bits: "19:16",
           name: "HEALTH_TEST_CLR",
-          desc: "Setting this bit will clear all registers related to the health test operations."
-        }
-        { bits: "9",
-          name: "RNG_BIT_EN",
-          desc: "Setting this bit enables the single RNG bit mode, where only one bit is sampled."
-        }
-        { bits: "11:10",
+          desc: '''
+                Setting this field to 0xA will clear all registers related to the
+                health test operations.
+                '''
+          resval: "0x5"
+        },
+        { bits: "23:20",
+          name: "RNG_BIT_ENABLE",
+          desc: '''
+                Setting this field to 0xA enables the single RNG bit mode, where only
+                one bit is sampled.
+                '''
+          resval: "0x5"
+        },
+        { bits: "25:24",
           name: "RNG_BIT_SEL",
           desc: '''When the above bit iset, this field selects which bit from the RNG bus will
                 be processed when in single RNG bit mode.
@@ -178,18 +189,6 @@
                 0b01: RNG bit 1
                 0b10: RNG bit 2
                 0b11: RNG bit 3
-                '''
-        }
-        { bits: "12",
-          name: "EXTHT_ENABLE",
-          desc: '''Setting this bit enables the hardware-based health test that is external
-                to ENTROPY_SRC."
-                '''
-        }
-        { bits: "13",
-          name: "REPCNTS_DISABLE",
-          desc: '''Setting this bit disables the health test called Repetition Count test,
-                which is based on counting symbols.
                 '''
         }
       ]
@@ -213,22 +212,30 @@
       desc: "Entropy control register",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe:     "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+// TODO: remove above tag when working
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "ES_ROUTE",
-          desc: '''Setting this bit routes the generated entropy value to the ENTROPY_DATA
-                register to be read by firmware. When this bit is zero, the generated
+          desc: '''
+                Setting this field to 0xA routes the generated entropy value to the ENTROPY_DATA
+                register to be read by firmware. When this field is 0x5, the generated
                 entropy will be forwarded out of this module to the hardware interface.
                 '''
-        }
-        { bits: "1",
+          resval: "0x5"
+        },
+        { bits: "7:4",
           name: "ES_TYPE",
-          desc: '''Setting this bit will bypass the conditioning logic and bring raw entropy
-                data to the ENTROPY_DATA register. When zero, FIPS compliant entropy
+          desc: '''
+                Setting this field to 0xA will bypass the conditioning logic and bring raw entropy
+                data to the ENTROPY_DATA register. When 0x5, FIPS compliant entropy
                 will be brought the ENTROPY_DATA register, after being conditioned.
                 '''
-        }
+          resval: "0x5"
+        },
       ]
     },
     { name: "ENTROPY_DATA",
@@ -1001,24 +1008,31 @@
       desc: "Firmware override control register",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe:     "true",
       regwen:   "REGWEN",
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "FW_OV_MODE",
-          desc: '''Setting this bit will put the entropy flow in firmware override mode.
+          desc: '''
+                Setting this field to 0xA will put the entropy flow in firmware override mode.
                 In this mode, firmware can monitor the post-health test entropy by reading
-                the observe FIFO.
+                the observe FIFO. This function also requires that the efuse_es_sw_ov_en
+                input is set.
                 '''
-        }
-        { bits: "1",
+          resval: "0x5"
+        },
+        { bits: "7:4",
           name: "FW_OV_ENTROPY_INSERT",
-          desc: '''Setting this bit will switch the input into the pre-conditioner packer FIFO.
-                Firmware can directly write into the packer FIFO, enabling the ability to insert
-                entropy bits back into the hardware flow. Firmware can read data from the health
-                check packer FIFO, then do optional health checks or optional conditioning, then
-                insert the results back into the flow. Also, the !!FW_OV_MODE bit must be set.
+          desc: '''
+                Setting this field to 0xA will switch the input into the pre-conditioner
+                packer FIFO. Firmware can directly write into the packer FIFO, enabling
+                the ability to insert entropy bits back into the hardware flow. Firmware
+                can read data from the health check packer FIFO, then do optional health
+                checks or optional conditioning, then insert the results back into the flow.
+                Also, the !!FW_OV_MODE bit must be set.
                 '''
-        }
+          resval: "0x5"
+        },
       ]
     },
     { name: "FW_OV_RD_DATA",

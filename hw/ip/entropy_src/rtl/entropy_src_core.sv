@@ -62,6 +62,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int ObserveFifoDepth = 64;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
+  // TODO: remove or enable below
+  // localparam int FieldEnableWidth = 4;
 
   //-----------------------
   // SHA3 parameters
@@ -78,17 +80,24 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [RngBusWidth-1:0] seed_value;
   logic       load_seed;
   logic       fw_ov_mode;
+  logic       fw_ov_mode_pfe;
   logic       fw_ov_entropy_insert;
+  logic       fw_ov_entropy_insert_pfe;
   logic [ObserveFifoWidth-1:0] fw_ov_wr_data;
   logic       fw_ov_fifo_rd_pulse;
   logic       fw_ov_fifo_wr_pulse;
   logic       es_enable;
+  logic       es_enable_pfe;
   logic       es_enable_early;
   logic       es_enable_lfsr;
   logic       es_enable_rng;
   logic       rng_bit_en;
+  logic       rng_bit_en_pfe;
   logic [1:0] rng_bit_sel;
   logic       lfsr_incr;
+  logic       lfsr_enable_pfe;
+  logic       entropy_data_reg_en_pfe;
+  logic       es_data_reg_rd_en;
   logic       sw_es_rd_pulse;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
@@ -149,15 +158,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     extht_active;
   logic                     alert_cntrs_clr;
   logic                     health_test_clr;
+  logic                     health_test_clr_pfe;
   logic                     health_test_done_pulse;
   logic [RngBusWidth-1:0]   health_test_esbus;
   logic                     health_test_esbus_vld;
+  logic                     es_route_pfe;
+  logic                     es_type_pfe;
   logic                     es_route_to_sw;
   logic                     es_bypass_to_sw;
   logic                     es_bypass_mode;
   logic                     rst_bypass_mode;
   logic                     rst_alert_cntr;
   logic                     boot_bypass_disable;
+  logic                     boot_bypass_dis_pfe;
   logic                     fips_compliance;
 
   logic [HalfRegWidth-1:0] health_test_fips_window;
@@ -368,6 +381,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_sha3_state;
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
+  logic                    unused_rng_bit_sel;
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -424,18 +438,95 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_vld_q   <= es_rdata_capt_vld_d;
     end
 
-  assign es_enable_d = reg2hw.conf.enable.q;
-  assign es_enable_early = (|reg2hw.conf.enable.q);
+
+  //--------------------------------------------
+  // set up secure enable bits
+  //--------------------------------------------
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_es_enable (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.enable.qe),
+//    .wdata_i                (reg2hw.conf.enable.q),
+//    .enable_o               (es_enable_pfe)
+//  );
+
+  assign es_enable_pfe = (es_enb_e'(reg2hw.conf.enable.q) == ES_FIELD_ON);
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_lfsr_enable (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.lfsr_enable.qe),
+//    .wdata_i                (reg2hw.conf.lfsr_enable.q),
+//    .enable_o               (lfsr_enable_pfe)
+//  );
+
+  assign lfsr_enable_pfe = (es_enb_e'(reg2hw.conf.lfsr_enable.q) == ES_FIELD_ON);
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_entropy_data_reg_en (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.entropy_data_reg_enable.qe),
+//    .wdata_i                (reg2hw.conf.entropy_data_reg_enable.q),
+//    .enable_o               (entropy_data_reg_en_pfe)
+//  );
+
+  assign entropy_data_reg_en_pfe =
+         (es_enb_e'(reg2hw.conf.entropy_data_reg_enable.q) == ES_FIELD_ON);
+
+//  assign es_enable_d = reg2hw.conf.enable.q;  // TODO: remove
+  assign es_enable_d = {lfsr_enable_pfe,es_enable_pfe};
+  assign es_enable_early = lfsr_enable_pfe || es_enable_pfe;
   assign es_enable = (|es_enable_q);
   assign es_enable_lfsr = es_enable_q[1];
   assign es_enable_rng = es_enable_q[0];
   assign load_seed = !es_enable;
-  assign hw2reg.regwen.d = !es_enable; // hw reg lock implementation
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_fw_ov_mode (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.fw_ov_control.fw_ov_mode.qe),
+//    .wdata_i                (reg2hw.fw_ov_control.fw_ov_mode.q),
+//    .enable_o               (fw_ov_mode_pfe)
+//  );
+
+  assign fw_ov_mode_pfe = (es_enb_e'(reg2hw.fw_ov_control.fw_ov_mode.q) == ES_FIELD_ON);
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_fw_ov_entropy_insert (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.fw_ov_control.fw_ov_entropy_insert.qe),
+//    .wdata_i                (reg2hw.fw_ov_control.fw_ov_entropy_insert.q),
+//    .enable_o               (fw_ov_entropy_insert_pfe)
+//  );
+
+  assign fw_ov_entropy_insert_pfe =
+         (es_enb_e'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q) == ES_FIELD_ON);
+
   // firmware override controls
-  assign fw_ov_mode = efuse_es_sw_ov_en_i && reg2hw.fw_ov_control.fw_ov_mode.q;
-  assign fw_ov_entropy_insert = reg2hw.fw_ov_control.fw_ov_entropy_insert.q;
+  assign fw_ov_mode = efuse_es_sw_ov_en_i && fw_ov_mode_pfe;
+  assign fw_ov_entropy_insert = fw_ov_entropy_insert_pfe;
   assign fw_ov_fifo_rd_pulse = reg2hw.fw_ov_rd_data.re;
   assign hw2reg.fw_ov_rd_data.d = sfifo_observe_rdata;
   assign fw_ov_fifo_wr_pulse = reg2hw.fw_ov_wr_data.qe;
@@ -702,7 +793,21 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // pack esrng bus into signal bit packer
 
-  assign rng_bit_en = reg2hw.conf.rng_bit_en.q;
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_rng_bit_en (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.rng_bit_enable.qe),
+//    .wdata_i                (reg2hw.conf.rng_bit_enable.q),
+//    .enable_o               (rng_bit_en_pfe)
+//  );
+
+  assign rng_bit_en_pfe = (es_enb_e'(reg2hw.conf.rng_bit_enable.q) == ES_FIELD_ON);
+
+  assign rng_bit_en = rng_bit_en_pfe;
   assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
 
   prim_packer_fifo #(
@@ -745,14 +850,28 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign ht_esbus_dly_d     = es_enable ? health_test_esbus : '0;
   assign ht_esbus_vld_dly2_d = es_enable && ht_esbus_vld_dly_q;
 
-  assign repcnt_active = !reg2hw.conf.repcnt_disable.q && es_enable;
-  assign repcnts_active = !reg2hw.conf.repcnts_disable.q && es_enable;
-  assign adaptp_active = !reg2hw.conf.adaptp_disable.q && es_enable;
-  assign bucket_active = !reg2hw.conf.bucket_disable.q && es_enable;
-  assign markov_active = !reg2hw.conf.markov_disable.q && es_enable;
-  assign extht_active = reg2hw.conf.extht_enable.q && es_enable;
+  assign repcnt_active = es_enable;
+  assign repcnts_active = es_enable;
+  assign adaptp_active = es_enable;
+  assign bucket_active = es_enable;
+  assign markov_active = es_enable;
+  assign extht_active = es_enable;
 
-  assign health_test_clr = reg2hw.conf.health_test_clr.q;
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_health_test_clr (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.health_test_clr.qe),
+//    .wdata_i                (reg2hw.conf.health_test_clr.q),
+//    .enable_o               (health_test_clr_pfe)
+//  );
+
+  assign health_test_clr_pfe = (es_enb_e'(reg2hw.conf.health_test_clr.q) == ES_FIELD_ON);
+
+  assign health_test_clr = health_test_clr_pfe;
 
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
@@ -1121,9 +1240,51 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign event_es_health_test_failed = es_main_sm_alert;
   assign event_es_observe_fifo_ready = observe_fifo_thresh_met;
 
-  assign es_route_to_sw = reg2hw.entropy_control.es_route.q;
-  assign es_bypass_to_sw = reg2hw.entropy_control.es_type.q;
-  assign boot_bypass_disable = reg2hw.conf.boot_bypass_disable.q;
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_es_route (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.entropy_control.es_route.qe),
+//    .wdata_i                (reg2hw.entropy_control.es_route.q),
+//    .enable_o               (es_route_pfe)
+//  );
+
+  assign es_route_pfe = (es_enb_e'(reg2hw.entropy_control.es_route.q) == ES_FIELD_ON);
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_es_type (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.entropy_control.es_type.qe),
+//    .wdata_i                (reg2hw.entropy_control.es_type.q),
+//    .enable_o               (es_type_pfe)
+//  );
+
+  assign es_type_pfe = (es_enb_e'(reg2hw.entropy_control.es_type.q) == ES_FIELD_ON);
+
+  // TODO: remove or enable prim_field_enable
+//  prim_field_enable #(
+//    .FieldW(FieldEnableWidth),
+//    .FieldEnVal(int'(ES_FIELD_ON))
+//  ) u_prim_field_enable_boot_bypass_dis (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .wvalid_i               (reg2hw.conf.boot_bypass_disable.qe),
+//    .wdata_i                (reg2hw.conf.boot_bypass_disable.q),
+//    .enable_o               (boot_bypass_dis_pfe)
+//  );
+
+  assign boot_bypass_dis_pfe = (es_enb_e'(reg2hw.conf.boot_bypass_disable.q) == ES_FIELD_ON);
+
+  assign es_route_to_sw = es_route_pfe;
+  assign es_bypass_to_sw = es_type_pfe;
+  assign boot_bypass_disable = boot_bypass_dis_pfe;
 
   assign boot_bypass_d =
          (!es_enable_early) ? 1'b1 :  // special case for reset
@@ -2179,8 +2340,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_swread_pop =  es_enable && sw_es_rd_pulse;
 
   // set the es entropy to the read reg
-  assign hw2reg.entropy_data.d = es_enable ? pfifo_swread_rdata : '0;
-  assign sw_es_rd_pulse = efuse_es_sw_reg_en_i && reg2hw.entropy_data.re;
+  assign es_data_reg_rd_en = es_enable && efuse_es_sw_reg_en_i && entropy_data_reg_en_pfe;
+  assign hw2reg.entropy_data.d = es_data_reg_rd_en ? pfifo_swread_rdata : '0;
+  assign sw_es_rd_pulse = es_data_reg_rd_en && reg2hw.entropy_data.re;
 
   //--------------------------------------------
   // unused signals
@@ -2190,6 +2352,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
-
+  assign unused_rng_bit_sel = reg2hw.conf.rng_bit_sel.qe ||
+         // TODO: remove or enable these
+         reg2hw.conf.enable.qe ||
+         reg2hw.conf.lfsr_enable.qe ||
+         reg2hw.conf.entropy_data_reg_enable.qe ||
+         reg2hw.fw_ov_control.fw_ov_mode.qe ||
+         reg2hw.fw_ov_control.fw_ov_entropy_insert.qe ||
+         reg2hw.conf.rng_bit_enable.qe ||
+         reg2hw.conf.health_test_clr.qe ||
+         reg2hw.entropy_control.es_route.qe ||
+         reg2hw.entropy_control.es_type.qe ||
+         reg2hw.conf.boot_bypass_disable.qe;
 
 endmodule
