@@ -20,6 +20,7 @@ from .gens.loop import Loop
 from .gens.straight_line_insn import StraightLineInsn
 
 from .gens.bad_insn import BadInsn
+from .gens.bad_giant_loop import BadGiantLoop
 from .gens.bad_zero_loop import BadZeroLoop
 
 
@@ -33,6 +34,7 @@ class SnippetGens:
 
         ECall,
         BadInsn,
+        BadGiantLoop,
         BadZeroLoop
     ]
 
@@ -214,6 +216,8 @@ class SnippetGens:
 
         '''
         snippets, next_model = self._gens(model, program, end)
+        # If end was True, there must be at least one instruction
+        assert snippets or not end
         snippet = Snippet.merge_list(snippets) if snippets else None
         return (snippet, next_model)
 

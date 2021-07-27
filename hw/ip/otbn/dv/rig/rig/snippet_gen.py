@@ -19,10 +19,10 @@ from .snippet import Snippet
 
 # The return type of a single generator. This is a tuple (snippet, done,
 # model). snippet is a generated snippet. done is true if the processor has
-# just executed an ECALL instruction. model is a Model object representing the
-# state of the processor after executing the code in the snippet(s). The PC of
-# the model will be the next instruction to be executed unless done is true, in
-# which case it still points at the ECALL.
+# just executed an instruction that causes it to stop. model is a Model object
+# representing the state of the processor after executing the code in the
+# snippet(s). The PC of the model will be the next instruction to be executed
+# unless done is true, in which case it still points at the final instruction.
 GenRet = Tuple[Snippet, bool, Model]
 
 # An "internal" return type for generators that never cause termination.
@@ -35,7 +35,8 @@ GensRet = Tuple[Optional[Snippet], Model]
 
 # A continuation type that allows a generator to recursively generate some more
 # stuff. If the boolean argument is true, the continuation will try to generate
-# a snippet that causes OTBN to stop.
+# a snippet that causes OTBN to stop. In this case, the Snippet term in the
+# GensRet will not be None.
 GenCont = Callable[[Model, Program, bool], GensRet]
 
 
