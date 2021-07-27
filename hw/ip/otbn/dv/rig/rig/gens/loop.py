@@ -155,15 +155,15 @@ class Loop(SnippetGen):
         assert 3 <= space_here
         max_bodysize = space_here - 2
 
-        # Another upper bound comes from program.get_insn_space_left(). If
-        # bodysize is 2 or more, our body will need to generate at least 2
-        # instructions (either a straight line of length bodysize, or a jump
-        # from the start and then a straight line instruction at the end). In
-        # this case, we need space for at least 3 instructions (including the
-        # LOOP/LOOPI instruction itself).
+        # Another upper bound comes from program.space. If bodysize is 2 or
+        # more, our body will need to generate at least 2 instructions (either
+        # a straight line of length bodysize, or a jump from the start and then
+        # a straight line instruction at the end). In this case, we need space
+        # for at least 3 instructions (including the LOOP/LOOPI instruction
+        # itself).
         #
-        # We know that program.get_insn_space_left() is at least 2 (checked in
-        # gen()), but if it's 2, we can only have a bodysize of 1.
+        # We know that program.space is at least 2 (checked in gen()), but if
+        # it's 2, we can only have a bodysize of 1.
         assert 2 <= program.space
         if program.space == 2:
             max_bodysize = min(max_bodysize, 1)
