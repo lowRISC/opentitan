@@ -5,7 +5,6 @@
   name: "rstmgr"
   import_testplans: ["hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   testpoints: [
     {
@@ -13,11 +12,19 @@
       desc: '''
             Smoke test accessing a major datapath within the rstmgr.
 
+            Checks the behavior of rstmgr when receiving various reset requests.
+
             **Stimulus**:
-            - TBD
+            - Send a low power entry reset.
+            - Send a peripheral reset request.
+            - Send a debug reset.
+            - Configure a software request for peripheral reset.
 
             **Checks**:
-            - TBD
+            - Checks the reset_info matches expected values.
+            - Checks the cpu_info CSR correctly captures the input info.
+            - Checks the output reset pins corresponding to sw resettable
+              units match `sw_rst_ctrl_n` CSR.
             '''
       milestone: V1
       tests: ["rstmgr_smoke"]
