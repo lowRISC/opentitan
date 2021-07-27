@@ -262,6 +262,9 @@ module spi_device_reg_top (
   logic [15:0] jedec_id_id_wd;
   logic [7:0] jedec_id_mf_qs;
   logic [7:0] jedec_id_mf_wd;
+  logic read_threshold_we;
+  logic [9:0] read_threshold_qs;
+  logic [9:0] read_threshold_wd;
   logic cmd_filter_0_we;
   logic cmd_filter_0_filter_0_qs;
   logic cmd_filter_0_filter_0_wd;
@@ -2301,6 +2304,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (jedec_id_mf_qs)
+  );
+
+
+  // R[read_threshold]: V(False)
+
+  prim_subreg #(
+    .DW      (10),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (10'h0)
+  ) u_read_threshold (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (read_threshold_we),
+    .wd     (read_threshold_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.read_threshold.q),
+
+    // to register interface (read)
+    .qs     (read_threshold_qs)
   );
 
 
@@ -12836,7 +12866,7 @@ module spi_device_reg_top (
 
 
 
-  logic [41:0] addr_hit;
+  logic [42:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -12855,32 +12885,33 @@ module spi_device_reg_top (
     addr_hit[13] = (reg_addr == SPI_DEVICE_LAST_READ_ADDR_OFFSET);
     addr_hit[14] = (reg_addr == SPI_DEVICE_FLASH_STATUS_OFFSET);
     addr_hit[15] = (reg_addr == SPI_DEVICE_JEDEC_ID_OFFSET);
-    addr_hit[16] = (reg_addr == SPI_DEVICE_CMD_FILTER_0_OFFSET);
-    addr_hit[17] = (reg_addr == SPI_DEVICE_CMD_FILTER_1_OFFSET);
-    addr_hit[18] = (reg_addr == SPI_DEVICE_CMD_FILTER_2_OFFSET);
-    addr_hit[19] = (reg_addr == SPI_DEVICE_CMD_FILTER_3_OFFSET);
-    addr_hit[20] = (reg_addr == SPI_DEVICE_CMD_FILTER_4_OFFSET);
-    addr_hit[21] = (reg_addr == SPI_DEVICE_CMD_FILTER_5_OFFSET);
-    addr_hit[22] = (reg_addr == SPI_DEVICE_CMD_FILTER_6_OFFSET);
-    addr_hit[23] = (reg_addr == SPI_DEVICE_CMD_FILTER_7_OFFSET);
-    addr_hit[24] = (reg_addr == SPI_DEVICE_ADDR_SWAP_MASK_OFFSET);
-    addr_hit[25] = (reg_addr == SPI_DEVICE_ADDR_SWAP_DATA_OFFSET);
-    addr_hit[26] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
-    addr_hit[27] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
-    addr_hit[28] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
-    addr_hit[29] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
-    addr_hit[30] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
-    addr_hit[31] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
-    addr_hit[32] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
-    addr_hit[33] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
-    addr_hit[34] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
-    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
-    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
-    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
-    addr_hit[38] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
-    addr_hit[39] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
-    addr_hit[40] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
-    addr_hit[41] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
+    addr_hit[16] = (reg_addr == SPI_DEVICE_READ_THRESHOLD_OFFSET);
+    addr_hit[17] = (reg_addr == SPI_DEVICE_CMD_FILTER_0_OFFSET);
+    addr_hit[18] = (reg_addr == SPI_DEVICE_CMD_FILTER_1_OFFSET);
+    addr_hit[19] = (reg_addr == SPI_DEVICE_CMD_FILTER_2_OFFSET);
+    addr_hit[20] = (reg_addr == SPI_DEVICE_CMD_FILTER_3_OFFSET);
+    addr_hit[21] = (reg_addr == SPI_DEVICE_CMD_FILTER_4_OFFSET);
+    addr_hit[22] = (reg_addr == SPI_DEVICE_CMD_FILTER_5_OFFSET);
+    addr_hit[23] = (reg_addr == SPI_DEVICE_CMD_FILTER_6_OFFSET);
+    addr_hit[24] = (reg_addr == SPI_DEVICE_CMD_FILTER_7_OFFSET);
+    addr_hit[25] = (reg_addr == SPI_DEVICE_ADDR_SWAP_MASK_OFFSET);
+    addr_hit[26] = (reg_addr == SPI_DEVICE_ADDR_SWAP_DATA_OFFSET);
+    addr_hit[27] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
+    addr_hit[28] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
+    addr_hit[29] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
+    addr_hit[30] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
+    addr_hit[31] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
+    addr_hit[32] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
+    addr_hit[33] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
+    addr_hit[34] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
+    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
+    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
+    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
+    addr_hit[38] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
+    addr_hit[39] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
+    addr_hit[40] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
+    addr_hit[41] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
+    addr_hit[42] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -12929,7 +12960,8 @@ module spi_device_reg_top (
                (addr_hit[38] & (|(SPI_DEVICE_PERMIT[38] & ~reg_be))) |
                (addr_hit[39] & (|(SPI_DEVICE_PERMIT[39] & ~reg_be))) |
                (addr_hit[40] & (|(SPI_DEVICE_PERMIT[40] & ~reg_be))) |
-               (addr_hit[41] & (|(SPI_DEVICE_PERMIT[41] & ~reg_be)))));
+               (addr_hit[41] & (|(SPI_DEVICE_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(SPI_DEVICE_PERMIT[42] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -13032,7 +13064,10 @@ module spi_device_reg_top (
   assign jedec_id_id_wd = reg_wdata[15:0];
 
   assign jedec_id_mf_wd = reg_wdata[23:16];
-  assign cmd_filter_0_we = addr_hit[16] & reg_we & !reg_error;
+  assign read_threshold_we = addr_hit[16] & reg_we & !reg_error;
+
+  assign read_threshold_wd = reg_wdata[9:0];
+  assign cmd_filter_0_we = addr_hit[17] & reg_we & !reg_error;
 
   assign cmd_filter_0_filter_0_wd = reg_wdata[0];
 
@@ -13097,7 +13132,7 @@ module spi_device_reg_top (
   assign cmd_filter_0_filter_30_wd = reg_wdata[30];
 
   assign cmd_filter_0_filter_31_wd = reg_wdata[31];
-  assign cmd_filter_1_we = addr_hit[17] & reg_we & !reg_error;
+  assign cmd_filter_1_we = addr_hit[18] & reg_we & !reg_error;
 
   assign cmd_filter_1_filter_32_wd = reg_wdata[0];
 
@@ -13162,7 +13197,7 @@ module spi_device_reg_top (
   assign cmd_filter_1_filter_62_wd = reg_wdata[30];
 
   assign cmd_filter_1_filter_63_wd = reg_wdata[31];
-  assign cmd_filter_2_we = addr_hit[18] & reg_we & !reg_error;
+  assign cmd_filter_2_we = addr_hit[19] & reg_we & !reg_error;
 
   assign cmd_filter_2_filter_64_wd = reg_wdata[0];
 
@@ -13227,7 +13262,7 @@ module spi_device_reg_top (
   assign cmd_filter_2_filter_94_wd = reg_wdata[30];
 
   assign cmd_filter_2_filter_95_wd = reg_wdata[31];
-  assign cmd_filter_3_we = addr_hit[19] & reg_we & !reg_error;
+  assign cmd_filter_3_we = addr_hit[20] & reg_we & !reg_error;
 
   assign cmd_filter_3_filter_96_wd = reg_wdata[0];
 
@@ -13292,7 +13327,7 @@ module spi_device_reg_top (
   assign cmd_filter_3_filter_126_wd = reg_wdata[30];
 
   assign cmd_filter_3_filter_127_wd = reg_wdata[31];
-  assign cmd_filter_4_we = addr_hit[20] & reg_we & !reg_error;
+  assign cmd_filter_4_we = addr_hit[21] & reg_we & !reg_error;
 
   assign cmd_filter_4_filter_128_wd = reg_wdata[0];
 
@@ -13357,7 +13392,7 @@ module spi_device_reg_top (
   assign cmd_filter_4_filter_158_wd = reg_wdata[30];
 
   assign cmd_filter_4_filter_159_wd = reg_wdata[31];
-  assign cmd_filter_5_we = addr_hit[21] & reg_we & !reg_error;
+  assign cmd_filter_5_we = addr_hit[22] & reg_we & !reg_error;
 
   assign cmd_filter_5_filter_160_wd = reg_wdata[0];
 
@@ -13422,7 +13457,7 @@ module spi_device_reg_top (
   assign cmd_filter_5_filter_190_wd = reg_wdata[30];
 
   assign cmd_filter_5_filter_191_wd = reg_wdata[31];
-  assign cmd_filter_6_we = addr_hit[22] & reg_we & !reg_error;
+  assign cmd_filter_6_we = addr_hit[23] & reg_we & !reg_error;
 
   assign cmd_filter_6_filter_192_wd = reg_wdata[0];
 
@@ -13487,7 +13522,7 @@ module spi_device_reg_top (
   assign cmd_filter_6_filter_222_wd = reg_wdata[30];
 
   assign cmd_filter_6_filter_223_wd = reg_wdata[31];
-  assign cmd_filter_7_we = addr_hit[23] & reg_we & !reg_error;
+  assign cmd_filter_7_we = addr_hit[24] & reg_we & !reg_error;
 
   assign cmd_filter_7_filter_224_wd = reg_wdata[0];
 
@@ -13552,13 +13587,13 @@ module spi_device_reg_top (
   assign cmd_filter_7_filter_254_wd = reg_wdata[30];
 
   assign cmd_filter_7_filter_255_wd = reg_wdata[31];
-  assign addr_swap_mask_we = addr_hit[24] & reg_we & !reg_error;
+  assign addr_swap_mask_we = addr_hit[25] & reg_we & !reg_error;
 
   assign addr_swap_mask_wd = reg_wdata[31:0];
-  assign addr_swap_data_we = addr_hit[25] & reg_we & !reg_error;
+  assign addr_swap_data_we = addr_hit[26] & reg_we & !reg_error;
 
   assign addr_swap_data_wd = reg_wdata[31:0];
-  assign cmd_info_0_we = addr_hit[26] & reg_we & !reg_error;
+  assign cmd_info_0_we = addr_hit[27] & reg_we & !reg_error;
 
   assign cmd_info_0_opcode_0_wd = reg_wdata[7:0];
 
@@ -13577,7 +13612,7 @@ module spi_device_reg_top (
   assign cmd_info_0_payload_en_0_wd = reg_wdata[19:16];
 
   assign cmd_info_0_payload_dir_0_wd = reg_wdata[20];
-  assign cmd_info_1_we = addr_hit[27] & reg_we & !reg_error;
+  assign cmd_info_1_we = addr_hit[28] & reg_we & !reg_error;
 
   assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
 
@@ -13596,7 +13631,7 @@ module spi_device_reg_top (
   assign cmd_info_1_payload_en_1_wd = reg_wdata[19:16];
 
   assign cmd_info_1_payload_dir_1_wd = reg_wdata[20];
-  assign cmd_info_2_we = addr_hit[28] & reg_we & !reg_error;
+  assign cmd_info_2_we = addr_hit[29] & reg_we & !reg_error;
 
   assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
 
@@ -13615,7 +13650,7 @@ module spi_device_reg_top (
   assign cmd_info_2_payload_en_2_wd = reg_wdata[19:16];
 
   assign cmd_info_2_payload_dir_2_wd = reg_wdata[20];
-  assign cmd_info_3_we = addr_hit[29] & reg_we & !reg_error;
+  assign cmd_info_3_we = addr_hit[30] & reg_we & !reg_error;
 
   assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
 
@@ -13634,7 +13669,7 @@ module spi_device_reg_top (
   assign cmd_info_3_payload_en_3_wd = reg_wdata[19:16];
 
   assign cmd_info_3_payload_dir_3_wd = reg_wdata[20];
-  assign cmd_info_4_we = addr_hit[30] & reg_we & !reg_error;
+  assign cmd_info_4_we = addr_hit[31] & reg_we & !reg_error;
 
   assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
 
@@ -13653,7 +13688,7 @@ module spi_device_reg_top (
   assign cmd_info_4_payload_en_4_wd = reg_wdata[19:16];
 
   assign cmd_info_4_payload_dir_4_wd = reg_wdata[20];
-  assign cmd_info_5_we = addr_hit[31] & reg_we & !reg_error;
+  assign cmd_info_5_we = addr_hit[32] & reg_we & !reg_error;
 
   assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
 
@@ -13672,7 +13707,7 @@ module spi_device_reg_top (
   assign cmd_info_5_payload_en_5_wd = reg_wdata[19:16];
 
   assign cmd_info_5_payload_dir_5_wd = reg_wdata[20];
-  assign cmd_info_6_we = addr_hit[32] & reg_we & !reg_error;
+  assign cmd_info_6_we = addr_hit[33] & reg_we & !reg_error;
 
   assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
 
@@ -13691,7 +13726,7 @@ module spi_device_reg_top (
   assign cmd_info_6_payload_en_6_wd = reg_wdata[19:16];
 
   assign cmd_info_6_payload_dir_6_wd = reg_wdata[20];
-  assign cmd_info_7_we = addr_hit[33] & reg_we & !reg_error;
+  assign cmd_info_7_we = addr_hit[34] & reg_we & !reg_error;
 
   assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
 
@@ -13710,7 +13745,7 @@ module spi_device_reg_top (
   assign cmd_info_7_payload_en_7_wd = reg_wdata[19:16];
 
   assign cmd_info_7_payload_dir_7_wd = reg_wdata[20];
-  assign cmd_info_8_we = addr_hit[34] & reg_we & !reg_error;
+  assign cmd_info_8_we = addr_hit[35] & reg_we & !reg_error;
 
   assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
 
@@ -13729,7 +13764,7 @@ module spi_device_reg_top (
   assign cmd_info_8_payload_en_8_wd = reg_wdata[19:16];
 
   assign cmd_info_8_payload_dir_8_wd = reg_wdata[20];
-  assign cmd_info_9_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_9_we = addr_hit[36] & reg_we & !reg_error;
 
   assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
 
@@ -13748,7 +13783,7 @@ module spi_device_reg_top (
   assign cmd_info_9_payload_en_9_wd = reg_wdata[19:16];
 
   assign cmd_info_9_payload_dir_9_wd = reg_wdata[20];
-  assign cmd_info_10_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_10_we = addr_hit[37] & reg_we & !reg_error;
 
   assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
 
@@ -13767,7 +13802,7 @@ module spi_device_reg_top (
   assign cmd_info_10_payload_en_10_wd = reg_wdata[19:16];
 
   assign cmd_info_10_payload_dir_10_wd = reg_wdata[20];
-  assign cmd_info_11_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_11_we = addr_hit[38] & reg_we & !reg_error;
 
   assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
 
@@ -13786,7 +13821,7 @@ module spi_device_reg_top (
   assign cmd_info_11_payload_en_11_wd = reg_wdata[19:16];
 
   assign cmd_info_11_payload_dir_11_wd = reg_wdata[20];
-  assign cmd_info_12_we = addr_hit[38] & reg_we & !reg_error;
+  assign cmd_info_12_we = addr_hit[39] & reg_we & !reg_error;
 
   assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
 
@@ -13805,7 +13840,7 @@ module spi_device_reg_top (
   assign cmd_info_12_payload_en_12_wd = reg_wdata[19:16];
 
   assign cmd_info_12_payload_dir_12_wd = reg_wdata[20];
-  assign cmd_info_13_we = addr_hit[39] & reg_we & !reg_error;
+  assign cmd_info_13_we = addr_hit[40] & reg_we & !reg_error;
 
   assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
 
@@ -13824,7 +13859,7 @@ module spi_device_reg_top (
   assign cmd_info_13_payload_en_13_wd = reg_wdata[19:16];
 
   assign cmd_info_13_payload_dir_13_wd = reg_wdata[20];
-  assign cmd_info_14_we = addr_hit[40] & reg_we & !reg_error;
+  assign cmd_info_14_we = addr_hit[41] & reg_we & !reg_error;
 
   assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
 
@@ -13843,7 +13878,7 @@ module spi_device_reg_top (
   assign cmd_info_14_payload_en_14_wd = reg_wdata[19:16];
 
   assign cmd_info_14_payload_dir_14_wd = reg_wdata[20];
-  assign cmd_info_15_we = addr_hit[41] & reg_we & !reg_error;
+  assign cmd_info_15_we = addr_hit[42] & reg_we & !reg_error;
 
   assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
 
@@ -13969,6 +14004,10 @@ module spi_device_reg_top (
       end
 
       addr_hit[16]: begin
+        reg_rdata_next[9:0] = read_threshold_qs;
+      end
+
+      addr_hit[17]: begin
         reg_rdata_next[0] = cmd_filter_0_filter_0_qs;
         reg_rdata_next[1] = cmd_filter_0_filter_1_qs;
         reg_rdata_next[2] = cmd_filter_0_filter_2_qs;
@@ -14003,7 +14042,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_0_filter_31_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = cmd_filter_1_filter_32_qs;
         reg_rdata_next[1] = cmd_filter_1_filter_33_qs;
         reg_rdata_next[2] = cmd_filter_1_filter_34_qs;
@@ -14038,7 +14077,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_1_filter_63_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = cmd_filter_2_filter_64_qs;
         reg_rdata_next[1] = cmd_filter_2_filter_65_qs;
         reg_rdata_next[2] = cmd_filter_2_filter_66_qs;
@@ -14073,7 +14112,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_2_filter_95_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = cmd_filter_3_filter_96_qs;
         reg_rdata_next[1] = cmd_filter_3_filter_97_qs;
         reg_rdata_next[2] = cmd_filter_3_filter_98_qs;
@@ -14108,7 +14147,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_3_filter_127_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[0] = cmd_filter_4_filter_128_qs;
         reg_rdata_next[1] = cmd_filter_4_filter_129_qs;
         reg_rdata_next[2] = cmd_filter_4_filter_130_qs;
@@ -14143,7 +14182,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_4_filter_159_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[0] = cmd_filter_5_filter_160_qs;
         reg_rdata_next[1] = cmd_filter_5_filter_161_qs;
         reg_rdata_next[2] = cmd_filter_5_filter_162_qs;
@@ -14178,7 +14217,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_5_filter_191_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[0] = cmd_filter_6_filter_192_qs;
         reg_rdata_next[1] = cmd_filter_6_filter_193_qs;
         reg_rdata_next[2] = cmd_filter_6_filter_194_qs;
@@ -14213,7 +14252,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_6_filter_223_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = cmd_filter_7_filter_224_qs;
         reg_rdata_next[1] = cmd_filter_7_filter_225_qs;
         reg_rdata_next[2] = cmd_filter_7_filter_226_qs;
@@ -14248,15 +14287,15 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_filter_7_filter_255_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = addr_swap_mask_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[31:0] = addr_swap_data_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[7:0] = cmd_info_0_opcode_0_qs;
         reg_rdata_next[8] = cmd_info_0_addr_en_0_qs;
         reg_rdata_next[9] = cmd_info_0_addr_swap_en_0_qs;
@@ -14268,7 +14307,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_0_payload_dir_0_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[7:0] = cmd_info_1_opcode_1_qs;
         reg_rdata_next[8] = cmd_info_1_addr_en_1_qs;
         reg_rdata_next[9] = cmd_info_1_addr_swap_en_1_qs;
@@ -14280,7 +14319,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_1_payload_dir_1_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[7:0] = cmd_info_2_opcode_2_qs;
         reg_rdata_next[8] = cmd_info_2_addr_en_2_qs;
         reg_rdata_next[9] = cmd_info_2_addr_swap_en_2_qs;
@@ -14292,7 +14331,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_2_payload_dir_2_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[7:0] = cmd_info_3_opcode_3_qs;
         reg_rdata_next[8] = cmd_info_3_addr_en_3_qs;
         reg_rdata_next[9] = cmd_info_3_addr_swap_en_3_qs;
@@ -14304,7 +14343,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_3_payload_dir_3_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[7:0] = cmd_info_4_opcode_4_qs;
         reg_rdata_next[8] = cmd_info_4_addr_en_4_qs;
         reg_rdata_next[9] = cmd_info_4_addr_swap_en_4_qs;
@@ -14316,7 +14355,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_4_payload_dir_4_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[7:0] = cmd_info_5_opcode_5_qs;
         reg_rdata_next[8] = cmd_info_5_addr_en_5_qs;
         reg_rdata_next[9] = cmd_info_5_addr_swap_en_5_qs;
@@ -14328,7 +14367,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_5_payload_dir_5_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[7:0] = cmd_info_6_opcode_6_qs;
         reg_rdata_next[8] = cmd_info_6_addr_en_6_qs;
         reg_rdata_next[9] = cmd_info_6_addr_swap_en_6_qs;
@@ -14340,7 +14379,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_6_payload_dir_6_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[7:0] = cmd_info_7_opcode_7_qs;
         reg_rdata_next[8] = cmd_info_7_addr_en_7_qs;
         reg_rdata_next[9] = cmd_info_7_addr_swap_en_7_qs;
@@ -14352,7 +14391,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_7_payload_dir_7_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next[7:0] = cmd_info_8_opcode_8_qs;
         reg_rdata_next[8] = cmd_info_8_addr_en_8_qs;
         reg_rdata_next[9] = cmd_info_8_addr_swap_en_8_qs;
@@ -14364,7 +14403,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_8_payload_dir_8_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next[7:0] = cmd_info_9_opcode_9_qs;
         reg_rdata_next[8] = cmd_info_9_addr_en_9_qs;
         reg_rdata_next[9] = cmd_info_9_addr_swap_en_9_qs;
@@ -14376,7 +14415,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_9_payload_dir_9_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[37]: begin
         reg_rdata_next[7:0] = cmd_info_10_opcode_10_qs;
         reg_rdata_next[8] = cmd_info_10_addr_en_10_qs;
         reg_rdata_next[9] = cmd_info_10_addr_swap_en_10_qs;
@@ -14388,7 +14427,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_10_payload_dir_10_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[38]: begin
         reg_rdata_next[7:0] = cmd_info_11_opcode_11_qs;
         reg_rdata_next[8] = cmd_info_11_addr_en_11_qs;
         reg_rdata_next[9] = cmd_info_11_addr_swap_en_11_qs;
@@ -14400,7 +14439,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_11_payload_dir_11_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[39]: begin
         reg_rdata_next[7:0] = cmd_info_12_opcode_12_qs;
         reg_rdata_next[8] = cmd_info_12_addr_en_12_qs;
         reg_rdata_next[9] = cmd_info_12_addr_swap_en_12_qs;
@@ -14412,7 +14451,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_12_payload_dir_12_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[40]: begin
         reg_rdata_next[7:0] = cmd_info_13_opcode_13_qs;
         reg_rdata_next[8] = cmd_info_13_addr_en_13_qs;
         reg_rdata_next[9] = cmd_info_13_addr_swap_en_13_qs;
@@ -14424,7 +14463,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_13_payload_dir_13_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[41]: begin
         reg_rdata_next[7:0] = cmd_info_14_opcode_14_qs;
         reg_rdata_next[8] = cmd_info_14_addr_en_14_qs;
         reg_rdata_next[9] = cmd_info_14_addr_swap_en_14_qs;
@@ -14436,7 +14475,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_14_payload_dir_14_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[42]: begin
         reg_rdata_next[7:0] = cmd_info_15_opcode_15_qs;
         reg_rdata_next[8] = cmd_info_15_addr_en_15_qs;
         reg_rdata_next[9] = cmd_info_15_addr_swap_en_15_qs;

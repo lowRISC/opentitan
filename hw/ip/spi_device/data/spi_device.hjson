@@ -446,6 +446,21 @@
         } // f: device id
       ]
     } // R: JEDEC_ID
+    { name: "READ_THRESHOLD"
+      desc: '''Read Buffer threshold register.
+
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "9:0"
+          name: "threshold"
+          desc: '''If 0, disable the watermark. If non-zero, when the host
+            access above or equal to the threshold, it reports an interrupt.
+            '''
+        } // f: threshold
+      ]
+    } // R: READ_THRESHOLD
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"

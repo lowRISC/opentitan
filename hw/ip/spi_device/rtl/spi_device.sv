@@ -60,6 +60,11 @@ module spi_device
   localparam int PtrW = SramAw + 1 + SDW;
   localparam int AsFifoDepthW = $clog2(FifoDepth+1);
 
+  localparam int unsigned ReadBufferDepth = spi_device_pkg::SramMsgDepth;
+  localparam int unsigned BufferAw        = $clog2(ReadBufferDepth);
+
+  // Derived parameters
+
   logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
   logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
 
@@ -178,6 +183,9 @@ module spi_device
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
   logic mailbox_assumed, passthrough_assumed_by_internal;
+
+  // Threshold value of a buffer in bytes
+  logic [BufferAw:0] readbuf_threshold;
 
   // Passthrouth config signals
   logic [255:0] cmd_filter;
@@ -387,6 +395,8 @@ module spi_device
 
   // Jedec ID
   assign jedec_id = {reg2hw.jedec_id.mf.q, reg2hw.jedec_id.id.q};
+
+  assign readbuf_threshold = reg2hw.read_threshold.q[BufferAw:0];
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -902,7 +912,7 @@ module spi_device
     .cmd_info_i     (cmd_info_broadcast),
     .cmd_info_idx_i (cmd_info_idx_broadcast),
 
-    .readbuf_threshold_i ('0), //$clog2(ReadBufferDepth)-1
+    .readbuf_threshold_i (readbuf_threshold),
 
     .addr_4b_en_i (cfg_addr_4b_en),
 

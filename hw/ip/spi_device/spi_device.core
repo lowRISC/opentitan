@@ -24,6 +24,7 @@ filesets:
       - rtl/spi_fwmode.sv
       - rtl/spi_cmdparse.sv
       - rtl/spid_readsram.sv
+      - rtl/spid_readbuffer.sv
       - rtl/spi_readcmd.sv
       - rtl/spi_passthrough.sv
       - rtl/spid_status.sv

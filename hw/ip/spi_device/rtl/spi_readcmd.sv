@@ -105,7 +105,9 @@ module spi_readcmd
   // SFDP Base Addr: the beginning index of the SFDP region in DPSRAM
   // SFDP Depth: The size of the SFDP buffer (64 fixed in the spi_device_pkg)
   parameter sram_addr_t  SfdpBaseAddr    = spi_device_pkg::SramSfdpIdx,
-  parameter int unsigned SfdpDepth       = spi_device_pkg::SramSfdpDepth
+  parameter int unsigned SfdpDepth       = spi_device_pkg::SramSfdpDepth,
+
+  localparam int unsigned BufferAw = $clog2(ReadBufferDepth)
 ) (
   input clk_i,
   input rst_ni,
@@ -142,8 +144,8 @@ module spi_readcmd
   input cmd_info_t              cmd_info_i,
   input logic [CmdInfoIdxW-1:0] cmd_info_idx_i,
 
-  // Double buffering
-  input [$clog2(ReadBufferDepth)-2:0] readbuf_threshold_i,
+  // Double buffering in bytes
+  input [BufferAw:0] readbuf_threshold_i,
 
   // The command mode is 4B mode. Every read command receives 4B address
   input addr_4b_en_i,
@@ -170,10 +172,6 @@ module spi_readcmd
   output read_watermark_o
 
 );
-
-  logic unused_threshold;
-  assign unused_threshold = ^readbuf_threshold_i;
-  assign read_watermark_o = 1'b 0;
 
   logic unused_p2s_sent ;
   assign unused_p2s_sent = p2s_sent_i;
@@ -324,6 +322,12 @@ module spi_readcmd
   logic [7:0] p2s_byte;
   logic       p2s_valid_inclk;
 
+  logic sfdp_hit;
+  assign sfdp_hit = sel_dp_i == DpReadSFDP;
+
+  // Indication of data output phase
+  logic output_start;
+
   //////////////
   // Datapath //
   //////////////
@@ -353,7 +357,7 @@ module spi_readcmd
   assign readbuf_address_o = readbuf_addr;
 
   always_comb begin
-    addr_d = '0; // default value. In 3B mode, upper most byte is 0
+    addr_d = addr_q; // default value. In 3B mode, upper most byte is 0
     addr_latch_en = 1'b0;
 
     // TODO: Handle the case of IO command
@@ -539,6 +543,8 @@ module spi_readcmd
 
     io_mode_o = SingleIO;
 
+    output_start = 1'b 0;
+
     unique case (main_st)
       MainReset: begin
         if (sel_dp_i inside {DpReadCmd, DpReadSFDP}) begin
@@ -611,6 +617,8 @@ module spi_readcmd
       MainOutput: begin
         bitcnt_dec = 1'b 1;
 
+        output_start = 1'b 1;
+
         // Note: p2s accepts the byte and latch inside at the first beat.
         // So, it is safe to change the data at the next cycle.
         p2s_valid_inclk = 1'b 1;
@@ -674,6 +682,28 @@ module spi_readcmd
     .fifo_rvalid_o (unused_fifo_rvalid),
     .fifo_rready_i (fifo_pop),
     .fifo_rdata_o  (fifo_rdata)
+  );
+
+  // Double Buffer Management logic
+  spid_readbuffer #(
+    .ReadBufferDepth (ReadBufferDepth)
+  ) u_readbuffer (
+    .clk_i,
+    .rst_ni,
+
+    .sys_rst_ni,
+
+    .current_address_i (addr_d),
+    .threshold_i       (readbuf_threshold_i),
+
+    .sfdp_hit_i    (sfdp_hit),
+    .mailbox_hit_i (addr_in_mailbox),
+    .mailbox_en_i  (mailbox_en_i),
+
+    .start_i (output_start),
+
+    .event_watermark_o (read_watermark_o),
+    .event_flip_o      ()
   );
 
   ////////////////

@@ -175,3 +175,8 @@ waive -rules {ASSIGN_SIGN NEG_ASSIGN} -location {spi_passthrough.sv} \
 waive -rules {CALC_NEXT_STATE} -location {spid_status.sv} \
       -regexp {'byte_sel_d' is assigned a non-constant expression 'i'} \
       -comment "byte_sel_q is not a state but mux selection register. but coded similar to the state machine"
+
+## Terminal
+waive -rules {TERMINAL_STATE} -location {spid_readbuffer.sv} \
+      -regexp {'StActive' is detected.} \
+      -comment "StActive is final state waiting CSb de-assertion"
