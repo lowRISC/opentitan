@@ -31,9 +31,16 @@ module otbn_loop_controller
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
   // the stack so maximum loop nesting depth is LoopStackDepth + 1.
   localparam int unsigned LoopStackDepth = 7;
-  // ISA has a fixed 12 bits for loop_bodysize. When IMEM size is less than 16 kB (ImemAddrWidth
-  // < 14) some of these bits are ignored as a loop body cannot be greater than the IMEM size.
-  localparam int unsigned LoopEndAddrWidth = ImemAddrWidth < 14 ? 14 : ImemAddrWidth;
+
+  // The ISA has a fixed 12 bits for loop_bodysize. The maximum possible address for the end of a
+  // loop is the maximum address in Imem (2^ImemAddrWidth - 4) plus loop_bodysize instructions
+  // (which take 4 * (2^12 - 1) bytes), plus 4 extra bytes. This simplifies to
+  //
+  //    (1 << ImemAddrWidth) + (1 << 14) - 4
+  //
+  // which is strictly less than (1 << (max(ImemAddrWidth, 14) + 1)), so can be represented with
+  // max(ImemAddrWidth, 14) + 1 bits.
+  localparam int unsigned LoopEndAddrWidth = 1 + (ImemAddrWidth < 14 ? 14 : ImemAddrWidth);
 
   typedef struct packed {
     logic [ImemAddrWidth-1:0] loop_start;
@@ -50,9 +57,9 @@ module otbn_loop_controller
   loop_info_t next_loop;
   logic       next_loop_valid;
 
-  loop_info_t                new_loop;
-  logic [LoopEndAddrWidth:0] new_loop_end_addr_full;
-  logic [ImemAddrWidth:0]    new_loop_end_addr_imem;
+  loop_info_t                  new_loop;
+  logic [LoopEndAddrWidth-1:0] new_loop_end_addr_full;
+  logic [ImemAddrWidth:0]      new_loop_end_addr_imem;
 
   logic loop_stack_push_req;
   logic loop_stack_push;
@@ -72,30 +79,21 @@ module otbn_loop_controller
   // stack. When the current loop ends a loop is popped off the loop stack to become the current
   // loop if the loop stack isn't empty.
 
-  // Determine end address of incoming loop from LOOP instruction (valid on loop_start_req_i and
-  // specified by loop_bodysize_i and loop_iterations_i).
-  if (ImemAddrWidth <= LoopEndAddrWidth) begin : g_new_loop_end_addr_small_imem
-    // Where the Imem address width is small enough that `loop_bodysize` could cause overflow when
-    // calculating the end the address then first calculate the 'full' address using sufficient
-    // width to avoid overflow.
-    assign new_loop_end_addr_full = {{(LoopEndAddrWidth-ImemAddrWidth){1'b0}}, insn_addr_i} +
-                                    {loop_bodysize_i, 2'b00} + 'd4;
+  // Determine end address of incoming loop from LOOP/LOOPI instruction (valid on loop_start_req_i
+  // and specified by the current instruction address and loop_bodysize_i).
+  //
+  // Note that both of the static casts increase the size of their terms because LoopEndAddrWidth >
+  // max(14, ImemAddrWidth).
+  assign new_loop_end_addr_full = LoopEndAddrWidth'(insn_addr_i) +
+                                  LoopEndAddrWidth'({loop_bodysize_i, 2'b00}) + 'd4;
 
-    // Truncate the full address to get an Imem address.
-    assign new_loop_end_addr_imem[ImemAddrWidth-1:0] = new_loop_end_addr_full[ImemAddrWidth-1:0];
+  // Truncate the full address to get an Imem address.
+  assign new_loop_end_addr_imem[ImemAddrWidth-1:0] = new_loop_end_addr_full[ImemAddrWidth-1:0];
 
-    // If the end address calculation did overflow Imem bounds set top bit of stored end address to
-    // indicate this.
-    assign new_loop_end_addr_imem[ImemAddrWidth] =
-        |new_loop_end_addr_full[LoopEndAddrWidth:ImemAddrWidth];
-  end else begin : g_new_loop_end_addr_big_imem
-    // Where Imem address width is large enough that `loop_bodysize` won't cause overflow when
-    // calculating the end address pass 'full' address straight through as Imem address.
-    assign new_loop_end_addr_full = insn_addr_i + {{(ImemAddrWidth-LoopEndAddrWidth){1'b0}},
-                                                   loop_bodysize_i, 2'b00} + 'd4;
-
-    assign new_loop_end_addr_imem = new_loop_end_addr_full;
-  end
+  // If the end address calculation overflowed ImemAddrWidth, set top bit of stored end address to
+  // indicate this.
+  assign new_loop_end_addr_imem[ImemAddrWidth] =
+      |new_loop_end_addr_full[LoopEndAddrWidth-1:ImemAddrWidth];
 
   assign new_loop = '{
     loop_start: next_insn_addr_i,
