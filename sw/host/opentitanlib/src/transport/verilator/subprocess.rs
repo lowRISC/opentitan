@@ -6,7 +6,7 @@ use crate::util::file;
 use anyhow::Result;
 use log::info;
 use regex::Regex;
-use std::io::Read;
+use std::io::{ErrorKind, Read};
 use std::process::{Child, ChildStdout, Command, Stdio};
 use std::time::{Duration, Instant};
 
@@ -74,9 +74,13 @@ impl Subprocess {
     }
 
     /// Finds a string within the verilator output.
-    /// It is assumed that the [`Regex`] `re` has exactly one capture.
+    /// It is assumed that the [`Regex`] `re` has exactly one capture group.
     pub fn find(&mut self, re: &Regex, timeout: Duration) -> Result<String> {
-        assert_eq!(re.captures_len(), 1);
+        // Regex captures_len: Capture group 0 is the full match.  Subsequent
+        // capture groups are the individual capture groups in the regex.
+        // We expect only one user-specified capture group in the regex,
+        // and thus expect a capture length of two.
+        assert_eq!(re.captures_len(), 2);
         let deadline = Instant::now() + timeout;
         loop {
             if let Some(captures) = re.captures(&self.accumulated_output) {
@@ -90,7 +94,48 @@ impl Subprocess {
 
     /// Kill the verilator subprocess.
     pub fn kill(&mut self) -> Result<()> {
-        self.child.kill()?;
+        match self.child.kill() {
+            Ok(_) => Ok(()),
+            Err(error) => {
+                if error.kind() == ErrorKind::InvalidInput {
+                    // Don't care if the child has already exited.
+                    Ok(())
+                } else {
+                    Err(error.into())
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn echo_subprocess() -> Result<Subprocess> {
+        let options = Options {
+            executable: "/bin/echo".to_owned(),
+            rom_image: "".to_owned(),
+            flash_image: "".to_owned(),
+            otp_image: "".to_owned(),
+            extra_args: vec!["abc 123 def 456".to_owned()],
+        };
+        Subprocess::from_options(options)
+    }
+
+    #[test]
+    fn test_find_regex() -> Result<()> {
+        let mut subprocess = echo_subprocess()?;
+        let regex = Regex::new("abc (.*) def")?;
+        let found = subprocess.find(&regex, Duration::from_millis(5000))?;
+        assert_eq!(found, "123");
+        Ok(())
+    }
+
+    #[test]
+    fn test_kill() -> Result<()> {
+        let mut subprocess = echo_subprocess()?;
+        subprocess.kill()?;
         Ok(())
     }
 }
