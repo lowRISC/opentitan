@@ -549,9 +549,11 @@
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
       memory: {
         rom: {
-          label:    "rom",
-          swaccess: "rx",
-          size:     "0x4000"
+          label:      "rom",
+          swaccess:   "ro",
+          exec:       "True",
+          byte_write: "False",
+          size:       "0x4000"
         }
       },
       param_decl: {

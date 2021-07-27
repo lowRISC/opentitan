@@ -5575,7 +5575,9 @@
         rom:
         {
           label: rom
-          swaccess: rx
+          swaccess: ro
+          exec: True
+          byte_write: False
           size: 0x4000
         }
       }
