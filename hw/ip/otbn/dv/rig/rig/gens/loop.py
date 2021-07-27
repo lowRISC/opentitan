@@ -415,6 +415,21 @@ class Loop(SnippetGen):
         is_loopi = random.random() < self.loopi_prob
         return self.loopi if is_loopi else self.loop
 
+    def _setup_body(self,
+                    hd_insn: ProgInsn,
+                    model: Model,
+                    program: Program) -> Model:
+        '''Set up a Model for use in body; insert hd_insn into program'''
+        body_model = model.copy()
+        body_model.update_for_insn(hd_insn)
+        body_model.pc += 4
+        body_model.loop_depth += 1
+        assert body_model.loop_depth <= Model.max_loop_depth
+
+        program.add_insns(model.pc, [hd_insn])
+
+        return body_model
+
     def _gen_pieces(self,
                     cont: GenCont,
                     model: Model,
@@ -465,13 +480,7 @@ class Loop(SnippetGen):
         hd_insn = ProgInsn(insn, [iter_opval, enc_bodysize], None)
 
         body_program = program.copy()
-        body_program.add_insns(model.pc, [hd_insn])
-
-        body_model = model.copy()
-        body_model.update_for_insn(hd_insn)
-        body_model.pc += 4
-        body_model.loop_depth += 1
-        assert body_model.loop_depth <= Model.max_loop_depth
+        body_model = self._setup_body(hd_insn, model, body_program)
 
         # Constrain fuel in body_model: subtract one (for the first instruction
         # after the loop) and then divide by the number of iterations. When we
