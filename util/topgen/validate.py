@@ -214,7 +214,9 @@ module_added = {
 
 memory_required = {
     'label': ['s', 'region label for the linker script'],
-    'swaccess': ['s', 'access attributes for the linker script'],
+    'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
+    'exec': ['pb', 'executable region indication for the linker script'],
+    'byte_write': ['pb', 'indicate whether the memory supports byte write accesses'],
     'size': ['d', 'memory region size in bytes for the linker script, '
                   'xbar and RTL parameterisations'],
 }
@@ -797,7 +799,7 @@ def check_modules(top, prefix):
                     error += 1
                 # make sure the linker region access attribute is valid
                 attr = value.get('swaccess', 'unknown attribute')
-                if attr not in ['r', 'rw', 'rx', 'rwx']:
+                if attr not in ['ro', 'rw']:
                     log.error('{} {} swaccess attribute {} of memory region {} '
                               'is not valid'.format(prefix, modname, attr, intf))
                     error += 1
