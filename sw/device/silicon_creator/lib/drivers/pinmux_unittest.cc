@@ -22,6 +22,23 @@ class PinmuxTest : public mask_rom_test::MaskRomTest {
 class InitTest : public PinmuxTest {
  protected:
   /**
+   * Set to track which pad attributes have already been configured.
+   */
+  std::set<top_earlgrey_pinmux_mio_out_t> configured_attr_;
+
+  /**
+   * Register the configuration of the pad attribute in the tracking
+   * set and return its computed address.
+   *
+   * Triggers a test failure if the pad attribute has already been registered.
+   */
+  uint32_t RegAttr(top_earlgrey_pinmux_mio_out_t index) {
+    EXPECT_TRUE(index >= 0 && index < kTopEarlgreyPinmuxMioOutLast);
+    EXPECT_TRUE(configured_attr_.insert(index).second);
+    return base_ + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
+           static_cast<uint32_t>(index) * sizeof(uint32_t);
+  }
+  /**
    * Set to track which peripheral inputs have already been configured.
    */
   std::set<top_earlgrey_pinmux_peripheral_in_t> configured_in_;
@@ -59,6 +76,16 @@ class InitTest : public PinmuxTest {
 };
 
 TEST_F(InitTest, Initialize) {
+  // The pad attributes that will be configured.
+  // TODO: generate pad attributes.
+  const uint32_t kAttrPullDownEnabled = 1 << 2;
+  EXPECT_ABS_WRITE32(RegAttr(kTopEarlgreyPinmuxMioOutIoc0),
+                     kAttrPullDownEnabled);
+  EXPECT_ABS_WRITE32(RegAttr(kTopEarlgreyPinmuxMioOutIoc1),
+                     kAttrPullDownEnabled);
+  EXPECT_ABS_WRITE32(RegAttr(kTopEarlgreyPinmuxMioOutIoc2),
+                     kAttrPullDownEnabled);
+
   // The inputs that will be configured.
   EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio0),
                      kTopEarlgreyPinmuxInselIoc0);

@@ -11,6 +11,48 @@
 #include "pinmux_regs.h"  // Generated.
 
 /**
+ * Pad attribute fields.
+ *
+ * TODO: it would be better if these were generated.
+ */
+#define PAD_ATTR_PULL_DISABLE (0 << 2)
+#define PAD_ATTR_PULL_ENABLE (1 << 2)
+#define PAD_ATTR_PULL_DOWN (0 << 3)
+#define PAD_ATTR_PULL_UP (1 << 3)
+
+/**
+ * Pad attribute values.
+ *
+ * Only specifies pad attribute combinations used by this driver and the default
+ * for documentation purposes.
+ */
+typedef enum pad_attr {
+  kPadAttrDefault = PAD_ATTR_PULL_DISABLE,
+  kPadAttrPullDown = PAD_ATTR_PULL_ENABLE | PAD_ATTR_PULL_DOWN,
+} pad_attr_t;
+
+/**
+ * Individual MIO pad to pad attribute mapping.
+ */
+typedef struct pad_config {
+  top_earlgrey_pinmux_mio_out_t pad;
+  pad_attr_t attr;
+} pad_config_t;
+
+/**
+ * MIO pad to pad attribute mappings.
+ */
+static const pad_config_t kPadConfigs[] = {
+    /**
+     * Software straps are configured as pull down so that only a strong pull up
+     * on the input reads as 1.
+     */
+    {.pad = kTopEarlgreyPinmuxMioOutIoc0, .attr = kPadAttrPullDown},
+    {.pad = kTopEarlgreyPinmuxMioOutIoc1, .attr = kPadAttrPullDown},
+    {.pad = kTopEarlgreyPinmuxMioOutIoc2, .attr = kPadAttrPullDown},
+};
+
+/**
  * A peripheral input and MIO pad to link it to.
  */
 typedef struct pinmux_input {
@@ -23,7 +65,7 @@ typedef struct pinmux_input {
  */
 static const pinmux_input_t kPinmuxInputs[] = {
     /**
-     * Connect software strap pins to GPIO module.
+     * Software strap pins are connected to the GPIO module.
      */
     {.periph = kTopEarlgreyPinmuxPeripheralInGpioGpio0,
      .pad = kTopEarlgreyPinmuxInselIoc0},
@@ -53,6 +95,15 @@ static const pinmux_output_t kPinmuxOutputs[] = {
 };
 
 void pinmux_init(void) {
+  // Configure pad attributes.
+  const uint32_t kConfigBase =
+      TOP_EARLGREY_PINMUX_AON_BASE_ADDR + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET;
+  for (uint32_t i = 0; i < ARRAYSIZE(kPadConfigs); ++i) {
+    uint32_t reg = kPadConfigs[i].pad * sizeof(uint32_t);
+    uint32_t val = kPadConfigs[i].attr;
+    abs_mmio_write32(kConfigBase + reg, val);
+  }
+
   // Set the input pad for each specified peripheral input.
   const uint32_t kInputBase =
       TOP_EARLGREY_PINMUX_AON_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET;
