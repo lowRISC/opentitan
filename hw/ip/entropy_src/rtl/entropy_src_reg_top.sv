@@ -134,42 +134,35 @@ module entropy_src_reg_top (
   logic alert_test_we;
   logic alert_test_recov_alert_wd;
   logic alert_test_fatal_alert_wd;
-  logic regwen_re;
+  logic regwen_we;
   logic regwen_qs;
+  logic regwen_wd;
   logic [7:0] rev_abi_revision_qs;
   logic [7:0] rev_hw_revision_qs;
   logic [7:0] rev_chip_type_qs;
   logic conf_we;
-  logic [1:0] conf_enable_qs;
-  logic [1:0] conf_enable_wd;
-  logic conf_boot_bypass_disable_qs;
-  logic conf_boot_bypass_disable_wd;
-  logic conf_repcnt_disable_qs;
-  logic conf_repcnt_disable_wd;
-  logic conf_adaptp_disable_qs;
-  logic conf_adaptp_disable_wd;
-  logic conf_bucket_disable_qs;
-  logic conf_bucket_disable_wd;
-  logic conf_markov_disable_qs;
-  logic conf_markov_disable_wd;
-  logic conf_health_test_clr_qs;
-  logic conf_health_test_clr_wd;
-  logic conf_rng_bit_en_qs;
-  logic conf_rng_bit_en_wd;
+  logic [3:0] conf_enable_qs;
+  logic [3:0] conf_enable_wd;
+  logic [3:0] conf_entropy_data_reg_enable_qs;
+  logic [3:0] conf_entropy_data_reg_enable_wd;
+  logic [3:0] conf_lfsr_enable_qs;
+  logic [3:0] conf_lfsr_enable_wd;
+  logic [3:0] conf_boot_bypass_disable_qs;
+  logic [3:0] conf_boot_bypass_disable_wd;
+  logic [3:0] conf_health_test_clr_qs;
+  logic [3:0] conf_health_test_clr_wd;
+  logic [3:0] conf_rng_bit_enable_qs;
+  logic [3:0] conf_rng_bit_enable_wd;
   logic [1:0] conf_rng_bit_sel_qs;
   logic [1:0] conf_rng_bit_sel_wd;
-  logic conf_extht_enable_qs;
-  logic conf_extht_enable_wd;
-  logic conf_repcnts_disable_qs;
-  logic conf_repcnts_disable_wd;
   logic rate_we;
   logic [15:0] rate_qs;
   logic [15:0] rate_wd;
   logic entropy_control_we;
-  logic entropy_control_es_route_qs;
-  logic entropy_control_es_route_wd;
-  logic entropy_control_es_type_qs;
-  logic entropy_control_es_type_wd;
+  logic [3:0] entropy_control_es_route_qs;
+  logic [3:0] entropy_control_es_route_wd;
+  logic [3:0] entropy_control_es_type_qs;
+  logic [3:0] entropy_control_es_type_wd;
   logic entropy_data_re;
   logic [31:0] entropy_data_qs;
   logic health_test_windows_we;
@@ -295,10 +288,10 @@ module entropy_src_reg_top (
   logic [3:0] extht_fail_counts_extht_hi_fail_count_qs;
   logic [3:0] extht_fail_counts_extht_lo_fail_count_qs;
   logic fw_ov_control_we;
-  logic fw_ov_control_fw_ov_mode_qs;
-  logic fw_ov_control_fw_ov_mode_wd;
-  logic fw_ov_control_fw_ov_entropy_insert_qs;
-  logic fw_ov_control_fw_ov_entropy_insert_wd;
+  logic [3:0] fw_ov_control_fw_ov_mode_qs;
+  logic [3:0] fw_ov_control_fw_ov_mode_wd;
+  logic [3:0] fw_ov_control_fw_ov_entropy_insert_qs;
+  logic [3:0] fw_ov_control_fw_ov_entropy_insert_wd;
   logic fw_ov_rd_data_re;
   logic [31:0] fw_ov_rd_data_qs;
   logic fw_ov_wr_data_we;
@@ -628,17 +621,28 @@ module entropy_src_reg_top (
   );
 
 
-  // R[regwen]: V(True)
-  prim_subreg_ext #(
-    .DW    (1)
+  // R[regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1)
   ) u_regwen (
-    .re     (regwen_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.regwen.d),
-    .qre    (),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (regwen_we),
+    .wd     (regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (regwen_qs)
   );
 
@@ -658,17 +662,17 @@ module entropy_src_reg_top (
 
 
   // R[conf]: V(False)
-  //   F[enable]: 1:0
+  //   F[enable]: 3:0
   prim_subreg #(
-    .DW      (2),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (4'h5)
   ) u_conf_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we),
+    .we     (conf_we & regwen_qs),
     .wd     (conf_enable_wd),
 
     // from internal hardware
@@ -676,24 +680,74 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.conf.enable.qe),
     .q      (reg2hw.conf.enable.q),
 
     // to register interface (read)
     .qs     (conf_enable_qs)
   );
 
-  //   F[boot_bypass_disable]: 3:3
+  //   F[entropy_data_reg_enable]: 7:4
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
+  ) u_conf_entropy_data_reg_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (conf_we & regwen_qs),
+    .wd     (conf_entropy_data_reg_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (reg2hw.conf.entropy_data_reg_enable.qe),
+    .q      (reg2hw.conf.entropy_data_reg_enable.q),
+
+    // to register interface (read)
+    .qs     (conf_entropy_data_reg_enable_qs)
+  );
+
+  //   F[lfsr_enable]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h5)
+  ) u_conf_lfsr_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (conf_we & regwen_qs),
+    .wd     (conf_lfsr_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (reg2hw.conf.lfsr_enable.qe),
+    .q      (reg2hw.conf.lfsr_enable.q),
+
+    // to register interface (read)
+    .qs     (conf_lfsr_enable_qs)
+  );
+
+  //   F[boot_bypass_disable]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h5)
   ) u_conf_boot_bypass_disable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we),
+    .we     (conf_we & regwen_qs),
     .wd     (conf_boot_bypass_disable_wd),
 
     // from internal hardware
@@ -701,124 +755,24 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.conf.boot_bypass_disable.qe),
     .q      (reg2hw.conf.boot_bypass_disable.q),
 
     // to register interface (read)
     .qs     (conf_boot_bypass_disable_qs)
   );
 
-  //   F[repcnt_disable]: 4:4
+  //   F[health_test_clr]: 19:16
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_repcnt_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_repcnt_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.repcnt_disable.q),
-
-    // to register interface (read)
-    .qs     (conf_repcnt_disable_qs)
-  );
-
-  //   F[adaptp_disable]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_adaptp_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_adaptp_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.adaptp_disable.q),
-
-    // to register interface (read)
-    .qs     (conf_adaptp_disable_qs)
-  );
-
-  //   F[bucket_disable]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_bucket_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_bucket_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.bucket_disable.q),
-
-    // to register interface (read)
-    .qs     (conf_bucket_disable_qs)
-  );
-
-  //   F[markov_disable]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_markov_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_markov_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.markov_disable.q),
-
-    // to register interface (read)
-    .qs     (conf_markov_disable_qs)
-  );
-
-  //   F[health_test_clr]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_conf_health_test_clr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we),
+    .we     (conf_we & regwen_qs),
     .wd     (conf_health_test_clr_wd),
 
     // from internal hardware
@@ -826,39 +780,39 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.conf.health_test_clr.qe),
     .q      (reg2hw.conf.health_test_clr.q),
 
     // to register interface (read)
     .qs     (conf_health_test_clr_qs)
   );
 
-  //   F[rng_bit_en]: 9:9
+  //   F[rng_bit_enable]: 23:20
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_rng_bit_en (
+    .RESVAL  (4'h5)
+  ) u_conf_rng_bit_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we),
-    .wd     (conf_rng_bit_en_wd),
+    .we     (conf_we & regwen_qs),
+    .wd     (conf_rng_bit_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.rng_bit_en.q),
+    .qe     (reg2hw.conf.rng_bit_enable.qe),
+    .q      (reg2hw.conf.rng_bit_enable.q),
 
     // to register interface (read)
-    .qs     (conf_rng_bit_en_qs)
+    .qs     (conf_rng_bit_enable_qs)
   );
 
-  //   F[rng_bit_sel]: 11:10
+  //   F[rng_bit_sel]: 25:24
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -868,7 +822,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we),
+    .we     (conf_we & regwen_qs),
     .wd     (conf_rng_bit_sel_wd),
 
     // from internal hardware
@@ -876,61 +830,11 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.conf.rng_bit_sel.qe),
     .q      (reg2hw.conf.rng_bit_sel.q),
 
     // to register interface (read)
     .qs     (conf_rng_bit_sel_qs)
-  );
-
-  //   F[extht_enable]: 12:12
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_extht_enable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_extht_enable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.extht_enable.q),
-
-    // to register interface (read)
-    .qs     (conf_extht_enable_qs)
-  );
-
-  //   F[repcnts_disable]: 13:13
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_conf_repcnts_disable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we),
-    .wd     (conf_repcnts_disable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.repcnts_disable.q),
-
-    // to register interface (read)
-    .qs     (conf_repcnts_disable_qs)
   );
 
 
@@ -961,11 +865,11 @@ module entropy_src_reg_top (
 
 
   // R[entropy_control]: V(False)
-  //   F[es_route]: 0:0
+  //   F[es_route]: 3:0
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -979,18 +883,18 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.entropy_control.es_route.qe),
     .q      (reg2hw.entropy_control.es_route.q),
 
     // to register interface (read)
     .qs     (entropy_control_es_route_qs)
   );
 
-  //   F[es_type]: 1:1
+  //   F[es_type]: 7:4
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1004,7 +908,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.entropy_control.es_type.qe),
     .q      (reg2hw.entropy_control.es_type.q),
 
     // to register interface (read)
@@ -1952,11 +1856,11 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_control]: V(False)
-  //   F[fw_ov_mode]: 0:0
+  //   F[fw_ov_mode]: 3:0
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1970,18 +1874,18 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.fw_ov_control.fw_ov_mode.qe),
     .q      (reg2hw.fw_ov_control.fw_ov_mode.q),
 
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_mode_qs)
   );
 
-  //   F[fw_ov_entropy_insert]: 1:1
+  //   F[fw_ov_entropy_insert]: 7:4
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1995,7 +1899,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.fw_ov_control.fw_ov_entropy_insert.qe),
     .q      (reg2hw.fw_ov_control.fw_ov_entropy_insert.q),
 
     // to register interface (read)
@@ -2625,38 +2529,32 @@ module entropy_src_reg_top (
   assign alert_test_recov_alert_wd = reg_wdata[0];
 
   assign alert_test_fatal_alert_wd = reg_wdata[1];
-  assign regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
+
+  assign regwen_wd = reg_wdata[0];
   assign conf_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign conf_enable_wd = reg_wdata[1:0];
+  assign conf_enable_wd = reg_wdata[3:0];
 
-  assign conf_boot_bypass_disable_wd = reg_wdata[3];
+  assign conf_entropy_data_reg_enable_wd = reg_wdata[7:4];
 
-  assign conf_repcnt_disable_wd = reg_wdata[4];
+  assign conf_lfsr_enable_wd = reg_wdata[11:8];
 
-  assign conf_adaptp_disable_wd = reg_wdata[5];
+  assign conf_boot_bypass_disable_wd = reg_wdata[15:12];
 
-  assign conf_bucket_disable_wd = reg_wdata[6];
+  assign conf_health_test_clr_wd = reg_wdata[19:16];
 
-  assign conf_markov_disable_wd = reg_wdata[7];
+  assign conf_rng_bit_enable_wd = reg_wdata[23:20];
 
-  assign conf_health_test_clr_wd = reg_wdata[8];
-
-  assign conf_rng_bit_en_wd = reg_wdata[9];
-
-  assign conf_rng_bit_sel_wd = reg_wdata[11:10];
-
-  assign conf_extht_enable_wd = reg_wdata[12];
-
-  assign conf_repcnts_disable_wd = reg_wdata[13];
+  assign conf_rng_bit_sel_wd = reg_wdata[25:24];
   assign rate_we = addr_hit[7] & reg_we & !reg_error;
 
   assign rate_wd = reg_wdata[15:0];
   assign entropy_control_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign entropy_control_es_route_wd = reg_wdata[0];
+  assign entropy_control_es_route_wd = reg_wdata[3:0];
 
-  assign entropy_control_es_type_wd = reg_wdata[1];
+  assign entropy_control_es_type_wd = reg_wdata[7:4];
   assign entropy_data_re = addr_hit[9] & reg_re & !reg_error;
   assign health_test_windows_we = addr_hit[10] & reg_we & !reg_error;
 
@@ -2745,9 +2643,9 @@ module entropy_src_reg_top (
   assign extht_fail_counts_re = addr_hit[41] & reg_re & !reg_error;
   assign fw_ov_control_we = addr_hit[42] & reg_we & !reg_error;
 
-  assign fw_ov_control_fw_ov_mode_wd = reg_wdata[0];
+  assign fw_ov_control_fw_ov_mode_wd = reg_wdata[3:0];
 
-  assign fw_ov_control_fw_ov_entropy_insert_wd = reg_wdata[1];
+  assign fw_ov_control_fw_ov_entropy_insert_wd = reg_wdata[7:4];
   assign fw_ov_rd_data_re = addr_hit[43] & reg_re & !reg_error;
   assign fw_ov_wr_data_we = addr_hit[44] & reg_we & !reg_error;
 
@@ -2809,17 +2707,13 @@ module entropy_src_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[1:0] = conf_enable_qs;
-        reg_rdata_next[3] = conf_boot_bypass_disable_qs;
-        reg_rdata_next[4] = conf_repcnt_disable_qs;
-        reg_rdata_next[5] = conf_adaptp_disable_qs;
-        reg_rdata_next[6] = conf_bucket_disable_qs;
-        reg_rdata_next[7] = conf_markov_disable_qs;
-        reg_rdata_next[8] = conf_health_test_clr_qs;
-        reg_rdata_next[9] = conf_rng_bit_en_qs;
-        reg_rdata_next[11:10] = conf_rng_bit_sel_qs;
-        reg_rdata_next[12] = conf_extht_enable_qs;
-        reg_rdata_next[13] = conf_repcnts_disable_qs;
+        reg_rdata_next[3:0] = conf_enable_qs;
+        reg_rdata_next[7:4] = conf_entropy_data_reg_enable_qs;
+        reg_rdata_next[11:8] = conf_lfsr_enable_qs;
+        reg_rdata_next[15:12] = conf_boot_bypass_disable_qs;
+        reg_rdata_next[19:16] = conf_health_test_clr_qs;
+        reg_rdata_next[23:20] = conf_rng_bit_enable_qs;
+        reg_rdata_next[25:24] = conf_rng_bit_sel_qs;
       end
 
       addr_hit[7]: begin
@@ -2827,8 +2721,8 @@ module entropy_src_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = entropy_control_es_route_qs;
-        reg_rdata_next[1] = entropy_control_es_type_qs;
+        reg_rdata_next[3:0] = entropy_control_es_route_qs;
+        reg_rdata_next[7:4] = entropy_control_es_type_qs;
       end
 
       addr_hit[9]: begin
@@ -2991,8 +2885,8 @@ module entropy_src_reg_top (
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[0] = fw_ov_control_fw_ov_mode_qs;
-        reg_rdata_next[1] = fw_ov_control_fw_ov_entropy_insert_qs;
+        reg_rdata_next[3:0] = fw_ov_control_fw_ov_mode_qs;
+        reg_rdata_next[7:4] = fw_ov_control_fw_ov_entropy_insert_qs;
       end
 
       addr_hit[43]: begin
