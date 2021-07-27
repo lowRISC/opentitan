@@ -34,8 +34,9 @@ SimpleGenRet = Tuple[Snippet, Model]
 GensRet = Tuple[Optional[Snippet], Model]
 
 # A continuation type that allows a generator to recursively generate some more
-# stuff.
-GenCont = Callable[[Model, Program], GensRet]
+# stuff. If the boolean argument is true, the continuation will try to generate
+# a snippet that causes OTBN to stop.
+GenCont = Callable[[Model, Program, bool], GensRet]
 
 
 class SnippetGen:

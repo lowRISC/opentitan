@@ -355,7 +355,7 @@ class Loop(SnippetGen):
                 bogus_tail_insns = [bogus_insn] * (tail_len + 1)
                 prog0.add_insns(tail_start, bogus_tail_insns)
 
-                head_snippet, model = cont(model, prog0)
+                head_snippet, model = cont(model, prog0, False)
 
                 # Generation of the head might have failed, but that's actually
                 # ok: we'll just start the loop body with the jump to the tail.
