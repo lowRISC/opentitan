@@ -85,7 +85,7 @@ void sec_mmio_write32(uint32_t addr, uint32_t value) {
 }
 
 void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
-  // Shadowed register require two writes.
+  // Shadowed registers require two writes.
   abs_mmio_write32(addr, value);
   abs_mmio_write32(addr, value);
   uint32_t masked_value = value ^ kSecMmioMaskVal;

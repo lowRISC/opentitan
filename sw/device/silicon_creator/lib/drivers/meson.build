@@ -239,7 +239,7 @@ sw_silicon_creator_lib_driver_alert = declare_dependency(
       'alert.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
     ],
   ),
 )
@@ -253,7 +253,7 @@ test('sw_silicon_creator_lib_driver_alert_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
@@ -273,6 +273,8 @@ sw_silicon_creator_lib_driver_alert_functest = declare_dependency(
       'alert_functest.c'
     ],
     dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_alert,
       sw_silicon_creator_lib_driver_rstmgr,
     ],

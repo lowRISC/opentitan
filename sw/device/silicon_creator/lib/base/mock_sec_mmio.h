@@ -54,17 +54,12 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
 /**
  * Expect a shadowed write to the given offset with the given 32-bit value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_SEC_READ` and
- * `EXPECT_SEC_WRITE` calls.
+ * @param addr Write address.
+ * @param ...  Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_WRITE32_SHADOWED(mmio, addr, ...) \
-  EXPECT_CALL(mmio,                                  \
+#define EXPECT_SEC_WRITE32_SHADOWED(addr, ...)          \
+  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
               Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 extern "C" {
