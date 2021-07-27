@@ -63,6 +63,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // Internal veriable to track which sw partitions have ECC reg error.
   bit [1:0] force_sw_parts_ecc_reg;
 
+  // DUT configuration object
+  otp_ctrl_ast_inputs_cfg dut_cfg;
+
+  // for DV macros ID
+  string msg_id = "otp_ctrl_if";
+
   // Lc_err could trigger during LC program, so check intr and status after lc_req is finished.
   // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
   // during the transition.
@@ -94,12 +100,16 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     lc_dft_en_i                = lc_ctrl_pkg::Off;    // drive it in specific task
     lc_escalate_en_i           = lc_ctrl_pkg::Off;    // drive it in specific task
     pwr_otp_init_i             = 0;
-    // Unused signals in open sourced OTP memory
-    otp_ast_pwr_seq_h_i        = $urandom();
-    scan_en_i                  = $urandom();
-    scan_rst_ni                = $urandom();
-    scanmode_i                 = $urandom();
-    otp_test_ctrl_i            = 0;
+
+    // `DV_CHECK_RANDOMIZE_FATAL won't work inside an interface as an interface doesn't
+    // have a `get_full_name` method
+    `DV_CHECK_RANDOMIZE_FATAL(dut_cfg, ,msg_id)
+    //Unused signals in open sourced OTP memory
+    otp_ast_pwr_seq_h_i        = dut_cfg.otp_ast_pwr_seq_h;
+    scan_en_i                  = dut_cfg.scan_en;
+    scan_rst_ni                = dut_cfg.scan_rst_n;
+    scanmode_i                 = dut_cfg.scanmode;
+    otp_test_ctrl_i            = dut_cfg.otp_test_ctrl;
   endtask
 
   task automatic drive_pwr_otp_init(logic val);

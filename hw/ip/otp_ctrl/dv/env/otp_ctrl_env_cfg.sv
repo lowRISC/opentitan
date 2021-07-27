@@ -18,7 +18,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   // ext interfaces
   otp_ctrl_vif otp_ctrl_vif;
-
   bit backdoor_clear_mem;
 
   // This value is updated in sequence when backdoor inject ECC error
@@ -26,6 +25,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   // Check ECC errors
   otp_ecc_err_e ecc_chk_err [NumPart] = '{default:OtpNoEccErr};
+
+  // values for otp_ctrl_if signals connected to DUT
+  rand otp_ctrl_ast_inputs_cfg dut_cfg;
 
   `uvm_object_utils_begin(otp_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -74,6 +76,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
     // only support 1 outstanding TL items in tlul_adapter
     m_tl_agent_cfg.max_outstanding_req = 1;
+
+    // create the inputs cfg instance
+    dut_cfg = otp_ctrl_ast_inputs_cfg::type_id::create("dut_cfg");
   endfunction
 
 endclass

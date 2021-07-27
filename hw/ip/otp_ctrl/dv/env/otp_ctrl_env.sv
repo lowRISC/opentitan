@@ -18,6 +18,7 @@ class otp_ctrl_env #(
 
   `uvm_component_new
 
+
   push_pull_agent#(.DeviceDataWidth(SRAM_DATA_SIZE))  m_sram_pull_agent[NumSramKeyReqSlots];
   push_pull_agent#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent;
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent;
@@ -67,6 +68,7 @@ class otp_ctrl_env #(
     if (!uvm_config_db#(otp_ctrl_vif)::get(this, "", "otp_ctrl_vif", cfg.otp_ctrl_vif)) begin
       `uvm_fatal(`gfn, "failed to get otp_ctrl_vif from uvm_config_db")
     end
+
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -93,6 +95,9 @@ class otp_ctrl_env #(
           scoreboard.flash_data_fifo.analysis_export);
       m_lc_prog_pull_agent.monitor.analysis_port.connect(scoreboard.lc_prog_fifo.analysis_export);
     end
+
+    // connect the DUT cfg instance to the handle in the otp_ctrl_vif
+    this.cfg.otp_ctrl_vif.dut_cfg = this.cfg.dut_cfg;
   endfunction
 
 endclass
