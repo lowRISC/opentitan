@@ -371,7 +371,10 @@ class LOOPI(OTBNInsn):
         self.bodysize = op_vals['bodysize']
 
     def execute(self, state: OTBNState) -> None:
-        state.loop_start(self.iterations, self.bodysize)
+        if self.iterations == 0:
+            state.stop_at_end_of_cycle(err_bits.LOOP)
+        else:
+            state.loop_start(self.iterations, self.bodysize)
 
 
 class BNADD(OTBNInsn):
