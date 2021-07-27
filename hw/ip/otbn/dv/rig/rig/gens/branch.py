@@ -187,7 +187,7 @@ class Branch(SnippetGen):
         model0.fuel = branch_fuel - 1
         prog0.space = branch_space
 
-        snippet0, model0 = cont(model0, prog0)
+        snippet0, model0 = cont(model0, prog0, False)
         # If snippet0 is None then we didn't manage to generate anything, but
         # that's fine. model0 will be unchanged and we just have an empty
         # sequence on the fall-through side of the branch.
@@ -213,7 +213,7 @@ class Branch(SnippetGen):
         prog1.space = branch_space
         model1.fuel = branch_fuel - 1
 
-        snippet1, model1 = cont(model1, prog1)
+        snippet1, model1 = cont(model1, prog1, False)
         # If snippet1 is None, we didn't manage to generate anything here
         # either. As before, that's fine.
 

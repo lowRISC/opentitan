@@ -203,17 +203,17 @@ class SnippetGens:
 
     def gens(self,
              model: Model,
-             program: Program) -> Tuple[Optional[Snippet], Model]:
+             program: Program,
+             end: bool) -> Tuple[Optional[Snippet], Model]:
         '''Try to generate snippets to continue program
 
         This will try to run down model.fuel and program.size. When it runs out
         of one or the other, it stops and returns any snippet it generated plus
-        the updated model.
+        the updated model. If end is true, the generated snippet should cause
+        OTBN to stop.
 
         '''
-        snippets, next_model = self._gens(model, program, False)
-        # _gens() only sets next_model to None if finish is True.
-        assert next_model is not None
+        snippets, next_model = self._gens(model, program, end)
         snippet = Snippet.merge_list(snippets) if snippets else None
         return (snippet, next_model)
 
@@ -239,7 +239,7 @@ class SnippetGens:
         tail_fuel = model.fuel - head_fuel
 
         model.fuel = head_fuel
-        head, model = self.gens(model, program)
+        head, model = self.gens(model, program, False)
         # Add the rest of the fuel to the tank
         model.fuel += tail_fuel
 
