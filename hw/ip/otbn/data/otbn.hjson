@@ -307,11 +307,6 @@
           resval: 0,
           desc: "Write 1 to securely wipe instruction memory."
         }
-        { bits: "2",
-          name: "internal",
-          resval: 0,
-          desc: "Write 1 to securely wipe internal state."
-        }
       ]
     } // register : sec_wipe
     { name: "INSN_CNT",
