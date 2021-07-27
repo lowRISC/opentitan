@@ -68,7 +68,7 @@
       }                                                                       \
       result_ = false;                                                        \
     } else {                                                                  \
-      result_ true;                                                           \
+      result_ = true;                                                         \
     }                                                                         \
   } while (false)
 
