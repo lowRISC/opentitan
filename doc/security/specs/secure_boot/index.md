@@ -173,7 +173,7 @@ manifest format is required to support:
 <!-- TODO: Update with published documents when available. -->
 [attestation]: {{< relref "/doc/security/specs/attestation" >}}
 [attestation-command]: {{< relref "/doc/security/specs/attestation" >}}#attestation-command
-[ibex-epmp]: (https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html)
+[ibex-epmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
 [identities-keys]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}
 [key-manager]: {{< relref "/hw/ip/keymgr/doc" >}}
 [mask-rom-epmp]: {{< relref "/sw/device/silicon_creator/mask_rom/docs/memory_protection" >}}
