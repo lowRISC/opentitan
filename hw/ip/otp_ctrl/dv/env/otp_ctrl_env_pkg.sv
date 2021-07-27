@@ -238,6 +238,7 @@ package otp_ctrl_env_pkg;
   endfunction
 
   // package sources
+  `include "otp_ctrl_ast_inputs_cfg.sv"
   `include "otp_ctrl_env_cfg.sv"
   `include "otp_ctrl_env_cov.sv"
   `include "otp_ctrl_virtual_sequencer.sv"

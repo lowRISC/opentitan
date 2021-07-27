@@ -101,7 +101,7 @@ module tb;
     .alert_tx_o                 (alert_tx   ),
     // ast
     .otp_ast_pwr_seq_o          (ast_req),
-    .otp_ast_pwr_seq_h_i        (ast_req),
+    .otp_ast_pwr_seq_h_i        (otp_ctrl_if.otp_ast_pwr_seq_h_i),
     .otp_alert_o                (otp_ctrl_if.otp_alert_o),
     // pwrmgr
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
@@ -133,7 +133,7 @@ module tb;
     //scan
     .scan_en_i                  (otp_ctrl_if.scan_en_i),
     .scan_rst_ni                (otp_ctrl_if.scan_rst_ni),
-    .scanmode_i                 (lc_ctrl_pkg::Off),
+    .scanmode_i                 (otp_ctrl_if.scanmode_i),
 
     // Test-related GPIO output
     .cio_test_o                 (),
