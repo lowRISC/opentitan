@@ -441,7 +441,7 @@ The full secure wipe mechanism is split into three parts:
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
 A secure wipe of only the internal state is performed whenever an OTBN operation is completed and after a recoverable error.
-Finally, host software can manually trigger the full or partial secure wipe operations by writing to the {{< regref "SEC_WIPE">}} register.
+Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by writing to the {{< regref "SEC_WIPE">}} register.
 
 Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section for implementation details.
 
@@ -707,7 +707,14 @@ Detected integrity violations in the data memory raise a fatal `imem_error`.
 
 ### Secure Wipe {#design-details-secure-wipe}
 
-The entire OTBN state, including the contents of instruction and data memories, can be securely deleted on demand from a host software.
+Applications running on OTBN may store sensitive data in the internal registers or the memory.
+In order to prevent an untrusted application from reading any leftover data, OTBN provides the secure wipe operation.
+This operation can be applied to:
+- [Data memory]({{<relref "#design-details-secure-wipe-dmem">}})
+- [Instruction memory]({{<relref "#design-details-secure-wipe-imem">}})
+- [Internal state]({{<relref "#design-details-secure-wipe-internal">}})
+
+Secure wipe of data and instruction memories can be triggered on demand from a host software.
 In addition, full or partial secure wipe is triggered automatically by the OTBN in certain situations.
 
 OTBN does not signal any error while a secure wipe operation is in progress.
@@ -721,12 +728,12 @@ In the following situations OTBN itself initiates a full secure wipe:
 
 The internal state secure wipe is automatically triggered when an OTBN operation completes, either successfully, or unsuccessfully due to a recoverable error.
 
-Host software can trigger a full state wipe by writing `3'b111` to {{< regref "SEC_WIPE">}}  (i.e. set all individual state wipe bits).
+Host software can trigger a data and instruction memory secure wipe by writing `2'b11` to {{< regref "SEC_WIPE">}} (i.e. by setting both individual state wipe bits to 1).
 
 #### Completion of Secure Wipe {#design-details-secure-wipe-completion}
 
 During the secure wipe operation the {{< regref "STATUS.busy">}} flag is set to 1, indicating that the OTBN is busy.
-Once the operation is completed, a {{< regref "INTR_STATE.done" >}} interrupt is raised and {{< regref "STATUS.busy">}} is cleared.
+Once the operation is completed, an {{< regref "INTR_STATE.done" >}} interrupt is raised and {{< regref "STATUS.busy">}} is cleared.
 This effectively means that the host software will get a single done interrupt for a secure wipe operation, independent of how many SEC_WIPE bits the software wrote.
 
 #### Data Memory (DMEM) Secure Wipe {#design-details-secure-wipe-dmem}

@@ -189,7 +189,6 @@ module otbn_reg_top (
   logic sec_wipe_we;
   logic sec_wipe_dmem_wd;
   logic sec_wipe_imem_wd;
-  logic sec_wipe_internal_wd;
   logic insn_cnt_re;
   logic [31:0] insn_cnt_qs;
 
@@ -725,32 +724,6 @@ module otbn_reg_top (
   );
 
 
-  //   F[internal]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
-  ) u_sec_wipe_internal (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (sec_wipe_we),
-    .wd     (sec_wipe_internal_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.sec_wipe.internal.q),
-
-    // to register interface (read)
-    .qs     ()
-  );
-
-
   // R[insn_cnt]: V(True)
 
   prim_subreg_ext #(
@@ -828,8 +801,6 @@ module otbn_reg_top (
   assign sec_wipe_dmem_wd = reg_wdata[0];
 
   assign sec_wipe_imem_wd = reg_wdata[1];
-
-  assign sec_wipe_internal_wd = reg_wdata[2];
   assign insn_cnt_re = addr_hit[10] & reg_re & !reg_error;
 
   // Read data return
@@ -886,7 +857,6 @@ module otbn_reg_top (
       addr_hit[9]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
       end
 
       addr_hit[10]: begin

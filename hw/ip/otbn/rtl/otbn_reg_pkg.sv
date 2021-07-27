@@ -56,9 +56,6 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
     } imem;
-    struct packed {
-      logic        q;
-    } internal;
   } otbn_reg2hw_sec_wipe_reg_t;
 
   typedef struct packed {
@@ -130,13 +127,13 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [44:44]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [43:43]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [42:41]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [40:37]
-    otbn_reg2hw_cmd_reg_t cmd; // [36:35]
-    otbn_reg2hw_start_addr_reg_t start_addr; // [34:3]
-    otbn_reg2hw_sec_wipe_reg_t sec_wipe; // [2:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [43:43]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [42:42]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [41:40]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [39:36]
+    otbn_reg2hw_cmd_reg_t cmd; // [35:34]
+    otbn_reg2hw_start_addr_reg_t start_addr; // [33:2]
+    otbn_reg2hw_sec_wipe_reg_t sec_wipe; // [1:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
