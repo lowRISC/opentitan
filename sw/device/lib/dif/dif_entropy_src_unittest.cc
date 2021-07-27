@@ -83,25 +83,26 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   EXPECT_WRITE32(ENTROPY_SRC_RATE_REG_OFFSET, 64);
   EXPECT_WRITE32(ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                  {
-                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_BIT,
-                      test_param.route_to_firmware},
-                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_BIT, false},
+                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET,
+                      (uint32_t)(test_param.route_to_firmware ? 0xa : 0x5)},
+                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, 0x5},
                  });
   EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
+
+  EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
+  uint32_t rng_bit_enable = test_param.expected_rng_bit_en ? 0xa : 0x5;
+  uint32_t lfsr_enable =
+      test_param.expected_mode == kDifEntropyModeLfsr ? 0xa : 0x5;
+  uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
-          {ENTROPY_SRC_CONF_ENABLE_OFFSET, test_param.expected_mode},
-          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_BIT, true},
-          {ENTROPY_SRC_CONF_REPCNT_DISABLE_BIT, true},
-          {ENTROPY_SRC_CONF_ADAPTP_DISABLE_BIT, true},
-          {ENTROPY_SRC_CONF_BUCKET_DISABLE_BIT, true},
-          {ENTROPY_SRC_CONF_MARKOV_DISABLE_BIT, true},
-          {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_BIT,
-           test_param.reset_health_test_registers},
-          {ENTROPY_SRC_CONF_RNG_BIT_EN_BIT, test_param.expected_rng_bit_en},
           {ENTROPY_SRC_CONF_RNG_BIT_SEL_OFFSET, test_param.expected_rng_sel},
-          {ENTROPY_SRC_CONF_EXTHT_ENABLE_BIT, false},
+          {ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET, rng_bit_enable},
+          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, 0xa},
+          {ENTROPY_SRC_CONF_LFSR_ENABLE_OFFSET, lfsr_enable},
+          {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
+          {ENTROPY_SRC_CONF_ENABLE_OFFSET, 0xa},
       });
 
   EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_), kDifEntropySrcOk);
