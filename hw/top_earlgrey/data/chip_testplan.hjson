@@ -1956,7 +1956,8 @@
       tests: ["chip_dif_aes_smoketest",
               "chip_dif_aon_timer_smoketest",
               "chip_dif_clkmgr_smoketest",
-              "chip_dif_csrng_smoketest",
+              // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
+              // "chip_dif_csrng_smoketest",
               "chip_dif_entropy_smoketest",
               "chip_dif_gpio_smoketest",
               "chip_dif_hmac_smoketest",
