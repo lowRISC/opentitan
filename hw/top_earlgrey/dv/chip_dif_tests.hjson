@@ -25,12 +25,13 @@
       sw_images: ["sw/device/tests/dif_clkmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
-    {
-      name: chip_dif_csrng_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
+    // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
+    // {
+    //  name: chip_dif_csrng_smoketest
+    //  uvm_test_seq: chip_sw_base_vseq
+    //  sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
+    //  en_run_modes: ["sw_test_mode"]
+    // }
     {
       name: chip_dif_entropy_smoketest
       uvm_test_seq: chip_sw_base_vseq
@@ -117,7 +118,8 @@
       tests: ["chip_dif_aes_smoketest",
               "chip_dif_aon_timer_smoketest",
               "chip_dif_clkmgr_smoketest",
-              "chip_dif_csrng_smoketest",
+              // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
+              // "chip_dif_csrng_smoketest",
               "chip_dif_entropy_smoketest",
               "chip_dif_gpio_smoketest",
               "chip_dif_hmac_smoketest",

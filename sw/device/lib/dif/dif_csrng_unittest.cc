@@ -16,6 +16,8 @@
 namespace dif_entropy_unittest {
 namespace {
 
+using ::testing::ElementsAreArray;
+
 class DifCsrngTest : public testing::Test, public mock_mmio::MmioTest {
  protected:
   const dif_csrng_params_t params_ = {.base_addr = dev().region()};
@@ -271,6 +273,12 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
   dif_csrng_internal_state_t got;
   EXPECT_EQ(dif_csrng_get_internal_state(&csrng_, instance_id, &got),
             kDifCsrngOk);
+
+  EXPECT_EQ(got.reseed_counter, expected.reseed_counter);
+  EXPECT_THAT(got.key, ElementsAreArray(expected.key));
+  EXPECT_THAT(got.v, ElementsAreArray(expected.v));
+  EXPECT_EQ(got.instantiated, expected.instantiated);
+  EXPECT_EQ(got.fips_compliance, expected.fips_compliance);
 }
 
 TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
