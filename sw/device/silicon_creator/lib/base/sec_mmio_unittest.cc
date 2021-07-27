@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 extern "C" {
 // This is an extern in the sec_mmio module.
@@ -25,7 +26,7 @@ using ::testing::Test;
 class SecMmioTest : public mask_rom_test::MaskRomTest {
  protected:
   void SetUp() override {
-    sec_mmio_init(+[] { std::abort(); });
+    sec_mmio_init(+[](rom_error_t) { std::abort(); });
   }
   sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
   mask_rom_test::MockAbsMmio mmio_;
@@ -38,7 +39,7 @@ TEST_F(SecMmioTest, Initialize) {
   ctx_->last_index = 1;
   ctx_->write_count = 1;
   ctx_->addrs[0] = 0;
-  sec_mmio_init(+[] { std::abort(); });
+  sec_mmio_init(+[](rom_error_t) { std::abort(); });
 
   EXPECT_EQ(ctx_->check_count, 0);
   EXPECT_EQ(ctx_->expected_write_count, 0);

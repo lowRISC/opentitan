@@ -42,7 +42,7 @@ static void upsert_register(uint32_t addr, uint32_t value) {
   // The following condition check serves as an additional fault detection
   // mechanism.
   if (i >= kSecMmioRegFileSize) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioRegFileSize);
     __builtin_unreachable();
   }
 }
@@ -65,7 +65,7 @@ uint32_t sec_mmio_read32(uint32_t addr) {
   upsert_register(addr, value);
 
   if ((abs_mmio_read32(addr) ^ kSecMmioMaskVal) != masked_value) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioReadFault);
     __builtin_unreachable();
   }
   return value;
@@ -78,7 +78,22 @@ void sec_mmio_write32(uint32_t addr, uint32_t value) {
   upsert_register(addr, masked_value);
 
   if ((abs_mmio_read32(addr) ^ kSecMmioMaskVal) != masked_value) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioWriteFault);
+    __builtin_unreachable();
+  }
+  ++sec_mmio_ctx.write_count;
+}
+
+void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
+  // Shadowed register require two writes.
+  abs_mmio_write32(addr, value);
+  abs_mmio_write32(addr, value);
+  uint32_t masked_value = value ^ kSecMmioMaskVal;
+
+  upsert_register(addr, masked_value);
+
+  if ((abs_mmio_read32(addr) ^ kSecMmioMaskVal) != masked_value) {
+    sec_mmio_shutdown_cb(kErrorSecMmioWriteFault);
     __builtin_unreachable();
   }
   ++sec_mmio_ctx.write_count;
@@ -96,13 +111,13 @@ void sec_mmio_check_values(uint32_t rnd_offset) {
     offset = (offset + kSecMmioRndStep) % sec_mmio_ctx.last_index;
     uint32_t read_value = abs_mmio_read32(sec_mmio_ctx.addrs[offset]);
     if ((read_value ^ kSecMmioMaskVal) != sec_mmio_ctx.values[offset]) {
-      sec_mmio_shutdown_cb();
+      sec_mmio_shutdown_cb(kErrorSecMmioCheckValueFault);
       __builtin_unreachable();
     }
   }
   // Check for loop completion.
   if (i != sec_mmio_ctx.last_index) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioCheckIndexFault);
     __builtin_unreachable();
   }
   ++sec_mmio_ctx.check_count;
@@ -122,7 +137,7 @@ void sec_mmio_check_counters(uint32_t expected_check_count) {
   // Check the expected write count. This is equivalent to
   // sec_mmio_ctx.write_count == sec_mmio_ctx.expected_write_count
   if (result != kValZero) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioWriteCountFault);
     __builtin_unreachable();
   }
 
@@ -132,7 +147,7 @@ void sec_mmio_check_counters(uint32_t expected_check_count) {
   result ^= sec_mmio_ctx.check_count;
   result ^= expected_check_count;
   if (~result != kValOnes) {
-    sec_mmio_shutdown_cb();
+    sec_mmio_shutdown_cb(kErrorSecMmioCheckCountFault);
     __builtin_unreachable();
   }
   ++sec_mmio_ctx.check_count;

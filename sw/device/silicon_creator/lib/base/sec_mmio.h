@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/error.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -106,7 +108,7 @@ typedef struct sec_mmio_ctx {
 /**
  * Shutdown module callback handler.
  */
-typedef void (*sec_mmio_shutdown_handler)(void);
+typedef void (*sec_mmio_shutdown_handler)(rom_error_t);
 
 /**
  * Initializes the module.
@@ -150,6 +152,25 @@ uint32_t sec_mmio_read32(uint32_t addr);
  * @param value The value to write.
  */
 void sec_mmio_write32(uint32_t addr, uint32_t value);
+
+/**
+ * Writes an aligned uint32_t to the MMIO region `base` at the give byte
+ * `offset`.
+ *
+ * This function implements a write-write-read-comparison operation for shadowed
+ * registers.. The first write value is stored in the list of expected register
+ * values for later comparison via `sec_mmio_check_values()`.
+ *
+ * On successful calls, this function will increment the internal count of
+ * writes. The caller is responsible to setting the expected write count by
+ * calling `sec_mmio_write_increment()`.
+ *
+ * A shutdown sequence is initiated if the comparison operation fails.
+ *
+ * @param addr The address to write to.
+ * @param value The value to write.
+ */
+void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value);
 
 /**
  * Increment the expected count of register writes by `value`.

@@ -21,21 +21,25 @@ extern "C" {
  * Choose a two-letter identifier for each module and encode the module
  * identifier the concatenated ASCII representation of those letters.
  */
+#define MODULE_CODE(ch0_, ch1_) ((ch0_) << 8 | (ch1_))
 enum module_ {
+  // clang-format off
   kModuleUnknown = 0,
-  kModuleAlertHandler = 0x4148,  // ASCII "AH".
-  kModuleUart = 0x4155,          // ASCII "UA".
-  kModuleHmac = 0x4d48,          // ASCII "HM".
-  kModuleSigverify = 0x5653,     // ASCII "SV".
-  kModuleKeymgr = 0x4d4b,        // ASCII "KM".
-  kModuleManifest = 0x414d,      // ASCII "MA".
-  kModuleMaskRom = 0x524d,       // ASCII "MR".
-  kModuleRomextimage = 0x4552,   // ASCII "RE".
-  kModuleInterrupt = 0x5249,     // ASCII "IR".
-  kModuleEpmp = 0x5045,          // ASCII "EP",
-  kModuleOtp = 0x504f,           // ASCII "OP".
-  kModuleOtbn = 0x4e42,          // ASCII "BN".
-  kModuleFlashCtrl = 0x4346,     // ASCII "FC".
+  kModuleAlertHandler = MODULE_CODE('A', 'H'),
+  kModuleUart =         MODULE_CODE('U', 'A'),
+  kModuleHmac =         MODULE_CODE('H', 'M'),
+  kModuleSigverify =    MODULE_CODE('S', 'V'),
+  kModuleKeymgr =       MODULE_CODE('K', 'M'),
+  kModuleManifest =     MODULE_CODE('M', 'A'),
+  kModuleMaskRom =      MODULE_CODE('M', 'R'),
+  kModuleRomextimage =  MODULE_CODE('R', 'E'),
+  kModuleInterrupt =    MODULE_CODE('I', 'R'),
+  kModuleEpmp =         MODULE_CODE('E', 'P'),
+  kModuleOtp =          MODULE_CODE('O', 'P'),
+  kModuleOtbn =         MODULE_CODE('B', 'N'),
+  kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
+  kModuleSecMmio =      MODULE_CODE('I', 'O'),
+  // clang-format on
 };
 
 /**
@@ -90,6 +94,13 @@ enum module_ {
   X(kErrorOtbnBadOffset,              ERROR_(3, kModuleOtbn, kInvalidArgument)), \
   X(kErrorFlashCtrlInvalidArgument,   ERROR_(1, kModuleFlashCtrl, kInvalidArgument)), \
   X(kErrorFlashCtrlBusy,              ERROR_(2, kModuleFlashCtrl, kUnavailable)), \
+  X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
+  X(kErrorSecMmioReadFault,           ERROR_(1, kModuleSecMmio, kInternal)), \
+  X(kErrorSecMmioWriteFault,          ERROR_(2, kModuleSecMmio, kInternal)), \
+  X(kErrorSecMmioCheckValueFault,     ERROR_(3, kModuleSecMmio, kInternal)), \
+  X(kErrorSecMmioCheckIndexFault,     ERROR_(4, kModuleSecMmio, kInternal)), \
+  X(kErrorSecMmioWriteCountFault,     ERROR_(5, kModuleSecMmio, kInternal)), \
+  X(kErrorSecMmioCheckCountFault,     ERROR_(6, kModuleSecMmio, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

@@ -214,6 +214,7 @@ rom_error_t mask_rom_boot(void) {
 }
 
 void mask_rom_main(void) {
+  sec_mmio_init(shutdown_finalize);
   rom_error_t error = mask_rom_boot();
   shutdown_finalize(error);
 }

@@ -19,6 +19,7 @@ class MockSecMmio : public GlobalMock<MockSecMmio> {
   MOCK_METHOD(void, Init, (sec_mmio_shutdown_handler callee));
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
+  MOCK_METHOD(void, Write32Shadowed, (uint32_t addr, uint32_t value));
   MOCK_METHOD(void, WriteIncrement, (uint32_t value));
   MOCK_METHOD(void, CheckValues, (uint32_t rnd_offset));
   MOCK_METHOD(void, CheckCounters, (uint32_t expected_check_count));
@@ -50,6 +51,22 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
   EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
               Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
+/**
+ * Expect a shadowed write to the given offset with the given 32-bit value.
+ *
+ * The value may be given as an integer, a pointer to little-endian data,
+ * or a `std::initializer_list<BitField>`.
+ *
+ * This function is only available in tests using a fixture that derives
+ * `MmioTest`.
+ *
+ * This expectation is sequenced with all other `EXPECT_SEC_READ` and
+ * `EXPECT_SEC_WRITE` calls.
+ */
+#define EXPECT_SEC_WRITE32_SHADOWED(mmio, addr, ...) \
+  EXPECT_CALL(mmio,                                  \
+              Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
+
 extern "C" {
 
 void sec_mmio_init(sec_mmio_shutdown_handler callee) {
@@ -62,6 +79,10 @@ uint32_t sec_mmio_read32(uint32_t addr) {
 
 void sec_mmio_write32(uint32_t addr, uint32_t value) {
   MockSecMmio::Instance().Write32(addr, value);
+}
+
+void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
+  MockSecMmio::Instance().Write32Shadowed(addr, value);
 }
 
 void sec_mmio_write_increment(uint32_t value) {
