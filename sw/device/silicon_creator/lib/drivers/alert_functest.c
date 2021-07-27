@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -36,6 +37,9 @@ enum {
   kOtpCoreBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
   kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
+
+// sec_mmio (used by the alert driver) requires this symbol to be defined.
+sec_mmio_ctx_t sec_mmio_ctx;
 
 rom_error_t alert_no_escalate_test(void) {
   // Configure class B alerts for phase 0 only and disable NMI signalling.

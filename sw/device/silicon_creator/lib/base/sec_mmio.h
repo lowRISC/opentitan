@@ -158,7 +158,7 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  * `offset`.
  *
  * This function implements a write-write-read-comparison operation for shadowed
- * registers.. The first write value is stored in the list of expected register
+ * registers. The first write value is stored in the list of expected register
  * values for later comparison via `sec_mmio_check_values()`.
  *
  * On successful calls, this function will increment the internal count of
