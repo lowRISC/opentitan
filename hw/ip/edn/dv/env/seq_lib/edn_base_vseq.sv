@@ -12,11 +12,16 @@ class edn_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  task body();
-    // Start csrng_device_seq
-    device_init();
-    // Initialize DUT
-    dut_init();
+  bit do_edn_init = 1'b1;
+
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    `uvm_info("SEN:00", $sformatf("Base sequence body, do_edn_init = %0d", do_edn_init), UVM_NONE)
+    if (do_edn_init) begin
+      // Initialize DUT and start device sequence
+      edn_init();
+      device_init();
+    end
   endtask
 
   virtual task device_init();
@@ -30,15 +35,12 @@ class edn_base_vseq extends cip_base_vseq #(
     join_none
   endtask
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
-
+  virtual task edn_init(string reset_kind = "HARD");
     // Enable edn, set modes
     ral.ctrl.edn_enable.set(cfg.enable);
     ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
     ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
     csr_update(.csr(ral.ctrl));
-
   endtask
 
   virtual task dut_shutdown();
