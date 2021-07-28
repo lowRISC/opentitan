@@ -114,7 +114,7 @@ module prim_esc_sender
       Idle: begin
         if (esc_req_i) begin
           state_d = CheckEscRespHi;
-        end else if (ping_req_i) begin
+        end else if (ping_req_d & ~ping_req_q) begin
           state_d = CheckPingResp0;
         end
         // any assertion of the response signal
