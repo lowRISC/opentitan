@@ -403,7 +403,7 @@ class FlowCfg():
         '''
         for item in self.cfgs:
             result = item._gen_results(results)
-            item.write_results_html()
+            item.write_results_html("results.html", item.results_md)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             log.log(VERBOSE, "[results_path]: [%s] [%s]", item.name, item.results_path)
@@ -411,7 +411,7 @@ class FlowCfg():
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html()
+            self.write_results_html("summary.html", item.results_summary_md)
         self.gen_email_html_summary()
 
     def gen_results_summary(self):
@@ -419,27 +419,28 @@ class FlowCfg():
         '''
         return
 
-    def write_results_html(self):
+    def write_results_html(self, filename, text_md):
+        '''Convert given text_md to html format and write it to file with given filename.
+        '''
         # Prepare workspace to generate reports.
         # Keep up to 2 weeks results.
-        clean_odirs(odir=self.results_path, max_odirs=14)
+        # If path exists, skip clean_odirs and directly update the files in the existing path.
+        if not (os.path.exists(self.results_path)):
+            clean_odirs(odir=self.results_path, max_odirs=14)
         mk_path(self.results_path)
         mk_path(self.symlink_path)
 
+        # Prepare results and paths.
+        text_html = md_results_to_html(self.results_title, self.css_file, text_md)
+        result_path = os.path.join(self.results_path, filename)
+        symlink_path = os.path.join(self.symlink_path, filename)
+
         # Write results to the report area.
-        if self.is_primary_cfg:
-            results_html = md_results_to_html(self.results_title, self.css_file,
-                                              self.results_summary_md)
-            result_path = os.path.join(self.results_path, "summary.html")
-            symlink_path = os.path.join(self.symlink_path, "summary.html")
-        else:
-            results_html = md_results_to_html(self.results_title, self.css_file,
-                                              self.results_md)
-            result_path = os.path.join(self.results_path, "results.html")
-            symlink_path = os.path.join(self.symlink_path, "results.html")
         with open(result_path, "w") as results_file:
-            results_file.write(results_html)
+            results_file.write(text_html)
         log.log(VERBOSE, "[results page]: [%s][%s], self.name, results_path")
+
+        # Link the `/latest` folder with the latest reports.
         mk_symlink(result_path, symlink_path)
 
     def _get_results_page_link(self, link_text):
@@ -585,13 +586,8 @@ class FlowCfg():
 
         # Publish the results page.
         # First, write the results html file to the scratch area.
-        results_html_file = self.results_path + "/publish_results_" + self.timestamp + \
-            ".html"
-        f = open(results_html_file, 'w')
-        f.write(
-            md_results_to_html(self.results_title, self.css_file,
-                               publish_results_md))
-        f.close()
+        self.write_results_html("publish.html", publish_results_md)
+        results_html_file = os.path.join(self.results_path, "publish.html")
 
         log.info("Publishing results to %s", results_page_url)
         cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
