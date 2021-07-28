@@ -25,21 +25,6 @@ class MockCsr : public ::mask_rom_test::GlobalMock<MockCsr> {
 
 using MockCsr = testing::StrictMock<internal::MockCsr>;
 
-/**
- * Conveninence fixture for creating CSR tests.
- *
- * This class should be derived by a test fixture (along with `testing::Test`)
- * and used in a `TEST_F` block. Doing so will make the `EXPECT_CSR_*`
- * convenience macros useable.
- *
- * TODO: should this be composable with MmioTest and/or MaskRomTest?
- */
-class CsrTest {
- private:
-  MockCsr csr_;
-  testing::InSequence seq_;
-};
-
 }  // namespace mock_csr
 
 /**
