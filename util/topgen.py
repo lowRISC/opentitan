@@ -663,30 +663,71 @@ def generate_top_ral(top: Dict[str, object],
     # Collect up the memories to add
     mems = []
     for item in list(top.get("memory", [])):
-        byte_write = ('byte_write' in item and
-                      item["byte_write"].lower() == "true")
-        data_intg_passthru = ('data_intg_passthru' in item and
-                              item["data_intg_passthru"].lower() == "true")
-        size_in_bytes = int(item['size'], 0)
-        num_regs = size_in_bytes // addrsep
-        swaccess = access.SWAccess('top-level memory',
-                                   item.get('swaccess', 'rw'))
+        mems.append(create_mem(item, addrsep, regwidth))
 
-        mems.append(window.Window(name=item['name'],
-                                  desc='(generated from top-level)',
-                                  unusual=False,
-                                  byte_write=byte_write,
-                                  data_intg_passthru=data_intg_passthru,
-                                  validbits=regwidth,
-                                  items=num_regs,
-                                  size_in_bytes=size_in_bytes,
-                                  offset=int(item["base_addr"], 0),
-                                  swaccess=swaccess))
+    # Top-level may override the mem setting. Store the new type to name_to_block
+    # If no other instance uses the orignal type, delete it
+    original_types = set()
+    for module in top['module']:
+        if 'memory' in module.keys() and len(module['memory']) > 0:
+            newtype = '{}_{}'.format(module['type'], module['name'])
+            assert newtype not in name_to_block
+
+            block = deepcopy(name_to_block[module['type']])
+            name_to_block[newtype] = block
+            inst_to_block[module['name']] = newtype
+
+            original_types.add(module['type'])
+
+            for mem_name, item in module['memory'].items():
+                assert block.reg_blocks[mem_name]
+                assert len(block.reg_blocks[mem_name].windows) <= 1
+                item['name'] = mem_name
+
+                win = create_mem(item, addrsep, regwidth)
+                if len(block.reg_blocks[mem_name].windows) > 0:
+                    blk_win = block.reg_blocks[mem_name].windows[0]
+
+                    # Top can only add new info for mem, shouldn't overwrite
+                    # existing configuration
+                    assert win.items == blk_win.items
+                    assert win.byte_write == blk_win.byte_write
+                    assert win.data_intg_passthru == blk_win.data_intg_passthru
+
+                    block.reg_blocks[mem_name].windows[0] = win
+                else:
+                    block.reg_blocks[mem_name].windows.append(win)
+
+    for t in original_types:
+        if t not in inst_to_block.values():
+            del name_to_block[t]
 
     chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_prefix, str(out_path))
+
+
+def create_mem(item, addrsep, regwidth):
+    byte_write = ('byte_write' in item and
+                  item["byte_write"].lower() == "true")
+    data_intg_passthru = ('data_intg_passthru' in item and
+                          item["data_intg_passthru"].lower() == "true")
+    size_in_bytes = int(item['size'], 0)
+    num_regs = size_in_bytes // addrsep
+    swaccess = access.SWAccess('top-level memory',
+                               item.get('swaccess', 'rw'))
+
+    return window.Window(name=item['name'],
+                         desc='(generated from top-level)',
+                         unusual=False,
+                         byte_write=byte_write,
+                         data_intg_passthru=data_intg_passthru,
+                         validbits=regwidth,
+                         items=num_regs,
+                         size_in_bytes=size_in_bytes,
+                         offset=int(item.get('base_addr', '0'), 0),
+                         swaccess=swaccess)
 
 
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
