@@ -18,8 +18,10 @@ class MockAbsMmio : public GlobalMock<MockAbsMmio> {
  public:
   MOCK_METHOD(uint8_t, Read8, (uint32_t addr));
   MOCK_METHOD(void, Write8, (uint32_t addr, uint8_t value));
+  MOCK_METHOD(void, Write8Shadowed, (uint32_t addr, uint8_t value));
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
+  MOCK_METHOD(void, Write32Shadowed, (uint32_t addr, uint32_t value));
 };
 }  // namespace internal
 
@@ -67,11 +69,9 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE8_SHADOWED(addr, ...)                        \
-  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),              \
-              Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__))); \
-  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),              \
-              Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE8_SHADOWED(addr, ...)           \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
+              Write8Shadowed(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
 
 /**
  * Expect a read to the device `dev` at the given offset, returning the given
@@ -115,11 +115,9 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE32_SHADOWED(addr, ...)                         \
-  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),                \
-              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__))); \
-  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),                \
-              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE32_SHADOWED(addr, ...)          \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
+              Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 extern "C" {
 
@@ -128,12 +126,11 @@ uint8_t abs_mmio_read8(uint32_t addr) {
 }
 
 void abs_mmio_write8(uint32_t addr, uint8_t value) {
-  return MockAbsMmio::Instance().Write8(addr, value);
+  MockAbsMmio::Instance().Write8(addr, value);
 }
 
 void abs_mmio_write8_shadowed(uint32_t addr, uint8_t value) {
-  MockAbsMmio::Instance().Write8(addr, value);
-  return MockAbsMmio::Instance().Write8(addr, value);
+  MockAbsMmio::Instance().Write8Shadowed(addr, value);
 }
 
 uint32_t abs_mmio_read32(uint32_t addr) {
@@ -141,12 +138,11 @@ uint32_t abs_mmio_read32(uint32_t addr) {
 }
 
 void abs_mmio_write32(uint32_t addr, uint32_t value) {
-  return MockAbsMmio::Instance().Write32(addr, value);
+  MockAbsMmio::Instance().Write32(addr, value);
 }
 
 void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
-  MockAbsMmio::Instance().Write32(addr, value);
-  return MockAbsMmio::Instance().Write32(addr, value);
+  MockAbsMmio::Instance().Write32Shadowed(addr, value);
 }
 
 }  // extern "C"
