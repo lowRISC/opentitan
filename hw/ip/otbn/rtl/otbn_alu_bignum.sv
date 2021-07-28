@@ -418,10 +418,10 @@ module otbn_alu_bignum
   always_comb begin
     unique case (operation_i.sel_flag)
       FlagC:   selection_flag_o = selected_flags.C;
-      FlagL:   selection_flag_o = selected_flags.L;
       FlagM:   selection_flag_o = selected_flags.M;
-      FlagZ:   selection_flag_o = selected_flags.Z;
-      default: selection_flag_o = selected_flags.C;
+      FlagL:   selection_flag_o = selected_flags.L;
+      // FlagZ case
+      default: selection_flag_o = selected_flags.Z;
     endcase
   end
 
