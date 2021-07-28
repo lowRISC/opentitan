@@ -28,33 +28,27 @@ class MockSecMmio : public GlobalMock<MockSecMmio> {
 using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
 
 /**
- * Expect a read to the device `dev` at the given offset, returning the given
+ * Expect a sec_mmio read at the given address, returning the given
  * 32-bit value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_SEC_READ` and
- * `EXPECT_SEC_WRITE` calls.
+ * @param addr Read address.
+ * @param ...  The value to return. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_READ32(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Read32(addr))          \
+#define EXPECT_SEC_READ32(addr, ...)                                  \
+  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), Read32(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint32_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the given offset with the given 32-bit value.
+ * Expect a sec_mmio write to the given address with the given 32-bit value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_SEC_READ` and
- * `EXPECT_SEC_WRITE` calls.
+ * @param addr Write address.
+ * @param ...  Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_WRITE32(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
+#define EXPECT_SEC_WRITE32(addr, ...)                   \
+  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
+              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 extern "C" {
 
