@@ -32,20 +32,20 @@ class OtpReadTest : public OtpTest {
 };
 
 TEST_F(OtpReadTest, Read32) {
-  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x00010203);
+  EXPECT_SEC_READ32(base_ + offset_, 0x00010203);
 
   EXPECT_EQ(otp_read32(0), 0x00010203);
 }
 
 TEST_F(OtpReadTest, Read64) {
-  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 8, 0x04050607);
-  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 4, 0x08090A0B);
+  EXPECT_SEC_READ32(base_ + offset_ + 8, 0x04050607);
+  EXPECT_SEC_READ32(base_ + offset_ + 4, 0x08090A0B);
 
   EXPECT_EQ(otp_read64(4), 0x0405060708090A0B);
 }
 
 TEST_F(OtpReadTest, ReadLen32) {
-  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x08090A0B);
+  EXPECT_SEC_READ32(base_ + offset_, 0x08090A0B);
 
   uint32_t value = 0;
   otp_read(0, &value, 1);
@@ -53,8 +53,8 @@ TEST_F(OtpReadTest, ReadLen32) {
 }
 
 TEST_F(OtpReadTest, ReadLen64) {
-  EXPECT_SEC_READ32(mmio_, base_ + offset_, 0x0C0D0E0F);
-  EXPECT_SEC_READ32(mmio_, base_ + offset_ + 4, 0x08090A0B);
+  EXPECT_SEC_READ32(base_ + offset_, 0x0C0D0E0F);
+  EXPECT_SEC_READ32(base_ + offset_ + 4, 0x08090A0B);
 
   std::array<uint32_t, 2> buf;
   otp_read(0, buf.data(), 2);
@@ -63,7 +63,7 @@ TEST_F(OtpReadTest, ReadLen64) {
 
 TEST_F(OtpReadTest, ReadLenN) {
   for (int val = 0; val < 16; ++val) {
-    EXPECT_SEC_READ32(mmio_, base_ + offset_ + val * sizeof(uint32_t), val);
+    EXPECT_SEC_READ32(base_ + offset_ + val * sizeof(uint32_t), val);
   }
 
   std::array<uint32_t, 16> arr;
