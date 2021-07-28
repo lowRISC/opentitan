@@ -255,6 +255,29 @@
 
             SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
             moment, GPIOs are the only mux inputs.
+
+            GPIOs are placed according to CrOS layout.
+            What we currently have is not fully complete based on CrOS requirements.
+            Whats connected:
+              - GPIO0-16, tap straps, JTAG, UART RX/TX, one of the SPI interfaces
+              - Need to ensure the GPIO layout is correct.
+              - Peripherals - multiple UARTs, I2Cs etc - ensure the IOs are hooked up correctly.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pinmux_mio_dio_pad_attrs
+      desc: '''Verify all pad attributes as configured are corectly signaled to the padring.
+
+            - For amm MIO and DIO pins, write the pad attribute CSRs and verify the correct behavior
+              is exhibited on the pads.
+            - SV-only test that will use forces to drive chip inputs / outputs to known values to
+              facilitate the testing.
+
+
+            - CSRs exhibit WARL behavior - only the pad arrtibute supported by the pad lib will be
+              reflected. Test in both, open source as well as closed with the ARM pads.
             '''
       milestone: V2
       tests: []
@@ -269,6 +292,8 @@
             sleep the peripheral can continue its signaling even in deep sleep. The testbench
             verifies the correctness of the reflected values once the chip goes into deep sleep.
             This is replicated for DIO pins as well.
+
+            X-refed with corresponding AON peripheral's deep sleep test.
             '''
       milestone: V2
       tests: []
@@ -285,6 +310,50 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sleep_usb_wake
+      desc: '''Verify USB wake up from deep sleep state.
+
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pinmux_lc_dft_en
+      desc: '''Verify the lc_dft_en signal from LC ctrl.
+
+            - 3 pins are used to sample the strap state at startup.
+            - they control the corecponding JTAG tap.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pinmux_lc_hw_debug_en
+      desc: '''Verify the lc_hw_debug_en from LC ctrl.
+
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pinux_strap_sampling
+      desc: '''Verify the DFT strap sampling functionality.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pinmux_boot_strap_conditions
+      desc: '''
+            '''
+      milestone: V2
+      tests: []
+    }
+
 
     // PADCTRL tests:
     {
