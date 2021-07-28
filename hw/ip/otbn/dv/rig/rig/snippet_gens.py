@@ -17,6 +17,7 @@ from .gens.branch import Branch
 from .gens.ecall import ECall
 from .gens.jump import Jump
 from .gens.loop import Loop
+from .gens.small_val import SmallVal
 from .gens.straight_line_insn import StraightLineInsn
 
 from .gens.bad_insn import BadInsn
@@ -29,6 +30,7 @@ class SnippetGens:
         Branch,
         Jump,
         Loop,
+        SmallVal,
         StraightLineInsn,
 
         ECall,
