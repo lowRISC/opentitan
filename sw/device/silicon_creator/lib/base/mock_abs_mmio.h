@@ -28,92 +28,70 @@ class MockAbsMmio : public GlobalMock<MockAbsMmio> {
 using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
 
 /**
- * Expect a read to the device `dev` at the given offset, returning the given
- * 8-bit value.
+ * Expect an abs_mmio read at the given address, returning the given 8-bit
+ * value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Read address.
+ * @param ... Value to return. May be an integer, a pointer to little-endian
+ * data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_READ8(addr, ...)                                  \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), Read8(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint8_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the given offset with the given 8-bit value.
+ * Expect an abs_mmio write to the given address with the given 8-bit value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Write address.
+ * @param ... Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_WRITE8(addr, ...)                    \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
               Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
 
 /**
- * Expect a shadowed write to the given offset with the given 8-bit value.
+ * Expect a shadowed abs_mmio write to the given address with the given 8-bit
+ * value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Write address.
+ * @param ... Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_WRITE8_SHADOWED(addr, ...)           \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
               Write8Shadowed(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
 
 /**
- * Expect a read to the device `dev` at the given offset, returning the given
- * 32-bit value.
+ * Expect an abs_mmio read at the given address, returning the given 32-bit
+ * value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Read address.
+ * @param ... Value to return. May be an integer, a pointer to little-endian
+ * data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_READ32(addr, ...)                                  \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), Read32(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint32_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the given offset with the given 32-bit value.
+ * Expect an abs_mmio write to the given address with the given 32-bit value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Write address.
+ * @param ... Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_WRITE32(addr, ...)                   \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
               Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 /**
- * Expect a shadowed write to the given offset with the given 32-bit value.
+ * Expect a shadowed abs_mmio write to the given address with the given 32-bit
+ * value.
  *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
+ * @param addr Write address.
+ * @param ... Expected value to be written. May be an integer, a pointer to
+ * little-endian data, or a `std::initializer_list<BitField>`.
  */
 #define EXPECT_ABS_WRITE32_SHADOWED(addr, ...)          \
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
