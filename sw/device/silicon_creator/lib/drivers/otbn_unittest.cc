@@ -41,11 +41,10 @@ TEST_F(StartTest, Success) {
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
   // Write start address.
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_START_ADDR_REG_OFFSET, 4);
+  EXPECT_ABS_WRITE32(base_ + OTBN_START_ADDR_REG_OFFSET, 4);
 
   // Set start command bit.
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_CMD_REG_OFFSET,
-                     {{OTBN_CMD_START_BIT, 1}});
+  EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, {{OTBN_CMD_START_BIT, 1}});
 
   EXPECT_EQ(otbn_start(4), kErrorOk);
 }
@@ -53,7 +52,7 @@ TEST_F(StartTest, Success) {
 class IsBusyTest : public OtbnTest {};
 
 TEST_F(IsBusyTest, Success) {
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
                     {{OTBN_STATUS_BUSY_BIT, true}});
 
   EXPECT_EQ(otbn_is_busy(), true);
@@ -62,7 +61,7 @@ TEST_F(IsBusyTest, Success) {
 class GetErrBitsTest : public OtbnTest {};
 
 TEST_F(GetErrBitsTest, Success) {
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_ERR_BITS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTBN_ERR_BITS_REG_OFFSET,
                     kOtbnErrBitsIllegalInsn | kOtbnErrBitsFatalReg);
 
   otbn_err_bits_t err_bits;
@@ -100,8 +99,8 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
   EXPECT_EQ(otbn_imem_write(0, test_data.data(), 2), kErrorOk);
 }
@@ -112,8 +111,8 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
   EXPECT_EQ(otbn_imem_write(4, test_data.data(), 2), kErrorOk);
 }
@@ -134,8 +133,8 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
   EXPECT_EQ(otbn_dmem_write(0, test_data.data(), 2), kErrorOk);
 }
@@ -146,8 +145,8 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
-  EXPECT_ABS_WRITE32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
   EXPECT_EQ(otbn_dmem_write(4, test_data.data(), 2), kErrorOk);
 }
@@ -167,8 +166,8 @@ TEST_F(DmemReadTest, SuccessWithoutOffset) {
   ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 8);
   static_assert(OTBN_DMEM_SIZE_BYTES >= 8, "OTBN DMEM size too small.");
 
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_DMEM_REG_OFFSET, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 4, 0xabcdef01);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET, 0x12345678);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 4, 0xabcdef01);
 
   std::array<uint32_t, 2> test_data = {0};
 
@@ -180,8 +179,8 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
   // Assumption in the test.
   static_assert(OTBN_DMEM_SIZE_BYTES >= 12, "OTBN DMEM size too small.");
 
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 4, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, base_ + OTBN_DMEM_REG_OFFSET + 8, 0xabcdef01);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 4, 0x12345678);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 8, 0xabcdef01);
 
   std::array<uint32_t, 2> test_data = {0};
 

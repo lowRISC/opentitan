@@ -25,7 +25,7 @@ class FlashCtrlTest : public mask_rom_test::MaskRomTest {
 class InitTest : public FlashCtrlTest {};
 
 TEST_F(InitTest, Initialize) {
-  EXPECT_ABS_WRITE32(mmio_, base_ + FLASH_CTRL_INIT_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
   flash_ctrl_init();
@@ -38,12 +38,12 @@ TEST_F(StatusCheckTest, InvalidArgument) {
 }
 
 TEST_F(StatusCheckTest, DefaultStatus) {
-  EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
                     {
                         {FLASH_CTRL_OP_STATUS_DONE_BIT, false},
                         {FLASH_CTRL_OP_STATUS_ERR_BIT, false},
                     });
-  EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_STATUS_REG_OFFSET,
                     {
                         {FLASH_CTRL_STATUS_RD_FULL_BIT, false},
                         {FLASH_CTRL_STATUS_RD_EMPTY_BIT, false},
@@ -61,12 +61,12 @@ TEST_F(StatusCheckTest, DefaultStatus) {
 }
 
 TEST_F(StatusCheckTest, AllSetStatus) {
-  EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
                     {
                         {FLASH_CTRL_OP_STATUS_DONE_BIT, true},
                         {FLASH_CTRL_OP_STATUS_ERR_BIT, true},
                     });
-  EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_STATUS_REG_OFFSET,
                     {
                         {FLASH_CTRL_STATUS_RD_FULL_BIT, true},
                         {FLASH_CTRL_STATUS_RD_EMPTY_BIT, true},
@@ -86,13 +86,13 @@ TEST_F(StatusCheckTest, AllSetStatus) {
 class ReadStartTest : public FlashCtrlTest {
  protected:
   void ExpectCheckBusy(bool busy) {
-    EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
+    EXPECT_ABS_READ32(base_ + FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
                       {{FLASH_CTRL_CTRL_REGWEN_EN_BIT, !busy}});
   }
   void ExpectReadStart(uint8_t part_sel, uint8_t info_sel) {
-    EXPECT_ABS_WRITE32(mmio_, base_ + FLASH_CTRL_ADDR_REG_OFFSET, 0x01234567);
+    EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_ADDR_REG_OFFSET, 0x01234567);
     EXPECT_ABS_WRITE32(
-        mmio_, base_ + FLASH_CTRL_CONTROL_REG_OFFSET,
+        base_ + FLASH_CTRL_CONTROL_REG_OFFSET,
         {
             {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_READ},
             {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, part_sel},
@@ -129,7 +129,7 @@ class ReadTest : public FlashCtrlTest {
                                         0x4B5A6978};
   void ExpectReadData(const std::vector<uint32_t> &data) {
     for (auto val : data) {
-      EXPECT_ABS_READ32(mmio_, base_ + FLASH_CTRL_RD_FIFO_REG_OFFSET, val);
+      EXPECT_ABS_READ32(base_ + FLASH_CTRL_RD_FIFO_REG_OFFSET, val);
     }
   }
 };
