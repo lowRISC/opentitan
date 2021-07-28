@@ -64,6 +64,10 @@
                     name:  "EN_ENTROPY_SRC_FW_READ",
                     value: "0xA5",
                 },
+                {
+                    name: "EN_ENTROPY_SRC_FW_OVER",
+                    value: "0xA5",
+                }
             ],
         }
         {
