@@ -237,11 +237,19 @@ package otp_ctrl_pkg;
   };
 
   typedef struct packed {
-    logic        ack;         // Ack for key.
+    logic        ack;        // Ack for key.
     sram_key_t   key;        // 128bit ephemeral scrambling key.
     sram_nonce_t nonce;      // 64bit nonce.
     logic        seed_valid; // Set to 1 if the key seed has been provisioned and is valid.
   } sram_otp_key_rsp_t;
+
+  // Default for dangling connection
+  parameter sram_otp_key_rsp_t SRAM_OTP_KEY_RSP_DEFAULT = '{
+    ack: 1'b1,
+    key: '0,
+    nonce: '0,
+    seed_valid: 1'b1
+  };
 
   typedef struct packed {
     logic        ack;        // Ack for key.

@@ -3471,8 +3471,8 @@
           type: req_rsp
           act: req
           width: 1
-          default: "'0"
           inst_name: sram_ctrl_ret_aon
+          default: ""
           top_signame: otp_ctrl_sram_otp_key
           index: 1
         }
@@ -5269,8 +5269,8 @@
           type: req_rsp
           act: req
           width: 1
-          default: "'0"
           inst_name: sram_ctrl_main
+          default: ""
           top_signame: otp_ctrl_sram_otp_key
           index: 0
         }
@@ -14866,8 +14866,8 @@
         type: req_rsp
         act: req
         width: 1
-        default: "'0"
         inst_name: sram_ctrl_ret_aon
+        default: ""
         top_signame: otp_ctrl_sram_otp_key
         index: 1
       }
@@ -15853,8 +15853,8 @@
         type: req_rsp
         act: req
         width: 1
-        default: "'0"
         inst_name: sram_ctrl_main
+        default: ""
         top_signame: otp_ctrl_sram_otp_key
         index: 0
       }
