@@ -14,6 +14,9 @@ package rstmgr_env_pkg;
   import csr_utils_pkg::*;
   import rstmgr_ral_pkg::*;
 
+  import rstmgr_reg_pkg::NumHwResets;
+  import rstmgr_reg_pkg::NumSwResets;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
