@@ -372,6 +372,63 @@
         }
       ]
     } // R: LAST_READ_ADDR
+    { name: "FLASH_STATUS"
+      desc: '''SPI Flash Status register.
+
+        This register emulates the SPI Flash Status 3, 2, 1 registers.
+        bit [7:0] is for Status register, bit [15:8] is for Status-2 register,
+        and bit [23:16] is for Status-3 register. It is SW responsibility to
+        maintain this register value up to date.
+
+        The HW latches the value when SPI Flash transaction begins. Any updates
+        during the transaction will be updated after the transaction is
+        completed.
+        '''
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwext: true
+      hwqe: true
+      fields: [
+        { bits: "0"
+          name: "busy"
+          desc: "BUSY"
+          swaccess: "rw0c"
+          hwaccess: "hrw"
+          tags: [
+            // STATUS[0] is updated by HW when CSb is de-asserted.
+            // So excluded from CSR automation test.
+            "excl:CsrNonInitTests:CsrExclWrite"
+          ]
+        } // f: busy
+        { bits: "23:1"
+          name: "status"
+          desc: '''Rest of the status register.
+
+            Fields other than the bit 0 (BUSY) field are SW-maintained fields.
+            HW just reads and returns to the host system.
+
+            [ 1]: WEL
+            [ 2]: BP0
+            [ 3]: BP1
+            [ 4]: BP2
+            [ 5]: TB
+            [ 6]: SEC
+            [ 7]: SRP0
+            [ 8]: SRP1
+            [ 9]: QE
+            [11]: LB1
+            [12]: LB2
+            [13]: LB3
+            [14]: CMP
+            [15]: SUS
+            [18]: WPS
+            [21]: DRV0
+            [22]: DRV1
+            [23]: HOLD /RST
+            '''
+        } // f: status
+      ]
+    } // R: FLASH_STATUS
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"
