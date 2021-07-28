@@ -75,7 +75,6 @@
       type:    "req_rsp"
       name:    "sram_otp_key"
       act:     "req"
-      default: "'0"
       package: "otp_ctrl_pkg"
     },
     // SRAM attribute input
