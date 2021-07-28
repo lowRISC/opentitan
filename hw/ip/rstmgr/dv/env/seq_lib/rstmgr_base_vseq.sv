@@ -112,8 +112,17 @@ class rstmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("checking exception_addr"));
   endtask
 
-  function void post_randomize();
-  endfunction
+  task check_software_reset_csr_and_pins(logic [NumSwResets-1:0] exp_ctrl_n);
+    csr_rd_check(.ptr(ral.sw_rst_ctrl_n), .compare_value(exp_ctrl_n),
+                 .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1], exp_ctrl_n[0])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1], exp_ctrl_n[1])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_n[1], exp_ctrl_n[2])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usb_n[1], exp_ctrl_n[3])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1], exp_ctrl_n[4])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1], exp_ctrl_n[5])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[6])
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     if (do_rstmgr_init) rstmgr_init();
