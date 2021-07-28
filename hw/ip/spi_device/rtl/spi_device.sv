@@ -198,6 +198,10 @@ module spi_device
   // domain variables into the bus clock domain.
   logic csb_deasserted_busclk;
 
+  // Read Status input and broadcast
+  logic status_busy_set; // set by HW (upload)
+  logic status_busy_broadcast; // from spid_status
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -659,7 +663,15 @@ module spi_device
             sub_sram_rdata  [IoModeReadCmd] = mem_b_rdata;
             sub_sram_rerror [IoModeReadCmd] = mem_b_rerror;
           end
-          // DpReadStatus:
+          DpReadStatus: begin
+            io_mode = sub_iomode[IoModeStatus];
+
+            p2s_valid = sub_p2s_valid[IoModeStatus];
+            p2s_data  = sub_p2s_data[IoModeStatus];
+            sub_p2s_sent[IoModeStatus] = p2s_sent;
+
+            // default memory (tied)
+          end
           // DpReadSFDP:
           // DpReadJEDEC:
           // DpUpload:
@@ -888,6 +900,64 @@ module spi_device
 
     .read_watermark_o ()
   );
+
+
+  // Begin: Read Status ==============================================
+  logic readstatus_qe;
+  logic [23:0] readstatus_q;
+  logic [23:0] readstatus_d;
+
+  assign readstatus_qe =  reg2hw.flash_status.busy.qe
+                       && reg2hw.flash_status.status.qe;
+  assign readstatus_q = { reg2hw.flash_status.status.q,
+                          reg2hw.flash_status.busy.q
+                        };
+  assign hw2reg.flash_status.busy.d   = readstatus_d[0];
+  assign hw2reg.flash_status.status.d = readstatus_d[23:1];
+
+  spid_status u_spid_status (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
+
+    .sys_clk_i  (clk_i),
+    .sys_rst_ni (rst_ni),
+
+    .csb_i (cio_csb_i),
+
+    .sys_status_we_i (readstatus_qe),
+    .sys_status_i    (readstatus_q),
+    .sys_status_o    (readstatus_d),
+
+    .sel_dp_i       (cmd_dp_sel),
+    .cmd_info_i     (cmd_info_broadcast),
+    .cmd_info_idx_i (cmd_info_idx_broadcast),
+
+    .outclk_p2s_valid_o (sub_p2s_valid[IoModeStatus]),
+    .outclk_p2s_byte_o  (sub_p2s_data[IoModeStatus]),
+    .outclk_p2s_sent_i  (sub_p2s_sent[IoModeStatus]),
+
+    .io_mode_o   (sub_iomode[IoModeStatus]),
+
+    .inclk_busy_set_i  (status_busy_set), // SCK domain
+
+    .inclk_busy_broadcast_o (status_busy_broadcast) // SCK domain
+  );
+
+  // Temporary:
+  logic unused_busy;
+  assign unused_busy = status_busy_broadcast;
+  // TODO: replace to the output of upload module
+  assign status_busy_set = 1'b 0;
+
+  // Tie unused
+  logic unused_sub_sram;
+  assign unused_sub_sram = ^{ sub_sram_req  [IoModeStatus],
+                              sub_sram_write[IoModeStatus],
+                              sub_sram_addr [IoModeStatus],
+                              sub_sram_wdata[IoModeStatus]
+                            };
+
+  // End: Read Status ------------------------------------------------
 
   /////////////////////
   // SPI Passthrough //

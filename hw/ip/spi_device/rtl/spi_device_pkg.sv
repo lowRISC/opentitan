@@ -204,7 +204,8 @@ package spi_device_pkg;
     IoModeFw       = 0,
     IoModeCmdParse = 1,
     IoModeReadCmd  = 2,
-    IoModeEnd      = 3 // Indicate of Length
+    IoModeStatus   = 3,
+    IoModeEnd      = 4 // Indicate of Length
   } sub_io_mode_e;
 
   // SPI Line Mode (Mode0 <-> Mode3)
