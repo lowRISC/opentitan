@@ -26,16 +26,16 @@ class UartTest : public mask_rom_test::MaskRomTest {
   mask_rom_test::MockAbsMmio mmio_;
 
   void ExpectDeviceReset() {
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_CTRL_REG_OFFSET, 0);
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_FIFO_CTRL_REG_OFFSET,
+    EXPECT_ABS_WRITE32(base_ + UART_CTRL_REG_OFFSET, 0);
+    EXPECT_ABS_WRITE32(base_ + UART_FIFO_CTRL_REG_OFFSET,
                        {
                            {UART_FIFO_CTRL_RXRST_BIT, true},
                            {UART_FIFO_CTRL_TXRST_BIT, true},
                        });
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_OVRD_REG_OFFSET, 0);
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_TIMEOUT_CTRL_REG_OFFSET, 0);
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_INTR_ENABLE_REG_OFFSET, 0);
-    EXPECT_ABS_WRITE32(mmio_, base_ + UART_INTR_STATE_REG_OFFSET,
+    EXPECT_ABS_WRITE32(base_ + UART_OVRD_REG_OFFSET, 0);
+    EXPECT_ABS_WRITE32(base_ + UART_TIMEOUT_CTRL_REG_OFFSET, 0);
+    EXPECT_ABS_WRITE32(base_ + UART_INTR_ENABLE_REG_OFFSET, 0);
+    EXPECT_ABS_WRITE32(base_ + UART_INTR_STATE_REG_OFFSET,
                        std::numeric_limits<uint32_t>::max());
   }
 };
@@ -45,12 +45,12 @@ class InitTest : public UartTest {};
 TEST_F(InitTest, Initialize) {
   ExpectDeviceReset();
 
-  EXPECT_ABS_WRITE32(mmio_, base_ + UART_CTRL_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + UART_CTRL_REG_OFFSET,
                      {
                          {UART_CTRL_TX_BIT, true},
                          {UART_CTRL_NCO_OFFSET, 1},
                      });
-  EXPECT_ABS_WRITE32(mmio_, base_ + UART_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_ABS_WRITE32(base_ + UART_INTR_ENABLE_REG_OFFSET, 0);
 
   EXPECT_EQ(uart_init(1), kErrorOk);
 }
@@ -72,10 +72,10 @@ class BytesSendTest : public UartTest {
     ASSERT_LE(num_elements, kBytesArray.size());
     for (int i = 0; i < num_elements; ++i) {
       uint32_t value = static_cast<uint32_t>(kBytesArray[i]);
-      EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+      EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                         {{UART_STATUS_TXFULL_BIT, false}});
-      EXPECT_ABS_WRITE32(mmio_, base_ + UART_WDATA_REG_OFFSET, value);
-      EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+      EXPECT_ABS_WRITE32(base_ + UART_WDATA_REG_OFFSET, value);
+      EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                         {{UART_STATUS_TXIDLE_BIT, true}});
     }
   }
@@ -90,18 +90,18 @@ TEST_F(BytesSendTest, SendBuffer) {
 
 TEST_F(BytesSendTest, SendByteBusy) {
   // FIFO full for one cycle, then empty.
-  EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_TXFULL_BIT, true}});
-  EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_TXFULL_BIT, false}});
 
   // The value sent is 'X'
-  EXPECT_ABS_WRITE32(mmio_, base_ + UART_WDATA_REG_OFFSET, 'X');
+  EXPECT_ABS_WRITE32(base_ + UART_WDATA_REG_OFFSET, 'X');
 
   // Transmitter busy for one cycle, then idle.
-  EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_TXIDLE_BIT, false}});
-  EXPECT_ABS_READ32(mmio_, base_ + UART_STATUS_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_TXIDLE_BIT, true}});
 
   uart_putchar('X');

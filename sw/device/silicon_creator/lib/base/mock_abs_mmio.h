@@ -35,8 +35,8 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_READ8(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Read8(addr))          \
+#define EXPECT_ABS_READ8(addr, ...)                                  \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), Read8(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint8_t>(__VA_ARGS__)))
 
 /**
@@ -51,8 +51,9 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE8(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE8(addr, ...)                    \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
+              Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
 
 /**
  * Expect a shadowed write to the given offset with the given 8-bit value.
@@ -66,9 +67,11 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE8_SHADOWED(mmio, addr, ...)                        \
-  EXPECT_CALL(mmio, Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__))); \
-  EXPECT_CALL(mmio, Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE8_SHADOWED(addr, ...)                        \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),              \
+              Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__))); \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),              \
+              Write8(addr, mock_mmio::ToInt<uint8_t>(__VA_ARGS__)));
 
 /**
  * Expect a read to the device `dev` at the given offset, returning the given
@@ -80,8 +83,8 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_READ32(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Read32(addr))          \
+#define EXPECT_ABS_READ32(addr, ...)                                  \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), Read32(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint32_t>(__VA_ARGS__)))
 
 /**
@@ -96,8 +99,9 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE32(mmio, addr, ...) \
-  EXPECT_CALL(mmio, Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE32(addr, ...)                   \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
+              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 /**
  * Expect a shadowed write to the given offset with the given 32-bit value.
@@ -111,9 +115,11 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
  * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
-#define EXPECT_ABS_WRITE32_SHADOWED(mmio, addr, ...)                         \
-  EXPECT_CALL(mmio, Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__))); \
-  EXPECT_CALL(mmio, Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
+#define EXPECT_ABS_WRITE32_SHADOWED(addr, ...)                         \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),                \
+              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__))); \
+  EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(),                \
+              Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 extern "C" {
 

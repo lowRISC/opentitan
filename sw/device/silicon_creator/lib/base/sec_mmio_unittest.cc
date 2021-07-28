@@ -49,16 +49,16 @@ TEST_F(SecMmioTest, Initialize) {
 }
 
 TEST_F(SecMmioTest, Read32OrDie) {
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+  EXPECT_ABS_READ32(0, 0x12345678);
+  EXPECT_ABS_READ32(0, 0x12345678);
   EXPECT_EQ(sec_mmio_read32(0), 0x12345678);
 
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
+  EXPECT_ABS_READ32(4, 0x87654321);
+  EXPECT_ABS_READ32(4, 0x87654321);
   EXPECT_EQ(sec_mmio_read32(4), 0x87654321);
 
-  EXPECT_ABS_READ32(mmio_, 0, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 0, 0x87654321);
+  EXPECT_ABS_READ32(0, 0x87654321);
+  EXPECT_ABS_READ32(0, 0x87654321);
   EXPECT_EQ(sec_mmio_read32(0), 0x87654321);
 
   // Two of the operations were targeting the same offset, so we only expect two
@@ -68,18 +68,18 @@ TEST_F(SecMmioTest, Read32OrDie) {
 }
 
 TEST_F(SecMmioTest, Write32) {
-  EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+  EXPECT_ABS_WRITE32(0, 0x12345678);
+  EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_write32(0, 0x12345678);
   EXPECT_EQ(ctx_->write_count, 1);
 
-  EXPECT_ABS_WRITE32(mmio_, 4, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
+  EXPECT_ABS_WRITE32(4, 0x87654321);
+  EXPECT_ABS_READ32(4, 0x87654321);
   sec_mmio_write32(4, 0x87654321);
   EXPECT_EQ(ctx_->write_count, 2);
 
-  EXPECT_ABS_WRITE32(mmio_, 0, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 0, 0x87654321);
+  EXPECT_ABS_WRITE32(0, 0x87654321);
+  EXPECT_ABS_READ32(0, 0x87654321);
   sec_mmio_write32(0, 0x87654321);
   EXPECT_EQ(ctx_->write_count, 3);
 
@@ -97,43 +97,43 @@ TEST_F(SecMmioTest, CounterInc) {
 }
 
 TEST_F(SecMmioTest, CheckValues) {
-  EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+  EXPECT_ABS_WRITE32(0, 0x12345678);
+  EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_write32(0, 0x12345678);
 
-  EXPECT_ABS_WRITE32(mmio_, 4, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
+  EXPECT_ABS_WRITE32(4, 0x87654321);
+  EXPECT_ABS_READ32(4, 0x87654321);
   sec_mmio_write32(4, 0x87654321);
 
-  EXPECT_ABS_WRITE32(mmio_, 8, 0);
-  EXPECT_ABS_READ32(mmio_, 8, 0);
+  EXPECT_ABS_WRITE32(8, 0);
+  EXPECT_ABS_READ32(8, 0);
   sec_mmio_write32(8, 0);
 
   // The expected permutation order for rnd_offset=0 is {1, 2, 0}.
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 8, 0);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+  EXPECT_ABS_READ32(4, 0x87654321);
+  EXPECT_ABS_READ32(8, 0);
+  EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_check_values(/*rnd_offset=*/0);
   EXPECT_EQ(ctx_->check_count, 1);
 
   // The expected permutation order for rnd_offset=1 is {2, 0, 1}.
-  EXPECT_ABS_READ32(mmio_, 8, 0);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
+  EXPECT_ABS_READ32(8, 0);
+  EXPECT_ABS_READ32(0, 0x12345678);
+  EXPECT_ABS_READ32(4, 0x87654321);
   sec_mmio_check_values(/*rnd_offset=*/1);
   EXPECT_EQ(ctx_->check_count, 2);
 
   // The expected permutation order for rnd_offset=32 is {0, 1, 2}.
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 4, 0x87654321);
-  EXPECT_ABS_READ32(mmio_, 8, 0);
+  EXPECT_ABS_READ32(0, 0x12345678);
+  EXPECT_ABS_READ32(4, 0x87654321);
+  EXPECT_ABS_READ32(8, 0);
   sec_mmio_check_values(/*rnd_offset=*/32);
   EXPECT_EQ(ctx_->check_count, 3);
 }
 
 TEST_F(SecMmioTest, CheckCount) {
-  EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-  EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+  EXPECT_ABS_WRITE32(0, 0x12345678);
+  EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_write32(0, 0x12345678);
   sec_mmio_write_increment(1);
 
@@ -149,8 +149,8 @@ class SecMmioDeathTest : public SecMmioTest {};
 
 TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
   auto deadly_ops = [this] {
-    EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
-    EXPECT_ABS_READ32(mmio_, 0, 0);
+    EXPECT_ABS_READ32(0, 0x12345678);
+    EXPECT_ABS_READ32(0, 0);
     sec_mmio_read32(0);
   };
   ASSERT_DEATH(deadly_ops(), "");
@@ -158,8 +158,8 @@ TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
 
 TEST_F(SecMmioDeathTest, Write32SimulatedFault) {
   auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-    EXPECT_ABS_READ32(mmio_, 0, 0);
+    EXPECT_ABS_WRITE32(0, 0x12345678);
+    EXPECT_ABS_READ32(0, 0);
     sec_mmio_write32(0, 0x12345678);
   };
   ASSERT_DEATH(deadly_ops(), "");
@@ -167,11 +167,11 @@ TEST_F(SecMmioDeathTest, Write32SimulatedFault) {
 
 TEST_F(SecMmioDeathTest, CheckValuesSimulatedFault) {
   auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-    EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+    EXPECT_ABS_WRITE32(0, 0x12345678);
+    EXPECT_ABS_READ32(0, 0x12345678);
     sec_mmio_write32(0, 0x12345678);
 
-    EXPECT_ABS_READ32(mmio_, 0, 0);
+    EXPECT_ABS_READ32(0, 0);
     sec_mmio_check_values(/*rnd_offset=*/0);
   };
   ASSERT_DEATH(deadly_ops(), "");
@@ -179,8 +179,8 @@ TEST_F(SecMmioDeathTest, CheckValuesSimulatedFault) {
 
 TEST_F(SecMmioDeathTest, CheckCountWriteMismatch) {
   auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(mmio_, 0, 0x12345678);
-    EXPECT_ABS_READ32(mmio_, 0, 0x12345678);
+    EXPECT_ABS_WRITE32(0, 0x12345678);
+    EXPECT_ABS_READ32(0, 0x12345678);
     sec_mmio_write32(0, 0x12345678);
     sec_mmio_check_counters(/*expected_check_count=*/0);
   };

@@ -28,18 +28,18 @@ class HmacTest : public mask_rom_test::MaskRomTest {
 class Sha256InitTest : public HmacTest {};
 
 TEST_F(Sha256InitTest, Initialize) {
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_CFG_REG_OFFSET, 0u);
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_INTR_STATE_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET, 0u);
+  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
+  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
                      std::numeric_limits<uint32_t>::max());
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_CFG_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET,
                      {
                          {HMAC_CFG_DIGEST_SWAP_BIT, false},
                          {HMAC_CFG_ENDIAN_SWAP_BIT, true},
                          {HMAC_CFG_SHA_EN_BIT, true},
                          {HMAC_CFG_HMAC_EN_BIT, false},
                      });
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_CMD_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
                      {{HMAC_CMD_HASH_START_BIT, true}});
   hmac_sha256_init();
 }
@@ -57,20 +57,20 @@ TEST_F(Sha256UpdateTest, SendData) {
   };
 
   // Trigger 8bit aligned writes.
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x01);
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x01);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
   EXPECT_EQ(hmac_sha256_update(&kData[1], 2), kErrorOk);
 
   // Trigger a single 32bit aligned write.
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x03020100);
+  EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x03020100);
   EXPECT_EQ(hmac_sha256_update(&kData[0], 4), kErrorOk);
 
   // Trigger 8bit/32bit/8bit sequence.
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x03);
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x07060504);
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x08);
-  EXPECT_ABS_WRITE8(mmio_, base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x09);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x03);
+  EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x07060504);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x08);
+  EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x09);
   EXPECT_EQ(hmac_sha256_update(&kData[2], 8), kErrorOk);
 }
 
@@ -87,41 +87,33 @@ TEST_F(Sha256FinalTest, GetDigest) {
   };
 
   // Request digest.
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_CMD_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
                      {{HMAC_CMD_HASH_PROCESS_BIT, true}});
 
   // Poll a couple of times before returning the result
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_INTR_STATE_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
                     {
                         {HMAC_INTR_STATE_HMAC_DONE_BIT, false},
                     });
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_INTR_STATE_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
                     {
                         {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
                     });
-  EXPECT_ABS_WRITE32(mmio_, base_ + HMAC_INTR_STATE_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
                      {
                          {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
                      });
 
   // Set expectations explicitly to ensure that the registers
   // are contiguous.
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_7_REG_OFFSET,
-                    kExpectedDigest[0]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_6_REG_OFFSET,
-                    kExpectedDigest[1]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_5_REG_OFFSET,
-                    kExpectedDigest[2]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_4_REG_OFFSET,
-                    kExpectedDigest[3]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_3_REG_OFFSET,
-                    kExpectedDigest[4]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_2_REG_OFFSET,
-                    kExpectedDigest[5]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_1_REG_OFFSET,
-                    kExpectedDigest[6]);
-  EXPECT_ABS_READ32(mmio_, base_ + HMAC_DIGEST_0_REG_OFFSET,
-                    kExpectedDigest[7]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_7_REG_OFFSET, kExpectedDigest[0]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_6_REG_OFFSET, kExpectedDigest[1]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_5_REG_OFFSET, kExpectedDigest[2]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_4_REG_OFFSET, kExpectedDigest[3]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_3_REG_OFFSET, kExpectedDigest[4]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_2_REG_OFFSET, kExpectedDigest[5]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_1_REG_OFFSET, kExpectedDigest[6]);
+  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_0_REG_OFFSET, kExpectedDigest[7]);
 
   hmac_digest_t got_digest;
   EXPECT_EQ(hmac_sha256_final(&got_digest), kErrorOk);
