@@ -10,10 +10,9 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/testing/mock_csr.h"
+#include "sw/device/lib/testing/mask_rom_test.h"
 
 namespace epmp_unittest {
-using ::mock_csr::CsrTest;
-using ::testing::Test;
 
 /**
  * Representation of the hardware PMP control register state.
@@ -146,8 +145,9 @@ static uint32_t napot(epmp_region_t region) {
   return (region.start >> 2) | ((region.end - region.start - 1) >> 3);
 }
 
-class EpmpTest : public CsrTest {
+class EpmpTest : public mask_rom_test::MaskRomTest {
  protected:
+  mock_csr::MockCsr csr_;
   /**
    * Default reset value for the PMP CSRs.
    */
@@ -155,7 +155,7 @@ class EpmpTest : public CsrTest {
   epmp_state_t state_ = reset_.State();
 };
 
-class EpmpCheckTest : public Test, public EpmpTest {};
+class EpmpCheckTest : public EpmpTest {};
 
 TEST_F(EpmpCheckTest, Default) {
   // Check CSRs are set as expected.
@@ -193,7 +193,7 @@ TEST_F(EpmpCheckTest, ErrorMseccfg) {
   EXPECT_EQ(epmp_state_check(&state_), kErrorEpmpBadCheck);
 }
 
-class EpmpTorTest : public Test, public EpmpTest {};
+class EpmpTorTest : public EpmpTest {};
 
 TEST_F(EpmpTorTest, Entry0) {
   // Region for entry.
@@ -285,7 +285,7 @@ TEST_F(EpmpTorTest, SharedAddress) {
   EXPECT_EQ(epmp_state_check(&state_), kErrorOk);
 }
 
-class EpmpNa4Test : public Test, public EpmpTest {};
+class EpmpNa4Test : public EpmpTest {};
 
 TEST_F(EpmpNa4Test, Entry0) {
   // Region for entry.
@@ -327,7 +327,7 @@ TEST_F(EpmpNa4Test, Entry15) {
   EXPECT_EQ(epmp_state_check(&state_), kErrorOk);
 }
 
-class EpmpNapotTest : public Test, public EpmpTest {};
+class EpmpNapotTest : public EpmpTest {};
 
 TEST_F(EpmpNapotTest, Entry0) {
   // Region for entry.

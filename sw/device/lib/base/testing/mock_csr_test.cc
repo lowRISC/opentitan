@@ -8,7 +8,10 @@
 #include "sw/device/lib/base/csr.h"
 
 namespace mock_csr_test {
-class MockCsrTest : public ::testing::Test, ::mock_csr::CsrTest {};
+class MockCsrTest : public testing::Test {
+ protected:
+  mock_csr::MockCsr csr_;
+};
 
 TEST_F(MockCsrTest, Read) {
   EXPECT_CSR_READ(CSR_REG_PMPCFG0, 1);
