@@ -10,6 +10,10 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(clkmgr_base_vseq)
 
+  // The extra cycles to wait after reset before starting any test, required so some CSRs (notably
+  // hints_status) are properly set when inputs go through synchronizers.
+  localparam int POST_APPLY_RESET_CYCLES = 10;
+
   typedef enum {LcTxTSelOn, LcTxTSelOff, LcTxTSelOther} lc_tx_t_sel_e;
 
   // This simplifies the constraint blocks.
@@ -118,6 +122,10 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
     cfg.usb_clk_rst_vif.drive_rst_pin(1);
+  endtask
+
+  task post_apply_reset(string reset_kind = "HARD");
+    cfg.io_clk_rst_vif.wait_clks(POST_APPLY_RESET_CYCLES);
   endtask
 
   // setup basic clkmgr features
