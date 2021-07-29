@@ -168,17 +168,6 @@ _mask_rom_start_boot:
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 
-  // Set up the stack pointer.
-  //
-  // In RISC-V, the stack grows downwards, so we load the address of the highest
-  // word in the stack into sp. We don't load in `_stack_end`, as that points
-  // beyond the end of RAM, and we always want it to be valid to dereference
-  // `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
-  //
-  // If an exception fires, the handler is conventionaly only allowed to clobber
-  // memory at addresses below `sp`.
-  la   sp, (_stack_end - 16)
-
   /**
    * Set well-defined interrupt/exception handlers
    *
@@ -197,9 +186,9 @@ _mask_rom_start_boot:
    * State").
    */
 
-  // Zero all writable registers except x2 (sp).
+  // Zero all writable registers.
   li x1,  0x0
-  // NOT x2 (sp) - We have already set it to the right value above.
+  li x2,  0x0
   li x3,  0x0
   li x4,  0x0
   li x5,  0x0
@@ -251,7 +240,18 @@ _mask_rom_start_boot:
   .extern crt_section_clear
   call crt_section_clear
 
-  // Setup global pointer.
+  // Set up stack pointer.
+  //
+  // In RISC-V, the stack grows downwards, so we load the address of the highest
+  // word in the stack into sp. We don't load in `_stack_end`, as that points
+  // beyond the end of RAM, and we always want it to be valid to dereference
+  // `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
+  //
+  // If an exception fires, the handler is conventionally only allowed to clobber
+  // memory at addresses below `sp`.
+  la sp, (_stack_end - 16)
+
+  // Set up global pointer.
   //
   // This requires that we disable linker relaxations, or it will be relaxed to
   // `mv gp, gp`, so we disabled relaxations for all of `_mask_rom_start_boot`.
