@@ -29,11 +29,14 @@ module edn_core import edn_pkg::*;
   input   csrng_pkg::csrng_rsp_t  csrng_cmd_i,
 
   // Alerts
-  output logic        alert_test_o,
+  output logic        recov_alert_test_o,
+  output logic        fatal_alert_test_o,
+  output logic        recov_alert_o,
   output logic        fatal_alert_o,
 
   // Interrupts
   output logic        intr_edn_cmd_req_done_o,
+  output logic        intr_edn_ebus_check_failed_o,
   output logic        intr_edn_fatal_err_o
 );
 
@@ -51,6 +54,7 @@ module edn_core import edn_pkg::*;
 
   // signals
   logic event_edn_cmd_req_done;
+  logic event_edn_ebus_check_failed;
   logic event_edn_fatal_err;
   logic edn_enable;
   logic cmd_fifo_rst;
@@ -130,6 +134,8 @@ module edn_core import edn_pkg::*;
   logic                               fifo_write_err_sum;
   logic                               fifo_read_err_sum;
   logic                               fifo_status_err_sum;
+  logic                               cs_rdata_capt_vld;
+  logic                               edn_bus_cmp_alert;
   logic                               unused_err_code_test_bit;
 
   // flops
@@ -146,6 +152,8 @@ module edn_core import edn_pkg::*;
   logic [3:0]                         boot_req_q, boot_req_d;
   logic                               boot_auto_req_wack_q, boot_auto_req_wack_d;
   logic                               boot_auto_req_dly_q, boot_auto_req_dly_d;
+  logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
+  logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -162,6 +170,8 @@ module edn_core import edn_pkg::*;
       boot_req_q <= '0;
       boot_auto_req_wack_q <= '0;
       boot_auto_req_dly_q <= '0;
+      cs_rdata_capt_q <= '0;
+      cs_rdata_capt_vld_q <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
       cs_cmd_req_vld_q  <= cs_cmd_req_vld_d;
@@ -176,6 +186,8 @@ module edn_core import edn_pkg::*;
       boot_req_q <= boot_req_d;
       boot_auto_req_wack_q <= boot_auto_req_wack_d;
       boot_auto_req_dly_q <= boot_auto_req_dly_d;
+      cs_rdata_capt_q <= cs_rdata_capt_d;
+      cs_rdata_capt_vld_q <= cs_rdata_capt_vld_d;
     end
 
   //--------------------------------------------
@@ -197,6 +209,24 @@ module edn_core import edn_pkg::*;
     .intr_o                 (intr_edn_cmd_req_done_o)
   );
 
+  // TODO: add intrp
+//  prim_intr_hw #(
+//    .Width(1)
+//  ) u_intr_hw_edn_ebus_check_failed (
+//    .clk_i                  (clk_i),
+//    .rst_ni                 (rst_ni),
+//    .event_intr_i           (event_edn_ebus_check_failed),
+//    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.edn_ebus_check_failed.q),
+//    .reg2hw_intr_test_q_i   (reg2hw.intr_test.edn_ebus_check_failed.q),
+//    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.edn_ebus_check_failed.qe),
+//    .reg2hw_intr_state_q_i  (reg2hw.intr_state.edn_ebus_check_failed.q),
+//    .hw2reg_intr_state_de_o (hw2reg.intr_state.edn_ebus_check_failed.de),
+//    .hw2reg_intr_state_d_o  (hw2reg.intr_state.edn_ebus_check_failed.d),
+//    .intr_o                 (intr_edn_ebus_check_failed_o)
+//  );
+
+  // TODO: remove when intrp is added
+  assign intr_edn_ebus_check_failed_o = event_edn_ebus_check_failed;
 
   prim_intr_hw #(
     .Width(1)
@@ -215,6 +245,9 @@ module edn_core import edn_pkg::*;
 
   // interrupt for sw app interface only
   assign event_edn_cmd_req_done = csrng_cmd_ack;
+
+  // entropy bus check failed interrupt
+  assign event_edn_ebus_check_failed = edn_bus_cmp_alert;
 
   // set the interrupt sources
   assign event_edn_fatal_err = edn_enable && (
@@ -281,9 +314,13 @@ module edn_core import edn_pkg::*;
   assign fatal_alert_o = event_edn_fatal_err;
 
   // alert test
-  assign alert_test_o = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
+  assign recov_alert_test_o = {
+    reg2hw.alert_test.recov_alert.q &&
+    reg2hw.alert_test.recov_alert.qe
+  };
+  assign fatal_alert_test_o = {
+    reg2hw.alert_test.fatal_alert.q &&
+    reg2hw.alert_test.fatal_alert.qe
   };
 
   // master module enable
@@ -562,6 +599,32 @@ module edn_core import edn_pkg::*;
          !edn_enable ? 1'b0 :
          (packer_cs_push && packer_cs_wready) ? csrng_cmd_i.genbits_fips :
          csrng_fips_q;
+
+  //--------------------------------------------
+  // data path integrity check
+  // - a counter meansure to entropy bus tampering
+  // - checks to make sure repeated data sets off
+  //   an alert for sw to handle
+  //--------------------------------------------
+
+  // capture a copy of the entropy data
+  assign cs_rdata_capt_vld = (packer_cs_rvalid && packer_cs_rready);
+
+  assign cs_rdata_capt_d = cs_rdata_capt_vld ? packer_cs_rdata[63:0] : cs_rdata_capt_q;
+
+  assign cs_rdata_capt_vld_d =
+         !edn_enable ? 1'b0 :
+         cs_rdata_capt_vld ? 1'b1 :
+         cs_rdata_capt_vld_q;
+
+  // continuous compare of the entropy data
+  assign edn_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
+         (cs_rdata_capt_q == packer_cs_rdata[63:0]);
+
+  assign recov_alert_o = edn_bus_cmp_alert;
+
+  assign hw2reg.recov_alert_sts.de = edn_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.d  = edn_bus_cmp_alert;
 
   //--------------------------------------------
   // end point interface packers generation

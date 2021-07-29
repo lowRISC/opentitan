@@ -36,6 +36,8 @@ module edn
 
   // Interrupts
   output logic      intr_edn_cmd_req_done_o,
+  // TODO: add intrp
+  // output logic      intr_edn_ebus_check_failed_o,
   output logic      intr_edn_fatal_err_o
 );
 
@@ -44,9 +46,12 @@ module edn
   edn_reg2hw_t reg2hw;
   edn_hw2reg_t hw2reg;
 
-  logic  alert;
-  logic  alert_test;
-  logic  intg_err_alert;
+  logic [NumAlerts-1:0] alert_test;
+  logic [NumAlerts-1:0] alert;
+
+  logic [NumAlerts-1:0] intg_err_alert;
+  assign intg_err_alert[0] = 1'b0;
+
 
   edn_reg_top u_reg (
     .clk_i,
@@ -55,7 +60,7 @@ module edn
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(intg_err_alert),
+    .intg_err_o(intg_err_alert[1]), // Assign this alert to the fatal alert index.
     .devmode_i(1'b1)
   );
 
@@ -76,27 +81,41 @@ module edn
     .csrng_cmd_i,
 
     // Alerts
-    .alert_test_o(alert_test),
-    .fatal_alert_o(alert),
+
+    .recov_alert_o(alert[0]),
+    .fatal_alert_o(alert[1]),
+
+    .recov_alert_test_o(alert_test[0]),
+    .fatal_alert_test_o(alert_test[1]),
 
     .intr_edn_cmd_req_done_o,
+  // TODO: add intrp - remove () below
+  //  .intr_edn_ebus_check_failed_o,
+    .intr_edn_ebus_check_failed_o(),
     .intr_edn_fatal_err_o
   );
 
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
-    .IsFatal(1)
-  ) u_prim_alert_sender (
-    .clk_i,
-    .rst_ni,
-    .alert_test_i  ( alert_test              ),
-    .alert_req_i   ( alert || intg_err_alert ),
-    .alert_ack_o   (                         ),
-    .alert_state_o (                         ),
-    .alert_rx_i    ( alert_rx_i[0]           ),
-    .alert_tx_o    ( alert_tx_o[0]           )
-  );
+
+  ///////////////////////////
+  // Alert generation
+  ///////////////////////////
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i]                 ),
+      .alert_req_i   ( alert[i] || intg_err_alert[i] ),
+      .alert_ack_o   (                               ),
+      .alert_state_o (                               ),
+      .alert_rx_i    ( alert_rx_i[i]                 ),
+      .alert_tx_o    ( alert_tx_o[i]                 )
+    );
+  end
+
 
   // Assertions
 
@@ -116,6 +135,8 @@ module edn
 
   // Interrupt Asserts
   `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
+  // TODO: add intrp
+  // `ASSERT_KNOWN(IntrEdnEBusCheckFailedKnownO_A, intr_edn_ebus_check_failed_o)
   `ASSERT_KNOWN(IntrEdnFifoErrKnownO_A, intr_edn_fatal_err_o)
 
 endmodule

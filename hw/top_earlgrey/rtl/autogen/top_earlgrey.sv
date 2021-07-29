@@ -2230,15 +2230,16 @@ module top_earlgrey #(
   );
 
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[57:57])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:57])
   ) u_edn0 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
-      // [57]: fatal_alert
-      .alert_tx_o  ( alert_tx[57:57] ),
-      .alert_rx_i  ( alert_rx[57:57] ),
+      // [57]: recov_alert
+      // [58]: fatal_alert
+      .alert_tx_o  ( alert_tx[58:57] ),
+      .alert_rx_i  ( alert_rx[58:57] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
@@ -2254,15 +2255,16 @@ module top_earlgrey #(
   );
 
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:58])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:59])
   ) u_edn1 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
-      // [58]: fatal_alert
-      .alert_tx_o  ( alert_tx[58:58] ),
-      .alert_rx_i  ( alert_rx[58:58] ),
+      // [59]: recov_alert
+      // [60]: fatal_alert
+      .alert_tx_o  ( alert_tx[60:59] ),
+      .alert_rx_i  ( alert_rx[60:59] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
@@ -2278,7 +2280,7 @@ module top_earlgrey #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59:59]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:61]),
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
@@ -2286,9 +2288,9 @@ module top_earlgrey #(
     .MemSizeRam(131072),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
-      // [59]: fatal_error
-      .alert_tx_o  ( alert_tx[59:59] ),
-      .alert_rx_i  ( alert_rx[59:59] ),
+      // [61]: fatal_error
+      .alert_tx_o  ( alert_tx[61:61] ),
+      .alert_rx_i  ( alert_rx[61:61] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2310,7 +2312,7 @@ module top_earlgrey #(
   );
 
   otbn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:60]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63:62]),
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndLfsrSeed(RndCnstOtbnUrndLfsrSeed),
@@ -2321,10 +2323,10 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-      // [60]: fatal
-      // [61]: recov
-      .alert_tx_o  ( alert_tx[61:60] ),
-      .alert_rx_i  ( alert_rx[61:60] ),
+      // [62]: fatal
+      // [63]: recov
+      .alert_tx_o  ( alert_tx[63:62] ),
+      .alert_rx_i  ( alert_rx[63:62] ),
 
       // Inter-module signals
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_req),
@@ -2350,15 +2352,15 @@ module top_earlgrey #(
   );
 
   rom_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:62]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:64]),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling)
   ) u_rom_ctrl (
-      // [62]: fatal
-      .alert_tx_o  ( alert_tx[62:62] ),
-      .alert_rx_i  ( alert_rx[62:62] ),
+      // [64]: fatal
+      .alert_tx_o  ( alert_tx[64:64] ),
+      .alert_rx_i  ( alert_rx[64:64] ),
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
@@ -2377,7 +2379,7 @@ module top_earlgrey #(
   );
 
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[66:63]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:65]),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),
@@ -2398,12 +2400,12 @@ module top_earlgrey #(
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [63]: fatal_sw_err
-      // [64]: recov_sw_err
-      // [65]: fatal_hw_err
-      // [66]: recov_hw_err
-      .alert_tx_o  ( alert_tx[66:63] ),
-      .alert_rx_i  ( alert_rx[66:63] ),
+      // [65]: fatal_sw_err
+      // [66]: recov_sw_err
+      // [67]: fatal_hw_err
+      // [68]: recov_hw_err
+      .alert_tx_o  ( alert_tx[68:65] ),
+      .alert_rx_i  ( alert_rx[68:65] ),
 
       // Inter-module signals
       .rst_cpu_n_o(rv_core_ibex_rst_cpu_n),

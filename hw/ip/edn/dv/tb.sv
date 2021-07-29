@@ -15,7 +15,7 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire intr_edn_cmd_req_done, intr_edn_fatal_err;
+  wire intr_edn_cmd_req_done, intr_edn_ebus_check_failed, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   edn_pkg::edn_req_t [NUM_ENDPOINTS-1:0] endpoint_req;
   edn_pkg::edn_rsp_t [NUM_ENDPOINTS-1:0] endpoint_rsp;
@@ -49,8 +49,13 @@ module tb;
     .alert_tx_o                (alert_tx),
 
     .intr_edn_cmd_req_done_o   (intr_edn_cmd_req_done),
+    // TODO: add intrp
+    // .intr_edn_ebus_check_failed_o (intr_edn_ebus_check_failed),
     .intr_edn_fatal_err_o      (intr_edn_fatal_err)
   );
+
+    // TODO: remove below when adding intrp
+  assign                        intr_edn_ebus_check_failed = 1'b0;
 
   for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
     assign endpoint_req[i].edn_req = endpoint_if[i].req;
@@ -64,6 +69,7 @@ module tb;
   end
 
   assign interrupts[CmdReqDone] = intr_edn_cmd_req_done;
+  assign interrupts[EBusChkFail] = intr_edn_ebus_check_failed;
   assign interrupts[FifoErr]    = intr_edn_fatal_err;
 
   initial begin
