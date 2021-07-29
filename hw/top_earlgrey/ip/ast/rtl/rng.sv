@@ -36,7 +36,7 @@ prim_lfsr #(
   .StatePermEn ( 1'b1 ),
   .StatePerm ( ast_pkg::RndCnstLfsrPermDefault ),
   .ExtSeedSVA ( 1'b0 )  // ext seed is unused
-) u_sys_lfsr (
+) u_rng_lfsr (
   .clk_i ( clk_i ),
   .rst_ni ( rst_n ),
   .lfsr_en_i ( rng_en_i ),
@@ -101,5 +101,12 @@ always_ff @( posedge clk_ast_rng_i, negedge rst_ast_rng_ni ) begin
     rng_val_o <= 1'b0;
   end
 end
+
+
+///////////////////////
+// Unused Signals
+///////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ rng_fips_i };  // Used in ASIC implementation
 
 endmodule : rng

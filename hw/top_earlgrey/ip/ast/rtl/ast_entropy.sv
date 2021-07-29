@@ -23,10 +23,10 @@ module ast_entropy #(
 ////////////////////////////////////////
 // Entropy Request FSM
 ////////////////////////////////////////
-typedef enum logic [3-1:0] {
-  ERQ_REQ0 = 3'd1,  // Device-0 Request (source)
-  ERQ_ACK0 = 3'd3,  // Device-0 Acknowledge
-  ERQ_IDLE = 3'd0   // IDLE/RESET
+typedef enum logic [2-1:0] {
+  ERQ_REQ0 = 2'd1,  // Device-0 Request (source)
+  ERQ_ACK0 = 2'd3,  // Device-0 Acknowledge
+  ERQ_IDLE = 2'd0   // IDLE/RESET
 } erq_sm_e;
 
 erq_sm_e erq_sm;
@@ -44,7 +44,7 @@ always_ff @( posedge clk_ast_es_i, negedge rst_ast_es_ni ) begin
     edn_req <= 1'b0;
     erq_sm  <= ERQ_IDLE;
   end else begin
-    case ( erq_sm )
+    unique case ( erq_sm )
       ERQ_IDLE: begin
         if ( dev0_wready ) begin
           edn_req <= 1'b1;
@@ -108,5 +108,14 @@ dev_entropy #(
   .dev_data_o ( dev0_entropy )
 );
 
+
+
+/////////////////////
+// Unused Signals
+/////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ entropy_rsp_i.edn_fips,
+                        dev0_entropy              // Used in ASIC implementation
+                      };
 
 endmodule : ast_entropy
