@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class clkmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(clkmgr_reg_block));
+class clkmgr_env_cfg extends cip_base_env_cfg #(
+  .RAL_T(clkmgr_reg_block)
+);
 
   // ext component cfgs
 
@@ -16,11 +18,11 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(clkmgr_reg_block));
   // A map from trans clock to its source clock (giving the signal that will appear on this clock
   // output if it's enabled).
   src_e trans_to_src [int] = '{
-    TransAes:        MainSrc,
-    TransHmac:       MainSrc,
-    TransKmac:       MainSrc,
-    TransOtbnIoDiv4: IoDiv4Src,
-    TransOtbnMain:   MainSrc
+    TransAes:        SrcMain,
+    TransHmac:       SrcMain,
+    TransKmac:       SrcMain,
+    TransOtbnIoDiv4: SrcIoDiv4,
+    TransOtbnMain:   SrcMain
   };
 
   `uvm_object_utils_begin(clkmgr_env_cfg)

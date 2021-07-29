@@ -8,9 +8,9 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  constraint enable_ip_clk_en { ip_clk_en == 1'b1; }
-  constraint all_busy { idle == '0; }
-  constraint scanmode_off { sel_scanmode == LcTxTSelOff; }
+  constraint enable_ip_clk_en {ip_clk_en == 1'b1;}
+  constraint all_busy {idle == '0;}
+  constraint scanmode_off {sel_scanmode == LcTxTSelOff;}
 
   task body();
     update_csrs_with_reset_values();
@@ -39,7 +39,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     logic [TL_DW-1:0] value;
     logic [NUM_TRANS-1:0] idle;
     typedef struct {
-      trans_e       unit;
+      trans_e unit;
       uvm_reg_field hint_bit;
       uvm_reg_field value_bit;
     } trans_descriptor_t;
@@ -60,8 +60,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("Clearing %s hint bit", descriptor.unit.name), UVM_MEDIUM)
       csr_wr(.ptr(descriptor.hint_bit), .value(1'b0));
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
-      `DV_CHECK_EQ(bit_value, 1'b1,
-                   $sformatf("%s hint value cannot drop while busy", descriptor.unit.name()))
+      `DV_CHECK_EQ(bit_value, 1'b1, $sformatf(
+                   "%s hint value cannot drop while busy", descriptor.unit.name()))
 
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(1);
@@ -70,8 +70,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       // Some cycles for the logic to settle.
       cfg.clk_rst_vif.wait_clks(3);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
-      `DV_CHECK_EQ(bit_value, 1'b0,
-                   $sformatf("%s hint value should drop when idle",  descriptor.unit.name()))
+      `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(
+                   "%s hint value should drop when idle", descriptor.unit.name()))
       trans = trans.next();
     end while (trans != trans.first);
   endtask : test_trans_clocks

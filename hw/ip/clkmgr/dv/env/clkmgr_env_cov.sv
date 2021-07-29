@@ -11,7 +11,7 @@
 // Wrapper class for peripheral clock covergroup.
 class clkmgr_peri_cg_wrap;
   // This covergroup collects signals affecting peripheral clock.
-  covergroup peri_cg(string name) with function sample(bit enable, bit ip_clk_en, bit scanmode);
+  covergroup peri_cg(string name) with function sample (bit enable, bit ip_clk_en, bit scanmode);
     option.name = name;
     option.per_instance = 1;
 
@@ -26,7 +26,7 @@ class clkmgr_peri_cg_wrap;
     peri_cg = new(name);
   endfunction
 
-  function void sample(bit enable, bit ip_clk_en, bit scanmode);
+  function void sample (bit enable, bit ip_clk_en, bit scanmode);
     peri_cg.sample(enable, ip_clk_en, scanmode);
   endfunction
 endclass
@@ -34,8 +34,11 @@ endclass
 // Wrapper class for transactional unit clock covergroup.
 class clkmgr_trans_cg_wrap;
   // This covergroup collects signals affecting transactional clock.
-  covergroup trans_cg(string name) with function
-      sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
+  covergroup trans_cg(
+      string name
+  ) with function sample (
+      bit hint, bit ip_clk_en, bit scanmode, bit idle
+  );
     option.name = name;
     option.per_instance = 1;
 
@@ -51,26 +54,27 @@ class clkmgr_trans_cg_wrap;
     trans_cg = new(name);
   endfunction
 
-  function void sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
+  function void sample (bit hint, bit ip_clk_en, bit scanmode, bit idle);
     trans_cg.sample(hint, ip_clk_en, scanmode, idle);
   endfunction
 endclass
 
-class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
+class clkmgr_env_cov extends cip_base_env_cov #(
+  .CFG_T(clkmgr_env_cfg)
+);
   `uvm_component_utils(clkmgr_env_cov)
 
   // the base class provides the following handles for use:
   // clkmgr_env_cfg: cfg
 
   // These covergroups collect signals affecting peripheral clocks.
-  clkmgr_peri_cg_wrap peri_cg_wrap[clkmgr_env_pkg::NUM_PERI];
+  clkmgr_peri_cg_wrap  peri_cg_wrap[clkmgr_env_pkg::NUM_PERI];
 
   // These covergroups collect signals affecting transactional clocks.
   clkmgr_trans_cg_wrap trans_cg_wrap[clkmgr_env_pkg::NUM_TRANS];
 
   // This embeded covergroup collects coverage for the external clock functionality.
-  covergroup extclk_cg with function
-      sample(bit sel, bit dft_en, bit byp_req, bit scanmode);
+  covergroup extclk_cg with function sample (bit sel, bit dft_en, bit byp_req, bit scanmode);
     sel_cp: coverpoint sel;
     dft_en_cp: coverpoint dft_en;
     byp_req_cp: coverpoint byp_req;

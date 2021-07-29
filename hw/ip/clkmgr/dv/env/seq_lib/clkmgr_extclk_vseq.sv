@@ -18,7 +18,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand lc_tx_t_sel_e sel_lc_dft_en;
 
   constraint lc_dft_en_c {
-    sel_lc_dft_en dist {LcTxTSelOn := 8, LcTxTSelOff := 2, LcTxTSelOther := 2};
+    sel_lc_dft_en dist {
+      LcTxTSelOn    := 8,
+      LcTxTSelOff   := 2,
+      LcTxTSelOther := 2
+    };
     !(lc_dft_en_other inside {On, Off});
   }
 
@@ -28,7 +32,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand lc_tx_t_sel_e sel_lc_clk_byp_req;
 
   constraint lc_clk_byp_req_c {
-    sel_lc_clk_byp_req dist {LcTxTSelOn := 8, LcTxTSelOff := 2, LcTxTSelOther := 2};
+    sel_lc_clk_byp_req dist {
+      LcTxTSelOn    := 8,
+      LcTxTSelOff   := 2,
+      LcTxTSelOther := 2
+    };
     !(lc_clk_byp_req_other inside {On, Off});
   }
 
@@ -41,13 +49,13 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_ast_clk_byp_ack;
   rand int cycles_before_next_trans;
 
-  constraint trans_large_c { num_trans == 16; }
+  constraint trans_large_c {num_trans == 16;}
   constraint cycles_to_stim_c {
-    cycles_before_extclk_sel      inside {[4:20]};
-    cycles_before_lc_clk_byp_req  inside {[4:20]};
-    cycles_before_lc_clk_byp_ack  inside {[4:20]};
-    cycles_before_ast_clk_byp_ack inside {[3:11]};
-    cycles_before_next_trans      inside {[15:25]};
+    cycles_before_extclk_sel inside {[4 : 20]};
+    cycles_before_lc_clk_byp_req inside {[4 : 20]};
+    cycles_before_lc_clk_byp_ack inside {[4 : 20]};
+    cycles_before_ast_clk_byp_ack inside {[3 : 11]};
+    cycles_before_next_trans inside {[15 : 25]};
   }
 
   function void post_randomize();
@@ -61,26 +69,28 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     set_scanmode_on_low_weight();
     csr_wr(.ptr(ral.extclk_sel_regwen), .value(1));
     fork
-      forever @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
-        if (cfg.clkmgr_vif.ast_clk_byp_req == lc_ctrl_pkg::On) begin
-          `uvm_info(`gfn, "Got ast_clk_byp_req on", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
-          cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::On);
-        end else begin
-          `uvm_info(`gfn, "Got ast_clk_byp_req off", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
-          cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::Off);
+      forever
+        @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
+          if (cfg.clkmgr_vif.ast_clk_byp_req == lc_ctrl_pkg::On) begin
+            `uvm_info(`gfn, "Got ast_clk_byp_req on", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
+            cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::On);
+          end else begin
+            `uvm_info(`gfn, "Got ast_clk_byp_req off", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
+            cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::Off);
+          end
         end
-      end
-      forever @cfg.clkmgr_vif.lc_clk_byp_ack begin : lc_clk_byp_ack
-        if (cfg.clkmgr_vif.lc_clk_byp_ack == lc_ctrl_pkg::On) begin
-          `uvm_info(`gfn, "Got lc_clk_byp_ack on", UVM_MEDIUM)
-        end else begin
-          `uvm_info(`gfn, "Got lc_clk_byp_req off", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
-          cfg.clkmgr_vif.update_lc_clk_byp_req(lc_ctrl_pkg::Off);
+      forever
+        @cfg.clkmgr_vif.lc_clk_byp_ack begin : lc_clk_byp_ack
+          if (cfg.clkmgr_vif.lc_clk_byp_ack == lc_ctrl_pkg::On) begin
+            `uvm_info(`gfn, "Got lc_clk_byp_ack on", UVM_MEDIUM)
+          end else begin
+            `uvm_info(`gfn, "Got lc_clk_byp_req off", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
+            cfg.clkmgr_vif.update_lc_clk_byp_req(lc_ctrl_pkg::Off);
+          end
         end
-      end
     join_none
     for (int i = 0; i < num_trans; ++i) begin
       logic [TL_DW-1:0] value;
@@ -100,10 +110,13 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
           cfg.clkmgr_vif.update_lc_clk_byp_req(lc_clk_byp_req);
         end
       join
-      `uvm_info(`gfn,
-                $sformatf("extclk_sel=0x%0x, lc_clk_byp_req=0x%0x, lc_dft_en=0x%0x, scanmode=0x%0x",
-                          extclk_sel, lc_clk_byp_req, lc_dft_en, scanmode),
-                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                "extclk_sel=0x%0x, lc_clk_byp_req=0x%0x, lc_dft_en=0x%0x, scanmode=0x%0x",
+                extclk_sel,
+                lc_clk_byp_req,
+                lc_dft_en,
+                scanmode
+                ), UVM_MEDIUM)
       csr_rd_check(.ptr(ral.extclk_sel), .compare_value(extclk_sel));
       cfg.io_clk_rst_vif.wait_clks(cycles_before_next_trans);
     end

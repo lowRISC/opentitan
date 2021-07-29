@@ -4,7 +4,11 @@
 //
 // clkmgr interface.
 
-interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
+interface clkmgr_if (
+  input logic clk,
+  input logic rst_n,
+  input logic rst_main_n
+);
   import clkmgr_env_pkg::*;
 
   // The ports to the dut side.
@@ -60,10 +64,10 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   logic                jitter_enable;
 
   // The expected and actual divided io clocks.
-  logic exp_clk_io_div2;
-  logic actual_clk_io_div2;
-  logic exp_clk_io_div4;
-  logic actual_clk_io_div4;
+  logic                exp_clk_io_div2;
+  logic                actual_clk_io_div2;
+  logic                exp_clk_io_div4;
+  logic                actual_clk_io_div4;
 
   function automatic void update_extclk_sel(lc_ctrl_pkg::lc_tx_t value);
     extclk_sel = value;
@@ -105,10 +109,8 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     return pwr_o.clk_status;
   endfunction
 
-  function automatic void update_exp_clk_io_divs(logic exp_div2_value,
-                                                 logic actual_div2_value,
-                                                 logic exp_div4_value,
-                                                 logic actual_div4_value);
+  function automatic void update_exp_clk_io_divs(logic exp_div2_value, logic actual_div2_value,
+                                                 logic exp_div4_value, logic actual_div4_value);
     exp_clk_io_div2 = exp_div2_value;
     actual_clk_io_div2 = actual_div2_value;
     exp_clk_io_div4 = exp_div4_value;
@@ -142,8 +144,9 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   always @(posedge clocks_o.clk_io_div4_powerup) begin
     if (rst_n) begin
       clk_enable_div4_ffs <= {clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div4_peri_en};
-      clk_hint_otbn_div4_ffs <= {clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0],
-                                 clk_hints[TransOtbnIoDiv4]};
+      clk_hint_otbn_div4_ffs <= {
+        clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints[TransOtbnIoDiv4]
+      };
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end
   end
@@ -159,7 +162,7 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   always @(posedge clocks_o.clk_io_div2_powerup) begin
     if (rst_n) begin
       clk_enable_div2_ffs <= {clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div2_peri_en};
-      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_div2_ffs  <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end
   end
   clocking peri_div2_cb @(posedge clocks_o.clk_io_div2_powerup);
@@ -172,7 +175,7 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   always @(posedge clocks_o.clk_io_powerup) begin
     if (rst_n) begin
       clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_peri_en};
-      ip_clk_en_io_ffs <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end
   end
   clocking peri_io_cb @(posedge clocks_o.clk_io_powerup);
@@ -185,7 +188,7 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   always @(posedge clocks_o.clk_usb_powerup) begin
     if (rst_n) begin
       clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables.usb_peri_en};
-      ip_clk_en_usb_ffs <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end
   end
   clocking peri_usb_cb @(posedge clocks_o.clk_usb_powerup);

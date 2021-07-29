@@ -5,9 +5,7 @@
 class clkmgr_common_vseq extends clkmgr_base_vseq;
   `uvm_object_utils(clkmgr_common_vseq)
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
   virtual task body();
