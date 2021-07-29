@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class clkmgr_base_test extends cip_base_test #(
-    .CFG_T(clkmgr_env_cfg),
-    .ENV_T(clkmgr_env)
-  );
+  .CFG_T(clkmgr_env_cfg),
+  .ENV_T(clkmgr_env)
+);
 
   `uvm_component_utils(clkmgr_base_test)
   `uvm_component_new
