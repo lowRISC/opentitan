@@ -295,21 +295,23 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
             dividers.step_div2(step_down && (cfg.clkmgr_vif.scanmode_i != On) ?
                                clock_dividers::DivStepDown : clock_dividers::DivStepUp);
           end
-          `uvm_info(`gfn, $sformatf("Stepped divided clocks: %0s", dividers.show()), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Stepped divided clocks: %0s", dividers.show()), UVM_HIGH)
         end
       end
       // Compare divided clocks, always based on values from clocking block (thus preponed).
       forever @cfg.clkmgr_vif.div_clks_cb begin : check_clocks
-        `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4,
-                     cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
-                     $sformatf("Mismatch for clk_io_div4_powerup, expected %b, got %b",
-                               cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
-                               cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4))
-        `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2,
-                     cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
-                     $sformatf("Mismatch for clk_io_div2_powerup, expected %b, got %b",
-                               cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
-                               cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2))
+        if (cfg.io_clk_rst_vif.rst_n) begin
+          `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4,
+                       cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
+                       $sformatf("Mismatch for clk_io_div4_powerup, expected %b, got %b",
+                                 cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4,
+                                 cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4))
+          `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2,
+                       cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
+                       $sformatf("Mismatch for clk_io_div2_powerup, expected %b, got %b",
+                                 cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div2,
+                                 cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div2))
+        end
       end
       forever @(posedge cfg.clkmgr_vif.clocks_o.clk_io_powerup) begin : increment_clocks
         if (cfg.io_clk_rst_vif.rst_n) begin
@@ -319,7 +321,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           // The incremented clock will be useful for the next comparison cycle.
           dividers.increment_div4(in_scan_mode);
           dividers.increment_div2();
-          `uvm_info(`gfn, $sformatf("Incremented divided clocks: %0s", dividers.show()), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Incremented divided clocks: %0s", dividers.show()), UVM_HIGH)
           `uvm_info(`gfn,
                     $sformatf(
                         "Update for div clk cb: div2 exp=%b, actual=%b, div4 exp=%b, actual=%b",
@@ -327,7 +329,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                         cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup,
                         dividers.get_div4_clk(),
                         cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup),
-                    UVM_MEDIUM)
+                    UVM_HIGH)
           // This delay seems to help with xcelium: without it the actual divided clocks are stale.
           #1;
           cfg.clkmgr_vif.update_exp_clk_io_divs(
@@ -335,6 +337,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
               .actual_div2_value(cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup),
               .exp_div4_value(dividers.get_div4_clk()),
               .actual_div4_value(cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup));
+        end else begin
+          `uvm_info(`gfn, "Clearing expectations because io rst_n is active", UVM_LOW)
+          cfg.clkmgr_vif.update_exp_clk_io_divs(
+            .exp_div2_value(1'b0),
+            .actual_div2_value(cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup),
+            .exp_div4_value(1'b0),
+            .actual_div4_value(cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup));
         end
       end
     join
@@ -417,7 +426,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
-      `uvm_info(`gfn, $sformatf("Reading 0x%0x from %s", item.d_data, csr.get_name()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Reading 0x%0x from %s", item.d_data, csr.get_name()), UVM_MEDIUM)
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
