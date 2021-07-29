@@ -155,4 +155,12 @@ TEST_APPS_SELFCHECKING = [
         # verilator for now.
         "targets": ["sim_verilator"],
     },
+    {
+        "name": "sw_silicon_creator_lib_irq_asm_functest",
+        "test_dir": "sw/device/silicon_creator/testing",
+        # TODO(lowRISC/opentitan#6965) This test resets the chip and appears to
+        # cause a test failure on FPGA boards.  Restrict this test to
+        # verilator for now.
+        "targets": ["sim_verilator"],
+    },
 ]

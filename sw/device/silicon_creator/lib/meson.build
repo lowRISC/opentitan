@@ -103,6 +103,18 @@ sw_silicon_creator_lib_epmp_test_unlock = declare_dependency(
   ),
 )
 
+# Silicon creator assembly exception handler.
+sw_silicon_creator_lib_irq_asm = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_irq_asm',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      hw_ip_pwrmgr_reg_h,
+      'irq_asm.S',
+    ],
+  ),
+)
+
 test('sw_silicon_creator_lib_shutdown_unittest', executable(
     'sw_silicon_creator_lib_shutdown_unittest',
     sources: [
@@ -212,5 +224,25 @@ sw_silicon_creator_lib_sigverify_functest = declare_dependency(
 mask_rom_tests += {
   'sw_silicon_creator_lib_sigverify_functest': {
     'library': sw_silicon_creator_lib_sigverify_functest,
+  }
+}
+
+sw_silicon_creator_lib_irq_asm_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_irq_asm_functest',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'irq_asm_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_irq_asm,
+      sw_silicon_creator_lib_driver_rstmgr,
+      sw_silicon_creator_lib_driver_watchdog,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_irq_asm_functest': {
+    'library': sw_silicon_creator_lib_irq_asm_functest,
   }
 }
