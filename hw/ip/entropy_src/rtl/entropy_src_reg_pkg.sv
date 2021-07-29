@@ -79,31 +79,24 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } enable;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } entropy_data_reg_enable;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } lfsr_enable;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } boot_bypass_disable;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } health_test_clr;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } rng_bit_enable;
     struct packed {
       logic [1:0]  q;
-      logic        qe;
     } rng_bit_sel;
   } entropy_src_reg2hw_conf_reg_t;
 
@@ -114,11 +107,9 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } es_route;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } es_type;
   } entropy_src_reg2hw_entropy_control_reg_t;
 
@@ -247,11 +238,9 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } fw_ov_mode;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } fw_ov_entropy_insert;
   } entropy_src_reg2hw_fw_ov_control_reg_t;
 
@@ -615,26 +604,26 @@ package entropy_src_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    entropy_src_reg2hw_intr_state_reg_t intr_state; // [574:571]
-    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [570:567]
-    entropy_src_reg2hw_intr_test_reg_t intr_test; // [566:559]
-    entropy_src_reg2hw_alert_test_reg_t alert_test; // [558:555]
-    entropy_src_reg2hw_conf_reg_t conf; // [554:522]
-    entropy_src_reg2hw_rate_reg_t rate; // [521:506]
-    entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [505:496]
-    entropy_src_reg2hw_entropy_data_reg_t entropy_data; // [495:463]
-    entropy_src_reg2hw_health_test_windows_reg_t health_test_windows; // [462:431]
-    entropy_src_reg2hw_repcnt_thresholds_reg_t repcnt_thresholds; // [430:397]
-    entropy_src_reg2hw_repcnts_thresholds_reg_t repcnts_thresholds; // [396:363]
-    entropy_src_reg2hw_adaptp_hi_thresholds_reg_t adaptp_hi_thresholds; // [362:329]
-    entropy_src_reg2hw_adaptp_lo_thresholds_reg_t adaptp_lo_thresholds; // [328:295]
-    entropy_src_reg2hw_bucket_thresholds_reg_t bucket_thresholds; // [294:261]
-    entropy_src_reg2hw_markov_hi_thresholds_reg_t markov_hi_thresholds; // [260:227]
-    entropy_src_reg2hw_markov_lo_thresholds_reg_t markov_lo_thresholds; // [226:193]
-    entropy_src_reg2hw_extht_hi_thresholds_reg_t extht_hi_thresholds; // [192:159]
-    entropy_src_reg2hw_extht_lo_thresholds_reg_t extht_lo_thresholds; // [158:125]
-    entropy_src_reg2hw_alert_threshold_reg_t alert_threshold; // [124:93]
-    entropy_src_reg2hw_fw_ov_control_reg_t fw_ov_control; // [92:83]
+    entropy_src_reg2hw_intr_state_reg_t intr_state; // [563:560]
+    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [559:556]
+    entropy_src_reg2hw_intr_test_reg_t intr_test; // [555:548]
+    entropy_src_reg2hw_alert_test_reg_t alert_test; // [547:544]
+    entropy_src_reg2hw_conf_reg_t conf; // [543:518]
+    entropy_src_reg2hw_rate_reg_t rate; // [517:502]
+    entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [501:494]
+    entropy_src_reg2hw_entropy_data_reg_t entropy_data; // [493:461]
+    entropy_src_reg2hw_health_test_windows_reg_t health_test_windows; // [460:429]
+    entropy_src_reg2hw_repcnt_thresholds_reg_t repcnt_thresholds; // [428:395]
+    entropy_src_reg2hw_repcnts_thresholds_reg_t repcnts_thresholds; // [394:361]
+    entropy_src_reg2hw_adaptp_hi_thresholds_reg_t adaptp_hi_thresholds; // [360:327]
+    entropy_src_reg2hw_adaptp_lo_thresholds_reg_t adaptp_lo_thresholds; // [326:293]
+    entropy_src_reg2hw_bucket_thresholds_reg_t bucket_thresholds; // [292:259]
+    entropy_src_reg2hw_markov_hi_thresholds_reg_t markov_hi_thresholds; // [258:225]
+    entropy_src_reg2hw_markov_lo_thresholds_reg_t markov_lo_thresholds; // [224:191]
+    entropy_src_reg2hw_extht_hi_thresholds_reg_t extht_hi_thresholds; // [190:157]
+    entropy_src_reg2hw_extht_lo_thresholds_reg_t extht_lo_thresholds; // [156:123]
+    entropy_src_reg2hw_alert_threshold_reg_t alert_threshold; // [122:91]
+    entropy_src_reg2hw_fw_ov_control_reg_t fw_ov_control; // [90:83]
     entropy_src_reg2hw_fw_ov_rd_data_reg_t fw_ov_rd_data; // [82:50]
     entropy_src_reg2hw_fw_ov_wr_data_reg_t fw_ov_wr_data; // [49:17]
     entropy_src_reg2hw_observe_fifo_thresh_reg_t observe_fifo_thresh; // [16:10]
