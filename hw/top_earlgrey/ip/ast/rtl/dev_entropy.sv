@@ -223,7 +223,7 @@ end
 // Packer FIFO (32to1 bit)
 ////////////////////////////////////////
 logic rdata, rvalid;
-logic [6-1:0] unc_depth;
+logic [6-1:0] depth;
 
 prim_packer_fifo #(
   .InW ( 32 ),
@@ -231,18 +231,27 @@ prim_packer_fifo #(
 ) u_dev_fifo (
   .clk_i ( clk_dev_i ),
   .rst_ni ( rst_dev_ni ),
-  .clr_i ( 1'b0 ),                // !dev_en_dev ), // Clear (sync)
-  .wvalid_i ( wvalid ),           // Write Valid
-  .wdata_i ( wdata ),             // Write Data (32-bit)
-  .wready_o ( wready ),           // Write Ready
+  .clr_i ( 1'b0 ),            // !dev_en_dev ), // Clear (sync)
+  .wvalid_i ( wvalid ),       // Write Valid
+  .wdata_i ( wdata ),         // Write Data (32-bit)
+  .wready_o ( wready ),       // Write Ready
   //
-  .rvalid_o ( rvalid ),           // Read Valid
-  .rdata_o ( rdata ),             // Read Data
-  .rready_i ( rready ),           // Read Ready (done)
-  .depth_o ( unc_depth[6-1:0] )   // empty when (depth_o == `0)
+  .rvalid_o ( rvalid ),       // Read Valid
+  .rdata_o ( rdata ),         // Read Data
+  .rready_i ( rready ),       // Read Ready (done)
+  .depth_o ( depth[6-1:0] )   // empty when (depth_o == `0)
 );
 
 assign rready     = rvalid && rate_pulse;
 assign dev_data_o = rdata && rate_pulse;
+
+
+///////////////////////
+// Unused Signals
+///////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ depth[6-1:0],
+                        dev_rate[31:16]
+                      };
 
 endmodule : dev_entropy

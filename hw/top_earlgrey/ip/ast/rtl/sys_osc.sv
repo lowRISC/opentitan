@@ -48,7 +48,7 @@ always begin
 end
 `else  // of SYNTHESIS
 // SYNTHESIS/VERILATOR/LINTER/FPGA
-///////////////////////////////////////
+////////////////////////////////////////
 logic sys_clk_dly;
 assign sys_clk_dly = 1'b1;
 
@@ -85,5 +85,14 @@ prim_clock_buf u_buf (
   .clk_i ( clk ),
   .clk_o ( sys_clk_o )
 );
+
+
+`ifdef SYNTHESIS
+/////////////////////////
+// Unused Signals
+/////////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ sys_jen_i };      // Used in ASIC implementation
+`endif
 
 endmodule : sys_osc

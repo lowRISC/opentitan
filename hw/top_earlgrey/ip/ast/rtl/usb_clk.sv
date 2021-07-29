@@ -21,6 +21,7 @@ module usb_clk (
   output logic clk_src_usb_val_o           // USB Source Clock Valid
 );
 
+
 logic clk, osc_en, usb_clk_en, rst_n;
 
 assign rst_n = rst_usb_clk_ni;  // Scan enabled
@@ -57,5 +58,12 @@ prim_flop_2sync #(
   .d_i ( 1'b1 ),
   .q_o ( clk_src_usb_val_o )
 );
+
+
+/////////////////////////
+// Unused Signals
+/////////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ usb_ref_pulse_i };  // Used in ASIC implementation
 
 endmodule : usb_clk

@@ -27,10 +27,10 @@ module rglts_pdm_3p3v (
 );
 
 `ifndef SYNTHESIS
-import ast_bhv_pkg::* ;
-
 // Behavioral Model
 ///////////////////////////////////////
+import ast_bhv_pkg::* ;
+
 // localparam time MPVCC_RDLY = 5us,
 //                 MPVCC_FDLY = 100ns,
 //                 MPPD_RDLY  = 50us,
@@ -78,14 +78,14 @@ vcaon_pok u_vcaon_pok (
 assign vcaon_pok_h_o = vcaon_pok_h && vcc_pok_h_i;
 
 `else  // of SYNTHESIS
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
 logic dummy0, dummy1;
 
-assign dummy0 = vcmain_pok_h_i && vcmain_pok_o_h_i && clk_src_aon_h_i && 1'b0;
-assign dummy1 = vcmain_pok_h_i || vcmain_pok_o_h_i || clk_src_aon_h_i || 1'b1;
+assign dummy0 = vcmain_pok_h_i && vcmain_pok_o_h_i && 1'b0;
+assign dummy1 = vcmain_pok_h_i || vcmain_pok_o_h_i || 1'b1;
 
 assign vcaon_pok_h_o  = dummy0 || !dummy0;  // 1'b1
 assign main_pwr_dly_o = dummy1 || !dummy1;  // 1'b1
@@ -112,5 +112,15 @@ assign flash_power_ready_h_o = vcc_pok_h_i;
 ///////////////////////////////////////
 assign otp_power_seq_h_o[0] = !flash_power_down_h_o && otp_power_seq_h_i[0];  // TODO Scan mode
 assign otp_power_seq_h_o[1] =  flash_power_down_h_o || otp_power_seq_h_i[1];  // TODO Scan mode
+
+
+///////////////////////
+// Unused Signals
+///////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ main_env_iso_en_h_i,  // Used in ASIC implementation
+                        vcmain_pok_h_i,       // Used in ASIC implementation
+                        clk_src_aon_h_i       // Used in ASIC implementation
+                      };
 
 endmodule : rglts_pdm_3p3v

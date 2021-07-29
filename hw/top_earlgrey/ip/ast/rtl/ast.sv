@@ -146,6 +146,7 @@ import ast_pkg::* ;
 import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
 
+
 logic vcaon_pok, vcaon_pok_h, scan_mode, scan_reset_n;
 logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
 
@@ -356,7 +357,7 @@ aon_clk  u_aon_clk (
 
 assign clk_aon = clk_src_aon_o;
 
-logic vcm_pokpor_aon_syn_n;
+logic vcmpp_aon_sync_n;
 
 // Reset De-Assert Sync
 prim_flop_2sync #(
@@ -579,6 +580,7 @@ ast_alert u_alert_otp (
 ast_pkg::ast_dif_t ot0_alert_src;
 
 assign ot0_alert_src   = '{p: 1'b0, n: 1'b1};
+
 ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
@@ -660,7 +662,6 @@ ast_reg_top u_reg (
   .intg_err_o ( ),
   .devmode_i ( 1'b0 )
 );  // u_reg
-
 
 // AST to Registers Input
 for (genvar i=0; i<10; i++ ) begin : gen_regb
@@ -753,5 +754,151 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, vcaon_pok_o)
 `ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, vcaon_pok_o)
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, vcaon_pok_o)             //TODO)
+
+/////////////////////
+// Unused Signals
+////////////////////
+logic unused_sigs;
+`ifndef ANALOGSIM
+assign unused_sigs = ^{ clk_ast_usb_i,
+                        rst_ast_usb_ni,
+                        padmux2ast_i[5:0],
+                        pad2ast_t0_ai,
+                        pad2ast_t1_ai,
+                        dft_strap_test_i.valid,
+                        dft_strap_test_i.straps[1:0],
+                        lc_dft_en_i[3:0],
+                        reg2hw.rega[0].q,   // [0:49]
+                        reg2hw.rega[1].q,   // [0:49]
+                        reg2hw.rega[2].q,   // [0:49]
+                        reg2hw.rega[3].q,   // [0:49]
+                        reg2hw.rega[4].q,   // [0:49]
+                        reg2hw.rega[5].q,   // [0:49]
+                        reg2hw.rega[6].q,   // [0:49]
+                        reg2hw.rega[7].q,   // [0:49]
+                        reg2hw.rega[8].q,   // [0:49]
+                        reg2hw.rega[9].q,   // [0:49]
+                        reg2hw.rega[10].q,  // [0:49]
+                        reg2hw.rega[11].q,  // [0:49]
+                        reg2hw.rega[12].q,  // [0:49]
+                        reg2hw.rega[13].q,  // [0:49]
+                        reg2hw.rega[14].q,  // [0:49]
+                        reg2hw.rega[15].q,  // [0:49]
+                        reg2hw.rega[16].q,  // [0:49]
+                        reg2hw.rega[17].q,  // [0:49]
+                        reg2hw.rega[18].q,  // [0:49]
+                        reg2hw.rega[19].q,  // [0:49]
+                        reg2hw.rega[20].q,  // [0:49]
+                        reg2hw.rega[21].q,  // [0:49]
+                        reg2hw.rega[22].q,  // [0:49]
+                        reg2hw.rega[23].q,  // [0:49]
+                        reg2hw.rega[24].q,  // [0:49]
+                        reg2hw.rega[25].q,  // [0:49]
+                        reg2hw.rega[26].q,  // [0:49]
+                        reg2hw.rega[27].q,  // [0:49]
+                        reg2hw.rega[28].q,  // [0:49]
+                        reg2hw.rega[29].q,  // [0:49]
+                        reg2hw.rega[30].q,  // [0:49]
+                        reg2hw.rega[31].q,  // [0:49]
+                        reg2hw.rega[32].q,  // [0:49]
+                        reg2hw.rega[33].q,  // [0:49]
+                        reg2hw.rega[34].q,  // [0:49]
+                        reg2hw.rega[35].q,  // [0:49]
+                        reg2hw.rega[36].q,  // [0:49]
+                        reg2hw.rega[37].q,  // [0:49]
+                        reg2hw.rega[38].q,  // [0:49]
+                        reg2hw.rega[39].q,  // [0:49]
+                        reg2hw.rega[40].q,  // [0:49]
+                        reg2hw.rega[41].q,  // [0:49]
+                        reg2hw.rega[42].q,  // [0:49]
+                        reg2hw.rega[43].q,  // [0:49]
+                        reg2hw.rega[44].q,  // [0:49]
+                        reg2hw.rega[45].q,  // [0:49]
+                        reg2hw.rega[46].q,  // [0:49]
+                        reg2hw.rega[47].q,  // [0:49]
+                        reg2hw.rega[48].q,  // [0:49]
+                        reg2hw.rega[49].q,  // [0:49]
+                        reg2hw.regb[0].q,  // [0:9]
+                        reg2hw.regb[1].q,  // [0:9]
+                        reg2hw.regb[2].q,  // [0:9]
+                        reg2hw.regb[3].q,  // [0:9]
+                        reg2hw.regb[4].q,  // [0:9]
+                        reg2hw.regb[5].q,  // [0:9]
+                        reg2hw.regb[6].q,  // [0:9]
+                        reg2hw.regb[7].q,  // [0:9]
+                        reg2hw.regb[8].q,  // [0:9]
+                        reg2hw.regb[9].q,  // [0:9]
+                        reg2hw.revid.q
+                      };
+`else
+assign unused_sigs = ^{ clk_ast_usb_i,
+                        rst_ast_usb_ni,
+                        padmux2ast_i[5:0],
+                        dft_strap_test_i.valid,
+                        dft_strap_test_i.straps[1:0],
+                        lc_dft_en_i[3:0],
+                        reg2hw.rega[0].q,   // [0:49]
+                        reg2hw.rega[1].q,   // [0:49]
+                        reg2hw.rega[2].q,   // [0:49]
+                        reg2hw.rega[3].q,   // [0:49]
+                        reg2hw.rega[4].q,   // [0:49]
+                        reg2hw.rega[5].q,   // [0:49]
+                        reg2hw.rega[6].q,   // [0:49]
+                        reg2hw.rega[7].q,   // [0:49]
+                        reg2hw.rega[8].q,   // [0:49]
+                        reg2hw.rega[9].q,   // [0:49]
+                        reg2hw.rega[10].q,  // [0:49]
+                        reg2hw.rega[11].q,  // [0:49]
+                        reg2hw.rega[12].q,  // [0:49]
+                        reg2hw.rega[13].q,  // [0:49]
+                        reg2hw.rega[14].q,  // [0:49]
+                        reg2hw.rega[15].q,  // [0:49]
+                        reg2hw.rega[16].q,  // [0:49]
+                        reg2hw.rega[17].q,  // [0:49]
+                        reg2hw.rega[18].q,  // [0:49]
+                        reg2hw.rega[19].q,  // [0:49]
+                        reg2hw.rega[20].q,  // [0:49]
+                        reg2hw.rega[21].q,  // [0:49]
+                        reg2hw.rega[22].q,  // [0:49]
+                        reg2hw.rega[23].q,  // [0:49]
+                        reg2hw.rega[24].q,  // [0:49]
+                        reg2hw.rega[25].q,  // [0:49]
+                        reg2hw.rega[26].q,  // [0:49]
+                        reg2hw.rega[27].q,  // [0:49]
+                        reg2hw.rega[28].q,  // [0:49]
+                        reg2hw.rega[29].q,  // [0:49]
+                        reg2hw.rega[30].q,  // [0:49]
+                        reg2hw.rega[31].q,  // [0:49]
+                        reg2hw.rega[32].q,  // [0:49]
+                        reg2hw.rega[33].q,  // [0:49]
+                        reg2hw.rega[34].q,  // [0:49]
+                        reg2hw.rega[35].q,  // [0:49]
+                        reg2hw.rega[36].q,  // [0:49]
+                        reg2hw.rega[37].q,  // [0:49]
+                        reg2hw.rega[38].q,  // [0:49]
+                        reg2hw.rega[39].q,  // [0:49]
+                        reg2hw.rega[40].q,  // [0:49]
+                        reg2hw.rega[41].q,  // [0:49]
+                        reg2hw.rega[42].q,  // [0:49]
+                        reg2hw.rega[43].q,  // [0:49]
+                        reg2hw.rega[44].q,  // [0:49]
+                        reg2hw.rega[45].q,  // [0:49]
+                        reg2hw.rega[46].q,  // [0:49]
+                        reg2hw.rega[47].q,  // [0:49]
+                        reg2hw.rega[48].q,  // [0:49]
+                        reg2hw.rega[49].q,  // [0:49]
+                        reg2hw.regb[0].q,  // [0:9]
+                        reg2hw.regb[1].q,  // [0:9]
+                        reg2hw.regb[2].q,  // [0:9]
+                        reg2hw.regb[3].q,  // [0:9]
+                        reg2hw.regb[4].q,  // [0:9]
+                        reg2hw.regb[5].q,  // [0:9]
+                        reg2hw.regb[6].q,  // [0:9]
+                        reg2hw.regb[7].q,  // [0:9]
+                        reg2hw.regb[8].q,  // [0:9]
+                        reg2hw.regb[9].q,  // [0:9]
+                        reg2hw.revid.q
+                      };
+`endif
 
 endmodule : ast

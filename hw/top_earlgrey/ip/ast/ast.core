@@ -26,6 +26,7 @@ filesets:
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
       - rtl/adc.sv
+      - rtl/adc_ana.sv
       - rtl/aon_clk.sv
       - rtl/aon_osc.sv
       - rtl/ast_dft.sv
@@ -83,6 +84,9 @@ targets:
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
     toplevel: ast
+    parameters:
+     - SYNTHESIS
+
 
   lint:
     <<: *default_target

@@ -65,6 +65,7 @@ always_ff @( posedge clk_io_osc_i, negedge rst_clk_osc_n ) begin
   end
 end
 
+logic clk_osc_en;
 assign clk_osc_en = clk_osc_sel && (clk_osc_en_q || clk_osc_aoff);
 
 prim_clock_gating u_clk_osc_ckgt (
@@ -100,6 +101,7 @@ always_ff @( posedge clk_ast_ext_i, negedge rst_clk_byp_n ) begin
   end
 end
 
+logic clk_byp_en;
 assign clk_byp_en = clk_byp_sel && (clk_byp_en_q || clk_byp_aoff);
 
 prim_clock_gating u_clk_byp_ckgt (
@@ -129,5 +131,14 @@ assign dpram_rml_o = 10'h000;
 assign spram_rm_o  = 5'h00;
 assign sprgf_rm_o  = 5'h00;
 assign sprom_rm_o  = 5'h00;
+
+
+///////////////////////
+// Unused Signals
+///////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ clk_i,       // Used in ASIC implementation
+                        rst_ni       // Used in ASIC implementation
+                      };
 
 endmodule : ast_dft

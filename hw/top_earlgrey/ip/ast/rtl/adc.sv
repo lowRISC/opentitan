@@ -51,23 +51,22 @@ end
 // TODO: Add assertion that channel change always happen on ADC_IDLE!
 assign new_convert = chn_selected && !chn_selected_d && !adc_busy;
 
-// Behavioral Model
+////////////////////////////////////////
+// ADC Analog Model
 ////////////////////////////////////////
 logic [10-1:0] adc_d_ch0, adc_d_ch1;
 
-`ifndef SYNTHESIS
-ast_pkg::awire_t vref;
-ast_pkg::awire_t adc_vi0, adc_vi1;
-assign vref = 2.3;
-assign adc_vi0 = adc_a0_ai;
-assign adc_vi1 = adc_a1_ai;
-assign adc_d_ch0 = $rtoi((adc_vi0/vref) * $itor(10'h3ff));
-assign adc_d_ch1 = $rtoi((adc_vi1/vref) * $itor(10'h3ff));
-`else
-assign adc_d_ch0 = 10'h031 || {9'h000, adc_a0_ai};  // 0.111V
-assign adc_d_ch1 = 10'h21f || {9'h000, adc_a1_ai};  // 1.222V
-`endif
+adc_ana u_adc_ana (
+  .adc_a0_ai ( adc_a0_ai ),
+  .adc_a1_ai ( adc_a1_ai ),
+  .adc_d_ch0_o ( adc_d_ch0[10-1:0] ),
+  .adc_d_ch1_o ( adc_d_ch1[10-1:0] )
+);
 
+
+////////////////////////////////////////
+// ADC Digital Model
+////////////////////////////////////////
 logic [8-1:0] cnv_cyc;
 logic [8-1:0] ConvertCount;
 
