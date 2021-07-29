@@ -61,9 +61,11 @@ module csrng
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
 
-  logic  alert;
-  logic  alert_test;
-  logic  intg_err_alert;
+  logic [NumAlerts-1:0] alert_test;
+  logic [NumAlerts-1:0] alert;
+
+  logic [NumAlerts-1:0] intg_err_alert;
+  assign intg_err_alert[0] = 1'b0;
 
   csrng_reg_top u_reg (
     .clk_i,
@@ -72,7 +74,7 @@ module csrng
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(intg_err_alert),
+    .intg_err_o(intg_err_alert[1]),
     .devmode_i(1'b1)
   );
 
@@ -104,8 +106,10 @@ module csrng
     .csrng_cmd_o,
 
     // Alerts
-    .alert_test_o(alert_test),
-    .fatal_alert_o(alert),
+    .recov_alert_test_o(alert_test[0]),
+    .fatal_alert_test_o(alert_test[1]),
+    .recov_alert_o(alert[0]),
+    .fatal_alert_o(alert[1]),
 
     .intr_cs_cmd_req_done_o,
     .intr_cs_entropy_req_o,
@@ -114,19 +118,24 @@ module csrng
   );
 
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
-    .IsFatal(1)
-  ) u_prim_alert_sender (
-    .clk_i,
-    .rst_ni,
-    .alert_test_i  ( alert_test              ),
-    .alert_req_i   ( alert || intg_err_alert ),
-    .alert_ack_o   (                         ),
-    .alert_state_o (                         ),
-    .alert_rx_i    ( alert_rx_i[0]           ),
-    .alert_tx_o    ( alert_tx_o[0]           )
-  );
+  ///////////////////////////
+  // Alert generation
+  ///////////////////////////
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i]                 ),
+      .alert_req_i   ( alert[i] || intg_err_alert[i] ),
+      .alert_ack_o   (                               ),
+      .alert_state_o (                               ),
+      .alert_rx_i    ( alert_rx_i[i]                 ),
+      .alert_tx_o    ( alert_tx_o[i]                 )
+    );
+  end
 
 
   // Assertions

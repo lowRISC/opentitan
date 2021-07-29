@@ -13377,6 +13377,13 @@
       module_name: keymgr
     }
     {
+      name: csrng_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: csrng
+    }
+    {
       name: csrng_fatal_alert
       width: 1
       type: alert

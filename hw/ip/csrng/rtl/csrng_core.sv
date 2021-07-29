@@ -37,7 +37,10 @@ module csrng_core import csrng_pkg::*; #(
   output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
 
   // Alerts
-  output logic           alert_test_o,
+
+  output logic           recov_alert_test_o,
+  output logic           fatal_alert_test_o,
+  output logic           recov_alert_o,
   output logic           fatal_alert_o,
 
   output logic           intr_cs_cmd_req_done_o,
@@ -73,8 +76,18 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_hw_inst_exc;
   logic       event_cs_fatal_err;
   logic       cs_enable;
+  logic       cs_enable_pfe;
+  logic       cs_enable_pfd;
+  logic       cs_enable_pfa;
   logic       sw_app_enable;
+  logic       sw_app_enable_pfe;
+  logic       sw_app_enable_pfd;
+  logic       sw_app_enable_pfa;
   logic       read_int_state;
+  logic       read_int_state_pfe;
+  logic       read_int_state_pfd;
+  logic       read_int_state_pfa;
+  logic       recov_alert_event;
   logic       acmd_avail;
   logic       acmd_sop;
   logic       acmd_mop;
@@ -649,15 +662,47 @@ module csrng_core import csrng_pkg::*; #(
   assign fatal_alert_o = event_cs_fatal_err;
 
   // alert test
-  assign alert_test_o = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
+  assign recov_alert_test_o = {
+    reg2hw.alert_test.recov_alert.q &&
+    reg2hw.alert_test.recov_alert.qe
+  };
+  assign fatal_alert_test_o = {
+    reg2hw.alert_test.fatal_alert.q &&
+    reg2hw.alert_test.fatal_alert.qe
   };
 
+
+  assign recov_alert_event = cs_enable_pfa || sw_app_enable_pfa || read_int_state_pfa;
+
+  assign recov_alert_o = recov_alert_event;
+
+
+
+  // check for illegal enable field states, and set alert if detected
+
+  assign cs_enable_pfe = (cs_enb_e'(reg2hw.ctrl.enable.q) == CS_FIELD_ON);
+  assign cs_enable_pfd = (cs_enb_e'(reg2hw.ctrl.enable.q) == ~CS_FIELD_ON);
+  assign cs_enable_pfa = !(cs_enable_pfe || cs_enable_pfd);
+  assign hw2reg.recov_alert_sts.enable_field_alert.de = cs_enable_pfa;
+  assign hw2reg.recov_alert_sts.enable_field_alert.d  = cs_enable_pfa;
+
+  assign sw_app_enable_pfe = (cs_enb_e'(reg2hw.ctrl.sw_app_enable.q) == CS_FIELD_ON);
+  assign sw_app_enable_pfd = (cs_enb_e'(reg2hw.ctrl.sw_app_enable.q) == ~CS_FIELD_ON);
+  assign sw_app_enable_pfa = !(sw_app_enable_pfe || sw_app_enable_pfd);
+  assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.de = sw_app_enable_pfa;
+  assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.d  = sw_app_enable_pfa;
+
+  assign read_int_state_pfe = (cs_enb_e'(reg2hw.ctrl.read_int_state.q) == CS_FIELD_ON);
+  assign read_int_state_pfd = (cs_enb_e'(reg2hw.ctrl.read_int_state.q) == ~CS_FIELD_ON);
+  assign read_int_state_pfa = !(read_int_state_pfe || read_int_state_pfd);
+  assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
+  assign hw2reg.recov_alert_sts.read_int_state_field_alert.d  = read_int_state_pfa;
+
+
   // master module enable
-  assign cs_enable = (cs_enb_e'(reg2hw.ctrl.enable.q) == CS_FIELD_ON);
-  assign sw_app_enable = (cs_enb_e'(reg2hw.ctrl.sw_app_enable.q) == CS_FIELD_ON);
-  assign read_int_state = (cs_enb_e'(reg2hw.ctrl.read_int_state.q) == CS_FIELD_ON);
+  assign cs_enable = cs_enable_pfe;
+  assign sw_app_enable = sw_app_enable_pfe;
+  assign read_int_state = read_int_state_pfe;
 
   //------------------------------------------
   // application interface

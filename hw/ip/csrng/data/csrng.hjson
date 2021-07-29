@@ -40,6 +40,9 @@
       desc: "Asserted when a FIFO error or a fatal alert occurs. Check the !!ERR_CODE register to get more information."}
   ],
   alert_list: [
+    { name: "recov_alert",
+      desc: "This alert is triggered when a recoverable alert occurs.  Check the !!RECOV_ALERT_STS register to get more information."
+    }
     { name: "fatal_alert",
       desc: '''
             This alert triggers (i) if an illegal state machine state is reached, or
@@ -103,6 +106,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
+      tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "3:0",
@@ -274,6 +279,38 @@
                 to instance HW1, and so forth. (To monitor the status of requests made
                 to the SW instance, check the CMD_STS register). Writing a zero to this register
                 resets the status bits.
+                '''
+        }
+      ]
+    },
+    {
+      name: "RECOV_ALERT_STS",
+      desc: "Recoverable alert status register",
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ENABLE field in the !!CTRL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
+        { bits: "1",
+          name: "SW_APP_ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the SW_APP_ENABLE field in the !!CTRL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
+        { bits: "2",
+          name: "READ_INT_STATE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the READ_INT_STATE field in the !!CTRL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
                 '''
         }
       ]

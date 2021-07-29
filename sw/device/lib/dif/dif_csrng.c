@@ -129,7 +129,7 @@ dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
   if (csrng == NULL) {
     return kDifCsrngBadArg;
   }
-  mmio_region_write32(csrng->params.base_addr, CSRNG_CTRL_REG_OFFSET, 0xaa);
+  mmio_region_write32(csrng->params.base_addr, CSRNG_CTRL_REG_OFFSET, 0xaaa);
   return kDifCsrngOk;
 }
 
