@@ -49,7 +49,6 @@ module edn_core import edn_pkg::*;
   localparam int GencmdFifoDepth = 13;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
-
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
 
   // signals
@@ -57,12 +56,21 @@ module edn_core import edn_pkg::*;
   logic event_edn_ebus_check_failed;
   logic event_edn_fatal_err;
   logic edn_enable;
+  logic edn_enable_pfe;
+  logic edn_enable_pfd;
+  logic edn_enable_pfa;
   logic cmd_fifo_rst;
+  logic cmd_fifo_rst_pfe;
+  logic cmd_fifo_rst_pfd;
+  logic cmd_fifo_rst_pfa;
   logic packer_arb_valid;
   logic packer_arb_ready;
   logic [NumEndPoints-1:0] packer_arb_req;
   logic [NumEndPoints-1:0] packer_arb_gnt;
   logic                    auto_req_mode;
+  logic                    auto_req_mode_pfe;
+  logic                    auto_req_mode_pfd;
+  logic                    auto_req_mode_pfa;
   logic                    seq_auto_req_mode;
   logic                    auto_req_mode_end;
   logic                    capt_gencmd_fifo_cnt;
@@ -89,6 +97,9 @@ module edn_core import edn_pkg::*;
   logic                      packer_cs_rready;
   logic [CSGenBitsWidth-1:0] packer_cs_rdata;
   logic                      boot_request;
+  logic                      boot_req_mode_pfe;
+  logic                      boot_req_mode_pfd;
+  logic                      boot_req_mode_pfa;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
   logic                      boot_auto_req;
@@ -137,6 +148,12 @@ module edn_core import edn_pkg::*;
   logic                               cs_rdata_capt_vld;
   logic                               edn_bus_cmp_alert;
   logic                               unused_err_code_test_bit;
+
+  // TODO: remove when connected
+  logic                               unused_edn_enable_pfa;
+  logic                               unused_boot_req_mode_pfa;
+  logic                               unused_auto_req_mode_pfa;
+  logic                               unused_cmd_fifo_rst_pfa;
 
   // flops
   logic [31:0]                        cs_cmd_req_q, cs_cmd_req_d;
@@ -323,19 +340,46 @@ module edn_core import edn_pkg::*;
     reg2hw.alert_test.fatal_alert.qe
   };
 
+  // check for illegal enable field states, and set alert if detected
+
+  assign edn_enable_pfe = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == EDN_FIELD_ON);
+  assign edn_enable_pfd = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == ~EDN_FIELD_ON);
+  assign edn_enable_pfa = !(edn_enable_pfe || edn_enable_pfd);
+  // TODO: add below to status reg
+//  assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
+//  assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
+  assign unused_edn_enable_pfa = edn_enable_pfa;
+
+  assign cmd_fifo_rst_pfe = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == EDN_FIELD_ON);
+  assign cmd_fifo_rst_pfd = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == ~EDN_FIELD_ON);
+  assign cmd_fifo_rst_pfa = !(cmd_fifo_rst_pfe || cmd_fifo_rst_pfd);
+  // TODO: add below to status reg
+//  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
+//  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d  = cmd_fifo_rst_pfa;
+  assign unused_cmd_fifo_rst_pfa = cmd_fifo_rst_pfa;
+
   // master module enable
-  assign edn_enable = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == EDN_FIELD_ON);
-  assign cmd_fifo_rst = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == EDN_FIELD_ON);
+  assign edn_enable = edn_enable_pfe;
+  assign cmd_fifo_rst = cmd_fifo_rst_pfe;
 
   //--------------------------------------------
   // sw register interface
   //--------------------------------------------
 
+  assign auto_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == EDN_FIELD_ON);
+  assign auto_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == ~EDN_FIELD_ON);
+  assign auto_req_mode_pfa = !(auto_req_mode_pfe || auto_req_mode_pfd);
+  // TODO: add below to status reg
+//  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
+//  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.d  = auto_req_mode_pfa;
+  assign unused_auto_req_mode_pfa = auto_req_mode_pfa;
+
+
   // SW interface connection
   // cmd req
+  assign auto_req_mode = auto_req_mode_pfe;
   assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
-  assign auto_req_mode = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == EDN_FIELD_ON);
   assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
   assign hw2reg.sum_sts.req_mode_sm_sts.d = seq_auto_req_mode;
   assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
@@ -514,8 +558,17 @@ module edn_core import edn_pkg::*;
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
 
+  assign boot_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == EDN_FIELD_ON);
+  assign boot_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == ~EDN_FIELD_ON);
+  assign boot_req_mode_pfa = !(boot_req_mode_pfe || boot_req_mode_pfd);
+  // TODO: add below to status reg
+//  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;
+//  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
+  assign unused_boot_req_mode_pfa = boot_req_mode_pfa;
+
+
   // boot request
-  assign boot_request = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == EDN_FIELD_ON);
+  assign boot_request = boot_req_mode_pfe;
 
   assign boot_req_d[0] =
          (!edn_enable) ? '0 :
