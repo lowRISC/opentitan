@@ -12913,11 +12913,25 @@
       module_name: entropy_src
     }
     {
+      name: edn0_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn0
+    }
+    {
       name: edn0_fatal_alert
       width: 1
       type: alert
       async: "1"
       module_name: edn0
+    }
+    {
+      name: edn1_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn1
     }
     {
       name: edn1_fatal_alert

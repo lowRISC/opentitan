@@ -62,7 +62,9 @@ parameter string LIST_OF_ALERTS[] = {
   "csrng_fatal_alert",
   "entropy_src_recov_alert",
   "entropy_src_fatal_alert",
+  "edn0_recov_alert",
   "edn0_fatal_alert",
+  "edn1_recov_alert",
   "edn1_fatal_alert",
   "sram_ctrl_main_fatal_error",
   "otbn_fatal",
@@ -74,4 +76,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 67;
+parameter uint NUM_ALERTS = 69;

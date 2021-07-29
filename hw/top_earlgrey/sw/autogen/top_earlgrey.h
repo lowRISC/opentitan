@@ -1314,17 +1314,19 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdCsrngFatalAlert = 54, /**< csrng_fatal_alert */
   kTopEarlgreyAlertIdEntropySrcRecovAlert = 55, /**< entropy_src_recov_alert */
   kTopEarlgreyAlertIdEntropySrcFatalAlert = 56, /**< entropy_src_fatal_alert */
-  kTopEarlgreyAlertIdEdn0FatalAlert = 57, /**< edn0_fatal_alert */
-  kTopEarlgreyAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalError = 59, /**< sram_ctrl_main_fatal_error */
-  kTopEarlgreyAlertIdOtbnFatal = 60, /**< otbn_fatal */
-  kTopEarlgreyAlertIdOtbnRecov = 61, /**< otbn_recov */
-  kTopEarlgreyAlertIdRomCtrlFatal = 62, /**< rom_ctrl_fatal */
-  kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 63, /**< rv_core_ibex_fatal_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 64, /**< rv_core_ibex_recov_sw_err */
-  kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
-  kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
-  kTopEarlgreyAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdEdn0RecovAlert = 57, /**< edn0_recov_alert */
+  kTopEarlgreyAlertIdEdn0FatalAlert = 58, /**< edn0_fatal_alert */
+  kTopEarlgreyAlertIdEdn1RecovAlert = 59, /**< edn1_recov_alert */
+  kTopEarlgreyAlertIdEdn1FatalAlert = 60, /**< edn1_fatal_alert */
+  kTopEarlgreyAlertIdSramCtrlMainFatalError = 61, /**< sram_ctrl_main_fatal_error */
+  kTopEarlgreyAlertIdOtbnFatal = 62, /**< otbn_fatal */
+  kTopEarlgreyAlertIdOtbnRecov = 63, /**< otbn_recov */
+  kTopEarlgreyAlertIdRomCtrlFatal = 64, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 65, /**< rv_core_ibex_fatal_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 66, /**< rv_core_ibex_recov_sw_err */
+  kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 67, /**< rv_core_ibex_fatal_hw_err */
+  kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 68, /**< rv_core_ibex_recov_hw_err */
+  kTopEarlgreyAlertIdLast = 68, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1334,7 +1336,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[67];
+    top_earlgrey_alert_for_peripheral[69];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

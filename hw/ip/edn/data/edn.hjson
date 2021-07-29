@@ -9,10 +9,16 @@
   interrupt_list: [
     { name: "edn_cmd_req_done"
       desc: "Asserted when a software CSRNG request has completed."}
+// TODO: add intrp
+//    { name: "edn_ebus_check_failed"
+//      desc: "Asserted when the entropy bus integrity check has failed."}
     { name: "edn_fatal_err"
       desc: "Asserted when a FIFO error occurs."}
   ],
   alert_list: [
+    { name: "recov_alert",
+      desc: "This alert is triggered when entropy bus data matches on consecutive clock cycles."
+    }
     { name: "fatal_alert",
       desc: '''
             This alert triggers (i) if an illegal state machine state is reached, or
@@ -239,6 +245,22 @@
                 AUTO_REQ_MODE. This register supports a maximum of 2^32 requests between reseeds.
                 This register will be used by a counter that counts down, triggering an
                 automatic reseed when it reaches zero.
+                '''
+        }
+      ]
+    },
+    {
+      name: "RECOV_ALERT_STS",
+      desc: "Recoverable alert status register",
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "12",
+          name: "EDN_BUS_CMP_ALERT",
+          desc: '''
+                This bit is set when the interal entropy bus value is equal to the prior
+                valid value on the bus, indicating a possible attack.
+                Writing a zero to this register resets the status bits.
                 '''
         }
       ]

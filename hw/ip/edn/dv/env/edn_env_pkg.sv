@@ -21,13 +21,14 @@ package edn_env_pkg;
 
   // parameters
   parameter uint     NUM_ENDPOINTS = 1;
-  parameter string   LIST_OF_ALERTS[] = {"fatal_alert"};
-  parameter uint     NUM_ALERTS = 1;
+  parameter string    LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
+  parameter uint     NUM_ALERTS       = 2;
 
   // types
   typedef enum int {
-    CmdReqDone = 0,
-    FifoErr    = 1
+    CmdReqDone  = 0,
+    EBusChkFail = 1,
+    FifoErr     = 2
   } edn_intr_e;
 
   typedef enum int {
