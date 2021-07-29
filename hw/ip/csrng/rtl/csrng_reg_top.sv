@@ -132,7 +132,8 @@ module csrng_reg_top (
   logic intr_test_cs_hw_inst_exc_wd;
   logic intr_test_cs_fatal_err_wd;
   logic alert_test_we;
-  logic alert_test_wd;
+  logic alert_test_recov_alert_wd;
+  logic alert_test_fatal_alert_wd;
   logic regwen_we;
   logic regwen_qs;
   logic regwen_wd;
@@ -160,6 +161,13 @@ module csrng_reg_top (
   logic hw_exc_sts_we;
   logic [14:0] hw_exc_sts_qs;
   logic [14:0] hw_exc_sts_wd;
+  logic recov_alert_sts_we;
+  logic recov_alert_sts_enable_field_alert_qs;
+  logic recov_alert_sts_enable_field_alert_wd;
+  logic recov_alert_sts_sw_app_enable_field_alert_qs;
+  logic recov_alert_sts_sw_app_enable_field_alert_wd;
+  logic recov_alert_sts_read_int_state_field_alert_qs;
+  logic recov_alert_sts_read_int_state_field_alert_wd;
   logic err_code_sfifo_cmd_err_qs;
   logic err_code_sfifo_genbits_err_qs;
   logic err_code_sfifo_cmdreq_err_qs;
@@ -472,16 +480,32 @@ module csrng_reg_top (
 
   // R[alert_test]: V(True)
 
+  //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_recov_alert (
     .re     (1'b0),
     .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .wd     (alert_test_recov_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q),
+    .qe     (reg2hw.alert_test.recov_alert.qe),
+    .q      (reg2hw.alert_test.recov_alert.q),
+    .qs     ()
+  );
+
+
+  //   F[fatal_alert]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_alert_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_alert.qe),
+    .q      (reg2hw.alert_test.fatal_alert.q),
     .qs     ()
   );
 
@@ -570,7 +594,7 @@ module csrng_reg_top (
   //   F[read_int_state]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SWACCESS("RW"),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
   ) u_ctrl_read_int_state (
     .clk_i   (clk_i),
@@ -789,6 +813,86 @@ module csrng_reg_top (
 
     // to register interface (read)
     .qs     (hw_exc_sts_qs)
+  );
+
+
+  // R[recov_alert_sts]: V(False)
+
+  //   F[enable_field_alert]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_enable_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_enable_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.enable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.enable_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_enable_field_alert_qs)
+  );
+
+
+  //   F[sw_app_enable_field_alert]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_sw_app_enable_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_sw_app_enable_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.sw_app_enable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.sw_app_enable_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_sw_app_enable_field_alert_qs)
+  );
+
+
+  //   F[read_int_state_field_alert]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_read_int_state_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_read_int_state_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.read_int_state_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.read_int_state_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_read_int_state_field_alert_qs)
   );
 
 
@@ -1606,7 +1710,7 @@ module csrng_reg_top (
 
 
 
-  logic [16:0] addr_hit;
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1622,10 +1726,11 @@ module csrng_reg_top (
     addr_hit[10] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
     addr_hit[11] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
     addr_hit[12] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[13] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
-    addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[15] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
+    addr_hit[13] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
+    addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[15] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
+    addr_hit[17] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1649,7 +1754,8 @@ module csrng_reg_top (
                (addr_hit[13] & (|(CSRNG_PERMIT[13] & ~reg_be))) |
                (addr_hit[14] & (|(CSRNG_PERMIT[14] & ~reg_be))) |
                (addr_hit[15] & (|(CSRNG_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be)))));
+               (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(CSRNG_PERMIT[17] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1680,7 +1786,9 @@ module csrng_reg_top (
   assign intr_test_cs_fatal_err_wd = reg_wdata[3];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_recov_alert_wd = reg_wdata[0];
+
+  assign alert_test_fatal_alert_wd = reg_wdata[1];
   assign regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign regwen_wd = reg_wdata[0];
@@ -1703,10 +1811,17 @@ module csrng_reg_top (
   assign hw_exc_sts_we = addr_hit[12] & reg_we & !reg_error;
 
   assign hw_exc_sts_wd = reg_wdata[14:0];
-  assign err_code_test_we = addr_hit[14] & reg_we & !reg_error;
+  assign recov_alert_sts_we = addr_hit[13] & reg_we & !reg_error;
+
+  assign recov_alert_sts_enable_field_alert_wd = reg_wdata[0];
+
+  assign recov_alert_sts_sw_app_enable_field_alert_wd = reg_wdata[1];
+
+  assign recov_alert_sts_read_int_state_field_alert_wd = reg_wdata[2];
+  assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
-  assign sel_tracking_sm_we = addr_hit[15] & reg_we & !reg_error;
+  assign sel_tracking_sm_we = addr_hit[16] & reg_we & !reg_error;
 
   assign sel_tracking_sm_wd = reg_wdata[1:0];
 
@@ -1737,6 +1852,7 @@ module csrng_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[4]: begin
@@ -1780,6 +1896,12 @@ module csrng_reg_top (
       end
 
       addr_hit[13]: begin
+        reg_rdata_next[0] = recov_alert_sts_enable_field_alert_qs;
+        reg_rdata_next[1] = recov_alert_sts_sw_app_enable_field_alert_qs;
+        reg_rdata_next[2] = recov_alert_sts_read_int_state_field_alert_qs;
+      end
+
+      addr_hit[14]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[2] = err_code_sfifo_cmdreq_err_qs;
@@ -1807,15 +1929,15 @@ module csrng_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[1:0] = '0;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[7:0] = tracking_sm_obs_tracking_sm_obs0_qs;
         reg_rdata_next[15:8] = tracking_sm_obs_tracking_sm_obs1_qs;
         reg_rdata_next[23:16] = tracking_sm_obs_tracking_sm_obs2_qs;

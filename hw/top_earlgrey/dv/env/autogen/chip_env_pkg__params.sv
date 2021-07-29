@@ -59,6 +59,7 @@ parameter string LIST_OF_ALERTS[] = {
   "kmac_fatal_fault",
   "keymgr_fatal_fault_err",
   "keymgr_recov_operation_err",
+  "csrng_recov_alert",
   "csrng_fatal_alert",
   "entropy_src_recov_alert",
   "entropy_src_fatal_alert",
@@ -76,4 +77,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 69;
+parameter uint NUM_ALERTS = 70;

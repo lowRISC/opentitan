@@ -87,7 +87,7 @@ _start:
   sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
 
   li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
-  li   t0, 0xaa
+  li   t0, 0xaaa
   sw   t0, CSRNG_CTRL_REG_OFFSET(a0)
 
   li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
