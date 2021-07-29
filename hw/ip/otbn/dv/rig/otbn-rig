@@ -71,10 +71,10 @@ def gen_main(args: argparse.Namespace) -> int:
     ser_data = init_data.as_json()
     ser_snippet = snippet.to_json()
     ser = [ser_data, ser_snippet, end_addr]
-    json.dump(ser, sys.stdout)
+    json.dump(ser, args.output)
     # Add a newline at end of output: json.dump doesn't, and it makes a
     # bit of a mess of some consoles.
-    sys.stdout.write('\n')
+    args.output.write('\n')
 
     return 0
 
@@ -160,6 +160,11 @@ def main() -> int:
                      help='Reset address. Defaults to 0.')
     gen.add_argument('--config', type=str, default='default',
                      help='Configuration to use')
+    gen.add_argument('--output', '-o',
+                     metavar='out',
+                     type=argparse.FileType('w', encoding='UTF-8'),
+                     default=sys.stdout,
+                     help='Output filename')
     gen.set_defaults(func=gen_main)
 
     asm.add_argument('--output', '-o',
