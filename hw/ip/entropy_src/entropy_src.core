@@ -19,6 +19,7 @@ filesets:
       - rtl/entropy_src_reg_pkg.sv
       - rtl/entropy_src_reg_top.sv
       - rtl/entropy_src_watermark_reg.sv
+      - rtl/entropy_src_field_en.sv
       - rtl/entropy_src_cntr_reg.sv
       - rtl/entropy_src_ack_sm.sv
       - rtl/entropy_src_main_sm.sv
