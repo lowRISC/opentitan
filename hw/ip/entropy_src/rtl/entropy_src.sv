@@ -211,7 +211,6 @@ module entropy_src
       stub_hw2reg = '0;
 
       // as long as enable is 1, do not allow registers to be written
-      stub_hw2reg.regwen.d = ~|reg2hw.conf.enable.q;
       stub_hw2reg.fw_ov_rd_data.d = stub_lfsr_value[31:0];
       stub_hw2reg.entropy_data.d = stub_lfsr_value[31:0];
       stub_hw2reg.debug_status.main_sm_idle.d = 1'b1;
