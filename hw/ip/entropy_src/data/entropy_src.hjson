@@ -127,7 +127,6 @@
       desc: "Configuration register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe:     "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
@@ -212,7 +211,6 @@
       desc: "Entropy control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe:     "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
@@ -1008,7 +1006,6 @@
       desc: "Firmware override control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe:     "true",
       regwen:   "REGWEN",
       fields: [
         { bits: "3:0",

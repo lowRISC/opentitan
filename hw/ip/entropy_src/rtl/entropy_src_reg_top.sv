@@ -680,7 +680,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.enable.qe),
+    .qe     (),
     .q      (reg2hw.conf.enable.q),
 
     // to register interface (read)
@@ -705,7 +705,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.entropy_data_reg_enable.qe),
+    .qe     (),
     .q      (reg2hw.conf.entropy_data_reg_enable.q),
 
     // to register interface (read)
@@ -730,7 +730,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.lfsr_enable.qe),
+    .qe     (),
     .q      (reg2hw.conf.lfsr_enable.q),
 
     // to register interface (read)
@@ -755,7 +755,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.boot_bypass_disable.qe),
+    .qe     (),
     .q      (reg2hw.conf.boot_bypass_disable.q),
 
     // to register interface (read)
@@ -780,7 +780,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.health_test_clr.qe),
+    .qe     (),
     .q      (reg2hw.conf.health_test_clr.q),
 
     // to register interface (read)
@@ -805,7 +805,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.rng_bit_enable.qe),
+    .qe     (),
     .q      (reg2hw.conf.rng_bit_enable.q),
 
     // to register interface (read)
@@ -830,7 +830,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.conf.rng_bit_sel.qe),
+    .qe     (),
     .q      (reg2hw.conf.rng_bit_sel.q),
 
     // to register interface (read)
@@ -883,7 +883,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.entropy_control.es_route.qe),
+    .qe     (),
     .q      (reg2hw.entropy_control.es_route.q),
 
     // to register interface (read)
@@ -908,7 +908,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.entropy_control.es_type.qe),
+    .qe     (),
     .q      (reg2hw.entropy_control.es_type.q),
 
     // to register interface (read)
@@ -1874,7 +1874,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fw_ov_control.fw_ov_mode.qe),
+    .qe     (),
     .q      (reg2hw.fw_ov_control.fw_ov_mode.q),
 
     // to register interface (read)
@@ -1899,7 +1899,7 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fw_ov_control.fw_ov_entropy_insert.qe),
+    .qe     (),
     .q      (reg2hw.fw_ov_control.fw_ov_entropy_insert.q),
 
     // to register interface (read)
