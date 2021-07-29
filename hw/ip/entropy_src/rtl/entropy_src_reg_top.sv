@@ -319,6 +319,11 @@ module entropy_src_reg_top (
   logic seed_we;
   logic [3:0] seed_qs;
   logic [3:0] seed_wd;
+  logic recov_alert_sts_we;
+  logic recov_alert_sts_es_main_sm_alert_qs;
+  logic recov_alert_sts_es_main_sm_alert_wd;
+  logic recov_alert_sts_es_bus_cmp_alert_qs;
+  logic recov_alert_sts_es_bus_cmp_alert_wd;
   logic err_code_sfifo_esrng_err_qs;
   logic err_code_sfifo_observe_err_qs;
   logic err_code_sfifo_esfinal_err_qs;
@@ -2301,6 +2306,60 @@ module entropy_src_reg_top (
   );
 
 
+  // R[recov_alert_sts]: V(False)
+
+  //   F[es_main_sm_alert]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_es_main_sm_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_main_sm_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_main_sm_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_main_sm_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_main_sm_alert_qs)
+  );
+
+
+  //   F[es_bus_cmp_alert]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_es_bus_cmp_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_bus_cmp_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_bus_cmp_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_bus_cmp_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_bus_cmp_alert_qs)
+  );
+
+
   // R[err_code]: V(False)
 
   //   F[sfifo_esrng_err]: 0:0
@@ -2540,7 +2599,7 @@ module entropy_src_reg_top (
 
 
 
-  logic [49:0] addr_hit;
+  logic [50:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
@@ -2591,8 +2650,9 @@ module entropy_src_reg_top (
     addr_hit[45] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET);
     addr_hit[46] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
     addr_hit[47] = (reg_addr == ENTROPY_SRC_SEED_OFFSET);
-    addr_hit[48] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
-    addr_hit[49] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
+    addr_hit[48] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
+    addr_hit[49] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
+    addr_hit[50] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2649,7 +2709,8 @@ module entropy_src_reg_top (
                (addr_hit[46] & (|(ENTROPY_SRC_PERMIT[46] & ~reg_be))) |
                (addr_hit[47] & (|(ENTROPY_SRC_PERMIT[47] & ~reg_be))) |
                (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be))) |
-               (addr_hit[49] & (|(ENTROPY_SRC_PERMIT[49] & ~reg_be)))));
+               (addr_hit[49] & (|(ENTROPY_SRC_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(ENTROPY_SRC_PERMIT[50] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -2817,7 +2878,12 @@ module entropy_src_reg_top (
   assign seed_we = addr_hit[47] & reg_we & !reg_error;
 
   assign seed_wd = reg_wdata[3:0];
-  assign err_code_test_we = addr_hit[49] & reg_we & !reg_error;
+  assign recov_alert_sts_we = addr_hit[48] & reg_we & !reg_error;
+
+  assign recov_alert_sts_es_main_sm_alert_wd = reg_wdata[12];
+
+  assign recov_alert_sts_es_bus_cmp_alert_wd = reg_wdata[13];
+  assign err_code_test_we = addr_hit[50] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
 
@@ -3076,6 +3142,11 @@ module entropy_src_reg_top (
       end
 
       addr_hit[48]: begin
+        reg_rdata_next[12] = recov_alert_sts_es_main_sm_alert_qs;
+        reg_rdata_next[13] = recov_alert_sts_es_bus_cmp_alert_qs;
+      end
+
+      addr_hit[49]: begin
         reg_rdata_next[0] = err_code_sfifo_esrng_err_qs;
         reg_rdata_next[1] = err_code_sfifo_observe_err_qs;
         reg_rdata_next[2] = err_code_sfifo_esfinal_err_qs;
@@ -3086,7 +3157,7 @@ module entropy_src_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[50]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 

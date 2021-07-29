@@ -139,7 +139,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    alert_threshold_fail;
   logic [HalfRegWidth-1:0] alert_threshold;
   logic [HalfRegWidth-1:0] alert_threshold_inv;
-  logic                     recov_alert_event;
   logic [Clog2ObserveFifoDepth:0] observe_fifo_thresh;
   logic                     observe_fifo_thresh_met;
   logic                     repcnt_active;
@@ -340,6 +339,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_main_sm_err_sum;
   logic                     es_main_sm_err;
   logic                     es_main_sm_alert;
+  logic                     es_bus_cmp_alert;
   logic                     es_main_sm_idle;
   logic [7:0]               es_main_sm_state;
   logic                     fifo_write_err_sum;
@@ -362,6 +362,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
+  logic                    es_rdata_capt_vld;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -383,6 +384,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [1:0]  es_enable_q, es_enable_d;
+  logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
+  logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -400,6 +403,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
       es_enable_q           <= '0;
+      es_rdata_capt_q       <= '0;
+      es_rdata_capt_vld_q   <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -415,6 +420,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
       es_enable_q           <= es_enable_d;
+      es_rdata_capt_q       <= es_rdata_capt_d;
+      es_rdata_capt_vld_q   <= es_rdata_capt_vld_d;
     end
 
   assign es_enable_d = reg2hw.conf.enable.q;
@@ -473,6 +480,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_health_test_failed.d),
     .intr_o                 (intr_es_health_test_failed_o)
   );
+
 
   prim_intr_hw #(
     .Width(1)
@@ -1110,7 +1118,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // misc control settings
   //------------------------------
 
-  assign event_es_health_test_failed = recov_alert_event;
+  assign event_es_health_test_failed = es_main_sm_alert;
   assign event_es_observe_fifo_ready = observe_fifo_thresh_met;
 
   assign es_route_to_sw = reg2hw.entropy_control.es_route.q;
@@ -1694,9 +1702,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
          ((any_fail_count >= ~alert_threshold_inv) && (~alert_threshold_inv != '0)) ||
          (any_fail_count >= alert_threshold) && (alert_threshold != '0);
 
-  assign recov_alert_event = es_main_sm_alert;
+  assign recov_alert_o = es_main_sm_alert || es_bus_cmp_alert;
 
-  assign recov_alert_o = recov_alert_event;
+  assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
+  assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
+
+  assign hw2reg.recov_alert_sts.es_bus_cmp_alert.de = es_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.es_bus_cmp_alert.d  = es_bus_cmp_alert;
 
 
   // repcnt fail counter
@@ -2117,6 +2129,28 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .fifo_pop_o       (es_hw_if_fifo_pop),
     .ack_sm_err_o     (es_ack_sm_err)
   );
+
+  //--------------------------------------------
+  // data path integrity check
+  // - a counter meansure to entropy bus tampering
+  // - checks to make sure repeated data sets off
+  //   an alert for sw to handle
+  //--------------------------------------------
+
+  // capture a copy of the entropy data
+  assign es_rdata_capt_vld = (sfifo_esfinal_pop && sfifo_esfinal_not_empty);
+
+  assign es_rdata_capt_d = es_rdata_capt_vld ? sfifo_esfinal_rdata[63:0] : es_rdata_capt_q;
+
+  assign es_rdata_capt_vld_d =
+         !es_enable ? 1'b0 :
+         es_rdata_capt_vld ? 1'b1 :
+         es_rdata_capt_vld_q;
+
+  // continuous compare of the entropy data
+  assign es_bus_cmp_alert = es_rdata_capt_vld && es_rdata_capt_vld_q &&
+         (es_rdata_capt_q == sfifo_esfinal_rdata[63:0]);
+
 
   //--------------------------------------------
   // software es read path
