@@ -57,10 +57,12 @@ sw_silicon_creator_mask_rom_epmp = declare_dependency(
 # Mask ROM ePMP test library.
 mask_rom_epmp_test_lib = declare_dependency(
   sources: [
+    hw_ip_aon_timer_reg_h,
     hw_ip_entropy_src_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
     hw_ip_sram_ctrl_reg_h,
+    hw_ip_pwrmgr_reg_h,
     'mask_rom_start.S',
   ],
   link_args: rom_link_args,
@@ -69,6 +71,7 @@ mask_rom_epmp_test_lib = declare_dependency(
     sw_silicon_creator_lib_driver_uart,
     sw_silicon_creator_lib_epmp_test_unlock,
     sw_silicon_creator_lib_fake_deps,
+    sw_silicon_creator_lib_irq_asm,
     sw_silicon_creator_mask_rom_epmp,
     sw_lib_crt,
     sw_lib_pinmux,
@@ -156,6 +159,7 @@ endforeach
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
+    hw_ip_aon_timer_reg_h,
     hw_ip_entropy_src_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
@@ -171,6 +175,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_pinmux,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
+      sw_silicon_creator_lib_irq_asm,
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_lib_shutdown,
       sw_silicon_creator_mask_rom_epmp,
