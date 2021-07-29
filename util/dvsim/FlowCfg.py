@@ -411,7 +411,7 @@ class FlowCfg():
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html("summary.html", item.results_summary_md)
+            self.write_results_html("summary.html", self.results_summary_md)
         self.gen_email_html_summary()
 
     def gen_results_summary(self):
