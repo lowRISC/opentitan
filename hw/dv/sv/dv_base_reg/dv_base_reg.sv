@@ -201,8 +201,19 @@ class dv_base_reg extends uvm_reg;
         // second write
         shadow_wr_staged = 0;
         if (staged_shadow_val != rw.value[0]) begin
+          dv_base_reg_field dv_fields[$];
+          get_dv_base_reg_fields(dv_fields);
+
+          // Compare second write value by field, if any field matches the first write value, will
+          // update the committed_val in the specific field.
+          foreach (dv_fields[i]) begin
+            uvm_reg_data_t mask = (1 << dv_fields[i].get_n_bits()) - 1;
+            mask = mask << dv_fields[i].get_lsb_pos();
+            if ((staged_shadow_val & mask) == (rw.value[0] & mask)) begin
+              committed_val = (committed_val & ~mask) | (staged_shadow_val & mask);
+            end
+          end
           shadow_update_err = 1;
-          return;
         end
         committed_val = staged_shadow_val;
         shadowed_val  = ~committed_val;
@@ -250,18 +261,25 @@ class dv_base_reg extends uvm_reg;
   // Override do_predict function to support shadow_reg.
   // Skip predict in one of the following conditions:
   // 1). It is shadow_reg's first write.
-  // 2). It is shadow_reg's second write with an update_err.
   // 2). The shadow_reg is locked due to fatal storage error and it is not a backdoor write.
+  // Note that if shadow_register write has update error, we will still try to update the value,
+  // because it might be partially updated.
 
   virtual function void do_predict(uvm_reg_item      rw,
                                    uvm_predict_e     kind = UVM_PREDICT_DIRECT,
                                    uvm_reg_byte_en_t be = -1);
-    if (is_shadowed && kind != UVM_PREDICT_READ && (shadow_wr_staged || shadow_update_err ||
-        (shadow_fatal_lock && rw.path != UVM_BACKDOOR))) begin
-      `uvm_info(`gfn, $sformatf(
-          "skip predict %s: due to shadow_reg_first_wr=%0b, update_err=%0b, shadow_fatal_lock=%0b",
-          get_name(), shadow_wr_staged, shadow_update_err, shadow_fatal_lock), UVM_HIGH)
-      return;
+    if (is_shadowed && kind != UVM_PREDICT_READ) begin
+      if (shadow_update_err) begin
+        `uvm_info(`gfn, $sformatf(
+            "Shadow reg %0s has update error, update rw.value from %0h to %0h",
+            get_name(), rw.value[0], committed_val), UVM_HIGH)
+        rw.value[0] = committed_val;
+      end else if (shadow_wr_staged || (shadow_fatal_lock && rw.path != UVM_BACKDOOR)) begin
+        `uvm_info(`gfn, $sformatf(
+            "skip predict %s: due to shadow_reg_first_wr=%0b, shadow_fatal_lock=%0b",
+            get_name(), shadow_wr_staged, shadow_fatal_lock), UVM_LOW)
+        return;
+      end
     end
     super.do_predict(rw, kind, be);
   endfunction
