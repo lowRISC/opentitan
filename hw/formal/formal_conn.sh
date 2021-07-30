@@ -23,10 +23,10 @@
 
 set -e
 
-CORE_PATH=systems:top_earlgrey
+CORE_PATH=systems:chip_earlgrey_asic
 REPO_PATH=$(readlink -f ../..)
 
-export DUT_TOP="top_earlgrey"
+export DUT_TOP="chip_earlgrey_asic"
 gui="-batch -command exit"  # default Batch mode
 tool="jg"
 export COV=0
