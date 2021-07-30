@@ -8,10 +8,23 @@
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
     sw_checklist:       "/sw/device/lib/dif/dif_otp_ctrl",
-    version:            "0.1",
-    life_stage:         "L1",
-    design_stage:       "D2",
-    verification_stage: "V2",
-    dif_stage:          "S1",
-    notes:              "",
+    revisions: [
+      {
+        version:            "0.1",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V2",
+        dif_stage:          "S1",
+        commit_id:          "127b109e2fab9336e830158abe449a3922544ded",
+        notes:              "",
+      }
+      {
+        version:            "1.0",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V1",
+        dif_stage:          "S1",
+        notes:              "Rolled back to V1 due test_memory change.",
+      }
+    ]
 }
