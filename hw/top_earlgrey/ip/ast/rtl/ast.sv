@@ -170,7 +170,7 @@ logic vcc_pok_h, vcc_pok;
 
 logic vcc_pok_int;
 
-vcc_pok u_vcc_pok (
+vcc_pgd u_vcc_pok (
   .vcc_pok_o ( vcc_pok_int )
 );  // of u_vcc_pok
 
@@ -216,7 +216,7 @@ logic vcmain_pok_por;
 // Power up/down with rise/fall delays.
 logic vcmain_pok_int, main_pwr_dly_o;
 
-vcmain_pok u_vcmain_pok (
+vcmain_pgd u_vcmain_pok (
   .vcmain_pok_o ( vcmain_pok_int )
 );  // of u_vcmain_pok
 
@@ -234,7 +234,7 @@ assign vcmain_pok_o   = vcmain_pok_por;
 logic vioa_pok;
 logic vioa_pok_int;
 
-vio_pok u_vioa_pok (
+vio_pgd u_vioa_pok (
   .vio_pok_o ( vioa_pok_int )
 );  // of u_vioa_pok
 
@@ -249,7 +249,7 @@ assign vioa_pok_o = vcaon_pok && vioa_pok;
 logic viob_pok;
 logic viob_pok_int;
 
-vio_pok u_viob_pok (
+vio_pgd u_viob_pok (
   .vio_pok_o ( viob_pok_int )
 );  // of u_viob_pok
 
@@ -755,150 +755,27 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, vcaon_pok_o)
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, vcaon_pok_o)             //TODO)
 
+
 /////////////////////
 // Unused Signals
 ////////////////////
 logic unused_sigs;
 `ifndef ANALOGSIM
-assign unused_sigs = ^{ clk_ast_usb_i,
-                        rst_ast_usb_ni,
-                        padmux2ast_i[5:0],
-                        pad2ast_t0_ai,
-                        pad2ast_t1_ai,
-                        dft_strap_test_i.valid,
-                        dft_strap_test_i.straps[1:0],
-                        lc_dft_en_i[3:0],
-                        reg2hw.rega[0].q,   // [0:49]
-                        reg2hw.rega[1].q,   // [0:49]
-                        reg2hw.rega[2].q,   // [0:49]
-                        reg2hw.rega[3].q,   // [0:49]
-                        reg2hw.rega[4].q,   // [0:49]
-                        reg2hw.rega[5].q,   // [0:49]
-                        reg2hw.rega[6].q,   // [0:49]
-                        reg2hw.rega[7].q,   // [0:49]
-                        reg2hw.rega[8].q,   // [0:49]
-                        reg2hw.rega[9].q,   // [0:49]
-                        reg2hw.rega[10].q,  // [0:49]
-                        reg2hw.rega[11].q,  // [0:49]
-                        reg2hw.rega[12].q,  // [0:49]
-                        reg2hw.rega[13].q,  // [0:49]
-                        reg2hw.rega[14].q,  // [0:49]
-                        reg2hw.rega[15].q,  // [0:49]
-                        reg2hw.rega[16].q,  // [0:49]
-                        reg2hw.rega[17].q,  // [0:49]
-                        reg2hw.rega[18].q,  // [0:49]
-                        reg2hw.rega[19].q,  // [0:49]
-                        reg2hw.rega[20].q,  // [0:49]
-                        reg2hw.rega[21].q,  // [0:49]
-                        reg2hw.rega[22].q,  // [0:49]
-                        reg2hw.rega[23].q,  // [0:49]
-                        reg2hw.rega[24].q,  // [0:49]
-                        reg2hw.rega[25].q,  // [0:49]
-                        reg2hw.rega[26].q,  // [0:49]
-                        reg2hw.rega[27].q,  // [0:49]
-                        reg2hw.rega[28].q,  // [0:49]
-                        reg2hw.rega[29].q,  // [0:49]
-                        reg2hw.rega[30].q,  // [0:49]
-                        reg2hw.rega[31].q,  // [0:49]
-                        reg2hw.rega[32].q,  // [0:49]
-                        reg2hw.rega[33].q,  // [0:49]
-                        reg2hw.rega[34].q,  // [0:49]
-                        reg2hw.rega[35].q,  // [0:49]
-                        reg2hw.rega[36].q,  // [0:49]
-                        reg2hw.rega[37].q,  // [0:49]
-                        reg2hw.rega[38].q,  // [0:49]
-                        reg2hw.rega[39].q,  // [0:49]
-                        reg2hw.rega[40].q,  // [0:49]
-                        reg2hw.rega[41].q,  // [0:49]
-                        reg2hw.rega[42].q,  // [0:49]
-                        reg2hw.rega[43].q,  // [0:49]
-                        reg2hw.rega[44].q,  // [0:49]
-                        reg2hw.rega[45].q,  // [0:49]
-                        reg2hw.rega[46].q,  // [0:49]
-                        reg2hw.rega[47].q,  // [0:49]
-                        reg2hw.rega[48].q,  // [0:49]
-                        reg2hw.rega[49].q,  // [0:49]
-                        reg2hw.regb[0].q,  // [0:9]
-                        reg2hw.regb[1].q,  // [0:9]
-                        reg2hw.regb[2].q,  // [0:9]
-                        reg2hw.regb[3].q,  // [0:9]
-                        reg2hw.regb[4].q,  // [0:9]
-                        reg2hw.regb[5].q,  // [0:9]
-                        reg2hw.regb[6].q,  // [0:9]
-                        reg2hw.regb[7].q,  // [0:9]
-                        reg2hw.regb[8].q,  // [0:9]
-                        reg2hw.regb[9].q,  // [0:9]
-                        reg2hw.revid.q
-                      };
-`else
-assign unused_sigs = ^{ clk_ast_usb_i,
-                        rst_ast_usb_ni,
-                        padmux2ast_i[5:0],
-                        dft_strap_test_i.valid,
-                        dft_strap_test_i.straps[1:0],
-                        lc_dft_en_i[3:0],
-                        reg2hw.rega[0].q,   // [0:49]
-                        reg2hw.rega[1].q,   // [0:49]
-                        reg2hw.rega[2].q,   // [0:49]
-                        reg2hw.rega[3].q,   // [0:49]
-                        reg2hw.rega[4].q,   // [0:49]
-                        reg2hw.rega[5].q,   // [0:49]
-                        reg2hw.rega[6].q,   // [0:49]
-                        reg2hw.rega[7].q,   // [0:49]
-                        reg2hw.rega[8].q,   // [0:49]
-                        reg2hw.rega[9].q,   // [0:49]
-                        reg2hw.rega[10].q,  // [0:49]
-                        reg2hw.rega[11].q,  // [0:49]
-                        reg2hw.rega[12].q,  // [0:49]
-                        reg2hw.rega[13].q,  // [0:49]
-                        reg2hw.rega[14].q,  // [0:49]
-                        reg2hw.rega[15].q,  // [0:49]
-                        reg2hw.rega[16].q,  // [0:49]
-                        reg2hw.rega[17].q,  // [0:49]
-                        reg2hw.rega[18].q,  // [0:49]
-                        reg2hw.rega[19].q,  // [0:49]
-                        reg2hw.rega[20].q,  // [0:49]
-                        reg2hw.rega[21].q,  // [0:49]
-                        reg2hw.rega[22].q,  // [0:49]
-                        reg2hw.rega[23].q,  // [0:49]
-                        reg2hw.rega[24].q,  // [0:49]
-                        reg2hw.rega[25].q,  // [0:49]
-                        reg2hw.rega[26].q,  // [0:49]
-                        reg2hw.rega[27].q,  // [0:49]
-                        reg2hw.rega[28].q,  // [0:49]
-                        reg2hw.rega[29].q,  // [0:49]
-                        reg2hw.rega[30].q,  // [0:49]
-                        reg2hw.rega[31].q,  // [0:49]
-                        reg2hw.rega[32].q,  // [0:49]
-                        reg2hw.rega[33].q,  // [0:49]
-                        reg2hw.rega[34].q,  // [0:49]
-                        reg2hw.rega[35].q,  // [0:49]
-                        reg2hw.rega[36].q,  // [0:49]
-                        reg2hw.rega[37].q,  // [0:49]
-                        reg2hw.rega[38].q,  // [0:49]
-                        reg2hw.rega[39].q,  // [0:49]
-                        reg2hw.rega[40].q,  // [0:49]
-                        reg2hw.rega[41].q,  // [0:49]
-                        reg2hw.rega[42].q,  // [0:49]
-                        reg2hw.rega[43].q,  // [0:49]
-                        reg2hw.rega[44].q,  // [0:49]
-                        reg2hw.rega[45].q,  // [0:49]
-                        reg2hw.rega[46].q,  // [0:49]
-                        reg2hw.rega[47].q,  // [0:49]
-                        reg2hw.rega[48].q,  // [0:49]
-                        reg2hw.rega[49].q,  // [0:49]
-                        reg2hw.regb[0].q,  // [0:9]
-                        reg2hw.regb[1].q,  // [0:9]
-                        reg2hw.regb[2].q,  // [0:9]
-                        reg2hw.regb[3].q,  // [0:9]
-                        reg2hw.regb[4].q,  // [0:9]
-                        reg2hw.regb[5].q,  // [0:9]
-                        reg2hw.regb[6].q,  // [0:9]
-                        reg2hw.regb[7].q,  // [0:9]
-                        reg2hw.regb[8].q,  // [0:9]
-                        reg2hw.regb[9].q,  // [0:9]
-                        reg2hw.revid.q
-                      };
+logic unused_analog_sigs;
+assign unused_analog_sigs = ^{ pad2ast_t0_ai,
+                               pad2ast_t1_ai
+                             };
 `endif
+assign unused_sigs = ^{ clk_ast_usb_i,
+                        rst_ast_usb_ni,
+                        rst_vcmpp_aon_n,
+                        padmux2ast_i[5:0],
+                        dft_strap_test_i.valid,
+                        dft_strap_test_i.straps[1:0],
+                        lc_dft_en_i[3:0],
+                        reg2hw.rega,  // [0:49]
+                        reg2hw.regb,  // [0:9]
+                        reg2hw.revid.q
+                      };
 
 endmodule : ast

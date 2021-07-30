@@ -71,7 +71,7 @@ assign main_pwr_dly_o = mr_vcc_dly && mr_pd_dly;
 
 logic vcaon_pok_h;
 
-vcaon_pok u_vcaon_pok (
+vcaon_pgd u_vcaon_pok (
   .vcaon_pok_o ( vcaon_pok_h )
 );
 

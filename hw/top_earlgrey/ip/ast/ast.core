@@ -34,10 +34,10 @@ filesets:
       - rtl/ast_entropy.sv
       - rtl/dev_entropy.sv
       - rtl/ast_alert.sv
-      - rtl/vcc_pok.sv
-      - rtl/vio_pok.sv
-      - rtl/vcaon_pok.sv
-      - rtl/vcmain_pok.sv
+      - rtl/vcc_pgd.sv
+      - rtl/vio_pgd.sv
+      - rtl/vcaon_pgd.sv
+      - rtl/vcmain_pgd.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
       - rtl/rglts_pdm_3p3v.sv

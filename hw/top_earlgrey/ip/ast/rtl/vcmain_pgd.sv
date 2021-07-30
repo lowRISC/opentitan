@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// *Name: vcc_pok
-// *Module Description:  VCC Power OK
+// *Name: vcmain_pgd
+// *Module Description:  VCMAIN Power Good
 //############################################################################
 `ifdef SYNTHESIS
 `ifndef PRIM_DEFAULT_IMPL
@@ -11,8 +11,8 @@
 `endif
 `endif
 
-module vcc_pok (
-  output logic vcc_pok_o
+module vcmain_pgd (
+  output logic vcmain_pok_o
 );
 
 // Local signal for testing hook
@@ -35,11 +35,11 @@ end
 
 always @( * ) begin
   if ( init_start ) begin
-    vcc_pok_o <= 1'b0;
+    vcmain_pok_o <= 1'b0;
   end else if ( !init_start && gen_supp_a ) begin
-    vcc_pok_o <= #(VCC_POK_RDLY) gen_supp_a;
+    vcmain_pok_o <= #(VCMAIN_POK_RDLY) gen_supp_a;
   end else if ( !init_start && !gen_supp_a ) begin
-    vcc_pok_o <= #(VCC_POK_FDLY) gen_supp_a;
+    vcmain_pok_o <= #(VCMAIN_POK_FDLY) gen_supp_a;
   end
 end
 `else
@@ -50,10 +50,10 @@ localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
-  assign vcc_pok_o = gen_supp_a;
+  assign vcmain_pok_o = gen_supp_a;
 end else begin : gen_generic
-  assign vcc_pok_o = gen_supp_a;
+  assign vcmain_pok_o = gen_supp_a;
 end
 `endif
 
-endmodule : vcc_pok
+endmodule : vcmain_pgd
