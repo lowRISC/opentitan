@@ -40,3 +40,8 @@ CONNECTION,CLKMGR_KMAC,u_clkmgr_aon,clocks_o.clk_main_kmac,u_kmac,clk_i
 CONNECTION,CLKMGR_KMAC_EDN,u_clkmgr_aon,clocks_o.clk_main_kmac,u_kmac,clk_edn_i
 CONNECTION,CLKMGR_OTBN,u_clkmgr_aon,clocks_o.clk_main_otbn,u_otbn,clk_i
 CONNECTION,CLKMGR_OTBN_EDN,u_clkmgr_aon,clocks_o.clk_main_otbn,u_otbn,clk_edn_i
+# pwrmgr rstmgr connections
+CONNECTION,CLKMGR_RST_LC_REQ,u_pwrmgr_aon,pwr_rst_o.rst_lc_req,u_rstmgr_aon,pwr_i.rst_lc_req
+CONNECTION,CLKMGR_RST_SYS_REQ,u_pwrmgr_aon,pwr_rst_o.rst_sys_req,u_rstmgr_aon,pwr_i.rst_sys_req
+CONNECTION,CLKMGR_RST_LC_SRC_N,u_pwrmgr_aon,pwr_rst_i.rst_lc_src_n,u_rstmgr_aon,pwr_o.rst_lc_src_n
+CONNECTION,CLKMGR_RST_SYS_SRC_N,u_pwrmgr_aon,pwr_rst_i.rst_sys_src_n,u_rstmgr_aon,pwr_o.rst_sys_src_n
