@@ -232,6 +232,7 @@ class csr_rw_seq extends csr_base_seq;
       uvm_reg_data_t wdata;
       uvm_reg_data_t compare_mask;
       uvm_reg_field  test_fields[$];
+      dv_base_reg    test_dv_csr;
 
       // check if parent block or register is excluded from write
       if (is_excl(test_csrs[i], CsrExclWrite, CsrRwTest)) begin
@@ -252,6 +253,14 @@ class csr_rw_seq extends csr_base_seq;
       // the pre-predict also needs to happen after the register is being written, to make sure the
       // register is getting the updated access information.
       csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
+
+      // Shadow register requires two writes with the same value to write registers into DUT.
+      // In `csr_wr` task, the `predict` task is triggered after two shadow writes are done.
+      // To avoid non-blocking access where shadow register read might be triggered between two
+      // consecutive shadow register write, we will wait until all outstanding accesses finish,
+      // then issue a shadow register read.
+      `downcast(test_dv_csr, test_csrs[i])
+      if (test_dv_csr.get_is_shadowed) wait_no_outstanding_access();
 
       do_check_csr_or_field_rd(.csr(test_csrs[i]),
                               .blocking(0),
