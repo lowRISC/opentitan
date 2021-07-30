@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: top_earlgrey
+  name: chip_earlgrey_asic
 
   import_cfgs: [// common server configuration for results upload
                 "{proj_root}/hw/formal/tools/dvsim/common_conn_cfg.hjson"]
 
-  fusesoc_core: lowrisc:systems:top_earlgrey
+  fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
 
   csv_path: "{proj_root}/hw/top_earlgrey/formal/conn_csvs/top_earlgrey_conn.csv"
 

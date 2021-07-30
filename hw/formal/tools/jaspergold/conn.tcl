@@ -16,9 +16,12 @@ if {$env(COV) == 1} {
 #-------------------------------------------------------------------------
 
 # only one scr file exists in this folder
-analyze -sv09                 \
-  +define+FPV_ON              \
-  -f [glob *.scr]
+# Blackbox ast related modules to avoid compile errors.
+analyze -sv09     \
+  +define+FPV_ON  \
+  -f [glob *.scr] \
+  -bbox_m ast     \
+  -bbox_m ast_dft
 
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
@@ -29,13 +32,16 @@ set_port_direction_handling coercion_weak_bbox
 
 elaborate -top $env(DUT_TOP)
 
+# Add this assumption to avoid a false functional loop.
+assume -env {top_earlgrey.u_pinmux_aon.reg2hw.mio_pad_sleep_status == '1}
+
 # Currently only for top_earlgrey
-if {$env(DUT_TOP) == "top_earlgrey"} {
-  clock clk_main_i
-  clock clk_io_i
-  clock clk_usb_i
-  clock clk_aon_i
-  reset -expr {por_n_i}
+# Because in JasperGold we can only drive primary inputs. We put a stopat to aovid clock input
+# from being driven internally.
+if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
+  stopat -env IOC6
+  clock IOC6
+  reset -expr {POR_N}
 }
 
 #-------------------------------------------------------------------------
