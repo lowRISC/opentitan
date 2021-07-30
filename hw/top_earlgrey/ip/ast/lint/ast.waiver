@@ -8,6 +8,10 @@ waive -rules IFDEF_CODE -location {ast.sv} \
       -msg {Assignment to 'ast2pad_t0_ao' contained within `else block at ast.sv} \
       -comment {This ifdef statement is used for analog simulations and is OK.}
 
+waive -rules IFDEF_CODE -location {ast.sv} \
+      -msg {Assignment to 'unused_analog_sigs' contained within `ifndef 'ANALOGSIM' block at} \
+      -comment {This ifdef statement is used for assigning "unused" signals and is OK.}
+
 waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
       -msg {Falling edge of clock 'clk' used here, should use rising edge} \
       -comment {This negedge trigger is done on purpose.}
@@ -15,6 +19,14 @@ waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
 waive -rules CLOCK_USE -location {ast_dft.sv} \
       -regexp {('clk_byp'|'clk_osc') is used for some other purpose, and as clock ('clk_ast_ext_i'|'clk_io_osc_i') at ast_dft.sv} \
       -comment {This message pops up due to a clock OR operation.}
+
+waive -rules CLOCK_USE -location {ast.sv} \
+      -regexp {'clk_ast_tlul_i' is connected to 'ast_dft' port 'clk_i', and used as a clock 'clk_i' at prim_lfsr} \
+      -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
+
+waive -rules CLOCK_USE -location {ast.sv} \
+      -regexp {'clk_aon' is connected to 'rglts_pdm_3p3v' port 'clk_src_aon_h_i', and used as a clock 'clk_i' at prim_generic_flop} \
+      -comment {This is a valid clock signal and the connection is ok here.}
 
 waive -rules RESET_DRIVER -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
       -msg {'rst_val_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
@@ -83,6 +95,10 @@ waive -rules RESET_USE -location {io_osc.sv sys_osc.sv usb_osc.sv aon_osc.sv} \
 waive -rules RESET_USE -location {ast_dft.sv} \
       -msg {'clk_io_osc_val_i' is used for some other purpose, and as asynchronous reset 'rst_clk_osc_n' at ast_dft.sv} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -msg {'rst_ast_tlul_ni' is connected to 'ast_dft' port 'rst_ni', and used as an asynchronous reset or set 'rst_n' at rng} \
+      -comment {This is a valid reset connection.}
 
 waive -rules {TRI_DRIVER} -location {ast.sv} \
       -regexp {'ast2pad_(t0|t1)_ao' is driven by a tristate driver} \
