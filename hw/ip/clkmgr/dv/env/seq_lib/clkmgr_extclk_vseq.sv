@@ -49,7 +49,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_ast_clk_byp_ack;
   rand int cycles_before_next_trans;
 
-  constraint trans_large_c {num_trans == 16;}
   constraint cycles_to_stim_c {
     cycles_before_extclk_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
@@ -66,8 +65,9 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   task body();
     update_csrs_with_reset_values();
-    set_scanmode_on_low_weight();
+    `uvm_info(`gfn, "extclk_sel write start", UVM_LOW)
     csr_wr(.ptr(ral.extclk_sel_regwen), .value(1));
+    `uvm_info(`gfn, "extclk_sel write end", UVM_LOW)
     fork
       forever
         @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
@@ -95,10 +95,12 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       logic [TL_DW-1:0] value;
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      `uvm_info(`gfn, $sformatf("extclk start: i=%0d", i), UVM_LOW)
       // Init needs to be synchronous.
       @cfg.clk_rst_vif.cb begin
         cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode),
                             .lc_dft_en(lc_dft_en));
+        `uvm_info(`gfn, "extclk initializes if", UVM_LOW)
       end
       fork
         begin

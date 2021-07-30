@@ -78,6 +78,8 @@ class tl_host_base_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
   // Called after the rsp is received.
   virtual task get_base_response(output uvm_sequence_item response, input int transaction_id = -1);
     REQ rsp;
+    `uvm_info(`gfn, $sformatf("Removing from a_source_pend_q, size=%0d", cfg.a_source_pend_q.size),
+              UVM_LOW)
     super.get_base_response(response, transaction_id);
     `downcast(rsp, response)
     if (cfg == null) get_cfg(rsp);

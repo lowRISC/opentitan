@@ -10,13 +10,18 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint enable_ip_clk_en {ip_clk_en == 1'b1;}
   constraint all_busy {idle == '0;}
-  constraint scanmode_off {sel_scanmode == LcTxTSelOff;}
 
   task body();
     update_csrs_with_reset_values();
     cfg.clk_rst_vif.wait_clks(10);
-    test_peri_clocks();
-    test_trans_clocks();
+    fork
+      begin : run_checks
+        test_peri_clocks();
+        test_trans_clocks();
+      end
+      @(negedge cfg.clk_rst_vif.rst_n);
+    join_any
+    disable fork;
   endtask : body
 
   // Flips all clk_enables bits from the reset value with all enabled. All is
@@ -28,6 +33,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     csr_rd(.ptr(ral.clk_enables), .value(value));
     flipped_value = value ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
     csr_wr(.ptr(ral.clk_enables), .value(flipped_value));
+
+    // And set it back to the reset value for stress tests.
+    cfg.clk_rst_vif.wait_clks(1);
+    csr_wr(.ptr(ral.clk_enables), .value(ral.clk_enables.get_reset()));
   endtask : test_peri_clocks
 
   // Starts with all units busy, and for each one this clears the hint and reads the
@@ -74,6 +83,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
                    "%s hint value should drop when idle", descriptor.unit.name()))
       trans = trans.next();
     end while (trans != trans.first);
+    csr_wr(.ptr(ral.clk_hints), .value(ral.clk_hints.get_reset()));
   endtask : test_trans_clocks
 
 endclass : clkmgr_smoke_vseq

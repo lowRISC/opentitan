@@ -31,21 +31,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   rand bit                 ip_clk_en;
   rand bit [NUM_TRANS-1:0] idle;
-
-  // scanmode is set according to sel_scanmode, which is randomized with weights.
-  lc_tx_t                  scanmode;
-  rand lc_tx_t             scanmode_other;
-  rand lc_tx_t_sel_e       sel_scanmode;
-  int                      scanmode_on_weight = 8;
-
-  constraint scanmode_c {
-    sel_scanmode dist {
-      LcTxTSelOn    := scanmode_on_weight,
-      LcTxTSelOff   := 4,
-      LcTxTSelOther := 4
-    };
-    !(scanmode_other inside {On, Off});
-  }
+  lc_tx_t                  scanmode = Off;
 
   // extclk_sel is set according to sel_extclk_sel, which is randomized with weights.
   lc_tx_t            extclk_sel;
@@ -63,24 +49,21 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_clkmgr_init = 1'b1;
+  bit do_init_reset  = 1'b1;
 
   `uvm_object_new
 
   function void post_randomize();
     super.post_randomize();
-    scanmode   = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
     extclk_sel = get_lc_tx_t_from_sel(sel_extclk_sel, extclk_sel_other);
-  endfunction
-
-  virtual function void set_scanmode_on_low_weight();
-    scanmode_on_weight = 2;
   endfunction
 
   task pre_start();
     // These are independent: do them in parallel since pre_start consumes time.
     fork
       begin
-        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode), .lc_dft_en(Off));
+        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(1'b0), .scanmode(scanmode), .lc_dft_en(Off));
+        update_csrs_with_reset_values();
       end
       if (do_clkmgr_init) clkmgr_init();
       super.pre_start();
@@ -88,7 +71,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    if (do_init_reset) begin
+      super.dut_init(reset_kind);
+    end
   endtask
 
   virtual task dut_shutdown();
@@ -104,6 +89,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    `uvm_info(`gfn, "in apply_reset", UVM_LOW)
     fork
       super.apply_reset(kind);
       if (kind == "HARD")

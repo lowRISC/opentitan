@@ -201,7 +201,8 @@ class tl_agent_cfg extends dv_base_agent_cfg;
       last_a_source_released = a_source_pend_q.pop_front();
     end
     a_source_pend_q.push_back(a_source);
-    `uvm_info(`gfn, $sformatf("a_source_pend_q: %p", a_source_pend_q), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("Added %p to a_source_pend_q: %p", a_source, a_source_pend_q),
+              UVM_MEDIUM)
   endfunction
 
   // Removes the last used a_source from a_source_pend_q.
@@ -213,12 +214,14 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   virtual function void remove_from_a_source_pend_q(bit [SourceWidth-1:0] a_source);
     int result[$];
 
+    `uvm_info(`gfn, $sformatf("at remove_from_a_source_pend_q with source=0x%0x, q=%p",
+                              a_source, a_source_pend_q), UVM_MEDIUM)
     // Responses can return out of order, so the a_source can be anywhere in the queue.
     result = a_source_pend_q.find_first_index with (item == a_source);
     if (result.size() == 1) begin
       a_source_pend_q.delete(result.pop_front());
       last_a_source_released = a_source;
-      `uvm_info(`gfn, $sformatf("a_source_pend_q: %p", a_source_pend_q), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("Popped from a_source_pend_q: %p", a_source_pend_q), UVM_MEDIUM)
     end
   endfunction
 

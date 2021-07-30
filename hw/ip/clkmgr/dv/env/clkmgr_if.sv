@@ -7,7 +7,9 @@
 interface clkmgr_if (
   input logic clk,
   input logic rst_n,
-  input logic rst_main_n
+  input logic rst_io_n,
+  input logic rst_main_n,
+  input logic rst_usb_n
 );
   import clkmgr_env_pkg::*;
 
@@ -141,16 +143,20 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0] clk_enable_div4_ffs;
   logic [PIPELINE_DEPTH-1:0] clk_hint_otbn_div4_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
-  always @(posedge clocks_o.clk_io_div4_powerup) begin
-    if (rst_n) begin
+  always @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n) begin
+    if (rst_io_n) begin
       clk_enable_div4_ffs <= {clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div4_peri_en};
       clk_hint_otbn_div4_ffs <= {
         clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints[TransOtbnIoDiv4]
       };
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end else begin
+      clk_enable_div4_ffs <= '0;
+      clk_hint_otbn_div4_ffs <= '0;
+      ip_clk_en_div4_ffs <= '0;
     end
   end
-  clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup);
+  clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
     input ip_clk_en = ip_clk_en_div4_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_div4_ffs[PIPELINE_DEPTH-1];
     input clk_hint_otbn = clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-1];
@@ -159,39 +165,48 @@ interface clkmgr_if (
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_div2_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div2_ffs;
-  always @(posedge clocks_o.clk_io_div2_powerup) begin
-    if (rst_n) begin
+  always @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n) begin
+    if (rst_io_n) begin
       clk_enable_div2_ffs <= {clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div2_peri_en};
       ip_clk_en_div2_ffs  <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end else begin
+      clk_enable_div2_ffs <= '0;
+      ip_clk_en_div2_ffs <= '0;
     end
   end
-  clocking peri_div2_cb @(posedge clocks_o.clk_io_div2_powerup);
+  clocking peri_div2_cb @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n);
     input ip_clk_en = ip_clk_en_div2_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_div2_ffs[PIPELINE_DEPTH-1];
   endclocking
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_io_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_ffs;
-  always @(posedge clocks_o.clk_io_powerup) begin
-    if (rst_n) begin
+  always @(posedge clocks_o.clk_io_powerup or negedge rst_io_n) begin
+    if (rst_io_n) begin
       clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_peri_en};
       ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end else begin
+      clk_enable_io_ffs <= '0;
+      ip_clk_en_io_ffs <= '0;
     end
   end
-  clocking peri_io_cb @(posedge clocks_o.clk_io_powerup);
+  clocking peri_io_cb @(posedge clocks_o.clk_io_powerup or negedge rst_io_n);
     input ip_clk_en = ip_clk_en_io_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_io_ffs[PIPELINE_DEPTH-1];
   endclocking
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_usb_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_usb_ffs;
-  always @(posedge clocks_o.clk_usb_powerup) begin
-    if (rst_n) begin
+  always @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n) begin
+    if (rst_usb_n) begin
       clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables.usb_peri_en};
       ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end else begin
+      clk_enable_usb_ffs <= '0;
+      ip_clk_en_usb_ffs  <= '0;
     end
   end
-  clocking peri_usb_cb @(posedge clocks_o.clk_usb_powerup);
+  clocking peri_usb_cb @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n);
     input ip_clk_en = ip_clk_en_usb_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_usb_ffs[PIPELINE_DEPTH-1];
   endclocking
@@ -199,13 +214,16 @@ interface clkmgr_if (
   // Pipelining and clocking block for transactional unit clocks.
   logic [PIPELINE_DEPTH-1:0][NUM_TRANS-1:0] clk_hints_ffs;
   logic [PIPELINE_DEPTH-1:0]                trans_clk_en_ffs;
-  always @(posedge clocks_o.clk_main_powerup) begin
-    if (rst_n) begin
+  always @(posedge clocks_o.clk_main_powerup or negedge rst_main_n) begin
+    if (rst_main_n) begin
       clk_hints_ffs <= {clk_hints_ffs[PIPELINE_DEPTH-2:0], clk_hints};
       trans_clk_en_ffs <= {trans_clk_en_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end else begin
+      clk_hints_ffs <= '0;
+      trans_clk_en_ffs <= '0;
     end
   end
-  clocking trans_cb @(posedge clocks_o.clk_main_powerup);
+  clocking trans_cb @(posedge clocks_o.clk_main_powerup or negedge rst_main_n);
     input ip_clk_en = trans_clk_en_ffs[PIPELINE_DEPTH-1];
     input clk_hints = clk_hints_ffs[PIPELINE_DEPTH-1];
     input idle_i;
@@ -224,6 +242,8 @@ interface clkmgr_if (
   always @(posedge clk) begin
     if (rst_n) begin
       step_down_ff <= ast_clk_byp_ack == lc_ctrl_pkg::On;
+    end else begin
+      step_down_ff <= 1'b0;
     end
   end
   clocking step_down_cb @(posedge clk);

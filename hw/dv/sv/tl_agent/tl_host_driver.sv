@@ -204,6 +204,8 @@ class tl_host_driver extends tl_base_driver;
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("a_source_pend_q size=%0d", cfg.a_source_pend_q.size()),
+                      UVM_LOW)
             req_found         = 1;
             rsp.rsp_completed = !reset_asserted;
             break;
