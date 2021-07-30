@@ -7,26 +7,10 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// Temporary solution to configure/enable the EDN and CSRNG to allow OTBN to run
-// before a DIF is available, https://github.com/lowRISC/opentitan/issues/6082
-static const uint32_t kEntropySrcConfRegOffset = 0x18;
-static const uint32_t kCsrngCtrlRegOffset = 0x14;
-static const uint32_t kEdnCtrlRegOffset = 0x14;
-
-static void setup_edn(void) {
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-                      kEntropySrcConfRegOffset, 0x2);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                      kCsrngCtrlRegOffset, 0xaa);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      kEdnCtrlRegOffset, 0xaa);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      kEdnCtrlRegOffset, 0xaa);
-}
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
 OTBN_DECLARE_PTR_SYMBOL(barrett384, wrap_barrett384);
@@ -161,7 +145,7 @@ static void test_err_test(otbn_t *otbn_ctx) {
 }
 
 bool test_main() {
-  setup_edn();
+  entropy_testutils_boot_mode_init();
 
   dif_otbn_config_t otbn_config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
