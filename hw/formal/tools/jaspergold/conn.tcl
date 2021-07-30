@@ -35,7 +35,7 @@ if {$env(DUT_TOP) == "top_earlgrey"} {
   clock clk_io_i
   clock clk_usb_i
   clock clk_aon_i
-  reset -expr {rst_ni}
+  reset -expr {por_n_i}
 }
 
 #-------------------------------------------------------------------------
