@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
+      - lowrisc:prim:subreg
       - "fileset_top    ? (lowrisc:systems:alert_handler_reg)"
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
