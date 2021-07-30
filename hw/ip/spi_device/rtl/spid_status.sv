@@ -24,6 +24,8 @@ module spid_status
   input clk_i,
   input rst_ni,
 
+  input clk_out_i, // Output clock (inverted SCK)
+
   input sys_clk_i, // Handling STATUS CSR (ext type)
   input sys_rst_ni,
 
@@ -57,19 +59,20 @@ module spid_status
   ///////////////
   // Temporary //
   ///////////////
-  sel_datapath_e unused_dp;
-  assign unused_dp = sel_dp_i;
 
   logic unused_cmd_info;
-  assign unused_cmd_info = ^{cmd_info_i, cmd_info_idx_i};
+  assign unused_cmd_info = ^cmd_info_i;
 
   logic unused_p2s_sent;
   assign unused_p2s_sent = outclk_p2s_sent_i;
 
-  assign outclk_p2s_valid_o = 1'b 0;
-  assign outclk_p2s_byte_o  = '0;
-
   assign io_mode_o = SingleIO;
+
+  typedef enum logic {
+    StIdle,
+    StActive
+  } st_e;
+  st_e st_q, st_d;
 
   ////////////
   // Signal //
@@ -79,6 +82,8 @@ module spid_status
   logic unused_status_sck;
   assign unused_status_sck = ^status_sck;
 
+  logic      p2s_valid_inclk;
+  spi_byte_t p2s_byte_inclk;
 
   ////////////////////////////
   // Status CSR (incl. CDC) //
@@ -196,6 +201,98 @@ module spid_status
     end else if (inclk_busy_set_i) begin
       status_sck[0] <= 1'b 1;
     end
+  end
+
+  /////////////////
+  // Data Return //
+  /////////////////
+
+  // Latch in clk_out
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      outclk_p2s_valid_o <= 1'b 0;
+      outclk_p2s_byte_o  <= '0;
+    end else begin
+      outclk_p2s_valid_o <= p2s_valid_inclk;
+      outclk_p2s_byte_o  <= p2s_byte_inclk;
+    end
+  end
+
+  // cmd_idx to data selector
+  logic [1:0] byte_sel_d, byte_sel_q;
+  logic byte_sel_update, byte_sel_inc;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      byte_sel_q <= 2'b 00;
+    end else begin
+      byte_sel_q <= byte_sel_d;
+    end
+  end
+
+  always_comb begin : byte_sel_input
+    byte_sel_d = byte_sel_q;
+
+    if (byte_sel_update) begin
+      // Check input command index and assign initial byte_sel
+      byte_sel_d = 2'b 00; // default value
+
+      for (int unsigned i = 0 ; i <= 2 ; i++) begin
+        if (cmd_info_idx_i == CmdInfoIdxW'(StatusCmdIdx[i])) begin
+          byte_sel_d = i;
+        end
+      end
+    end else if (byte_sel_inc) begin
+      unique case (byte_sel_q)
+        2'b 00:  byte_sel_d = 2'b 01;
+        2'b 01:  byte_sel_d = 2'b 10;
+        2'b 10:  byte_sel_d = 2'b 00;
+        default: byte_sel_d = 2'b 00;
+      endcase
+    end
+  end : byte_sel_input
+
+  assign p2s_byte_inclk = (st_q == StIdle) ? status_sck[8*byte_sel_d+:8]
+                                           : status_sck[8*byte_sel_q+:8];
+
+  // State Machine
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) st_q <= StIdle;
+    else         st_q <= st_d;
+  end
+
+  always_comb begin
+    st_d = st_q;
+
+    byte_sel_update = 1'b 0;
+    byte_sel_inc    = 1'b 0;
+
+    p2s_valid_inclk = 1'b 0;
+
+    unique case (st_q)
+      StIdle: begin
+        if (sel_dp_i == DpReadStatus) begin
+          st_d = StActive;
+          // dp asserted after 8th SCK. Should send out the data right away.
+          byte_sel_update = 1'b 1;
+          p2s_valid_inclk = 1'b 1;
+        end
+      end
+
+      StActive: begin
+        p2s_valid_inclk = 1'b 1;
+        // deadend state
+        // Everytime a byte sent out, shift to next.
+
+        // TODO: Check if the byte_sel_inc to be delayed a cycle
+        if (outclk_p2s_sent_i) byte_sel_inc = 1'b 1;
+      end
+
+      default: begin
+        st_d = StIdle;
+      end
+    endcase
   end
 
 endmodule : spid_status

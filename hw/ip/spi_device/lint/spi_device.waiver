@@ -130,11 +130,17 @@ waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
 waive -rules {TERMINAL_STATE} -location {spi_cmdparse.sv} \
       -regexp {StWait} \
       -comment "CmdParse stays StWait until CSb de-assertion is received"
+waive -rules {TERMINAL_STATE} -location {spid_status.sv} \
+      -regexp {StActive} \
+      -comment "Until CSb de-asserted, the logic keeps sending the STATUS to the host system"
 
 #### Integer use
 waive -rules {INTEGER} -location {spi_cmdparse.sv} \
       -regexp {'i' of type int used as a non-constant value} \
       -comment "Need to give the index to the submodules to recognize which command it received"
+waive -rules {INTEGER} -location {spid_status.sv} \
+      -regexp {'i' of type int used as a non-constant value} \
+      -comment "Find correct cmd_index and return the appropriate byte_sel signal"
 
 #### SRAM mux
 #### SRAM has unpacked array to mux/demux. Waive one bit unpacked array
@@ -162,3 +168,7 @@ waive -rules {NOT_READ} -location {spi_passthrough.sv} \
 waive -rules {ASSIGN_SIGN NEG_ASSIGN} -location {spi_passthrough.sv} \
       -regexp {'addr_size_d'} \
       -comment "Waive the unsigned, negative value errors for readability"
+
+waive -rules {CALC_NEXT_STATE} -location {spid_status.sv} \
+      -regexp {'byte_sel_d' is assigned a non-constant expression 'i'} \
+      -comment "byte_sel_q is not a state but mux selection register. but coded similar to the state machine"

@@ -919,6 +919,8 @@ module spi_device
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
 
+    .clk_out_i (clk_spi_out_buf),
+
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
@@ -951,11 +953,18 @@ module spi_device
 
   // Tie unused
   logic unused_sub_sram;
-  assign unused_sub_sram = ^{ sub_sram_req  [IoModeStatus],
-                              sub_sram_write[IoModeStatus],
-                              sub_sram_addr [IoModeStatus],
-                              sub_sram_wdata[IoModeStatus]
+  assign unused_sub_sram = ^{ sub_sram_req   [IoModeStatus],
+                              sub_sram_write [IoModeStatus],
+                              sub_sram_addr  [IoModeStatus],
+                              sub_sram_wdata [IoModeStatus],
+                              sub_sram_rvalid[IoModeStatus],
+                              sub_sram_rdata [IoModeStatus],
+                              sub_sram_rerror[IoModeStatus]
                             };
+  assign sub_sram_req[IoModeStatus]   = 1'b 0;
+  assign sub_sram_write[IoModeStatus] = 1'b 0;
+  assign sub_sram_addr[IoModeStatus]  = '0;
+  assign sub_sram_wdata[IoModeStatus] = '0;
 
   // End: Read Status ------------------------------------------------
 
