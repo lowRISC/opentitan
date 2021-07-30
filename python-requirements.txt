@@ -6,6 +6,7 @@
 anytree # dependency of sw/host/vendor/google_verible_verilog_syntax_py
 enlighten
 flake8
+git-fame
 gitpython
 hjson
 ipyxact >= 0.2.4
@@ -21,6 +22,7 @@ mypy
 # To relax the constraint we either need to do a runtime detection, or switch all
 # users to a newer version.
 premailer < 3.9.0
+pydriller
 pyelftools
 pyftdi
 pyserial
@@ -29,6 +31,7 @@ pytest
 pytest-timeout
 pyyaml
 tabulate
+termcolor
 yapf
 
 # Type stubs for mypy checking. types-dataclasses is only needed for Python <= 3.6.
