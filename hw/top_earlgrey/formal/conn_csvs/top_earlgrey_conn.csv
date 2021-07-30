@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
+# Run these checks with
+#  cd hw/top_earlgrey/formal
+#  ../../../util/dvsim/dvsim.py chip_conn_cfg.hjson
+#
 # TODO: use chip_earlgrey_asic once the ast compile error fixed
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
