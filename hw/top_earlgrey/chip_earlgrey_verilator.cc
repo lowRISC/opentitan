@@ -10,13 +10,13 @@
 #include "verilator_sim_ctrl.h"
 
 int main(int argc, char **argv) {
-  chip_earlgrey_verilator top;
+  chip_earlgrey_verilator_tb top;
   VerilatorMemUtil memutil;
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.clk_i, &top.rst_ni,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  std::string top_scope("TOP.chip_earlgrey_verilator.top_earlgrey");
+  std::string top_scope("TOP.chip_earlgrey_verilator_tb.u_dut.top_earlgrey");
   std::string ram1p_adv_scope(
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
