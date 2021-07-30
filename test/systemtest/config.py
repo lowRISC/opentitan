@@ -105,6 +105,9 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_kmac_kmac_smoketest",
     },
     {
+        "name": "entropy_src_fw_ovr_test",
+    },
+    {
         "name": "flash_ctrl_test",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
