@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// *Name: vcmain_pok
-// *Module Description:  VCMAIN Power OK
+// *Name: vio_pgd
+// *Module Description:  VIO Power Good
 //############################################################################
 `ifdef SYNTHESIS
 `ifndef PRIM_DEFAULT_IMPL
@@ -11,8 +11,8 @@
 `endif
 `endif
 
-module vcmain_pok (
-  output logic vcmain_pok_o
+module vio_pgd (
+  output logic vio_pok_o
 );
 
 // Local signal for testing hook
@@ -35,25 +35,25 @@ end
 
 always @( * ) begin
   if ( init_start ) begin
-    vcmain_pok_o <= 1'b0;
+    vio_pok_o <= 1'b0;
   end else if ( !init_start && gen_supp_a ) begin
-    vcmain_pok_o <= #(VCMAIN_POK_RDLY) gen_supp_a;
+    vio_pok_o <= #(VIO_POK_RDLY) gen_supp_a;
   end else if ( !init_start && !gen_supp_a ) begin
-    vcmain_pok_o <= #(VCMAIN_POK_FDLY) gen_supp_a;
+    vio_pok_o <= #(VIO_POK_FDLY) gen_supp_a;
   end
 end
 `else
 // SYNTHESIS/VERILATOR/LINTER/FPGA
-///////////////////////////////////////
+//////////////////////////////////////
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
 if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
-  assign vcmain_pok_o = gen_supp_a;
+  assign vio_pok_o = gen_supp_a;
 end else begin : gen_generic
-  assign vcmain_pok_o = gen_supp_a;
+  assign vio_pok_o = gen_supp_a;
 end
 `endif
 
-endmodule : vcmain_pok
+endmodule : vio_pgd

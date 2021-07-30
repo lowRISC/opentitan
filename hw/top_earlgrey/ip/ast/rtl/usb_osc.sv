@@ -92,4 +92,13 @@ prim_clock_buf u_buf (
   .clk_o ( usb_clk_o )
 );
 
+
+`ifdef SYNTHESIS
+///////////////////////
+// Unused Signals
+///////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ usb_ref_val_i };  // Used in ASIC implementation
+`endif
+
 endmodule : usb_osc
