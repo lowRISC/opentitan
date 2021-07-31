@@ -29,7 +29,6 @@ module pinmux
   output logic                     usb_wkup_req_o,
   // Sleep enable and strap sample enable
   // from pwrmgr, running on clk_i
-  // TODO(#5198): figure out the connections.
   input                            sleep_en_i,
   input                            strap_en_i,
   // LC signals for TAP qualification
