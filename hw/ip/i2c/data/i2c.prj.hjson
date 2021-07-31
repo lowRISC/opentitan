@@ -12,10 +12,9 @@
       {
         version:            "0.5",
         life_stage:         "L1",
-        design_stage:       "D1",
+        design_stage:       "D2",
         verification_stage: "V1",
         dif_stage:          "S0",
-        commit_id:          "ff9c06167bc34d921974839017dec54f0fb8347a",
         notes:              ""
       }
     ]
