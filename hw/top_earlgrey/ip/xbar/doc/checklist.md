@@ -142,7 +142,7 @@ Review        | Signoff date                          | Done        | 2019-11-04
 [XBAR DV document]:                   {{<relref "/hw/ip/tlul/doc/dv">}}
 [XBAR Testplan]:                      {{<relref "/hw/ip/tlul/doc/dv/index.md#testplan">}}
 
-[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv-doc-draft-completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan-completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-top-created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary-assertion-checks-added" >}}

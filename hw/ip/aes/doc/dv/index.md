@@ -5,7 +5,7 @@ title: "AES DV document"
 ## Goals
 * **DV**
   * Verify all AES IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP.
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP.
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -156,5 +156,5 @@ Here's how to run a basic test without DPI calls:
 ```console
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_wakeup
 ```
-## DV plan
+## Testplan
 {{< incGenFromIpDesc "../../data/aes_testplan.hjson" "testplan" >}}

@@ -14,7 +14,7 @@ applicable. Once done, remove this comment before making a PR. -->
 ## Goals
 * **DV**
   * Verify all RSTMGR IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -80,7 +80,7 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 [Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
-The following test sequences and covergroupsare described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#dv-plan).
+The following test sequences and covergroupsare described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
 
 #### Test sequences
 The test sequences reside in `hw/ip/rstmgr/dv/env/seq_lib`.
@@ -121,7 +121,7 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson -i rstmgr_smoke
 ```
 
-## DV plan
+## Testplan
 <!-- TODO: uncomment the line below after adding the testplan.
 Please make sure the testplan is added to `/util/build_docs.py`. -->
 {{</* incGenFromIpDesc "hw/ip/rstmgr/data/rstmgr_testplan.hjson" "testplan" */>}}

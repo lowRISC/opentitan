@@ -110,7 +110,7 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [AON Timer DV Plan]()
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [AON Timer DV document]()
 Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [AON Timer Testplan]()
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |

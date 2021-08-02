@@ -14,7 +14,7 @@ applicable. Once done, remove this comment before making a PR. -->
 ${'##'} Goals
 * **DV**
   * Verify all ${name.upper()} IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -128,7 +128,7 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/${name}/dv/${name}_sim_cfg.hjson -i ${name}_smoke
 ```
 
-${'##'} DV plan
+${'##'} Testplan
 <!-- TODO: uncomment the line below after adding the testplan.
 Please make sure the testplan is added to `/util/build_docs.py`. -->
-{{</* incGenFromIpDesc "hw/ip/${name}/data/${name}_testplan.hjson" "testplan" */>}
+{{</* incGenFromIpDesc "../../data/${name}_testplan.hjson" "testplan" */>}

@@ -5,7 +5,7 @@ title: "AON Timer DV Document"
 ## Goals
 * **DV**
   * Verify the always-on timer (*AON Timer*) by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -134,5 +134,5 @@ To run a basic smoke test, go to the top of the repository and run:
 $ util/dvsim/dvsim.py hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
 ```
 
-## DV plan
+## Testplan
 {{< incGenFromIpDesc "../../data/aon_timer_testplan.hjson" "testplan" >}}

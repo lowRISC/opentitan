@@ -47,5 +47,5 @@ interrupt source and interrupt target.
 Detailed explanation is listed in the
 [Symbolic Variables]({{< relref "/hw/formal/README.md#symbolic-variables" >}}) section.
 
-## DV plan
+## Testplan
 {{< incGenFromIpDesc "../../data/rv_plic_fpv_testplan.hjson" "testplan" >}}

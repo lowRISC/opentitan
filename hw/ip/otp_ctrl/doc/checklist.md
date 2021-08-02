@@ -116,7 +116,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [OTP_CTRL DV document]({{<relref "dv" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Done        | [OTP_CTRL Testplan]({{<relref "dv/index.md#dv-plan" >}})
+Documentation | [TESTPLAN_COMPLETED][]                | Done        | [OTP_CTRL Testplan]({{<relref "dv/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
