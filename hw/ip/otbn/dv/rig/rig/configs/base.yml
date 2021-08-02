@@ -13,6 +13,7 @@ gen-weights:
 
   # Generators that end the program
   ECall: 1
+  BadAtEnd: 1
   BadDeepLoop: 1
   BadInsn: 1
   BadGiantLoop: 1
