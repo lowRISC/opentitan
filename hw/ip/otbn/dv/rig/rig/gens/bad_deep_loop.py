@@ -154,7 +154,7 @@ class BadDeepLoop(SnippetGen):
         model.pc += 4
         model.loop_depth += 1
 
-        body_snippet = None
+        body_snippet = None  # type: Optional[Snippet]
 
         if space_here <= 2:
             # If we've run out of space in front of us, jump somewhere else to
@@ -169,7 +169,7 @@ class BadDeepLoop(SnippetGen):
             # TODO: Can this fail?
             assert jump_ret is not None
 
-            jump_snippet, model = jump_ret
+            jump_insn, jump_snippet, model = jump_ret
             assert model.pc == gap_lo
             body_snippet = jump_snippet
 
