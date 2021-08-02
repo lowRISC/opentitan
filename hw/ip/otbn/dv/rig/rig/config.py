@@ -6,8 +6,7 @@ import os
 import random
 from typing import Dict, List, Optional, Set
 
-from shared.yaml_parse_helpers import (check_str, check_keys, check_list,
-                                       load_yaml)
+from shared.yaml_parse_helpers import check_str, check_keys, load_yaml
 
 
 class Weights:
