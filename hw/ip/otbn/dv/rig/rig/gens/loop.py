@@ -185,13 +185,18 @@ class Loop(SnippetGen):
                          op0_type: OperandType,
                          op1_type: ImmOperandType,
                          space_here: int,
+                         check: bool,
                          model: Model,
                          program: Program) -> Optional[Shape]:
         '''Pick the size of loop and number of iterations
 
-        op_type is the type of the first operand (either 'grs' for loop or
-        'iterations' for loopi). space_here is the number of instructions'
-        space available at the current position.
+        op0_type is the type of the first operand (either 'grs' for loop or
+        'iterations' for loopi). op1_type is the type of the bodysize operand.
+
+        space_here is the number of instructions' space available at the
+        current position. If check is true, we're generating a genuine loop and
+        should perform checks like making sure there's enough space to generate
+        everything.
 
         '''
         # The first upper bound on bodysize is that we've got to have an empty
@@ -238,8 +243,9 @@ class Loop(SnippetGen):
         # Decide on the bodysize value. tail_pc is the address of the last
         # instruction in the loop body.
         bodysize = random.randint(max(1, bs_min), min(bs_max, max_bodysize))
-        tail_pc = model.pc + 4 * bodysize
-        assert program.get_insn_space_at(tail_pc) >= 2
+        if check:
+            tail_pc = model.pc + 4 * bodysize
+            assert program.get_insn_space_at(tail_pc) >= 2
 
         iters = self.pick_iterations(op0_type, bodysize, model)
         if iters is None:
@@ -247,6 +253,12 @@ class Loop(SnippetGen):
         iter_opval, num_iters = iters
 
         return (iter_opval, num_iters, bodysize)
+
+    def _gen_tail(self,
+                  num_insns: int,
+                  model: Model,
+                  program: Program) -> Optional[Tuple[List[ProgInsn], Model]]:
+        return self.sli_gen.gen_some(num_insns, model, program)
 
     def _gen_body(self,
                   bodysize: int,
@@ -397,7 +409,7 @@ class Loop(SnippetGen):
         # points at tail_start. Generate the remaining straight line
         # instructions that we need.
         assert model.pc == tail_start
-        tail_ret = self.sli_gen.gen_some(tail_len, model, program)
+        tail_ret = self._gen_tail(tail_len, model, program)
         if tail_ret is None:
             return None
 
@@ -408,6 +420,7 @@ class Loop(SnippetGen):
         tail_snippet = ProgSnippet(tail_start, tail_insns)
         tail_snippet.insert_into_program(program)
 
+        tail_snippet = ProgSnippet(tail_start, tail_insns)
         snippet = Snippet.cons_option(head_snippet, tail_snippet)
 
         # Remove the const annotations that we added to the model
@@ -433,6 +446,30 @@ class Loop(SnippetGen):
         program.add_insns(model.pc, [hd_insn])
 
         return body_model
+
+    def _pick_head(self,
+                   space_here: int,
+                   check: bool,
+                   model: Model,
+                   program: Program) -> Optional[Tuple[ProgInsn, Shape]]:
+        insn = self.pick_loop_insn()
+
+        # Pick a loop count
+        op0_type = insn.operands[0].op_type
+        op1_type = insn.operands[1].op_type
+        assert isinstance(op1_type, ImmOperandType)
+        lshape = self._pick_loop_shape(op0_type, op1_type,
+                                       space_here, check, model, program)
+        if lshape is None:
+            return None
+
+        iter_opval, num_iters, bodysize = lshape
+
+        # Generate the head instruction (which runs once, unconditionally) and
+        # clone model and program to add it
+        enc_bodysize = op1_type.op_val_to_enc_val(bodysize, model.pc)
+        assert enc_bodysize is not None
+        return (ProgInsn(insn, [iter_opval, enc_bodysize], None), lshape)
 
     def _gen_pieces(self,
                     cont: GenCont,
@@ -464,24 +501,12 @@ class Loop(SnippetGen):
         if model.loop_depth == Model.max_loop_depth:
             return None
 
-        insn = self.pick_loop_insn()
-
-        # Pick a loop count
-        op0_type = insn.operands[0].op_type
-        op1_type = insn.operands[1].op_type
-        assert isinstance(op1_type, ImmOperandType)
-        lshape = self._pick_loop_shape(op0_type,
-                                       op1_type, space_here, model, program)
-        if lshape is None:
+        ret = self._pick_head(space_here, True, model, program)
+        if ret is None:
             return None
 
+        hd_insn, lshape = ret
         iter_opval, num_iters, bodysize = lshape
-
-        # Generate the head instruction (which runs once, unconditionally) and
-        # clone model and program to add it
-        enc_bodysize = op1_type.op_val_to_enc_val(bodysize, model.pc)
-        assert enc_bodysize is not None
-        hd_insn = ProgInsn(insn, [iter_opval, enc_bodysize], None)
 
         body_program = program.copy()
         body_model = self._setup_body(hd_insn, model, body_program)

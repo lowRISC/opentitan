@@ -21,6 +21,7 @@ from .gens.small_val import SmallVal
 from .gens.known_wdr import KnownWDR
 from .gens.straight_line_insn import StraightLineInsn
 
+from .gens.bad_at_end import BadAtEnd
 from .gens.bad_deep_loop import BadDeepLoop
 from .gens.bad_insn import BadInsn
 from .gens.bad_giant_loop import BadGiantLoop
@@ -38,6 +39,7 @@ class SnippetGens:
         KnownWDR,
 
         ECall,
+        BadAtEnd,
         BadDeepLoop,
         BadInsn,
         BadGiantLoop,
