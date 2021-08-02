@@ -60,7 +60,7 @@ package keymgr_reg_pkg;
   } keymgr_reg2hw_control_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [2:0]  q;
   } keymgr_reg2hw_sideload_clear_reg_t;
 
   typedef struct packed {
@@ -106,7 +106,7 @@ package keymgr_reg_pkg;
     } invalid_op;
     struct packed {
       logic        q;
-    } invalid_cmd;
+    } invalid_states;
     struct packed {
       logic        q;
     } invalid_kmac_input;
@@ -163,7 +163,7 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_cmd;
+    } invalid_states;
     struct packed {
       logic        d;
       logic        de;
@@ -174,14 +174,37 @@ package keymgr_reg_pkg;
     } invalid_kmac_data;
   } keymgr_hw2reg_err_code_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_fsm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_op;
+    struct packed {
+      logic        d;
+      logic        de;
+    } regfile_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_intg;
+  } keymgr_hw2reg_fault_status_reg_t;
+
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [934:934]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [933:933]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [932:931]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [930:927]
-    keymgr_reg2hw_control_reg_t control; // [926:919]
-    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [918:918]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [936:936]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [935:935]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [934:933]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [932:929]
+    keymgr_reg2hw_control_reg_t control; // [928:921]
+    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [920:918]
     keymgr_reg2hw_reseed_interval_reg_t reseed_interval; // [917:902]
     keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [901:900]
     keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [899:644]
@@ -196,15 +219,16 @@ package keymgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_hw2reg_intr_state_reg_t intr_state; // [548:547]
-    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [546:546]
-    keymgr_hw2reg_control_reg_t control; // [545:544]
-    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [543:543]
-    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [542:279]
-    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [278:15]
-    keymgr_hw2reg_working_state_reg_t working_state; // [14:11]
-    keymgr_hw2reg_op_status_reg_t op_status; // [10:8]
-    keymgr_hw2reg_err_code_reg_t err_code; // [7:0]
+    keymgr_hw2reg_intr_state_reg_t intr_state; // [558:557]
+    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [556:556]
+    keymgr_hw2reg_control_reg_t control; // [555:554]
+    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [553:553]
+    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [552:289]
+    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [288:25]
+    keymgr_hw2reg_working_state_reg_t working_state; // [24:21]
+    keymgr_hw2reg_op_status_reg_t op_status; // [20:18]
+    keymgr_hw2reg_err_code_reg_t err_code; // [17:10]
+    keymgr_hw2reg_fault_status_reg_t fault_status; // [9:0]
   } keymgr_hw2reg_t;
 
   // Register offsets
@@ -267,6 +291,7 @@ package keymgr_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_WORKING_STATE_OFFSET = 8'h e0;
   parameter logic [BlockAw-1:0] KEYMGR_OP_STATUS_OFFSET = 8'h e4;
   parameter logic [BlockAw-1:0] KEYMGR_ERR_CODE_OFFSET = 8'h e8;
+  parameter logic [BlockAw-1:0] KEYMGR_FAULT_STATUS_OFFSET = 8'h ec;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_INTR_TEST_RESVAL = 1'h 0;
@@ -339,11 +364,12 @@ package keymgr_reg_pkg;
     KEYMGR_SW_SHARE1_OUTPUT_7,
     KEYMGR_WORKING_STATE,
     KEYMGR_OP_STATUS,
-    KEYMGR_ERR_CODE
+    KEYMGR_ERR_CODE,
+    KEYMGR_FAULT_STATUS
   } keymgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_PERMIT [59] = '{
+  parameter logic [3:0] KEYMGR_PERMIT [60] = '{
     4'b 0001, // index[ 0] KEYMGR_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_INTR_TEST
@@ -402,7 +428,8 @@ package keymgr_reg_pkg;
     4'b 1111, // index[55] KEYMGR_SW_SHARE1_OUTPUT_7
     4'b 0001, // index[56] KEYMGR_WORKING_STATE
     4'b 0001, // index[57] KEYMGR_OP_STATUS
-    4'b 0001  // index[58] KEYMGR_ERR_CODE
+    4'b 0001, // index[58] KEYMGR_ERR_CODE
+    4'b 0001  // index[59] KEYMGR_FAULT_STATUS
   };
 
 endpackage

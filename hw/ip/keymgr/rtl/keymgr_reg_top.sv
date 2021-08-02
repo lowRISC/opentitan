@@ -132,8 +132,8 @@ module keymgr_reg_top (
   logic [2:0] control_dest_sel_qs;
   logic [2:0] control_dest_sel_wd;
   logic sideload_clear_we;
-  logic sideload_clear_qs;
-  logic sideload_clear_wd;
+  logic [2:0] sideload_clear_qs;
+  logic [2:0] sideload_clear_wd;
   logic reseed_interval_we;
   logic [15:0] reseed_interval_qs;
   logic [15:0] reseed_interval_wd;
@@ -289,12 +289,17 @@ module keymgr_reg_top (
   logic err_code_we;
   logic err_code_invalid_op_qs;
   logic err_code_invalid_op_wd;
-  logic err_code_invalid_cmd_qs;
-  logic err_code_invalid_cmd_wd;
+  logic err_code_invalid_states_qs;
+  logic err_code_invalid_states_wd;
   logic err_code_invalid_kmac_input_qs;
   logic err_code_invalid_kmac_input_wd;
   logic err_code_invalid_kmac_data_qs;
   logic err_code_invalid_kmac_data_wd;
+  logic fault_status_cmd_qs;
+  logic fault_status_kmac_fsm_qs;
+  logic fault_status_kmac_op_qs;
+  logic fault_status_regfile_intg_qs;
+  logic fault_status_ctrl_fsm_intg_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -524,9 +529,9 @@ module keymgr_reg_top (
   // R[sideload_clear]: V(False)
 
   prim_subreg #(
-    .DW      (1),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (3'h0)
   ) u_sideload_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1954,29 +1959,29 @@ module keymgr_reg_top (
   );
 
 
-  //   F[invalid_cmd]: 1:1
+  //   F[invalid_states]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_err_code_invalid_cmd (
+  ) u_err_code_invalid_states (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_we),
-    .wd     (err_code_invalid_cmd_wd),
+    .wd     (err_code_invalid_states_wd),
 
     // from internal hardware
-    .de     (hw2reg.err_code.invalid_cmd.de),
-    .d      (hw2reg.err_code.invalid_cmd.d),
+    .de     (hw2reg.err_code.invalid_states.de),
+    .d      (hw2reg.err_code.invalid_states.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.invalid_cmd.q),
+    .q      (reg2hw.err_code.invalid_states.q),
 
     // to register interface (read)
-    .qs     (err_code_invalid_cmd_qs)
+    .qs     (err_code_invalid_states_qs)
   );
 
 
@@ -2032,9 +2037,141 @@ module keymgr_reg_top (
   );
 
 
+  // R[fault_status]: V(False)
+
+  //   F[cmd]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_cmd (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.cmd.de),
+    .d      (hw2reg.fault_status.cmd.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_cmd_qs)
+  );
 
 
-  logic [58:0] addr_hit;
+  //   F[kmac_fsm]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_kmac_fsm (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.kmac_fsm.de),
+    .d      (hw2reg.fault_status.kmac_fsm.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_kmac_fsm_qs)
+  );
+
+
+  //   F[kmac_op]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_kmac_op (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.kmac_op.de),
+    .d      (hw2reg.fault_status.kmac_op.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_kmac_op_qs)
+  );
+
+
+  //   F[regfile_intg]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_regfile_intg (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.regfile_intg.de),
+    .d      (hw2reg.fault_status.regfile_intg.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_regfile_intg_qs)
+  );
+
+
+  //   F[ctrl_fsm_intg]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_ctrl_fsm_intg (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.ctrl_fsm_intg.de),
+    .d      (hw2reg.fault_status.ctrl_fsm_intg.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_ctrl_fsm_intg_qs)
+  );
+
+
+
+
+  logic [59:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == KEYMGR_INTR_STATE_OFFSET);
@@ -2096,6 +2233,7 @@ module keymgr_reg_top (
     addr_hit[56] = (reg_addr == KEYMGR_WORKING_STATE_OFFSET);
     addr_hit[57] = (reg_addr == KEYMGR_OP_STATUS_OFFSET);
     addr_hit[58] = (reg_addr == KEYMGR_ERR_CODE_OFFSET);
+    addr_hit[59] = (reg_addr == KEYMGR_FAULT_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2161,7 +2299,8 @@ module keymgr_reg_top (
                (addr_hit[55] & (|(KEYMGR_PERMIT[55] & ~reg_be))) |
                (addr_hit[56] & (|(KEYMGR_PERMIT[56] & ~reg_be))) |
                (addr_hit[57] & (|(KEYMGR_PERMIT[57] & ~reg_be))) |
-               (addr_hit[58] & (|(KEYMGR_PERMIT[58] & ~reg_be)))));
+               (addr_hit[58] & (|(KEYMGR_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(KEYMGR_PERMIT[59] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -2189,7 +2328,7 @@ module keymgr_reg_top (
   assign control_dest_sel_wd = reg_wdata[14:12];
   assign sideload_clear_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign sideload_clear_wd = reg_wdata[0];
+  assign sideload_clear_wd = reg_wdata[2:0];
   assign reseed_interval_we = addr_hit[7] & reg_we & !reg_error;
 
   assign reseed_interval_wd = reg_wdata[15:0];
@@ -2345,7 +2484,7 @@ module keymgr_reg_top (
 
   assign err_code_invalid_op_wd = reg_wdata[0];
 
-  assign err_code_invalid_cmd_wd = reg_wdata[1];
+  assign err_code_invalid_states_wd = reg_wdata[1];
 
   assign err_code_invalid_kmac_input_wd = reg_wdata[2];
 
@@ -2384,7 +2523,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = sideload_clear_qs;
+        reg_rdata_next[2:0] = sideload_clear_qs;
       end
 
       addr_hit[7]: begin
@@ -2593,9 +2732,17 @@ module keymgr_reg_top (
 
       addr_hit[58]: begin
         reg_rdata_next[0] = err_code_invalid_op_qs;
-        reg_rdata_next[1] = err_code_invalid_cmd_qs;
+        reg_rdata_next[1] = err_code_invalid_states_qs;
         reg_rdata_next[2] = err_code_invalid_kmac_input_qs;
         reg_rdata_next[3] = err_code_invalid_kmac_data_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[0] = fault_status_cmd_qs;
+        reg_rdata_next[1] = fault_status_kmac_fsm_qs;
+        reg_rdata_next[2] = fault_status_kmac_op_qs;
+        reg_rdata_next[3] = fault_status_regfile_intg_qs;
+        reg_rdata_next[4] = fault_status_ctrl_fsm_intg_qs;
       end
 
       default: begin

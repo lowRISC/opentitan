@@ -529,7 +529,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         GetStatusCodesTestCase{
             .reg_val = {{
-                .offset = KEYMGR_ERR_CODE_INVALID_CMD_BIT,
+                .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
                 .value = 1,
             }},
             .exp_val = kDifKeymgrStatusCodeIdle |
@@ -566,7 +566,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         GetStatusCodesTestCase{
             .reg_val = {{
-                            .offset = KEYMGR_ERR_CODE_INVALID_CMD_BIT,
+                            .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
                             .value = 1,
                         },
                         {
@@ -814,8 +814,8 @@ TEST_P(BadArgsTwo, SetBadArg) {
 TEST_F(SideloadClearTest, Set) {
   EXPECT_WRITE32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                  {{
-                     .offset = KEYMGR_SIDELOAD_CLEAR_VAL_BIT,
-                     .value = 1,
+                     .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                     .value = kDifKeyMgrSideLoadClearAll,
                  }});
   EXPECT_EQ(
       dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifKeymgrToggleEnabled),
@@ -823,8 +823,8 @@ TEST_F(SideloadClearTest, Set) {
 
   EXPECT_WRITE32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                  {{
-                     .offset = KEYMGR_SIDELOAD_CLEAR_VAL_BIT,
-                     .value = 0,
+                     .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                     .value = kDifKeyMgrSideLoadClearNone,
                  }});
   EXPECT_EQ(
       dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifKeymgrToggleDisabled),
@@ -834,8 +834,8 @@ TEST_F(SideloadClearTest, Set) {
 TEST_F(SideloadClearTest, Get) {
   EXPECT_READ32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                 {{
-                    .offset = KEYMGR_SIDELOAD_CLEAR_VAL_BIT,
-                    .value = 1,
+                    .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                    .value = kDifKeyMgrSideLoadClearAll,
                 }});
   dif_keymgr_toggle_t state = kDifKeymgrToggleDisabled;
   EXPECT_EQ(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state),
@@ -844,8 +844,8 @@ TEST_F(SideloadClearTest, Get) {
 
   EXPECT_READ32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                 {{
-                    .offset = KEYMGR_SIDELOAD_CLEAR_VAL_BIT,
-                    .value = 0,
+                    .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                    .value = kDifKeyMgrSideLoadClearNone,
                 }});
   state = kDifKeymgrToggleEnabled;
   EXPECT_EQ(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state),

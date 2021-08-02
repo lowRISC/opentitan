@@ -182,7 +182,7 @@ Software is responsible for determining if the key should be preserved in shares
 An error code register is maintained {{< regref ERR_CODE >}} to check issues that might rise while using the key manager.
 There are two categories of errors
 *  Hardware fault errors - These errors indicate something fundamental has gone wrong and are errors that could not have been caused by software.
-   *  Invalid command - A non-one-hot command was issued from the key manager controller to the KMAC data interface. This is not possible by software and indicates a hardware fault.  This error can also happen if the KMCA data fsm gets into an invalid state.
+   *  Invalid states - There are invalid / impossible states observed in the keymgr.  These are likely fault errors.
    *  Invalid fsm state - The fsm reached an invalid state.  This is not possible by software and indicates a hardware fault.
    *  Invalid kmac operation - The KMAC module itself reported an error.  This is not possible given the set of KMAC data interface inputs.
    *  Invalid output - The data return from KMAC is all 0's or all 1's.  This is not possible given the set of KMAC data interface inputs.
@@ -193,8 +193,12 @@ There are two categories of errors
 
 Two separate alerts are generated, one corresponding to each category above.
 
-### Invalid Command/Fsm/Kmac Operation
-When these errors occur, a fault alert is generated.
+In addition to the error code register, there is a separate {{< regref FAULT_STATUS >}} that captures the sources that caused `Invalid states` to assert.
+*  Command error - A non-one-hot command was issued from the key manager controller to the KMAC data interface. This is not possible by software and indicates a hardware fault.  This error can also happen if the KMCA data fsm gets into an invalid state.
+*  Kmac fsm error - The kmac fsm has transitioned into an error state.
+*  Kmac operation error - The kmac module has returned an error, this should never happen.
+*  Register file integrity error - The register file has encountered an integrity error.
+
 
 ### Invalid Output
 When these errors occur, a fault alert is generated.
@@ -353,6 +357,8 @@ When a valid operation is called, the internal state key is sent over the KMAC k
 During all other times, the sideloaded value is presented.
 Note, there may not be a valid key in the sideload register if it has been cleared or never generated.
 The sideload key can be overwritten with another generate command, or cleared with entropy through {{< regref SIDELOAD_CLEAR >}}.
+
+The clearing can be done one slot at a time, or all at once.
 
 The following diagram illustrates an example when there is no valid key in the KMAC sideload registers and an operation is called.
 During the duration of the operation, the key is valid and shows the internal key state.
