@@ -64,7 +64,7 @@ class BadZeroLoop(Loop):
         # with the same body size but with zero iterations.
         _, _, bodysize = good_shape
 
-        insn = self._pick_loop_insn()
+        insn = self.pick_loop_insn()
         op0_type = insn.operands[0].op_type
         op1_type = insn.operands[1].op_type
 

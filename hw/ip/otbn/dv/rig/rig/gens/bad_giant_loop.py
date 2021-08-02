@@ -51,7 +51,7 @@ class BadGiantLoop(Loop):
         if model.loop_depth == Model.max_loop_depth:
             return None
 
-        insn = self._pick_loop_insn()
+        insn = self.pick_loop_insn()
         iters_op_type = insn.operands[0].op_type
         bodysize_op_type = insn.operands[1].op_type
 
@@ -80,7 +80,7 @@ class BadGiantLoop(Loop):
 
         # Now pick the number of iterations (not that the number actually
         # matters)
-        iters = self._pick_iterations(iters_op_type, bodysize, model)
+        iters = self.pick_iterations(iters_op_type, bodysize, model)
         if iters is None:
             return None
 
