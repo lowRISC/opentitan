@@ -487,8 +487,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     dv_base_reg dv_reg;
     bit         do_read_check = 1;
     bit         write         = item.is_write();
-    uvm_reg_addr_t csr_addr   = ral.get_word_aligned_addr(item.a_addr);
-    bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
+    uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    bit [TL_AW-1:0] addr_mask = cfg.ral_models[ral_name].get_addr_mask();
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -497,7 +497,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
+      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       `downcast(dv_reg, csr)
     // SW CFG window
