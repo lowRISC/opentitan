@@ -10,7 +10,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
-  input clr_key_i,   // clear key just deletes the key
+  input keymgr_sideload_clr_e clr_key_i, // clear key just deletes the key
   input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [Shares-1:0][RandWidth-1:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
@@ -61,6 +61,20 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   assign cnt_d = cnt_end ? cnt_q :
                  clr     ? cnt_q + 1'b1 : cnt_q;
 
+  logic clr_key;
+  assign clr_key = (clr_key_i != SideLoadClrIdle);
+
+  logic clr_all_keys;
+  assign clr_all_keys = !(clr_key_i inside {SideLoadClrIdle, SideLoadClrAes,
+                                            SideLoadClrHmac, SideLoadClrKmac,
+                                            SideLoadClrOtbn});
+
+  logic aes_clr, hmac_clr, kmac_clr, otbn_clr;
+  assign aes_clr  = clr & (clr_all_keys | (clr_key_i == SideLoadClrAes));
+  assign hmac_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrHmac));
+  assign kmac_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrKmac));
+  assign otbn_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrOtbn));
+
   always_comb begin
 
     clr = 1'b0;
@@ -78,7 +92,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
       // when wipe is received, delete the key and disable sideload until reboot.
       StSideloadIdle: begin
         keys_en = 1'b1;
-        if (wipe_key_i || clr_key_i) begin
+        if (wipe_key_i || clr_key) begin
           state_d = wipe_key_i ? StSideloadWipe : StSideloadClear;
         end
       end
@@ -89,7 +103,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
         clr = 1'b1;
         if (wipe_key_i) begin
           state_d = StSideloadWipe;
-        end else if (!clr_key_i) begin
+        end else if (!clr_key) begin
           state_d = StSideloadIdle;
         end
       end
@@ -123,7 +137,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & aes_sel),
-    .clr_i(clr),
+    .clr_i(aes_clr),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
     .valid_o(aes_key_o.valid),
@@ -136,7 +150,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & hmac_sel),
-    .clr_i(clr),
+    .clr_i(hmac_clr),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
     .valid_o(hmac_key_o.valid),
@@ -151,7 +165,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & otbn_sel),
-    .clr_i(clr),
+    .clr_i(otbn_clr),
     .entropy_i(entropy_i),
     .key_i(data_i),
     .valid_o(otbn_key_o.valid),
@@ -165,7 +179,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & kmac_sel),
-    .clr_i(clr),
+    .clr_i(kmac_clr),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
     .valid_o(kmac_sideload_key.valid),

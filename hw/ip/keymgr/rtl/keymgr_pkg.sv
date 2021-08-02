@@ -141,11 +141,21 @@ package keymgr_pkg;
   // Error is encoded as 1 error per bit
   typedef enum logic [2:0] {
     ErrInvalidOp,
-    ErrInvalidCmd,
+    ErrInvalidStates,
     ErrInvalidIn,
     ErrInvalidOut,
     ErrLastPos
   } keymgr_err_pos_e;
+
+  // Bit position of fault status
+  typedef enum logic [2:0] {
+    FaultCmd,
+    FaultKmacFsm,
+    FaultKmacOp,
+    FaultRegFileIntg,
+    FaultCtrlFsm,
+    FaultLastPos
+  } keymgr_fault_pos_e;
 
   typedef enum logic [2:0] {
     KeyUpdateIdle,
@@ -155,6 +165,14 @@ package keymgr_pkg;
     KeyUpdateInvalid,
     KeyUpdateWipe
   } keymgr_key_update_e;
+
+  typedef enum logic [2:0] {
+    SideLoadClrIdle,
+    SideLoadClrAes,
+    SideLoadClrHmac,
+    SideLoadClrKmac,
+    SideLoadClrOtbn
+  } keymgr_sideload_clr_e;
 
   // Key connection to various symmetric modules
   typedef struct packed {

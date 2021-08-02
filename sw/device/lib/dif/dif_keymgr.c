@@ -109,7 +109,7 @@ static_assert(kDifKeymgrStatusCodeInvalidOperation >> 1 ==
                   1 << KEYMGR_ERR_CODE_INVALID_OP_BIT,
               "Layout of ERR_CODE register changed.");
 static_assert(kDifKeymgrStatusCodeInvalidKmacCommand >> 1 ==
-                  1 << KEYMGR_ERR_CODE_INVALID_CMD_BIT,
+                  1 << KEYMGR_ERR_CODE_INVALID_STATES_BIT,
               "Layout of ERR_CODE register changed.");
 static_assert(kDifKeymgrStatusCodeInvalidKmacInput >> 1 ==
                   1 << KEYMGR_ERR_CODE_INVALID_KMAC_INPUT_BIT,
@@ -559,9 +559,12 @@ dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
     return kDifKeymgrBadArg;
   }
 
-  mmio_region_write32(
-      keymgr->params.base_addr, KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
-      bitfield_bit32_write(0, KEYMGR_SIDELOAD_CLEAR_VAL_BIT, enable));
+  dif_keymgr_sideload_clr_t val = state == kDifKeymgrToggleEnabled
+                                      ? kDifKeyMgrSideLoadClearAll
+                                      : kDifKeyMgrSideLoadClearNone;
+
+  mmio_region_write32(keymgr->params.base_addr,
+                      KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, val);
 
   return kDifKeymgrOk;
 }
@@ -574,8 +577,7 @@ dif_keymgr_result_t dif_keymgr_sideload_clear_get_enabled(
 
   uint32_t reg_val = mmio_region_read32(keymgr->params.base_addr,
                                         KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
-  *state = bool_to_toggle(
-      bitfield_bit32_read(reg_val, KEYMGR_SIDELOAD_CLEAR_VAL_BIT));
+  *state = bool_to_toggle(reg_val == kDifKeyMgrSideLoadClearAll);
 
   return kDifKeymgrOk;
 }

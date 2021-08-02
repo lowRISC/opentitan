@@ -387,17 +387,50 @@
     },
 
     { name: "SIDELOAD_CLEAR",
-      desc: "Clear all sideload keys",
+      desc: "sideload key slots clear"
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
+        { bits: "2:0",
           name: "VAL",
           resval: "0"
           desc: '''
-            When 1, the sideload keys are continuously cleared with entropy.
-            When 0, the sideload keys are left as is.
-          '''
+            Depending on the value programmed, a different side load key slot is cleared.
+            If the value programmed is not one of the enumerated values below, ALL side load key slots are continuously cleard.
+          ''',
+          enum: [
+            { value: "0",
+              name: "None",
+              desc: '''
+                No sideload keys cleared.
+                '''
+            },
+            { value: "1",
+              name: "AES",
+              desc: '''
+                The AES sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "2",
+              name: "HMAC",
+              desc: '''
+                The HMAC sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "3",
+              name: "KMAC",
+              desc: '''
+                The KMAC sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "4",
+              name: "OTBN",
+              desc: '''
+                The OTBN sideload key is continuously cleared with entropy.
+                '''
+            },
+          ]
+
         },
       ]
     },
@@ -826,9 +859,9 @@
           desc: "Invalid operation issued to key manager",
         },
         { bits: "1",
-          name: "INVALID_CMD",
+          name: "INVALID_STATES",
           resval: "0x0"
-          desc: "Invalid command issued from key manager to kmac interface",
+          desc: "Invalid states that occur in keymgr. These are suspected faults.  Please see !!FAULT_STATUS for a closer breakdown",
         },
         { bits: "2",
           name: "INVALID_KMAC_INPUT",
@@ -842,5 +875,42 @@
         },
       ]
     },
+
+    { name: "FAULT_STATUS",
+      desc: '''
+        Detailed per bit breakdown of the INVALID_STATES field in !!ERR_CODE
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMD",
+          resval: "0x0"
+          desc: "A non-onehot command was sent from keymgr to kmac",
+        },
+        { bits: "1",
+          name: "KMAC_FSM",
+          resval: "0x0"
+          desc: "The kmac transfer interface is in an error state",
+        },
+        { bits: "2",
+          name: "KMAC_OP",
+          resval: "0x0"
+          desc: "KMAC reported an error during keymgr usage, this should never happen",
+        },
+        { bits: "3",
+          name: "REGFILE_INTG",
+          resval: "0x0"
+          desc: "Register file integrity error.",
+        },
+        { bits: "4",
+          name: "CTRL_FSM_INTG",
+          resval: "0x0"
+          desc: "Control FSM integrity error.",
+        },
+      ]
+    },
+
+
   ],
 }

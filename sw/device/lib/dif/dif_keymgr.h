@@ -35,6 +35,18 @@ typedef enum dif_keymgr_toggle {
 } dif_keymgr_toggle_t;
 
 /**
+ * Enumeration for side load slot clearing.
+ */
+typedef enum dif_keymgr_sideload_clr {
+  kDifKeyMgrSideLoadClearNone,
+  kDifKeyMgrSideLoadClearAes,
+  kDifKeyMgrSideLoadClearHmac,
+  kDifKeyMgrSideLoadClearKmac,
+  kDifKeyMgrSideLoadClearOtbn,
+  kDifKeyMgrSideLoadClearAll,
+} dif_keymgr_sideload_clr_t;
+
+/**
  * Hardware instantiation parameters for key manager.
  *
  * This struct describes information about the underlying hardware that is
