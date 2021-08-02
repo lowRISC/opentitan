@@ -5,7 +5,7 @@ title: "ENTROPY_SRC DV document"
 ## Goals
 * **DV**
   * Verify all ENTROPY_SRC IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -99,5 +99,5 @@ $ cd hw/ip/entropy_src/dv
 $ make TEST_NAME=entropy_src_smoke
 ```
 
-## DV plan
+## Testplan
 {{< incGenFromIpDesc "../../data/entropy_src_testplan.hjson" "testplan" >}}

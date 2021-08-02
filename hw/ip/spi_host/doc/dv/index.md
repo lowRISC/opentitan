@@ -1,11 +1,11 @@
 ---
-title: "SPI_HOST DV Plan"
+title: "SPI_HOST DV Document"
 ---
 
 ## Goals
 * **DV**
   * Verify all SPI_HOST IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run tests that exercise all testpoint in the [DV plan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run tests that exercise all testpoints in the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -15,11 +15,11 @@ title: "SPI_HOST DV Plan"
 * [Simulation results](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/results.html)
 
 ## Design features
-For detailed information on SPI_HOST design features, please see the 
+For detailed information on SPI_HOST design features, please see the
 [SPI_HOST HWIP technical specification]({{< relref "hw/ip/spi_host/doc" >}}).
 
 ## Testbench architecture
-SPI_HOST testbench has been constructed based on the 
+SPI_HOST testbench has been constructed based on the
 [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
@@ -54,7 +54,7 @@ All common types and methods defined at the package level can be found in
 TODO
 ```
 ### TL_agent
-SPI_HOST testbench instantiates (already handled in CIP base env) 
+SPI_HOST testbench instantiates (already handled in CIP base env)
 [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via TL host interface into SPI_HOST device.
 Transactions will be sampled by the monitor and passed on to the predictor in the scoreboard.
@@ -86,7 +86,7 @@ Some of the most commonly used tasks / functions are as follows:
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-the list of functional coverpoints can be found under covergroups in the [DV plan](#testplan)
+the list of functional coverpoints can be found under covergroups in the [testplan](#testplan)
 
 
 ### Self-checking strategy

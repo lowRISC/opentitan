@@ -63,7 +63,7 @@ optional arguments:
   -eo [hw/ip/<ip>], --env-outdir [hw/ip/<ip>]
                         Path to place the full tetsbench code. It creates 3
                         directories - dv, data and doc. The DV document and the
-                        DV plan Hjson files are placed in the doc and data
+                        testplan Hjson files are placed in the doc and data
                         directories respectively. These are to be merged into
                         the IP's root directory (with the existing data and
                         doc directories). Under dv, it creates 3 sub-

@@ -107,7 +107,7 @@ def main():
         "--env-outdir",
         metavar="[hw/ip/<ip>]",
         help="""Path to place the full testbench code. It creates 3 directories
-        - dv, data, and doc. The DV plan and the testplan Hjson files are placed
+        - dv, data, and doc. The DV doc and the testplan Hjson files are placed
         in the doc and data directories respectively. These are to be merged
         into the IP's root directory (with the existing data and doc
         directories). Under dv, it creates 3 sub-directories - env, tb, and

@@ -5,7 +5,7 @@ title: "SRAM_CTRL DV document"
 ## Goals
 * **DV**
   * Verify all SRAM_CTRL IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -202,5 +202,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_sim_cfg.hjson -i sram_ctrl_smoke
 ```
 
-## DV plan
+## Testplan
 {{< incGenFromIpDesc "../../data/sram_ctrl_base_testplan.hjson" "testplan" >}}

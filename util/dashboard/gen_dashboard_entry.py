@@ -75,8 +75,8 @@ def get_linked_design_spec(obj):
     return result
 
 
-# Provide the link to the DV plan.
-def get_linked_dv_plan(obj):
+# Provide the link to the DV document.
+def get_linked_dv_doc(obj):
     if 'dv_doc' in obj:
         return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(
             get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']))
@@ -229,8 +229,8 @@ def print_version1_format(obj, outfile):
     genout(outfile, "      <tr>\n")
     genout(outfile, "        <td class=\"fixleft\">" +
                     get_linked_design_spec(obj) + "</td>\n")
-    genout(outfile, "        <td class=\"dv-plan\">" +
-                    get_linked_dv_plan(obj) + "</td>\n")
+    genout(outfile, "        <td class=\"dv-doc\">" +
+                    get_linked_dv_doc(obj) + "</td>\n")
     genout(outfile, "        <td class=\"version\">" +
                     get_linked_version(obj) + "</td>\n")
 
@@ -261,8 +261,8 @@ def print_multiversion_format(obj, outfile):
         if len(revisions) == 1:
             outstr += "        <td class='fixleft'>"
             outstr += get_linked_design_spec(obj) + "</td>\n"
-            outstr += "        <td class='dv-plan'>"
-            outstr += get_linked_dv_plan(obj) + "</td>\n"
+            outstr += "        <td class='dv-doc'>"
+            outstr += get_linked_dv_doc(obj) + "</td>\n"
         # Print out the module name in the first entry only
         elif i == 0:
             outstr += "        <td class='fixleft' rowspan='{}'>".format(
@@ -270,7 +270,7 @@ def print_multiversion_format(obj, outfile):
             outstr += get_linked_design_spec(obj) + "</td>\n"
             outstr += "        <td class='hw-stage' rowspan='{}'>".format(
                 len(revisions))
-            outstr += get_linked_dv_plan(obj) + "</td>\n"
+            outstr += get_linked_dv_doc(obj) + "</td>\n"
 
         # Version
         outstr += "        <td class=\"version\">"
@@ -306,18 +306,18 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     else:
         log.error("hjson file import failed")
 
-    # create design spec and DV plan references, check for existence below
+    # create design spec and DV doc references, check for existence below
     design_spec_md = re.sub(r'/data/', '/doc/',
                             re.sub(r'\.prj\.hjson', '.md', str(hjson_path)))
-    dv_plan_md = re.sub(
-        r'/data/', '/doc/',
-        re.sub(r'\.prj\.hjson', '_dv_plan.md', str(hjson_path)))
+    dv_doc_md = re.sub(
+        r'/data/', '/doc/dv',
+        re.sub(r'\.prj\.hjson', 'index.md', str(hjson_path)))
     design_spec_html = re.sub(
         r'/data/', '/doc/',
         re.sub(r'\.prj\.hjson', '.html', str(rel_hjson_path)))
-    dv_plan_html = re.sub(
-        r'/data/', '/doc/',
-        re.sub(r'\.prj\.hjson', '_dv_plan.html', str(rel_hjson_path)))
+    dv_doc_html = re.sub(
+        r'/data/', '/doc/dv',
+        re.sub(r'\.prj\.hjson', 'index.html', str(rel_hjson_path)))
 
     # yapf: disable
     genout(outfile, "      <tr>\n")
@@ -329,9 +329,9 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
                "design spec</a>\n")
     else:
         genout(outfile, "        <td>&nbsp;</td>\n")
-    if os.path.exists(dv_plan_md):
+    if os.path.exists(dv_doc_md):
         genout(outfile, "        <td class=\"fixleft\"><a href=\"" +
-               html.escape(dv_plan_html) + "\">" +
+               html.escape(dv_doc_html) + "\">" +
                "DV document</a>\n")
     else:
         genout(outfile, "        <td>&nbsp;</td>\n")
