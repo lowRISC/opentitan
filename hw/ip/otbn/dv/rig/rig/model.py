@@ -341,35 +341,54 @@ class Model:
     def pick_reg_operand_value(self, op_type: RegOperandType) -> Optional[int]:
         '''Pick a random value for a register operand
 
-        Returns None if there's no valid value possible.'''
-        if op_type.is_src():
-            # This operand needs an architectural value. Pick a register
-            # from the indices in _known_regs[op_type.reg_type].
-            known_regs = self._known_regs.get(op_type.reg_type)
-            if not known_regs:
-                return None
+        Returns None if there's no valid value possible.
 
-            known_list = list(known_regs)
-            if op_type.reg_type == 'gpr':
-                # Add x1 if to the list of known registers if it has an
-                # architectural value and isn't marked constant. This won't
-                # appear in known_regs, because we don't track x1 there.
-                assert 1 not in known_regs
-                if not (self._call_stack.empty() or self.is_const('gpr', 1)):
-                    known_list.append(1)
+        '''
 
-            return random.choice(known_list)
+        # A register can be used if all of the following hold:
+        #
+        #   - If the register is used as a source, it has an architecturally
+        #     defined value (maybe not known by us, but at least defined).
+        #
+        #   - If the register is used as a destination, it must not be const.
+        #
+        #   - For x1 used as a source, the call stack must not be empty and x1
+        #     must not be marked constant (since the read will pop from the
+        #     call stack).
+        #
+        #   - For x1 used as a destination, the call stack must not be full and
+        #     x1 must not be marked constant.
 
-        # This operand isn't treated as a source. Generate a list of allowed
-        # registers (everything but constant registers, plus x1 if the call
-        # stack is full) and then pick from it.
+        is_src = op_type.is_src()
+        is_dst = op_type.is_dest()
+
         assert op_type.width is not None
-        const_regs = self._const_regs.get(op_type.reg_type, set())
-        all_regs = set(range(1 << op_type.width))
-        good_regs = all_regs - const_regs
-        if op_type.reg_type == 'gpr' and self._call_stack.full():
-            good_regs.discard(1)
-        return random.choice(list(good_regs))
+
+        reg_set = set(self._known_regs.get(op_type.reg_type, {}).keys()
+                      if is_src else range(1 << op_type.width))
+        if is_dst:
+            reg_set -= self._const_regs.get(op_type.reg_type, set())
+
+        # Special handling for x1
+        #
+        # Note that this won't allow us to generate things like add x1, x1, x1
+        # when the stack is full, because we only do one operand at a time.
+        if op_type.reg_type == 'gpr':
+            can_use_x1 = not self.is_const('gpr', 1)
+            if is_src and self._call_stack.empty():
+                can_use_x1 = False
+            if is_dst and self._call_stack.full():
+                can_use_x1 = False
+
+            # Since x1 isn't tracked in known_regs, we add it here if wanted
+            # (to handle the src case) and remove it here if not wanted (to
+            # handle the non-src case).
+            if can_use_x1:
+                reg_set.add(1)
+            else:
+                reg_set.discard(1)
+
+        return None if not reg_set else random.choice(list(reg_set))
 
     def all_regs_with_known_vals(self) -> Dict[str, List[Tuple[int, int]]]:
         '''Like regs_with_known_vals, but returns all reg types'''
