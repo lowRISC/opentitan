@@ -20,6 +20,7 @@ from .gens.loop import Loop
 from .gens.small_val import SmallVal
 from .gens.straight_line_insn import StraightLineInsn
 
+from .gens.bad_deep_loop import BadDeepLoop
 from .gens.bad_insn import BadInsn
 from .gens.bad_giant_loop import BadGiantLoop
 from .gens.bad_zero_loop import BadZeroLoop
@@ -35,6 +36,7 @@ class SnippetGens:
         StraightLineInsn,
 
         ECall,
+        BadDeepLoop,
         BadInsn,
         BadGiantLoop,
         BadZeroLoop

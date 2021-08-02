@@ -559,3 +559,24 @@ class Program:
                     return 0
 
         return max(0, space // 4)
+
+    def imem_gaps(self) -> List[Tuple[int, int]]:
+        '''Return the list of gaps between sections in ascending order
+
+        Each gap is represented as (addr0, addr1) where addr0 < addr1, meaning
+        that all addresses addr0, addr0+1, ..., addr1 - 1 are available.
+
+        '''
+        ret = []
+        gap_start = 0
+
+        for sec_start, sec_insns in sorted(self._sections.items()):
+            assert gap_start <= sec_start
+            if gap_start < sec_start:
+                ret.append((gap_start, sec_start))
+            gap_start = sec_start + 4 * len(sec_insns)
+
+        if gap_start < self.imem_size:
+            ret.append((gap_start, self.imem_size))
+
+        return ret

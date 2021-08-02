@@ -156,10 +156,10 @@ class Loop(SnippetGen):
         assert enc_val is not None
         return (enc_val, num_iters)
 
-    def _pick_iterations(self,
-                         op_type: OperandType,
-                         bodysize: int,
-                         model: Model) -> Optional[Tuple[int, int]]:
+    def pick_iterations(self,
+                        op_type: OperandType,
+                        bodysize: int,
+                        model: Model) -> Optional[Tuple[int, int]]:
         '''Pick the number of iterations for a loop
 
         Returns the encoded value (register index or encoded number of
@@ -241,7 +241,7 @@ class Loop(SnippetGen):
         tail_pc = model.pc + 4 * bodysize
         assert program.get_insn_space_at(tail_pc) >= 2
 
-        iters = self._pick_iterations(op0_type, bodysize, model)
+        iters = self.pick_iterations(op0_type, bodysize, model)
         if iters is None:
             return None
         iter_opval, num_iters = iters
@@ -410,7 +410,7 @@ class Loop(SnippetGen):
         model.pop_const(const_token)
         return (snippet, model)
 
-    def _pick_loop_insn(self) -> Insn:
+    def pick_loop_insn(self) -> Insn:
         '''Pick either LOOP or LOOPI'''
         is_loopi = random.random() < self.loopi_prob
         return self.loopi if is_loopi else self.loop
@@ -460,7 +460,7 @@ class Loop(SnippetGen):
         if model.loop_depth == Model.max_loop_depth:
             return None
 
-        insn = self._pick_loop_insn()
+        insn = self.pick_loop_insn()
 
         # Pick a loop count
         op0_type = insn.operands[0].op_type
