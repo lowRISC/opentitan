@@ -12,11 +12,16 @@ from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import ProgSnippet
-from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
+from ..snippet_gen import GenCont, GenRet, SnippetGen
+
+
+# Like a SimpleGenRet, but also includes the actual jump instruction
+RetTriple = Tuple[ProgInsn, ProgSnippet, Model]
 
 
 class Jump(SnippetGen):
     '''A generator that makes a snippet with a JAL or JALR jump'''
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
@@ -65,13 +70,17 @@ class Jump(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        return SnippetGen._unsimple_genret(self.gen_tgt(model, program, None))
+        ret = self.gen_tgt(model, program, None)
+        if ret is None:
+            return None
+
+        prog_insn, snippet, model = ret
+        return (snippet, False, model)
 
     def gen_tgt(self,
                 model: Model,
                 program: Program,
-                tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
-
+                tgt_addr: Optional[int]) -> Optional[RetTriple]:
         # Decide whether to generate JALR or JAL. If we try to generate a JALR
         # and fail, try to generate a JAL instead: in practice that might well
         # work and if we return None from here, the wrapper will disable us
@@ -82,13 +91,7 @@ class Jump(SnippetGen):
             ret = self.gen_jalr(model, program, tgt_addr)
         if ret is None:
             ret = self.gen_jal(model, program, tgt_addr)
-
-        if ret is None:
-            return None
-        else:
-            snippet, new_model = ret
-            assert new_model is not None
-            return (snippet, new_model)
+        return ret
 
     def _pick_jump(self,
                    base_addr: int,
@@ -159,7 +162,7 @@ class Jump(SnippetGen):
                      link_reg_idx: int,
                      new_pc: int,
                      model: Model,
-                     program: Program) -> SimpleGenRet:
+                     program: Program) -> RetTriple:
         '''Generate a 1-instruction snippet for prog_insn; finish generation'''
         # Generate our one-instruction snippet and add it to the program
         snippet = ProgSnippet(model.pc, [prog_insn])
@@ -181,12 +184,12 @@ class Jump(SnippetGen):
         # And update the PC, which is now tgt
         model.pc = new_pc
 
-        return (snippet, model)
+        return (prog_insn, snippet, model)
 
     def gen_jal(self,
                 model: Model,
                 program: Program,
-                tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
+                tgt_addr: Optional[int]) -> Optional[RetTriple]:
         '''Generate a random JAL instruction'''
         assert len(self.jal.operands) == 2
         offset_optype = self.jal.operands[1].op_type
@@ -204,7 +207,7 @@ class Jump(SnippetGen):
     def gen_jalr(self,
                  model: Model,
                  program: Program,
-                 tgt_addr: Optional[int]) -> Optional[SimpleGenRet]:
+                 tgt_addr: Optional[int]) -> Optional[RetTriple]:
         '''Generate a random JALR instruction'''
 
         assert len(self.jalr.operands) == 3

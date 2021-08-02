@@ -376,7 +376,7 @@ class Loop(SnippetGen):
                 if jump_ret is None:
                     return None
 
-                jump_snippet, model = jump_ret
+                jump_insn, jump_snippet, model = jump_ret
                 assert model.pc == tail_start
 
                 head_snippet = Snippet.cons_option(head_snippet, jump_snippet)
