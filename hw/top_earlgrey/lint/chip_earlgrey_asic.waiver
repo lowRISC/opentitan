@@ -7,7 +7,54 @@
 waive -rules {MULTI_DRIVEN} -location {chip_earlgrey_asic.sv} -regexp {'(IOA2|IOA3)' has 2 drivers, also driven at} \
       -comment "These two pads are shorted to AST, hence this multiple driver warning is OK."
 
-# COMBO_LOOP waiver on the Passthrough port
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} \
       -regexp {port 'u_passthrough.host_s_i.*' driven in module 'spi_device'} \
       -comment "In the passthrough mode, SPI 4 lines are connected from pads to pads."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'mio_in_raw[28]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'clk_ast_ext_i' at ast_dft} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'mio_in_raw_o[28]' driven in module 'padring' by port 'gen_mio_pads[28].u_mio_pad.in_raw_o' at padring} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'in_raw_o' driven in module 'prim_pad_wrapper' by port 'gen_.*.u_impl_.*.in_raw_o' at prim_pad_wrapper} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'in_raw_o' driven in module 'prim_.*_pad_wrapper' by port} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'ast_base_clks.clk_io' is driven by instance 'u_ast' of module 'ast', and used as a clock} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'clk_src_io_o' driven in module 'ast' by port 'u_ast_dft.clk_src_io_o' at ast} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'clk_src_io_o' driven in module 'ast_dft' at ast_dft} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
+      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_i' at ast_dft} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
+      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
+      -comment "This is a valid clock signal."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
+      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
+      -comment "This is a valid clock signal."
+
+waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -msg {'scan_reset_no' driven in module 'ast' at ast} \
+      -comment "This is a valid reset signal."
