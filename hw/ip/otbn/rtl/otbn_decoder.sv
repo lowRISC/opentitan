@@ -335,21 +335,19 @@ module otbn_decoder
             illegal_insn = 1'b0;
 
           3'b001: begin
-            unique case (insn[31:27])
-              5'b0_0000: illegal_insn = 1'b0;   // slli
+            unique case (insn[31:25])
+              7'b0000000: illegal_insn = 1'b0;   // slli
               default: illegal_insn = 1'b1;
             endcase
           end
 
           3'b101: begin
-            if (!insn[26]) begin
-              unique case (insn[31:27])
-                5'b0_0000,                      // srli
-                5'b0_1000: illegal_insn = 1'b0; // srai
+            unique case (insn[31:25])
+              7'b0000000,                      // srli
+              7'b0100000: illegal_insn = 1'b0; // srai
 
-                default: illegal_insn = 1'b1;
-              endcase
-            end
+              default: illegal_insn = 1'b1;
+            endcase
           end
 
           default: illegal_insn = 1'b1;
