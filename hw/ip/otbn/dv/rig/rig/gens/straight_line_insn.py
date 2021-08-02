@@ -183,14 +183,18 @@ class StraightLineInsn(SnippetGen):
 
         Here, the GPR value must be known and must be at most 31. If wdr_is_src
         then the WDR that it points to must also have an architectural value.
+        Otherwise, the WDR is a destination and must not be marked const.
 
         '''
+        wdr_is_dest = not wdr_is_src
         arch_wdrs = set(model.regs_with_architectural_vals('wdr'))
         valid_gprs = []
         for gpr, gpr_val in known_regs:
             if gpr_val is None or gpr_val > 31:
                 continue
             if wdr_is_src and gpr_val not in arch_wdrs:
+                continue
+            if wdr_is_dest and model.is_const('wdr', gpr_val):
                 continue
 
             valid_gprs.append(gpr)
