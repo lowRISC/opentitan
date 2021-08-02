@@ -621,7 +621,7 @@ class SimCfg(FlowCfg):
             else:
                 testplan = "https://{}/{}".format(self.doc_server,
                                                   self.rel_path)
-                testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+                testplan = testplan.replace("/dv", "/doc/dv/#testplan")
 
             results_str += f"### [Testplan]({testplan})\n"
 
