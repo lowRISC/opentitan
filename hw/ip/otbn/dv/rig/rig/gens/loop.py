@@ -13,7 +13,7 @@ from .straight_line_insn import StraightLineInsn
 from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import LoopSnippet, Snippet
+from ..snippet import LoopSnippet, ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
 
@@ -401,8 +401,12 @@ class Loop(SnippetGen):
         if tail_ret is None:
             return None
 
-        tail_snippet, model = tail_ret
+        tail_insns, model = tail_ret
         assert model.pc == match_addr
+        assert len(tail_insns) == tail_len
+
+        tail_snippet = ProgSnippet(tail_start, tail_insns)
+        tail_snippet.insert_into_program(program)
 
         snippet = Snippet.cons_option(head_snippet, tail_snippet)
 

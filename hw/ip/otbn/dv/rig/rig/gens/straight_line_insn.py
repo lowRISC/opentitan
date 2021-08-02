@@ -12,8 +12,8 @@ from shared.operand import ImmOperandType, OptionOperandType, RegOperandType
 from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import ProgSnippet, Snippet
-from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
+from ..snippet import ProgSnippet
+from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class StraightLineInsn(SnippetGen):
@@ -64,32 +64,46 @@ class StraightLineInsn(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        return SnippetGen._unsimple_genret(self._gen(model, program))
+        pc = model.pc
+        ret = self._gen(model, program)
+        if ret is None:
+            return None
+
+        prog_insn, model = ret
+        snippet = ProgSnippet(pc, [prog_insn])
+        snippet.insert_into_program(program)
+
+        return (snippet, False, model)
 
     def gen_some(self,
                  count: int,
                  model: Model,
-                 program: Program) -> Optional[SimpleGenRet]:
-        '''Generate a block of count straight-line instructions'''
+                 program: Program) -> Optional[Tuple[List[ProgInsn], Model]]:
+        '''Generate a block of count straight-line instructions
+
+        Note that, unlike gen(), this doesn't insert the instructions into
+        program.
+
+        '''
         assert 0 < count
 
         # Take a copy of model, so that we fail atomically
         model = model.copy()
 
-        children = []  # type: List[Snippet]
+        insns = []  # type: List[ProgInsn]
         for i in range(count):
             gen_ret = self._gen(model, program)
             if gen_ret is None:
                 return None
 
-            snippet, model = gen_ret
-            children.append(snippet)
+            prog_insn, model = gen_ret
+            insns.append(prog_insn)
 
-        return (Snippet.merge_list(children), model)
+        return (insns, model)
 
     def _gen(self,
              model: Model,
-             program: Program) -> Optional[SimpleGenRet]:
+             program: Program) -> Optional[Tuple[ProgInsn, Model]]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
         #
@@ -119,16 +133,12 @@ class StraightLineInsn(SnippetGen):
                 weights[idx] = 0
                 continue
 
-        # Success! We have generated an instruction. Put it in a snippet and
-        # add that to the program
-        snippet = ProgSnippet(model.pc, [prog_insn])
-        snippet.insert_into_program(program)
-
-        # Then update the model with the instruction and update the model PC
+        # Success! We have generated an instruction. Update the model with the
+        # instruction and update the model PC
         model.update_for_insn(prog_insn)
         model.pc += 4
 
-        return (snippet, model)
+        return (prog_insn, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Try to fill out an instruction
