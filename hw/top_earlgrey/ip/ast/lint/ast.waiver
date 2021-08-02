@@ -25,11 +25,11 @@ waive -rules CLOCK_USE -location {ast.sv} \
       -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
 
 waive -rules CLOCK_USE -location {ast.sv} \
-      -regexp {'clk_aon' is connected to 'rglts_pdm_3p3v' port 'clk_src_aon_h_i', and used as a clock 'clk_i' at prim_generic_flop} \
+      -regexp {'clk_aon' is connected to 'rglts_pdm_3p3v' port 'clk_src_aon_h_i', and used as a clock} \
       -comment {This is a valid clock signal and the connection is ok here.}
 
 waive -rules RESET_DRIVER -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
-      -msg {'rst_val_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -msg {'rst_val_n' is driven here, and used as an asynchronous reset} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {rng.sv} \
@@ -61,7 +61,7 @@ waive -rules RESET_DRIVER -location {dev_entropy.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_MUX -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
-      -msg {Asynchronous reset 'rst_val_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
+      -msg {Asynchronous reset 'rst_val_n' is driven by a multiplexer here, used as a reset} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {ast.sv} \
@@ -77,11 +77,11 @@ waive -rules RESET_USE -location {ast.sv} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
-      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set 'rst_ni' at prim_generic_flop.} \
+      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
-      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set 'rst_ni' at prim_generic_flop.} \
+      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_o_h_i', and used as an asynchronous reset or set} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
@@ -98,6 +98,10 @@ waive -rules RESET_USE -location {ast_dft.sv} \
 
 waive -rules RESET_USE -location {ast.sv} \
       -msg {'rst_ast_tlul_ni' is connected to 'ast_dft' port 'rst_ni', and used as an asynchronous reset or set 'rst_n' at rng} \
+      -comment {This is a valid reset connection.}
+
+waive -rules RESET_USE -location {ast.sv} \
+      -regexp {('rst_sys_clk_n'|'rst_usb_clk_n') is connected to ('sys_clk'|'usb_clk') port ('rst_sys_clk_ni'|'rst_usb_clk_ni'), and used as an asynchronous reset or set} \
       -comment {This is a valid reset connection.}
 
 waive -rules {TRI_DRIVER} -location {ast.sv} \
