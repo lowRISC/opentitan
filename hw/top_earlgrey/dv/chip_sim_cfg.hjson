@@ -24,7 +24,8 @@
   ral_spec: "{proj_root}/hw/top_earlgrey/data/top_earlgrey.hjson"
 
   // Add additional tops for simulation.
-  sim_tops: ["xbar_main_bind",
+  sim_tops: ["pwrmgr_bind",
+             "xbar_main_bind",
              "xbar_peri_bind"]
 
   // Import additional common sim cfg files.
