@@ -27,9 +27,9 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
       csr_random_n_add_to_q(rg, csr_update_q);
     end
 
-    csr_random_n_add_to_q(ral.max_creator_key_ver, csr_update_q);
-    csr_random_n_add_to_q(ral.max_owner_int_key_ver, csr_update_q);
-    csr_random_n_add_to_q(ral.max_owner_key_ver, csr_update_q);
+    csr_random_n_add_to_q(ral.max_creator_key_ver_shadowed, csr_update_q);
+    csr_random_n_add_to_q(ral.max_owner_int_key_ver_shadowed, csr_update_q);
+    csr_random_n_add_to_q(ral.max_owner_key_ver_shadowed, csr_update_q);
 
     csr_random_n_add_to_q(ral.max_creator_key_ver_regwen, csr_update_q);
     csr_random_n_add_to_q(ral.max_owner_int_key_ver_regwen, csr_update_q);

@@ -255,8 +255,8 @@ TEST_F(ConfigureTest, BadArgs) {
 TEST_F(ConfigureTest, Configure) {
   constexpr dif_keymgr_config_t kConfig = {.entropy_reseed_interval = 0xA5A5};
 
-  EXPECT_WRITE32(KEYMGR_RESEED_INTERVAL_REG_OFFSET,
-                 kConfig.entropy_reseed_interval);
+  EXPECT_WRITE32_SHADOWED(KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                          kConfig.entropy_reseed_interval);
 
   EXPECT_EQ(dif_keymgr_configure(&keymgr_, kConfig), kDifKeymgrOk);
 }
@@ -281,19 +281,19 @@ class AdvanceStateTest : public DifKeymgrInitialized {
     switch (state) {
       case KEYMGR_WORKING_STATE_STATE_VALUE_INIT:
         return {
-            .offset = KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET,
+            .offset = KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET,
             .wen_offset = KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET,
             .wen_bit_index = KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_EN_BIT,
         };
       case KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY:
         return {
-            .offset = KEYMGR_MAX_OWNER_INT_KEY_VER_REG_OFFSET,
+            .offset = KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET,
             .wen_offset = KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET,
             .wen_bit_index = KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_EN_BIT,
         };
       case KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_INTERMEDIATE_KEY:
         return {
-            .offset = KEYMGR_MAX_OWNER_KEY_VER_REG_OFFSET,
+            .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
             .wen_offset = KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET,
             .wen_bit_index = KEYMGR_MAX_OWNER_KEY_VER_REGWEN_EN_BIT,
         };
@@ -393,7 +393,7 @@ TEST_P(AdvanceToOperational, Success) {
                    kStateParams.binding_value[i]);
   }
   EXPECT_WRITE32(KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
-  EXPECT_WRITE32(reg_info.offset, kStateParams.max_key_version);
+  EXPECT_WRITE32_SHADOWED(reg_info.offset, kStateParams.max_key_version);
   EXPECT_WRITE32(reg_info.wen_offset, 0);
   ExpectOperationStart({
       .dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,

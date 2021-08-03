@@ -78,6 +78,8 @@ module keymgr
   keymgr_hw2reg_t hw2reg;
 
   logic regfile_intg_err;
+  logic shadowed_storage_err;
+  logic shadowed_update_err;
   keymgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -88,6 +90,16 @@ module keymgr
     .intg_err_o (regfile_intg_err),
     .devmode_i  (1'b1) // connect to real devmode signal in the future
   );
+
+  assign shadowed_storage_err = reg2hw.reseed_interval_shadowed.err_storage |
+                                reg2hw.max_creator_key_ver_shadowed.err_storage |
+                                reg2hw.max_owner_int_key_ver_shadowed.err_storage |
+                                reg2hw.max_owner_key_ver_shadowed.err_storage;
+
+  assign shadowed_update_err  = reg2hw.reseed_interval_shadowed.err_update |
+                                reg2hw.max_creator_key_ver_shadowed.err_update |
+                                reg2hw.max_owner_int_key_ver_shadowed.err_update |
+                                reg2hw.max_owner_key_ver_shadowed.err_update;
 
 
   /////////////////////////////////////
@@ -131,7 +143,7 @@ module keymgr
     .rst_edn_ni,
     .reseed_req_i(reseed_req),
     .reseed_ack_o(reseed_ack),
-    .reseed_interval_i(reg2hw.reseed_interval.q),
+    .reseed_interval_i(reg2hw.reseed_interval_shadowed.q),
     .edn_o,
     .edn_i,
     .seed_en_o(seed_en),
@@ -208,6 +220,7 @@ module keymgr
     .rst_ni,
     .en_i(lc_keymgr_en[KeyMgrEnCtrl] == lc_ctrl_pkg::On),
     .regfile_intg_err_i(regfile_intg_err),
+    .shadowed_err_i(shadowed_storage_err),
     .state_intg_err_o(ctrl_state_intg_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
@@ -388,9 +401,9 @@ module keymgr
     assign max_key_versions[i] = '0;
   end
 
-  assign max_key_versions[Creator]  = reg2hw.max_creator_key_ver;
-  assign max_key_versions[OwnerInt] = reg2hw.max_owner_int_key_ver;
-  assign max_key_versions[Owner]    = reg2hw.max_owner_key_ver;
+  assign max_key_versions[Creator]  = reg2hw.max_creator_key_ver_shadowed.q;
+  assign max_key_versions[OwnerInt] = reg2hw.max_owner_int_key_ver_shadowed.q;
+  assign max_key_versions[Owner]    = reg2hw.max_owner_key_ver_shadowed.q;
 
 
   // General module for checking inputs
@@ -498,30 +511,35 @@ module keymgr
     .intr_o                 (intr_op_done_o)
   );
 
-  assign hw2reg.err_code.invalid_op.d          = reg2hw.err_code.invalid_op.q  |
-                                                 err_code[ErrInvalidOp];
-  assign hw2reg.err_code.invalid_states.d      = reg2hw.err_code.invalid_states.q |
-                                                 err_code[ErrInvalidStates];
-  assign hw2reg.err_code.invalid_kmac_input.d  = reg2hw.err_code.invalid_kmac_input.q |
-                                                 err_code[ErrInvalidIn];
-  assign hw2reg.err_code.invalid_kmac_data.d   = reg2hw.err_code.invalid_kmac_data.q |
-                                                 err_code[ErrInvalidOut];
-  assign hw2reg.err_code.invalid_op.de         = 1'b1;
-  assign hw2reg.err_code.invalid_states.de     = 1'b1;
-  assign hw2reg.err_code.invalid_kmac_input.de = 1'b1;
-  assign hw2reg.err_code.invalid_kmac_data.de  = 1'b1;
+  assign hw2reg.err_code.invalid_op.d             = reg2hw.err_code.invalid_op.q  |
+                                                    err_code[ErrInvalidOp];
+  assign hw2reg.err_code.invalid_states.d         = reg2hw.err_code.invalid_states.q |
+                                                    err_code[ErrInvalidStates];
+  assign hw2reg.err_code.invalid_kmac_input.d     = reg2hw.err_code.invalid_kmac_input.q |
+                                                    err_code[ErrInvalidIn];
+  assign hw2reg.err_code.invalid_kmac_data.d      = reg2hw.err_code.invalid_kmac_data.q |
+                                                    err_code[ErrInvalidOut];
+  assign hw2reg.err_code.invalid_shadow_update.d  = reg2hw.err_code.invalid_shadow_update.q |
+                                                    shadowed_update_err;
+  assign hw2reg.err_code.invalid_op.de            = 1'b1;
+  assign hw2reg.err_code.invalid_states.de        = 1'b1;
+  assign hw2reg.err_code.invalid_kmac_input.de    = 1'b1;
+  assign hw2reg.err_code.invalid_kmac_data.de     = 1'b1;
+  assign hw2reg.err_code.invalid_shadow_update.de = 1'b1;
 
   // detailed breakdown of the invalid_states field above
   assign hw2reg.fault_status.cmd.d             = fault_code[FaultCmd];
   assign hw2reg.fault_status.kmac_fsm.d        = fault_code[FaultKmacFsm];
   assign hw2reg.fault_status.kmac_op.d         = fault_code[FaultKmacOp];
   assign hw2reg.fault_status.regfile_intg.d    = fault_code[FaultRegFileIntg];
+  assign hw2reg.fault_status.shadow.d          = fault_code[FaultShadow];
   assign hw2reg.fault_status.ctrl_fsm_intg.d   = fault_code[FaultCtrlFsm];
   assign hw2reg.fault_status.cmd.de            = 1'b1;
   assign hw2reg.fault_status.kmac_fsm.de       = 1'b1;
   assign hw2reg.fault_status.kmac_op.de        = 1'b1;
   assign hw2reg.fault_status.regfile_intg.de   = 1'b1;
   assign hw2reg.fault_status.ctrl_fsm_intg.de  = 1'b1;
+  assign hw2reg.fault_status.shadow.de         = 1'b1;
 
   // There are two types of alerts
   // - alerts for hardware errors, these could not have been generated by software.
@@ -533,13 +551,16 @@ module keymgr
   // Error code fatal faults occur only when keymgr operation is actually invoked.
   // The regfile and state integrity errors are more persistent / structural issues,
   // thus they cause both the operational faults to occur and are also sent directly.
-  assign fault_errs = err_code[ErrInvalidOut] | err_code[ErrInvalidStates] |
-                      regfile_intg_err        | ctrl_state_intg_err;
+  assign fault_errs = err_code[ErrInvalidOut]    |
+                      err_code[ErrInvalidStates] |
+                      regfile_intg_err           |
+                      ctrl_state_intg_err        |
+                      shadowed_storage_err;
 
   assign fault_err_req_d = fault_errs    ? 1'b1 :
                            fault_err_ack ? 1'b0 : fault_err_req_q;
 
-  assign op_errs = err_code[ErrInvalidOp] | err_code[ErrInvalidIn];
+  assign op_errs = err_code[ErrInvalidOp] | err_code[ErrInvalidIn] | shadowed_update_err;
   assign op_err_req_d = op_errs    ? 1'b1 :
                         op_err_ack ? 1'b0 : op_err_req_q;
 

@@ -378,6 +378,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
     end
+
     if (data_phase_write && csr.get_name() == "sw_binding_regwen" &&
         current_state == keymgr_pkg::StReset) begin
       // in StReset, can't change sw_binding_regwen value
@@ -543,8 +544,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "reseed_interval": begin
-        if (addr_phase_write) cfg.keymgr_vif.edn_interval = item.a_data;
+      "reseed_interval_shadowed": begin
+        if (addr_phase_write)
+          cfg.keymgr_vif.edn_interval = `gmv(ral.reseed_interval_shadowed.val);
       end
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
@@ -576,9 +578,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function bit [TL_DW-1:0] get_current_max_version();
     case (current_state)
-      keymgr_pkg::StCreatorRootKey: return `gmv(ral.max_creator_key_ver);
-      keymgr_pkg::StOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver);
-      keymgr_pkg::StOwnerKey:       return `gmv(ral.max_owner_key_ver);
+      keymgr_pkg::StCreatorRootKey: return `gmv(ral.max_creator_key_ver_shadowed);
+      keymgr_pkg::StOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver_shadowed);
+      keymgr_pkg::StOwnerKey:       return `gmv(ral.max_owner_key_ver_shadowed);
       // for the other state, max is 0
       default: return 0;
     endcase

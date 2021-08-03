@@ -153,6 +153,7 @@ package keymgr_pkg;
     FaultKmacFsm,
     FaultKmacOp,
     FaultRegFileIntg,
+    FaultShadow,
     FaultCtrlFsm,
     FaultLastPos
   } keymgr_fault_pos_e;

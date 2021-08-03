@@ -168,7 +168,7 @@ static bool get_max_key_version_reg_info_for_next_state(
     case KEYMGR_WORKING_STATE_STATE_VALUE_INIT:
       *reg_info = (max_key_version_reg_info_t){
           .is_required = true,
-          .reg_offset = KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET,
+          .reg_offset = KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET,
           .wen_reg_offset = KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET,
           .wen_bit_index = KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_EN_BIT,
       };
@@ -176,7 +176,7 @@ static bool get_max_key_version_reg_info_for_next_state(
     case KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY:
       *reg_info = (max_key_version_reg_info_t){
           .is_required = true,
-          .reg_offset = KEYMGR_MAX_OWNER_INT_KEY_VER_REG_OFFSET,
+          .reg_offset = KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET,
           .wen_reg_offset = KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET,
           .wen_bit_index = KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_EN_BIT,
       };
@@ -184,7 +184,7 @@ static bool get_max_key_version_reg_info_for_next_state(
     case KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_INTERMEDIATE_KEY:
       *reg_info = (max_key_version_reg_info_t){
           .is_required = true,
-          .reg_offset = KEYMGR_MAX_OWNER_KEY_VER_REG_OFFSET,
+          .reg_offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
           .wen_reg_offset = KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET,
           .wen_bit_index = KEYMGR_MAX_OWNER_KEY_VER_REGWEN_EN_BIT,
       };
@@ -291,10 +291,12 @@ dif_keymgr_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
     return kDifKeymgrBadArg;
   }
 
-  uint32_t reg_val = bitfield_field32_write(0, KEYMGR_RESEED_INTERVAL_VAL_FIELD,
-                                            config.entropy_reseed_interval);
-  mmio_region_write32(keymgr->params.base_addr,
-                      KEYMGR_RESEED_INTERVAL_REG_OFFSET, reg_val);
+  uint32_t reg_val =
+      bitfield_field32_write(0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD,
+                             config.entropy_reseed_interval);
+  mmio_region_write32_shadowed(keymgr->params.base_addr,
+                               KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                               reg_val);
 
   return kDifKeymgrOk;
 }
@@ -353,9 +355,9 @@ dif_keymgr_lockable_result_t dif_keymgr_advance_state(
                         KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
     // Write and lock (rw0c) the max key version.
-    mmio_region_write32(keymgr->params.base_addr,
-                        max_key_ver_reg_info.reg_offset,
-                        params->max_key_version);
+    mmio_region_write32_shadowed(keymgr->params.base_addr,
+                                 max_key_ver_reg_info.reg_offset,
+                                 params->max_key_version);
     mmio_region_write32(keymgr->params.base_addr,
                         max_key_ver_reg_info.wen_reg_offset, 0);
   } else if (params != NULL) {
