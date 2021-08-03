@@ -49,31 +49,56 @@ def GccIncludeFeature(include_paths):
 def GccAchitectureFeature(architecture, float_abi, endian, fpu):
     if fpu == "none":
         fpu = "auto"
-    _ARCHITECTURE_FEATURE = feature(
-        name = "architecture",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
-                          _LD_ALL_ACTIONS,
-                flag_groups = [
-                    flag_group(
-                        flags = [
-                            # Set the system architecture/cpu
-                            "-march=" + architecture,
-                            # Set the fpu
-                            "-mfpu=" + fpu,
-                            # Set the floating point calculation mode hard/soft
-                            "-mfloat-abi={}".format(float_abi),
-                            # Set the endianess of the architecture
-                            "-m{}-endian".format(endian),
-                            # Set the fpu available on the chip
-                        ],
-                    ),
-                ],
-            ),
-        ],
-    )
+    if architecture == 'riscv32':
+        # TODO(cfrantz): why do I have to do this?  Seems the lowRISC gcc
+        # doesn't support `-mfpu`, `-mfloat-abi` or `-mlittle-endian`.
+        _ARCHITECTURE_FEATURE = feature(
+            name = "architecture",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
+                              _LD_ALL_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                # Set the system architecture/cpu
+                                "-march=rv32imc",
+                                "-mabi=ilp32",
+                                "-mcmodel=medany",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+    else:
+        _ARCHITECTURE_FEATURE = feature(
+            name = "architecture",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
+                              _LD_ALL_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                # Set the system architecture/cpu
+                                "-march=" + architecture,
+                                # Set the fpu
+                                "-mfpu=" + fpu,
+                                # Set the floating point calculation mode hard/soft
+                                "-mfloat-abi={}".format(float_abi),
+                                # Set the endianess of the architecture
+                                "-m{}-endian".format(endian),
+                                # Set the fpu available on the chip
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
     return _ARCHITECTURE_FEATURE
 
 _ALL_WARNINGS_FEATURE = feature(

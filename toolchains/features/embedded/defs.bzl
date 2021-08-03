@@ -4,5 +4,5 @@ _IMPL_LOOKUP = {
     "GCC": GetGccEmbeddedFeatures,
 }
 
-def GetEmbeddedFeatures(compiler):
-    return _IMPL_LOOKUP[compiler]()
+def GetEmbeddedFeatures(compiler, architecture, float_abi, endian, fpu):
+    return _IMPL_LOOKUP[compiler](architecture, float_abi, endian, fpu)

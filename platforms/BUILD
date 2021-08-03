@@ -78,6 +78,16 @@ platform(
 )
 
 platform(
+    name = "opentitan_rv32imc",
+    constraint_values = [
+        "@bazel_embedded//constraints/fpu:none",
+        "@bazel_embedded//constraints/cpu:riscv32",
+        # TODO(cfrantz): change to this after upstreaming cpu constraints.
+        # See https://github.com/bazelbuild/platforms/pull/30.
+    ],
+)
+
+platform(
     name = "stm32f2xx",
     parents = [":cortex_m3"],
 )

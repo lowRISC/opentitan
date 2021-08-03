@@ -26,11 +26,11 @@ load(
     "tool_path",
 )
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-load("@com_gcc_arm_none_eabi_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE", "SYSTEM_INCLUDE_PATHS")
+load("@com_lowrisc_toolchain_rv32imc_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE", "SYSTEM_INCLUDE_PATHS")
 load("//toolchains/features/common:defs.bzl", "GetCommonFeatures")
 load("//toolchains/features/embedded:defs.bzl", "GetEmbeddedFeatures")
 
-_ARM_NONE_EABI_VERSION = "9.2.1"
+_RISCV32_UNKNOWN_ELF_VERSION = "9.2.0"
 _CPP_ALL_COMPILE_ACTIONS = [
     ACTION_NAMES.assemble,
     ACTION_NAMES.preprocess_assemble,
@@ -77,7 +77,7 @@ def _get_additional_system_include_paths(ctx):
                 include_paths.append(inc)
     return include_paths
 
-def _gcc_arm_none_toolchain_config_info_impl(ctx):
+def _lowrisc_toolchain_rv32imc_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
             name = "gcc",
@@ -102,6 +102,10 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
         tool_path(
             name = "nm",
             path = "gcc_wrappers/{os}/nm",
+        ),
+        tool_path(
+            name = "objcopy",
+            path = "gcc_wrappers/{os}/objcopy",
         ),
         tool_path(
             name = "objdump",
@@ -142,10 +146,10 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
         toolchain_identifier = ctx.attr.toolchain_identifier,
         cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS,
         host_system_name = "i686-unknown-linux-gnu",
-        target_system_name = "arm-none-eabi",
+        target_system_name = "riscv32-unknown-elf",
         target_cpu = ctx.attr.architecture,
         target_libc = "unknown",
-        compiler = "arm-none-eabi-gcc",
+        compiler = "riscv32-unknown-elf-gcc",
         abi_version = "unknown",
         abi_libc_version = "unknown",
         tool_paths = tool_paths,
@@ -168,44 +172,15 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
     )
     return toolchain_config_info
 
-gcc_arm_none_toolchain_config = rule(
-    implementation = _gcc_arm_none_toolchain_config_info_impl,
+lowrisc_toolchain_rv32imc_toolchain_config = rule(
+    implementation = _lowrisc_toolchain_rv32imc_toolchain_config_info_impl,
     attrs = {
         "architecture": attr.string(
-            default = "armv4",
+            default = "riscv32",
             doc = "System architecture",
             mandatory = False,
             values = [
-                "armv4",
-                "armv4t",
-                "armv5t",
-                "armv5te",
-                "armv6",
-                "armv6j",
-                "armv6k",
-                "armv6kz",
-                "armv6t2",
-                "armv6z",
-                "armv6zk",
-                "armv7",
-                "armv7-a",
-                "armv7ve",
-                "armv8-a",
-                "armv8.1-a",
-                "armv8.2-a",
-                "armv8.3-a",
-                "armv8.4-a",
-                "armv8.5-a",
-                "armv7-r",
-                "armv8-r",
-                "armv6-m",
-                "armv6s-m",
-                "armv7-m",
-                "armv7e-m",
-                "armv8-m.base",
-                "armv8-m.main",
-                "iwmmxt",
-                "iwmmxt2",
+                "riscv32",
             ],
         ),
         "float_abi": attr.string(
@@ -225,30 +200,13 @@ gcc_arm_none_toolchain_config = rule(
             providers = [CcInfo],
         ),
         "fpu": attr.string(
-            default = "auto",
+            default = "none",
             doc = "Floating point unit",
             mandatory = False,
             values = [
                 "none",
                 "auto",
-                "vfpv2",
-                "vfpv3",
-                "vfpv3-fp16",
-                "vfpv3-d16",
-                "vfpv3-d16-fp16",
-                "vfpv3xd",
-                "vfpv3xd-fp16",
-                "neon-vfpv3",
-                "neon-fp16",
-                "vfpv4",
-                "vfpv4-d16",
-                "fpv4-sp-d16",
-                "neon-vfpv4",
-                "fpv5-d16",
-                "fpv5-sp-d16",
-                "fp-armv8",
-                "neon-fp-armv8",
-                "crypto-neon-fp-armv8",
+                # TODO(cfrantz) what other values are relevant here?
             ],
         ),
         "endian": attr.string(
@@ -263,7 +221,7 @@ gcc_arm_none_toolchain_config = rule(
         ),
         "_gcc_wrappers": attr.label(
             doc = "Passthrough gcc wrappers used for the compiler",
-            default = "//toolchains/gcc_arm_none_eabi/gcc_wrappers:all",
+            default = "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
         ),
     },
     provides = [CcToolchainConfigInfo],
@@ -280,22 +238,22 @@ def compiler_components(system_hdr_deps, injected_hdr_deps):
     native.filegroup(
         name = "compiler_components",
         srcs = [
-            "//toolchains/gcc_arm_none_eabi/gcc_wrappers:all",
-            "@com_gcc_arm_none_eabi_compiler//:all",
+            "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
+            "@com_lowrisc_toolchain_rv32imc_compiler//:all",
             ":additional_headers",
         ],
     )
 
-def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, endian, fpu):
+def lowrisc_toolchain_rv32imc_toolchain(name, compiler_components, architecture, float_abi, endian, fpu):
     toolchain_config = name + "_config"
 
-    gcc_arm_none_toolchain_config(
+    lowrisc_toolchain_rv32imc_toolchain_config(
         name = toolchain_config,
         architecture = architecture,
         float_abi = float_abi,
         endian = endian,
         fpu = fpu,
-        toolchain_identifier = "arm-none-eabi",
+        toolchain_identifier = "riscv32-unknown-elf",
     )
 
     cc_toolchain(
@@ -310,7 +268,7 @@ def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, e
         ar_files = compiler_components,
         supports_param_files = 0,
         toolchain_config = ":" + toolchain_config,
-        toolchain_identifier = "arm-none-eabi",
+        toolchain_identifier = "riscv32-unknown-elf",
     )
 
     native.toolchain(
@@ -319,12 +277,13 @@ def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, e
             "@platforms//cpu:x86_64",
         ],
         target_compatible_with = [
-            "@platforms//cpu:" + architecture,
+            # TODO(cfrantz): change to platforms package after upstreaming.
+            "@bazel_embedded//constraints/cpu:" + architecture,
             "//constraints/fpu:" + fpu,
         ],
         toolchain = ":" + name,
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
     )
 
-def register_gcc_arm_none_toolchain():
-    native.register_toolchains("@bazel_embedded//toolchains/gcc_arm_none_eabi:all")
+def register_lowrisc_toolchain_rv32imc_toolchain():
+    native.register_toolchains("@bazel_embedded//toolchains/lowrisc_toolchain_rv32imc:all")
