@@ -429,6 +429,23 @@
         } // f: status
       ]
     } // R: FLASH_STATUS
+    {
+      name: "JEDEC_ID"
+      desc: '''JEDEC ID register.
+        '''
+      swaccess: "rw"
+      hwaccess:  "hro"
+      fields: [
+        { bits: "23:16"
+          name: "mf"
+          desc: "Manufacturer ID"
+        } // f: manufacturer id
+        { bits: "15:0"
+          name: "id"
+          desc: "Device ID"
+        } // f: device id
+      ]
+    } // R: JEDEC_ID
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"

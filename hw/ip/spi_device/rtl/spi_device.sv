@@ -202,6 +202,9 @@ module spi_device
   logic status_busy_set; // set by HW (upload)
   logic status_busy_broadcast; // from spid_status
 
+  // Jedec ID
+  logic [23:0] jedec_id;
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -383,6 +386,9 @@ module spi_device
       readbuf_addr_busclk <= readbuf_addr_sck;
     end
   end
+
+  // Jedec ID
+  assign jedec_id = {reg2hw.jedec_id.mf.q, reg2hw.jedec_id.id.q};
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -576,6 +582,24 @@ module spi_device
 
   assign csb_deasserted_busclk = !csb_sync_q && csb_sync;
 
+  // CSb pulse
+  logic csb_sckin_sync_d, csb_sckin_sync_q, csb_asserted_pulse_sckin;
+  prim_flop_2sync #(
+    .Width      (1),
+    .ResetValue (1'b 1)
+  ) u_csb_sckin_sync (
+    .clk_i (clk_spi_in_buf),
+    .rst_ni(rst_spi_n), //Use CSb as a reset
+    .d_i (1'b 0),
+    .q_o (csb_sckin_sync_d)
+  );
+  always_ff @(posedge clk_spi_in_buf or negedge rst_spi_n) begin
+    if (!rst_spi_n) csb_sckin_sync_q <= 1'b 1;
+    else            csb_sckin_sync_q <= csb_sckin_sync_d;
+  end
+
+  assign csb_asserted_pulse_sckin = csb_sckin_sync_q && !csb_sckin_sync_d;
+
   //////////////////////////////
   // SPI_DEVICE mode selector //
   //////////////////////////////
@@ -672,7 +696,14 @@ module spi_device
 
             // default memory (tied)
           end
-          // DpReadSFDP:
+
+          DpReadSFDP: begin
+            io_mode = sub_iomode[IoModeJedec];
+
+            p2s_valid = sub_p2s_valid[IoModeJedec];
+            p2s_data  = sub_p2s_data[IoModeJedec];
+            sub_p2s_sent[IoModeJedec] = p2s_sent;
+          end
           // DpReadJEDEC:
           // DpUpload:
           // DpUnknown:
@@ -901,7 +932,6 @@ module spi_device
     .read_watermark_o ()
   );
 
-
   // Begin: Read Status ==============================================
   logic readstatus_qe;
   logic [23:0] readstatus_q;
@@ -952,21 +982,58 @@ module spi_device
   assign status_busy_set = 1'b 0;
 
   // Tie unused
-  logic unused_sub_sram;
-  assign unused_sub_sram = ^{ sub_sram_req   [IoModeStatus],
-                              sub_sram_write [IoModeStatus],
-                              sub_sram_addr  [IoModeStatus],
-                              sub_sram_wdata [IoModeStatus],
-                              sub_sram_rvalid[IoModeStatus],
-                              sub_sram_rdata [IoModeStatus],
-                              sub_sram_rerror[IoModeStatus]
-                            };
+  logic unused_sub_sram_status;
+  assign unused_sub_sram_status = ^{
+    sub_sram_req   [IoModeStatus],
+    sub_sram_write [IoModeStatus],
+    sub_sram_addr  [IoModeStatus],
+    sub_sram_wdata [IoModeStatus],
+    sub_sram_rvalid[IoModeStatus],
+    sub_sram_rdata [IoModeStatus],
+    sub_sram_rerror[IoModeStatus]
+  };
   assign sub_sram_req[IoModeStatus]   = 1'b 0;
   assign sub_sram_write[IoModeStatus] = 1'b 0;
   assign sub_sram_addr[IoModeStatus]  = '0;
   assign sub_sram_wdata[IoModeStatus] = '0;
 
   // End: Read Status ------------------------------------------------
+
+  spid_jedec u_jedec (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
+
+    .clk_out_i (clk_spi_out_buf),
+
+    .inclk_csb_asserted_pulse_i (csb_asserted_pulse_sckin),
+
+    .sys_jedec_i (jedec_id),
+
+    .io_mode_o (sub_iomode[IoModeJedec]),
+
+    .sel_dp_i       (cmd_dp_sel),
+    .cmd_info_i     (cmd_info_broadcast),
+    .cmd_info_idx_i (cmd_info_idx_broadcast),
+
+    .outclk_p2s_valid_o (sub_p2s_valid[IoModeJedec]),
+    .outclk_p2s_byte_o  (sub_p2s_data[IoModeJedec]),
+    .outclk_p2s_sent_i  (sub_p2s_sent[IoModeJedec])
+  );
+  // Tie unused
+  logic unused_sub_sram_jedec;
+  assign unused_sub_sram_jedec = ^{
+    sub_sram_req   [IoModeJedec],
+    sub_sram_write [IoModeJedec],
+    sub_sram_addr  [IoModeJedec],
+    sub_sram_wdata [IoModeJedec],
+    sub_sram_rvalid[IoModeJedec],
+    sub_sram_rdata [IoModeJedec],
+    sub_sram_rerror[IoModeJedec]
+  };
+  assign sub_sram_req[IoModeJedec]   = 1'b 0;
+  assign sub_sram_write[IoModeJedec] = 1'b 0;
+  assign sub_sram_addr[IoModeJedec]  = '0;
+  assign sub_sram_wdata[IoModeJedec] = '0;
 
   /////////////////////
   // SPI Passthrough //
