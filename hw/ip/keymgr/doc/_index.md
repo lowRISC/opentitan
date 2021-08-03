@@ -241,7 +241,7 @@ When an illegal operation is supplied, the error code is updated and the operati
 In addition to alerts and interrupts, key manager may also update the working state key and relevant outputs based on current state.
 See the tables below for an enumeration.
 
-| Current State    | Invalid Command | Invalid Output | Invalid Input | Invalid Operation   |
+| Current State    | Invalid States  | Invalid Output | Invalid Input | Invalid Operation   |
 | -------------    | ----------------| ---------------|---------------|---------------------|
 | Reset            | Not Possible    | Not Possible   | Not possible  | Not updated         |
 | Initialized      | Updated         | Updated        | Not updated   | Not updated         |
