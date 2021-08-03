@@ -21,7 +21,8 @@ interface pwrmgr_ast_if (
   input logic main_pok
 );
 
-  localparam int MIN_WAIT_CYCLES = 1;
+  localparam int MIN_CLK_WAIT_CYCLES = 0;
+  localparam int MIN_PDN_WAIT_CYCLES = 1;
   localparam int MAX_WAIT_CYCLES = 30;
 
   bit disable_sva;
@@ -29,15 +30,28 @@ interface pwrmgr_ast_if (
 
   always_comb reset_or_disable = !rst_ni || disable_sva;
 
-  `define ON_OFF_ASSERTS(name, en, val) \
-    `ASSERT(name``On_A, en |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] val, clk_i, reset_or_disable) \
-    `ASSERT(name``Off_A, !en |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] !val, clk_i, reset_or_disable)
-
   // Clock enable-valid.
-  `ON_OFF_ASSERTS(CoreClkHandshake, core_clk_en, core_clk_val)
-  `ON_OFF_ASSERTS(IoClkHandshake, io_clk_en, io_clk_val)
-  `ON_OFF_ASSERTS(UsbClkHandshake, usb_clk_en, usb_clk_val)
-  `ON_OFF_ASSERTS(MainPdHandshake, main_pd_n, main_pok)
+  `ASSERT(CoreClkHandshakeOn_A,
+          core_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] core_clk_val, clk_i,
+          reset_or_disable)
+  `ASSERT(CoreClkHandshakeOff_A,
+          !core_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] !core_clk_val, clk_i,
+          reset_or_disable)
 
-  `undef ON_OFF_ASSERTS
+  `ASSERT(IoClkHandshakeOn_A, io_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] io_clk_val,
+          clk_i, reset_or_disable)
+  `ASSERT(IoClkHandshakeOff_A, !io_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] !io_clk_val,
+          clk_i, reset_or_disable)
+
+  `ASSERT(UsbClkHandshakeOn_A, usb_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] usb_clk_val,
+          clk_i, reset_or_disable)
+  `ASSERT(UsbClkHandshakeOff_A,
+          !usb_clk_en |-> ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES] !usb_clk_val, clk_i,
+          reset_or_disable)
+
+  // Main pd-pok
+  `ASSERT(MainPdHandshakeOn_A, main_pd_n |-> ##[MIN_PDN_WAIT_CYCLES:MAX_WAIT_CYCLES] main_pok,
+          clk_i, reset_or_disable)
+  `ASSERT(MainPdHandshakeOff_A, !main_pd_n |-> ##[MIN_PDN_WAIT_CYCLES:MAX_WAIT_CYCLES] !main_pok,
+          clk_i, reset_or_disable)
 endinterface

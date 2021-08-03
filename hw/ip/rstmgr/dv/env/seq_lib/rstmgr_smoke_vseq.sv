@@ -8,7 +8,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
   `uvm_object_new
 
-  rand ibex_pkg::crash_dump_t cpu_dump;
+  rand ibex_pkg::crash_dump_t  cpu_dump;
   rand logic [NumHwResets-1:0] rstreqs;
   rand logic [NumSwResets-1:0] sw_rst_regen;
   rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
@@ -105,12 +105,12 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
       csr_wr(.ptr(ral.sw_rst_regen), .value(sw_rst_regen));
       `uvm_info(`gfn, $sformatf("sw_rst_regen set to 0x%0h", sw_rst_regen), UVM_LOW)
       csr_rd_check(.ptr(ral.sw_rst_regen), .compare_value(sw_rst_regen),
-                    .err_msg("Expected sw_rst_regen to reflect rw0c"));
+                   .err_msg("Expected sw_rst_regen to reflect rw0c"));
 
       // Check sw_rst_regen can not be set to all ones again because it is rw0c.
       csr_wr(.ptr(ral.sw_rst_regen), .value('1));
       csr_rd_check(.ptr(ral.sw_rst_regen), .compare_value(sw_rst_regen),
-                    .err_msg("Expected sw_rst_regen block raising individual bits because rw0c"));
+                   .err_msg("Expected sw_rst_regen block raising individual bits because rw0c"));
 
       // Check that the regen disabled bits block corresponding updated to ctrl_n.
       csr_wr(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_regen));
@@ -118,8 +118,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
                    .err_msg("Expected sw_rst_ctrl_n not to change"));
 
       csr_wr(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_ctrl_n));
-      `uvm_info(`gfn, $sformatf(
-                "Attempted to set sw_rst_ctrl_n to 0x%0x", sw_rst_ctrl_n), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("Attempted to set sw_rst_ctrl_n to 0x%0x", sw_rst_ctrl_n), UVM_LOW)
       exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
       // And check that the reset outputs match the actual ctrl_n settings.
       // Allow for domain crossing delay.
