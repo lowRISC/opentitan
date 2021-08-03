@@ -61,9 +61,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     !(extclk_sel_other inside {On, Off});
   }
 
-  // various knobs to enable certain routines
-  bit do_clkmgr_init = 1'b1;
-
   `uvm_object_new
 
   function void post_randomize();
@@ -80,15 +77,16 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // These are independent: do them in parallel since pre_start consumes time.
     fork
       begin
-        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(ip_clk_en), .scanmode(scanmode), .lc_dft_en(Off));
+        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(1'b0), .scanmode(scanmode), .lc_dft_en(Off));
+        update_csrs_with_reset_values();
       end
-      if (do_clkmgr_init) clkmgr_init();
+      clkmgr_init();
       super.pre_start();
     join
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    super.dut_init(reset_kind);
   endtask
 
   virtual task dut_shutdown();

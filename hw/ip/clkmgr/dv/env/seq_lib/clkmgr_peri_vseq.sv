@@ -26,5 +26,8 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
       flipped_enables = initial_enables ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
       csr_wr(.ptr(ral.clk_enables), .value(flipped_enables));
     end
+    // And set it back to the reset value for stress tests.
+    cfg.clk_rst_vif.wait_clks(1);
+    csr_wr(.ptr(ral.clk_enables), .value(ral.clk_enables.get_reset()));
   endtask : body
 endclass : clkmgr_peri_vseq

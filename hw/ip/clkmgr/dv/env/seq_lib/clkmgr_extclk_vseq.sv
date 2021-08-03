@@ -49,7 +49,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_ast_clk_byp_ack;
   rand int cycles_before_next_trans;
 
-  constraint trans_large_c {num_trans == 16;}
   constraint cycles_to_stim_c {
     cycles_before_extclk_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
