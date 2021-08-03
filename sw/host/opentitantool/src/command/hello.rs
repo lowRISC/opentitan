@@ -28,7 +28,10 @@ pub struct HelloMessage {
 }
 
 impl CommandDispatch for HelloWorld {
-    fn run(&self, _transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        _transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // Is the world cruel or not?
         let msg = if self.cruel {
             "Hello cruel World!"
@@ -48,7 +51,10 @@ pub struct HelloPeople {
 }
 
 impl CommandDispatch for HelloPeople {
-    fn run(&self, _transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        _transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // The `hello people` command produces no result.
         Ok(None)
     }
@@ -75,7 +81,10 @@ pub struct GoodbyeMessage {
 }
 
 impl CommandDispatch for GoodbyeCommand {
-    fn run(&self, _transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        _transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         Ok(Some(Box::new(GoodbyeMessage {
             message: "Goodbye!".to_owned(),
         })))

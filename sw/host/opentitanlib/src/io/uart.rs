@@ -16,5 +16,9 @@ pub trait Uart: Read + Write {
 
     /// Reads UART recieve data into `buf`, returning the number of bytes read.
     /// The `timeout` may be used to specify a duration to wait for data.
-    fn read_timeout(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize>;
+    fn read_timeout(
+        &mut self,
+        buf: &mut [u8],
+        timeout: Duration,
+    ) -> Result<usize>;
 }

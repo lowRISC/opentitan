@@ -36,7 +36,11 @@ impl Uart for VerilatorUart {
         Ok(())
     }
 
-    fn read_timeout(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+    fn read_timeout(
+        &mut self,
+        buf: &mut [u8],
+        timeout: Duration,
+    ) -> Result<usize> {
         file::wait_read_timeout(&self.file, timeout)?;
         Ok(self.file.read(buf)?)
     }

@@ -12,5 +12,8 @@ pub use opentitantool_derive::*;
 /// on internal nodes in the heirarchy.  See the documentation for
 /// [`opentitantool_derive`].
 pub trait CommandDispatch {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>>;
+    fn run(
+        &self,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>>;
 }

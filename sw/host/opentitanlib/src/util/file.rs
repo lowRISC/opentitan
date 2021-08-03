@@ -11,7 +11,11 @@ use std::os::unix::io::AsRawFd;
 use std::time::Duration;
 
 /// Waits for an event on `fd` or for `timeout` to expire.
-pub fn wait_timeout(fd: &impl AsRawFd, events: poll::PollFlags, timeout: Duration) -> Result<()> {
+pub fn wait_timeout(
+    fd: &impl AsRawFd,
+    events: poll::PollFlags,
+    timeout: Duration,
+) -> Result<()> {
     let timeout = timeout.as_millis().try_into().unwrap_or(c_int::MAX);
     let mut pfd = [poll::PollFd::new(fd.as_raw_fd(), events)];
     match poll::poll(&mut pfd, timeout)? {

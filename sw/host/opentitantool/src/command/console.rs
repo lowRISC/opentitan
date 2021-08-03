@@ -21,7 +21,11 @@ use opentitanlib::util::file;
 
 #[derive(Debug, StructOpt)]
 pub struct Console {
-    #[structopt(short, long, help = "Do not print console start end exit messages.")]
+    #[structopt(
+        short,
+        long,
+        help = "Do not print console start end exit messages."
+    )]
     quiet: bool,
 
     #[structopt(short, long, help = "Log console output to a file")]
@@ -30,15 +34,24 @@ pub struct Console {
     #[structopt(short, long, help = "Exit after a timeout in seconds.")]
     timeout: Option<u64>,
 
-    #[structopt(long, help = "Exit with success if the specified regex is matched.")]
+    #[structopt(
+        long,
+        help = "Exit with success if the specified regex is matched."
+    )]
     exit_success: Option<String>,
 
-    #[structopt(long, help = "Exit with failure if the specified regex is matched.")]
+    #[structopt(
+        long,
+        help = "Exit with failure if the specified regex is matched."
+    )]
     exit_failure: Option<String>,
 }
 
 impl CommandDispatch for Console {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // We need the UART for the console command to operate.
         transport.capabilities().request(Capability::UART).ok()?;
         let mut stdout = std::io::stdout();
@@ -47,7 +60,9 @@ impl CommandDispatch for Console {
         // Set up resources specified by the command line parameters.
         let mut console = InnerConsole {
             logfile: self.logfile.as_ref().map(File::create).transpose()?,
-            deadline: self.timeout.map(|t| Instant::now() + Duration::new(t, 0)),
+            deadline: self
+                .timeout
+                .map(|t| Instant::now() + Duration::new(t, 0)),
             exit_success: self
                 .exit_success
                 .as_ref()
@@ -145,7 +160,11 @@ impl InnerConsole {
             // better way to approach waiting on the UART and keyboard.
 
             // Check for input on the uart.
-            match self.uart_read(&mut *uart, Duration::from_millis(10), stdout)? {
+            match self.uart_read(
+                &mut *uart,
+                Duration::from_millis(10),
+                stdout,
+            )? {
                 ExitStatus::None => {}
                 ExitStatus::ExitSuccess => {
                     break;
@@ -156,7 +175,9 @@ impl InnerConsole {
             };
 
             // Wait for input from the user.
-            if file::wait_read_timeout(&*stdin, Duration::from_millis(0)).is_ok() {
+            if file::wait_read_timeout(&*stdin, Duration::from_millis(0))
+                .is_ok()
+            {
                 let len = stdin.read(&mut buf)?;
                 if len == 1 && buf[0] == InnerConsole::CTRL_C {
                     break;

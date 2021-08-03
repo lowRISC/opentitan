@@ -87,7 +87,9 @@ impl Subprocess {
                 let val = captures.get(1).expect("expected a capture");
                 return Ok(val.as_str().to_owned());
             } else {
-                self.accumulate(deadline.saturating_duration_since(Instant::now()))?;
+                self.accumulate(
+                    deadline.saturating_duration_since(Instant::now()),
+                )?;
             }
         }
     }
