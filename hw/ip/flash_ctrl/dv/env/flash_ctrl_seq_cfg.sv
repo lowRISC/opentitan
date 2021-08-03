@@ -18,6 +18,10 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // This enables memory protection regions to overlap.
   bit allow_mp_region_overlap;
 
+  // Weights for enable bits for each of the flash banks information partitions memory protection
+  //  configuration registers.
+  uint mp_info_page_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+
   // When this knob is NOT FlashOpInvalid (default) the selected operation will be the only
   //  operation to run in the test (FlashOpRead, FlashOpProgram, FlashOpErase).
   flash_ctrl_pkg::flash_op_e flash_only_op;
@@ -27,7 +31,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
   uint mp_region_erase_en_pc;
-  uint mp_region_data_partition_pc;
   uint mp_region_max_pages;
 
   // Knob to control bank level erasability.
@@ -37,6 +40,13 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint default_region_read_en_pc;
   uint default_region_program_en_pc;
   uint default_region_erase_en_pc;
+
+  // Weights to enable read / program and erase for each information partition page.
+  // For each of the information partitions in each of the banks there is a single variable to
+  //  control all of this partition pages.
+  uint mp_info_page_read_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_program_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_erase_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
 
   // Control the number of flash ops.
   uint max_flash_ops_per_cfg;
@@ -110,7 +120,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
     mp_region_read_en_pc = 50;
     mp_region_program_en_pc = 50;
     mp_region_erase_en_pc = 50;
-    mp_region_data_partition_pc = 50;
     mp_region_max_pages = 32;
 
     bank_erase_en_pc = 50;
@@ -118,6 +127,13 @@ class flash_ctrl_seq_cfg extends uvm_object;
     default_region_read_en_pc    = 50;
     default_region_program_en_pc = 50;
     default_region_erase_en_pc   = 50;
+
+    foreach (mp_info_page_en_pc[i, j]) begin
+      mp_info_page_en_pc[i][j] = 50;
+      mp_info_page_read_en_pc[i][j] = 50;
+      mp_info_page_program_en_pc[i][j] = 50;
+      mp_info_page_erase_en_pc[i][j] = 50;
+    end
 
     flash_only_op = FlashOpInvalid;
 
