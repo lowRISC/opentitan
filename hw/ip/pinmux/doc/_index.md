@@ -382,7 +382,11 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 ## Pinout and Pinmux Mapping
 
-**TODO: generate tables for top-earlgrey**
+The tables below summarize the pinout and pinmux connectivity for certain top-level designs.
+
+### Top Earlgrey
+
+{{< snippet "../../../top_earlgrey/ip/pinmux/doc/autogen/targets.md" >}}
 
 ## Register Table
 
