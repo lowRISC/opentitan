@@ -649,12 +649,29 @@
 
     // CLKMGR tests:
     {
-      name: chip_sw_clk_off_trans
+      name: chip_sw_clk_idle_trans
       desc: '''Verify the ability to turn off the transactional clock via SW.
 
-             Ensure that activity in any of the IPs running on this clock prevents the clock from
-             actually being turned off. Verify that turning off this clock does not affect the other
-             derived clocks.
+            Ensure that activity in any of the IPs running on this clock prevents the clock from
+            actually being turned off until the activity is completed, at which point the clock is
+            turned off.  Verify it is off via spinwait in hints_status CSR, and then check the state
+            of the transactional unit to correspond to a completed activity.  Verify that turning
+            off this clock does not affect the other derived clocks.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_clk_off_trans
+      desc: '''Verify the turned off transactional units.
+
+            Verify CSR accesses do not complete in units that are off.  Using the watchdog timers,
+            turn off a transactional unit's clock, issue a CSR access to that unit, verify a watchdog
+            event results, and verify the rstmgr crash dump info records the CSR address.
+
+            A stretch goal is to check the PC corresponds to the code performing
+            the CSR access (stretch since it could be difficult to maintain this
+            check).
             '''
       milestone: V2
       tests: []
@@ -663,6 +680,9 @@
       name: chip_sw_clk_off_peri
       desc: '''Verify the ability to turn off the peripheral clock via SW.
 
+            Verify CSR accesses do not complete in peripherals that are off.  Using the watchdog
+            timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
             '''
       milestone: V2
       tests: []
@@ -671,14 +691,33 @@
       name: chip_clk_div
       desc: '''Verify clk division logic is working correctly.
 
+            This can be easily verified if we implement clock cycle counters.
+            The IP level checks the divided clocks on each parent clock cycle.
+
+            Add formal connectivity tests to check peripherals are connected to
+            the clock they expect.
             '''
       milestone: V2
       tests: []
     }
     {
       name: chip_clkmgr_external_clk_src
-      desc: '''Verify the clkmgr switches to the correct clk src during certain LC states.
+      desc: '''Verify the clkmgr requests ext clk src during certain LC states.
 
+            On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
+            it when lc_program completes. It may be best to verify this via SVA,
+            unless we implement clock cycle counters.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_clkmgr_jitter_enable
+      desc: '''Verify the chip operates correctly when clock jitter is enabled.
+
+            Run a full regression with the chip configured with jittery clocks.
+            This can be done in the custom boot ROM for DV tests, and provide a
+            SW knob in case some tests need to disable jitter.
             '''
       milestone: V2
       tests: []
@@ -689,7 +728,9 @@
       name: chip_pwrmgr_cold_boot
       desc: '''Verify the cold boot sequence through the wiggling of `por_rst_n`.
 
-            This mainly ensures that both FSMs are properly reset on the POR signal. Details TBD.
+            This mainly ensures that both FSMs are properly reset on the POR signal. The check
+            is that the processor ends up running. Also verify, the rstmgr records POR in
+            `reset_info` CSR.
             '''
       milestone: V2
       tests: []
@@ -700,7 +741,11 @@
             sources.
 
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests.
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to low power, optionally disabling the source's clock,
+            have the source issue a wakeup event and verify `wake_info` indicates the expected
+            wakeup.
             '''
       milestone: V2
       tests: []
@@ -711,7 +756,9 @@
             sources.
 
             This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests.
+            working correctly as expected. X-ref'ed with all individual IP tests. For each reset
+            source, enable the source and bring the chip to low power, issue a reset, and verify the
+            rstmgr's `reset_info` indicates the expected reset.
             '''
       milestone: V2
       tests: []
@@ -722,7 +769,8 @@
             sources.
 
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests.
+            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
       tests: ["chip_dif_pwrmgr_smoketest",
@@ -734,7 +782,8 @@
             sources.
 
             This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests.
+            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_reset_reqs, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
       tests: []
@@ -744,7 +793,8 @@
       desc: '''Verify that the chip can be reset by ALL available reset sources.
 
             This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests.
+            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
             '''
       milestone: V2
       tests: []
@@ -755,16 +805,18 @@
             FSM transition.
 
             The main_pok from AST is randomly forced to flip while in the middle of a FSM
-            transition. This is done on all normal / deep sleep / reset request tests.
+            transition. This is done on all normal / deep sleep / reset request tests. The check
+            that flipping during POR results in a stretched reset is done at IP level.
             '''
       milestone: V2
       tests: []
     }
     {
       name: chip_pwrmgr_b2b_sleep_reset_req
-      desc: '''Verify that the pwrmge sequences sleep_req and reset req coming in almost at the same
+      desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
             time, one after the other.
 
+            Verified at IP level.
             '''
       milestone: V2
       tests: []
@@ -772,29 +824,8 @@
     {
       name: chip_pwrmgr_debug_sleep
       desc: '''Verify that when the chip being in "debuggable" state prevent the low power entry.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_pwrmgr_sleep_wake_req_disabled
-      desc: '''Verify that the chip cannot be woken up from sleep from a wake up source that is
-            disabled.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_pwrmgr_reset_req_disabled
-      desc: '''Verify that the chip cannot be reset from a reset source that is disabled.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_pwrmgr_sleep_reset_req_disabled
-      desc: '''Verify that the chip cannot be woken up from sleep from a reset source that is
-            disabled.
+
+            This is an open issue: https://github.com/lowRISC/opentitan/issues/7215
             '''
       milestone: V2
       tests: []
@@ -806,23 +837,6 @@
       milestone: V2
       tests: []
     }
-    {
-      name: chip_pwrmgr_sleep_wake_up_fall_through
-      desc: '''Verify that the chip sleep falls through when an interrupt arrives just in time
-            before the pwrmgr iniitates the low power entry.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_pwrmgr_sleep_abort
-      desc: '''Verify that the chip sleep transition aborts due to an active flash / lifecycle / OTP
-            transaction.
-            '''
-      milestone: V2
-      tests: []
-    }
-
 
     // RSTMGR tests:
 
