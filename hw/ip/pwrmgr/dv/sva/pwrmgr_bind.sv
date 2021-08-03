@@ -30,19 +30,12 @@ module pwrmgr_bind;
   );
 
   bind pwrmgr pwrmgr_ast_if pwrmgr_ast_if (
-    .clk_i(clk_slow_i),
-    .rst_ni(rst_slow_ni),
-    // The output enables.
-    .core_clk_en(pwr_ast_o.core_clk_en),
-    .io_clk_en(pwr_ast_o.io_clk_en),
-    .usb_clk_en(pwr_ast_o.usb_clk_en),
-    // The input valids.
-    .core_clk_val(pwr_ast_i.core_clk_val),
-    .io_clk_val(pwr_ast_i.io_clk_val),
-    .usb_clk_val(pwr_ast_i.usb_clk_val),
-    // The main power control.
-    .main_pd_n(pwr_ast_o.main_pd_n),
-    .main_pok(pwr_ast_i.main_pok)
+    .clk_slow_i,
+    .rst_slow_ni,
+    // The pwrmgr outputs.
+    .pwr_ast_o,
+    // The pwrmgr input.
+    .pwr_ast_i
   );
 
   bind pwrmgr pwrmgr_rstmgr_if pwrmgr_rstmgr_if (
