@@ -53,7 +53,9 @@ module tb;
   clkmgr_if clkmgr_if (
     .clk(clk),
     .rst_n(rst_n),
-    .rst_main_n(rst_main_n)
+    .rst_io_n(rst_io_n),
+    .rst_main_n(rst_main_n),
+    .rst_usb_n(rst_usb_n)
   );
 
   initial begin

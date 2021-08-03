@@ -55,6 +55,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       // We expect all units to be on.
       `DV_CHECK_EQ(value, '1, "All idle and all hints high: units status should be high")
+      // Set hints to the reset value for stress tests.
       csr_wr(.ptr(ral.clk_hints), .value(ral.clk_hints.get_reset()));
     end
   endtask : body

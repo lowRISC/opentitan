@@ -149,17 +149,24 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
+  // Clock monitors.
+  // Notice the clock gating condition is sampled at the clock edge from clocking blocks,
+  // but we add a #0 before the actual clock is checked. This is to be certain the clock
+  // has assumed its value in case some logic needs to settle.
+
   task monitor_div4_peri_clock();
     forever
       @cfg.clkmgr_vif.peri_div4_cb begin
-        logic enable = cfg.clkmgr_vif.peri_div4_cb.clk_enable;
-        logic clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-        logic gating_condition = enable && clk_en || scan_en;
-        #0;
-        check_clock("div4", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_peri);
-        if (cfg.en_cov) begin
-          cov.peri_cg_wrap[PeriDiv4].sample(enable, clk_en, scan_en);
+        if (cfg.io_clk_rst_vif.rst_n) begin
+          logic enable = cfg.clkmgr_vif.peri_div4_cb.clk_enable;
+          logic clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
+          logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+          logic gating_condition = enable && clk_en || scan_en;
+          #0;
+          check_clock("div4", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_peri);
+          if (cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriDiv4].sample(enable, clk_en, scan_en);
+          end
         end
       end
   endtask
@@ -167,14 +174,16 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task monitor_div2_peri_clock();
     forever
       @cfg.clkmgr_vif.peri_div2_cb begin
-        logic enable = cfg.clkmgr_vif.peri_div2_cb.clk_enable;
-        logic clk_en = cfg.clkmgr_vif.peri_div2_cb.ip_clk_en;
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-        logic gating_condition = enable && clk_en || scan_en;
-        #0;
-        check_clock("div2", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div2_peri);
-        if (cfg.en_cov) begin
-          cov.peri_cg_wrap[PeriDiv2].sample(enable, clk_en, scan_en);
+        if (cfg.io_clk_rst_vif.rst_n) begin
+          logic enable = cfg.clkmgr_vif.peri_div2_cb.clk_enable;
+          logic clk_en = cfg.clkmgr_vif.peri_div2_cb.ip_clk_en;
+          logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+          logic gating_condition = enable && clk_en || scan_en;
+          #0;
+          check_clock("div2", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div2_peri);
+          if (cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriDiv2].sample(enable, clk_en, scan_en);
+          end
         end
       end
   endtask
@@ -182,14 +191,16 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task monitor_io_peri_clock();
     forever
       @cfg.clkmgr_vif.peri_io_cb begin
-        logic enable = cfg.clkmgr_vif.peri_io_cb.clk_enable;
-        logic clk_en = cfg.clkmgr_vif.peri_io_cb.ip_clk_en;
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-        logic gating_condition = enable && clk_en || scan_en;
-        #0;
-        check_clock("io", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_peri);
-        if (cfg.en_cov) begin
-          cov.peri_cg_wrap[PeriIo].sample(enable, clk_en, scan_en);
+        if (cfg.io_clk_rst_vif.rst_n) begin
+          logic enable = cfg.clkmgr_vif.peri_io_cb.clk_enable;
+          logic clk_en = cfg.clkmgr_vif.peri_io_cb.ip_clk_en;
+          logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+          logic gating_condition = enable && clk_en || scan_en;
+          #0;
+          check_clock("io", gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_peri);
+          if (cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriIo].sample(enable, clk_en, scan_en);
+          end
         end
       end
   endtask
@@ -197,14 +208,16 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task monitor_usb_peri_clock();
     forever
       @cfg.clkmgr_vif.peri_usb_cb begin
-        logic enable = cfg.clkmgr_vif.peri_usb_cb.clk_enable;
-        logic clk_en = cfg.clkmgr_vif.peri_usb_cb.ip_clk_en;
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-        logic gating_condition = enable && clk_en || scan_en;
-        #0;
-        check_clock("usb", gating_condition, cfg.clkmgr_vif.clocks_o.clk_usb_peri);
-        if (cfg.en_cov) begin
-          cov.peri_cg_wrap[PeriUsb].sample(enable, clk_en, scan_en);
+        if (cfg.usb_clk_rst_vif.rst_n) begin
+          logic enable = cfg.clkmgr_vif.peri_usb_cb.clk_enable;
+          logic clk_en = cfg.clkmgr_vif.peri_usb_cb.ip_clk_en;
+          logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+          logic gating_condition = enable && clk_en || scan_en;
+          #0;
+          check_clock("usb", gating_condition, cfg.clkmgr_vif.clocks_o.clk_usb_peri);
+          if (cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriUsb].sample(enable, clk_en, scan_en);
+          end
         end
       end
   endtask
@@ -214,48 +227,51 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     src_e   src = cfg.trans_to_src[trans];
 
     forever begin
-      logic hint, idle, clk_en, scan_en, gating_condition;
+      logic hint, idle, clk_en, scan_en, src_rst_n, gating_condition;
 
       // Wait for the correct clocking block (to ensure that we sample when the output clock should
       // be high if enabled), then read the relevant signals from that clocking block.
       case (src)
         SrcMain: begin
           @(cfg.clkmgr_vif.trans_cb);
-          hint   = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
-          idle   = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
+          hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
+          idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
           clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
+          src_rst_n = cfg.main_clk_rst_vif.rst_n;
         end
         SrcIoDiv4: begin
           @(cfg.clkmgr_vif.peri_div4_cb);
-          hint   = cfg.clkmgr_vif.peri_div4_cb.clk_hint_otbn;
-          idle   = cfg.clkmgr_vif.peri_div4_cb.otbn_idle;
+          hint = cfg.clkmgr_vif.peri_div4_cb.clk_hint_otbn;
+          idle = cfg.clkmgr_vif.peri_div4_cb.otbn_idle;
           clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
+          src_rst_n = cfg.io_clk_rst_vif.rst_n;
         end
       endcase
+      if (src_rst_n) begin
+        scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+        gating_condition = (hint || !idle) && clk_en || scan_en;
 
-      scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
-      gating_condition = (hint || !idle) && clk_en || scan_en;
-
-      #0;
-      case (trans)
-        TransAes: begin
-          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_aes);
+        #0;
+        case (trans)
+          TransAes: begin
+            check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_aes);
+          end
+          TransHmac: begin
+            check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_hmac);
+          end
+          TransKmac: begin
+            check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_kmac);
+          end
+          TransOtbnIoDiv4: begin
+            check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_otbn);
+          end
+          TransOtbnMain: begin
+            check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
+          end
+        endcase
+        if (cfg.en_cov) begin
+          cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
         end
-        TransHmac: begin
-          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_hmac);
-        end
-        TransKmac: begin
-          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_kmac);
-        end
-        TransOtbnIoDiv4: begin
-          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_io_div4_otbn);
-        end
-        TransOtbnMain: begin
-          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
-        end
-      endcase
-      if (cfg.en_cov) begin
-        cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
       end
     end
   endtask
@@ -270,15 +286,17 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                     UVM_MEDIUM)
           prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
         end
-        if (((cfg.clkmgr_vif.extclk_cb.extclk_sel == On) &&
-             (cfg.clkmgr_vif.extclk_cb.lc_dft_en_i == On)) ||
-            (cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req == On)) begin
-          `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On, "Expected ast_clk_byp_req to be On")
-        end
-        if (cfg.en_cov) begin
-          cov.extclk_cg.sample(cfg.clkmgr_vif.extclk_cb.extclk_sel,
-                               cfg.clkmgr_vif.extclk_cb.lc_dft_en_i,
-                               cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+        if (cfg.clk_rst_vif.rst_n) begin
+          if (((cfg.clkmgr_vif.extclk_cb.extclk_sel == On) &&
+               (cfg.clkmgr_vif.extclk_cb.lc_dft_en_i == On)) ||
+              (cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req == On)) begin
+            `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On, "Expected ast_clk_byp_req to be On")
+          end
+          if (cfg.en_cov) begin
+            cov.extclk_cg.sample(
+                cfg.clkmgr_vif.extclk_cb.extclk_sel, cfg.clkmgr_vif.extclk_cb.lc_dft_en_i,
+                cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+          end
         end
       end
   endtask
@@ -286,12 +304,21 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task monitor_clk_dividers();
     clock_dividers dividers = new();
     clock_dividers::div_step_e prev_div_step = clock_dividers::DivStepUp;
+    // This controls the window for checking divided clocks. We open it after the
+    // first increment, and close it upon reset. Needed for tests that reset.
+    // May not be needed anymore since we reset the expected activity on reset
+    // active.
+    bit ok_to_check_dividers = 1'b0;
 
     #1;
     cfg.io_clk_rst_vif.wait_for_reset();
     fork
       forever
-        @(posedge cfg.io_clk_rst_vif.rst_n) begin : handle_dividers_reset
+        @(negedge cfg.io_clk_rst_vif.rst_n) begin : handle_dividers_reset_start
+          ok_to_check_dividers = 1'b0;
+        end
+      forever
+        @(posedge cfg.io_clk_rst_vif.rst_n) begin : handle_dividers_reset_done
           dividers.reset();
           `uvm_info(`gfn, $sformatf("Reset divided clocks: %0s", dividers.show()), UVM_MEDIUM)
         end
@@ -319,7 +346,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       // Compare divided clocks, always based on values from clocking block (thus preponed).
       forever
         @cfg.clkmgr_vif.div_clks_cb begin : check_clocks
-          if (cfg.io_clk_rst_vif.rst_n) begin
+          if (cfg.io_clk_rst_vif.rst_n && ok_to_check_dividers) begin
             `DV_CHECK_EQ(cfg.clkmgr_vif.div_clks_cb.actual_clk_io_div4,
                          cfg.clkmgr_vif.div_clks_cb.exp_clk_io_div4, $sformatf(
                          "Mismatch for clk_io_div4_powerup, expected %b, got %b",
@@ -360,6 +387,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 .actual_div2_value(cfg.clkmgr_vif.clocks_o.clk_io_div2_powerup),
                 .exp_div4_value(dividers.get_div4_clk()),
                 .actual_div4_value(cfg.clkmgr_vif.clocks_o.clk_io_div4_powerup));
+            if (ok_to_check_dividers == 1'b0) begin
+              ok_to_check_dividers = 1'b1;
+              `uvm_info(`gfn, "Ready to start checking divided clocks", UVM_LOW)
+            end
           end else begin
             `uvm_info(`gfn, "Clearing expectations because io rst_n is active", UVM_LOW)
             // verilog_format: off  // the args are aligned to the function parenthesis
@@ -409,6 +440,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     // - For read, update predication at address phase and compare at data phase.
     case (csr.get_name())
       // add individual case item for each csr
+      "alert_test": begin
+        // FIXME
+      end
       "intr_state": begin
         // FIXME
         do_read_check = 1'b0;

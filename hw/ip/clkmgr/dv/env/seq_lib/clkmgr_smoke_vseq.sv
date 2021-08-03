@@ -10,7 +10,6 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint enable_ip_clk_en {ip_clk_en == 1'b1;}
   constraint all_busy {idle == '0;}
-  constraint scanmode_off {sel_scanmode == LcTxTSelOff;}
 
   task body();
     update_csrs_with_reset_values();
@@ -28,11 +27,17 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     csr_rd(.ptr(ral.clk_enables), .value(value));
     flipped_value = value ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
     csr_wr(.ptr(ral.clk_enables), .value(flipped_value));
+
+    // And set it back to the reset value for stress tests.
+    cfg.clk_rst_vif.wait_clks(1);
+    csr_wr(.ptr(ral.clk_enables), .value(ral.clk_enables.get_reset()));
   endtask : test_peri_clocks
 
-  // Starts with all units busy, and for each one this clears the hint and reads the
-  // hint status, expecting it to remain at 1 since the unit is busy; then it sets
-  // the corresponding idle bit and reads status again, expecting it to be low.
+  // Starts with all units busy, and for each one this clears the hint and reads the hint status,
+  // expecting it to remain at 1 since the unit is busy; then it sets the corresponding idle bit
+  // and reads status again, expecting it to be low.
+  //
+  // We disable the value checks when reset is active since the reads return unpredictable data.
   task test_trans_clocks();
     trans_e trans;
     logic bit_value;
@@ -60,9 +65,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("Clearing %s hint bit", descriptor.unit.name), UVM_MEDIUM)
       csr_wr(.ptr(descriptor.hint_bit), .value(1'b0));
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
-      `DV_CHECK_EQ(bit_value, 1'b1, $sformatf(
-                   "%s hint value cannot drop while busy", descriptor.unit.name()))
-
+      if (!cfg.under_reset) begin
+        `DV_CHECK_EQ(bit_value, 1'b1, $sformatf(
+                     "%s hint value cannot drop while busy", descriptor.unit.name()))
+      end
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(1);
       idle[trans] = 1'b1;
@@ -70,10 +76,12 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       // Some cycles for the logic to settle.
       cfg.clk_rst_vif.wait_clks(3);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
-      `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(
-                   "%s hint value should drop when idle", descriptor.unit.name()))
+      if (!cfg.under_reset) begin
+        `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(
+                     "%s hint value should drop when idle", descriptor.unit.name()))
+      end
       trans = trans.next();
     end while (trans != trans.first);
+    csr_wr(.ptr(ral.clk_hints), .value(ral.clk_hints.get_reset()));
   endtask : test_trans_clocks
-
 endclass : clkmgr_smoke_vseq
