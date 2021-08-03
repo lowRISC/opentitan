@@ -9731,6 +9731,7 @@
         pad: SPI_HOST_D0
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 0
       }
       {
@@ -9741,6 +9742,7 @@
         pad: SPI_HOST_D1
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 1
       }
       {
@@ -9751,6 +9753,7 @@
         pad: SPI_HOST_D2
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 2
       }
       {
@@ -9761,6 +9764,7 @@
         pad: SPI_HOST_D3
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 3
       }
       {
@@ -9771,6 +9775,7 @@
         pad: SPI_DEV_D0
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 4
       }
       {
@@ -9781,6 +9786,7 @@
         pad: SPI_DEV_D1
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 5
       }
       {
@@ -9791,6 +9797,7 @@
         pad: SPI_DEV_D2
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 6
       }
       {
@@ -9801,6 +9808,7 @@
         pad: SPI_DEV_D3
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 7
       }
       {
@@ -9811,6 +9819,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 8
       }
       {
@@ -9821,6 +9830,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 9
       }
       {
@@ -9831,6 +9841,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 10
       }
       {
@@ -9841,6 +9852,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 0
       }
       {
@@ -9851,6 +9863,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 1
       }
       {
@@ -9861,6 +9874,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 2
       }
       {
@@ -9871,6 +9885,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 3
       }
       {
@@ -9881,6 +9896,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 4
       }
       {
@@ -9891,6 +9907,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 5
       }
       {
@@ -9901,6 +9918,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 6
       }
       {
@@ -9911,6 +9929,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 7
       }
       {
@@ -9921,6 +9940,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 8
       }
       {
@@ -9931,6 +9951,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 9
       }
       {
@@ -9941,6 +9962,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 10
       }
       {
@@ -9951,6 +9973,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 11
       }
       {
@@ -9961,6 +9984,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 12
       }
       {
@@ -9971,6 +9995,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 13
       }
       {
@@ -9981,6 +10006,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 14
       }
       {
@@ -9991,6 +10017,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 15
       }
       {
@@ -10001,6 +10028,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 16
       }
       {
@@ -10011,6 +10039,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 17
       }
       {
@@ -10021,6 +10050,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 18
       }
       {
@@ -10031,6 +10061,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 19
       }
       {
@@ -10041,6 +10072,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 20
       }
       {
@@ -10051,6 +10083,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 21
       }
       {
@@ -10061,6 +10094,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 22
       }
       {
@@ -10071,6 +10105,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 23
       }
       {
@@ -10081,6 +10116,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 24
       }
       {
@@ -10091,6 +10127,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 25
       }
       {
@@ -10101,6 +10138,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 26
       }
       {
@@ -10111,6 +10149,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 27
       }
       {
@@ -10121,6 +10160,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 28
       }
       {
@@ -10131,6 +10171,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 29
       }
       {
@@ -10141,6 +10182,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 30
       }
       {
@@ -10151,6 +10193,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 31
       }
       {
@@ -10161,6 +10204,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 32
       }
       {
@@ -10171,6 +10215,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 33
       }
       {
@@ -10181,6 +10226,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 34
       }
       {
@@ -10191,6 +10237,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 35
       }
       {
@@ -10201,6 +10248,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 36
       }
       {
@@ -10211,6 +10259,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 37
       }
       {
@@ -10221,6 +10270,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 38
       }
       {
@@ -10231,6 +10281,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 39
       }
       {
@@ -10241,6 +10292,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 40
       }
       {
@@ -10251,6 +10303,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 41
       }
       {
@@ -10261,6 +10314,7 @@
         pad: SPI_DEV_CLK
         attr: InputStd
         connection: direct
+        desc: ""
         glob_idx: 11
       }
       {
@@ -10271,6 +10325,7 @@
         pad: SPI_DEV_CS_L
         attr: InputStd
         connection: direct
+        desc: ""
         glob_idx: 12
       }
       {
@@ -10281,6 +10336,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 13
       }
       {
@@ -10291,6 +10347,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 42
       }
       {
@@ -10301,6 +10358,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 43
       }
       {
@@ -10311,6 +10369,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 44
       }
       {
@@ -10321,6 +10380,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 45
       }
       {
@@ -10331,6 +10391,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 46
       }
       {
@@ -10341,6 +10402,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 47
       }
       {
@@ -10351,6 +10413,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 48
       }
       {
@@ -10361,6 +10424,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 49
       }
       {
@@ -10371,6 +10435,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 50
       }
       {
@@ -10381,6 +10446,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 51
       }
       {
@@ -10391,6 +10457,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 52
       }
       {
@@ -10401,6 +10468,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 53
       }
       {
@@ -10411,6 +10479,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 54
       }
       {
@@ -10421,6 +10490,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 55
       }
       {
@@ -10431,6 +10501,7 @@
         pad: SPI_HOST_CLK
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 14
       }
       {
@@ -10441,6 +10512,7 @@
         pad: SPI_HOST_CS_L
         attr: BidirStd
         connection: direct
+        desc: ""
         glob_idx: 15
       }
       {
@@ -10451,6 +10523,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 16
       }
       {
@@ -10461,6 +10534,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 17
       }
       {
@@ -10471,6 +10545,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 18
       }
       {
@@ -10481,6 +10556,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 19
       }
       {
@@ -10491,6 +10567,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 20
       }
       {
@@ -10501,6 +10578,7 @@
         pad: ""
         attr: BidirTol
         connection: manual
+        desc: ""
         glob_idx: 21
       }
       {
@@ -10511,6 +10589,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 42
       }
       {
@@ -10521,6 +10600,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 43
       }
       {
@@ -10531,6 +10611,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 44
       }
       {
@@ -10541,6 +10622,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 45
       }
       {
@@ -10551,6 +10633,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 46
       }
       {
@@ -10561,6 +10644,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 47
       }
       {
@@ -10571,6 +10655,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 48
       }
       {
@@ -10581,6 +10666,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 49
       }
       {
@@ -10591,6 +10677,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 50
       }
       {
@@ -10601,6 +10688,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 51
       }
       {
@@ -10611,6 +10699,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 52
       }
       {
@@ -10621,6 +10710,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 53
       }
       {
@@ -10631,6 +10721,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 54
       }
       {
@@ -10641,6 +10732,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 55
       }
       {
@@ -10651,6 +10743,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 56
       }
       {
@@ -10661,6 +10754,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 57
       }
       {
@@ -10671,6 +10765,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 58
       }
       {
@@ -10681,6 +10776,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 59
       }
       {
@@ -10691,6 +10787,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 60
       }
       {
@@ -10701,6 +10798,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 61
       }
       {
@@ -10711,6 +10809,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 62
       }
       {
@@ -10721,6 +10820,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 63
       }
       {
@@ -10731,6 +10831,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 64
       }
       {
@@ -10741,6 +10842,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 65
       }
       {
@@ -10751,6 +10853,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 66
       }
       {
@@ -10761,6 +10864,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 67
       }
       {
@@ -10771,6 +10875,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 68
       }
       {
@@ -10781,6 +10886,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 69
       }
       {
@@ -10791,6 +10897,7 @@
         pad: IOR8
         attr: BidirOd
         connection: direct
+        desc: ""
         glob_idx: 22
       }
       {
@@ -10801,6 +10908,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 70
       }
       {
@@ -10811,6 +10919,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 71
       }
       {
@@ -10821,6 +10930,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 72
       }
       {
@@ -10831,6 +10941,7 @@
         pad: IOR9
         attr: BidirOd
         connection: direct
+        desc: ""
         glob_idx: 23
       }
       {
@@ -10841,6 +10952,7 @@
         pad: ""
         attr: ""
         connection: muxed
+        desc: ""
         glob_idx: 73
       }
     ]

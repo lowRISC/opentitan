@@ -30,6 +30,7 @@ from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
 from topgen.gen_dv import gen_dv
+from topgen.gen_top_docs import gen_top_docs
 from topgen.top import Top
 from topgen.clocks import Clocks
 from topgen.merge import extract_clocks, connect_clocks
@@ -1190,6 +1191,9 @@ def main():
 
         with rendered_path.open(mode='w', encoding='UTF-8') as fout:
             fout.write(template_contents)
+
+        # generate documentation for toplevel
+        gen_top_docs(completecfg, c_helper, out_path)
 
 
 if __name__ == "__main__":
