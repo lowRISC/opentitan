@@ -255,9 +255,16 @@ class KnownMem:
         # Since b < 0 and v > 0, the denominator is negative and this is an
         # increasing function of offset, so we can get the allowed range for k
         # by evaluating it at the endpoints of offset_range.
+        #
+        # Round down in the division when computing k_max and round up when
+        # computing k_min (because we're interested in the range of integers
+        # that we can choose). Since b is negative, we negate top and bottom
+        # when rounding up to allow the usual "(num + den - 1) // den" trick to
+        # work properly.
         bv = - offset_align * v
         k_max = (-offset_range[1] + offset_align * i0) // bv
-        k_min = (-offset_range[0] + offset_align * i0 + (bv - 1)) // bv
+        k_min_num = -offset_range[0] + offset_align * i0
+        k_min = (- k_min_num + ((- bv) - 1)) // (- bv)
 
         # If k_min > k_max, this means b*v gives such big steps that none
         # landed in the range of allowed offsets
