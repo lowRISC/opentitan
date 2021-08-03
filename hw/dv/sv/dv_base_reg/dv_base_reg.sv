@@ -274,10 +274,10 @@ class dv_base_reg extends uvm_reg;
             "Shadow reg %0s has update error, update rw.value from %0h to %0h",
             get_name(), rw.value[0], committed_val), UVM_HIGH)
         rw.value[0] = committed_val;
-      end else if (shadow_wr_staged || (shadow_fatal_lock && rw.path != UVM_BACKDOOR)) begin
+      end else if (!shadow_wr_staged || (shadow_fatal_lock && rw.path != UVM_BACKDOOR)) begin
         `uvm_info(`gfn, $sformatf(
             "skip predict %s: due to shadow_reg_first_wr=%0b, shadow_fatal_lock=%0b",
-            get_name(), shadow_wr_staged, shadow_fatal_lock), UVM_LOW)
+            get_name(), !shadow_wr_staged, shadow_fatal_lock), UVM_LOW)
         return;
       end
     end
