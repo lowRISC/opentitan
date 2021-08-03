@@ -7,7 +7,8 @@ import re
 
 import pytest
 
-from .. import config, utils
+from . import config
+from .. import utils
 
 log = logging.getLogger(__name__)
 

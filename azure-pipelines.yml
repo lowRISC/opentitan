@@ -182,6 +182,45 @@ jobs:
       includePatterns:
         - "/sw/device/**/*nexysvideo*"
 
+# Software targeting the English Breakfast top level is produced by patching
+# the source tree before building. This builds a selected subset of software
+# only.
+# TODO: This is a rather ugly hack, which will go away once we properly support
+# building more than one top-level design with different parametrizations.
+# Work towards this goal is tracked in issue #4669.
+- job: sw_build_englishbreakfast
+  displayName: Build Software for English Breakfast toplevel design
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --install-dir="$TOOLCHAIN_PATH" \
+        --release-version="$TOOLCHAIN_VERSION" \
+        --update
+    displayName: Install toolchain
+  - bash: |
+      . util/build_consts.sh
+      ./meson_init.sh -A
+      # Patch software.
+      ./hw/top_englishbreakfast/util/prepare_sw.py
+      # Build FPGA boot ROM and aes_serial binary for FPGA SCA.
+      ninja -C "$OBJ_DIR" sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
+      ninja -C "$OBJ_DIR" sw/device/sca/aes_serial_export_fpga_nexysvideo
+      # Build binaries for Verilator simulation.
+      ninja -C "$OBJ_DIR" sw/device/boot_rom/boot_rom_export_sim_verilator
+      ninja -C "$OBJ_DIR" sw/device/tests/dif_aes_smoketest_export_sim_verilator
+      ninja -C "$OBJ_DIR" sw/device/examples/hello_world/hello_world_export_sim_verilator
+    displayName: Build embedded targets
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/sw/device/***"
+
 # We continue building with GCC, despite defaulting to Clang. This is a copy of
 # `sw_build` with `meson_init.sh` configured with the GCC toolchain, instead of
 # the default toolchain.
@@ -306,6 +345,32 @@ jobs:
         -m "not slow" \
         --log-cli-level=DEBUG \
         --test-run-title="Run system tests with Verilator simulation (excl. slow tests)" \
+        --napoleon-docstrings
+    displayName: Execute tests
+
+- job: execute_verilated_tests_englishbreakfast
+  displayName: Execute tests on the Verilated English Breakfast toplevel design
+  pool: ci-public
+  dependsOn:
+    - chip_englishbreakfast_verilator
+    - sw_build_englishbreakfast
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_englishbreakfast_verilator
+        - sw_build_englishbreakfast
+  - bash: |
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/englishbreakfast/test_sim_verilator.py \
+        -m "not slow" \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run English Breakfast system tests with Verilator simulation" \
         --napoleon-docstrings
     displayName: Execute tests
 
@@ -500,12 +565,7 @@ jobs:
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn:
     - lint
-    # The bootrom is built into the FPGA image at synthesis time.
-    # Currently, we can't have different versions of binaries in $BIN_DIR. Consequently, we are
-    # using the NexysVideo bootrom here and the resulting CW305 bitstream is not functional.
-    # By generating the CW305 bootrom binary we would break execute_fpga_tests executed on the
-    # NexysVideo.
-    - sw_build_nexysvideo
+    - sw_build_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
@@ -514,7 +574,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - sw_build_nexysvideo
+        - sw_build_englishbreakfast
   - bash: |
       set -e
       . util/build_consts.sh
