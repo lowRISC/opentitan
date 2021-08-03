@@ -22,6 +22,7 @@ filesets:
       - rtl/keymgr_sideload_key.sv
       - rtl/keymgr_ctrl.sv
       - rtl/keymgr_cfg_en.sv
+      - rtl/keymgr_cnt.sv
       - rtl/keymgr_kmac_if.sv
       - rtl/keymgr_input_checks.sv
       - rtl/keymgr_reseed_ctrl.sv

@@ -103,6 +103,12 @@ package keymgr_pkg;
     Otbn
   } keymgr_key_dest_e;
 
+  // Enumeration for hardened count style
+  typedef enum logic {
+    CrossCnt, // up count and down count
+    DupCnt    // duplicate counters
+  } keymgr_cnt_style_e;
+
   // Enumeration for key select
   typedef enum logic {
     HwKey = 0,
@@ -148,13 +154,14 @@ package keymgr_pkg;
   } keymgr_err_pos_e;
 
   // Bit position of fault status
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     FaultCmd,
     FaultKmacFsm,
     FaultKmacOp,
     FaultRegFileIntg,
     FaultShadow,
     FaultCtrlFsm,
+    FaultCtrlCnt,
     FaultLastPos
   } keymgr_fault_pos_e;
 

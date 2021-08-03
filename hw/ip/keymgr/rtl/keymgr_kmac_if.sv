@@ -39,13 +39,38 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   output logic cmd_error_o
 );
 
-  // Enumeration for working state
-  typedef enum logic [2:0] {
-    StIdle   = 0,
-    StTx     = 1,
-    StTxLast = 2,
-    StOpWait = 3,
-    StClean  = 4
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
+  //      -s 2292624416 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (46.67%)
+  //  6: ||||||||||||||||| (40.00%)
+  //  7: ||||| (13.33%)
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 9
+  //
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle    = 10'b1110100010,
+    StTx      = 10'b0010011011,
+    StTxLast  = 10'b0101000000,
+    StOpWait  = 10'b1000101001,
+    StClean   = 10'b1111111101,
+    StInvalid = 10'b0011101110
   } data_state_e;
 
   localparam int AdvRem = AdvDataWidth % KmacDataIfWidth;
@@ -105,29 +130,43 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   assign start = adv_en_i | id_en_i | gen_en_i;
 
-  // downcount
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cnt <= '0;
-    end else if (cnt_clr) begin
-      cnt <= '0;
-    end else if (cnt_set) begin
-      cnt <= rounds;
-    end else if (cnt_en && cnt >'0) begin
-      cnt <= cnt - 1'b1;
-    end
-  end
+  logic cnt_err;
+  keymgr_cnt #(
+    .Width(CntWidth),
+    .OutSelDnCnt(1'b1)
+  ) u_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(cnt_clr),
+    .set_i(cnt_set),
+    .set_cnt_i(rounds),
+    .en_i(cnt_en),
+    .cnt_o(cnt),
+    .err_o(cnt_err)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       inputs_invalid_q <= '0;
-      state_q <= StIdle;
     end else begin
       inputs_invalid_q <= inputs_invalid_d;
-      state_q <= state_d;
     end
    end
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = data_state_e'(state_raw_q);
+
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
+  );
 
   always_comb begin
     cnt_clr = 1'b0;
@@ -177,6 +216,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
             state_d = StTxLast;
           end
         end
+
+        if (cnt_err) begin
+          state_d = StInvalid;
+        end
+
       end
 
       StTxLast: begin
@@ -194,6 +238,10 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         // transaction accepted
         cnt_clr = kmac_data_i.ready;
         state_d = kmac_data_i.ready ? StOpWait : StTxLast;
+
+        if (cnt_err) begin
+          state_d = StInvalid;
+        end
       end
 
       StOpWait: begin

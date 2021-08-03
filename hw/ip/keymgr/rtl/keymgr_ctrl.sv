@@ -183,14 +183,14 @@ module keymgr_ctrl import keymgr_pkg::*; (
   assign kmac_out_valid = valid_data_chk(kmac_data_i[0]) & valid_data_chk(kmac_data_i[1]);
 
   // error definition
-  assign op_fault_err_d = |fault_o | ~kmac_out_valid;
+  assign op_fault_err_d = |fault_o | ~kmac_out_valid | op_fault_err_q;
   assign op_err = kmac_input_invalid_i | invalid_op;
 
   // key update conditions
-  assign key_update = (op_ack | op_update) & (advance_sel | disable_sel);
+  assign key_update = advance_sel | disable_sel;
 
   // external collateral update conditions
-  assign data_update = op_ack & gen_sel;
+  assign data_update = gen_sel;
 
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -262,7 +262,6 @@ module keymgr_ctrl import keymgr_pkg::*; (
     wipe_key_o = 1'b0;
     key_update_vld = 1'b0;
 
-
     // if a wipe request arrives, immediately destroy the
     // keys regardless of current state
 
@@ -285,8 +284,8 @@ module keymgr_ctrl import keymgr_pkg::*; (
       end
 
       KeyUpdateKmac: begin
-        data_valid_o = data_update & ~op_fault_err & ~op_err;
-        key_update_vld = key_update & ~op_fault_err & ~op_err;
+        data_valid_o = data_update & ~op_err;
+        key_update_vld = key_update & ~op_err;
         key_state_d[cdi_sel_o] = key_update_vld ? kmac_data_i : key_state_q[cdi_sel_o];
       end
 
@@ -309,15 +308,20 @@ module keymgr_ctrl import keymgr_pkg::*; (
     endcase // unique case (update_sel)
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cnt <= '0;
-    end else if (op_ack || random_ack) begin
-      cnt <= '0;
-    end else if (op_update) begin
-      cnt <= cnt + 1'b1;
-    end
-  end
+  logic cnt_err;
+  keymgr_cnt #(
+    .Width(CntWidth),
+    .CntStyle(DupCnt)
+  ) u_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(op_ack | random_ack),
+    .set_i('0),
+    .set_cnt_i('0),
+    .en_i(op_update),
+    .cnt_o(cnt),
+    .err_o(cnt_err)
+  );
 
   // TODO: Create a no select option, do not leave this as binary
   assign hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
@@ -555,17 +559,17 @@ module keymgr_ctrl import keymgr_pkg::*; (
     endcase // unique case (state_q)
   end
 
-  // if working over multiple CDIs, a fault of any
+  // If working over multiple CDIs, a fault of any
   // is considered an overall fault
-  logic clr_err;
-
+  //
+  // faults are always permanently retained, and will be used
+  // to transition to control FSM back into DISABLED state
+  // if it is somehow glitched OUT of it.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       op_fault_err_q <= '0;
-    end else if (op_update || op_ack) begin
+    end else begin
       op_fault_err_q <= op_fault_err_d;
-    end else if (op_fault_err_q && clr_err) begin
-      op_fault_err_q <= '0;
     end
   end
 
@@ -583,14 +587,8 @@ module keymgr_ctrl import keymgr_pkg::*; (
     id_en_o = 1'b0;
     gen_en_o = 1'b0;
 
-    clr_err = 1'b0;
-
     unique case (op_state_q)
       StIdle: begin
-        // errors are only cleared once the main control FSM is confirmed to be
-        // be in disabled state.
-        clr_err = disabled;
-
         if (random_req) begin
           op_state_d = StRandomize;
         end else if (adv_req) begin
@@ -628,8 +626,8 @@ module keymgr_ctrl import keymgr_pkg::*; (
 
         // Invalidate keys under the following conditions
         if (op_ack || op_update) begin
-          op_update_sel = op_fault_err ? KeyUpdateWipe    :
-                          disabled  ? KeyUpdateInvalid : KeyUpdateKmac;
+          op_update_sel = disabled     ? KeyUpdateInvalid :
+                          op_fault_err ? KeyUpdateWipe    : KeyUpdateKmac;
         end
       end
 
@@ -650,8 +648,8 @@ module keymgr_ctrl import keymgr_pkg::*; (
         end
 
         if (op_ack) begin
-          op_update_sel = op_fault_err ? KeyUpdateWipe :
-                          disabled  ? KeyUpdateInvalid : KeyUpdateKmac;
+          op_update_sel = disabled     ? KeyUpdateInvalid :
+                          op_fault_err ? KeyUpdateWipe    : KeyUpdateKmac;
         end
       end
 
@@ -677,6 +675,7 @@ module keymgr_ctrl import keymgr_pkg::*; (
   assign fault_o[FaultRegFileIntg] = regfile_intg_err_i;
   assign fault_o[FaultShadow]      = shadowed_err_i;
   assign fault_o[FaultCtrlFsm]     = state_intg_err_o;
+  assign fault_o[FaultCtrlCnt]     = cnt_err;
 
   always_comb begin
     status_o = OpIdle;
