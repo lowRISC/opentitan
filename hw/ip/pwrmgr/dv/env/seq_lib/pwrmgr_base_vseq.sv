@@ -46,9 +46,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
   constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
-  constraint cycles_before_core_clk_en_c {cycles_before_core_clk_en inside {[2 : 6]};}
-  constraint cycles_before_io_clk_en_c {cycles_before_io_clk_en inside {[2 : 6]};}
-  constraint cycles_before_usb_clk_en_c {cycles_before_usb_clk_en inside {[2 : 6]};}
+  constraint cycles_before_core_clk_en_c {cycles_before_core_clk_en inside {[0 : 6]};}
+  constraint cycles_before_io_clk_en_c {cycles_before_io_clk_en inside {[0 : 6]};}
+  constraint cycles_before_usb_clk_en_c {cycles_before_usb_clk_en inside {[0 : 6]};}
   constraint cycles_before_main_pd_n_c {cycles_before_main_pd_n inside {[2 : 6]};}
 
   bit do_pwrmgr_init = 1'b1;
