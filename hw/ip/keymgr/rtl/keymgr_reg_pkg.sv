@@ -214,6 +214,10 @@ package keymgr_reg_pkg;
       logic        d;
       logic        de;
     } ctrl_fsm_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_cnt;
   } keymgr_hw2reg_fault_status_reg_t;
 
   // Register -> HW type
@@ -238,16 +242,16 @@ package keymgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_hw2reg_intr_state_reg_t intr_state; // [562:561]
-    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [560:560]
-    keymgr_hw2reg_control_reg_t control; // [559:558]
-    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [557:557]
-    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [556:293]
-    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [292:29]
-    keymgr_hw2reg_working_state_reg_t working_state; // [28:25]
-    keymgr_hw2reg_op_status_reg_t op_status; // [24:22]
-    keymgr_hw2reg_err_code_reg_t err_code; // [21:12]
-    keymgr_hw2reg_fault_status_reg_t fault_status; // [11:0]
+    keymgr_hw2reg_intr_state_reg_t intr_state; // [564:563]
+    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [562:562]
+    keymgr_hw2reg_control_reg_t control; // [561:560]
+    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [559:559]
+    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [558:295]
+    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [294:31]
+    keymgr_hw2reg_working_state_reg_t working_state; // [30:27]
+    keymgr_hw2reg_op_status_reg_t op_status; // [26:24]
+    keymgr_hw2reg_err_code_reg_t err_code; // [23:14]
+    keymgr_hw2reg_fault_status_reg_t fault_status; // [13:0]
   } keymgr_hw2reg_t;
 
   // Register offsets

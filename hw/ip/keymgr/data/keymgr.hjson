@@ -396,7 +396,8 @@
           resval: "0"
           desc: '''
             Depending on the value programmed, a different side load key slot is cleared.
-            If the value programmed is not one of the enumerated values below, ALL side load key slots are continuously cleard.
+            If the value programmed is not one of the enumerated values below, ALL side
+            load key slots are continuously cleared.
           ''',
           enum: [
             { value: "0",
@@ -929,6 +930,11 @@
           name: "CTRL_FSM_INTG",
           resval: "0x0"
           desc: "Control FSM integrity error.",
+        },
+        { bits: "6",
+          name: "CTRL_FSM_CNT",
+          resval: "0x0"
+          desc: "Control FSM counter integrity error.",
         },
       ]
     },
