@@ -136,6 +136,7 @@ module otbn_controller
   logic stall;
   logic ispr_stall;
   logic mem_stall;
+  logic jump_or_branch;
   logic branch_taken;
   logic insn_executing;
   logic [ImemAddrWidth-1:0] branch_target;
@@ -223,6 +224,9 @@ module otbn_controller
   // error handling logic.
   assign done_complete = (insn_valid_i && insn_dec_shared_i.ecall_insn);
   assign done_o = done_complete | err;
+
+  assign jump_or_branch = (insn_valid_i &
+                           (insn_dec_shared_i.branch_insn | insn_dec_shared_i.jump_insn));
 
   // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
   // instruction (which is always taken)
@@ -384,7 +388,7 @@ module otbn_controller
     .loop_jump_addr_o    (loop_jump_addr),
     .loop_err_o          (loop_err),
 
-    .branch_taken_i      (branch_taken),
+    .jump_or_branch_i    (jump_or_branch),
     .otbn_stall_i        (stall)
   );
 
