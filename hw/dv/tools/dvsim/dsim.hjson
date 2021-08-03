@@ -20,6 +20,9 @@
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                "+incdir+{build_dir}",
+               // TODO Remove buggy optimization when dsim fixes bug
+               // https://gitlab.metrics.ca/google/google/-/issues/242.
+               "-noopt-task-func",
                // Suppress following DSim errors and warnings:
                //   EnumMustBePositive - UVM 1.2 violates this
                "-suppress EnumMustBePositive"]
