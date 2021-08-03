@@ -134,9 +134,10 @@ module keymgr_reg_top (
   logic sideload_clear_we;
   logic [2:0] sideload_clear_qs;
   logic [2:0] sideload_clear_wd;
-  logic reseed_interval_we;
-  logic [15:0] reseed_interval_qs;
-  logic [15:0] reseed_interval_wd;
+  logic reseed_interval_shadowed_re;
+  logic reseed_interval_shadowed_we;
+  logic [15:0] reseed_interval_shadowed_qs;
+  logic [15:0] reseed_interval_shadowed_wd;
   logic sw_binding_regwen_re;
   logic sw_binding_regwen_we;
   logic sw_binding_regwen_qs;
@@ -219,21 +220,24 @@ module keymgr_reg_top (
   logic max_creator_key_ver_regwen_we;
   logic max_creator_key_ver_regwen_qs;
   logic max_creator_key_ver_regwen_wd;
-  logic max_creator_key_ver_we;
-  logic [31:0] max_creator_key_ver_qs;
-  logic [31:0] max_creator_key_ver_wd;
+  logic max_creator_key_ver_shadowed_re;
+  logic max_creator_key_ver_shadowed_we;
+  logic [31:0] max_creator_key_ver_shadowed_qs;
+  logic [31:0] max_creator_key_ver_shadowed_wd;
   logic max_owner_int_key_ver_regwen_we;
   logic max_owner_int_key_ver_regwen_qs;
   logic max_owner_int_key_ver_regwen_wd;
-  logic max_owner_int_key_ver_we;
-  logic [31:0] max_owner_int_key_ver_qs;
-  logic [31:0] max_owner_int_key_ver_wd;
+  logic max_owner_int_key_ver_shadowed_re;
+  logic max_owner_int_key_ver_shadowed_we;
+  logic [31:0] max_owner_int_key_ver_shadowed_qs;
+  logic [31:0] max_owner_int_key_ver_shadowed_wd;
   logic max_owner_key_ver_regwen_we;
   logic max_owner_key_ver_regwen_qs;
   logic max_owner_key_ver_regwen_wd;
-  logic max_owner_key_ver_we;
-  logic [31:0] max_owner_key_ver_qs;
-  logic [31:0] max_owner_key_ver_wd;
+  logic max_owner_key_ver_shadowed_re;
+  logic max_owner_key_ver_shadowed_we;
+  logic [31:0] max_owner_key_ver_shadowed_qs;
+  logic [31:0] max_owner_key_ver_shadowed_wd;
   logic sw_share0_output_0_re;
   logic [31:0] sw_share0_output_0_qs;
   logic [31:0] sw_share0_output_0_wd;
@@ -295,10 +299,13 @@ module keymgr_reg_top (
   logic err_code_invalid_kmac_input_wd;
   logic err_code_invalid_kmac_data_qs;
   logic err_code_invalid_kmac_data_wd;
+  logic err_code_invalid_shadow_update_qs;
+  logic err_code_invalid_shadow_update_wd;
   logic fault_status_cmd_qs;
   logic fault_status_kmac_fsm_qs;
   logic fault_status_kmac_op_qs;
   logic fault_status_regfile_intg_qs;
+  logic fault_status_shadow_qs;
   logic fault_status_ctrl_fsm_intg_qs;
 
   // Register instances
@@ -553,19 +560,20 @@ module keymgr_reg_top (
   );
 
 
-  // R[reseed_interval]: V(False)
+  // R[reseed_interval_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h100)
-  ) u_reseed_interval (
+  ) u_reseed_interval_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reseed_interval_we),
-    .wd     (reseed_interval_wd),
+    .re     (reseed_interval_shadowed_re),
+    .we     (reseed_interval_shadowed_we),
+    .wd     (reseed_interval_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -573,10 +581,14 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reseed_interval.q),
+    .q      (reg2hw.reseed_interval_shadowed.q),
 
     // to register interface (read)
-    .qs     (reseed_interval_qs)
+    .qs     (reseed_interval_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.reseed_interval_shadowed.err_update),
+    .err_storage (reg2hw.reseed_interval_shadowed.err_storage)
   );
 
 
@@ -1306,19 +1318,20 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_creator_key_ver]: V(False)
+  // R[max_creator_key_ver_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
-  ) u_max_creator_key_ver (
+  ) u_max_creator_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (max_creator_key_ver_we & max_creator_key_ver_regwen_qs),
-    .wd     (max_creator_key_ver_wd),
+    .re     (max_creator_key_ver_shadowed_re),
+    .we     (max_creator_key_ver_shadowed_we & max_creator_key_ver_regwen_qs),
+    .wd     (max_creator_key_ver_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1326,10 +1339,14 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.max_creator_key_ver.q),
+    .q      (reg2hw.max_creator_key_ver_shadowed.q),
 
     // to register interface (read)
-    .qs     (max_creator_key_ver_qs)
+    .qs     (max_creator_key_ver_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.max_creator_key_ver_shadowed.err_update),
+    .err_storage (reg2hw.max_creator_key_ver_shadowed.err_storage)
   );
 
 
@@ -1360,19 +1377,20 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_owner_int_key_ver]: V(False)
+  // R[max_owner_int_key_ver_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h1)
-  ) u_max_owner_int_key_ver (
+  ) u_max_owner_int_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (max_owner_int_key_ver_we & max_owner_int_key_ver_regwen_qs),
-    .wd     (max_owner_int_key_ver_wd),
+    .re     (max_owner_int_key_ver_shadowed_re),
+    .we     (max_owner_int_key_ver_shadowed_we & max_owner_int_key_ver_regwen_qs),
+    .wd     (max_owner_int_key_ver_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1380,10 +1398,14 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.max_owner_int_key_ver.q),
+    .q      (reg2hw.max_owner_int_key_ver_shadowed.q),
 
     // to register interface (read)
-    .qs     (max_owner_int_key_ver_qs)
+    .qs     (max_owner_int_key_ver_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.max_owner_int_key_ver_shadowed.err_update),
+    .err_storage (reg2hw.max_owner_int_key_ver_shadowed.err_storage)
   );
 
 
@@ -1414,19 +1436,20 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_owner_key_ver]: V(False)
+  // R[max_owner_key_ver_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
-  ) u_max_owner_key_ver (
+  ) u_max_owner_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (max_owner_key_ver_we & max_owner_key_ver_regwen_qs),
-    .wd     (max_owner_key_ver_wd),
+    .re     (max_owner_key_ver_shadowed_re),
+    .we     (max_owner_key_ver_shadowed_we & max_owner_key_ver_regwen_qs),
+    .wd     (max_owner_key_ver_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1434,10 +1457,14 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.max_owner_key_ver.q),
+    .q      (reg2hw.max_owner_key_ver_shadowed.q),
 
     // to register interface (read)
-    .qs     (max_owner_key_ver_qs)
+    .qs     (max_owner_key_ver_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.max_owner_key_ver_shadowed.err_update),
+    .err_storage (reg2hw.max_owner_key_ver_shadowed.err_storage)
   );
 
 
@@ -2037,6 +2064,32 @@ module keymgr_reg_top (
   );
 
 
+  //   F[invalid_shadow_update]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_invalid_shadow_update (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_invalid_shadow_update_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.invalid_shadow_update.de),
+    .d      (hw2reg.err_code.invalid_shadow_update.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.err_code.invalid_shadow_update.q),
+
+    // to register interface (read)
+    .qs     (err_code_invalid_shadow_update_qs)
+  );
+
+
   // R[fault_status]: V(False)
 
   //   F[cmd]: 0:0
@@ -2143,7 +2196,33 @@ module keymgr_reg_top (
   );
 
 
-  //   F[ctrl_fsm_intg]: 4:4
+  //   F[shadow]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_shadow (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.shadow.de),
+    .d      (hw2reg.fault_status.shadow.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fault_status_shadow_qs)
+  );
+
+
+  //   F[ctrl_fsm_intg]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2181,7 +2260,7 @@ module keymgr_reg_top (
     addr_hit[ 4] = (reg_addr == KEYMGR_CFG_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == KEYMGR_CONTROL_OFFSET);
     addr_hit[ 6] = (reg_addr == KEYMGR_SIDELOAD_CLEAR_OFFSET);
-    addr_hit[ 7] = (reg_addr == KEYMGR_RESEED_INTERVAL_OFFSET);
+    addr_hit[ 7] = (reg_addr == KEYMGR_RESEED_INTERVAL_SHADOWED_OFFSET);
     addr_hit[ 8] = (reg_addr == KEYMGR_SW_BINDING_REGWEN_OFFSET);
     addr_hit[ 9] = (reg_addr == KEYMGR_SEALING_SW_BINDING_0_OFFSET);
     addr_hit[10] = (reg_addr == KEYMGR_SEALING_SW_BINDING_1_OFFSET);
@@ -2209,11 +2288,11 @@ module keymgr_reg_top (
     addr_hit[32] = (reg_addr == KEYMGR_SALT_7_OFFSET);
     addr_hit[33] = (reg_addr == KEYMGR_KEY_VERSION_OFFSET);
     addr_hit[34] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_OFFSET);
-    addr_hit[35] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_OFFSET);
+    addr_hit[35] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_OFFSET);
     addr_hit[36] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_OFFSET);
-    addr_hit[37] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_OFFSET);
+    addr_hit[37] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_OFFSET);
     addr_hit[38] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_REGWEN_OFFSET);
-    addr_hit[39] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_OFFSET);
+    addr_hit[39] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_OFFSET);
     addr_hit[40] = (reg_addr == KEYMGR_SW_SHARE0_OUTPUT_0_OFFSET);
     addr_hit[41] = (reg_addr == KEYMGR_SW_SHARE0_OUTPUT_1_OFFSET);
     addr_hit[42] = (reg_addr == KEYMGR_SW_SHARE0_OUTPUT_2_OFFSET);
@@ -2329,9 +2408,10 @@ module keymgr_reg_top (
   assign sideload_clear_we = addr_hit[6] & reg_we & !reg_error;
 
   assign sideload_clear_wd = reg_wdata[2:0];
-  assign reseed_interval_we = addr_hit[7] & reg_we & !reg_error;
+  assign reseed_interval_shadowed_re = addr_hit[7] & reg_re & !reg_error;
+  assign reseed_interval_shadowed_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign reseed_interval_wd = reg_wdata[15:0];
+  assign reseed_interval_shadowed_wd = reg_wdata[15:0];
   assign sw_binding_regwen_re = addr_hit[8] & reg_re & !reg_error;
   assign sw_binding_regwen_we = addr_hit[8] & reg_we & !reg_error;
 
@@ -2414,21 +2494,24 @@ module keymgr_reg_top (
   assign max_creator_key_ver_regwen_we = addr_hit[34] & reg_we & !reg_error;
 
   assign max_creator_key_ver_regwen_wd = reg_wdata[0];
-  assign max_creator_key_ver_we = addr_hit[35] & reg_we & !reg_error;
+  assign max_creator_key_ver_shadowed_re = addr_hit[35] & reg_re & !reg_error;
+  assign max_creator_key_ver_shadowed_we = addr_hit[35] & reg_we & !reg_error;
 
-  assign max_creator_key_ver_wd = reg_wdata[31:0];
+  assign max_creator_key_ver_shadowed_wd = reg_wdata[31:0];
   assign max_owner_int_key_ver_regwen_we = addr_hit[36] & reg_we & !reg_error;
 
   assign max_owner_int_key_ver_regwen_wd = reg_wdata[0];
-  assign max_owner_int_key_ver_we = addr_hit[37] & reg_we & !reg_error;
+  assign max_owner_int_key_ver_shadowed_re = addr_hit[37] & reg_re & !reg_error;
+  assign max_owner_int_key_ver_shadowed_we = addr_hit[37] & reg_we & !reg_error;
 
-  assign max_owner_int_key_ver_wd = reg_wdata[31:0];
+  assign max_owner_int_key_ver_shadowed_wd = reg_wdata[31:0];
   assign max_owner_key_ver_regwen_we = addr_hit[38] & reg_we & !reg_error;
 
   assign max_owner_key_ver_regwen_wd = reg_wdata[0];
-  assign max_owner_key_ver_we = addr_hit[39] & reg_we & !reg_error;
+  assign max_owner_key_ver_shadowed_re = addr_hit[39] & reg_re & !reg_error;
+  assign max_owner_key_ver_shadowed_we = addr_hit[39] & reg_we & !reg_error;
 
-  assign max_owner_key_ver_wd = reg_wdata[31:0];
+  assign max_owner_key_ver_shadowed_wd = reg_wdata[31:0];
   assign sw_share0_output_0_re = addr_hit[40] & reg_re & !reg_error;
 
   assign sw_share0_output_0_wd = '1;
@@ -2490,6 +2573,8 @@ module keymgr_reg_top (
 
   assign err_code_invalid_kmac_data_wd = reg_wdata[3];
 
+  assign err_code_invalid_shadow_update_wd = reg_wdata[4];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -2527,7 +2612,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[15:0] = reseed_interval_qs;
+        reg_rdata_next[15:0] = reseed_interval_shadowed_qs;
       end
 
       addr_hit[8]: begin
@@ -2639,7 +2724,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[35]: begin
-        reg_rdata_next[31:0] = max_creator_key_ver_qs;
+        reg_rdata_next[31:0] = max_creator_key_ver_shadowed_qs;
       end
 
       addr_hit[36]: begin
@@ -2647,7 +2732,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[31:0] = max_owner_int_key_ver_qs;
+        reg_rdata_next[31:0] = max_owner_int_key_ver_shadowed_qs;
       end
 
       addr_hit[38]: begin
@@ -2655,7 +2740,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[31:0] = max_owner_key_ver_qs;
+        reg_rdata_next[31:0] = max_owner_key_ver_shadowed_qs;
       end
 
       addr_hit[40]: begin
@@ -2735,6 +2820,7 @@ module keymgr_reg_top (
         reg_rdata_next[1] = err_code_invalid_states_qs;
         reg_rdata_next[2] = err_code_invalid_kmac_input_qs;
         reg_rdata_next[3] = err_code_invalid_kmac_data_qs;
+        reg_rdata_next[4] = err_code_invalid_shadow_update_qs;
       end
 
       addr_hit[59]: begin
@@ -2742,7 +2828,8 @@ module keymgr_reg_top (
         reg_rdata_next[1] = fault_status_kmac_fsm_qs;
         reg_rdata_next[2] = fault_status_kmac_op_qs;
         reg_rdata_next[3] = fault_status_regfile_intg_qs;
-        reg_rdata_next[4] = fault_status_ctrl_fsm_intg_qs;
+        reg_rdata_next[4] = fault_status_shadow_qs;
+        reg_rdata_next[5] = fault_status_ctrl_fsm_intg_qs;
       end
 
       default: begin

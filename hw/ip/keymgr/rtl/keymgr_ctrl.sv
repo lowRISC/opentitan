@@ -16,6 +16,7 @@ module keymgr_ctrl import keymgr_pkg::*; (
 
   // faults that can occur outside of operations
   input regfile_intg_err_i,
+  input shadowed_err_i,
   output logic state_intg_err_o,
 
   // Software interface
@@ -674,6 +675,7 @@ module keymgr_ctrl import keymgr_pkg::*; (
   assign fault_o[FaultKmacFsm]     = kmac_fsm_err_i;
   assign fault_o[FaultKmacOp]      = kmac_op_err_i;
   assign fault_o[FaultRegFileIntg] = regfile_intg_err_i;
+  assign fault_o[FaultShadow]      = shadowed_err_i;
   assign fault_o[FaultCtrlFsm]     = state_intg_err_o;
 
   always_comb begin

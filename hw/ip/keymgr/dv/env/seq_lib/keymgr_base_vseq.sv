@@ -65,11 +65,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.reseed_interval.val,
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.reseed_interval_shadowed.val,
                                    value dist {[50:100]   :/ 1,
                                                [101:1000] :/ 1,
                                                [1001:$]   :/ 1};)
-    csr_update(.csr(ral.reseed_interval));
+    csr_update(.csr(ral.reseed_interval_shadowed));
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output
@@ -100,9 +100,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] max_key_ver_val;
 
     key_version_val           = `gmv(ral.key_version);
-    max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver);
-    max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver);
-    max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver);
+    max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver_shadowed);
+    max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver_shadowed);
+    max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver_shadowed);
     max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
         ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
         ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
@@ -135,13 +135,13 @@ class keymgr_base_vseq extends cip_base_vseq #(
       // only when it's in 3 working state and key_verion less than max version
       case (current_state)
         keymgr_pkg::StCreatorRootKey: begin
-          is_good_op = key_verion <= ral.max_creator_key_ver.get_mirrored_value();
+          is_good_op = key_verion <= ral.max_creator_key_ver_shadowed.get_mirrored_value();
         end
         keymgr_pkg::StOwnerIntKey: begin
-          is_good_op = key_verion <= ral.max_owner_int_key_ver.get_mirrored_value();
+          is_good_op = key_verion <= ral.max_owner_int_key_ver_shadowed.get_mirrored_value();
         end
         keymgr_pkg::StOwnerKey: begin
-          is_good_op = key_verion <= ral.max_owner_key_ver.get_mirrored_value();
+          is_good_op = key_verion <= ral.max_owner_key_ver_shadowed.get_mirrored_value();
         end
         default: is_good_op = 0;
       endcase

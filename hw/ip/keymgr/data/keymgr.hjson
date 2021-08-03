@@ -435,8 +435,11 @@
       ]
     },
 
-    { name: "RESEED_INTERVAL",
+    { name: "RESEED_INTERVAL_SHADOWED",
       desc: "reseed interval for key manager entropy reseed",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -599,10 +602,13 @@
       ]
     },
 
-    { name: "MAX_CREATOR_KEY_VER",
+    { name: "MAX_CREATOR_KEY_VER_SHADOWED",
       desc: "Max creator key version",
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
       regwen: "MAX_CREATOR_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
@@ -633,10 +639,13 @@
       ]
     },
 
-    { name: "MAX_OWNER_INT_KEY_VER",
+    { name: "MAX_OWNER_INT_KEY_VER_SHADOWED",
       desc: "Max owner intermediate key version",
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
       regwen: "MAX_OWNER_INT_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
@@ -667,10 +676,13 @@
       ]
     },
 
-    { name: "MAX_OWNER_KEY_VER",
+    { name: "MAX_OWNER_KEY_VER_SHADOWED",
       desc: "Max owner key version",
       swaccess: "rw",
       hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
       regwen: "MAX_OWNER_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
@@ -873,6 +885,11 @@
           resval: "0x0"
           desc: "Invalid data returned from kmac interface.",
         },
+        { bits: "4",
+          name: "INVALID_SHADOW_UPDATE",
+          resval: "0x0"
+          desc: "An error observed during shadow register updates.",
+        },
       ]
     },
 
@@ -904,6 +921,11 @@
           desc: "Register file integrity error.",
         },
         { bits: "4",
+          name: "SHADOW",
+          resval: "0x0"
+          desc: "Shadow copy storage error.",
+        },
+        { bits: "5",
           name: "CTRL_FSM_INTG",
           resval: "0x0"
           desc: "Control FSM integrity error.",

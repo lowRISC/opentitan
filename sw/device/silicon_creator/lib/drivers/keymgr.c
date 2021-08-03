@@ -61,9 +61,10 @@ static rom_error_t check_expected_state(uint32_t expected_state) {
 
 rom_error_t keymgr_init(uint16_t entropy_reseed_interval) {
   RETURN_IF_ERROR(check_expected_state(kKeymgrStateReset));
-  uint32_t reg = bitfield_field32_write(0, KEYMGR_RESEED_INTERVAL_VAL_FIELD,
-                                        entropy_reseed_interval);
-  abs_mmio_write32(kBase + KEYMGR_RESEED_INTERVAL_REG_OFFSET, reg);
+  uint32_t reg = bitfield_field32_write(
+      0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
+  abs_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                            reg);
   return kErrorOk;
 }
 
@@ -80,7 +81,8 @@ void keymgr_set_next_stage_inputs(const keymgr_binding_value_t *binding_value,
   abs_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
   // Write and lock (rw0c) the max key version.
-  abs_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET, max_key_ver);
+  abs_mmio_write32_shadowed(
+      kBase + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   abs_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 

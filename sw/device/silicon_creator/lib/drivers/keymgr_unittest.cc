@@ -47,7 +47,9 @@ TEST_F(KeymgrTest, Initialize) {
                     KEYMGR_WORKING_STATE_STATE_VALUE_RESET,
                     /*err_code=*/0u);
 
-  EXPECT_ABS_WRITE32(base_ + KEYMGR_RESEED_INTERVAL_REG_OFFSET, 0u);
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET, 0u);
+
   EXPECT_EQ(keymgr_init(0u), kErrorOk);
 }
 
@@ -70,9 +72,10 @@ TEST_F(KeymgrTest, SetNextStageInputs) {
                      cfg_.binding_value.data[7]);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
-  EXPECT_ABS_WRITE32(base_ + KEYMGR_MAX_CREATOR_KEY_VER_REG_OFFSET,
-                     cfg_.max_key_ver);
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, cfg_.max_key_ver);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
+
   keymgr_set_next_stage_inputs(&cfg_.binding_value, cfg_.max_key_ver);
 }
 
