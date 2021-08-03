@@ -124,7 +124,7 @@ def get_cov_results(logpath, dut_name):
                     cov_results[key] = item[0] + " %"
                 else:
                     cov_results[key] = "N/A"
-                    log.error("Parse %s coverage error. Expect one matching value, get %s",
+                    log.warning("Parse %s coverage error. Expect one matching value, get %s",
                               key, item)
             return cov_results
 
