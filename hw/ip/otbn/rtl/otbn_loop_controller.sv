@@ -25,7 +25,7 @@ module otbn_loop_controller
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
   output                     loop_err_o,
 
-  input                      branch_taken_i,
+  input                      jump_or_branch_i,
   input                      otbn_stall_i
 );
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
@@ -118,7 +118,7 @@ module otbn_loop_controller
   assign loop_jump_addr_o = current_loop_q.loop_start;
 
   assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_req_i;
-  assign loop_branch_err         = at_current_loop_end_insn & branch_taken_i;
+  assign loop_branch_err         = at_current_loop_end_insn & jump_or_branch_i;
   assign loop_stack_overflow_err = loop_stack_push_req & loop_stack_full;
   assign loop_at_end_err         = at_current_loop_end_insn & loop_start_req_i;
 
