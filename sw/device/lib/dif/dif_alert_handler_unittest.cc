@@ -58,13 +58,9 @@ TEST_P(InitTest, NullArgs) {
   EXPECT_EQ(dif_alert_handler_init(params, nullptr), kDifAlertHandlerBadArg);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    InitTestSignalCounts, InitTest,
-    testing::Values(1, 2, 12, 16
-                    // TODO: Enable these parameters once we can support them.
-                    // See: #3826
-                    // 24, 32,
-                    ));
+INSTANTIATE_TEST_SUITE_P(InitTestSignalCounts, InitTest,
+                         testing::Values(1, 2, 12, 16, 24, 32, 64,
+                                         ALERT_HANDLER_PARAM_N_ALERTS));
 
 class ConfigTest : public AlertTest {
   // We provide our own dev_ member variable in this fixture, in order to
@@ -748,12 +744,12 @@ class CauseTest : public AlertTest {};
 TEST_F(CauseTest, IsCause) {
   bool flag;
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET, {{0, true}, {5, true}});
+  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_5_REG_OFFSET, {{0, true}});
   EXPECT_EQ(dif_alert_handler_alert_is_cause(&handler_, 5, &flag),
             kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET, {{0, true}, {5, true}});
+  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_6_REG_OFFSET, {{0, false}});
   EXPECT_EQ(dif_alert_handler_alert_is_cause(&handler_, 6, &flag),
             kDifAlertHandlerOk);
   EXPECT_FALSE(flag);

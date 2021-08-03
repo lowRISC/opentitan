@@ -23,9 +23,8 @@ dif_alert_handler_result_t dif_alert_handler_init(
     return kDifAlertHandlerBadArg;
   }
 
-  // TODO: We currently don't support more than 16 alerts correctly.
-  // See: #3826
-  if (params.alert_count > 16) {
+  // Check we do not exceed maximum number of alerts supported by the hardware.
+  if (params.alert_count > ALERT_HANDLER_PARAM_N_ALERTS) {
     return kDifAlertHandlerBadArg;
   }
 
@@ -50,21 +49,28 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
     return false;
   }
 
-  uint32_t enable_reg = mmio_region_read32(
-      handler->params.base_addr, ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET);
-  uint32_t alerts_reg =
-      mmio_region_read32(handler->params.base_addr,
-                         ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET);
-
   for (int i = 0; i < class->alerts_len; ++i) {
     if (class->alerts[i] >= handler->params.alert_count) {
       return false;
     }
 
-    // Note: the value in alerts[i] corresponds directly to the bit index within
-    // the register. (I.e., alert N has enable bit N).
-    enable_reg = bitfield_bit32_write(enable_reg, class->alerts[i], true);
+    // Enable the alert.
+    // NOTE: the value in alerts[i] corresponds directly to the multireg index.
+    // (I.e., alert N has enable multireg N).
+    ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
+                                  class->alerts[i] * sizeof(uint32_t);
+    uint32_t enable_reg =
+        mmio_region_read32(handler->params.base_addr, enable_reg_offset);
+    // TODO: we would like to use the generated macro for the ENABLE BIT OFFSET
+    // below for the alert with the given index/ID, not just assume they are
+    // the same across all regs in the multireg. However, making this assumption
+    // for now.
+    enable_reg = bitfield_bit32_write(
+        enable_reg, ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true);
+    mmio_region_write32_shadowed(handler->params.base_addr, enable_reg_offset,
+                                 enable_reg);
 
+    // Determine alert classification.
     uint32_t classification;
     switch (class->alert_class) {
       case kDifAlertHandlerClassA:
@@ -87,27 +93,26 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
         return false;
     }
 
-    // TODO: Currently, we assume all fields are of equal width.
-    // See: #3826
-    uint32_t field_width = bitfield_popcount32(
-        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_MASK);
-    uint32_t field_offset = field_width * class->alerts[i];
-
-    alerts_reg = bitfield_field32_write(
-        alerts_reg,
-        (bitfield_field32_t){
-            .mask = ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_MASK,
-            .index = field_offset,
-        },
+    // Classify the alert.
+    // NOTE: the value in alerts[i] corresponds directly to the multireg index.
+    // (I.e., alert N has enable multireg N).
+    ptrdiff_t class_reg_offset =
+        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
+        class->alerts[i] * sizeof(uint32_t);
+    uint32_t class_reg =
+        mmio_region_read32(handler->params.base_addr, class_reg_offset);
+    // TODO: we would like to use the generated macro for the BITFIELD
+    // below for the alert with the given index/ID, not just assume they are
+    // the same across all regs in the multireg.
+    class_reg = bitfield_field32_write(
+        class_reg, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_FIELD,
         classification);
+    mmio_region_write32_shadowed(handler->params.base_addr, class_reg_offset,
+                                 class_reg);
+
+    // TODO: support locking the alert class configuration.
   }
 
-  mmio_region_write32_shadowed(handler->params.base_addr,
-                               ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET,
-                               enable_reg);
-  mmio_region_write32_shadowed(handler->params.base_addr,
-                               ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
-                               alerts_reg);
   return true;
 }
 
@@ -491,6 +496,11 @@ dif_alert_handler_result_t dif_alert_handler_is_locked(
   if (handler == NULL || is_locked == NULL) {
     return kDifAlertHandlerBadArg;
   }
+  // TODO(timothytrippel): more "locking" functionality has been added that
+  // can lock the ping-timer-en and ping-timer-cyc with the
+  // ping-timer-regwen, and likewise with the alert-en-x and alert-class-x
+  // registers. We need to check for this here, otherwise the alerts cannot be
+  // enabled.
 
   uint32_t reg =
       mmio_region_read32(handler->params.base_addr,
@@ -665,9 +675,12 @@ dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
     return kDifAlertHandlerBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET);
-  *is_cause = bitfield_bit32_read(reg, alert);
+  ptrdiff_t cause_reg_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  uint32_t cause_reg =
+      mmio_region_read32(handler->params.base_addr, cause_reg_offset);
+  *is_cause =
+      bitfield_bit32_read(cause_reg, ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT);
 
   return kDifAlertHandlerOk;
 }
