@@ -457,29 +457,37 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
       ${reg_inst}.build(csr_excl);
       default_map.add_reg(.rg(${reg_inst}),
                           .offset(${reg_offset}));
-% if reg.shadowed and reg.hwext:
+% if reg.shadowed:
 <%
-    shadowed_reg_path = ''
-    for tag in reg.tags:
-      parts = tag.split(':')
-      if parts[0] == 'shadowed_reg_path':
-        shadowed_reg_path = parts[1]
+    if reg.hwext:
+      shadowed_reg_path = ''
+      for tag in reg.tags:
+        parts = tag.split(':')
+        if parts[0] == 'shadowed_reg_path':
+          shadowed_reg_path = parts[1]
 
-    if not shadowed_reg_path:
-      print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
-      assert 0
+      if not shadowed_reg_path:
+        print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
+        assert 0
 
-    bit_idx = reg.fields[-1].bits.msb + 1
-
+      bit_idx = reg.fields[-1].bits.msb + 1
 %>\
+      % if reg.update_err_alert:
       ${reg_inst}.add_update_err_alert("${reg.update_err_alert}");
+      % endif
+
+      % if reg.storage_err_alert:
       ${reg_inst}.add_storage_err_alert("${reg.storage_err_alert}");
+      % endif
+
+  % if reg.hwext:
       ${reg_inst}.add_hdl_path_slice(
           "${shadowed_reg_path}.committed_reg.q",
           0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
       ${reg_inst}.add_hdl_path_slice(
           "${shadowed_reg_path}.shadow_reg.q",
           0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
+  % endif
 % endif
 % for field in reg.fields:
 <%
@@ -504,7 +512,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
           "${reg_block_path}.u_${reg_field_name}.q${"s" if reg.hwext else ""}",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 %   endif
-%   if shadowed and not hwext:
+%   if reg.shadowed and not reg.hwext:
       ${reg_inst}.add_hdl_path_slice(
           "${reg_block_path}.u_${reg_field_name}.committed_reg.q",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
