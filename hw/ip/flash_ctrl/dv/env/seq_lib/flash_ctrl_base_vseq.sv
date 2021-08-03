@@ -74,6 +74,29 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.default_region), .value(data));
   endtask
 
+  // Configure the memory protection of some selected page in one of the information partitions in
+  //  one of the banks.
+  virtual task flash_ctrl_mp_info_page_cfg(uint bank, uint info_part, uint page,
+                                           flash_bank_mp_info_page_cfg_t page_cfg);
+    uvm_reg_data_t data;
+    uvm_reg csr;
+    string csr_name = $sformatf("bank%0d_info%0d_page_cfg", bank, info_part);
+    // If the selected information partition has only 1 page, no suffix needed to the register
+    //  name, if there is more than one page, the page index should be added to the register name.
+    if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
+      csr_name = $sformatf({csr_name, "_%0d"}, page);
+    end
+    csr = ral.get_reg_by_name(csr_name);
+    data =
+        get_csr_val_with_updated_field(csr.get_field_by_name("en_0"), data, page_cfg.en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en_0"), data, page_cfg.read_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en_0"), data,
+                                       page_cfg.program_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en_0"), data,
+                                       page_cfg.erase_en);
+    csr_wr(.ptr(csr), .value(data));
+  endtask
+
   // Configure bank erasability.
   virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en);
     csr_wr(.ptr(ral.mp_bank_cfg), .value(bank_erase_en));

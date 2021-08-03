@@ -30,6 +30,18 @@ package flash_ctrl_env_pkg;
   parameter uint FlashSizeBytes           = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
                                             flash_ctrl_pkg::DataWidth / 8;
 
+  // Number of bytes in each of the flash pages.
+  parameter uint BytesPerPage = FlashSizeBytes / FlashNumPages;
+
+  // Num of bytes in each of the flash banks for each of the flash partitions.
+  parameter uint BytesPerBank = FlashSizeBytes / flash_ctrl_pkg::NumBanks;
+
+  parameter uint InfoTypeBytes [flash_ctrl_pkg::InfoTypes] = '{
+    flash_ctrl_pkg::InfoTypeSize[0] * BytesPerPage,
+    flash_ctrl_pkg::InfoTypeSize[1] * BytesPerPage,
+    flash_ctrl_pkg::InfoTypeSize[2] * BytesPerPage
+  };
+
   parameter uint FlashNumBusWords         = FlashSizeBytes / top_pkg::TL_DBW;
   parameter uint FlashNumBusWordsPerBank  = FlashNumBusWords / flash_ctrl_pkg::NumBanks;
   parameter uint FlashNumBusWordsPerPage  = FlashNumBusWordsPerBank / flash_ctrl_pkg::PagesPerBank;
@@ -82,10 +94,16 @@ package flash_ctrl_env_pkg;
     bit           read_en;    // enable reads
     bit           program_en; // enable write
     bit           erase_en;   // enable erase
-    flash_part_e  partition;  // info or data
     uint          num_pages;  // 0:NumPages % start_page
     uint          start_page; // 0:NumPages-1
   } flash_mp_region_cfg_t;
+
+  typedef struct packed {
+    bit           en;         // enable this page
+    bit           read_en;    // enable reads
+    bit           program_en; // enable write
+    bit           erase_en;   // enable erase
+  } flash_bank_mp_info_page_cfg_t;
 
   typedef struct packed {
     flash_dv_part_e partition;  // data or one of the info partitions

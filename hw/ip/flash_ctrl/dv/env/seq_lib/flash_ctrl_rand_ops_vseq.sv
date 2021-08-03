@@ -20,6 +20,14 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_rand_ops_base_vseq;
     // Don't enable any memory protection.
     cfg.seq_cfg.num_en_mp_regions = 0;
 
+    // Enable access to all information partitions.
+    foreach (cfg.seq_cfg.mp_info_page_en_pc[i, j]) begin
+      cfg.seq_cfg.mp_info_page_en_pc[i][j] = 100;
+      cfg.seq_cfg.mp_info_page_read_en_pc[i][j] = 100;
+      cfg.seq_cfg.mp_info_page_program_en_pc[i][j] = 100;
+      cfg.seq_cfg.mp_info_page_erase_en_pc[i][j] = 100;
+    end
+
     // Enable default region read/program and erasability.
     cfg.seq_cfg.default_region_read_en_pc = 100;
     cfg.seq_cfg.default_region_program_en_pc = 100;

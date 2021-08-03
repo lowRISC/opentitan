@@ -19,11 +19,26 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   // A single randomized flash ctrl operation.
   rand flash_op_t flash_op;
 
+  rand uint bank;
+
+  // Constraint address to be in relevant range for the selected partition.
+  constraint addr_c {
+    solve bank before flash_op;
+    bank inside {[0:flash_ctrl_pkg::NumBanks-1]};
+    if (flash_op.partition == FlashPartData) {
+      flash_op.addr inside {[BytesPerBank*bank:BytesPerBank*(bank+1)-1]};
+    } else {
+      flash_op.addr inside
+       {[BytesPerBank*bank:(BytesPerBank*bank)+(InfoTypeBytes[flash_op.partition>>1])-1]};
+    }
+  }
+
   constraint flash_op_c {
     solve flash_op.partition before flash_op.op;
     solve flash_op.op before flash_op.erase_type;
     solve flash_op.op before flash_op.num_words;
-    solve flash_op.addr before flash_op.num_words ;
+    solve flash_op.addr before flash_op.num_words;
+    solve flash_op.partition before flash_op.addr;
 
     flash_op.addr inside {[0:FlashSizeBytes-1]};
 
@@ -69,7 +84,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
   }
 
-  // Flash ctrl op data - use for programing or reading the flash.
+  // Flash ctrl operation data queue - used for programing or reading the flash.
   rand data_q_t flash_op_data;
 
   constraint flash_op_data_c {
@@ -129,10 +144,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         }
       }
 
-      mp_regions[i].partition dist {
-        flash_ctrl_pkg::FlashPartData :/ cfg.seq_cfg.mp_region_data_partition_pc,
-        flash_ctrl_pkg::FlashPartInfo :/ (100 - cfg.seq_cfg.mp_region_data_partition_pc)
-      };
     }
   }
 
@@ -160,6 +171,42 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       1 :/ cfg.seq_cfg.default_region_erase_en_pc,
       0 :/ (100 - cfg.seq_cfg.default_region_erase_en_pc)
     };
+  }
+
+  // Information partitions memory protection rpages settings.
+  rand flash_bank_mp_info_page_cfg_t
+         mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+
+  constraint mp_info_pages_c {
+
+    foreach (mp_info_pages[i, j]) {
+
+      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+
+      foreach (mp_info_pages[i][j][k]) {
+        
+        mp_info_pages[i][j][k].en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_en_pc[i][j]
+        };
+
+        mp_info_pages[i][j][k].read_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_read_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_read_en_pc[i][j]
+        };
+
+        mp_info_pages[i][j][k].program_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_program_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_program_en_pc[i][j]
+        };
+
+        mp_info_pages[i][j][k].erase_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_erase_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_erase_en_pc[i][j]
+        };
+
+      }
+    }
   }
 
   // Bank erasability.
@@ -241,6 +288,10 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_default_region_cfg(.read_en   (default_region_read_en),
                                     .program_en(default_region_program_en),
                                     .erase_en  (default_region_erase_en));
+
+      foreach (mp_info_pages[i, j, k]) begin
+        flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
+      end
 
       flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
 
