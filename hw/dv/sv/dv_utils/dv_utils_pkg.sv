@@ -46,6 +46,7 @@ package dv_utils_pkg;
 
   // speed for the clock
   typedef enum int {
+    ClkFreq6Mhz   = 6,
     ClkFreq24Mhz  = 24,
     ClkFreq25Mhz  = 25,
     ClkFreq48Mhz  = 48,
