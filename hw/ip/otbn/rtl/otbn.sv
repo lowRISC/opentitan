@@ -96,6 +96,10 @@ module otbn
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
 
+  // TODO: Connect up sec_wipe signals
+  logic unused_sec_wipe;
+  assign unused_sec_wipe = ^{reg2hw.sec_wipe};
+
   // Bus device windows, as specified in otbn.hjson
   typedef enum logic {
     TlWinImem = 1'b0,
