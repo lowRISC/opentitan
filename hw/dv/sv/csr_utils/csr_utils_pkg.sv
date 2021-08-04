@@ -152,6 +152,8 @@ package csr_utils_pkg;
                                 csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
   endtask
 
+  // Use `csr_wr` to construct `csr_update` to avoid replicated codes to handle nonblocking,
+  // shadow writes etc
   task automatic csr_update(input  uvm_reg      csr,
                             input  uvm_check_e  check = default_csr_check,
                             input  uvm_path_e   path = UVM_DEFAULT_PATH,
@@ -159,53 +161,21 @@ package csr_utils_pkg;
                             input  uint         timeout_ns = default_timeout_ns,
                             input  uvm_reg_map  map = null,
                             input  bit          en_shadow_wr = 1);
-    if (blocking) begin
-      csr_update_sub(csr, check, path, timeout_ns, map, en_shadow_wr);
-    end else begin
-      fork
-        csr_update_sub(csr, check, path, timeout_ns, map, en_shadow_wr);
-      join_none
-      // Add #0 to ensure that this thread starts executing before any subsequent call
-      #0;
+    uvm_reg_field fields[$];
+    uvm_reg_data_t value;
+
+    // below is partial replication of the uvm_reg_field::update() logic in UVM1.2 source code
+    if (!csr.needs_update()) return;
+    csr.get_fields(fields);
+    // Concatenate the write-to-update values from each field
+    // Fields are stored in LSB or MSB order
+    value = 0;
+    foreach (fields[i]) begin
+      value |= fields[i].XupdateX() << fields[i].get_lsb_pos();
     end
-  endtask
 
-  // subroutine of csr_update, don't use it directly
-  task automatic csr_update_sub(input  uvm_reg      csr,
-                                input  uvm_check_e  check = default_csr_check,
-                                input  uvm_path_e   path = UVM_DEFAULT_PATH,
-                                input  uint         timeout_ns = default_timeout_ns,
-                                input  uvm_reg_map  map = null,
-                                input  bit          en_shadow_wr = 1);
-    fork
-      begin : isolation_fork
-        uvm_status_e  status;
-        string        msg_id = {csr_utils_pkg::msg_id, "::csr_update"};
-
-        fork
-          begin
-            increment_outstanding_access();
-            csr_pre_write_sub(csr, en_shadow_wr);
-            csr.update(.status(status), .path(path), .map(map), .prior(100));
-            csr_post_write_sub(csr, en_shadow_wr);
-            // when reset occurs, all items will be dropped immediately. This may end up getting
-            // d_error = 1 from previous item on the bus. Skip checking it during reset
-            if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK,
-                           $sformatf("trying to update csr %0s", csr.get_full_name()),
-                           error, msg_id)
-            end
-            decrement_outstanding_access();
-          end
-          begin
-            wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_update %0s (addr=0x%0h)",
-                                   csr.get_full_name(), csr.get_address()));
-          end
-        join_any
-        disable fork;
-      end : isolation_fork
-    join
+    csr_wr(.ptr(csr), .value(value), .check(check), .path(path), .blocking(blocking), .backdoor(0),
+           .timeout_ns(timeout_ns), .predict(0), .map(map), .en_shadow_wr(en_shadow_wr));
   endtask
 
   task automatic csr_wr(input uvm_object     ptr,
@@ -254,25 +224,24 @@ package csr_utils_pkg;
                             input bit            en_shadow_wr = 1);
     fork
       begin : isolation_fork
-        uvm_status_e  status;
         string        msg_id = {csr_utils_pkg::msg_id, "::csr_wr"};
 
         fork
           begin
+            dv_base_reg dv_reg;
+            `downcast(dv_reg, csr, "", fatal, msg_id)
+
             increment_outstanding_access();
             csr_pre_write_sub(csr, en_shadow_wr);
-            csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
+
+            csr_wr_and_predict_sub(.csr(csr), .value(value), .check(check), .path(path),
+                                   .predict(predict), .map(map));
+            if (en_shadow_wr && dv_reg.get_is_shadowed()) begin
+              csr_wr_and_predict_sub(.csr(csr), .value(value), .check(check), .path(path),
+                                     .predict(predict), .map(map));
+            end
+
             csr_post_write_sub(csr, en_shadow_wr);
-            if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK,
-                           $sformatf("trying to write csr %0s", csr.get_full_name()),
-                           error, msg_id)
-            end
-            // Only update the predicted value if status is ok (otherwise the write isn't completed
-            // successfully and the design shouldn't have accepted the written value)
-            if (status == UVM_IS_OK && predict) begin
-              void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
-            end
             decrement_outstanding_access();
           end
           begin
@@ -286,27 +255,42 @@ package csr_utils_pkg;
     join
   endtask
 
-  task automatic csr_pre_write_sub(ref uvm_reg csr, bit en_shadow_wr);
-    dv_base_reg dv_reg;
-    `downcast(dv_reg, csr, "", fatal, msg_id)
-    if (dv_reg.get_is_shadowed()) begin
-      if (en_shadow_wr) increment_outstanding_access();
-      dv_reg.atomic_en_shadow_wr.get(1);
-      dv_reg.set_en_shadow_wr(en_shadow_wr);
+  // internal task, don't use it directly
+  task automatic csr_wr_and_predict_sub(uvm_reg        csr,
+                                        uvm_reg_data_t value,
+                                        uvm_check_e    check,
+                                        uvm_path_e     path,
+                                        bit            predict,
+                                        uvm_reg_map    map);
+    uvm_status_e status;
+    csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
+
+    if (under_reset) return;
+    if (check == UVM_CHECK) begin
+      `DV_CHECK_EQ(status, UVM_IS_OK,
+                   $sformatf("trying to write csr %0s", csr.get_full_name()),
+                   error, msg_id)
+    end
+    // Only update the predicted value if status is ok (otherwise the write isn't completed
+    // successfully and the design shouldn't have accepted the written value)
+    if (status == UVM_IS_OK && predict) begin
+      void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
     end
   endtask
 
-  task automatic csr_post_write_sub(ref uvm_reg csr, bit en_shadow_wr);
+  task automatic csr_pre_write_sub(uvm_reg csr, bit en_shadow_wr);
     dv_base_reg dv_reg;
     `downcast(dv_reg, csr, "", fatal, msg_id)
-    if (dv_reg.get_is_shadowed()) begin
-      // try setting en_shadow_wr back to default value 1, this function will only work if the
-      // shadow reg finished both writes
-      dv_reg.set_en_shadow_wr(1);
+    if (dv_reg.get_is_shadowed() && en_shadow_wr) begin
+      dv_reg.atomic_en_shadow_wr.get(1);
+    end
+  endtask
+
+  task automatic csr_post_write_sub(uvm_reg csr, bit en_shadow_wr);
+    dv_base_reg dv_reg;
+    `downcast(dv_reg, csr, "", fatal, msg_id)
+    if (dv_reg.get_is_shadowed() && en_shadow_wr) begin
       dv_reg.atomic_en_shadow_wr.put(1);
-      if (en_shadow_wr) begin
-        decrement_outstanding_access();
-      end
     end
   endtask
 
