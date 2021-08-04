@@ -792,10 +792,16 @@ TEST_F(CauseTest, BadAlert) {
 // }
 
 TEST_F(CauseTest, AckLocal) {
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET,
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
                  {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, true}});
   EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
                 &handler_, kDifAlertHandlerLocalAlertEscalationIntegrityFail),
+            kDifAlertHandlerOk);
+
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
+                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
+  EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
+                &handler_, kDifAlertHandlerLocalAlertBusIntegrityFail),
             kDifAlertHandlerOk);
 }
 

@@ -186,6 +186,7 @@ typedef enum dif_alert_handler_local_alert {
   kDifAlertHandlerLocalAlertEscalationPingFail,
   kDifAlertHandlerLocalAlertAlertIntegrityFail,
   kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+  kDifAlertHandlerLocalAlertBusIntegrityFail,
   kDifAlertHandlerLocalAlertShadowedUpdateError,
   kDifAlertHandlerLocalAlertShadowedStorageError,
 } dif_alert_handler_local_alert_t;
