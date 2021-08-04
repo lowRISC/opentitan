@@ -88,7 +88,7 @@ module top_earlgrey #(
   parameter bit RvCoreIbexICacheECC = 1,
   parameter bit RvCoreIbexBranchPredictor = 0,
   parameter bit RvCoreIbexDbgTriggerEn = 1,
-  parameter bit SecRvCoreIbexureIbex = 1,
+  parameter bit RvCoreIbexSecureIbex = 1,
   parameter int unsigned RvCoreIbexDmHaltAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
@@ -2389,7 +2389,7 @@ module top_earlgrey #(
     .ICacheECC(RvCoreIbexICacheECC),
     .BranchPredictor(RvCoreIbexBranchPredictor),
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
-    .SecureIbex(SecRvCoreIbexureIbex),
+    .SecureIbex(RvCoreIbexSecureIbex),
     .DmHaltAddr(RvCoreIbexDmHaltAddr),
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
