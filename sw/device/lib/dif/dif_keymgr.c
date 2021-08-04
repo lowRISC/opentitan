@@ -522,12 +522,6 @@ dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
           .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
       };
       break;
-    case kDifKeymgrVersionedKeyDestHmac:
-      hw_op_params = (start_operation_params_t){
-          .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_HMAC,
-          .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
-      };
-      break;
     case kDifKeymgrVersionedKeyDestKmac:
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_KMAC,

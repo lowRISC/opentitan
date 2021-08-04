@@ -490,10 +490,6 @@ typedef enum dif_keymgr_versioned_key_dest {
    */
   kDifKeymgrVersionedKeyDestAes,
   /**
-   * Sideload the generated versioned key to HMAC device.
-   */
-  kDifKeymgrVersionedKeyDestHmac,
-  /**
    * Sideload the generated versioned key to KMAC device.
    */
   kDifKeymgrVersionedKeyDestKmac,

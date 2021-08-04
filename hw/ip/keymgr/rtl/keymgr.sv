@@ -23,7 +23,6 @@ module keymgr
   parameter seed_t RndCnstHardOutputSeed       = RndCnstHardOutputSeedDefault,
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
-  parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
 ) (
@@ -38,7 +37,6 @@ module keymgr
 
   // key interface to crypto modules
   output hw_key_req_t aes_key_o,
-  output hw_key_req_t hmac_key_o,
   output hw_key_req_t kmac_key_o,
   output otbn_key_req_t otbn_key_o,
 
@@ -387,7 +385,6 @@ module keymgr
 
   assign cipher_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
   assign cipher_seed = cipher_sel == Aes  ? RndCnstAesSeed  :
-                       cipher_sel == Hmac ? RndCnstHmacSeed :
                        cipher_sel == Kmac ? RndCnstKmacSeed :
                        cipher_sel == Otbn ? RndCnstOtbnSeed : RndCnstNoneSeed;
   assign output_key = (key_sel == HwKey) ? RndCnstHardOutputSeed : RndCnstSoftOutputSeed;
@@ -479,7 +476,6 @@ module keymgr
     .data_i(kmac_data),
     .prng_en_o(sideload_lfsr_en),
     .aes_key_o,
-    .hmac_key_o,
     .otbn_key_o,
     .kmac_key_o
   );
@@ -620,7 +616,6 @@ module keymgr
   // TBD this may be changed depending on whether we want to support this
   // mode of operation going forward.
   `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o.valid)
-  `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o.valid)
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o.valid)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 

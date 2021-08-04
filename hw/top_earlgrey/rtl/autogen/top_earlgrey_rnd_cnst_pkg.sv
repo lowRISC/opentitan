@@ -186,24 +186,19 @@ package top_earlgrey_rnd_cnst_pkg;
     256'h7663F6D1FBE7E4402C0329CAC3B7D06751F2882DF8F3259134067E7A112FFDB3
   };
 
-  // Compile-time random bits for generation seed when hmac destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
-    256'h0BC5F1A8862845852761603352213B7A034816103A781D0A4F5A0A911C1BCAFE
-  };
-
   // Compile-time random bits for generation seed when kmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
-    256'h63DD2AF7CA1C6AE78EFCBDC6ADA112F1235EE7DBA5042C13061068C02CEF00B7
+    256'h0BC5F1A8862845852761603352213B7A034816103A781D0A4F5A0A911C1BCAFE
   };
 
   // Compile-time random bits for generation seed when otbn destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrOtbnSeed = {
-    256'h56289223D7E05DB35983FE5A262A6E3AB1655D42B3090AE475A2DF4171FDFD7C
+    256'h63DD2AF7CA1C6AE78EFCBDC6ADA112F1235EE7DBA5042C13061068C02CEF00B7
   };
 
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'hE9D1B1F891DCAB64F5A52883A710B72B92E47F6E0845F450EAD8F3095FF32C32
+    256'h56289223D7E05DB35983FE5A262A6E3AB1655D42B3090AE475A2DF4171FDFD7C
   };
 
   ////////////////////////////////////////////
@@ -211,14 +206,14 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivNonProduction = {
-    128'hB6FEE0311AF608B7123F603C251A36AB,
-    256'h2E658548C5420BE549DA272D96AE771B3A1955E3D4549F3608232D03F93EED0F
+    128'h3A1955E3D4549F3608232D03F93EED0F,
+    256'hE9D1B1F891DCAB64F5A52883A710B72B92E47F6E0845F450EAD8F3095FF32C32
   };
 
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivProduction = {
-    128'h0CB942155264F8C121B7387A0A07DB44,
-    256'hFE8C330CA072829F9970F91074501568220E25BA7743095F2C1194FB74487A86
+    128'h220E25BA7743095F2C1194FB74487A86,
+    256'hB6FEE0311AF608B7123F603C251A36AB2E658548C5420BE549DA272D96AE771B
   };
 
   ////////////////////////////////////////////
@@ -226,22 +221,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'h1DD6E62190D79F1230D02F643AC42FA7
+    128'hFE8C330CA072829F9970F91074501568
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    128'h5120695530D16A94098E681252F1C774
+    128'h0CB942155264F8C121B7387A0A07DB44
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMainLfsrSeed = {
-    32'hAA9FBE94
+    32'h3AC42FA7
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainLfsrPerm = {
-    160'h2DC87CEDCBA3E48E7595FC2221A74051ACDC4FC1
+    160'h81E9BB44AF23BD847D62EA6F9D3660AF0C150E4C
   };
 
   ////////////////////////////////////////////
@@ -249,23 +244,23 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
   parameter otbn_pkg::urnd_lfsr_seed_t RndCnstOtbnUrndLfsrSeed = {
-    256'h983D914E80A925BC15891B60C560A7FB75457E09E258C252C3083125BE14E22D
+    256'hC3083125BE14E22D044C7BD9E98EB2847FA1A35F74A8586D23E3BD765866C6F6
   };
 
   // Permutation applied to the LFSR chunks of the PRNG used for URND.
   parameter otbn_pkg::urnd_chunk_lfsr_perm_t RndCnstOtbnUrndChunkLfsrPerm = {
-    128'h7E95AF64CAA87B2E1AED74700FC12C97,
-    256'h93C18DCD269CE74BEAB6096C81ADDEE885340FBD2900A4513CFF852D47560DB1
+    128'h0C12F0E2B9EA5A371FD0F691CA53BF25,
+    256'h7B7531E119CEF75B206A2CA62F4D02EE4A4029144FE8521D5F36637EE6805C7A
   };
 
   // Compile-time random reset value for IMem/DMem scrambling key.
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnOtbnKey = {
-    128'hFD9C13AC08496DB56FBC4894D38BD867
+    128'h2FB69C3AAB936B415A0D6E7185EAA2E0
   };
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
-    64'h9E4DA0E3FF9F3036
+    64'h3AE54E9E45DA6E66
   };
 
   ////////////////////////////////////////////
@@ -273,12 +268,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrlScrNonce = {
-    64'h5D7717A4B76A8AFF
+    64'hCE44CBFF5E09E6DD
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrlScrKey = {
-    128'hB798AB7845C3FEAB0D2F4C7CF730A567
+    128'hE58A331208F189DE6265EDC8FDE06DB0
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg
