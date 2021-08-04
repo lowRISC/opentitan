@@ -155,8 +155,10 @@
                      "+urg+lic+wait",
                      // Lists all the tests that covered a given object.
                      "-show tests",
-                     // Enable test grading.
-                     "-grade index",
+                     // Enable test grading using the "index" scheme, and the
+                     // generation of the list of contributing tests with
+                     // "testfile".
+                     "-grade index testfile",
                      // Use simple ratio of total covered bins over total bins across cps & crs,
                      "-group ratio",
                      // Compute overall coverage for per-instance covergroups individually rather
