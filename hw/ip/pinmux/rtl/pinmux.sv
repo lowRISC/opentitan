@@ -87,12 +87,14 @@ module pinmux
   pinmux_hw2reg_t hw2reg;
 
   pinmux_reg_top u_reg (
-    .clk_i  ,
-    .rst_ni ,
-    .tl_i   ,
-    .tl_o   ,
-    .reg2hw ,
-    .hw2reg ,
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_aon_ni,
+    .tl_i,
+    .tl_o,
+    .reg2hw,
+    .hw2reg,
     .intg_err_o(alerts[0]),
     .devmode_i(1'b1)
   );
@@ -412,24 +414,24 @@ module pinmux
                        dio_wkup_mux[reg2hw.wkup_detector_padsel[k]] :
                        mio_wkup_mux[reg2hw.wkup_detector_padsel[k]];
 
+    // This module runs on the AON clock entirely
     pinmux_wkup u_pinmux_wkup (
-      .clk_i,
-      .rst_ni,
-      .clk_aon_i,
-      .rst_aon_ni,
-      // config signals. these are synched to clk_aon internally
-      .wkup_en_i          ( reg2hw.wkup_detector_en[k].q                ),
-      .filter_en_i        ( reg2hw.wkup_detector[k].filter.q            ),
-      .wkup_mode_i        ( wkup_mode_e'(reg2hw.wkup_detector[k].mode.q)),
-      .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q            ),
-      .pin_value_i        ( pin_value                                   ),
-      // cause reg signals. these are synched from/to clk_aon internally
-      .wkup_cause_valid_i ( reg2hw.wkup_cause[k].qe                     ),
-      .wkup_cause_data_i  ( reg2hw.wkup_cause[k].q                      ),
-      .wkup_cause_data_o  ( hw2reg.wkup_cause[k].d                      ),
-      // wakeup request signals on clk_aon (level encoded)
-      .aon_wkup_req_o     ( aon_wkup_req[k]                             )
+      .clk_i              (clk_aon_i                                     ),
+      .rst_ni             (rst_aon_ni                                    ),
+      // config signals have already been synced to the AON domain inside the CSR node.
+      .wkup_en_i          ( reg2hw.wkup_detector_en[k].q                 ),
+      .filter_en_i        ( reg2hw.wkup_detector[k].filter.q             ),
+      .wkup_mode_i        ( wkup_mode_e'(reg2hw.wkup_detector[k].mode.q) ),
+      .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q             ),
+      .pin_value_i        ( pin_value                                    ),
+      // wakeup request pulse on clk_aon, will be synced back to the bus domain insie the CSR node.
+      .aon_wkup_pulse_o   ( hw2reg.wkup_cause[k].de                      )
     );
+
+    assign hw2reg.wkup_cause[k].d = 1'b1;
+
+    // This is the latched wakeup request, hence this request signal is level encoded.
+    assign aon_wkup_req[k] = reg2hw.wkup_cause[k].q;
   end
 
   // OR' together all wakeup requests
