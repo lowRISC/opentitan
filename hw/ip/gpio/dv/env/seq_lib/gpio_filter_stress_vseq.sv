@@ -58,33 +58,37 @@ class gpio_filter_stress_vseq extends gpio_intr_with_filter_rand_intr_event_vseq
 
       begin : drive_noise_on_each_pin
         repeat ($urandom_range(1, 10)) begin
-          for (uint pin_num = 0; pin_num  < NUM_GPIOS; pin_num++) begin
-            automatic uint pin = pin_num;
-            fork
-              begin
-                if (gpio_filter_value[pin] == 1'b1) begin
-                  // Drive fully asynchronous noise for pins with filter enabled
-                  drive_noise_on_pin(pin, gpio_i[pin]);
-                end else begin
-                  uint ps_delay;
-                  bit intr_state_this_pin = crnt_intr_status[pin];
-                  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ps_delay, ps_delay inside {[1:10000]};)
-                  // Drive single asynchronous change for pins with filter disabled
-                  #(ps_delay * 1ps);
-                  cfg.gpio_vif.drive_pin(pin, ~stable_value[pin]);
-                  update_pin_intr_state(pin,
-                                        intr_state_this_pin,
-                                        stable_value[pin],
-                                        ~stable_value[pin]);
-                  // update interrupt value for pin
-                  crnt_intr_status[pin] = intr_state_this_pin;
-                  // update stable value for pin
-                  stable_value[pin] = ~stable_value[pin];
-                end
-              end
-            join_none
-          end
-          wait fork;
+          fork : isolation_fork
+            begin
+              for (uint pin_num = 0; pin_num  < NUM_GPIOS; pin_num++) begin
+                automatic uint pin = pin_num;
+                fork
+                  begin
+                    if (gpio_filter_value[pin] == 1'b1) begin
+                      // Drive fully asynchronous noise for pins with filter enabled
+                      drive_noise_on_pin(pin, gpio_i[pin]);
+                    end else begin
+                      uint ps_delay;
+                      bit intr_state_this_pin = crnt_intr_status[pin];
+                      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ps_delay, ps_delay inside {[1:10000]};)
+                      // Drive single asynchronous change for pins with filter disabled
+                      #(ps_delay * 1ps);
+                      cfg.gpio_vif.drive_pin(pin, ~stable_value[pin]);
+                      update_pin_intr_state(pin,
+                                            intr_state_this_pin,
+                                            stable_value[pin],
+                                            ~stable_value[pin]);
+                      // update interrupt value for pin
+                      crnt_intr_status[pin] = intr_state_this_pin;
+                      // update stable value for pin
+                      stable_value[pin] = ~stable_value[pin];
+                    end
+                  end
+                join_none
+              end // end for loop
+              wait fork;
+            end // end isolation_fork
+          join
 
           // Keep driving toggled value until next clock edge
           cfg.clk_rst_vif.wait_clks(1);
