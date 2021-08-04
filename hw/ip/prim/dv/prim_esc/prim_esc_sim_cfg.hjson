@@ -38,4 +38,11 @@
       tests: ["prim_esc_test"]
     }
   ]
+
+  overrides: [
+    {
+      name: vcs_cov_cfg_file
+      value: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_esc/data/prim_esc_cover.cfg"
+    }
+  ]
 }
