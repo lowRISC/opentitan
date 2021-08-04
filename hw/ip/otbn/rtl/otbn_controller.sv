@@ -436,33 +436,58 @@ module otbn_controller
     endcase
   end
 
+  // Base RF read/write address, enable and commit control
   always_comb begin
     rf_base_rd_addr_a_o = insn_dec_base_i.a;
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
 
-    // Errors prevent reads from committing (in particular from popping the call stack)
-    rf_base_rd_commit_o = ~err;
+    // Only commit read or write if the instruction is executing (in particular a read commit pops
+    // the call stack so must not occur where a valid instruction sees an error and doesn't
+    // execute).
+    rf_base_rd_commit_o = insn_executing;
+    rf_base_wr_commit_o = insn_executing;
 
     rf_base_rd_en_a_o   = 1'b0;
     rf_base_rd_en_b_o   = 1'b0;
+    rf_base_wr_en_o     = 1'b0;
 
     if (insn_valid_i) begin
       if (insn_dec_shared_i.st_insn) begin
         // For stores, both base reads happen in the same cycle as the request because they give the
         // address and data, which make up the request.
-        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & (lsu_load_req_raw | lsu_store_req_raw);
-        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & (lsu_load_req_raw | lsu_store_req_raw);
+        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & lsu_store_req_raw;
+        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & lsu_store_req_raw;
+
+        // Bignum stores can update the base register file where an increment is used.
+        rf_base_wr_en_o     = (insn_dec_shared_i.subset == InsnSubsetBignum) &
+                              insn_dec_base_i.rf_we                          &
+                              lsu_store_req_raw;
       end else if (insn_dec_shared_i.ld_insn) begin
         // For loads, the A read happens in the same cycle as the request, giving the address from
         // which to load. The B read is only used for BN.LID and should take place when the
         // instruction is unstalled, giving the index of the register to write the result to.
-        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & (lsu_load_req_raw | lsu_store_req_raw);
+        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & lsu_load_req_raw;
         rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
+
+        if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
+          // Bignum loads can update the base register file where an increment is used. When
+          // incrementing the base address this must happen in the same cycle as the request and the
+          // A read. When incrementing the indirect destination register this should happen when the
+          // instruction is unstalled and the B read occurs. This ensures correct call stack
+          // behaviour when x1 is being incremented.
+          rf_base_wr_en_o = insn_dec_bignum_i.d_inc ? insn_dec_base_i.rf_we & ~stall            :
+                                                      insn_dec_base_i.rf_we & lsu_load_req_raw;
+        end else begin
+          // For Base loads write the base register file when the instruction is unstalled (meaning
+          // the load data is available).
+          rf_base_wr_en_o = insn_dec_base_i.rf_we & ~stall;
+        end
       end else begin
-        // For all other instructions the read happens when the instruction is unstalled.
+        // For all other instructions the read and write happen when the instruction is unstalled.
         rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & ~stall;
         rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
+        rf_base_wr_en_o     = insn_dec_base_i.rf_we    & ~stall;
       end
     end
 
@@ -519,10 +544,6 @@ module otbn_controller
   assign unused_rf_base_rd_b_intg_bits = |rf_base_rd_data_b_intg_i[38:32];
 
   // Register file write MUX
-  // Only enable writes when unstalled
-  assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we & ~stall;
-  assign rf_base_wr_commit_o = insn_executing & ~err;
-
   always_comb begin
     // Write data mux for anything that needs integrity computing during register write
     unique case (insn_dec_base_i.rf_wdata_sel)
