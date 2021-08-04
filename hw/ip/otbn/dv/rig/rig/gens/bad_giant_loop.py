@@ -48,7 +48,7 @@ class BadGiantLoop(Loop):
             return None
 
         # And we don't want to overflow the loop stack
-        if model.loop_depth == Model.max_loop_depth:
+        if model.loop_stack.maybe_full():
             return None
 
         insn = self.pick_loop_insn()
@@ -88,7 +88,9 @@ class BadGiantLoop(Loop):
         hd_addr = model.pc
         hd_insn = ProgInsn(insn, [iters_opval, enc_bodysize], None)
 
-        body_model = self._setup_body(hd_insn, model, program)
+        end_addr = model.pc + 4 * bodysize
+
+        body_model = self._setup_body(hd_insn, end_addr, model, program)
 
         # At this point, all the "loop related work" is done: we've entered the
         # loop body (from which we can never leave). Now call the continuation

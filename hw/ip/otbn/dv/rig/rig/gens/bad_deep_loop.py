@@ -12,7 +12,7 @@ from .jump import Jump
 from .loop import Loop
 from ..config import Config
 from ..program import ProgInsn, Program
-from ..model import Model
+from ..model import LoopStack, Model
 from ..snippet import LoopSnippet, ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SnippetGen
 
@@ -35,7 +35,15 @@ class BadDeepLoop(SnippetGen):
         assert 0 < room
         return (1.0 if room > 50 else 0.0)
 
-    def _pick_bodysize(self, insn: Insn, pc: int, program: Program) -> int:
+    def _pick_bodysize(self,
+                       insn: Insn,
+                       pc: int,
+                       program: Program) -> Tuple[int, int]:
+        '''Pick the size of the loop body.
+
+        Returns (enc_bodysize, end_addr).
+
+        '''
         # Pick some value for bodysize that either points at an existing
         # instruction or points above the top of memory. Rather than doing
         # something clever, we pick the address at random and "re-roll" if it
@@ -59,7 +67,7 @@ class BadDeepLoop(SnippetGen):
         assert bodysize is not None
         enc_bodysize = bodysize_op_type.op_val_to_enc_val(bodysize, pc)
         assert enc_bodysize is not None
-        return enc_bodysize
+        return (enc_bodysize, pc + 4 * guess)
 
     def _pick_loop_iterations(self, model: Model) -> Optional[int]:
         # This is like Loop._pick_loop_iterations, but doesn't try to weight
@@ -85,8 +93,14 @@ class BadDeepLoop(SnippetGen):
         assert enc_val is not None
         return enc_val
 
-    def _gen_loop_head(self, model: Model, program: Program) -> ProgInsn:
-        '''Generate a LOOP or LOOPI instruction'''
+    def _gen_loop_head(self,
+                       model: Model,
+                       program: Program) -> Tuple[ProgInsn, int]:
+        '''Generate a LOOP or LOOPI instruction
+
+        Returns (hd_insn, end_address).
+
+        '''
 
         # Pick an instruction (LOOP vs. LOOPI) and number of iterations
         # together. This means that if we've only got GPRs equal to zero (an
@@ -105,9 +119,9 @@ class BadDeepLoop(SnippetGen):
             assert insn is self.loop_gen.loopi
             enc_iters = self._pick_loopi_iterations(iters_op_type, model.pc)
 
-        enc_bodysize = self._pick_bodysize(insn, model.pc, program)
+        enc_bodysize, end_addr = self._pick_bodysize(insn, model.pc, program)
 
-        return ProgInsn(insn, [enc_iters, enc_bodysize], None)
+        return (ProgInsn(insn, [enc_iters, enc_bodysize], None), end_addr)
 
     def _gen_loop_stack(self,
                         model: Model,
@@ -121,10 +135,13 @@ class BadDeepLoop(SnippetGen):
         # space_here should always be positive (otherwise we got stuck already)
         assert space_here >= 1
 
-        if model.loop_depth == model.max_loop_depth:
+        # We should only have run if we knew the exact loop depth
+        assert model.loop_stack.min_depth() == model.loop_stack.max_depth()
+
+        if model.loop_stack.maybe_full():
             # We've bottomed out. Store the model (which we already copied
             # above)
-            prog_insn = self._gen_loop_head(model, program)
+            prog_insn, _ = self._gen_loop_head(model, program)
 
             # Note that we generate a ProgSnippet, not a LoopSnippet here: while
             # we've got a loop instruction, we happen to know that it will fault,
@@ -148,11 +165,11 @@ class BadDeepLoop(SnippetGen):
         assert space_here >= 2
 
         hd_pc = model.pc
-        hd_insn = self._gen_loop_head(model, program)
+        hd_insn, end_addr = self._gen_loop_head(model, program)
         program.add_insns(hd_pc, [hd_insn])
         model.update_for_insn(hd_insn)
         model.pc += 4
-        model.loop_depth += 1
+        model.loop_stack.push(end_addr)
 
         body_snippet = None  # type: Optional[Snippet]
 
@@ -190,8 +207,13 @@ class BadDeepLoop(SnippetGen):
         # space_here should always be positive (otherwise we got stuck already)
         assert space_here > 0
 
-        assert model.loop_depth <= model.max_loop_depth
-        num_nests = 1 + model.max_loop_depth - model.loop_depth
+        # Give up unless we know our exact loop depth (otherwise, we wouldn't
+        # be able to predict the number of loops needed to blow the stack)
+        depth = model.loop_stack.min_depth()
+        if depth != model.loop_stack.max_depth():
+            return None
+
+        num_nests = 1 + LoopStack.stack_depth - depth
 
         # We know the number of nested loops (num_nests). For each loop, we'll
         # generate zero or more straight-line instructions, a jump if necessary

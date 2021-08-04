@@ -254,11 +254,29 @@ class Loop(SnippetGen):
 
         return (iter_opval, num_iters, bodysize)
 
+    def _gen_tail_insns(self,
+                        num_insns: int,
+                        model: Model,
+                        program: Program) -> Optional[Tuple[List[ProgInsn],
+                                                            Model]]:
+        return self.sli_gen.gen_some(num_insns, model, program)
+
     def _gen_tail(self,
                   num_insns: int,
                   model: Model,
-                  program: Program) -> Optional[Tuple[List[ProgInsn], Model]]:
-        return self.sli_gen.gen_some(num_insns, model, program)
+                  program: Program) -> Optional[Tuple[Snippet, Model]]:
+        pc = model.pc
+        ret = self._gen_tail_insns(num_insns, model, program)
+        if ret is None:
+            return None
+
+        insns, model = ret
+        assert len(insns) == num_insns
+
+        snippet = ProgSnippet(pc, insns)
+        snippet.insert_into_program(program)
+
+        return (snippet, model)
 
     def _gen_body(self,
                   bodysize: int,
@@ -413,14 +431,9 @@ class Loop(SnippetGen):
         if tail_ret is None:
             return None
 
-        tail_insns, model = tail_ret
+        tail_snippet, model = tail_ret
         assert model.pc == match_addr
-        assert len(tail_insns) == tail_len
 
-        tail_snippet = ProgSnippet(tail_start, tail_insns)
-        tail_snippet.insert_into_program(program)
-
-        tail_snippet = ProgSnippet(tail_start, tail_insns)
         snippet = Snippet.cons_option(head_snippet, tail_snippet)
 
         # Remove the const annotations that we added to the model
@@ -434,14 +447,14 @@ class Loop(SnippetGen):
 
     def _setup_body(self,
                     hd_insn: ProgInsn,
+                    end_addr: int,
                     model: Model,
                     program: Program) -> Model:
         '''Set up a Model for use in body; insert hd_insn into program'''
         body_model = model.copy()
         body_model.update_for_insn(hd_insn)
         body_model.pc += 4
-        body_model.loop_depth += 1
-        assert body_model.loop_depth <= Model.max_loop_depth
+        body_model.loop_stack.push(end_addr)
 
         program.add_insns(model.pc, [hd_insn])
 
@@ -498,7 +511,7 @@ class Loop(SnippetGen):
             return None
 
         # Don't blow the loop stack
-        if model.loop_depth == Model.max_loop_depth:
+        if model.loop_stack.maybe_full():
             return None
 
         ret = self._pick_head(space_here, True, model, program)
@@ -508,8 +521,11 @@ class Loop(SnippetGen):
         hd_insn, lshape = ret
         iter_opval, num_iters, bodysize = lshape
 
+        # The address of the final instruction in the loop
+        end_addr = model.pc + 4 * bodysize
+
         body_program = program.copy()
-        body_model = self._setup_body(hd_insn, model, body_program)
+        body_model = self._setup_body(hd_insn, end_addr, model, body_program)
 
         # Constrain fuel in body_model: subtract one (for the first instruction
         # after the loop) and then divide by the number of iterations. When we
@@ -532,23 +548,27 @@ class Loop(SnippetGen):
             return None
 
         body_snippet, body_model = body_ret
-        assert body_model.loop_depth == model.loop_depth + 1
-        body_model.loop_depth -= 1
+        body_model.loop_stack.pop(end_addr)
 
         # Calculate the actual amount of fuel that we used
         body_fuel = fuel_per_iter - body_model.fuel
         assert body_fuel > 0
         fuel_afterwards = model.fuel - num_iters * body_fuel
 
-        # Update model to take the loop body into account. If we know we have
-        # exactly one iteration through the body, we can just take body_model.
-        # Otherwise, we merge the two after "teleporting" model to the loop
-        # match address.
-        assert body_model.pc == model.pc + 4 * (1 + bodysize)
+        # Update model to take the loop body into account. For the loop stack
+        # state, we just take whatever's in body_model. If everything was well
+        # balanced, this will match anyway (and, if not, it's the state that
+        # OTBN will be in at the end of the loop).
+        #
+        # For registers, if we know we have exactly one iteration through the
+        # body, we can just take them from body_model. Otherwise, we merge the
+        # two after "teleporting" model to the loop match address.
+        assert body_model.pc == end_addr + 4
         if num_iters == 1:
             model = body_model
         else:
             model.update_for_insn(hd_insn)
+            model.loop_stack = body_model.loop_stack
             model.pc = body_model.pc
             model.merge(body_model)
 
