@@ -27,7 +27,7 @@ readonly DIST_ARTIFACTS=(
   'sw/otbn/*.elf'
   'sw/host/spiflash/spiflash'
   'hw/top_earlgrey/Vchip_earlgrey_verilator'
-  'hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit'
+  'hw/top_earlgrey/lowrisc_systems_chip_earlgrey_*.bit'
 )
 
 DIST_DIR="$OBJ_DIR/$OT_VERSION"

@@ -610,6 +610,7 @@ jobs:
     - sw_build
     - chip_earlgrey_verilator
     - chip_earlgrey_nexysvideo
+    - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
   - template: ci/install-package-dependencies.yml
@@ -620,6 +621,7 @@ jobs:
         - sw_build_nexysvideo
         - chip_earlgrey_verilator
         - chip_earlgrey_nexysvideo
+        - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
