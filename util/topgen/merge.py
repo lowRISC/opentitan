@@ -4,6 +4,7 @@
 
 import logging as log
 import random
+import re
 from collections import OrderedDict
 from copy import deepcopy
 from math import ceil, log2
@@ -107,9 +108,17 @@ def elaborate_instance(instance, block: IpBlock):
         param_prefixes = ["Sec", "RndCnst", "MemSize"]
         name_top = cc_mod_name + param.name
         for prefix in param_prefixes:
-            if param.name.lower().startswith(prefix.lower()):
-                name_top = (prefix + cc_mod_name +
-                            param.name[len(prefix):])
+            if not param.name.startswith(prefix):
+                continue
+            else:
+                if param.name == prefix:
+                    raise ValueError(f'Module instance {mod_name} has a '
+                                     f'parameter {param.name} that is equal '
+                                     f'to prefix {prefix}.')
+
+                if re.match(prefix + '[A-Z].+$', param.name):
+                    name_top = (prefix + cc_mod_name +
+                                param.name[len(prefix):])
                 break
 
         new_param['name_top'] = name_top

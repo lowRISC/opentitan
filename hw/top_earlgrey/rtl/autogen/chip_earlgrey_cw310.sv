@@ -758,7 +758,7 @@ module chip_earlgrey_cw310 #(
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexPipeLine(1),
-    .SecRvCoreIbexureIbex(0),
+    .RvCoreIbexSecureIbex(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)

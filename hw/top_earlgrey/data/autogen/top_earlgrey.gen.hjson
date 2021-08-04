@@ -5859,7 +5859,7 @@
           type: bit
           default: "1"
           expose: "true"
-          name_top: SecRvCoreIbexureIbex
+          name_top: RvCoreIbexSecureIbex
         }
         {
           name: DmHaltAddr
