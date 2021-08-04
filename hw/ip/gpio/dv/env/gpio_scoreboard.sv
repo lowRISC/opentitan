@@ -76,7 +76,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       real clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;
       time crnt_time = $time;
 
-      // apply pending update for interrupt state
+      // apply pending update for `data_in` register
       if (data_in_update_queue.size() > 0) begin
         if (data_in_update_queue[$].needs_update == 1'b1 &&
             (int'((crnt_time - data_in_update_queue[$].eval_time) / clk_period)) > 1) begin
@@ -161,7 +161,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             // Push new interrupt state update entry into queue
             intr_state_update_queue.push_back(intr_state_write_to_clear_update);
             if (intr_state_update_queue.size() > 2) begin
-              // Delete extra unenecessary entry
+              // Delete extra unnecessary entry
               intr_state_update_queue.delete(0);
             end
           end
