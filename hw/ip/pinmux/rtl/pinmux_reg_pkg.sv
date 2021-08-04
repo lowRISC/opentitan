@@ -96,7 +96,6 @@ package pinmux_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        qe;
   } pinmux_reg2hw_wkup_cause_mreg_t;
 
   typedef struct packed {
@@ -119,35 +118,36 @@ package pinmux_reg_pkg;
 
   typedef struct packed {
     logic        d;
+    logic        de;
   } pinmux_hw2reg_wkup_cause_mreg_t;
 
   // Register -> HW type
   typedef struct packed {
-    pinmux_reg2hw_alert_test_reg_t alert_test; // [1431:1430]
-    pinmux_reg2hw_mio_periph_insel_mreg_t [32:0] mio_periph_insel; // [1429:1232]
-    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [1231:1040]
-    pinmux_reg2hw_mio_pad_attr_mreg_t [31:0] mio_pad_attr; // [1039:592]
-    pinmux_reg2hw_dio_pad_attr_mreg_t [15:0] dio_pad_attr; // [591:368]
-    pinmux_reg2hw_mio_pad_sleep_status_mreg_t [31:0] mio_pad_sleep_status; // [367:336]
-    pinmux_reg2hw_mio_pad_sleep_en_mreg_t [31:0] mio_pad_sleep_en; // [335:304]
-    pinmux_reg2hw_mio_pad_sleep_mode_mreg_t [31:0] mio_pad_sleep_mode; // [303:240]
-    pinmux_reg2hw_dio_pad_sleep_status_mreg_t [15:0] dio_pad_sleep_status; // [239:224]
-    pinmux_reg2hw_dio_pad_sleep_en_mreg_t [15:0] dio_pad_sleep_en; // [223:208]
-    pinmux_reg2hw_dio_pad_sleep_mode_mreg_t [15:0] dio_pad_sleep_mode; // [207:176]
-    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [175:168]
-    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [167:128]
-    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [127:64]
-    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [63:16]
-    pinmux_reg2hw_wkup_cause_mreg_t [7:0] wkup_cause; // [15:0]
+    pinmux_reg2hw_alert_test_reg_t alert_test; // [1423:1422]
+    pinmux_reg2hw_mio_periph_insel_mreg_t [32:0] mio_periph_insel; // [1421:1224]
+    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [1223:1032]
+    pinmux_reg2hw_mio_pad_attr_mreg_t [31:0] mio_pad_attr; // [1031:584]
+    pinmux_reg2hw_dio_pad_attr_mreg_t [15:0] dio_pad_attr; // [583:360]
+    pinmux_reg2hw_mio_pad_sleep_status_mreg_t [31:0] mio_pad_sleep_status; // [359:328]
+    pinmux_reg2hw_mio_pad_sleep_en_mreg_t [31:0] mio_pad_sleep_en; // [327:296]
+    pinmux_reg2hw_mio_pad_sleep_mode_mreg_t [31:0] mio_pad_sleep_mode; // [295:232]
+    pinmux_reg2hw_dio_pad_sleep_status_mreg_t [15:0] dio_pad_sleep_status; // [231:216]
+    pinmux_reg2hw_dio_pad_sleep_en_mreg_t [15:0] dio_pad_sleep_en; // [215:200]
+    pinmux_reg2hw_dio_pad_sleep_mode_mreg_t [15:0] dio_pad_sleep_mode; // [199:168]
+    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [167:160]
+    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [159:120]
+    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [119:56]
+    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [55:8]
+    pinmux_reg2hw_wkup_cause_mreg_t [7:0] wkup_cause; // [7:0]
   } pinmux_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    pinmux_hw2reg_mio_pad_attr_mreg_t [31:0] mio_pad_attr; // [727:312]
-    pinmux_hw2reg_dio_pad_attr_mreg_t [15:0] dio_pad_attr; // [311:104]
-    pinmux_hw2reg_mio_pad_sleep_status_mreg_t [31:0] mio_pad_sleep_status; // [103:40]
-    pinmux_hw2reg_dio_pad_sleep_status_mreg_t [15:0] dio_pad_sleep_status; // [39:8]
-    pinmux_hw2reg_wkup_cause_mreg_t [7:0] wkup_cause; // [7:0]
+    pinmux_hw2reg_mio_pad_attr_mreg_t [31:0] mio_pad_attr; // [735:320]
+    pinmux_hw2reg_dio_pad_attr_mreg_t [15:0] dio_pad_attr; // [319:112]
+    pinmux_hw2reg_mio_pad_sleep_status_mreg_t [31:0] mio_pad_sleep_status; // [111:48]
+    pinmux_hw2reg_dio_pad_sleep_status_mreg_t [15:0] dio_pad_sleep_status; // [47:16]
+    pinmux_hw2reg_wkup_cause_mreg_t [7:0] wkup_cause; // [15:0]
   } pinmux_hw2reg_t;
 
   // Register offsets
@@ -665,15 +665,6 @@ package pinmux_reg_pkg;
   parameter logic [12:0] PINMUX_DIO_PAD_ATTR_14_ATTR_14_RESVAL = 13'h 0;
   parameter logic [12:0] PINMUX_DIO_PAD_ATTR_15_RESVAL = 13'h 0;
   parameter logic [12:0] PINMUX_DIO_PAD_ATTR_15_ATTR_15_RESVAL = 13'h 0;
-  parameter logic [7:0] PINMUX_WKUP_CAUSE_RESVAL = 8'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_0_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_1_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_2_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_3_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_4_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_5_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_6_RESVAL = 1'h 0;
-  parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_7_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {

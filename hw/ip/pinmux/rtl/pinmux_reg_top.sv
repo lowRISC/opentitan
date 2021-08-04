@@ -9,6 +9,8 @@
 module pinmux_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_aon_i,
+  input rst_aon_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -102,6 +104,15 @@ module pinmux_reg_top (
   );
 
   // cdc oversampling signals
+    logic sync_aon_update;
+  prim_pulse_sync u_aon_tgl (
+    .clk_src_i(clk_aon_i),
+    .rst_src_ni(rst_aon_ni),
+    .src_pulse_i(1'b1),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(sync_aon_update)
+  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -1394,107 +1405,147 @@ module pinmux_reg_top (
   logic wkup_detector_en_0_we;
   logic wkup_detector_en_0_qs;
   logic wkup_detector_en_0_wd;
+  logic wkup_detector_en_0_busy;
   logic wkup_detector_en_1_we;
   logic wkup_detector_en_1_qs;
   logic wkup_detector_en_1_wd;
+  logic wkup_detector_en_1_busy;
   logic wkup_detector_en_2_we;
   logic wkup_detector_en_2_qs;
   logic wkup_detector_en_2_wd;
+  logic wkup_detector_en_2_busy;
   logic wkup_detector_en_3_we;
   logic wkup_detector_en_3_qs;
   logic wkup_detector_en_3_wd;
+  logic wkup_detector_en_3_busy;
   logic wkup_detector_en_4_we;
   logic wkup_detector_en_4_qs;
   logic wkup_detector_en_4_wd;
+  logic wkup_detector_en_4_busy;
   logic wkup_detector_en_5_we;
   logic wkup_detector_en_5_qs;
   logic wkup_detector_en_5_wd;
+  logic wkup_detector_en_5_busy;
   logic wkup_detector_en_6_we;
   logic wkup_detector_en_6_qs;
   logic wkup_detector_en_6_wd;
+  logic wkup_detector_en_6_busy;
   logic wkup_detector_en_7_we;
   logic wkup_detector_en_7_qs;
   logic wkup_detector_en_7_wd;
+  logic wkup_detector_en_7_busy;
   logic wkup_detector_0_we;
   logic [2:0] wkup_detector_0_mode_0_qs;
   logic [2:0] wkup_detector_0_mode_0_wd;
+  logic wkup_detector_0_mode_0_busy;
   logic wkup_detector_0_filter_0_qs;
   logic wkup_detector_0_filter_0_wd;
+  logic wkup_detector_0_filter_0_busy;
   logic wkup_detector_0_miodio_0_qs;
   logic wkup_detector_0_miodio_0_wd;
+  logic wkup_detector_0_miodio_0_busy;
   logic wkup_detector_1_we;
   logic [2:0] wkup_detector_1_mode_1_qs;
   logic [2:0] wkup_detector_1_mode_1_wd;
+  logic wkup_detector_1_mode_1_busy;
   logic wkup_detector_1_filter_1_qs;
   logic wkup_detector_1_filter_1_wd;
+  logic wkup_detector_1_filter_1_busy;
   logic wkup_detector_1_miodio_1_qs;
   logic wkup_detector_1_miodio_1_wd;
+  logic wkup_detector_1_miodio_1_busy;
   logic wkup_detector_2_we;
   logic [2:0] wkup_detector_2_mode_2_qs;
   logic [2:0] wkup_detector_2_mode_2_wd;
+  logic wkup_detector_2_mode_2_busy;
   logic wkup_detector_2_filter_2_qs;
   logic wkup_detector_2_filter_2_wd;
+  logic wkup_detector_2_filter_2_busy;
   logic wkup_detector_2_miodio_2_qs;
   logic wkup_detector_2_miodio_2_wd;
+  logic wkup_detector_2_miodio_2_busy;
   logic wkup_detector_3_we;
   logic [2:0] wkup_detector_3_mode_3_qs;
   logic [2:0] wkup_detector_3_mode_3_wd;
+  logic wkup_detector_3_mode_3_busy;
   logic wkup_detector_3_filter_3_qs;
   logic wkup_detector_3_filter_3_wd;
+  logic wkup_detector_3_filter_3_busy;
   logic wkup_detector_3_miodio_3_qs;
   logic wkup_detector_3_miodio_3_wd;
+  logic wkup_detector_3_miodio_3_busy;
   logic wkup_detector_4_we;
   logic [2:0] wkup_detector_4_mode_4_qs;
   logic [2:0] wkup_detector_4_mode_4_wd;
+  logic wkup_detector_4_mode_4_busy;
   logic wkup_detector_4_filter_4_qs;
   logic wkup_detector_4_filter_4_wd;
+  logic wkup_detector_4_filter_4_busy;
   logic wkup_detector_4_miodio_4_qs;
   logic wkup_detector_4_miodio_4_wd;
+  logic wkup_detector_4_miodio_4_busy;
   logic wkup_detector_5_we;
   logic [2:0] wkup_detector_5_mode_5_qs;
   logic [2:0] wkup_detector_5_mode_5_wd;
+  logic wkup_detector_5_mode_5_busy;
   logic wkup_detector_5_filter_5_qs;
   logic wkup_detector_5_filter_5_wd;
+  logic wkup_detector_5_filter_5_busy;
   logic wkup_detector_5_miodio_5_qs;
   logic wkup_detector_5_miodio_5_wd;
+  logic wkup_detector_5_miodio_5_busy;
   logic wkup_detector_6_we;
   logic [2:0] wkup_detector_6_mode_6_qs;
   logic [2:0] wkup_detector_6_mode_6_wd;
+  logic wkup_detector_6_mode_6_busy;
   logic wkup_detector_6_filter_6_qs;
   logic wkup_detector_6_filter_6_wd;
+  logic wkup_detector_6_filter_6_busy;
   logic wkup_detector_6_miodio_6_qs;
   logic wkup_detector_6_miodio_6_wd;
+  logic wkup_detector_6_miodio_6_busy;
   logic wkup_detector_7_we;
   logic [2:0] wkup_detector_7_mode_7_qs;
   logic [2:0] wkup_detector_7_mode_7_wd;
+  logic wkup_detector_7_mode_7_busy;
   logic wkup_detector_7_filter_7_qs;
   logic wkup_detector_7_filter_7_wd;
+  logic wkup_detector_7_filter_7_busy;
   logic wkup_detector_7_miodio_7_qs;
   logic wkup_detector_7_miodio_7_wd;
+  logic wkup_detector_7_miodio_7_busy;
   logic wkup_detector_cnt_th_0_we;
   logic [7:0] wkup_detector_cnt_th_0_qs;
   logic [7:0] wkup_detector_cnt_th_0_wd;
+  logic wkup_detector_cnt_th_0_busy;
   logic wkup_detector_cnt_th_1_we;
   logic [7:0] wkup_detector_cnt_th_1_qs;
   logic [7:0] wkup_detector_cnt_th_1_wd;
+  logic wkup_detector_cnt_th_1_busy;
   logic wkup_detector_cnt_th_2_we;
   logic [7:0] wkup_detector_cnt_th_2_qs;
   logic [7:0] wkup_detector_cnt_th_2_wd;
+  logic wkup_detector_cnt_th_2_busy;
   logic wkup_detector_cnt_th_3_we;
   logic [7:0] wkup_detector_cnt_th_3_qs;
   logic [7:0] wkup_detector_cnt_th_3_wd;
+  logic wkup_detector_cnt_th_3_busy;
   logic wkup_detector_cnt_th_4_we;
   logic [7:0] wkup_detector_cnt_th_4_qs;
   logic [7:0] wkup_detector_cnt_th_4_wd;
+  logic wkup_detector_cnt_th_4_busy;
   logic wkup_detector_cnt_th_5_we;
   logic [7:0] wkup_detector_cnt_th_5_qs;
   logic [7:0] wkup_detector_cnt_th_5_wd;
+  logic wkup_detector_cnt_th_5_busy;
   logic wkup_detector_cnt_th_6_we;
   logic [7:0] wkup_detector_cnt_th_6_qs;
   logic [7:0] wkup_detector_cnt_th_6_wd;
+  logic wkup_detector_cnt_th_6_busy;
   logic wkup_detector_cnt_th_7_we;
   logic [7:0] wkup_detector_cnt_th_7_qs;
   logic [7:0] wkup_detector_cnt_th_7_wd;
+  logic wkup_detector_cnt_th_7_busy;
   logic wkup_detector_padsel_0_we;
   logic [5:0] wkup_detector_padsel_0_qs;
   logic [5:0] wkup_detector_padsel_0_wd;
@@ -1519,24 +1570,31 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_7_we;
   logic [5:0] wkup_detector_padsel_7_qs;
   logic [5:0] wkup_detector_padsel_7_wd;
-  logic wkup_cause_re;
   logic wkup_cause_we;
   logic wkup_cause_cause_0_qs;
   logic wkup_cause_cause_0_wd;
+  logic wkup_cause_cause_0_busy;
   logic wkup_cause_cause_1_qs;
   logic wkup_cause_cause_1_wd;
+  logic wkup_cause_cause_1_busy;
   logic wkup_cause_cause_2_qs;
   logic wkup_cause_cause_2_wd;
+  logic wkup_cause_cause_2_busy;
   logic wkup_cause_cause_3_qs;
   logic wkup_cause_cause_3_wd;
+  logic wkup_cause_cause_3_busy;
   logic wkup_cause_cause_4_qs;
   logic wkup_cause_cause_4_wd;
+  logic wkup_cause_cause_4_busy;
   logic wkup_cause_cause_5_qs;
   logic wkup_cause_cause_5_wd;
+  logic wkup_cause_cause_5_busy;
   logic wkup_cause_cause_6_qs;
   logic wkup_cause_cause_6_wd;
+  logic wkup_cause_cause_6_busy;
   logic wkup_cause_cause_7_qs;
   logic wkup_cause_cause_7_wd;
+  logic wkup_cause_cause_7_busy;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -12525,217 +12583,185 @@ module pinmux_reg_top (
   // Subregister 0 of Multireg wkup_detector_en
   // R[wkup_detector_en_0]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_0_we & wkup_detector_regwen_0_qs),
-    .wd     (wkup_detector_en_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[0].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_0_we & wkup_detector_regwen_0_qs),
+    .src_wd_i     (wkup_detector_en_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_0_busy),
+    .src_qs_o     (wkup_detector_en_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[0].q)
   );
 
   // Subregister 1 of Multireg wkup_detector_en
   // R[wkup_detector_en_1]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_1_we & wkup_detector_regwen_1_qs),
-    .wd     (wkup_detector_en_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[1].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_1_we & wkup_detector_regwen_1_qs),
+    .src_wd_i     (wkup_detector_en_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_1_busy),
+    .src_qs_o     (wkup_detector_en_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[1].q)
   );
 
   // Subregister 2 of Multireg wkup_detector_en
   // R[wkup_detector_en_2]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_2_we & wkup_detector_regwen_2_qs),
-    .wd     (wkup_detector_en_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[2].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_2_we & wkup_detector_regwen_2_qs),
+    .src_wd_i     (wkup_detector_en_2_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_2_busy),
+    .src_qs_o     (wkup_detector_en_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[2].q)
   );
 
   // Subregister 3 of Multireg wkup_detector_en
   // R[wkup_detector_en_3]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_3_we & wkup_detector_regwen_3_qs),
-    .wd     (wkup_detector_en_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[3].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_3_we & wkup_detector_regwen_3_qs),
+    .src_wd_i     (wkup_detector_en_3_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_3_busy),
+    .src_qs_o     (wkup_detector_en_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[3].q)
   );
 
   // Subregister 4 of Multireg wkup_detector_en
   // R[wkup_detector_en_4]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_4_we & wkup_detector_regwen_4_qs),
-    .wd     (wkup_detector_en_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[4].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_4_we & wkup_detector_regwen_4_qs),
+    .src_wd_i     (wkup_detector_en_4_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_4_busy),
+    .src_qs_o     (wkup_detector_en_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[4].q)
   );
 
   // Subregister 5 of Multireg wkup_detector_en
   // R[wkup_detector_en_5]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_5_we & wkup_detector_regwen_5_qs),
-    .wd     (wkup_detector_en_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[5].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_5_we & wkup_detector_regwen_5_qs),
+    .src_wd_i     (wkup_detector_en_5_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_5_busy),
+    .src_qs_o     (wkup_detector_en_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[5].q)
   );
 
   // Subregister 6 of Multireg wkup_detector_en
   // R[wkup_detector_en_6]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_6_we & wkup_detector_regwen_6_qs),
-    .wd     (wkup_detector_en_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[6].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_6_we & wkup_detector_regwen_6_qs),
+    .src_wd_i     (wkup_detector_en_6_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_6_busy),
+    .src_qs_o     (wkup_detector_en_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[6].q)
   );
 
   // Subregister 7 of Multireg wkup_detector_en
   // R[wkup_detector_en_7]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_en_7_we & wkup_detector_regwen_7_qs),
-    .wd     (wkup_detector_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_en[7].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_en_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_en_7_we & wkup_detector_regwen_7_qs),
+    .src_wd_i     (wkup_detector_en_7_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_en_7_busy),
+    .src_qs_o     (wkup_detector_en_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_en[7].q)
   );
 
 
@@ -12744,80 +12770,68 @@ module pinmux_reg_top (
   // R[wkup_detector_0]: V(False)
 
   // F[mode_0]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_0_mode_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
-    .wd     (wkup_detector_0_mode_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[0].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_0_mode_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
+    .src_wd_i     (wkup_detector_0_mode_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_0_mode_0_busy),
+    .src_qs_o     (wkup_detector_0_mode_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[0].mode.q)
   );
 
 
   // F[filter_0]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_0_filter_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
-    .wd     (wkup_detector_0_filter_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[0].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_0_filter_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
+    .src_wd_i     (wkup_detector_0_filter_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_0_filter_0_busy),
+    .src_qs_o     (wkup_detector_0_filter_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[0].filter.q)
   );
 
 
   // F[miodio_0]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_0_miodio_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
-    .wd     (wkup_detector_0_miodio_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[0].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_0_miodio_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_0_we & wkup_detector_regwen_0_qs),
+    .src_wd_i     (wkup_detector_0_miodio_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_0_miodio_0_busy),
+    .src_qs_o     (wkup_detector_0_miodio_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[0].miodio.q)
   );
 
 
@@ -12825,80 +12839,68 @@ module pinmux_reg_top (
   // R[wkup_detector_1]: V(False)
 
   // F[mode_1]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_1_mode_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
-    .wd     (wkup_detector_1_mode_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[1].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_1_mode_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
+    .src_wd_i     (wkup_detector_1_mode_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_1_mode_1_busy),
+    .src_qs_o     (wkup_detector_1_mode_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[1].mode.q)
   );
 
 
   // F[filter_1]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_1_filter_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
-    .wd     (wkup_detector_1_filter_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[1].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_1_filter_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
+    .src_wd_i     (wkup_detector_1_filter_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_1_filter_1_busy),
+    .src_qs_o     (wkup_detector_1_filter_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[1].filter.q)
   );
 
 
   // F[miodio_1]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_1_miodio_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
-    .wd     (wkup_detector_1_miodio_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[1].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_1_miodio_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_1_we & wkup_detector_regwen_1_qs),
+    .src_wd_i     (wkup_detector_1_miodio_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_1_miodio_1_busy),
+    .src_qs_o     (wkup_detector_1_miodio_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[1].miodio.q)
   );
 
 
@@ -12906,80 +12908,68 @@ module pinmux_reg_top (
   // R[wkup_detector_2]: V(False)
 
   // F[mode_2]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_2_mode_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
-    .wd     (wkup_detector_2_mode_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[2].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_2_mode_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
+    .src_wd_i     (wkup_detector_2_mode_2_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_2_mode_2_busy),
+    .src_qs_o     (wkup_detector_2_mode_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[2].mode.q)
   );
 
 
   // F[filter_2]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_2_filter_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
-    .wd     (wkup_detector_2_filter_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[2].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_2_filter_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
+    .src_wd_i     (wkup_detector_2_filter_2_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_2_filter_2_busy),
+    .src_qs_o     (wkup_detector_2_filter_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[2].filter.q)
   );
 
 
   // F[miodio_2]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_2_miodio_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
-    .wd     (wkup_detector_2_miodio_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[2].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_2_miodio_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_2_we & wkup_detector_regwen_2_qs),
+    .src_wd_i     (wkup_detector_2_miodio_2_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_2_miodio_2_busy),
+    .src_qs_o     (wkup_detector_2_miodio_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[2].miodio.q)
   );
 
 
@@ -12987,80 +12977,68 @@ module pinmux_reg_top (
   // R[wkup_detector_3]: V(False)
 
   // F[mode_3]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_3_mode_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
-    .wd     (wkup_detector_3_mode_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[3].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_3_mode_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
+    .src_wd_i     (wkup_detector_3_mode_3_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_3_mode_3_busy),
+    .src_qs_o     (wkup_detector_3_mode_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[3].mode.q)
   );
 
 
   // F[filter_3]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_3_filter_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
-    .wd     (wkup_detector_3_filter_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[3].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_3_filter_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
+    .src_wd_i     (wkup_detector_3_filter_3_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_3_filter_3_busy),
+    .src_qs_o     (wkup_detector_3_filter_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[3].filter.q)
   );
 
 
   // F[miodio_3]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_3_miodio_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
-    .wd     (wkup_detector_3_miodio_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[3].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_3_miodio_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_3_we & wkup_detector_regwen_3_qs),
+    .src_wd_i     (wkup_detector_3_miodio_3_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_3_miodio_3_busy),
+    .src_qs_o     (wkup_detector_3_miodio_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[3].miodio.q)
   );
 
 
@@ -13068,80 +13046,68 @@ module pinmux_reg_top (
   // R[wkup_detector_4]: V(False)
 
   // F[mode_4]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_4_mode_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
-    .wd     (wkup_detector_4_mode_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[4].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_4_mode_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
+    .src_wd_i     (wkup_detector_4_mode_4_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_4_mode_4_busy),
+    .src_qs_o     (wkup_detector_4_mode_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[4].mode.q)
   );
 
 
   // F[filter_4]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_4_filter_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
-    .wd     (wkup_detector_4_filter_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[4].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_4_filter_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
+    .src_wd_i     (wkup_detector_4_filter_4_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_4_filter_4_busy),
+    .src_qs_o     (wkup_detector_4_filter_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[4].filter.q)
   );
 
 
   // F[miodio_4]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_4_miodio_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
-    .wd     (wkup_detector_4_miodio_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[4].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_4_miodio_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_4_we & wkup_detector_regwen_4_qs),
+    .src_wd_i     (wkup_detector_4_miodio_4_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_4_miodio_4_busy),
+    .src_qs_o     (wkup_detector_4_miodio_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[4].miodio.q)
   );
 
 
@@ -13149,80 +13115,68 @@ module pinmux_reg_top (
   // R[wkup_detector_5]: V(False)
 
   // F[mode_5]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_5_mode_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
-    .wd     (wkup_detector_5_mode_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[5].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_5_mode_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
+    .src_wd_i     (wkup_detector_5_mode_5_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_5_mode_5_busy),
+    .src_qs_o     (wkup_detector_5_mode_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[5].mode.q)
   );
 
 
   // F[filter_5]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_5_filter_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
-    .wd     (wkup_detector_5_filter_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[5].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_5_filter_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
+    .src_wd_i     (wkup_detector_5_filter_5_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_5_filter_5_busy),
+    .src_qs_o     (wkup_detector_5_filter_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[5].filter.q)
   );
 
 
   // F[miodio_5]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_5_miodio_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
-    .wd     (wkup_detector_5_miodio_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[5].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_5_miodio_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_5_we & wkup_detector_regwen_5_qs),
+    .src_wd_i     (wkup_detector_5_miodio_5_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_5_miodio_5_busy),
+    .src_qs_o     (wkup_detector_5_miodio_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[5].miodio.q)
   );
 
 
@@ -13230,80 +13184,68 @@ module pinmux_reg_top (
   // R[wkup_detector_6]: V(False)
 
   // F[mode_6]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_6_mode_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
-    .wd     (wkup_detector_6_mode_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[6].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_6_mode_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
+    .src_wd_i     (wkup_detector_6_mode_6_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_6_mode_6_busy),
+    .src_qs_o     (wkup_detector_6_mode_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[6].mode.q)
   );
 
 
   // F[filter_6]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_6_filter_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
-    .wd     (wkup_detector_6_filter_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[6].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_6_filter_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
+    .src_wd_i     (wkup_detector_6_filter_6_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_6_filter_6_busy),
+    .src_qs_o     (wkup_detector_6_filter_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[6].filter.q)
   );
 
 
   // F[miodio_6]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_6_miodio_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
-    .wd     (wkup_detector_6_miodio_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[6].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_6_miodio_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_6_we & wkup_detector_regwen_6_qs),
+    .src_wd_i     (wkup_detector_6_miodio_6_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_6_miodio_6_busy),
+    .src_qs_o     (wkup_detector_6_miodio_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[6].miodio.q)
   );
 
 
@@ -13311,80 +13253,68 @@ module pinmux_reg_top (
   // R[wkup_detector_7]: V(False)
 
   // F[mode_7]: 2:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_wkup_detector_7_mode_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
-    .wd     (wkup_detector_7_mode_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[7].mode.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_7_mode_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
+    .src_wd_i     (wkup_detector_7_mode_7_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_7_mode_7_busy),
+    .src_qs_o     (wkup_detector_7_mode_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[7].mode.q)
   );
 
 
   // F[filter_7]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_7_filter_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
-    .wd     (wkup_detector_7_filter_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[7].filter.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_7_filter_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
+    .src_wd_i     (wkup_detector_7_filter_7_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_7_filter_7_busy),
+    .src_qs_o     (wkup_detector_7_filter_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[7].filter.q)
   );
 
 
   // F[miodio_7]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wkup_detector_7_miodio_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
-    .wd     (wkup_detector_7_miodio_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector[7].miodio.q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_7_miodio_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_7_we & wkup_detector_regwen_7_qs),
+    .src_wd_i     (wkup_detector_7_miodio_7_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_7_miodio_7_busy),
+    .src_qs_o     (wkup_detector_7_miodio_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector[7].miodio.q)
   );
 
 
@@ -13393,217 +13323,185 @@ module pinmux_reg_top (
   // Subregister 0 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_0]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_0_we & wkup_detector_regwen_0_qs),
-    .wd     (wkup_detector_cnt_th_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[0].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_0_we & wkup_detector_regwen_0_qs),
+    .src_wd_i     (wkup_detector_cnt_th_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_0_busy),
+    .src_qs_o     (wkup_detector_cnt_th_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[0].q)
   );
 
   // Subregister 1 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_1]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_1_we & wkup_detector_regwen_1_qs),
-    .wd     (wkup_detector_cnt_th_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[1].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_1_we & wkup_detector_regwen_1_qs),
+    .src_wd_i     (wkup_detector_cnt_th_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_1_busy),
+    .src_qs_o     (wkup_detector_cnt_th_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[1].q)
   );
 
   // Subregister 2 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_2]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_2_we & wkup_detector_regwen_2_qs),
-    .wd     (wkup_detector_cnt_th_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[2].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_2_we & wkup_detector_regwen_2_qs),
+    .src_wd_i     (wkup_detector_cnt_th_2_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_2_busy),
+    .src_qs_o     (wkup_detector_cnt_th_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[2].q)
   );
 
   // Subregister 3 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_3]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_3_we & wkup_detector_regwen_3_qs),
-    .wd     (wkup_detector_cnt_th_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[3].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_3_we & wkup_detector_regwen_3_qs),
+    .src_wd_i     (wkup_detector_cnt_th_3_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_3_busy),
+    .src_qs_o     (wkup_detector_cnt_th_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[3].q)
   );
 
   // Subregister 4 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_4]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_4_we & wkup_detector_regwen_4_qs),
-    .wd     (wkup_detector_cnt_th_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[4].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_4_we & wkup_detector_regwen_4_qs),
+    .src_wd_i     (wkup_detector_cnt_th_4_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_4_busy),
+    .src_qs_o     (wkup_detector_cnt_th_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[4].q)
   );
 
   // Subregister 5 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_5]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_5_we & wkup_detector_regwen_5_qs),
-    .wd     (wkup_detector_cnt_th_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[5].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_5_we & wkup_detector_regwen_5_qs),
+    .src_wd_i     (wkup_detector_cnt_th_5_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_5_busy),
+    .src_qs_o     (wkup_detector_cnt_th_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[5].q)
   );
 
   // Subregister 6 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_6]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_6_we & wkup_detector_regwen_6_qs),
-    .wd     (wkup_detector_cnt_th_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[6].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_6_we & wkup_detector_regwen_6_qs),
+    .src_wd_i     (wkup_detector_cnt_th_6_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_6_busy),
+    .src_qs_o     (wkup_detector_cnt_th_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[6].q)
   );
 
   // Subregister 7 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_7]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_wkup_detector_cnt_th_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wkup_detector_cnt_th_7_we & wkup_detector_regwen_7_qs),
-    .wd     (wkup_detector_cnt_th_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wkup_detector_cnt_th[7].q),
-
-    // to register interface (read)
-    .qs     (wkup_detector_cnt_th_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_detector_cnt_th_7_we & wkup_detector_regwen_7_qs),
+    .src_wd_i     (wkup_detector_cnt_th_7_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (wkup_detector_cnt_th_7_busy),
+    .src_qs_o     (wkup_detector_cnt_th_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_detector_cnt_th[7].q)
   );
 
 
@@ -13827,125 +13725,181 @@ module pinmux_reg_top (
 
 
   // Subregister 0 of Multireg wkup_cause
-  // R[wkup_cause]: V(True)
+  // R[wkup_cause]: V(False)
 
   // F[cause_0]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_0 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_0_wd),
-    .d      (hw2reg.wkup_cause[0].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[0].qe),
-    .q      (reg2hw.wkup_cause[0].q),
-    .qs     (wkup_cause_cause_0_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_0_wd),
+    .dst_de_i     (hw2reg.wkup_cause[0].de),
+    .dst_d_i      (hw2reg.wkup_cause[0].d),
+    .src_busy_o   (wkup_cause_cause_0_busy),
+    .src_qs_o     (wkup_cause_cause_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[0].q)
   );
 
 
   // F[cause_1]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_1 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_1_wd),
-    .d      (hw2reg.wkup_cause[1].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[1].qe),
-    .q      (reg2hw.wkup_cause[1].q),
-    .qs     (wkup_cause_cause_1_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_1_wd),
+    .dst_de_i     (hw2reg.wkup_cause[1].de),
+    .dst_d_i      (hw2reg.wkup_cause[1].d),
+    .src_busy_o   (wkup_cause_cause_1_busy),
+    .src_qs_o     (wkup_cause_cause_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[1].q)
   );
 
 
   // F[cause_2]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_2 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_2_wd),
-    .d      (hw2reg.wkup_cause[2].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[2].qe),
-    .q      (reg2hw.wkup_cause[2].q),
-    .qs     (wkup_cause_cause_2_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_2_wd),
+    .dst_de_i     (hw2reg.wkup_cause[2].de),
+    .dst_d_i      (hw2reg.wkup_cause[2].d),
+    .src_busy_o   (wkup_cause_cause_2_busy),
+    .src_qs_o     (wkup_cause_cause_2_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[2].q)
   );
 
 
   // F[cause_3]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_3 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_3_wd),
-    .d      (hw2reg.wkup_cause[3].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[3].qe),
-    .q      (reg2hw.wkup_cause[3].q),
-    .qs     (wkup_cause_cause_3_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_3_wd),
+    .dst_de_i     (hw2reg.wkup_cause[3].de),
+    .dst_d_i      (hw2reg.wkup_cause[3].d),
+    .src_busy_o   (wkup_cause_cause_3_busy),
+    .src_qs_o     (wkup_cause_cause_3_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[3].q)
   );
 
 
   // F[cause_4]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_4 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_4_wd),
-    .d      (hw2reg.wkup_cause[4].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[4].qe),
-    .q      (reg2hw.wkup_cause[4].q),
-    .qs     (wkup_cause_cause_4_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_4_wd),
+    .dst_de_i     (hw2reg.wkup_cause[4].de),
+    .dst_d_i      (hw2reg.wkup_cause[4].d),
+    .src_busy_o   (wkup_cause_cause_4_busy),
+    .src_qs_o     (wkup_cause_cause_4_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[4].q)
   );
 
 
   // F[cause_5]: 5:5
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_5 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_5_wd),
-    .d      (hw2reg.wkup_cause[5].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[5].qe),
-    .q      (reg2hw.wkup_cause[5].q),
-    .qs     (wkup_cause_cause_5_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_5_wd),
+    .dst_de_i     (hw2reg.wkup_cause[5].de),
+    .dst_d_i      (hw2reg.wkup_cause[5].d),
+    .src_busy_o   (wkup_cause_cause_5_busy),
+    .src_qs_o     (wkup_cause_cause_5_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[5].q)
   );
 
 
   // F[cause_6]: 6:6
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_6 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_6_wd),
-    .d      (hw2reg.wkup_cause[6].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[6].qe),
-    .q      (reg2hw.wkup_cause[6].q),
-    .qs     (wkup_cause_cause_6_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_6_wd),
+    .dst_de_i     (hw2reg.wkup_cause[6].de),
+    .dst_d_i      (hw2reg.wkup_cause[6].d),
+    .src_busy_o   (wkup_cause_cause_6_busy),
+    .src_qs_o     (wkup_cause_cause_6_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[6].q)
   );
 
 
   // F[cause_7]: 7:7
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
   ) u_wkup_cause_cause_7 (
-    .re     (wkup_cause_re),
-    .we     (wkup_cause_we),
-    .wd     (wkup_cause_cause_7_wd),
-    .d      (hw2reg.wkup_cause[7].d),
-    .qre    (),
-    .qe     (reg2hw.wkup_cause[7].qe),
-    .q      (reg2hw.wkup_cause[7].q),
-    .qs     (wkup_cause_cause_7_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wkup_cause_we),
+    .src_wd_i     (wkup_cause_cause_7_wd),
+    .dst_de_i     (hw2reg.wkup_cause[7].de),
+    .dst_d_i      (hw2reg.wkup_cause[7].d),
+    .src_busy_o   (wkup_cause_cause_7_busy),
+    .src_qs_o     (wkup_cause_cause_7_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wkup_cause[7].q)
   );
 
 
@@ -16202,7 +16156,6 @@ module pinmux_reg_top (
   assign wkup_detector_padsel_7_we = addr_hit[412] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_7_wd = reg_wdata[5:0];
-  assign wkup_cause_re = addr_hit[413] & reg_re & !reg_error;
   assign wkup_cause_we = addr_hit[413] & reg_we & !reg_error;
 
   assign wkup_cause_cause_0_wd = reg_wdata[0];
@@ -17960,6 +17913,113 @@ module pinmux_reg_top (
   always_comb begin
     reg_busy = '0;
     unique case (1'b1)
+      addr_hit[381]: begin
+        reg_busy = wkup_detector_en_0_busy;
+      end
+      addr_hit[382]: begin
+        reg_busy = wkup_detector_en_1_busy;
+      end
+      addr_hit[383]: begin
+        reg_busy = wkup_detector_en_2_busy;
+      end
+      addr_hit[384]: begin
+        reg_busy = wkup_detector_en_3_busy;
+      end
+      addr_hit[385]: begin
+        reg_busy = wkup_detector_en_4_busy;
+      end
+      addr_hit[386]: begin
+        reg_busy = wkup_detector_en_5_busy;
+      end
+      addr_hit[387]: begin
+        reg_busy = wkup_detector_en_6_busy;
+      end
+      addr_hit[388]: begin
+        reg_busy = wkup_detector_en_7_busy;
+      end
+      addr_hit[389]: begin
+        reg_busy =
+          wkup_detector_0_mode_0_busy |
+          wkup_detector_0_filter_0_busy |
+          wkup_detector_0_miodio_0_busy;
+      end
+      addr_hit[390]: begin
+        reg_busy =
+          wkup_detector_1_mode_1_busy |
+          wkup_detector_1_filter_1_busy |
+          wkup_detector_1_miodio_1_busy;
+      end
+      addr_hit[391]: begin
+        reg_busy =
+          wkup_detector_2_mode_2_busy |
+          wkup_detector_2_filter_2_busy |
+          wkup_detector_2_miodio_2_busy;
+      end
+      addr_hit[392]: begin
+        reg_busy =
+          wkup_detector_3_mode_3_busy |
+          wkup_detector_3_filter_3_busy |
+          wkup_detector_3_miodio_3_busy;
+      end
+      addr_hit[393]: begin
+        reg_busy =
+          wkup_detector_4_mode_4_busy |
+          wkup_detector_4_filter_4_busy |
+          wkup_detector_4_miodio_4_busy;
+      end
+      addr_hit[394]: begin
+        reg_busy =
+          wkup_detector_5_mode_5_busy |
+          wkup_detector_5_filter_5_busy |
+          wkup_detector_5_miodio_5_busy;
+      end
+      addr_hit[395]: begin
+        reg_busy =
+          wkup_detector_6_mode_6_busy |
+          wkup_detector_6_filter_6_busy |
+          wkup_detector_6_miodio_6_busy;
+      end
+      addr_hit[396]: begin
+        reg_busy =
+          wkup_detector_7_mode_7_busy |
+          wkup_detector_7_filter_7_busy |
+          wkup_detector_7_miodio_7_busy;
+      end
+      addr_hit[397]: begin
+        reg_busy = wkup_detector_cnt_th_0_busy;
+      end
+      addr_hit[398]: begin
+        reg_busy = wkup_detector_cnt_th_1_busy;
+      end
+      addr_hit[399]: begin
+        reg_busy = wkup_detector_cnt_th_2_busy;
+      end
+      addr_hit[400]: begin
+        reg_busy = wkup_detector_cnt_th_3_busy;
+      end
+      addr_hit[401]: begin
+        reg_busy = wkup_detector_cnt_th_4_busy;
+      end
+      addr_hit[402]: begin
+        reg_busy = wkup_detector_cnt_th_5_busy;
+      end
+      addr_hit[403]: begin
+        reg_busy = wkup_detector_cnt_th_6_busy;
+      end
+      addr_hit[404]: begin
+        reg_busy = wkup_detector_cnt_th_7_busy;
+      end
+      addr_hit[413]: begin
+        reg_busy =
+          wkup_cause_cause_0_busy |
+          wkup_cause_cause_1_busy |
+          wkup_cause_cause_2_busy |
+          wkup_cause_cause_3_busy |
+          wkup_cause_cause_4_busy |
+          wkup_cause_cause_5_busy |
+          wkup_cause_cause_6_busy |
+          wkup_cause_cause_7_busy;
+      end
       default: begin
         reg_busy  = '0;
       end
