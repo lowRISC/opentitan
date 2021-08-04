@@ -7,6 +7,7 @@ use anyhow::Result;
 /// Represents the SPI transfer mode.
 /// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
 /// for details about SPI transfer modes.
+#[derive(Debug, Clone, Copy)]
 pub enum TransferMode {
     /// `Mode0` is CPOL=0, CPHA=0.
     Mode0,
@@ -18,11 +19,38 @@ pub enum TransferMode {
     Mode3,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ClockPhase {
+    SampleLeading,
+    SampleTrailing,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ClockPolarity {
+    IdleLow,
+    IdleHigh,
+}
+
+impl TransferMode {
+    pub fn phase(&self) -> ClockPhase {
+        match self {
+            TransferMode::Mode0 | TransferMode::Mode2 => ClockPhase::SampleLeading,
+            TransferMode::Mode1 | TransferMode::Mode3 => ClockPhase::SampleTrailing,
+        }
+    }
+    pub fn polarity(&self) -> ClockPolarity {
+        match self {
+            TransferMode::Mode0 | TransferMode::Mode1 => ClockPolarity::IdleLow,
+            TransferMode::Mode2 | TransferMode::Mode3 => ClockPolarity::IdleHigh,
+        }
+    }
+}
+
 /// Represents a SPI transfer.
 pub enum Transfer<'rd, 'wr> {
     Read(&'rd mut [u8]),
     Write(&'wr [u8]),
-    Both(&'rd mut [u8], &'wr [u8]),
+    Both(&'wr [u8], &'rd mut [u8]),
 }
 
 /// A trait which represents a SPI Target.
@@ -45,6 +73,9 @@ pub trait Target {
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> usize;
 
+    /// Maximum chunksize handled by this SPI device.
+    fn max_chunk_size(&self) -> usize;
+
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.
-    fn run_transaction(&self, transaction: &[Transfer]) -> Result<()>;
+    fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()>;
 }
