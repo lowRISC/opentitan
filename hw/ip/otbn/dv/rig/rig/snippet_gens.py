@@ -18,6 +18,7 @@ from .gens.ecall import ECall
 from .gens.jump import Jump
 from .gens.loop import Loop
 from .gens.small_val import SmallVal
+from .gens.known_wdr import KnownWDR
 from .gens.straight_line_insn import StraightLineInsn
 
 from .gens.bad_deep_loop import BadDeepLoop
@@ -34,6 +35,7 @@ class SnippetGens:
         Loop,
         SmallVal,
         StraightLineInsn,
+        KnownWDR,
 
         ECall,
         BadDeepLoop,

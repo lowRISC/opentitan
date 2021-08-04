@@ -9,6 +9,7 @@ gen-weights:
   Loop: 0.1
   SmallVal: 0.05
   StraightLineInsn: 1.0
+  KnownWDR: 0.05
 
   # Generators that end the program
   ECall: 1
