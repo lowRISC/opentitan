@@ -3,4 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod console;
+pub mod gpio;
 pub mod hello;
+pub mod spi;
