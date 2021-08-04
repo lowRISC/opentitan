@@ -12,15 +12,10 @@ class dv_base_reg extends uvm_reg;
   local bit            is_shadowed;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
-  local bit            en_shadow_wr = 1;
   // In certain shadow reg (e.g. in AES), fatal error can lock write access
   local bit            shadow_fatal_lock;
   local string         update_err_alert_name;
   local string         storage_err_alert_name;
-
-  // atomic_shadow_wr: semaphore to guarantee atomicity of the two writes for shadowed registers.
-  // In case a parallel thread writing a different value to the same reg causing an update_err
-  semaphore            atomic_shadow_wr;
 
   // atomic_en_shadow_wr: semaphore to guarantee setting or resetting en_shadow_wr is unchanged
   // through the 1st/2nd (or both) writes
@@ -31,7 +26,6 @@ class dv_base_reg extends uvm_reg;
                int          has_coverage);
     super.new(name, n_bits, has_coverage);
     atomic_en_shadow_wr = new(1);
-    atomic_shadow_wr    = new(1);
   endfunction : new
 
   function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
@@ -142,17 +136,6 @@ class dv_base_reg extends uvm_reg;
     return staged_shadow_val;
   endfunction
 
-  function void set_en_shadow_wr(bit val);
-    // do not update en_shadow_wr if shadow register write is in process
-    if ((en_shadow_wr ^ val) && shadow_wr_staged) begin
-      `uvm_info(`gfn,
-          $sformatf("unable to %0s en_shadow_wr because register already completed first write",
-          val ? "set" : "clear"), UVM_HIGH)
-      return;
-    end
-    en_shadow_wr = val;
-  endfunction
-
   // A helper function for shadow register or field read to clear the `shadow_wr_staged` flag.
   virtual function void clear_shadow_wr_staged();
     if (is_shadowed) shadow_wr_staged = 0;
@@ -179,16 +162,18 @@ class dv_base_reg extends uvm_reg;
     shadow_update_err = 0;
   endfunction
 
-  // post_write callback to handle special regs:
+  // do_predict callback to handle special regs. This function doesn't update mirror values, but
+  // update local variables used for the special regs.
   // - shadow register: shadow reg won't be updated until the second write has no error
   // - lock register: if wen_fld is set to 0, change access policy to all the lockable_flds
   // TODO: create an `enable_field_access_policy` variable and set the template code during
   // automation.
-  virtual task post_write(uvm_reg_item rw);
+  virtual function void pre_do_predict(uvm_reg_item rw, uvm_predict_e kind);
     dv_base_reg_field fields[$];
 
     // no need to update shadow value or access type if access is not OK, as access is aborted
-    if (rw.status != UVM_IS_OK) return;
+    // no need to update if not write
+    if (rw.status != UVM_IS_OK || kind != UVM_PREDICT_WRITE) return;
 
     if (is_shadowed && !shadow_fatal_lock) begin
       // first write
@@ -218,9 +203,11 @@ class dv_base_reg extends uvm_reg;
         committed_val = staged_shadow_val;
         shadowed_val  = ~committed_val;
       end
+      lock_lockable_flds(committed_val);
+    end else begin
+      lock_lockable_flds(rw.value[0]);
     end
-    lock_lockable_flds(rw.value[0]);
-  endtask
+  endfunction
 
   // shadow register read will clear its phase tracker
   virtual task post_read(uvm_reg_item rw);
@@ -235,29 +222,6 @@ class dv_base_reg extends uvm_reg;
     return is_ext_reg;
   endfunction
 
-  // if it is a shadowed register, and is enabled to write it twice, this task will write the
-  // register twice with the same value and address.
-  virtual task write(output uvm_status_e     status,
-                     input uvm_reg_data_t    value,
-                     input uvm_path_e        path = UVM_DEFAULT_PATH,
-                     input uvm_reg_map       map = null,
-                     input uvm_sequence_base parent=null,
-                     input int               prior = -1,
-                     input uvm_object        extension = null,
-                     input string            fname = "",
-                     input int               lineno = 0);
-    if (is_shadowed) atomic_shadow_wr.get(1);
-    super.write(status, value, path, map, parent, prior, extension, fname, lineno);
-    if (is_shadowed && en_shadow_wr) begin
-      // If one of the shadow register write is successful (not aborted), the status will be
-      // UVM_IS_OK. Then predict function can predict according to the phase tracker.
-      uvm_status_e shadow_wr_status;
-      super.write(shadow_wr_status, value, path, map, parent, prior, extension, fname, lineno);
-      if (shadow_wr_status == UVM_IS_OK) status = shadow_wr_status;
-    end
-    if (is_shadowed) atomic_shadow_wr.put(1);
-  endtask
-
   // Override do_predict function to support shadow_reg.
   // Skip predict in one of the following conditions:
   // 1). It is shadow_reg's first write.
@@ -268,6 +232,7 @@ class dv_base_reg extends uvm_reg;
   virtual function void do_predict(uvm_reg_item      rw,
                                    uvm_predict_e     kind = UVM_PREDICT_DIRECT,
                                    uvm_reg_byte_en_t be = -1);
+    pre_do_predict(rw, kind);
     if (is_shadowed && kind != UVM_PREDICT_READ) begin
       if (shadow_update_err) begin
         `uvm_info(`gfn, $sformatf(
@@ -350,9 +315,7 @@ class dv_base_reg extends uvm_reg;
       committed_val     = get_mirrored_value();
       shadowed_val      = ~committed_val;
       // in case reset is issued during shadowed writes
-      void'(atomic_shadow_wr.try_get(1));
       void'(atomic_en_shadow_wr.try_get(1));
-      atomic_shadow_wr.put(1);
       atomic_en_shadow_wr.put(1);
     end
   endfunction
