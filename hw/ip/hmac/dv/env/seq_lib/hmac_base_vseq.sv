@@ -120,7 +120,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // can safely assume that the input array will always have 8 elements
   // since HMAC key size is always 256 bits
   virtual task wr_key(bit [TL_DW-1:0] key[]);
-    // pity we cant loop here
     foreach (key[i]) begin
       ral.key[i].set(key[7]);
       csr_update(.csr(ral.key[i]));
