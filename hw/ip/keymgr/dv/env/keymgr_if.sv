@@ -16,11 +16,9 @@ interface keymgr_if(input clk, input rst_n);
   rom_ctrl_pkg::keymgr_data_t     rom_digest;
 
   keymgr_pkg::hw_key_req_t kmac_key;
-  keymgr_pkg::hw_key_req_t hmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
 
   keymgr_pkg::hw_key_req_t kmac_key_exp;
-  keymgr_pkg::hw_key_req_t hmac_key_exp;
   keymgr_pkg::hw_key_req_t aes_key_exp;
 
   // connect KDF interface for assertion check
@@ -35,7 +33,6 @@ interface keymgr_if(input clk, input rst_n);
 
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
   bit is_kmac_key_good;
-  bit is_hmac_key_good;
   bit is_aes_key_good;
 
   // when kmac sideload key is generated, kmac may be used to do other OP, but once the OP is done,
@@ -82,10 +79,8 @@ interface keymgr_if(input clk, input rst_n);
   // reset local exp variables when reset is issued
   function automatic void reset();
     kmac_key_exp = '0;
-    hmac_key_exp = '0;
     aes_key_exp  = '0;
     is_kmac_key_good = 0;
-    is_hmac_key_good = 0;
     is_aes_key_good  = 0;
     is_kmac_sideload_avail = 0;
 
@@ -201,10 +196,6 @@ interface keymgr_if(input clk, input rst_n);
         is_kmac_sideload_avail   <= 1;
         kmac_sideload_key_shares <= key_shares;
       end
-      keymgr_pkg::Hmac: begin
-        hmac_key_exp     <= '{1'b1, key_shares};
-        is_hmac_key_good <= good_key;
-      end
       keymgr_pkg::Aes: begin
         aes_key_exp     <= '{1'b1, key_shares};
         is_aes_key_good <= good_key;
@@ -283,10 +274,6 @@ interface keymgr_if(input clk, input rst_n);
       forever begin
         @(posedge clk);
         if (!is_kmac_key_good) check_invalid_key(kmac_key, "KMAC");
-      end
-      forever begin
-        @(posedge clk);
-        if (!is_hmac_key_good) check_invalid_key(hmac_key, "HMAC");
       end
       forever begin
         @(posedge clk);

@@ -21,7 +21,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input [Shares-1:0][kmac_pkg::AppDigestW-1:0] data_i,
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
-  output hw_key_req_t hmac_key_o,
   output hw_key_req_t kmac_key_o,
   output otbn_key_req_t otbn_key_o
 );
@@ -65,13 +64,13 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   assign clr_key = (clr_key_i != SideLoadClrIdle);
 
   logic clr_all_keys;
-  assign clr_all_keys = !(clr_key_i inside {SideLoadClrIdle, SideLoadClrAes,
-                                            SideLoadClrHmac, SideLoadClrKmac,
+  assign clr_all_keys = !(clr_key_i inside {SideLoadClrIdle,
+                                            SideLoadClrAes,
+                                            SideLoadClrKmac,
                                             SideLoadClrOtbn});
 
-  logic aes_clr, hmac_clr, kmac_clr, otbn_clr;
+  logic aes_clr, kmac_clr, otbn_clr;
   assign aes_clr  = clr & (clr_all_keys | (clr_key_i == SideLoadClrAes));
-  assign hmac_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrHmac));
   assign kmac_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrKmac));
   assign otbn_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrOtbn));
 
@@ -125,9 +124,8 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     endcase // unique case (state_q)
   end
 
-  logic aes_sel, hmac_sel, kmac_sel, otbn_sel;
+  logic aes_sel, kmac_sel, otbn_sel;
   assign aes_sel  = dest_sel_i == Aes  & key_sel_i == HwKey;
-  assign hmac_sel = dest_sel_i == Hmac & key_sel_i == HwKey;
   assign kmac_sel = dest_sel_i == Kmac & key_sel_i == HwKey;
   assign otbn_sel = dest_sel_i == Otbn & key_sel_i == HwKey;
 
@@ -142,19 +140,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .key_i(data_truncated),
     .valid_o(aes_key_o.valid),
     .key_o(aes_key_o.key)
-  );
-
-  keymgr_sideload_key u_hmac_key (
-    .clk_i,
-    .rst_ni,
-    .en_i(keys_en),
-    .set_en_i(data_en_i),
-    .set_i(data_valid_i & hmac_sel),
-    .clr_i(hmac_clr),
-    .entropy_i(entropy_i),
-    .key_i(data_truncated),
-    .valid_o(hmac_key_o.valid),
-    .key_o(hmac_key_o.key)
   );
 
   keymgr_sideload_key #(

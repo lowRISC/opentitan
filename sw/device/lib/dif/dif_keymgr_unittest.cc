@@ -782,11 +782,6 @@ INSTANTIATE_TEST_SUITE_P(
             .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
         },
         GenerateVersionedKeyTestCase{
-            .dest = kDifKeymgrVersionedKeyDestHmac,
-            .exp_dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_HMAC,
-            .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
-        },
-        GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestKmac,
             .exp_dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_KMAC,
             .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,

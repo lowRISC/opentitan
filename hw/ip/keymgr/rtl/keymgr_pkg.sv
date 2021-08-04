@@ -46,8 +46,6 @@ package keymgr_pkg;
     256'h6EECBF9FC3C64230421DA1EAEC48F871070A3582E71AD4059D5D550784E9B9DE;
   parameter seed_t RndCnstAesSeedDefault =
     256'hC1104CD94EBA084FA6438188038006489F3DF38771214AE0BBA65CEB9BC2366F;
-  parameter seed_t RndCnstHmacSeedDefault =
-    256'h075CF7939313EEC797019BD0036D9500374A8FD9121CC8E78E1E3359D5F77C4E;
   parameter seed_t RndCnstKmacSeedDefault =
     256'h0A5CCCD9627BF6169B3A765D3D6D0CD89DBDCB7B6DF8D3C03746D60A0145D3ED;
   parameter seed_t RndCnstOtbnSeedDefault =
@@ -98,7 +96,6 @@ package keymgr_pkg;
   typedef enum logic [2:0] {
     None,
     Aes,
-    Hmac,
     Kmac,
     Otbn
   } keymgr_key_dest_e;
@@ -177,7 +174,6 @@ package keymgr_pkg;
   typedef enum logic [2:0] {
     SideLoadClrIdle,
     SideLoadClrAes,
-    SideLoadClrHmac,
     SideLoadClrKmac,
     SideLoadClrOtbn
   } keymgr_sideload_clr_e;

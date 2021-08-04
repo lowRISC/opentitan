@@ -2121,7 +2121,6 @@ module top_earlgrey #(
     .RndCnstSoftOutputSeed(RndCnstKeymgrSoftOutputSeed),
     .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed),
     .RndCnstAesSeed(RndCnstKeymgrAesSeed),
-    .RndCnstHmacSeed(RndCnstKeymgrHmacSeed),
     .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
     .RndCnstOtbnSeed(RndCnstKeymgrOtbnSeed),
     .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
@@ -2138,7 +2137,6 @@ module top_earlgrey #(
       .edn_o(edn0_edn_req[0]),
       .edn_i(edn0_edn_rsp[0]),
       .aes_key_o(),
-      .hmac_key_o(),
       .kmac_key_o(keymgr_kmac_key),
       .otbn_key_o(),
       .kmac_data_o(kmac_app_req[0]),

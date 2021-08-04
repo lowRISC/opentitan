@@ -892,7 +892,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
-      keymgr_pkg::Hmac: exp.KeyID = keymgr_pkg::RndCnstHmacSeedDefault;
       keymgr_pkg::Aes:  exp.KeyID = keymgr_pkg::RndCnstAesSeedDefault;
       keymgr_pkg::None: exp.KeyID = keymgr_pkg::RndCnstNoneSeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
