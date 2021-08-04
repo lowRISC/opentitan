@@ -615,6 +615,8 @@
             desc: "Current state for watchdog NMI"
           },
         ]
+        tags: [// nmi could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
       },
 
       { name: "ERR_STATUS",
