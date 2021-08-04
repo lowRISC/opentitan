@@ -33,17 +33,17 @@ typedef struct flash_ctrl_status {
    */
   bool rd_empty;
   /**
+   * Flash program FIFO full, software must consume data.
+   */
+  bool prog_full;
+  /**
+   * Flash program FIFO empty.
+   */
+  bool prog_empty;
+  /**
    * Flash controller undergoing init.
    */
   bool init_wip;
-  /**
-   * Flash operation done.
-   */
-  bool done;
-  /**
-   * Flash operation error.
-   */
-  bool err;
 } flash_ctrl_status_t;
 
 /**
@@ -54,10 +54,8 @@ typedef struct flash_ctrl_status {
  *
  * @param flash_ctrl flash controller device to check the status bits for.
  * @param[out] status_out The current status of the flash controller.
- * @return `kErrorFlashCtrlInvalidArgument` if `status` is NULL, `kErrorOk`
- * otherwise.
  */
-rom_error_t flash_ctrl_status_get(flash_ctrl_status_t *status);
+void flash_ctrl_status_get(flash_ctrl_status_t *status);
 
 /**
  * Region selection enumeration. Represents both the partition and the info
@@ -83,34 +81,85 @@ typedef enum flash_crtl_partition {
 } flash_ctrl_partition_t;
 
 /**
- * Start a read transaction.
+ * Perform a read transaction.
  *
  * The flash controller will truncate to the closest, lower word aligned
  * address. For example, if 0x13 is supplied, the controller will perform a read
  * at address 0x10.
  *
+ * On success, `data` is populated with the read data.
+ *
+ * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
+ * internal error mask for flash_ctrl, which can be checked against the
+ * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
+ *
  * @param addr The address to read from.
  * @param word_count The number of bus words the flash operation should read.
  * @param region The region to read from.
+ * @param[out] data The buffer to store the read data.
+ * @param[out] err The internal error state of flash_ctrl.
  * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
- * transaction, `kErrorOk` otherwise.
+ * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
+ * otherwise.
  */
-rom_error_t flash_ctrl_read_start(uint32_t addr, uint32_t word_count,
-                                  flash_ctrl_partition_t region);
+rom_error_t flash_ctrl_read(uint32_t addr, uint32_t word_count,
+                            flash_ctrl_partition_t region, uint32_t *data);
+
+typedef enum flash_ctrl_erase_type {
+  /**
+   * Erase a page.
+   */
+  kFlashCtrlErasePage = 0x0000,
+  /**
+   * Erase a bank.
+   */
+  kFlashCtrlEraseBank = 0x0080,
+} flash_ctrl_erase_type_t;
 
 /**
- * Read data from the read FIFO.
+ * Perform a program transaction.
  *
- * Attempts to read `word_count` words from the read FIFO.
+ * The flash controller will truncate to the closest, lower word aligned
+ * address. For example, if 0x13 is supplied, the controller will start writing
+ * at address 0x10.
  *
- * It is up to the caller to call `flash_ctrl_status_get()` to ensure the
- * flash controller completed this transaction successfully.
+ * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
+ * internal error mask for flash_ctrl, which can be checked against the
+ * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
  *
- * @param word_count The number of words to read.
- * @param data_out The region in memory to store the data read off the FIFO.
- * @return The number of words read from the FIFO.
+ * @param addr The address to write to.
+ * @param word_count The number of bus words the flash operation should program.
+ * @param region The region to program.
+ * @param data The buffer containing the data to program to flash.
+ * @param[out] err The internal error state of flash_ctrl.
+ * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
+ * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
+ * otherwise.
  */
-size_t flash_ctrl_fifo_read(size_t word_count, uint32_t *data_out);
+rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
+                            flash_ctrl_partition_t region,
+                            const uint32_t *data);
+
+/**
+ * Invoke a blocking erase transaction.
+ *
+ * The flash controller will truncate to the closest page boundary for page
+ * erase operations, and to the nearest bank aligned boundary for bank erase
+ * operations.
+ *
+ * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
+ * internal error mask for flash_ctrl, which can be checked against the
+ * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
+ *
+ * @param addr The address that falls within the bank or page being deleted.
+ * @param region The region that contains the bank or page being deleted.
+ * @param[out] err The internal error state of flash_ctrl.
+ * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
+ * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
+ * otherwise.
+ */
+rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t region,
+                             flash_ctrl_erase_type_t type);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
