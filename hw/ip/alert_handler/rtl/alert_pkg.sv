@@ -48,6 +48,15 @@ package alert_pkg;
     cstate_e [N_CLASSES-1:0]                class_esc_state; // current escalation protocol state
   } alert_crashdump_t;
 
+  // Default for dangling connection
+  parameter alert_crashdump_t ALERT_CRASHDUMP_DEFAULT = '{
+    alert_cause: '0,
+    loc_alert_cause: '0,
+    class_accum_cnt: '0,
+    class_esc_cnt: '0,
+    class_esc_state: '0
+  };
+
   // breakout wrapper structs
   typedef struct packed {
     // alerts
