@@ -196,6 +196,27 @@ are checked in.
 There is an over-arching build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
 This is used by an Azure Pipelines pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
 
+## Automatic SV Code Formatting using Verible (Open Source)
+
+The open source Verible tool used for [style linting]({{< relref "#style-linting-using-verible-open-source" >}}) also supports an automatic code formatting mode for SystemVerilog.
+The formatter follows our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md) and helps reducing manual code alignment steps.
+
+Note that this formatter is still under development and not entirely production ready yet due to some remaining formatting bugs and discrepancies - hence automatic code formatting is not enforced in CI at this point.
+However, the tool is mature enough for manual use on individual files (i.e., certain edits may have to be manually amended after using it).
+
+The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
+Hence, we encourage IP designers to install the tool as described [here]({{< relref "doc/ug/install_instructions/index.md#verible" >}}), and run their code through the formatter tool before creating a design pull request.
+
+The tool can be invoked on specific SystemVerilog files with the following command:
+```shell
+util/verible-format.py --inplace --files <path to SV files>
+
+```
+This is an in-place operation, hence it is recommended to commit all changes before invoking the formatter.
+
+Note that the formatter only edits whitespace.
+The tool performs an equivalency check before emitting the reformatted code to ensure that no errors are introduced.
+
 ## Getting Started Designing Hardware
 
 The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship, documentation, etc.
