@@ -15,6 +15,9 @@ enum RootCommandHierarchy {
     // Not flattened because `Console` is a leaf command.
     Console(command::console::Console),
 
+    Gpio(command::gpio::GpioCommand),
+    Spi(command::spi::SpiCommand),
+
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[structopt(flatten)]
     Greetings(command::hello::Greetings),

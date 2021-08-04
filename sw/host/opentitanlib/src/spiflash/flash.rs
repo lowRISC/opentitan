@@ -208,12 +208,25 @@ impl SpiFlash {
     }
 
     /// Read into `buffer` from the SPI flash starting at `address`.
-    pub fn read(&self, spi: &dyn Target, mut address: u32, buffer: &mut [u8]) -> Result<()> {
+    pub fn read(&self, spi: &dyn Target, address: u32, buffer: &mut [u8]) -> Result<()> {
+        self.read_with_progress(spi, address, buffer, |_, _| {})
+    }
+
+    /// Read into `buffer` from the SPI flash starting at `address`.
+    /// The `progress` callback will be invoked after each chunk of the read operation.
+    pub fn read_with_progress(
+        &self,
+        spi: &dyn Target,
+        mut address: u32,
+        buffer: &mut [u8],
+        progress: impl Fn(u32, u32),
+    ) -> Result<()> {
         // Break the read up according to the maximum chunksize the backend can handle.
         for chunk in buffer.chunks_mut(spi.max_chunk_size()) {
             let op_addr = self.opcode_with_address(SpiFlash::READ, address)?;
             spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Read(chunk)])?;
             address += chunk.len() as u32;
+            progress(address, chunk.len() as u32);
         }
         Ok(())
     }
@@ -221,6 +234,19 @@ impl SpiFlash {
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
     /// The address and length must be sector aligned.
     pub fn erase(&self, spi: &dyn Target, address: u32, length: u32) -> Result<()> {
+        self.erase_with_progress(spi, address, length, |_, _| {})
+    }
+
+    /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
+    /// The address and length must be sector aligned.
+    /// The `progress` callback will be invoked after each chunk of the erase operation.
+    pub fn erase_with_progress(
+        &self,
+        spi: &dyn Target,
+        address: u32,
+        length: u32,
+        progress: impl Fn(u32, u32),
+    ) -> Result<()> {
         if address % self.erase_size != 0 {
             return Err(Error::BadEraseAddress(address, self.erase_size).into());
         }
@@ -235,6 +261,7 @@ impl SpiFlash {
             let op_addr = self.opcode_with_address(SpiFlash::SECTOR_ERASE, addr)?;
             spi.run_transaction(&mut [Transfer::Write(&op_addr)])?;
             SpiFlash::wait_for_busy_clear(spi)?;
+            progress(addr, self.erase_size);
         }
         Ok(())
     }
@@ -242,7 +269,21 @@ impl SpiFlash {
     /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
     /// The address and buffer length may be arbitrary.  This function will not
     /// erase the segment first.
-    pub fn program(&self, spi: &dyn Target, mut address: u32, buffer: &[u8]) -> Result<()> {
+    pub fn program(&self, spi: &dyn Target, address: u32, buffer: &[u8]) -> Result<()> {
+        self.program_with_progress(spi, address, buffer, |_, _| {})
+    }
+
+    /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
+    /// The address and buffer length may be arbitrary.  This function will not
+    /// erase the segment first.
+    /// The `progress` callback will be invoked after each chunk of the program operation.
+    pub fn program_with_progress(
+        &self,
+        spi: &dyn Target,
+        mut address: u32,
+        buffer: &[u8],
+        progress: impl Fn(u32, u32),
+    ) -> Result<()> {
         let mut remain = buffer.len();
         let mut chunkstart = 0usize;
         while remain != 0 {
@@ -266,6 +307,7 @@ impl SpiFlash {
             address += chunk as u32;
             chunkstart += chunk;
             remain -= chunk;
+            progress(address, chunk as u32);
         }
         Ok(())
     }

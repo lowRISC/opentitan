@@ -7,13 +7,24 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use opentitanlib::transport::{EmptyTransport, Transport};
+use opentitanlib::util::parse_u16;
 
+pub mod ultradebug;
 pub mod verilator;
 
 #[derive(Debug, StructOpt)]
 pub struct BackendOpts {
-    #[structopt(long, default_value)]
+    #[structopt(long, default_value, help = "Name of the debug interface")]
     interface: String,
+
+    #[structopt(long, parse(try_from_str = parse_u16),
+                help="USB Vendor ID of the interface")]
+    usb_vid: Option<u16>,
+    #[structopt(long, parse(try_from_str = parse_u16),
+                help="USB Product ID of the interface")]
+    usb_pid: Option<u16>,
+    #[structopt(long, help = "USB serial number of the interface")]
+    usb_serial: Option<String>,
 
     #[structopt(flatten)]
     verilator_opts: verilator::VerilatorOpts,
@@ -30,6 +41,7 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     match args.interface.as_str() {
         "" => Ok(Box::new(EmptyTransport)),
         "verilator" => verilator::create(&args.verilator_opts),
+        "ultradebug" => ultradebug::create(&args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }
 }
