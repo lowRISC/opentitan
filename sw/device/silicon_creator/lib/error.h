@@ -97,6 +97,7 @@ enum module_ {
   X(kErrorOtbnUnavailable,            ERROR_(4, kModuleOtbn, kFailedPrecondition)), \
   X(kErrorFlashCtrlInvalidArgument,   ERROR_(1, kModuleFlashCtrl, kInvalidArgument)), \
   X(kErrorFlashCtrlBusy,              ERROR_(2, kModuleFlashCtrl, kUnavailable)), \
+  X(kErrorFlashCtrlInternal,          ERROR_(3, kModuleFlashCtrl, kInternal)), \
   X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
   X(kErrorSecMmioReadFault,           ERROR_(1, kModuleSecMmio, kInternal)), \
   X(kErrorSecMmioWriteFault,          ERROR_(2, kModuleSecMmio, kInternal)), \
