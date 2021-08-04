@@ -40,13 +40,14 @@ class BadAtEnd(Loop):
         assert 0 < room
         return (1.0 if room > 50 else 0.0)
 
-    def _gen_tail(self,
-                  num_insns: int,
-                  model: Model,
-                  program: Program) -> Optional[Tuple[List[ProgInsn], Model]]:
+    def _gen_tail_insns(self,
+                        num_insns: int,
+                        model: Model,
+                        program: Program) -> Optional[Tuple[List[ProgInsn],
+                                                            Model]]:
         assert num_insns > 0
         old_model = model.copy()
-        ret = super()._gen_tail(num_insns, model, program)
+        ret = super()._gen_tail_insns(num_insns, model, program)
         if ret is None:
             return None
 

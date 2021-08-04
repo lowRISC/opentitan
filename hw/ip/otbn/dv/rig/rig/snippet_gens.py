@@ -17,6 +17,7 @@ from .gens.branch import Branch
 from .gens.ecall import ECall
 from .gens.jump import Jump
 from .gens.loop import Loop
+from .gens.loop_dup_end import LoopDupEnd
 from .gens.small_val import SmallVal
 from .gens.known_wdr import KnownWDR
 from .gens.straight_line_insn import StraightLineInsn
@@ -34,6 +35,7 @@ class SnippetGens:
         Branch,
         Jump,
         Loop,
+        LoopDupEnd,
         SmallVal,
         StraightLineInsn,
         KnownWDR,

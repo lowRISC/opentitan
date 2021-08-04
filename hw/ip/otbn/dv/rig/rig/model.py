@@ -88,6 +88,79 @@ class CallStack:
         self._elts_at_top = [None] * len(self._elts_at_top)
 
 
+class LoopStack:
+    '''An abstract model of the loop stack
+
+    The idea is that most of the time, we push loop end addresses onto _stack
+    when entering a loop body and pop them off again when exiting. If something
+    goes wrong in the loop body and the pop address doesn't match, we throw
+    away the current stack (since we know it can never be popped) and increment
+    a "stuck" counter by that much.
+
+    This "stuck" counter, in turn, needs to be a range of possible values
+    because otherwise we can't merge branches (where one side might have had an
+    ill-formed loop, but the other didn't).
+
+    '''
+    stack_depth = 8
+
+    def __init__(self) -> None:
+        self._stack = []  # type: List[int]
+        self._min_stuck = 0
+        self._max_stuck = 0
+
+    def copy(self) -> 'LoopStack':
+        '''Return a deep copy of the loop stack'''
+        ret = LoopStack()
+        ret._stack = self._stack.copy()
+        ret._min_stuck = self._min_stuck
+        ret._max_stuck = self._max_stuck
+        return ret
+
+    def merge(self, other: 'LoopStack') -> None:
+        if self._stack == other._stack:
+            matching_stack = self._stack
+            ns_min = 0
+            ns_max = 0
+        else:
+            matching_stack = []
+            for a, b in zip(self._stack, other._stack):
+                if a == b:
+                    matching_stack.append(a)
+                else:
+                    break
+            new_stuck_self = len(self._stack) - len(matching_stack)
+            new_stuck_other = len(other._stack) - len(matching_stack)
+            ns_min = min(new_stuck_self, new_stuck_other)
+            ns_max = max(new_stuck_self, new_stuck_other)
+
+        self._stack = matching_stack
+        self._min_stuck = min(self._min_stuck, other._min_stuck) + ns_min
+        self._max_stuck = max(self._max_stuck, other._max_stuck) + ns_max
+
+    def push(self, end_addr: int) -> None:
+        assert self._max_stuck + len(self._stack) < LoopStack.stack_depth
+        self._stack.append(end_addr)
+
+    def pop(self, end_addr: int) -> None:
+        if self._stack:
+            exp_addr = self._stack.pop()
+            if exp_addr != end_addr:
+                to_add = len(self._stack) + 1
+                self._min_stuck += to_add
+                self._max_stuck += to_add
+                self._stack = []
+
+    def min_depth(self) -> int:
+        return self._min_stuck + len(self._stack)
+
+    def max_depth(self) -> int:
+        return self._max_stuck + len(self._stack)
+
+    def maybe_full(self) -> bool:
+        return self.max_depth() == LoopStack.stack_depth
+
+
 class Model:
     '''An abstract model of the processor and memories
 
@@ -96,8 +169,6 @@ class Model:
     following the instruction stream to this point.
 
     '''
-    max_loop_depth = 8
-
     def __init__(self, dmem_size: int, reset_addr: int, fuel: int) -> None:
         assert fuel >= 0
         self.initial_fuel = fuel
@@ -137,8 +208,8 @@ class Model:
         # arithmetic operation that got written to x1).
         self._call_stack = CallStack()
 
-        # The depth of the loop stack.
-        self.loop_depth = 0
+        # The loop stack.
+        self.loop_stack = LoopStack()
 
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         csrs = KnownMem(4096)
@@ -176,7 +247,7 @@ class Model:
             ret._const_stack.append({n: regs.copy()
                                      for n, regs in entry.items()})
         ret._call_stack = self._call_stack.copy()
-        ret.loop_depth = self.loop_depth
+        ret.loop_stack = self.loop_stack.copy()
         ret._known_mem = {n: mem.copy()
                           for n, mem in self._known_mem.items()}
         return ret
@@ -245,8 +316,7 @@ class Model:
         assert self._const_stack == other._const_stack
 
         self._call_stack.merge(other._call_stack)
-
-        assert self.loop_depth == other.loop_depth
+        self.loop_stack.merge(other.loop_stack)
 
         for mem_type, self_mem in self._known_mem.items():
             self_mem.merge(other._known_mem[mem_type])
