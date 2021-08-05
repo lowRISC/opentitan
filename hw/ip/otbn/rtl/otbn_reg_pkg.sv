@@ -167,6 +167,7 @@ package otbn_reg_pkg;
   parameter logic [0:0] OTBN_CMD_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_STATUS_RESVAL = 1'h 0;
   parameter logic [31:0] OTBN_INSN_CNT_RESVAL = 32'h 0;
+  parameter logic [31:0] OTBN_INSN_CNT_INSN_CNT_RESVAL = 32'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
