@@ -17,7 +17,7 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
 );
 
   logic [1:0] err;
-  logic [1:0] data_err;
+  logic data_err;
   tl_h2d_cmd_intg_t cmd;
   assign cmd = extract_h2d_cmd_intg(tl_i);
 
@@ -28,11 +28,9 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
     .err_o(err)
   );
 
-  prim_secded_39_32_dec u_data_chk (
-    .data_i({tl_i.a_user.data_intg, DataMaxWidth'(tl_i.a_data)}),
-    .data_o(),
-    .syndrome_o(),
-    .err_o(data_err)
+  tlul_data_integ_dec u_tlul_data_integ_dec (
+    .data_intg_i({tl_i.a_user.data_intg, DataMaxWidth'(tl_i.a_data)}),
+    .data_err_o(data_err)
   );
 
   // error output is transactional, it is up to the instantiating module
