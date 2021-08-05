@@ -13,6 +13,160 @@
                      "hw/ip/tlul/data/tlul_testplan.hjson"]
 
   testpoints: [
+
+    //////////////////
+    // Host Device  //
+    // RV_CORE_IBEX //
+    //////////////////
+    //
+    // Note: the Debug Module will be referred to as RVDM.
+    {
+      name: chip_ibex_debug_basic
+      desc: '''Verify correct operation of rv_core_ibex while in debug mode.
+
+            Trigger the RVDM to send a debug request to rv_core_ibex, which should then jump to the
+            debug ROM and execute the code there before returning via `dret` and executing the rest
+            of the main program.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_debug_single_step_test
+      desc: '''Verify correct operation of rv_core_ibex while single-step debugging.
+
+            Set `dcsr.step` in the core.
+            Trigger the RVDM to send a debug request to rv_core_ibex, which should then jump to the
+            debug ROM and start code execution.
+            Write `dmcontrol.resumereq`, and check that the core jumps out of debug mode, executes
+            one instruction, then jumps back into debug mode.
+            Do this a random number of times before returning via `dret`and executing the rest of
+            the main program.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_debug_ebreak_test
+      desc: '''Verify functionality of EBREAK logic at the system level.
+
+            Trigger the RVDM to send a debug request to rv_core_ibex, which should then jump to the
+            debug ROM and start code execution.
+            Insert `ebreak` instruction into the debug ROM, and check that the hart completely
+            halts, and restarts execution of the debug ROM.
+
+            TODO: similar to block level test, do we need this feature tested again?
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_interrupt_test
+      desc: '''Verify correct operation of rv_core_ibex when taking interrupts from PLIC.
+
+            Trigger random interrupts from the PLIC, and check that the core takes the correct
+            interrupt, jumps to the proper handler, and returns to finish execution of the main
+            program.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_recoverable_nmi_test
+      desc: '''Verify correct operation of rv_core_ibex recoverable NMI functionality.
+
+            TODO: Greg to check with SW team if this mechanism still is sensible.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_mixed_use_sw_test
+      desc: '''Check with Chris Frantz for mixed use A/B SW usecases.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_vat_error_test
+      desc: '''Verify correct operation of virtual-address-translation error cases.
+
+            Configure the PMP regions and the address translation address registers such that PMP
+            covers a larger valid address region than the address translation.
+
+            Access addresses that are mapped by PMP but unmapped by the translation scheme, and
+            verify that the erroneous address passes through to the TLUL fabric and triggers a bus
+            error, and that the core responds appropriately to the bus error.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_device_error_test
+      desc: '''Verify that device errors are routed back to the core correctly.
+
+            Trigger errors in various devices (posibbly by accessing unmapped addresses for each
+            device) and check that the error is registered by Ibex and that the core then traps to
+            the appropriate exception handler and continues execution.
+
+            TODO: check with Sri if top level xbar tests covers error connectivity
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_double_fault_test
+      desc: '''Verify that double faults are handled correctly by the core.
+
+            Trigger several random and directed double fault scenarios, check that the watchdog
+            sends an NMI to the core and then reboots the system, and check that crashdump
+            information in the reset manager afterwards.
+
+            Random double faults can be as simple as inserting an `ebreak` instruction into the
+            `ebreak` exception handler to keep the core looping into the exception handler to run
+            down the watchdog timer.
+
+            TODO: Check with Greg about specific directed double fault cases.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_wfi_test
+      desc: '''Verify system-level impact of WFI.
+
+            Insert a `WFI` instruction into the program, and have Ibex execute it.
+            Verify that the core goes to sleep, and that the pwrmgr has registered this and reacts
+            correctly by going into the low power state.
+            Then trigger either the PLIC or RVDM to send stimulus to the core to wake it up, ROM
+            should re-check its contents and system execution should continue as normal.
+
+            Xref'd with pwrmgr tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_ram_config_test
+      desc: '''Verify connectivity of RAM config bits in the Icache.
+
+            TODO: formal connectivity will handle this?
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ibex_hartid_test
+      desc: '''Verify accessibility of the `mhartid` CSR.
+
+            Relatively simple test, read out the `mhartid` CSR and verify the hart ID.
+            Write some random data to `mhartid` and read it out again, verify that it has not
+            changed.
+            '''
+      milestone: V2
+      tests: []
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // IO Peripherals                                                        //
     // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM //
