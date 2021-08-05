@@ -100,6 +100,10 @@ package otbn_reg_pkg;
       logic        d;
       logic        de;
     } fatal_reg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_illegal_bus_access;
   } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
@@ -119,6 +123,10 @@ package otbn_reg_pkg;
       logic        d;
       logic        de;
     } reg_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } illegal_bus_access;
   } otbn_hw2reg_fatal_alert_cause_reg_t;
 
   typedef struct packed {
@@ -138,10 +146,10 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [58:57]
-    otbn_hw2reg_status_reg_t status; // [56:56]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [55:40]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [39:32]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [62:61]
+    otbn_hw2reg_status_reg_t status; // [60:60]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [59:42]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [41:32]
     otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [31:0]
   } otbn_hw2reg_t;
 
@@ -198,7 +206,7 @@ package otbn_reg_pkg;
     4'b 0001, // index[ 3] OTBN_ALERT_TEST
     4'b 0001, // index[ 4] OTBN_CMD
     4'b 0001, // index[ 5] OTBN_STATUS
-    4'b 0001, // index[ 6] OTBN_ERR_BITS
+    4'b 0011, // index[ 6] OTBN_ERR_BITS
     4'b 1111, // index[ 7] OTBN_START_ADDR
     4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
     4'b 0001, // index[ 9] OTBN_SEC_WIPE

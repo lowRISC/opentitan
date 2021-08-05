@@ -89,7 +89,12 @@ typedef enum dif_otbn_err_bits {
   /** Error seen in Dmem read */
   kDifOtbnErrBitsFatalDmem = (1 << 6),
   /** Error seen in RF read */
-  kDifOtbnErrBitsFatalReg = (1 << 7)
+  kDifOtbnErrBitsFatalReg = (1 << 7),
+  /**
+   * A bus-accessible register or memory was read or written while when it was
+   * not allowed.
+   */
+  kDifOtbnErrBitsFatalIllegalBusAccess = (1 << 8),
 } dif_otbn_err_bits_t;
 
 /**

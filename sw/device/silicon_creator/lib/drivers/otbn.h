@@ -65,7 +65,12 @@ typedef enum otbn_err_bits {
   /** Error seen in Dmem read */
   kOtbnErrBitsFatalDmem = (1 << 6),
   /** Error seen in RF read */
-  kOtbnErrBitsFatalReg = (1 << 7)
+  kOtbnErrBitsFatalReg = (1 << 7),
+  /**
+   * A bus-accessible register or memory was read or written while when it was
+   * not allowed.
+   */
+  kOtbnErrBitsFatalIllegalBusAccess = (1 << 8),
 } otbn_err_bits_t;
 
 /**

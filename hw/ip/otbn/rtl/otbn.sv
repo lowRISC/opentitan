@@ -587,6 +587,9 @@ module otbn
   assign hw2reg.err_bits.fatal_reg.de = done;
   assign hw2reg.err_bits.fatal_reg.d = err_bits.fatal_reg;
 
+  assign hw2reg.err_bits.fatal_illegal_bus_access.de = done;
+  assign hw2reg.err_bits.fatal_illegal_bus_access.d = err_bits.fatal_illegal_bus_access;
+
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
   logic [top_pkg::TL_DW-ImemAddrWidth-1:0] unused_start_addr_bits;
@@ -603,6 +606,8 @@ module otbn
   // TODO: Register file errors
   assign hw2reg.fatal_alert_cause.reg_error.de = 0;
   assign hw2reg.fatal_alert_cause.reg_error.d  = 0;
+  assign hw2reg.fatal_alert_cause.illegal_bus_access.de = 1'b0; // TODO: implement
+  assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = 1'b0; // TODO: implement
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
