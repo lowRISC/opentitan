@@ -178,6 +178,7 @@
       fields: [
         { bits: "0",
           name: "bad_data_addr"
+          resval: 0,
           desc: '''
             A DMEM read or write occurred with an out of bounds or unaligned
             address.
@@ -185,11 +186,13 @@
         }
         { bits: "1",
           name: "bad_insn_addr"
+          resval: 0,
           desc: '''
             An IMEM read occurred with an out of bounds or unaligned address.
           '''
         }
         { bits: "2",
+          resval: 0,
           name: "call_stack"
           desc: '''
             A instruction tried to pop from an empty call stack or push to a
@@ -197,6 +200,7 @@
           '''
         }
         { bits: "3",
+          resval: 0,
           name: "illegal_insn"
           desc: '''
             One of the following happened:
@@ -208,6 +212,7 @@
         }
         { bits: "4",
           name: "loop"
+          resval: 0,
           desc: '''
             One of the following happened:
             <ul>
@@ -224,14 +229,17 @@
         }
         { bits: "5",
           name: "fatal_imem"
+          resval: 0,
           desc: "A fatal error was seen on an instruction fetch."
         }
         { bits: "6",
           name: "fatal_dmem"
+          resval: 0,
           desc: "A fatal error was seen on a DMEM read."
         }
         { bits: "7",
           name: "fatal_reg"
+          resval: 0,
           desc: "A fatal error was seen on a GPR or WDR read."
         }
       ]
@@ -317,6 +325,7 @@
       fields: [
         { bits: "31:0",
           name: "insn_cnt",
+          resval: 0,
           desc: '''
             The number of instructions executed in the current or last OTBN run.
             Saturates at 2^32-1. The counter is reset to zero when a new operation
