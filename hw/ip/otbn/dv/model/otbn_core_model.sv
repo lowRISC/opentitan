@@ -143,8 +143,8 @@ module otbn_core_model
     end
   end
 
-  assign err_bits_o = raw_err_bits_q[7:0];
-  assign unused_raw_err_bits = ^raw_err_bits_q[31:8];
+  assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
+  assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
 
   assign insn_cnt_o = insn_cnt_q;
 
@@ -199,4 +199,3 @@ module otbn_core_model
 
 endmodule
 `endif // SYNTHESIS
-

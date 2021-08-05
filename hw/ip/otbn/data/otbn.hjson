@@ -242,6 +242,14 @@
           resval: 0,
           desc: "A fatal error was seen on a GPR or WDR read."
         }
+        { bits: "8",
+          name: "fatal_illegal_bus_access"
+          resval: 0,
+          desc: '''
+            A bus-accessible register or memory was read or written while when
+            it was not allowed.
+            '''
+        }
       ]
     } // register : err_bits
     { name: "START_ADDR",
@@ -292,6 +300,14 @@
           name: "reg_error",
           resval: 0,
           desc: "Set on any integrity error in a register file"
+        }
+        { bits: "4",
+          name: "illegal_bus_access"
+          resval: 0,
+          desc: '''
+            A bus-accessible register or memory was read or written while when
+            it was not allowed.
+            '''
         }
       ]
     } // register : fatal_alert_cause
@@ -350,9 +366,7 @@
           Instruction Memory.
 
           This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
-          Accesses while OTBN is busy are blocking.
-
-          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
+          Accesses while OTBN is not idle result in a fatal error, setting the fatal_illegal_bus_access error bit.
         '''
       }
     }
@@ -370,9 +384,7 @@
           Data Memory.
 
           This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
-          Accesses while OTBN is busy are blocking.
-
-          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
+          Accesses while OTBN is not idle result in a fatal error, setting the fatal_illegal_bus_access error bit.
         '''
       }
     }

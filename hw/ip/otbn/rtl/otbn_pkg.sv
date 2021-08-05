@@ -52,9 +52,9 @@ package otbn_pkg;
 
   // Error bits
   //
-  // Note: These errors are duplicated in the register HJSON (../data/otbn.hjson), the ISS
-  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating them here, update those too.
+  // Note: These errors are duplicated in other places. If updating them here, update those too.
   typedef struct packed {
+    logic fatal_illegal_bus_access;
     logic fatal_reg;
     logic fatal_dmem;
     logic fatal_imem;
