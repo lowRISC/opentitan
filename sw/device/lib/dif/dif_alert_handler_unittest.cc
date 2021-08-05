@@ -778,7 +778,13 @@ TEST_F(CauseTest, IsCause) {
 }
 
 TEST_F(CauseTest, Ack) {
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET, {{11, true}});
+  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET,
+                 {{ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true}});
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&handler_, 0),
+            kDifAlertHandlerOk);
+
+  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_11_REG_OFFSET,
+                 {{ALERT_HANDLER_ALERT_CAUSE_11_A_11_BIT, true}});
   EXPECT_EQ(dif_alert_handler_alert_acknowledge(&handler_, 11),
             kDifAlertHandlerOk);
 }

@@ -696,6 +696,8 @@ dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
       ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
   uint32_t cause_reg =
       mmio_region_read32(handler->params.base_addr, cause_reg_offset);
+  // NOTE: assuming all cause registers across all alerts use the same bit index
+  // for the cause bit
   *is_cause =
       bitfield_bit32_read(cause_reg, ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT);
 
@@ -708,9 +710,13 @@ dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
     return kDifAlertHandlerBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(0, alert, true);
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET, reg);
+  ptrdiff_t cause_reg_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  // NOTE: assuming all cause registers across all alerts use the same bit index
+  // for the cause bit
+  uint32_t cause_reg =
+      bitfield_bit32_write(0, ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true);
+  mmio_region_write32(handler->params.base_addr, cause_reg_offset, cause_reg);
 
   return kDifAlertHandlerOk;
 }
