@@ -797,27 +797,31 @@ TEST_F(CauseTest, BadAlert) {
             kDifAlertHandlerBadArg);
 }
 
-// TEST_F(CauseTest, IsCauseLocal) {
-//   bool flag;
+TEST_F(CauseTest, IsCauseLocal) {
+  bool flag;
 
-//   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET,
-//                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_0_BIT, true},
-//                  {ALERT_HANDLER_LOC_ALERT_CAUSE_1_LA_1_BIT, true}});
-//   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-//                 &handler_, kDifAlertHandlerLocalAlertEscalationPingFail,
-//                 &flag),
-//             kDifAlertHandlerOk);
-//   EXPECT_TRUE(flag);
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_1_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CAUSE_1_LA_1_BIT, true}});
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
+                &handler_, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
+            kDifAlertHandlerOk);
+  EXPECT_TRUE(flag);
 
-//   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET,
-//                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_0_BIT, true},
-//                  {ALERT_HANDLER_LOC_ALERT_CAUSE_1_LA_1_BIT, true}});
-//   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-//                 &handler_, kDifAlertHandlerLocalAlertAlertIntegrityFail,
-//                 &flag),
-//             kDifAlertHandlerOk);
-//   EXPECT_FALSE(flag);
-// }
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
+                &handler_, kDifAlertHandlerLocalAlertBusIntegrityFail, &flag),
+            kDifAlertHandlerOk);
+  EXPECT_TRUE(flag);
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, false}});
+  EXPECT_EQ(
+      dif_alert_handler_local_alert_is_cause(
+          &handler_, kDifAlertHandlerLocalAlertEscalationIntegrityFail, &flag),
+      kDifAlertHandlerOk);
+  EXPECT_FALSE(flag);
+}
 
 TEST_F(CauseTest, AckLocal) {
   EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
