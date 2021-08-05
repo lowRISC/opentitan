@@ -36,8 +36,7 @@ If the system is not in a low power mode, the IRQ is immediately serviced.
 Both the wakeup and the IRQ signals remain asserted until system reset or explicit acknowledgement by software.
 This first threshold is known as the watchdog bark.
 
-Note that it is not recommended to connect this IRQ to a non-maskable interrupt (NMI) pin.
-This would require the start-up (ROM) code to be able to handle the watchdog bark, or the core might get stuck when resuming from low-power modes.
+An extra interrupt output is available to connect the watchdog bark output to a non-maskable interrupt pin if required.
 
 When the second threshold is met (this is known as the watchdog bite), a reset request is sent to the power manager which will trigger a system reset.
 This is independent of the IRQ sent as part of the watchdog bark.
@@ -78,9 +77,9 @@ The always-on timer will run on a ~200KHz clock.
 The timers themselves are 32b wide, giving a maximum timeout window of roughly ~6 hours.
 For the wakeup timer, the pre-scaler extends the maximum timeout to ~1000 days.
 
-Register reads via the TLUL interface are synchronized to the slow clock via a single asynchronous fifo.
-This synchronization guarantees that updates have propagated into the underlying registers on completion of a write.
-Note that as a consequence of this, reads and writes to the AON Timer peripheral will cause the CPU to stall.
+Register reads via the TLUL interface are synchronized to the slow clock using the "async" register generation feature.
+This means that writes can complete before the data has reached its underlying register in the slow clock domain.
+If software needs to guarantee completion of a register write, it can read back the register value (which will guarantee the completion of all previous writes to the peripheral).
 
 # Programmers Guide
 
@@ -101,6 +100,8 @@ Pet the watchdog by writing zero to the {{<regref"WDOG_COUNT">}} register.
 If either timer reaches the programmed threshold, interrupts are generated from the AON_TIMER module.
 Disable or reinitialize the wakeup timer if required by clearing the enable bit in {{<regref"WKUP_CTRL">}} or clearing the timer value in {{<regref"WKUP_COUNT">}}.
 Clear the interrupt by writing 1 into the Interrupt Status Register {{<regref "INTR_STATE">}}.
+
+If the timer has caused a wakeup event ({{<regref"WKUP_CAUSE">}} is set) then clear the wakeup request by writing 0 to {{<regref"WKUP_CAUSE">}}.
 
 ## Device Interface Functions (DIFs)
 
