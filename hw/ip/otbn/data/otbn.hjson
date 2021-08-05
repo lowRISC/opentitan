@@ -281,17 +281,17 @@
         { bits: "1",
           name: "imem_error",
           resval: 0,
-          desc: "Set on any ECC error in IMEM"
+          desc: "Set on any integrity error in IMEM"
         }
         { bits: "2",
           name: "dmem_error",
           resval: 0,
-          desc: "Set on any ECC error in DMEM"
+          desc: "Set on any integrity error in DMEM"
         }
         { bits: "3",
           name: "reg_error",
           resval: 0,
-          desc: "Set on any ECC error in a register file"
+          desc: "Set on any integrity error in a register file"
         }
       ]
     } // register : fatal_alert_cause
