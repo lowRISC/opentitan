@@ -22,8 +22,8 @@ using ::mock_mmio::MockDevice;
 using ::testing::_;
 using ::testing::Return;
 
-constexpr uint32_t kAlerts = 12;
-constexpr uint32_t kAllOnes = std::numeric_limits<uint32_t>::max();
+constexpr uint32_t kAlerts = ALERT_HANDLER_PARAM_N_ALERTS;
+constexpr uint32_t kAllZeros = 0;
 
 class AlertTest : public testing::Test, public MmioTest {
  protected:
@@ -85,7 +85,7 @@ class ConfigTest : public AlertTest {
     handler_.params.base_addr = dev().region();
 
     // Make sure that the peripheral looks unlocked.
-    ON_CALL(*dev_, Read32(_)).WillByDefault(Return(kAllOnes));
+    ON_CALL(*dev_, Read32(_)).WillByDefault(Return(kAllZeros));
   }
 };
 
@@ -350,241 +350,241 @@ TEST_F(ConfigTest, ClassInit) {
             kDifAlertHandlerConfigOk);
 }
 
-// TEST_F(ConfigTest, BadAlert) {
-// IgnoreMmioCalls();
+TEST_F(ConfigTest, BadAlert) {
+  IgnoreMmioCalls();
 
-// std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, kAlerts + 1};
-// std::vector<dif_alert_handler_local_alert_t> locals_a = {
-// kDifAlertHandlerLocalAlertEscalationPingFail,
-//};
-// std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
-//{.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
-//{.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
-//};
-// std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
-//{.phase = kDifAlertHandlerClassStatePhase1, .cycles = 20000},
-//{.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
-//};
+  std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, kAlerts + 1};
+  std::vector<dif_alert_handler_local_alert_t> locals_a = {
+      kDifAlertHandlerLocalAlertEscalationPingFail,
+  };
+  std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
+      {.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
+  };
+  std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
+      {.phase = kDifAlertHandlerClassStatePhase1, .cycles = 20000},
+      {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
+  };
 
-// std::vector<dif_alert_handler_class_config_t> classes = {
-//{
-//.alert_class = kDifAlertHandlerClassA,
-//.alerts = alerts_a.data(),
-//.alerts_len = alerts_a.size(),
-//.local_alerts = locals_a.data(),
-//.local_alerts_len = locals_a.size(),
-//.use_escalation_protocol = kDifAlertHandlerToggleDisabled,
-//.automatic_locking = kDifAlertHandlerToggleEnabled,
-//.accumulator_threshold = 12,
-//.irq_deadline_cycles = 30000,
-//.phase_signals = signals_a.data(),
-//.phase_signals_len = signals_a.size(),
-//.phase_durations = durations_a.data(),
-//.phase_durations_len = durations_a.size(),
-//},
-//};
+  std::vector<dif_alert_handler_class_config_t> classes = {
+      {
+          .alert_class = kDifAlertHandlerClassA,
+          .alerts = alerts_a.data(),
+          .alerts_len = alerts_a.size(),
+          .local_alerts = locals_a.data(),
+          .local_alerts_len = locals_a.size(),
+          .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
+          .automatic_locking = kDifAlertHandlerToggleEnabled,
+          .accumulator_threshold = 12,
+          .irq_deadline_cycles = 30000,
+          .phase_signals = signals_a.data(),
+          .phase_signals_len = signals_a.size(),
+          .phase_durations = durations_a.data(),
+          .phase_durations_len = durations_a.size(),
+      },
+  };
 
-// dif_alert_handler_config_t config = {
-//.ping_timeout = 50,
-//.classes = classes.data(),
-//.classes_len = classes.size(),
-//};
+  dif_alert_handler_config_t config = {
+      .ping_timeout = 50,
+      .classes = classes.data(),
+      .classes_len = classes.size(),
+  };
 
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-//}
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+}
 
-// TEST_F(ConfigTest, BadSignalPhase) {
-// IgnoreMmioCalls();
+TEST_F(ConfigTest, BadSignalPhase) {
+  IgnoreMmioCalls();
 
-// std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
-// std::vector<dif_alert_handler_local_alert_t> locals_a = {
-// kDifAlertHandlerLocalAlertEscalationPingFail,
-//};
-// std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
-//{.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
-//{.phase = kDifAlertHandlerClassStateTerminal, .signal = 1},
-//};
-// std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
-//{.phase = kDifAlertHandlerClassStatePhase1, .cycles = 20000},
-//{.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
-//};
+  std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
+  std::vector<dif_alert_handler_local_alert_t> locals_a = {
+      kDifAlertHandlerLocalAlertEscalationPingFail,
+  };
+  std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
+      {.phase = kDifAlertHandlerClassStateTerminal, .signal = 1},
+  };
+  std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
+      {.phase = kDifAlertHandlerClassStatePhase1, .cycles = 20000},
+      {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
+  };
 
-// std::vector<dif_alert_handler_class_config_t> classes = {
-//{
-//.alert_class = kDifAlertHandlerClassA,
-//.alerts = alerts_a.data(),
-//.alerts_len = alerts_a.size(),
-//.local_alerts = locals_a.data(),
-//.local_alerts_len = locals_a.size(),
-//.use_escalation_protocol = kDifAlertHandlerToggleDisabled,
-//.automatic_locking = kDifAlertHandlerToggleEnabled,
-//.accumulator_threshold = 12,
-//.irq_deadline_cycles = 30000,
-//.phase_signals = signals_a.data(),
-//.phase_signals_len = signals_a.size(),
-//.phase_durations = durations_a.data(),
-//.phase_durations_len = durations_a.size(),
-//},
-//};
+  std::vector<dif_alert_handler_class_config_t> classes = {
+      {
+          .alert_class = kDifAlertHandlerClassA,
+          .alerts = alerts_a.data(),
+          .alerts_len = alerts_a.size(),
+          .local_alerts = locals_a.data(),
+          .local_alerts_len = locals_a.size(),
+          .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
+          .automatic_locking = kDifAlertHandlerToggleEnabled,
+          .accumulator_threshold = 12,
+          .irq_deadline_cycles = 30000,
+          .phase_signals = signals_a.data(),
+          .phase_signals_len = signals_a.size(),
+          .phase_durations = durations_a.data(),
+          .phase_durations_len = durations_a.size(),
+      },
+  };
 
-// dif_alert_handler_config_t config = {
-//.ping_timeout = 50,
-//.classes = classes.data(),
-//.classes_len = classes.size(),
-//};
+  dif_alert_handler_config_t config = {
+      .ping_timeout = 50,
+      .classes = classes.data(),
+      .classes_len = classes.size(),
+  };
 
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-//}
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+}
 
-// TEST_F(ConfigTest, BadDurationPhase) {
-// IgnoreMmioCalls();
+TEST_F(ConfigTest, BadDurationPhase) {
+  IgnoreMmioCalls();
 
-// std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
-// std::vector<dif_alert_handler_local_alert_t> locals_a = {
-// kDifAlertHandlerLocalAlertEscalationPingFail,
-//};
-// std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
-//{.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
-//{.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
-//};
-// std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
-//{.phase = kDifAlertHandlerClassStateTerminal, .cycles = 20000},
-//{.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
-//};
+  std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
+  std::vector<dif_alert_handler_local_alert_t> locals_a = {
+      kDifAlertHandlerLocalAlertEscalationPingFail,
+  };
+  std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
+      {.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
+  };
+  std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
+      {.phase = kDifAlertHandlerClassStateTerminal, .cycles = 20000},
+      {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
+  };
 
-// std::vector<dif_alert_handler_class_config_t> classes = {
-//{
-//.alert_class = kDifAlertHandlerClassA,
-//.alerts = alerts_a.data(),
-//.alerts_len = alerts_a.size(),
-//.local_alerts = locals_a.data(),
-//.local_alerts_len = locals_a.size(),
-//.use_escalation_protocol = kDifAlertHandlerToggleDisabled,
-//.automatic_locking = kDifAlertHandlerToggleEnabled,
-//.accumulator_threshold = 12,
-//.irq_deadline_cycles = 30000,
-//.phase_signals = signals_a.data(),
-//.phase_signals_len = signals_a.size(),
-//.phase_durations = durations_a.data(),
-//.phase_durations_len = durations_a.size(),
-//},
-//};
+  std::vector<dif_alert_handler_class_config_t> classes = {
+      {
+          .alert_class = kDifAlertHandlerClassA,
+          .alerts = alerts_a.data(),
+          .alerts_len = alerts_a.size(),
+          .local_alerts = locals_a.data(),
+          .local_alerts_len = locals_a.size(),
+          .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
+          .automatic_locking = kDifAlertHandlerToggleEnabled,
+          .accumulator_threshold = 12,
+          .irq_deadline_cycles = 30000,
+          .phase_signals = signals_a.data(),
+          .phase_signals_len = signals_a.size(),
+          .phase_durations = durations_a.data(),
+          .phase_durations_len = durations_a.size(),
+      },
+  };
 
-// dif_alert_handler_config_t config = {
-//.ping_timeout = 50,
-//.classes = classes.data(),
-//.classes_len = classes.size(),
-//};
+  dif_alert_handler_config_t config = {
+      .ping_timeout = 50,
+      .classes = classes.data(),
+      .classes_len = classes.size(),
+  };
 
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-//}
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+}
 
-// TEST_F(ConfigTest, BadPointers) {
-// IgnoreMmioCalls();
+TEST_F(ConfigTest, BadPointers) {
+  IgnoreMmioCalls();
 
-// std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
-// std::vector<dif_alert_handler_local_alert_t> locals_a = {
-// kDifAlertHandlerLocalAlertEscalationPingFail,
-//};
-// std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
-//{.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
-//{.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
-//};
-// std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
-//{.phase = kDifAlertHandlerClassStateTerminal, .cycles = 20000},
-//{.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
-//};
+  std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
+  std::vector<dif_alert_handler_local_alert_t> locals_a = {
+      kDifAlertHandlerLocalAlertEscalationPingFail,
+  };
+  std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
+      {.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
+  };
+  std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
+      {.phase = kDifAlertHandlerClassStateTerminal, .cycles = 20000},
+      {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
+  };
 
-// std::vector<dif_alert_handler_class_config_t> classes = {
-//{
-//.alert_class = kDifAlertHandlerClassA,
-//.alerts = alerts_a.data(),
-//.alerts_len = alerts_a.size(),
-//.local_alerts = locals_a.data(),
-//.local_alerts_len = locals_a.size(),
-//.use_escalation_protocol = kDifAlertHandlerToggleDisabled,
-//.automatic_locking = kDifAlertHandlerToggleEnabled,
-//.accumulator_threshold = 12,
-//.irq_deadline_cycles = 30000,
-//.phase_signals = signals_a.data(),
-//.phase_signals_len = signals_a.size(),
-//.phase_durations = durations_a.data(),
-//.phase_durations_len = durations_a.size(),
-//},
-//};
+  std::vector<dif_alert_handler_class_config_t> classes = {
+      {
+          .alert_class = kDifAlertHandlerClassA,
+          .alerts = alerts_a.data(),
+          .alerts_len = alerts_a.size(),
+          .local_alerts = locals_a.data(),
+          .local_alerts_len = locals_a.size(),
+          .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
+          .automatic_locking = kDifAlertHandlerToggleEnabled,
+          .accumulator_threshold = 12,
+          .irq_deadline_cycles = 30000,
+          .phase_signals = signals_a.data(),
+          .phase_signals_len = signals_a.size(),
+          .phase_durations = durations_a.data(),
+          .phase_durations_len = durations_a.size(),
+      },
+  };
 
-// dif_alert_handler_config_t config = {
-//.ping_timeout = 50,
-//.classes = classes.data(),
-//.classes_len = classes.size(),
-//};
+  dif_alert_handler_config_t config = {
+      .ping_timeout = 50,
+      .classes = classes.data(),
+      .classes_len = classes.size(),
+  };
 
-// classes[0].alerts = nullptr;
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-// classes[0].alerts = alerts_a.data();
+  classes[0].alerts = nullptr;
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+  classes[0].alerts = alerts_a.data();
 
-// classes[0].local_alerts = nullptr;
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-// classes[0].local_alerts = locals_a.data();
+  classes[0].local_alerts = nullptr;
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+  classes[0].local_alerts = locals_a.data();
 
-// classes[0].phase_signals = nullptr;
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-// classes[0].phase_signals = signals_a.data();
+  classes[0].phase_signals = nullptr;
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+  classes[0].phase_signals = signals_a.data();
 
-// classes[0].phase_durations = nullptr;
-// EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-// kDifAlertHandlerConfigError);
-//}
+  classes[0].phase_durations = nullptr;
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+}
 
-// TEST_F(ConfigTest, BadClass) {
-//   IgnoreMmioCalls();
+TEST_F(ConfigTest, BadClass) {
+  IgnoreMmioCalls();
 
-//   std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
-//   std::vector<dif_alert_handler_local_alert_t> locals_a = {
-//       kDifAlertHandlerLocalAlertEscalationPingFail,
-//   };
-//   std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
-//       {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
-//       {.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
-//   };
-//   std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
-//       {.phase = kDifAlertHandlerClassStateTerminal, .cycles = 20000},
-//       {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
-//   };
+  std::vector<dif_alert_handler_alert_t> alerts_a = {1, 2, 5};
+  std::vector<dif_alert_handler_local_alert_t> locals_a = {
+      kDifAlertHandlerLocalAlertEscalationPingFail,
+  };
+  std::vector<dif_alert_handler_class_phase_signal_t> signals_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .signal = 3},
+      {.phase = kDifAlertHandlerClassStatePhase2, .signal = 1},
+  };
+  std::vector<dif_alert_handler_class_phase_duration_t> durations_a = {
+      {.phase = kDifAlertHandlerClassStatePhase0, .cycles = 20000},
+      {.phase = kDifAlertHandlerClassStatePhase2, .cycles = 15000},
+  };
 
-//   std::vector<dif_alert_handler_class_config_t> classes = {
-//       {
-//           .alert_class = static_cast<dif_alert_handler_class_t>(12),
-//           .alerts = alerts_a.data(),
-//           .alerts_len = alerts_a.size(),
-//           .local_alerts = locals_a.data(),
-//           .local_alerts_len = locals_a.size(),
-//           .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
-//           .automatic_locking = kDifAlertHandlerToggleEnabled,
-//           .accumulator_threshold = 12,
-//           .irq_deadline_cycles = 30000,
-//           .phase_signals = signals_a.data(),
-//           .phase_signals_len = signals_a.size(),
-//           .phase_durations = durations_a.data(),
-//           .phase_durations_len = durations_a.size(),
-//       },
-//   };
+  std::vector<dif_alert_handler_class_config_t> classes = {
+      {
+          .alert_class = static_cast<dif_alert_handler_class_t>(12),
+          .alerts = alerts_a.data(),
+          .alerts_len = alerts_a.size(),
+          .local_alerts = locals_a.data(),
+          .local_alerts_len = locals_a.size(),
+          .use_escalation_protocol = kDifAlertHandlerToggleDisabled,
+          .automatic_locking = kDifAlertHandlerToggleEnabled,
+          .accumulator_threshold = 12,
+          .irq_deadline_cycles = 30000,
+          .phase_signals = signals_a.data(),
+          .phase_signals_len = signals_a.size(),
+          .phase_durations = durations_a.data(),
+          .phase_durations_len = durations_a.size(),
+      },
+  };
 
-//   dif_alert_handler_config_t config = {
-//       .ping_timeout = 50,
-//       .classes = classes.data(),
-//       .classes_len = classes.size(),
-//   };
+  dif_alert_handler_config_t config = {
+      .ping_timeout = 50,
+      .classes = classes.data(),
+      .classes_len = classes.size(),
+  };
 
-//   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
-//             kDifAlertHandlerConfigError);
-// }
+  EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
+            kDifAlertHandlerConfigError);
+}
 
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_EQ(dif_alert_handler_configure(nullptr, {}),

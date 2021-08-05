@@ -207,7 +207,7 @@ typedef uint32_t dif_alert_handler_signal_t;
  *
  * This enum describes the sequence of states in the *escalation protocol*,
  * which triggers under two different conditions:
- * - If too many alerts of a particular class accumualte.
+ * - If too many alerts of a particular class accumulate.
  * - If the software IRQ handler for that class times out.
  *
  * When either of these conditions is reached, phase 0 begins. This may trigger
