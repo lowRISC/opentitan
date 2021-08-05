@@ -1265,12 +1265,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [31:0]     operand_a,
                          stack_fullness_e loop_stack_fullness,
                          logic [31:0]     current_loop_end,
+                         logic [31:0]     bodysize,
                          logic            at_loop_end);
     // Extremes for iteration count
     iterations_cp: coverpoint operand_a { bins extremes[] = {'0, '1}; }
 
     // Is the loop end address above the top of memory?
-    oob_end_addr_cp: coverpoint insn_addr + 32'(insn_data[31:20]) >= ImemSizeByte;
+    oob_end_addr_cp: coverpoint insn_addr + 4 * bodysize >= ImemSizeByte;
 
     // Current state of the loop stack (empty, half full, full)
     loop_stack_fullness_cp: coverpoint loop_stack_fullness;
@@ -1278,12 +1279,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Is this loop the last instruction of the current loop?
     at_loop_end_cp: coverpoint at_loop_end;
 
-    // Does the loop end for this instruction match the top of a nonempty loop stack? (Note that the
-    // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
-    // the encoding of the size field. This is the same thing as is stored as current_loop_end).
+    // Does the loop end for this instruction match the top of a nonempty loop stack? If valid,
+    // current_loop_end is the address of the last instruction in the loop body. The last
+    // instruction of the current loop body is the current PC plus 4 for the LOOP instruction and
+    // then 4 * (bodysize - 1) for all but the last instruction of the loop body.
     `DEF_SEEN_CP(duplicate_loop_end_cp,
                  (loop_stack_fullness != StackEmpty) &&
-                 (current_loop_end == insn_addr + 32'(insn_data[31:20])))
+                 (current_loop_end == insn_addr + 4 * bodysize))
   endgroup
 
   covergroup insn_loopi_cg
@@ -1291,10 +1293,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [31:0]     insn_data,
                          stack_fullness_e loop_stack_fullness,
                          logic [31:0]     current_loop_end,
+                         logic [31:0]     bodysize,
                          logic            at_loop_end);
 
     // Is the loop end address above the top of memory?
-    oob_end_addr_cp: coverpoint insn_addr + 32'(insn_data[31:20]) >= ImemSizeByte;
+    oob_end_addr_cp: coverpoint insn_addr + 4 * bodysize >= ImemSizeByte;
 
     // Current state of the loop stack (empty, half full, full)
     loop_stack_fullness_cp: coverpoint loop_stack_fullness;
@@ -1302,12 +1305,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Is this loop the last instruction of the current loop?
     at_loop_end_cp: coverpoint at_loop_end;
 
-    // Does the loop end for this instruction match the top of a nonempty loop stack? (Note that the
-    // sum on the RHS yields the last address inside the loop, because there's an implicit "+1" in
-    // the encoding of the size field. This is the same thing as is stored as current_loop_end).
+    // Does the loop end for this instruction match the top of a nonempty loop stack? If valid,
+    // current_loop_end is the address of the last instruction in the loop body. The last
+    // instruction of the current loop body is the current PC plus 4 for the LOOPI instruction and
+    // then 4 * (bodysize - 1) for all but the last instruction of the loop body.
     `DEF_SEEN_CP(duplicate_loop_end_cp,
                  (loop_stack_fullness != StackEmpty) &&
-                 (current_loop_end == insn_addr + 32'(insn_data[31:20])))
+                 (current_loop_end == insn_addr + 4 * bodysize))
   endgroup
 
   covergroup insn_bn_addc_cg
@@ -1633,6 +1637,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     mnem_str_t   mnem;
     logic [31:0] insn_data;
+    logic [31:0] loop_bodysize;
 
     // Since iss_item and rtl_item have come in separately, we do a quick check here to make sure
     // they actually match the same instruction.
@@ -1734,6 +1739,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          `gfn)
     endcase
 
+    // LOOP and LOOPI instructions store bodysize as an immediate in bits 31:20, but shifted by 1
+    // (so a bodysize of 1 is encoded as 0 etc.)
+    loop_bodysize = 32'(insn_data[31:20]) + 32'd1;
+
     // Instruction-specific coverage.
     case (mnem)
       mnem_add, mnem_sub:
@@ -1788,12 +1797,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                             rtl_item.gpr_operand_a,
                             rtl_item.loop_stack_fullness,
                             rtl_item.current_loop_end,
+                            loop_bodysize,
                             rtl_item.at_current_loop_end_insn);
       mnem_loopi:
         insn_loopi_cg.sample(rtl_item.insn_addr,
                              insn_data,
                              rtl_item.loop_stack_fullness,
                              rtl_item.current_loop_end,
+                             loop_bodysize,
                              rtl_item.at_current_loop_end_insn);
       mnem_bn_addc:
         insn_bn_addc_cg.sample(insn_data,
