@@ -35,10 +35,9 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
   logic [DataIntgWidth-1:0] data_intg;
   if (EnableDataIntgGen) begin : gen_data_intg
     logic [DataMaxWidth-1:0] unused_data;
-
-    prim_secded_39_32_enc u_data_gen (
+    tlul_data_integ_enc u_tlul_data_integ_enc (
       .data_i(DataMaxWidth'(tl_i.d_data)),
-      .data_o({data_intg, unused_data})
+      .data_intg_o({data_intg, unused_data})
     );
   end else begin : gen_passthrough_data_intg
     assign data_intg = tl_i.d_user.data_intg;
