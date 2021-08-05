@@ -203,11 +203,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   // A macro to define a coverpoint based on the sign of a value (assumed to be represented by an
   // unsigned SystemVerilog expression).
-`define DEF_SIGN_CP(NAME, VALUE, WIDTH)    \
-  NAME: coverpoint VALUE {                 \
-    bins zero = {0};                       \
-    bins pos = {[1:(1 << (WIDTH - 1))-1]}; \
-    bins neg = {[1 << (WIDTH - 1):$]};     \
+`define DEF_SIGN_CP(NAME, VALUE, WIDTH)           \
+  NAME: coverpoint VALUE {                        \
+    bins zero = {0};                              \
+    bins pos = {[1:(WIDTH'd1 << (WIDTH - 1))-1]}; \
+    bins neg = {[WIDTH'd1 << (WIDTH - 1):$]};     \
   }
 
   // A macro to define a coverpoint based on whether a value is zero or not (assumed to be
