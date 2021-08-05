@@ -124,7 +124,7 @@ module prim_prince_tb;
     // Drive input into encryption instances.
     key_in    = key;
     dec_in    = 0;
-    valid_in  = 1;
+    valid_in = 0;
     for (int unsigned i = 0; i < 2; i++) begin
       for (int unsigned j = 0; j < 2; j++) begin
         for (int unsigned k = 0; k < NumRoundsHalf; k++) begin
@@ -132,10 +132,14 @@ module prim_prince_tb;
         end
       end
     end
+    // wait some time before signaling that the inputs are valid
+    clk_if.wait_clks($urandom_range(0, 10));
+    valid_in  = 1;
     // Wait for the DUTs to finish calculations.
     clk_if.wait_clks(2);
     wait(&valid_out == 1);
     valid_in = 0;
+    clk_if.wait_clks(1);
     // query DPI model for expected encrypted output.
     for (int i = 0; i < 2; i++) begin
       for (int j = 0; j < 2; j++) begin
@@ -162,7 +166,7 @@ module prim_prince_tb;
     // Drive input into decryption instances.
     key_in = key;
     dec_in = 1;
-    valid_in = 1;
+    valid_in = 0;
     for (int unsigned i = 0; i < 2; i++) begin
       for (int unsigned j = 0; j < 2; j++) begin
         for (int unsigned k = 0; k < NumRoundsHalf; k++) begin
@@ -170,6 +174,9 @@ module prim_prince_tb;
         end
       end
     end
+    // wait some time before signaling that the inputs are valid
+    clk_if.wait_clks($urandom_range(0, 10));
+    valid_in = 1;
     // Wait for the DUTs to finish calculations.
     clk_if.wait_clks(2);
     wait(&valid_out == 1);
@@ -243,11 +250,16 @@ module prim_prince_tb;
     bit [KeyWidth/2-1:0] k0, k1;
     bit [DataWidth-1:0] plaintext;
 
+    $timeformat(-12, 0, " ps", 12);
     clk_if.set_period_ps(ClkPeriod);
     clk_if.set_active();
+    // Toggle reset twice at start of the test to hit a small toggle coverage point:
+    // - rst_ni: 1 -> 0
+    // No additional functional impact
     clk_if.apply_reset();
-    $timeformat(-12, 0, " ps", 12);
-    clk_if.wait_clks(10);
+    clk_if.wait_clks(5);
+    clk_if.apply_reset();
+    clk_if.wait_clks(5);
 
     /////////////////////////////
     // Test the 5 golden vectors.
