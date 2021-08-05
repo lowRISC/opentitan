@@ -31,13 +31,14 @@ module spi_fwmode
   output logic      txf_underflow_o,
 
   // SRAM interface
-  output logic              fwm_req_o,
-  output logic              fwm_write_o,
-  output logic [SramAw-1:0] fwm_addr_o,
-  output logic [SramDw-1:0] fwm_wdata_o,
-  input                     fwm_rvalid_i,
-  input        [SramDw-1:0] fwm_rdata_i,
-  input        [1:0]        fwm_rerror_i,
+  output logic       fwm_req_o,
+  output logic       fwm_write_o,
+  output sram_addr_t fwm_addr_o,
+  output sram_data_t fwm_wdata_o,
+  output sram_strb_t fwm_wstrb_o,
+  input              fwm_rvalid_i,
+  input  sram_data_t fwm_rdata_i,
+  input  sram_err_t  fwm_rerror_i,
 
   // Serial to Parallel
   input             rx_data_valid_i,
@@ -253,6 +254,7 @@ module spi_fwmode
   );
 
   // Arbiter for FIFOs : Connecting between SRAM Ctrls and SRAM interface
+  assign fwm_wstrb_o = '1;
   prim_sram_arbiter #(
     .N            (2),  // RXF, TXF
     .SramDw       (SramDw),

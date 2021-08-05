@@ -85,23 +85,21 @@ module spi_device
   logic [SramDw-1:0] mem_a_rdata;
   logic [1:0]        mem_a_rerror;
 
+  sram_l2m_t mem_b_l2m;
+  sram_m2l_t mem_b_m2l;
   logic              mem_b_req;
   logic              mem_b_write;
   logic [SramAw-1:0] mem_b_addr;
   logic [SramDw-1:0] mem_b_wdata;
+  logic [SramDw-1:0] mem_b_wmask;
   logic              mem_b_rvalid;
   logic [SramDw-1:0] mem_b_rdata;
   logic [1:0]        mem_b_rerror;
 
 
   // Submoule SRAM Requests
-  logic              sub_sram_req    [IoModeEnd];
-  logic              sub_sram_write  [IoModeEnd];
-  logic [SramAw-1:0] sub_sram_addr   [IoModeEnd];
-  logic [SramDw-1:0] sub_sram_wdata  [IoModeEnd];
-  logic              sub_sram_rvalid [IoModeEnd];
-  logic [SramDw-1:0] sub_sram_rdata  [IoModeEnd];
-  logic [1:0]        sub_sram_rerror [IoModeEnd];
+  sram_l2m_t sub_sram_l2m [IoModeEnd];
+  sram_m2l_t sub_sram_m2l [IoModeEnd];
 
   // Host return path mux
   logic [3:0] internal_sd, internal_sd_en;
@@ -634,13 +632,14 @@ module spi_device
     p2s_data  = 8'h 0;
     sub_p2s_sent = '{default: 1'b 0};
 
-    mem_b_req   = 1'b 0;
-    mem_b_write = 1'b 0;
-    mem_b_addr  = '0;
-    mem_b_wdata = '0;
-    sub_sram_rvalid = '{default:  1'b 0};
-    sub_sram_rdata  = '{default:     '0};
-    sub_sram_rerror = '{default: 2'b 00};
+    mem_b_l2m = '{ default: '0 };
+    for (int unsigned i = 0 ; i < IoModeEnd ; i++) begin
+      sub_sram_m2l[i] = '{
+        rvalid: 1'b 0,
+        rdata: '0,
+        rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+      };
+    end
 
     unique case (spi_mode)
       FwMode: begin
@@ -652,13 +651,8 @@ module spi_device
 
         // SRAM:: Remember this has glitch
         // switch should happen only when clock gate is disabled.
-        mem_b_req   = sub_sram_req   [IoModeFw];
-        mem_b_write = sub_sram_write [IoModeFw];
-        mem_b_addr  = sub_sram_addr  [IoModeFw];
-        mem_b_wdata = sub_sram_wdata [IoModeFw];
-        sub_sram_rvalid [IoModeFw] = mem_b_rvalid;
-        sub_sram_rdata  [IoModeFw] = mem_b_rdata;
-        sub_sram_rerror [IoModeFw] = mem_b_rerror;
+        mem_b_l2m = sub_sram_l2m[IoModeFw];
+        sub_sram_m2l[IoModeFw] = mem_b_m2l;
       end
 
       FlashMode, PassThrough: begin
@@ -679,13 +673,8 @@ module spi_device
 
             // SRAM:: Remember this has glitch
             // switch should happen only when clock gate is disabled.
-            mem_b_req   = sub_sram_req   [IoModeReadCmd];
-            mem_b_write = sub_sram_write [IoModeReadCmd];
-            mem_b_addr  = sub_sram_addr  [IoModeReadCmd];
-            mem_b_wdata = sub_sram_wdata [IoModeReadCmd];
-            sub_sram_rvalid [IoModeReadCmd] = mem_b_rvalid;
-            sub_sram_rdata  [IoModeReadCmd] = mem_b_rdata;
-            sub_sram_rerror [IoModeReadCmd] = mem_b_rerror;
+            mem_b_l2m = sub_sram_l2m[IoModeReadCmd];
+            sub_sram_m2l[IoModeReadCmd] = mem_b_m2l;
           end
           DpReadStatus: begin
             io_mode = sub_iomode[IoModeStatus];
@@ -808,13 +797,14 @@ module spi_device
     .txf_underflow_o (txf_underflow),
 
     // SRAM interface
-    .fwm_req_o    (sub_sram_req    [IoModeFw]),
-    .fwm_write_o  (sub_sram_write  [IoModeFw]),
-    .fwm_addr_o   (sub_sram_addr   [IoModeFw]),
-    .fwm_wdata_o  (sub_sram_wdata  [IoModeFw]),
-    .fwm_rvalid_i (sub_sram_rvalid [IoModeFw]),
-    .fwm_rdata_i  (sub_sram_rdata  [IoModeFw]),
-    .fwm_rerror_i (sub_sram_rerror [IoModeFw]),
+    .fwm_req_o    (sub_sram_l2m[IoModeFw].req    ),
+    .fwm_write_o  (sub_sram_l2m[IoModeFw].we     ),
+    .fwm_addr_o   (sub_sram_l2m[IoModeFw].addr   ),
+    .fwm_wdata_o  (sub_sram_l2m[IoModeFw].wdata  ),
+    .fwm_wstrb_o  (sub_sram_l2m[IoModeFw].wstrb  ),
+    .fwm_rvalid_i (sub_sram_m2l[IoModeFw].rvalid ),
+    .fwm_rdata_i  (sub_sram_m2l[IoModeFw].rdata  ),
+    .fwm_rerror_i (sub_sram_m2l[IoModeFw].rerror ),
 
     // Input from S2P
     .rx_data_valid_i (s2p_data_valid),
@@ -894,13 +884,8 @@ module spi_device
     .sel_dp_i   (cmd_dp_sel),
 
     // SRAM interface
-    .sram_req_o    (sub_sram_req      [IoModeReadCmd]),
-    .sram_we_o     (sub_sram_write    [IoModeReadCmd]),
-    .sram_addr_o   (sub_sram_addr     [IoModeReadCmd]),
-    .sram_wdata_o  (sub_sram_wdata    [IoModeReadCmd]),
-    .sram_rvalid_i (sub_sram_rvalid   [IoModeReadCmd]),
-    .sram_rdata_i  (sub_sram_rdata    [IoModeReadCmd]),
-    .sram_rerror_i (sub_sram_rerror   [IoModeReadCmd]),
+    .sram_l2m_o (sub_sram_l2m[IoModeReadCmd]),
+    .sram_m2l_i (sub_sram_m2l[IoModeReadCmd]),
 
     // S2P
     .s2p_valid_i   (s2p_data_valid),
@@ -984,18 +969,10 @@ module spi_device
   // Tie unused
   logic unused_sub_sram_status;
   assign unused_sub_sram_status = ^{
-    sub_sram_req   [IoModeStatus],
-    sub_sram_write [IoModeStatus],
-    sub_sram_addr  [IoModeStatus],
-    sub_sram_wdata [IoModeStatus],
-    sub_sram_rvalid[IoModeStatus],
-    sub_sram_rdata [IoModeStatus],
-    sub_sram_rerror[IoModeStatus]
+    sub_sram_l2m[IoModeStatus],
+    sub_sram_m2l[IoModeStatus]
   };
-  assign sub_sram_req[IoModeStatus]   = 1'b 0;
-  assign sub_sram_write[IoModeStatus] = 1'b 0;
-  assign sub_sram_addr[IoModeStatus]  = '0;
-  assign sub_sram_wdata[IoModeStatus] = '0;
+  assign sub_sram_l2m[IoModeStatus] = '0;
 
   // End: Read Status ------------------------------------------------
 
@@ -1022,18 +999,10 @@ module spi_device
   // Tie unused
   logic unused_sub_sram_jedec;
   assign unused_sub_sram_jedec = ^{
-    sub_sram_req   [IoModeJedec],
-    sub_sram_write [IoModeJedec],
-    sub_sram_addr  [IoModeJedec],
-    sub_sram_wdata [IoModeJedec],
-    sub_sram_rvalid[IoModeJedec],
-    sub_sram_rdata [IoModeJedec],
-    sub_sram_rerror[IoModeJedec]
+    sub_sram_l2m[IoModeJedec],
+    sub_sram_m2l[IoModeJedec]
   };
-  assign sub_sram_req[IoModeJedec]   = 1'b 0;
-  assign sub_sram_write[IoModeJedec] = 1'b 0;
-  assign sub_sram_addr[IoModeJedec]  = '0;
-  assign sub_sram_wdata[IoModeJedec] = '0;
+  assign sub_sram_l2m[IoModeJedec] = '0;
 
   /////////////////////
   // SPI Passthrough //
@@ -1103,6 +1072,16 @@ module spi_device
   );
 
   // SRAM Wrapper
+  assign mem_b_req   = mem_b_l2m.req;
+  assign mem_b_write = mem_b_l2m.we;
+  assign mem_b_addr  = mem_b_l2m.addr;
+  assign mem_b_wdata = mem_b_l2m.wdata;
+  assign mem_b_wmask = sram_strb2mask(mem_b_l2m.wstrb);
+
+  assign mem_b_m2l.rvalid = mem_b_rvalid;
+  assign mem_b_m2l.rdata  = mem_b_rdata;
+  assign mem_b_m2l.rerror = mem_b_rerror;
+
   prim_ram_2p_async_adv #(
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
@@ -1132,7 +1111,7 @@ module spi_device
     .b_write_i  (mem_b_write),
     .b_addr_i   (mem_b_addr),
     .b_wdata_i  (mem_b_wdata),
-    .b_wmask_i  ({SramDw{1'b1}}),
+    .b_wmask_i  (mem_b_wmask),
     .b_rvalid_o (mem_b_rvalid),
     .b_rdata_o  (mem_b_rdata),
     .b_rerror_o (mem_b_rerror),

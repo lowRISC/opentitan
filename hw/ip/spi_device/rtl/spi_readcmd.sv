@@ -120,13 +120,8 @@ module spi_readcmd
   input sel_datapath_e sel_dp_i,
 
   // SRAM access
-  output logic       sram_req_o,
-  output logic       sram_we_o,
-  output sram_addr_t sram_addr_o,
-  output sram_data_t sram_wdata_o,
-  input              sram_rvalid_i,
-  input  sram_data_t sram_rdata_i,
-  input  sram_err_t  sram_rerror_i,
+  output sram_l2m_t  sram_l2m_o,
+  input  sram_m2l_t  sram_m2l_i,
 
   // Interface: SPI to Parallel
   input               s2p_valid_i,
@@ -190,7 +185,7 @@ module spi_readcmd
   assign mailbox_assumed_o = 1'b 0;
 
   sram_err_t unused_sram_rerr;
-  assign unused_sram_rerr = sram_rerror_i;
+  assign unused_sram_rerr = sram_m2l_i.rerror;
 
   // TODO: Implement cmd_info
   logic unused_cmd_info_idx;
@@ -672,13 +667,8 @@ module spi_readcmd
     .mailbox_hit_i (addr_in_mailbox),
     .sfdp_hit_i    (sel_dp_i == DpReadSFDP),
 
-    .sram_req_o,
-    .sram_we_o,
-    .sram_addr_o,
-    .sram_wdata_o,
-    .sram_rvalid_i,
-    .sram_rdata_i,
-    .sram_rerror_i,
+    .sram_l2m_o,
+    .sram_m2l_i,
 
     // FIFO
     .fifo_rvalid_o (unused_fifo_rvalid),

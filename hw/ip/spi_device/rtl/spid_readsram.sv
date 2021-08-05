@@ -64,13 +64,8 @@ module spid_readsram
   input sfdp_hit_i,    // selected DP is DpReadSFDP
 
   // SRAM request and response
-  output logic       sram_req_o,
-  output logic       sram_we_o,
-  output sram_addr_t sram_addr_o,
-  output sram_data_t sram_wdata_o,
-  input              sram_rvalid_i,
-  input  sram_data_t sram_rdata_i,
-  input  sram_err_t  sram_rerror_i,
+  output sram_l2m_t sram_l2m_o,
+  input  sram_m2l_t sram_m2l_i,
 
   // FIFO output (spi_byte_t)
   output logic      fifo_rvalid_o,
@@ -121,12 +116,13 @@ module spid_readsram
   logic [31:0] next_address;
 
   logic sram_req;
-  assign sram_req_o   = sram_req;
-  assign sram_we_o    = 1'b 0;
-  assign sram_wdata_o = '0;
+  assign sram_l2m_o.req   = sram_req;
+  assign sram_l2m_o.we    = 1'b 0;
+  assign sram_l2m_o.wdata = '0;
+  assign sram_l2m_o.wstrb = 8'h0; // no write
 
   sram_addr_t sram_addr;
-  assign sram_addr_o = sram_addr;
+  assign sram_l2m_o.addr = sram_addr;
 
   sram_data_t sram_data;
 
@@ -152,7 +148,7 @@ module spid_readsram
   logic sram_latched; // sram request sent
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) sram_latched <= 1'b 0;
-    else if (sram_req_o) sram_latched <= 1'b 1;
+    else if (sram_req) sram_latched <= 1'b 1;
   end
 
   logic [1:0] strb;
@@ -165,10 +161,10 @@ module spid_readsram
   // fifo_wdata
   always_comb begin
     unique case (strb)
-      2'b 00:  fifo_wdata = sram_data.data[ 7: 0];
-      2'b 01:  fifo_wdata = sram_data.data[15: 8];
-      2'b 10:  fifo_wdata = sram_data.data[23:16];
-      2'b 11:  fifo_wdata = sram_data.data[31:24];
+      2'b 00:  fifo_wdata = sram_data[ 7: 0];
+      2'b 01:  fifo_wdata = sram_data[15: 8];
+      2'b 10:  fifo_wdata = sram_data[23:16];
+      2'b 11:  fifo_wdata = sram_data[31:24];
       default: fifo_wdata = '0;
     endcase
   end
@@ -232,7 +228,7 @@ module spid_readsram
           addr_sel = AddrInput;
         end
 
-        if ((sram_req_o || sram_latched) && strb_set) begin
+        if ((sram_read_req_i || sram_latched) && strb_set) begin
           // Only when both are valid
           st_d = StPush;
         end else begin
@@ -288,9 +284,9 @@ module spid_readsram
 
     .clr_i (1'b 0),
 
-    .wvalid_i (sram_rvalid_i),
+    .wvalid_i (sram_m2l_i.rvalid),
     .wready_o (),
-    .wdata_i  (sram_rdata_i),
+    .wdata_i  (sram_m2l_i.rdata),
 
     .rvalid_o (sram_d_valid),
     .rready_i (sram_d_ready),
@@ -325,7 +321,7 @@ module spid_readsram
 
   // TODO: Handle SRAM integrity errors
   sram_err_t unused_sram_rerror;
-  assign unused_sram_rerror = sram_rerror_i;
+  assign unused_sram_rerror = sram_m2l_i.rerror;
 
 
   ////////////////
@@ -341,13 +337,13 @@ module spid_readsram
 
   // FIFO should not overflow. The Main state machine shall send request only
   // when it needs the data within 2 cycles
-  `ASSERT(NotOverflow_A, sram_req_o && !sram_we_o |-> !sram_fifo_full)
+  `ASSERT(NotOverflow_A, sram_l2m_o.req && !sram_l2m_o.we |-> !sram_fifo_full)
 
   // SRAM access always read
-  `ASSERT(SramReadOnly_A, sram_req_o |-> !sram_we_o)
+  `ASSERT(SramReadOnly_A, sram_l2m_o.req |-> !sram_l2m_o.we)
 
   // SRAM data should return in next cycle
-  `ASSUME(SramDataReturnRequirement_M, sram_req_o && !sram_we_o |=> sram_rvalid_i)
+  `ASSUME(SramDataReturnRequirement_M, sram_l2m_o.req && !sram_l2m_o.we |=> sram_m2l_i.rvalid)
 
   // in fifo_pop, FIFO should not be empty.
   `ASSERT(FifoNotEmpty_A, fifo_rready_i |-> unused_fifo_depth != 0)

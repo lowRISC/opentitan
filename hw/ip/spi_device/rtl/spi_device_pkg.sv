@@ -295,7 +295,8 @@ package spi_device_pkg;
   } spi_cmd_e;
 
   // Sram parameters
-  parameter int unsigned SramDw = 32;
+  parameter int unsigned SramDw    = 32;
+  parameter int unsigned SramStrbW = SramDw/8;
 
   // Msg region is used for read cmd in Flash and Passthrough region
   parameter int unsigned SramMsgDepth = 512; // 2kB
@@ -319,14 +320,35 @@ package spi_device_pkg;
 
   parameter int unsigned SramAw = $clog2(spi_device_reg_pkg::SramDepth);
 
-  typedef logic [SramAw-1:0] sram_addr_t;
-  typedef struct packed {
-    logic [SramDw-1:0]   data;
-  } sram_data_t;
+  typedef logic [SramAw-1:0]    sram_addr_t;
+  typedef logic [SramDw-1:0]    sram_data_t;
+  typedef logic [SramStrbW-1:0] sram_strb_t;
   typedef struct packed {
     logic uncorr;
     logic corr;
   } sram_err_t;
+
+  typedef struct packed {
+    logic       req;
+    logic       we;
+    sram_addr_t addr;
+    sram_data_t wdata;
+    sram_strb_t wstrb;
+  } sram_l2m_t; // logic to Memory
+
+  typedef struct packed {
+    logic       rvalid;
+    sram_data_t rdata;
+    sram_err_t  rerror;
+  } sram_m2l_t; // Memory to logic
+
+  function automatic logic [SramDw-1:0] sram_strb2mask(logic [SramStrbW-1:0] strb);
+    logic [SramDw-1:0] result;
+    for (int unsigned i = 0 ; i < SramStrbW ; i++) begin
+      result[8*i+:8] = strb[i] ? 8'h FF : 8'h 00;
+    end
+    return result;
+  endfunction : sram_strb2mask
 
   // Calculate each space's base and size
   parameter sram_addr_t SramReadBufferIdx  = sram_addr_t'(0);
