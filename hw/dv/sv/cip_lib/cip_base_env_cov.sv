@@ -84,7 +84,6 @@ class tl_errors_cg_wrap;
   // This covergroup sampled all kinds of TL error cases.
   covergroup tl_errors_cg (string name)
       with function sample(bit unmapped_err,
-                           bit csr_aligned_err,
                            bit csr_size_err,
                            bit mem_byte_access_err,
                            bit mem_wo_err,
@@ -95,7 +94,6 @@ class tl_errors_cg_wrap;
 
     // these cp should be disabled (set weight to 0), when they're not applicable for the block
     cp_unmapped_err: coverpoint unmapped_err;
-    cp_csr_aligned_err: coverpoint csr_aligned_err;
     cp_csr_size_err: coverpoint csr_size_err;
     cp_mem_byte_access_err: coverpoint mem_byte_access_err;
     cp_mem_wo_err: coverpoint mem_wo_err;
@@ -113,13 +111,12 @@ class tl_errors_cg_wrap;
 
   // Function: sample
   function void sample(bit unmapped_err,
-                       bit csr_aligned_err,
                        bit csr_size_err,
                        bit mem_byte_access_err,
                        bit mem_wo_err,
                        bit mem_ro_err,
                        bit tl_protocol_err);
-    tl_errors_cg.sample(unmapped_err, csr_aligned_err, csr_size_err, mem_byte_access_err,
+    tl_errors_cg.sample(unmapped_err, csr_size_err, mem_byte_access_err,
                         mem_wo_err, mem_ro_err, tl_protocol_err);
   endfunction : sample
 

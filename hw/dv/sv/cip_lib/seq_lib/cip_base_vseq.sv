@@ -355,7 +355,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "intr_test":                  run_intr_test_vseq(num_times);
       "alert_test":                 run_alert_test_vseq(num_times);
       "tl_errors":                  run_tl_errors_vseq(num_times);
-      "tl_intg_err":                run_tl_intg_err_vseq(num_times);
+      // Each iteration only sends 1 item with TL integrity error. Increase to send at least
+      // 10 x num_times integrity errors
+      "tl_intg_err":                run_tl_intg_err_vseq(10 * num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
       "shadow_reg_errors":          run_shadow_reg_errors(num_times);
