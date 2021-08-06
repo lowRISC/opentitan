@@ -68,20 +68,22 @@ module prim_lc_sync #(
 
   // If the multibit signal is in a transient state, we expect it
   // to be stable again within one clock cycle.
-  `ASSERT(CheckTransients_A,
+  // DV will exclude these three assertions by name, thus added a module name prefix to make it
+  // harder to accidentally replicate in other modules.
+  `ASSERT(PrimLcSyncCheckTransients_A,
       !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
       |=>
       (lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off}))
 
   // If a signal departs from passive state, we expect it to move to the active state
   // with only one transient cycle in between.
-  `ASSERT(CheckTransients0_A,
+  `ASSERT(PrimLcSyncCheckTransients0_A,
       $past(lc_en_i == lc_ctrl_pkg::Off) &&
       !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
       |=>
       (lc_en_i == lc_ctrl_pkg::On))
 
-  `ASSERT(CheckTransients1_A,
+  `ASSERT(PrimLcSyncCheckTransients1_A,
       $past(lc_en_i == lc_ctrl_pkg::On) &&
       !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
       |=>
