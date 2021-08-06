@@ -236,10 +236,10 @@ jobs:
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_earlgrey_verilator \
+        lowrisc:dv:chip_verilator_sim \
         --verilator_options="--threads 4"
 
-      cp "$OBJ_DIR/hw/sim-verilator/Vchip_earlgrey_verilator_tb" \
+      cp "$OBJ_DIR/hw/sim-verilator/Vchip_sim_tb" \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml

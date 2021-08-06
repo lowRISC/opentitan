@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module chip_earlgrey_verilator_tb (
+module chip_sim_tb (
   // Clock and Reset
   input clk_i,
   input rst_ni
@@ -207,4 +207,4 @@ module chip_earlgrey_verilator_tb (
   `undef SIM_SRAM_IF
 
 
-endmodule // chip_earlgrey_verilator_tb
+endmodule // chip_sim_tb

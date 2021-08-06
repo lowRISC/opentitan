@@ -19,7 +19,7 @@ First the simulation needs to built itself.
 
 ```console
 $ cd $REPO_TOP
-$ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build lowrisc:systems:chip_earlgrey_verilator
+$ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build lowrisc:dv:chip_verilator_sim
 ```
 The fsel_top flag used above is specific to the OpenTitan project to select the correct fileset.
 
@@ -46,7 +46,7 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
+$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
@@ -103,10 +103,10 @@ To write all UART output to a file called `your-log-file.log`, pass `+UARTDPI_LO
 A full command-line invocation of the simulation could then look like that:
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
+$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
+  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   +UARTDPI_LOG_uart0=-
 ```
 
@@ -195,10 +195,10 @@ Tracing slows down the simulation by roughly factor of 1000.
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
+$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
+  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   --trace
 $ gtkwave sim.fst
 ```
