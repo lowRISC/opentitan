@@ -254,9 +254,7 @@ class OTBNState:
         self.loop_step()
         self.gprs.post_insn()
 
-        self._err_bits |= (self.gprs.err_bits() |
-                           self.dmem.err_bits() |
-                           self.loop_stack.err_bits())
+        self._err_bits |= self.gprs.err_bits() | self.loop_stack.err_bits()
         if self._err_bits:
             self.pending_halt = True
 

@@ -7,7 +7,6 @@ from typing import List, Sequence
 
 from shared.mem_layout import get_memory_layout
 
-from .err_bits import BAD_DATA_ADDR
 from .trace import Trace
 
 
@@ -60,8 +59,6 @@ class Dmem:
 
         self.data = [uninit] * num_words
         self.trace = []  # type: List[TraceDmemStore]
-
-        self.err_flag = False
 
         self._load_begun = False
         self._load_ready = False
@@ -143,37 +140,43 @@ class Dmem:
             u32s += self._get_u32s(idx)
         return struct.pack('<{}I'.format(len(u32s)), *u32s)
 
+    def is_valid_256b_addr(self, addr: int) -> bool:
+        '''Return true if this is a valid address for a BN.LID/BN.SID'''
+        assert addr >= 0
+        if addr & 31:
+            return False
+
+        word_addr = addr // 32
+        if word_addr >= len(self.data):
+            return False
+
+        return True
+
     def load_u256(self, addr: int) -> int:
         '''Read a u256 little-endian value from an aligned address'''
         assert addr >= 0
+        assert self.is_valid_256b_addr(addr)
 
-        if addr & 31:
-            self.err_flag = True
-            return 0
-
-        word_addr = addr // 32
-
-        if word_addr >= len(self.data):
-            self.err_flag = True
-            return 0
-
-        return self.data[word_addr]
+        return self.data[addr // 32]
 
     def store_u256(self, addr: int, value: int) -> None:
         '''Write a u256 little-endian value to an aligned address'''
         assert addr >= 0
         assert 0 <= value < (1 << 256)
-
-        if addr & 31:
-            self.err_flag = True
-            return
-
-        word_addr = addr // 32
-        if word_addr >= len(self.data):
-            self.err_flag = True
-            return
+        assert self.is_valid_256b_addr(addr)
 
         self.trace.append(TraceDmemStore(addr, value, True))
+
+    def is_valid_32b_addr(self, addr: int) -> bool:
+        '''Return true if this is a valid address for a LW/SW instruction'''
+        assert addr >= 0
+        if addr & 3:
+            return False
+
+        if (addr + 3) // 32 >= len(self.data):
+            return False
+
+        return True
 
     def load_u32(self, addr: int) -> int:
         '''Read a 32-bit value from memory.
@@ -182,14 +185,7 @@ class Dmem:
         32-bit integer.
 
         '''
-        assert addr >= 0
-        if addr & 3:
-            self.err_flag = True
-            return 0
-
-        if (addr + 3) // 32 >= len(self.data):
-            self.err_flag = True
-            return 0
+        assert self.is_valid_32b_addr(addr)
 
         idx32 = addr // 4
         idxW = idx32 // 8
@@ -205,19 +201,9 @@ class Dmem:
         '''
         assert addr >= 0
         assert 0 <= value <= (1 << 32) - 1
-
-        if addr & 3:
-            self.err_flag = True
-            return
-
-        if (addr + 3) // 32 >= len(self.data):
-            self.err_flag = True
-            return
+        assert self.is_valid_32b_addr(addr)
 
         self.trace.append(TraceDmemStore(addr, value, False))
-
-    def err_bits(self) -> int:
-        return BAD_DATA_ADDR if self.err_flag else 0
 
     def changes(self) -> Sequence[Trace]:
         return self.trace
@@ -244,8 +230,6 @@ class Dmem:
         self._set_u32s(idxW, u32s)
 
     def commit(self, stalled: bool) -> None:
-        assert not self.err_flag
-
         if self._load_begun:
             self._load_begun = False
             self._load_ready = True
@@ -258,7 +242,6 @@ class Dmem:
 
     def abort(self) -> None:
         self.trace = []
-        self.err_flag = False
 
     def in_progress_load_complete(self) -> bool:
         '''Returns true if a previously started load has completed'''
