@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:alert
+      - lowrisc:prim:flop_2sync
     files:
       - rtl/rv_plic_gateway.sv
       - rtl/rv_plic_target.sv

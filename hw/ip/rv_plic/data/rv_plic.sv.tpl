@@ -145,13 +145,25 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   //////////////
   // Gateways //
   //////////////
+
+  // Synchronize all incoming interrupt requests.
+  logic [NumSrc-1:0] intr_src_synced;
+  prim_flop_2sync #(
+    .Width(NumSrc)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(intr_src_i),
+    .q_o(intr_src_synced)
+  );
+
   rv_plic_gateway #(
     .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
     .rst_ni,
 
-    .src_i      (intr_src_i),
+    .src_i      (intr_src_synced),
     .le_i       (LevelEdgeTrig),
 
     .claim_i    (claim),
