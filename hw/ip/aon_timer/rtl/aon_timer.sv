@@ -174,6 +174,10 @@ module aon_timer import aon_timer_reg_pkg::*;
     end
   end
 
+  // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
+  `ASSERT(WkupStable_A, aon_timer_wkup_req_o && aon_sleep_mode |=>
+          aon_timer_wkup_req_o || $fell(reg2hw.wkup_cause.q), clk_aon_i, !rst_aon_ni)
+
   ////////////////////////
   // Interrupt Handling //
   ////////////////////////
@@ -194,29 +198,19 @@ module aon_timer import aon_timer_reg_pkg::*;
     end
   end
 
-  logic [1:0] aon_intr_set;
+  logic [1:0] aon_intr_set, intr_set;
   assign aon_intr_set[AON_WDOG] = aon_wdog_intr_set;
   assign aon_intr_set[AON_WKUP] = aon_wkup_intr_set;
 
-  logic [1:0] intr_event_q, intr_event_q1;
-
   for (genvar i = 0; i < 2; i++) begin : gen_intr_sync
     prim_pulse_sync u_intr_sync (
-     .clk_src_i(clk_aon_i),
-     .rst_src_ni(rst_aon_ni),
-     .src_pulse_i(aon_intr_set[i]),
-     .clk_dst_i(clk_i),
-     .rst_dst_ni(rst_ni),
-     .dst_pulse_o(intr_event_q[i])
+      .clk_src_i   (clk_aon_i),
+      .rst_src_ni  (rst_aon_ni),
+      .src_pulse_i (aon_intr_set[i]),
+      .clk_dst_i   (clk_i),
+      .rst_dst_ni  (rst_ni),
+      .dst_pulse_o (intr_set[i])
     );
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      intr_event_q1 <= '0;
-    end else begin
-      intr_event_q1 <= intr_event_q;
-    end
   end
 
   // Registers to interrupt
@@ -238,7 +232,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   ) u_intr_hw (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_event_q ^ intr_event_q1),
+    .event_intr_i           (intr_set),
     .reg2hw_intr_enable_q_i (2'b11),
     .reg2hw_intr_test_q_i   (intr_test_q),
     .reg2hw_intr_test_qe_i  (intr_test_qe),
