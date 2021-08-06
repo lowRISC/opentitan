@@ -50,7 +50,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h41180000, 32'h41180fff}
     }},
     '{"rv_plic", '{
-        '{32'h41010000, 32'h41010fff}
+        '{32'h48000000, 32'h4fffffff}
     }},
     '{"otbn", '{
         '{32'h411d0000, 32'h411dffff}

@@ -483,7 +483,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41010000",
+      base_addr: "0x48000000",
       attr: "templated",
     },
     { name: "aes",

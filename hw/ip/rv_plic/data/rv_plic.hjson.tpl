@@ -75,6 +75,17 @@
 
   regwidth: "32",
   registers: [
+% for i in range(src):
+    { name: "PRIO${i}",
+      desc: "Interrupt Source ${i} Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "${(prio).bit_length()-1}:0" }
+      ],
+    }
+% endfor
+    { skipto: "0x00001000" }
     { multireg: {
         name: "IP",
         desc: "Interrupt Pending",
@@ -89,18 +100,8 @@
                "excl:CsrNonInitTests:CsrExclCheck"],
       }
     },
-% for i in range(src):
-    { name: "PRIO${i}",
-      desc: "Interrupt Source ${i} Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "${(prio).bit_length()-1}:0" }
-      ],
-    }
-% endfor
 % for i in range(target):
-    { skipto: "${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + i*0x100 | x}" }
+    { skipto: "${"0x{:x}".format(0x00002000 + i * 0x100)}" }
     { multireg: {
         name: "IE${i}",
         desc: "Interrupt Enable for Target ${i}",
@@ -113,6 +114,9 @@
         ],
       }
     }
+% endfor
+% for i in range(target):
+    { skipto: "${"0x{:x}".format(0x00200000  + i * 0x1000)}" }
     { name: "THRESHOLD${i}",
       desc: "Threshold of priority for Target ${i}",
       swaccess: "rw",
@@ -135,6 +139,9 @@
       tags: [// CC register value is related to IP
              "excl:CsrNonInitTests:CsrExclCheck"],
     }
+% endfor
+  { skipto: "0x4000000" }
+% for i in range(target):
     { name: "MSIP${i}",
       desc: '''msip for Hart ${i}.
       Write 1 to here asserts software interrupt for Hart msip_o[${i}], write 0 to clear.''',
@@ -147,7 +154,7 @@
       ],
     }
 % endfor
-  { skipto: "${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + target*0x100 | x}" }
+  { skipto: "0x4004000" }
   { name: "ALERT_TEST",
       desc: '''Alert Test Register.''',
       swaccess: "wo",

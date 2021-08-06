@@ -661,7 +661,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x41010000u
+#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x48000000u
 
 /**
  * Peripheral size for rv_plic in top earlgrey.
@@ -671,7 +671,7 @@ extern "C" {
  * address between #TOP_EARLGREY_RV_PLIC_BASE_ADDR and
  * `TOP_EARLGREY_RV_PLIC_BASE_ADDR + TOP_EARLGREY_RV_PLIC_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_PLIC_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_RV_PLIC_SIZE_BYTES 0x8000000u
 
 /**
  * Peripheral base address for aes in top earlgrey.
