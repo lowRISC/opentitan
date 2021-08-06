@@ -241,6 +241,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           write_msg(output_len_enc);
         end
 
+        // wait for some cycles after writing message to let internal state settle
+        cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
+
         // issue an incorrect SW command, this will be dropped internally,
         // so need to send the correct command afterwards.
         if (kmac_err_type == kmac_pkg::ErrSwCmdSequence &&

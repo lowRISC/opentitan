@@ -701,10 +701,26 @@ class kmac_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] intr_state;
     if (enable_intr[KmacDone]) begin
       wait(cfg.intr_vif.pins[KmacDone] == 1'b1);
+      // wait a few cycles to slightly loosen timing requirements on scoreboard
+      cfg.clk_rst_vif.wait_clks(5);
       check_interrupts(.interrupts(1 << KmacDone),
                        .check_set(1'b1));
     end else begin
-      csr_spinwait(.ptr(ral.intr_state.kmac_done), .exp_data(1'b1));
+      // Loosen up the `kmac_done` checks slightly to ease timing pressure on the cycle accurate
+      // model, instead of spinwaiting, we now do a "before" and "after" CSR read.
+
+      // First do a backdoor read to make sure we don't encounter any race conditions with the
+      // design.
+      csr_rd_check(.ptr(ral.intr_state.kmac_done), .compare_value(1'b0), .backdoor(1'b1));
+
+      // Wait a long time for hashing to finish, then check that `kmac_done` is set
+      if (cfg.enable_masking) begin
+        cfg.clk_rst_vif.wait_clks(1000);
+      end else begin
+        cfg.clk_rst_vif.wait_clks(150);
+      end
+
+      csr_rd_check(.ptr(ral.intr_state.kmac_done), .compare_value(1'b1));
     end
     // read and clear intr_state
     csr_rd(.ptr(ral.intr_state), .value(intr_state));
