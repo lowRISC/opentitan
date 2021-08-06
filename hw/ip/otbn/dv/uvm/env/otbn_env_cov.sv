@@ -1128,11 +1128,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_addr)
 
-    // Load from a "barely invalid" address (aligned but overlapping the top of memory)
-    `DEF_SEEN_CP(barely_oob_addr_cp,
-                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 4) &&
-                 ($signed(operand_a) + $signed(offset) < DmemSizeByte) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    // Load from a "barely invalid" address (the smallest aligned address that's above the top of
+    // memory)
+    `DEF_SEEN_CP(barely_oob_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte)
     `DEF_MNEM_CROSS(barely_oob_addr)
 
     // Cross the different possible address alignments for otherwise valid addresses

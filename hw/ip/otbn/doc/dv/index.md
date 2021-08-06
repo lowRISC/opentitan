@@ -383,7 +383,7 @@ The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
   Tracked as `top_addr_cross`.
 - Load from an invalid address (aligned but above the top of memory)
   Tracked as `oob_addr_cross`.
-- Load from a "barely invalid" address (aligned but overlapping the top of memory)
+- Load from a "barely invalid" address (just above the top of memory)
   Tracked as `barely_oob_addr_cross`.
 - Misaligned address tracking.
   Track loads from addresses that are in range for the size of the memory.
