@@ -2649,8 +2649,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // Calculate the unmasked key
           exp_keys = `gmv(ral.cfg.sideload) ? keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
-            // Sideloaded keys are treated as two-share masked form by default, need to xor them
-            if (cfg.enable_masking || `gmv(ral.cfg.sideload)) begin
+            if (cfg.enable_masking) begin
               unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
             end else begin
               unmasked_key.push_back(exp_keys[0][i]);
