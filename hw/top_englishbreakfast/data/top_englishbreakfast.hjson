@@ -154,18 +154,13 @@
       { name: "sys_io_div4", gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
       { name: "sys_aon",     gen: true,  type: "top", parent: "sys_src", clk: "aon"     }
       { name: "spi_device",  gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
-      { name: "spi_host0",   gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
+      { name: "spi_host0",   gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
       { name: "usb",         gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
     ]
   }
 
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
-
-
-  // TODO: remove completely
-  host: [
-  ]
 
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
@@ -209,7 +204,7 @@
     },
     { name: "spi_host0",
       type: "spi_host",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4", clk_core_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host0", rst_core_ni: "spi_host0"},
       base_addr: "0x40060000",
@@ -235,14 +230,6 @@
       clock_group: "timers",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "sys"},
       base_addr: "0x40140000",
-    },
-    { name: "alert_handler",
-      type: "alert_handler",
-      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
-      base_addr: "0x40150000",
-      attr: "templated",
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
@@ -308,16 +295,19 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: "Aon",
-      base_addrs: {regs: "0x40500000", ram: "0x40600000"}
+      param_decl: {
+        InstrExec: "0",
+      }
+      base_addrs: {regs: "0x40500000", ram: "0x40600000"},
       // Memory regions must be associated with a dedicated
       // TL-UL device interface.
       memory: {
         ram: {
-          label:      "ram_ret_aon",
+          label:    "ram_ret_aon",
           swaccess:   "rw",
           exec:       "True",
           byte_write: "True",
-          size:       "0x1000"
+          size:     "0x1000"
         }
       }
     },
@@ -332,7 +322,7 @@
     { name: "rv_dm",
       type: "rv_dm",
       clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
+      clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
       // Note that this module also contains a bus host.
       base_addrs: {rom: "0x00010000", regs: "0x41200000"}
@@ -350,6 +340,10 @@
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
+      param_decl: {
+        Masking: "1",
+        SBoxImpl: "aes_pkg::SBoxImplDom"
+      }
       base_addr: "0x41100000",
     },
     { name: "hmac",
@@ -364,7 +358,10 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys", rst_otp_ni: "lc_io_div4"},
-      base_addrs: {regs: "0x411C0000", ram: "0x10000000"}
+      param_decl: {
+        InstrExec: "1",
+      }
+      base_addrs: {regs: "0x411C0000", ram: "0x10000000"},
       // Memory regions must be associated with a dedicated
       // TL-UL device interface.
       memory: {
@@ -379,7 +376,6 @@
     },
     { name: "rom_ctrl",
       type: "rom_ctrl",
-      param_decl: {SecDisableScrambling: "1'b1"},
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
@@ -392,6 +388,9 @@
           byte_write: "False",
           size:       "0x4000"
         }
+      },
+      param_decl: {
+        SecDisableScrambling: "1'b1"
       }
     },
     { name: "rv_core_ibex",
@@ -412,8 +411,8 @@
                    BranchPredictor: "0",
                    DbgTriggerEn: "1",
                    SecureIbex: "1",
-                   DmHaltAddr: "ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]",
-                   DmExceptionAddr: "ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]",
+                   DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]",
+                   DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]",
                    PipeLine: "0"
                   }
       clock_srcs: {clk_i: "main", clk_esc_i: "io_div4"},
@@ -423,7 +422,7 @@
     },
   ]
 
-  // Memories (RAM, eFlash) are defined at the top.
+  // Memories (ROM, RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
     { name: "eflash",
@@ -558,15 +557,6 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
-                                   'lc_ctrl.esc_scrap_state0_rx',
-                                   'lc_ctrl.esc_scrap_state1_rx'
-                                   'pwrmgr_aon.esc_rst_rx'],
-      'alert_handler.esc_tx'    : ['rv_core_ibex.esc_tx',
-                                   'lc_ctrl.esc_scrap_state0_tx',
-                                   'lc_ctrl.esc_scrap_state1_tx',
-                                   'pwrmgr_aon.esc_rst_tx'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
@@ -578,8 +568,7 @@
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
                                    'aon_timer_aon.sleep_mode'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
+      'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
 
       // usbdev connection to pinmux
       'usbdev.usb_out_of_rst'   : ['pinmux_aon.usb_out_of_rst'],
@@ -594,14 +583,13 @@
       'clkmgr_aon.idle'         : [],
 
       // Pinmux JTAG signals
-      // Note that the DFT TAP will be connected
-      // automatically by the DFT insertion tool,
-      // hence it does not have to be connected here.
       'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
 
       // LC function control signal broadcast
-      'lc_ctrl.lc_dft_en'          : ['pinmux_aon.lc_dft_en'],
+      'lc_ctrl.lc_dft_en'          : ['pinmux_aon.lc_dft_en',
+                                      'clkmgr_aon.lc_dft_en'
+                                     ],
       'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'sram_ctrl_ret_aon.lc_hw_debug_en',
@@ -624,8 +612,23 @@
       'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['flash_ctrl.lc_seed_hw_rd_en'],
 
-      // TODO: Put passthrough here?
-      //'spi_device.passthrough': ['spi_host0.passthrough']
+      // rv_plic connections
+      'rv_plic.msip' : ['rv_core_ibex.irq_software'],
+      'rv_plic.irq'  : ['rv_core_ibex.irq_external'],
+
+      // rv_dm connections
+      'rv_dm.debug_req': ['rv_core_ibex.debug_req'],
+
+      // rv_timer connections
+
+
+      // rv core ibex connections
+      'rv_core_ibex.rst_cpu_n'  : ['rstmgr_aon.rst_cpu_n'],
+      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
+      'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
+
+      // spi passthrough connection
+      'spi_device.passthrough'     : ['spi_host0.passthrough']
 
       // Debug module reset request to reset manager
       'rv_dm.ndmreset_req' : ['rstmgr_aon.ndmreset_req']
@@ -635,20 +638,32 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr_aon.resets', 'rstmgr_aon.rst_cpu_n',
-        'pwrmgr_aon.pwr_cpu', 'pwrmgr_aon.fetch_en',
-        'clkmgr_aon.clocks',
+        // reset and clock connections
+        'rstmgr_aon.resets', 'clkmgr_aon.clocks',
 
-        // Debug request from debug module to CPU
-        'rv_dm.debug_req',
+        // dedicated timer interrupt
+        'rv_core_ibex.irq_timer',
+
+        // hardwired connections
+        'rv_core_ibex.hart_id', 'rv_core_ibex.boot_addr',
 
         // Xbars
-        'main.tl_corei', 'main.tl_cored'
+
+        // Pinmux JTAG signals for the tool-inserted DFT TAP
+        'pinmux_aon.dft_jtag',
+
+        // OTP HW_CFG Broadcast signals.
+        // TODO(#6713): The actual struct breakout and mapping currently needs to
+        // be performed by hand in the toplevel template.
+        'lc_ctrl.otp_device_id',
+        'lc_ctrl.otp_manuf_state',
+        'sram_ctrl_main.otp_en_sram_ifetch',
+        'sram_ctrl_ret_aon.otp_en_sram_ifetch'
     ],
 
     // ext is to create port in the top.
     'external': {
-        // 'adc_ctrl_aon.adc'             : 'adc'
+        # 'adc_ctrl_aon.adc'             : 'adc'
         'ast.edn'                      : '',
         'ast.lc_dft_en'                : '',
         'ast.ram_1p_cfg'               : 'ram_1p_cfg',
@@ -671,12 +686,14 @@
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'  : 'dft_hold_tap_sel',
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
-        'rstmgr_aon.por_n'             : 'por_n'
         # 'otp_ctrl.otp_ast_pwr_seq'     : '',
         # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
+        # 'otp_ctrl.otp_alert'           : 'otp_alert',
+        'rstmgr_aon.por_n'             : 'por_n'
         'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
         'sensor_ctrl_aon.ast2pinmux'   : '',
+        # 'sensor_ctrl_aon.ast_init_done': 'ast_init_done',
         'usbdev.usb_ref_val'           : '',
         'usbdev.usb_ref_pulse'         : '',
     },
@@ -699,6 +716,20 @@
       reset_connections: {rst_peri_ni: "sys_io_div4"},
     }
   ],
+
+  // Modules whose interrupts are connected to RV_PLIC.
+  interrupt_module: [
+    "uart0",
+    "gpio",
+    "spi_device",
+    "spi_host0",
+    // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
+    "usbdev",
+    "pwrmgr_aon",
+    "aon_timer_aon",
+    "flash_ctrl",
+    "hmac",
+  ]
 
   // ===== PINMUX & PINOUT ======================================================
 
@@ -809,7 +840,8 @@
     //
     // - instance: This is the comportable IO instance name where the IO signal comes from.
     //
-    // - connection: Can have either of the following values:
+    // - connection: This key is similar to the connection key in the pinout/pad configuration and
+    //               can have either of the following values:
     //
     //               1) 'direct': This is a dedicated IO signal that is directly connected to a pad.
     //                            Such an IO signal must also specify the 'port' and 'pad' keys

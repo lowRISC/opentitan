@@ -9,19 +9,18 @@
   other_reset_list: [ "rst_fixed_ni" ] // Secondary clocks used by specific nodes
 
   nodes: [
-    { name:  "corei",
+    { name:  "rv_core_ibex.corei",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: "false"
 
     },
-    { name:  "cored",
+    { name:  "rv_core_ibex.cored",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: "false"
-
     },
     { name:      "rv_dm.sba",
       type:      "host",
@@ -96,6 +95,12 @@
       inst_type: "rv_plic",
       pipeline_byp: "false"
     },
+    { name:      "rv_core_ibex.cfg",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
     { name:      "sram_ctrl_main.regs",
       type:      "device",
       clock:     "clk_main_i",
@@ -110,16 +115,19 @@
     },
   ],
   connections: {
-    corei:  ["rom_ctrl.rom", "rv_dm.rom", "sram_ctrl_main.ram", "eflash"],
-    cored:  [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs", "eflash", "peri",
-      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main.ram",
-      "sram_ctrl_main.regs"
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.rom", "sram_ctrl_main.ram", "eflash"],
+    rv_core_ibex.cored:  [
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs",
+      "sram_ctrl_main.ram", "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim",
+      "aes", "hmac",
+      "rv_plic", "sram_ctrl_main.ram", "sram_ctrl_main.regs",
+      "rv_core_ibex.cfg"
     ],
     rv_dm.sba: [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "eflash", "peri",
-      "flash_ctrl.core", "flash_ctrl.prim", "aes", "hmac", "rv_plic", "sram_ctrl_main.ram",
-      "sram_ctrl_main.regs"
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.regs", "sram_ctrl_main.ram",
+      "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim", "aes",
+      "hmac", "rv_plic",
+      "sram_ctrl_main.regs", "rv_core_ibex.cfg"
     ],
   },
 }

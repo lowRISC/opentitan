@@ -5,6 +5,7 @@
 r"""Script to prepare SW for non-earlgrey tops
 """
 
+import argparse
 import sys
 import subprocess
 import re
@@ -12,6 +13,20 @@ from pathlib import Path
 
 
 def main():
+
+    parser = argparse.ArgumentParser(
+        prog="prepare_sw",
+        description="Script to prepare SW sources for English Breakfast",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument(
+        '--build',
+        '-b',
+        default=False,
+        action='store_true',
+        help='Build ROM based on reduced design')
+
+    args = parser.parse_args()
 
     # Config
     name_old = 'earlgrey'
@@ -62,6 +77,8 @@ def main():
     #    need to change some file and variable names in auto-generated files.
     # 3. The build system still uses some sources from the original top level.
     #    We thus need to replace those with the new sources patched in 2.
+    # 4. References to IP cores not available on English Breakfast need to be
+    #    removed from the source code of the boot ROM and some applications.
 
     # 1.
     cmd = ['sed', '-i', "s/TOPNAME='top_{}'/TOPNAME='top_{}'/g".format(name_old, name),
@@ -107,10 +124,10 @@ def main():
         with open(path_out + file_name_new, "w") as file_out:
             file_out.write(text)
 
-    # Generate the boot_rom to enable the FPGA build.
-    print("Generating boot ROM...")
-    cmd = ['ninja', '-C', path_root + '/build-out',
-           'sw/device/boot_rom/boot_rom_export_fpga_nexysvideo']
+    # 4.
+    print("Patching SW sources...")
+    cmd = ['git', 'apply', '-p1', path_root + '/hw/' + topname + '/util/sw_sources.patch',
+           '--verbose']
     try:
         subprocess.run(cmd,
                        check=True,
@@ -119,10 +136,34 @@ def main():
                        universal_newlines=True)
 
     except subprocess.CalledProcessError as e:
-        print("Failed to generate boot ROM: " + str(e))
+        print("Failed to patch SW sources: " + str(e))
         sys.exit(1)
 
-    return 0
+    if (args.build):
+        # Build the software including boot_rom to enable the FPGA build.
+        binaries = [
+            'sw/device/boot_rom/boot_rom_export_fpga_nexysvideo',
+            'sw/device/sca/aes_serial_export_fpga_nexysvideo',
+            'sw/device/boot_rom/boot_rom_export_sim_verilator',
+            'sw/device/tests/dif_aes_smoketest_export_sim_verilator',
+            'sw/device/examples/hello_world/hello_world_export_sim_verilator',
+        ]
+        for binary in binaries:
+            print("Building " + binary + "...")
+            cmd = ['ninja', '-C', path_root + '/build-out',
+                   binary]
+            try:
+                subprocess.run(cmd,
+                               check=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+                               universal_newlines=True)
+
+            except subprocess.CalledProcessError as e:
+                print("Failed to generate boot ROM: " + str(e))
+                sys.exit(1)
+
+        return 0
 
 
 if __name__ == "__main__":

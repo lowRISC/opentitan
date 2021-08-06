@@ -22,7 +22,9 @@ int main(int argc, char **argv) {
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
 
-  MemArea rom(top_scope + ".u_rom_rom.u_prim_rom.gen_generic.u_impl_generic",
+  MemArea rom(top_scope +
+                  ".u_rom_ctrl.gen_rom_scramble_disabled.u_rom."
+                  "u_prim_rom.gen_generic.u_impl_generic",
               0x4000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
