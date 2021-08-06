@@ -1127,6 +1127,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  ($signed(operand_a) + $signed(offset) > DmemSizeByte - 4) &&
                  ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_addr)
+    // Load from a negative invalid address (aligned but unsigned address exceeds the top of memory)
+    `DEF_SEEN_CP(oob_addr_neg_cp,
+                 ($signed(operand_a) + $signed(offset) < 0) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(oob_addr_neg)
 
     // Load from a "barely invalid" address (the smallest aligned address that's above the top of
     // memory)
@@ -1477,6 +1482,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  ($signed(operand_a) + $signed(offset) > DmemSizeByte - 32) &&
                  ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
     `DEF_MNEM_CROSS(oob_addr)
+    // Load from a negative invalid address (aligned but unsigned address exceeds the top of memory)
+    `DEF_SEEN_CP(oob_addr_neg_cp,
+                 ($signed(operand_a) + $signed(offset) < 0) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(oob_addr_neg)
 
     // Misaligned address tracking (see DV document for why we have these exact crosses)
     grs1_align_cp:

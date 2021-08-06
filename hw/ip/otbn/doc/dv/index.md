@@ -383,6 +383,8 @@ The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
   Tracked as `top_addr_cross`.
 - Load from an invalid address (aligned but above the top of memory)
   Tracked as `oob_addr_cross`.
+- Load from a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
 - Load from a "barely invalid" address (just above the top of memory)
   Tracked as `barely_oob_addr_cross`.
 - Misaligned address tracking.
@@ -405,6 +407,8 @@ The instruction-specific covergroup is `insn_xw_cg` (shared with `LW`).
   Tracked as `top_addr_cross`.
 - Store to an invalid address (aligned but above the top of memory)
   Tracked as `oob_addr_cross`.
+- Store to a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
 - Store to a "barely invalid" address (aligned but overlapping the top of memory)
   Tracked as `barely_oob_addr_cross`.
 - Misaligned address tracking.
@@ -782,6 +786,8 @@ The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.SID`).
   Tracked as `top_addr_cross`.
 - Load from an invalid address (aligned but above the top of memory)
   Tracked as `oob_addr_cross`.
+- Load from a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
 - Misaligned address tracking.
   Track loads from addresses that are in range for the size of the memory.
   Crossing the possible misalignments for operand_a and offset would give a big cross (`32^2 = 1024`).
@@ -812,6 +818,8 @@ The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.LID`).
   Tracked as `top_addr_cross`.
 - Store to an invalid address (aligned but above the top of memory)
   Tracked as `oob_addr_cross`.
+- Store to a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
 - Misaligned address tracking.
   Track stores to addresses that are in range for the size of the memory.
   Crossing the possible misalignments for operand_a and offset would give a big cross (`32^2 = 1024`).
