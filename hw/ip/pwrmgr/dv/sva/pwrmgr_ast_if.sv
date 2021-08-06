@@ -33,25 +33,29 @@ interface pwrmgr_ast_if (
   `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_WAIT_CYCLES]
 
   // Clock enable-valid.
-  `ASSERT(CoreClkHandshakeOn_A, pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.core_clk_val,
-          clk_slow_i, reset_or_disable)
+  `ASSERT(CoreClkHandshakeOn_A,
+          $rose(pwr_ast_o.core_clk_en) |->
+          `CLK_WAIT_BOUNDS pwr_ast_i.core_clk_val, clk_slow_i, reset_or_disable)
   `ASSERT(CoreClkHandshakeOff_A,
-          !pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
+          $fell(pwr_ast_o.core_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
           reset_or_disable)
 
-  `ASSERT(IoClkHandshakeOn_A, pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.io_clk_val,
+  `ASSERT(IoClkHandshakeOn_A, $rose(pwr_ast_o.io_clk_en) |-> `CLK_WAIT_BOUNDS pwr_ast_i.io_clk_val,
           clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkHandshakeOff_A, !pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val,
-          clk_slow_i, reset_or_disable)
+  `ASSERT(IoClkHandshakeOff_A,
+          $fell(pwr_ast_o.io_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val, clk_slow_i,
+          reset_or_disable)
 
-  `ASSERT(UsbClkHandshakeOn_A, pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.usb_clk_val,
-          clk_slow_i, reset_or_disable)
-  `ASSERT(UsbClkHandshakeOff_A, !pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val,
-          clk_slow_i, reset_or_disable)
+  `ASSERT(UsbClkHandshakeOn_A,
+          $rose(pwr_ast_o.usb_clk_en) |->
+          `CLK_WAIT_BOUNDS pwr_ast_i.usb_clk_val, clk_slow_i, reset_or_disable)
+  `ASSERT(UsbClkHandshakeOff_A,
+          $fell(pwr_ast_o.usb_clk_en) |->
+          `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val, clk_slow_i, reset_or_disable)
 
   // Main pd-pok
-  `ASSERT(MainPdHandshakeOn_A, pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS pwr_ast_i.main_pok,
+  `ASSERT(MainPdHandshakeOn_A, $rose(pwr_ast_o.main_pd_n) |-> `PDN_WAIT_BOUNDS pwr_ast_i.main_pok,
           clk_slow_i, reset_or_disable)
-  `ASSERT(MainPdHandshakeOff_A, !pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS !pwr_ast_i.main_pok,
+  `ASSERT(MainPdHandshakeOff_A, $fell(pwr_ast_o.main_pd_n) |-> `PDN_WAIT_BOUNDS !pwr_ast_i.main_pok,
           clk_slow_i, reset_or_disable)
 endinterface
