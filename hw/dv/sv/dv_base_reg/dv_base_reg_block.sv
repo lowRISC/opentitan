@@ -277,4 +277,13 @@ class dv_base_reg_block extends uvm_reg_block;
     return (word_aligned ? get_word_aligned_addr(byte_offset) : byte_offset) + map.get_base_addr();
   endfunction
 
+  // The design ignores the address bits that aren't enabled by addr_mask.
+  // Normalize these ignored bits to enable locating which CSR/mem is at the returned address.
+  function uvm_reg_addr_t get_normalized_addr(uvm_reg_addr_t byte_addr, uvm_reg_map map = null);
+    if (map == null) map = get_default_map();
+    return get_addr_from_offset(.byte_offset(byte_addr & addr_mask[map]),
+                                .word_aligned(1),
+                                .map(map));
+  endfunction
+
 endclass

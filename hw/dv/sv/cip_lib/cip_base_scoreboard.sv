@@ -64,7 +64,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
       if (!has_csr) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_aligned_err.option.weight = 0;
         tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
       end
       if (!has_unmapped) begin
@@ -285,12 +284,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task process_mem_write(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     if (!cfg.under_reset)  exp_mem[ral_name].write(addr, item.a_data, item.a_mask);
   endtask
 
   virtual task process_mem_read(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     if (!cfg.under_reset && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
       exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
     end
@@ -298,7 +297,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     addr_range_t   loc_mem_ranges[$] = cfg.ral_models[ral_name].mem_ranges;
     foreach (loc_mem_ranges[i]) begin
       if (addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
@@ -327,7 +326,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //  - TL protocol violation
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
-    bit csr_aligned_err, csr_size_err, tl_item_err;
+    bit csr_size_err, tl_item_err;
     bit has_intg_err;
     bit mem_byte_access_err, mem_wo_err, mem_ro_err;
 
@@ -341,7 +340,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     mem_access_err  = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
                                                 mem_ro_err);
-    csr_aligned_err = !is_tl_csr_write_addr_word_aligned(item, ral_name);
     csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err     = item.get_exp_d_error();
 
@@ -377,27 +375,26 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    if (!is_tl_err && (mem_access_err || csr_aligned_err || csr_size_err || tl_item_err ||
+    if (!is_tl_err && (mem_access_err || csr_size_err || tl_item_err ||
                        has_intg_err)) begin
       is_tl_err = 1;
     end
     if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, is_tl_err,
-          $sformatf({"unmapped: %0d, mem_access_err: %0d, csr_aligned_err: %0d, csr_size_err: %0d",
-                    " tl_item_err: %0d, has_intg_err: %0d"}, is_tl_unmapped_addr, mem_access_err,
-                    csr_aligned_err, csr_size_err, tl_item_err, has_intg_err))
+          $sformatf({"unmapped: %0d, mem_access_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
+                    "has_intg_err: %0d"}, is_tl_unmapped_addr, mem_access_err,
+                    csr_size_err, tl_item_err, has_intg_err))
 
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
-      if (is_tl_unmapped_addr + csr_aligned_err + csr_size_err + mem_byte_access_err + mem_wo_err +
+      if (is_tl_unmapped_addr + csr_size_err + mem_byte_access_err + mem_wo_err +
           mem_ro_err + tl_item_err == 1) begin
         tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
-                                       .csr_aligned_err(csr_aligned_err),
-                                       .csr_size_err(csr_size_err),
-                                       .mem_byte_access_err(mem_byte_access_err),
-                                       .mem_wo_err(mem_wo_err),
-                                       .mem_ro_err(mem_ro_err),
-                                       .tl_protocol_err(tl_item_err));
+                                            .csr_size_err(csr_size_err),
+                                            .mem_byte_access_err(mem_byte_access_err),
+                                            .mem_wo_err(mem_wo_err),
+                                            .mem_ro_err(mem_ro_err),
+                                            .tl_protocol_err(tl_item_err));
       end
 
     end
@@ -406,7 +403,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if address is mapped
   virtual function bit is_tl_access_mapped_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     // check if it's mem addr or reg addr
     return is_mem_addr(item, ral_name) || addr inside {cfg.ral_models[ral_name].csr_addrs};
   endfunction
@@ -419,7 +416,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (is_mem_addr(item, ral_name)) begin
       bit mem_partial_write_support;
       dv_base_mem mem;
-      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
       string mem_access = get_mem_access_by_addr(cfg.ral_models[ral_name], addr);
 
       `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name], addr))
@@ -440,17 +437,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 1;
   endfunction
 
-  // check if csr write word-aligned
-  virtual function bit is_tl_csr_write_addr_word_aligned(tl_seq_item item, string ral_name);
-    return !item.is_write() || item.a_addr[1:0] == 0 || is_mem_addr(item, ral_name);
-  endfunction
-
   // check if csr write size greater or equal to csr width
   virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, string ral_name);
     if (!is_tl_access_mapped_addr(item, ral_name) || is_mem_addr(item, ral_name)) return 1;
     if (item.is_write()) begin
       dv_base_reg    csr;
-      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
       `DV_CHECK_FATAL($cast(csr,
                             cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr)))
       if (csr.get_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||

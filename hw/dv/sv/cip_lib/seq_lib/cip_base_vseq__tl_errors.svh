@@ -50,23 +50,6 @@ virtual task tl_access_unmapped_addr(string ral_name);
   end
 endtask
 
-virtual task tl_write_csr_word_unaligned_addr(string ral_name);
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
-  repeat ($urandom_range(10, 100)) begin
-    if (cfg.under_reset) return;
-    `create_tl_access_error_case(
-        tl_write_csr_word_unaligned_addr,
-        opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
-        foreach (loc_mem_ranges[i]) {
-          !((addr & csr_addr_mask[ral_name])
-              inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]});
-        }
-        addr[1:0] != 2'b00;,
-        ,
-        p_sequencer.tl_sequencer_hs[ral_name])
-  end
-endtask
-
 virtual task tl_write_less_than_csr_width(string ral_name);
   uvm_reg all_csrs[$];
 
@@ -242,7 +225,6 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
                 1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
                 // only run when csr addresses exist
                 has_csr_addrs: tl_write_less_than_csr_width(ral_name);
-                has_csr_addrs: tl_write_csr_word_unaligned_addr(ral_name);
 
                 // only run when unmapped addr exists
                 cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
