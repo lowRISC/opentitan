@@ -71,3 +71,16 @@ The valid keys for these YAML files are:
 
   As an even shorter shorthand, a one-item list whose only item is a
   string can be replaced by just that string.
+
+- ranges:
+
+  A dictionary of maximum or minimum values, keyed with names like
+  `max-FOO` or `min-FOO`, respectively.
+
+  Supported names:
+
+  - `max-loop-iters`: Used by the Loop generator to constrain the
+    maximum number of loop iterations that it will pick.
+  - `max-loop-tail-insns`: Used by the Loop generator to constrain the
+    maximum number of straight-line instructions it will generate as
+    part of a loop's tail.

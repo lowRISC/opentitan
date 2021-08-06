@@ -3,10 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # An example custom configuration that generates lots of loops (100
-# times as many as the default config)
+# times as many as the default config), but constrains them not to
+# take too long. We also force the generator not to make long loop
+# tails (the straight-line code that appears up to and including the
+# last instruction of the loop). The idea is that we'll be much more
+# likely to get deeply nested loops this way.
 
 inherit: base
 
 gen-weights:
   Loop: 100
 
+ranges:
+  max-loop-iters: 2
+  max-loop-tail-insns: 4

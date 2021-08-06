@@ -4,7 +4,7 @@
 
 import os
 import random
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from shared.yaml_parse_helpers import check_str, check_keys, load_yaml
 
@@ -43,6 +43,85 @@ class Weights:
     def merge(self, other: 'Weights') -> None:
         for key in set(self.values.keys()) | set(other.values.keys()):
             self.values[key] = self.get(key) * other.get(key)
+
+
+class MinMaxes:
+    '''An object representing a dict of maximum int values, indexed by string
+
+    Each key starts with either "min-" or "max-" (and we need to know which, so
+    that we can merge dictionaries properly).
+
+    '''
+    def __init__(self, what: str, yml: object):
+        if not isinstance(yml, dict):
+            raise ValueError('{} is expected to be a dict, '
+                             'but was actually a {}.'
+                             .format(what, type(yml).__name__))
+
+        self.min_values = {}  # type: Dict[str, int]
+        self.max_values = {}  # type: Dict[str, int]
+
+        for key, value in yml.items():
+            if not isinstance(key, str):
+                raise ValueError('{} had key {!r}, which is not a string.'
+                                 .format(what, key))
+            is_min = key.startswith('min-')
+            if not is_min:
+                if not key.startswith('max-'):
+                    raise ValueError('{} had key {!r}, which does not start '
+                                     'with "min-" or "max-".'
+                                     .format(what, key))
+
+            try:
+                ival = int(value)
+            except ValueError:
+                raise ValueError('{} at key {!r} had value {!r}, '
+                                 'which is not an integer.'
+                                 .format(what, key, value)) from None
+
+            if is_min:
+                self.min_values[key[4:]] = ival
+            else:
+                self.max_values[key[4:]] = ival
+
+    def get_min(self, key: str, default: Optional[int] = None) -> Optional[int]:
+        '''Get a minimum from the dictionary'''
+        return self.min_values.get(key, default)
+
+    def get_max(self, key: str, default: Optional[int] = None) -> Optional[int]:
+        '''Get a maximum from the dictionary'''
+        return self.max_values.get(key, default)
+
+    def get_range(self,
+                  key: str,
+                  default_min: int,
+                  default_max: int) -> Tuple[int, int]:
+        '''Get a (min, max) pair from the dictionary'''
+        return (self.min_values.get(key, default_min),
+                self.max_values.get(key, default_max))
+
+    def _merge_key(self, is_min: bool, key: str, other: 'MinMaxes') -> int:
+        '''Compute a merged value for key.
+
+        This should appear in either self or other.
+
+        '''
+        a = self.min_values.get(key) if is_min else self.max_values.get(key)
+        b = other.min_values.get(key) if is_min else other.max_values.get(key)
+        if a is None:
+            assert b is not None
+            return b
+        if b is None:
+            assert a is not None
+            return a
+
+        return max(a, b) if is_min else min(a, b)
+
+    def merge(self, other: 'MinMaxes') -> None:
+        for key in set(self.min_values.keys()) | set(other.min_values.keys()):
+            self.min_values[key] = self._merge_key(True, key, other)
+        for key in set(self.max_values.keys()) | set(other.max_values.keys()):
+            self.max_values[key] = self._merge_key(False, key, other)
 
 
 class Inheritance:
@@ -101,7 +180,7 @@ class Config:
                  yml: object):
         yd = check_keys(yml, 'top-level',
                         [],
-                        ['gen-weights', 'insn-weights', 'inherit'])
+                        ['gen-weights', 'insn-weights', 'inherit', 'ranges'])
 
         # The most general form for the inherit field is a list of dictionaries
         # that get parsed into Inheritance objects. As a shorthand, these
@@ -134,10 +213,9 @@ class Config:
                                                      parents, known_names)
 
         self.path = path
-        self.gen_weights = Weights('gen-weights',
-                                   yd.get('gen-weights', {}))
-        self.insn_weights = Weights('insn-weights',
-                                    yd.get('insn-weights', {}))
+        self.gen_weights = Weights('gen-weights', yd.get('gen-weights', {}))
+        self.insn_weights = Weights('insn-weights', yd.get('insn-weights', {}))
+        self.ranges = MinMaxes('ranges', yd.get('ranges', {}))
 
         if merged_ancestors is not None:
             self.merge(merged_ancestors)
@@ -175,3 +253,4 @@ class Config:
     def merge(self, other: 'Config') -> None:
         self.gen_weights.merge(other.gen_weights)
         self.insn_weights.merge(other.insn_weights)
+        self.ranges.merge(other.ranges)
