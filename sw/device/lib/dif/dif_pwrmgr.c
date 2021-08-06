@@ -594,3 +594,25 @@ dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
                       snapshot);
   return kDifPwrmgrOk;
 }
+
+dif_pwrmgr_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
+                                           dif_pwrmgr_alert_t alert) {
+  if (pwrmgr == NULL) {
+    return kDifPwrmgrBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  switch (alert) {
+    case kDifPwrmgrAlertFatalFault:
+      index = PWRMGR_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifPwrmgrBadArg;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(pwrmgr->params.base_addr, PWRMGR_ALERT_TEST_REG_OFFSET,
+                      reg);
+
+  return kDifPwrmgrOk;
+}
