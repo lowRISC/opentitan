@@ -47,6 +47,31 @@
     }
   ],
 
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq",
+      act:     "req",
+      package: "",
+      width:   "1"
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq_id",
+      act:     "req",
+      package: "",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "msip",
+      act:     "req",
+      package: "",
+      width:   "1"
+    },
+  ]
+
   regwidth: "32",
   registers: [
     { multireg: {
@@ -61,18 +86,6 @@
         ],
         tags: [// IP is driven by intr_src, cannot auto-predict
                "excl:CsrNonInitTests:CsrExclCheck"],
-      }
-    },
-    { multireg: {
-        name: "LE",
-        desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
-        count: "NumSrc",
-        cname: "RV_PLIC",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-          { bits: "0", name: "LE", desc: "L0E1" }
-        ],
       }
     },
     { name: "PRIO0",

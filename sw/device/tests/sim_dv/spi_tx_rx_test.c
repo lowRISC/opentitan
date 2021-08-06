@@ -200,28 +200,6 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
                          plic) == kDifRvPlicOk,
         "dif_rv_plic_init failed");
 
-  // Enable SPI_DEVICE interrupts at PLIC as edge triggered.
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-  CHECK(dif_rv_plic_irq_set_trigger(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-  CHECK(dif_rv_plic_irq_set_trigger(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
-                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_trigger failed");
-
   // Set the priority of SPI DEVICE interrupts at PLIC to be >=1 (so ensure the
   // target does get interrupted).
   CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,

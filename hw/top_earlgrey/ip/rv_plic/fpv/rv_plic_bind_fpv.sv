@@ -19,7 +19,6 @@ module rv_plic_bind_fpv;
     .irq_id_o,
     .msip_o,
     .ip,
-    .le,
     .ie,
     .claim,
     .complete,

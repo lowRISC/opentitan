@@ -128,15 +128,7 @@ static void uart_configure_irqs(dif_uart_t *uart) {
 /**
  * Configures all the relevant interrupts in PLIC.
  */
-static void plic_configure_irqs(dif_rv_plic_t *plic) {
-  // Set IRQ triggers to be level triggered
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
-                                    kDifRvPlicIrqTriggerLevel) == kDifRvPlicOk,
-        "RX overflow trigger type set failed!");
-  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
-                                    kDifRvPlicIrqTriggerLevel) == kDifRvPlicOk,
-        "TX empty trigger type set failed!");
-
+static void plic_configure_irqs(dif_plic_t *plic) {
   // Set IRQ priorities to MAX
   CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
                                      kDifRvPlicMaxPriority) == kDifRvPlicOk,
