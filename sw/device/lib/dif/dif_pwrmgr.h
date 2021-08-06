@@ -277,6 +277,17 @@ typedef enum dif_pwrmgr_irq {
 typedef uint32_t dif_pwrmgr_irq_snapshot_t;
 
 /**
+ * Power manager alerts.
+ */
+typedef enum dif_pwrmgr_alert {
+  /**
+   * A fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifPwrmgrAlertFatalFault = 0,
+} dif_pwrmgr_alert_t;
+
+/**
  * Creates a new handle for power manager.
  *
  * This function does not actuate the hardware.
@@ -564,6 +575,18 @@ dif_pwrmgr_result_t dif_pwrmgr_irq_disable_all(
 DIF_WARN_UNUSED_RESULT
 dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_snapshot_t snapshot);
+
+/**
+ * Forces a particular alert, causing it to be serviced as if hardware had
+ * asserted it.
+ *
+ * @param pwrmgr A power manager handle.
+ * @param alert A power manager alert type.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_pwrmgr_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
+                                           dif_pwrmgr_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"

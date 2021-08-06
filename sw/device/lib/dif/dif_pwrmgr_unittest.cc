@@ -894,5 +894,22 @@ TEST_F(IrqTest, RestoreAll) {
   EXPECT_EQ(dif_pwrmgr_irq_restore_all(&pwrmgr_, snapshot), kDifPwrmgrOk);
 }
 
+class AlertTest : public DifPwrmgrInitialized {};
+
+TEST_F(AlertTest, ForceBadArgs) {
+  EXPECT_EQ(dif_pwrmgr_alert_force(nullptr, kDifPwrmgrAlertFatalFault),
+            kDifPwrmgrBadArg);
+  EXPECT_EQ(
+      dif_pwrmgr_alert_force(&pwrmgr_, static_cast<dif_pwrmgr_alert_t>(1)),
+      kDifPwrmgrBadArg);
+}
+
+TEST_F(AlertTest, Force) {
+  EXPECT_WRITE32(PWRMGR_ALERT_TEST_REG_OFFSET, {{0, true}});
+
+  EXPECT_EQ(dif_pwrmgr_alert_force(&pwrmgr_, kDifPwrmgrAlertFatalFault),
+            kDifPwrmgrOk);
+}
+
 }  // namespace
 }  // namespace dif_pwrmgr_unittest
