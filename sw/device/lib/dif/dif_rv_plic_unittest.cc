@@ -38,14 +38,6 @@ class PlicTest : public Test, public MmioTest {
 class InitTest : public PlicTest {
  protected:
   void ExpectInitReset() {
-    // Level/edge multireg.
-    EXPECT_WRITE32(RV_PLIC_LE_0_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE_1_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE_2_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE_3_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE_4_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE_5_REG_OFFSET, 0);
-
     // Priority registers.
     for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
       ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
@@ -86,7 +78,7 @@ class IrqTest : public PlicTest {
     // Make sure to change the `last_bit` when `RV_PLIC_PARAM_NUM_SRC` changes.
     // As `last_bit` represents the bit index in a register, we need to count
     // all of the last bits of a multireg to get the total number of bits.
-    // The bit count in IE, LE and IP registers is expected to be the same.
+    // The bit count in IE and IP registers is expected to be the same.
     //
     // This check has been added to help diagnose the mismatch of test values
     // with the HW defines. One of the recent PRs ran into this problem, and
@@ -114,15 +106,6 @@ class IrqTest : public PlicTest {
           {RV_PLIC_IE0_3_REG_OFFSET, RV_PLIC_IE0_3_E_127_BIT},
           {RV_PLIC_IE0_4_REG_OFFSET, RV_PLIC_IE0_4_E_159_BIT},
           {RV_PLIC_IE0_5_REG_OFFSET, RV_PLIC_IE0_5_E_179_BIT},
-      }};
-  static constexpr std::array<Register, RV_PLIC_LE_MULTIREG_COUNT>
-      kTriggerRegisters{{
-          {RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31_BIT},
-          {RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63_BIT},
-          {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_95_BIT},
-          {RV_PLIC_LE_3_REG_OFFSET, RV_PLIC_LE_3_LE_127_BIT},
-          {RV_PLIC_LE_4_REG_OFFSET, RV_PLIC_LE_4_LE_159_BIT},
-          {RV_PLIC_LE_5_REG_OFFSET, RV_PLIC_LE_5_LE_179_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_IP_MULTIREG_COUNT>
       kPendingRegisters{{
@@ -162,8 +145,6 @@ class IrqTest : public PlicTest {
 
 constexpr std::array<IrqTest::Register, RV_PLIC_IE0_MULTIREG_COUNT>
     IrqTest::kEnableRegisters;
-constexpr std::array<IrqTest::Register, RV_PLIC_LE_MULTIREG_COUNT>
-    IrqTest::kTriggerRegisters;
 constexpr std::array<IrqTest::Register, RV_PLIC_IP_MULTIREG_COUNT>
     IrqTest::kPendingRegisters;
 
@@ -197,6 +178,7 @@ TEST_F(IrqEnableSetTest, Target0Disable) {
   }
 }
 
+<<<<<<< HEAD:sw/device/lib/dif/dif_rv_plic_unittest.cc
 class IrqTriggerTypeSetTest : public IrqTest {};
 
 TEST_F(IrqTriggerTypeSetTest, NullArgs) {
@@ -225,6 +207,8 @@ TEST_F(IrqTriggerTypeSetTest, Disable) {
   }
 }
 
+=======
+>>>>>>> 06e3cae3c ([rv_plic] Standardize on level triggered interrupts in the system):sw/device/lib/dif/dif_plic_unittest.cc
 class IrqPrioritySetTest : public PlicTest {};
 
 TEST_F(IrqPrioritySetTest, NullArgs) {

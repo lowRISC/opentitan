@@ -89,18 +89,6 @@
                "excl:CsrNonInitTests:CsrExclCheck"],
       }
     },
-    { multireg: {
-        name: "LE",
-        desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
-        count: "NumSrc",
-        cname: "RV_PLIC",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-          { bits: "0", name: "LE", desc: "L0E1" }
-        ],
-      }
-    },
 % for i in range(src):
     { name: "PRIO${i}",
       desc: "Interrupt Source ${i} Priority",

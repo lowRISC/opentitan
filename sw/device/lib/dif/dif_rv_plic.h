@@ -197,22 +197,6 @@ dif_rv_plic_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
                                                  dif_rv_plic_toggle_t state);
 
 /**
- * Sets the IRQ trigger type.
- *
- * Sets the behaviour of the Interrupt Gateway for a particular IRQ to be edge
- * or level triggered.
- *
- * @param plic A PLIC handle.
- * @param irq An interrupt type.
- * @param trigger A trigger type.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_set_trigger(
-    const dif_rv_plic_t *plic, dif_rv_plic_irq_id_t irq,
-    dif_rv_plic_irq_trigger_t trigger);
-
-/**
  * Sets IRQ source priority (0-3).
  *
  * In order for the PLIC to set a Claim/Complete register and assert the

@@ -75,11 +75,6 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   for (uint32_t i = 0; i < kNumGpios; ++i) {
     dif_rv_plic_irq_id_t plic_irq_id = i + kTopEarlgreyPlicIrqIdGpioGpio0;
 
-    // Enable GPIO interrupts at PLIC as edge triggered.
-    CHECK(dif_rv_plic_irq_set_trigger(plic, plic_irq_id,
-                                      kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
-          "dif_rv_plic_irq_set_trigger failed");
-
     // Set the priority of GPIO interrupts at PLIC to be >=1
     CHECK(dif_rv_plic_irq_set_priority(plic, plic_irq_id, 0x1) == kDifRvPlicOk,
           "dif_rv_plic_irq_set_priority failed");

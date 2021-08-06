@@ -20,7 +20,6 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   input [NumTarget-1:0] msip_o,
   // probe design signals
   input [NumSrc-1:0] ip,
-  input [NumSrc-1:0] le,
   input [NumSrc-1:0] ie [NumTarget],
   input [NumSrc-1:0] claim,
   input [NumSrc-1:0] complete,
@@ -79,18 +78,11 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   end
 
   // when IP is set, previous cycle should follow edge or level triggered criteria
-  `ASSERT(LevelTriggeredIp_A, $rose(ip[src_sel]) |->
-          $past(le[src_sel]) || $past(intr_src_i[src_sel]))
-
-  `ASSERT(EdgeTriggeredIp_A, $rose(ip[src_sel]) |->
-          !$past(le[src_sel]) || $rose($past(intr_src_i[src_sel])))
+  `ASSERT(LevelTriggeredIp_A, ##3 $rose(ip[src_sel]) |-> $past(intr_src_i[src_sel], 3))
 
   // when interrupt is trigger, and nothing claimed yet, then next cycle should assert IP.
-  `ASSERT(LevelTriggeredIpWithClaim_A, !le[src_sel] && intr_src_i[src_sel] && !claimed |=>
-          ip[src_sel])
-
-  `ASSERT(EdgeTriggeredIpWithClaim_A, le[src_sel] && $rose(intr_src_i[src_sel]) && !claimed |=>
-          ip[src_sel])
+  `ASSERT(LevelTriggeredIpWithClaim_A, ##2 $past(intr_src_i[src_sel], 2) &&
+          !claimed |=> ip[src_sel])
 
   // ip stays stable until claimed, reset to 0 after claimed, and stays 0 until complete
   `ASSERT(IpStableAfterTriggered_A, ip[src_sel] && !claimed  |=> ip[src_sel])

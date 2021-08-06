@@ -95,18 +95,6 @@ static plic_reg_info_t plic_irq_enable_reg_info(dif_rv_plic_irq_id_t irq,
 }
 
 /**
- * Get an IRQ source specific Level/Edge register info.
- */
-static plic_reg_info_t plic_irq_trigger_type_reg_info(
-    dif_rv_plic_irq_id_t irq) {
-  ptrdiff_t offset = plic_offset_from_reg0(irq);
-  return (plic_reg_info_t){
-      .offset = RV_PLIC_LE_0_REG_OFFSET + offset,
-      .bit_index = plic_irq_bit_index(irq),
-  };
-}
-
-/**
  * Get an IRQ source specific Interrupt Pending register info.
  */
 static plic_reg_info_t plic_irq_pending_reg_info(dif_rv_plic_irq_id_t irq) {
@@ -136,12 +124,16 @@ static ptrdiff_t plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
  * claimed the CC register, so we assume that the previous "owner" of the
  * resource has cleared/completed the CC access.
  */
+<<<<<<< HEAD:sw/device/lib/dif/dif_rv_plic.c
 static void plic_reset(const dif_rv_plic_t *plic) {
   // Clear all of the Level/Edge registers.
   for (int i = 0; i < RV_PLIC_LE_MULTIREG_COUNT; ++i) {
     ptrdiff_t offset = RV_PLIC_LE_0_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->params.base_addr, offset, 0);
   }
+=======
+static void plic_reset(const dif_plic_t *plic) {
+>>>>>>> 06e3cae3c ([rv_plic] Standardize on level triggered interrupts in the system):sw/device/lib/dif/dif_plic.c
 
   // Clear all of the priority registers.
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
@@ -231,6 +223,7 @@ dif_rv_plic_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
   return kDifRvPlicOk;
 }
 
+<<<<<<< HEAD:sw/device/lib/dif/dif_rv_plic.c
 dif_rv_plic_result_t dif_rv_plic_irq_set_trigger(
     const dif_rv_plic_t *plic, dif_rv_plic_irq_id_t irq,
     dif_rv_plic_irq_trigger_t trigger) {
@@ -262,6 +255,11 @@ dif_rv_plic_result_t dif_rv_plic_irq_set_trigger(
 dif_rv_plic_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
                                                   dif_rv_plic_irq_id_t irq,
                                                   uint32_t priority) {
+=======
+dif_plic_result_t dif_plic_irq_set_priority(const dif_plic_t *plic,
+                                            dif_plic_irq_id_t irq,
+                                            uint32_t priority) {
+>>>>>>> 06e3cae3c ([rv_plic] Standardize on level triggered interrupts in the system):sw/device/lib/dif/dif_plic.c
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
       priority > kDifRvPlicMaxPriority) {
     return kDifRvPlicBadArg;
