@@ -48,8 +48,12 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_err.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_cmd_intg_chk.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_rsp_intg_gen.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_enc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_dec.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_enc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_ext.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_shadow.sv
@@ -62,6 +66,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_packer_fifo.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_lfsr.sv
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop_2sync.sv
+    "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop_en.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_buf.sv
