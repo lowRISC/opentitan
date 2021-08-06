@@ -71,6 +71,8 @@ class Field:
                  reg_resval: Optional[int],
                  reg_width: int,
                  params: ReggenParams,
+                 hwext: bool,
+                 shadowed: bool,
                  raw: object) -> 'Field':
         where = 'field {} of {} register'.format(field_idx, reg_name)
         rd = check_keys(raw, where,
@@ -107,6 +109,11 @@ class Field:
             hwaccess = HWAccess(where, raw_hwaccess)
         else:
             hwaccess = default_hwaccess
+
+        # Currently internal shadow registers do not support hw write type
+        if not hwext and shadowed and hwaccess.allows_write():
+            raise ValueError('Internal Shadow registers do not currently support '
+                             'hardware write')
 
         bits = Bits.from_raw(where, reg_width, params, rd['bits'])
 
