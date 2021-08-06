@@ -10,7 +10,7 @@ from .isa import (DecodeError, OTBNInsn, OTBNLDInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
                   extract_quarter_word)
 from .state import OTBNState
-from .err_bits import ILLEGAL_INSN
+from .err_bits import BAD_DATA_ADDR, ILLEGAL_INSN
 
 
 class ADD(RV32RegReg):
@@ -184,8 +184,12 @@ class LW(OTBNLDInsn):
     def execute(self, state: OTBNState) -> None:
         base = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (base + self.offset) & ((1 << 32) - 1)
-        result = state.dmem.load_u32(addr)
-        state.gprs.get_reg(self.grd).write_unsigned(result)
+
+        if not state.dmem.is_valid_32b_addr(addr):
+            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+        else:
+            result = state.dmem.load_u32(addr)
+            state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SW(OTBNInsn):
@@ -201,7 +205,11 @@ class SW(OTBNInsn):
         base = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (base + self.offset) & ((1 << 32) - 1)
         value = state.gprs.get_reg(self.grs2).read_unsigned()
-        state.dmem.store_u32(addr, value)
+
+        if not state.dmem.is_valid_32b_addr(addr):
+            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
+        else:
+            state.dmem.store_u32(addr, value)
 
 
 class BEQ(OTBNInsn):
@@ -899,6 +907,8 @@ class BNLID(OTBNLDInsn):
 
         if grd_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        elif not state.dmem.is_valid_256b_addr(addr):
+            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
         else:
             wrd = grd_val & 0x1f
             value = state.dmem.load_u256(addr)
@@ -935,6 +945,8 @@ class BNSID(OTBNInsn):
 
         if grs2_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        elif not state.dmem.is_valid_256b_addr(addr):
+            state.stop_at_end_of_cycle(BAD_DATA_ADDR)
         else:
             wrs = grs2_val & 0x1f
             wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
