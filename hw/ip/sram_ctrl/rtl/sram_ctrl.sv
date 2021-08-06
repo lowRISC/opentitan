@@ -273,9 +273,9 @@ module sram_ctrl
 
   // Compute the correct integrity alongside for the pseudo-random initialization values.
   logic [DataWidth - 1 :0] lfsr_out_integ;
-  prim_secded_39_32_enc u_data_gen (
+  tlul_data_integ_enc u_tlul_data_integ_enc (
     .data_i(lfsr_out),
-    .data_o(lfsr_out_integ)
+    .data_intg_o(lfsr_out_integ)
   );
 
   /////////////////////////////////
