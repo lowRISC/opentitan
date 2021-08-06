@@ -267,6 +267,8 @@ class Register(RegBase):
                                  resval,
                                  reg_width,
                                  params,
+                                 hwext,
+                                 shadowed,
                                  rf)
                   for idx, rf in enumerate(raw_fields)]
 
