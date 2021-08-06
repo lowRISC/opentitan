@@ -363,12 +363,12 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for rv_plic in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h41010000;
+  parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h48000000;
 
   /**
    * Peripheral size in bytes for rv_plic in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_PLIC_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_RV_PLIC_SIZE_BYTES = 32'h8000000;
 
   /**
    * Peripheral base address for aes in top earlgrey.

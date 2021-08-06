@@ -4541,7 +4541,7 @@
       ]
       base_addrs:
       {
-        null: 0x41010000
+        null: 0x48000000
       }
     }
     {
@@ -7872,8 +7872,8 @@
           addr_range:
           [
             {
-              base_addr: 0x41010000
-              size_byte: 0x1000
+              base_addr: 0x48000000
+              size_byte: 0x8000000
             }
           ]
           xbar: false

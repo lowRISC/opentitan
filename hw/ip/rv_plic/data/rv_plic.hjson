@@ -74,20 +74,6 @@
 
   regwidth: "32",
   registers: [
-    { multireg: {
-        name: "IP",
-        desc: "Interrupt Pending",
-        count: "NumSrc",
-        cname: "RV_PLIC",
-        swaccess: "ro",
-        hwaccess: "hwo",
-        fields: [
-          { bits: "0", name: "P", desc: "Interrupt Pending of Source" }
-        ],
-        tags: [// IP is driven by intr_src, cannot auto-predict
-               "excl:CsrNonInitTests:CsrExclCheck"],
-      }
-    },
     { name: "PRIO0",
       desc: "Interrupt Source 0 Priority",
       swaccess: "rw",
@@ -344,7 +330,22 @@
         { bits: "2:0" }
       ],
     }
-    { skipto: "256" }
+    { skipto: "0x00001000" }
+    { multireg: {
+        name: "IP",
+        desc: "Interrupt Pending",
+        count: "NumSrc",
+        cname: "RV_PLIC",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0", name: "P", desc: "Interrupt Pending of Source" }
+        ],
+        tags: [// IP is driven by intr_src, cannot auto-predict
+               "excl:CsrNonInitTests:CsrExclCheck"],
+      }
+    },
+    { skipto: "0x2000" }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
@@ -357,6 +358,7 @@
         ],
       }
     }
+    { skipto: "0x200000" }
     { name: "THRESHOLD0",
       desc: "Threshold of priority for Target 0",
       swaccess: "rw",
@@ -379,6 +381,7 @@
       tags: [// CC register value is related to IP
              "excl:CsrNonInitTests:CsrExclCheck"],
     }
+  { skipto: "0x4000000" }
     { name: "MSIP0",
       desc: '''msip for Hart 0.
       Write 1 to here asserts software interrupt for Hart msip_o[0], write 0 to clear.''',
@@ -390,7 +393,7 @@
         }
       ],
     }
-  { skipto: "512" }
+  { skipto: "0x4004000" }
   { name: "ALERT_TEST",
       desc: '''Alert Test Register.''',
       swaccess: "wo",
