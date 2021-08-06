@@ -67,6 +67,18 @@ class Loop(SnippetGen):
         else:
             self.loopi_prob = loopi_weight / sum_weights
 
+        self.cfg_max_iters = cfg.ranges.get_max('loop-iters')
+        if self.cfg_max_iters is not None and self.cfg_max_iters < 1:
+            raise RuntimeError(f'Invalid max-loop-iters value of '
+                               f'{self.cfg_max_iters}: this must be '
+                               f'at least 1.')
+
+        self.cfg_max_tail = cfg.ranges.get_max('loop-tail-insns')
+        if self.cfg_max_tail is not None and self.cfg_max_tail < 1:
+            raise RuntimeError(f'Invalid max-loop-tail-insns value of '
+                               f'{self.cfg_max_tail}: this must be '
+                               f'at least 1.')
+
     def _pick_loop_iterations(self,
                               max_iters: int,
                               model: Model) -> Optional[Tuple[int, int]]:
@@ -89,6 +101,9 @@ class Loop(SnippetGen):
         # most likely iteration count (which is good, because 1 iteration is
         # boring).
         max_iters = min(max_iters, 10)
+
+        if self.cfg_max_iters is not None:
+            max_iters = min(max_iters, self.cfg_max_iters)
 
         # Iterate over the known registers, trying to pick a weight
         poss_pairs = []  # type: List[Tuple[int, int]]
@@ -119,6 +134,12 @@ class Loop(SnippetGen):
         iters_range = op_type.get_op_val_range(model.pc)
         assert iters_range is not None
         iters_lo, iters_hi = iters_range
+
+        # Constrain iters_hi if the max-loop-iters configuration value was set.
+        if self.cfg_max_iters is not None:
+            iters_hi = min(iters_hi, self.cfg_max_iters)
+            if iters_hi < iters_lo:
+                return None
 
         # Very occasionally, generate iters_hi iterations (the maximum number
         # representable) if we've got fuel for it. We don't do this often,
@@ -305,6 +326,9 @@ class Loop(SnippetGen):
             max_tail_len = bodysize
         else:
             max_tail_len = min(bodysize, model.fuel - 1)
+
+        if self.cfg_max_tail is not None:
+            max_tail_len = min(max_tail_len, self.cfg_max_tail)
 
         # program.space gives another bound on the tail length. If the bodysize
         # is large enough that we'll need to jump to the tail, the tail can't
