@@ -21,8 +21,8 @@ class kmac_app_vseq extends kmac_sideload_vseq;
 
   constraint kmac_app_c {
     if (en_app) {
-      // application interface outputs 256-bit digest (32 bytes)
-      output_len == 32;
+      // application interface outputs 384-bit digest (48 bytes)
+      output_len == kmac_pkg::AppDigestW / 8;
 
       // LC_CTRL uses 128-bit strength, KeyMgr and OTP_CTRL use 256-bit strength
       if (app_mode == AppLc) {

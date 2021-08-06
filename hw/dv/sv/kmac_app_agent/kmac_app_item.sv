@@ -16,9 +16,9 @@ class kmac_app_item extends uvm_sequence_item;
   rand byte byte_data_q[$];
 
   // response digest/error
-  rand bit [KeyWidth-1:0] rsp_digest_share0;
-  rand bit [KeyWidth-1:0] rsp_digest_share1;
-  rand bit                rsp_error;
+  rand bit [kmac_pkg::AppDigestW-1:0] rsp_digest_share0;
+  rand bit [kmac_pkg::AppDigestW-1:0] rsp_digest_share1;
+  rand bit                            rsp_error;
 
   rand bit                is_kmac_rsp_err;
   rand int unsigned       rsp_delay;

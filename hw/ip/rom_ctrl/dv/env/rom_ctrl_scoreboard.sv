@@ -135,7 +135,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       // Check data sent to keymgr
       if (cfg.rom_ctrl_vif.keymgr_data.valid) begin
         `DV_CHECK_EQ(keymgr_complete, 1'b0, "Spurious keymgr signal")
-        `DV_CHECK_EQ(cfg.rom_ctrl_vif.keymgr_data.data, kmac_digest, "Incorrect keymgr digest")
+        `DV_CHECK_EQ(cfg.rom_ctrl_vif.keymgr_data.data, kmac_digest[DIGEST_SIZE-1:0], "Incorrect keymgr digest")
         keymgr_complete = 1'b1;
       end
     end
