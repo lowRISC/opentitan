@@ -168,8 +168,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   byte kmac_app_msg[$];
 
   // output digest from KMAC_APP intf (256 bits each)
-  bit [keymgr_pkg::KeyWidth-1:0] kmac_app_digest_share0;
-  bit [keymgr_pkg::KeyWidth-1:0] kmac_app_digest_share1;
+  bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share0;
+  bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share1;
 
   // output digests
   bit [7:0] digest_share0[];
