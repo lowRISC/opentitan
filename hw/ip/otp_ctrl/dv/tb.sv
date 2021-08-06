@@ -191,23 +191,23 @@ module tb;
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
     // 2 values.
     // If it's not Off, it should be On.
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients1_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_sync_seed_hw_rd_en is either Off or On, we will use more than these
     // 2 values.
     // If it's not On, it should be Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients1_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_check_byp_en is either Off or On, we will use more than these
     // 2 values.
     // If it's not On, it should be Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.CheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.CheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.CheckTransients1_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients1_A);
 
     // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
     $assertoff(0, tb.dut.gen_partitions[2].gen_buffered.u_part_buf.OtpErrorState_A);
