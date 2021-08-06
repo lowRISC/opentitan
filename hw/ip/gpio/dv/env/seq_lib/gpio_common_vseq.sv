@@ -10,6 +10,14 @@ class gpio_common_vseq extends gpio_base_vseq;
     num_trans inside {[1:3]};
   }
 
+  virtual task pre_start();
+    super.pre_start();
+    // GPIO scoreboard is cycle accurate and will only update `intr_state` mirrored value only at
+    // the address phase of the next read operation. This is too late for intr_test. So we turn on
+    // `predict` switch in `csr_wr` task to avoid this issue.
+    if (common_seq_type == "intr_test")  do_predict_csr_wr = 1;
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     // Implement gpio pulldown for csr tests for avoiding comparison
     // mismatch for DATA_IN register checks

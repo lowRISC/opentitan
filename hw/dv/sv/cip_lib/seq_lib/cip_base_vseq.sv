@@ -33,6 +33,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to lock shadow register write access if fatal storage error occurred
   bit do_lock_shadow_reg = 1'b1;
 
+  // knobs to turn on `csr_wr` task's `predict` switch in intr_test sequence
+  bit do_predict_csr_wr = 1'b0;
+
   // csr queues
   dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -390,7 +393,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       foreach (intr_csrs[i]) begin
         uvm_reg_data_t data = $urandom();
         `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
-        csr_wr(.ptr(intr_csrs[i]), .value(data));
+        csr_wr(.ptr(intr_csrs[i]), .value(data), .predict(do_predict_csr_wr));
       end
 
       // Read all intr related csr and check interrupt pins
