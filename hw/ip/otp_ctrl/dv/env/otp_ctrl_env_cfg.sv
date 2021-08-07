@@ -38,6 +38,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
 
+    // OTP can run with 6Mhz, disable this constraint which limits freq >= 24Mhz
+    clk_freq_mhz_c.constraint_mode(0);
+
     // create push_pull agent config obj
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       string cfg_name = $sformatf("sram_pull_agent_cfg[%0d]", i);

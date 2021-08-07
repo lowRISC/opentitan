@@ -46,6 +46,14 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   rand clk_freq_mhz_e clk_freq_mhz;
   rand clk_freq_mhz_e clk_freqs_mhz[string];
 
+  // TODO(#7647), only run with 24Mhz or higher
+  constraint clk_freq_mhz_c {
+    clk_freq_mhz >= ClkFreq24Mhz;
+    foreach (clk_freqs_mhz[i]) {
+      clk_freqs_mhz[i] >= ClkFreq24Mhz;
+    }
+  }
+
   `uvm_object_param_utils_begin(dv_base_env_cfg #(RAL_T))
     `uvm_field_int   (is_active,   UVM_DEFAULT)
     `uvm_field_int   (en_scb,      UVM_DEFAULT)
