@@ -5,12 +5,12 @@
 // Description sysrst_ctrl key press and release FSM module
 
 module sysrst_ctrl_keyfsm #(
-  parameter int unsigned TIMERBIT = 16
+  parameter int unsigned TimerWidth = 16
   ) (
   input                clk_aon_i,
   input                rst_aon_ni,
   input                trigger_i,
-  input [TIMERBIT-1:0] cfg_timer_i,
+  input [TimerWidth-1:0] cfg_timer_i,
   input                cfg_l2h_en_i,
   input                cfg_h2l_en_i,
   output logic         timer_l2h_cond_met,
@@ -22,7 +22,7 @@ module sysrst_ctrl_keyfsm #(
   logic trigger_h2l, trigger_l2h, trigger_l2l, trigger_h2h;
   //logic trigger_tgl, trigger_sty;
 
-  logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
+  logic [TimerWidth-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_reg

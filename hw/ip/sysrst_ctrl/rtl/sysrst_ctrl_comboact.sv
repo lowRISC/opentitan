@@ -7,8 +7,6 @@
 module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_aon_ni,
-  input  clk_i,
-  input  rst_ni,
 
   input  cfg_intr_en,
   input  cfg_bat_disable_en,
@@ -24,10 +22,6 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   output gsc_rst_o,
   output ec_rst_l_o
 );
-
-  logic [15:0] cfg_ec_rst_timer;
-  logic        load_ec_rst_timer;
-  logic [15:0] cfg_ec_rst_timer_d;
 
   logic combo_det_q;
   logic combo_gsc_pulse;
@@ -71,34 +65,6 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   assign combo_intr_pulse = cfg_intr_en && (combo_det_q == 1'b0) && (combo_det == 1'b1);
 
   //ec_rst_logic
-  //synchronize between cfg(24MHz) and always-on(200KHz)
-  prim_fifo_async #(
-    .Width(16),
-    .Depth(2)
-  ) i_cfg_ec_rst_pulse (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (ec_rst_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (ec_rst_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (load_ec_rst_timer),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_ec_rst_timer_d),
-    .rdepth_o  ()
-  );
-
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_cfg_ec_rst_timer_reg
-    if (!rst_aon_ni) begin
-      cfg_ec_rst_timer    <= '0;
-    end else if (load_ec_rst_timer) begin
-      cfg_ec_rst_timer    <= cfg_ec_rst_timer_d;
-    end
-  end
-
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_ec_rst_l_int
     if (!rst_aon_ni) begin
       ec_rst_l_int    <= 1'b1;//active low signal
@@ -127,7 +93,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
 
   assign timer_cnt_en = (ec_rst_l_q == 1'b0);
 
-  assign timer_cnt_clr = (ec_rst_l_q == 1'b0) && (timer_cnt_q == cfg_ec_rst_timer);
+  assign timer_cnt_clr = (ec_rst_l_q == 1'b0) && (timer_cnt_q == ec_rst_ctl_i.q);
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
