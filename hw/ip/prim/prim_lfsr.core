@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:cipher_pkg
     files:
       - rtl/prim_lfsr.sv
     file_type: systemVerilogSource
