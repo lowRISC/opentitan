@@ -7,8 +7,8 @@
 module sysrst_ctrl_intr import sysrst_ctrl_reg_pkg::*; (
   input  clk_i,
   input  rst_ni,
-  input  sysrst_ctrl_combo_intr,
-  input  sysrst_ctrl_key_intr,
+  input  sysrst_ctrl_combo_intr_i,
+  input  sysrst_ctrl_key_intr_i,
   input  sysrst_ctrl_reg2hw_intr_state_reg_t intr_state_i,
   input  sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable_i,
   input  sysrst_ctrl_reg2hw_intr_test_reg_t intr_test_i,
@@ -18,10 +18,10 @@ module sysrst_ctrl_intr import sysrst_ctrl_reg_pkg::*; (
 
   logic sysrst_ctrl_event;
 
-  assign sysrst_ctrl_event = sysrst_ctrl_combo_intr | sysrst_ctrl_key_intr;
+  assign sysrst_ctrl_event = sysrst_ctrl_combo_intr_i | sysrst_ctrl_key_intr_i;
 
   // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(1)) i_sysrst_ctrl_intr_o (
+  prim_intr_hw #(.Width(1)) u_sysrst_ctrl_intr_o (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .event_intr_i           (sysrst_ctrl_event),

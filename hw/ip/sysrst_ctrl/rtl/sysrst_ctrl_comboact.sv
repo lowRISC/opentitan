@@ -43,7 +43,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   logic ec_rst_l_int, ec_rst_l_det;
 
   //delay the level signal to generate a pulse
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_combo_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_combo_det
     if (!rst_aon_ni) begin
       combo_det_q    <= 1'b0;
     end else begin
@@ -57,7 +57,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
 
   assign bat_disable_d = combo_bat_disable_pulse ? 1'b1 : bat_disable_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_combo_bat_disable
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_combo_bat_disable
     if (!rst_aon_ni) begin
       bat_disable_q    <= 1'b0;
     end else begin
@@ -91,7 +91,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
     .rdepth_o  ()
   );
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_cfg_ec_rst_timer_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_cfg_ec_rst_timer_reg
     if (!rst_aon_ni) begin
       cfg_ec_rst_timer    <= '0;
     end else if (load_ec_rst_timer) begin
@@ -99,7 +99,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_ec_rst_l_int
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_ec_rst_l_int
     if (!rst_aon_ni) begin
       ec_rst_l_int    <= 1'b1;//active low signal
     end else begin
@@ -117,7 +117,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   assign ec_rst_l_d = (combo_ec_rst_pulse | combo_gsc_pulse | ec_rst_l_det) ? 1'b0 :
           timer_cnt_clr ? 1'b1 : ec_rst_l_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_combo_ec_rst_l
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_combo_ec_rst_l
     if (!rst_aon_ni) begin
       ec_rst_l_q    <= 1'b0;//asserted when power-on-reset is asserted
     end else begin
@@ -149,7 +149,7 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
 
   assign gsc_rst_d = combo_gsc_pulse ? 1'b1 : gsc_rst_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_combo_gsc_rst
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: u_combo_gsc_rst
     if (!rst_aon_ni) begin
       gsc_rst_q    <= 1'b0;
     end else begin

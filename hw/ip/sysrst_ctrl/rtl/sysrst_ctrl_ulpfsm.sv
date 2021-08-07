@@ -23,7 +23,7 @@ module sysrst_ctrl_ulpfsm #(
   logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_reg
     if (!rst_aon_ni) begin
       trigger_q    <= 1'b0;
     end
@@ -60,7 +60,7 @@ module sysrst_ctrl_ulpfsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_state_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_state_reg
     if (!rst_aon_ni) begin
       timer_state_q    <= IDLE_ST;
     end
@@ -71,7 +71,7 @@ module sysrst_ctrl_ulpfsm #(
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_cnt_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_cnt_reg
     if (!rst_aon_ni) begin
       timer_cnt_q    <= '0;
     end
@@ -82,7 +82,7 @@ module sysrst_ctrl_ulpfsm #(
     end
   end
 
-  always_comb begin: timer_fsm
+  always_comb begin: p_timer_fsm
     timer_state_d = timer_state_q;
     //outputs
     timer_cond_met_o = 1'b0;
