@@ -156,7 +156,8 @@ module keymgr
     .StateOutDw(LfsrWidth),
     .DefaultSeed(RndCnstLfsrSeed),
     .StatePermEn(1'b1),
-    .StatePerm(RndCnstLfsrPerm)
+    .StatePerm(RndCnstLfsrPerm),
+    .NonLinearOut(1'b1)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
