@@ -61,7 +61,7 @@ module sysrst_ctrl
   logic z3_wakeup_hw;
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int, z3_wakeup_int;
   logic sysrst_ctrl_combo_intr, sysrst_ctrl_key_intr;
-  logic ulp_wakeup_int;
+  logic ulp_wakeup_pulse_int;
 
   //Always-on pins
   assign cio_ec_rst_out_l_en_o = 1'b1;
@@ -99,6 +99,8 @@ module sysrst_ctrl
   sysrst_ctrl_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .clk_aon_i,
+    .rst_aon_ni,
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -109,8 +111,6 @@ module sysrst_ctrl
 
   //Instantiate the autoblock module
   sysrst_ctrl_autoblock u_autoblock (
-    .clk_i,
-    .rst_ni,
     .clk_aon_i,
     .rst_aon_ni,
     .pwrb_int_i(pwrb_int),
@@ -127,8 +127,6 @@ module sysrst_ctrl
 
   //Instantiate the ULP module
   sysrst_ctrl_ulp u_ulp (
-    .clk_i,
-    .rst_ni,
     .clk_aon_i,
     .rst_aon_ni,
     .pwrb_int_i(pwrb_int),
@@ -139,14 +137,12 @@ module sysrst_ctrl
     .ulp_pwrb_debounce_ctl_i(reg2hw.ulp_pwrb_debounce_ctl),
     .ulp_ctl_i(reg2hw.ulp_ctl),
     .ulp_status_o(hw2reg.ulp_status),
-    .ulp_wakeup_o(ulp_wakeup_int),
+    .ulp_wakeup_pulse_o(ulp_wakeup_pulse_int),
     .z3_wakeup_hw_o(z3_wakeup_hw)
   );
 
   //Instantiate the pin inversion module
   sysrst_ctrl_inv u_inversion (
-    .clk_aon_i,
-    .rst_aon_ni,
     .cio_pwrb_in_i,
     .cio_key0_in_i,
     .cio_key1_in_i,
@@ -178,8 +174,6 @@ module sysrst_ctrl
   sysrst_ctrl_pin u_pin_vis_ovd (
     .clk_i,
     .rst_ni,
-    .clk_aon_i,
-    .rst_aon_ni,
     .cio_pwrb_in_i,
     .cio_key0_in_i,
     .cio_key1_in_i,
@@ -249,10 +243,11 @@ module sysrst_ctrl
     .ec_rst_l_hw_o(ec_rst_l_hw)
   );
 
+  // TODO: does ulp_wakeup_pulse_int have to be on the AON domain or not?
   // GSC wakeup signal to pwrmgr
   // see #6323
   assign gsc_wk_o = reg2hw.wk_status.q;
-  assign hw2reg.wk_status.de = ulp_wakeup_int ||
+  assign hw2reg.wk_status.de = ulp_wakeup_pulse_int ||
            sysrst_ctrl_combo_intr || sysrst_ctrl_key_intr;
   assign hw2reg.wk_status.d = 1'b1;
 

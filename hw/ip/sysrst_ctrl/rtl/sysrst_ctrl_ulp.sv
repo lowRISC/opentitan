@@ -7,8 +7,6 @@
 module sysrst_ctrl_ulp import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_aon_ni,
-  input  clk_i,
-  input  rst_ni,
 
   input  lid_open_int_i,
   input  ac_present_int_i,
@@ -20,125 +18,14 @@ module sysrst_ctrl_ulp import sysrst_ctrl_reg_pkg::*; (
   input  sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl_i,
 
   output sysrst_ctrl_hw2reg_ulp_status_reg_t ulp_status_o,
-  output ulp_wakeup_o,
+  output ulp_wakeup_pulse_o,
   output z3_wakeup_hw_o
 
 );
 
-  logic         cfg_ulp_en;
-  logic         load_ulp_ac_timer;
-  logic [15:0]  cfg_ulp_ac_timer;
-  logic [15:0]  cfg_ulp_ac_timer_d;
-  logic         load_ulp_lid_timer;
-  logic [15:0]  cfg_ulp_lid_timer;
-  logic [15:0]  cfg_ulp_lid_timer_d;
-  logic         load_ulp_pwrb_timer;
-  logic [15:0]  cfg_ulp_pwrb_timer;
-  logic [15:0]  cfg_ulp_pwrb_timer_d;
-
-  logic pwrb_cond_met, pwrb_cond_met_q;
-  logic lid_open_cond_met, lid_open_cond_met_q;
-  logic ac_present_cond_met, ac_present_cond_met_q;
   logic pwrb_int;
   logic lid_open_int;
   logic ac_present_int;
-  logic pwrb_det_pulse;
-  logic lid_open_det_pulse;
-  logic ac_present_det_pulse;
-  logic cfg_pwrb_det_pulse;
-  logic cfg_lid_open_det_pulse;
-  logic cfg_ac_present_det_pulse;
-
-  //synchronize between cfg(24MHz) and always-on(200KHz)
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_ulp_en (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(ulp_ctl_i.q),
-    .q_o(cfg_ulp_en)
-  );
-
-  prim_fifo_async #(
-    .Width(16),
-    .Depth(2)
-  ) u_cfg_ulp_ac_timer (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (ulp_ac_debounce_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (ulp_ac_debounce_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (load_ulp_ac_timer),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_ulp_ac_timer_d),
-    .rdepth_o  ()
-  );
-
-  prim_fifo_async #(
-    .Width(16),
-    .Depth(2)
-  ) u_cfg_ulp_lid_timer (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (ulp_lid_debounce_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (ulp_lid_debounce_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (load_ulp_lid_timer),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_ulp_lid_timer_d),
-    .rdepth_o  ()
-  );
-
-  prim_fifo_async #(
-    .Width(16),
-    .Depth(2)
-  ) u_cfg_ulp_pwrb_timer (
-    .clk_wr_i  (clk_i),
-    .rst_wr_ni (rst_ni),
-    .wvalid_i  (ulp_pwrb_debounce_ctl_i.qe),
-    .wready_o  (),
-    .wdata_i   (ulp_pwrb_debounce_ctl_i.q),
-    .wdepth_o  (),
-
-    .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_aon_ni),
-    .rvalid_o  (load_ulp_pwrb_timer),
-    .rready_i  (1'b1),
-    .rdata_o   (cfg_ulp_pwrb_timer_d),
-    .rdepth_o  ()
-  );
-
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_cfg_ulp_ac_timer_reg
-    if (!rst_aon_ni) begin
-      cfg_ulp_ac_timer    <= '0;
-    end else if (load_ulp_ac_timer) begin
-      cfg_ulp_ac_timer    <= cfg_ulp_ac_timer_d;
-    end
-  end
-
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_cfg_ulp_lid_timer_reg
-    if (!rst_aon_ni) begin
-      cfg_ulp_lid_timer    <= '0;
-    end else if (load_ulp_lid_timer) begin
-      cfg_ulp_lid_timer    <= cfg_ulp_lid_timer_d;
-    end
-  end
-
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_cfg_ulp_pwrb_timer_reg
-    if (!rst_aon_ni) begin
-      cfg_ulp_pwrb_timer    <= '0;
-    end else if (load_ulp_pwrb_timer) begin
-      cfg_ulp_pwrb_timer    <= cfg_ulp_pwrb_timer_d;
-    end
-  end
 
   //synchronize between GPIO and always-on(200KHz)
   prim_flop_2sync # (
@@ -175,9 +62,9 @@ module sysrst_ctrl_ulp import sysrst_ctrl_reg_pkg::*; (
     .clk_aon_i,
     .rst_aon_ni,
     .trigger_i(pwrb_int),
-    .cfg_timer_i(cfg_ulp_pwrb_timer),
-    .cfg_en_i(cfg_ulp_en),
-    .timer_cond_met_o(pwrb_cond_met)
+    .cfg_timer_i(ulp_pwrb_debounce_ctl_i.q),
+    .cfg_en_i(ulp_ctl_i.q),
+    .timer_cond_met_o(pwrb_cond_met_d)
   );
 
   sysrst_ctrl_ulpfsm # (
@@ -187,9 +74,9 @@ module sysrst_ctrl_ulp import sysrst_ctrl_reg_pkg::*; (
     .clk_aon_i,
     .rst_aon_ni,
     .trigger_i(lid_open_int),
-    .cfg_timer_i(cfg_ulp_lid_timer),
-    .cfg_en_i(cfg_ulp_en),
-    .timer_cond_met_o(lid_open_cond_met)
+    .cfg_timer_i(ulp_lid_debounce_ctl_i.q),
+    .cfg_en_i(ulp_ctl_i.q),
+    .timer_cond_met_o(lid_open_cond_met_d)
   );
 
   sysrst_ctrl_ulpfsm # (
@@ -199,67 +86,44 @@ module sysrst_ctrl_ulp import sysrst_ctrl_reg_pkg::*; (
     .clk_aon_i,
     .rst_aon_ni,
     .trigger_i(ac_present_int),
-    .cfg_timer_i(cfg_ulp_ac_timer),
-    .cfg_en_i(cfg_ulp_en),
-    .timer_cond_met_o(ac_present_cond_met)
+    .cfg_timer_i(ulp_ac_debounce_ctl_i.q),
+    .cfg_en_i(ulp_ctl_i.q),
+    .timer_cond_met_o(ac_present_cond_met_d)
   );
 
   //delay the level signal to generate a pulse
+  logic pwrb_cond_met_d, pwrb_cond_met_q;
+  logic lid_open_cond_met_d, lid_open_cond_met_q;
+  logic ac_present_cond_met_d, ac_present_cond_met_q;
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_ulp_cond_met
     if (!rst_aon_ni) begin
-      pwrb_cond_met_q    <= 1'b0;
-      lid_open_cond_met_q    <= 1'b0;
-      ac_present_cond_met_q    <= 1'b0;
+      pwrb_cond_met_q       <= 1'b0;
+      lid_open_cond_met_q   <= 1'b0;
+      ac_present_cond_met_q <= 1'b0;
     end else begin
-      pwrb_cond_met_q    <= pwrb_cond_met;
-      lid_open_cond_met_q    <= lid_open_cond_met;
-      ac_present_cond_met_q    <= ac_present_cond_met;
+      pwrb_cond_met_q       <= pwrb_cond_met_d;
+      lid_open_cond_met_q   <= lid_open_cond_met_d;
+      ac_present_cond_met_q <= ac_present_cond_met_d;
     end
   end
 
-  assign pwrb_det_pulse = cfg_ulp_en &&
-    (pwrb_cond_met_q == 1'b0) && (pwrb_cond_met == 1'b1);
-  assign lid_open_det_pulse = cfg_ulp_en &&
-    (lid_open_cond_met_q == 1'b0) && (lid_open_cond_met == 1'b1);
-  assign ac_present_det_pulse = cfg_ulp_en &&
-    (ac_present_cond_met_q == 1'b0) && (ac_present_cond_met == 1'b1);
+  logic pwrb_det_pulse;
+  logic lid_open_det_pulse;
+  logic ac_present_det_pulse;
+  assign pwrb_det_pulse       = pwrb_cond_met_d       & ~pwrb_cond_met_q;
+  assign lid_open_det_pulse   = lid_open_cond_met_d   & ~lid_open_cond_met_q;
+  assign ac_present_det_pulse = ac_present_cond_met_d & ~ac_present_cond_met_q;
 
-  //Synchronize from 200KHz always-onclock to 24MHz cfg clock
-  prim_pulse_sync u_pwrb_det_pulse (
-    .clk_src_i   (clk_aon_i),
-    .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_aon_ni),
-    .rst_dst_ni  (rst_ni),
-    .src_pulse_i (pwrb_det_pulse),
-    .dst_pulse_o (cfg_pwrb_det_pulse)
-  );
+  // aggregate pulses
+  assign ulp_wakeup_pulse_o = ulp_ctl_i.q & (pwrb_det_pulse |
+                                             lid_open_det_pulse |
+                                             ac_present_det_pulse);
 
-  prim_pulse_sync u_lid_open_det_pulse (
-    .clk_src_i   (clk_aon_i),
-    .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_aon_ni),
-    .rst_dst_ni  (rst_ni),
-    .src_pulse_i (lid_open_det_pulse),
-    .dst_pulse_o (cfg_lid_open_det_pulse)
-  );
-
-  prim_pulse_sync u_ac_present_det_pulse (
-    .clk_src_i   (clk_aon_i),
-    .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_aon_ni),
-    .rst_dst_ni  (rst_ni),
-    .src_pulse_i (ac_present_det_pulse),
-    .dst_pulse_o (cfg_ac_present_det_pulse)
-  );
-
-  assign ulp_status_o.de =
-           cfg_pwrb_det_pulse || cfg_lid_open_det_pulse || cfg_ac_present_det_pulse;
+  assign z3_wakeup_hw_o = pwrb_cond_met_d |
+                          lid_open_cond_met_d |
+                          ac_present_cond_met_d;
 
   assign ulp_status_o.d = 1'b1;
-
-  assign ulp_wakeup_o =
-           cfg_pwrb_det_pulse || cfg_lid_open_det_pulse || cfg_ac_present_det_pulse;
-
-  assign z3_wakeup_hw_o = pwrb_cond_met || lid_open_cond_met || ac_present_cond_met;
+  assign ulp_status_o.de = ulp_wakeup_pulse_o;
 
 endmodule

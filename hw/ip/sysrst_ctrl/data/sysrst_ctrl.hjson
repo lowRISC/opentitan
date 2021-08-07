@@ -38,6 +38,12 @@
       desc:    "Number of keyboard combos",
       local:   "true",
     }
+    { name:    "TimerWidth",
+      type:    "int",
+      default: "16",
+      desc:    "Number of timer bits",
+      local:   "true",
+    }
   ],
   available_input_list: [
     { name: "ac_present", desc: "A/C power is present" }
@@ -93,9 +99,9 @@
       desc: "EC reset control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       regwen: "REGWEN",
       resval: "2000",
+      async: "clk_aon_i",
       fields: [
         { bits: "15:0",
           name: "ec_rst_pulse",
@@ -107,9 +113,9 @@
       desc: "Ultra low power AC debounce control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       regwen: "REGWEN",
       resval: "8000",
+      async: "clk_aon_i",
       fields: [
         { bits: "15:0",
           name: "ulp_ac_debounce_timer",
@@ -121,9 +127,9 @@
       desc: "Ultra low power lid debounce control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       regwen: "REGWEN",
       resval: "8000",
+      async: "clk_aon_i",
       fields: [
         { bits: "15:0",
           name: "ulp_lid_debounce_timer",
@@ -135,9 +141,9 @@
       desc: "Ultra low power pwrb debounce control register",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       regwen: "REGWEN",
       resval: "8000",
+      async: "clk_aon_i",
       fields: [
         { bits: "15:0",
           name: "ulp_pwrb_debounce_timer",
@@ -150,6 +156,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "ulp_enable",
@@ -162,6 +169,7 @@
       swaccess: "rw1c",
       hwaccess: "hwo",
       resval: "0",
+      async: "clk_aon_i",
       tags: [ // the value of these regs is determined by the
               // value on the pins, hence it cannot be predicted.
               "excl:CsrNonInitTests:CsrExclCheck"],
@@ -193,6 +201,7 @@
       hwaccess: "hro",
       regwen: "REGWEN",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "key0_in",
@@ -250,6 +259,7 @@
       hwaccess: "hro",
       regwen: "REGWEN",
       resval: "2",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "bat_disable_0",
@@ -314,6 +324,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "2",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "bat_disable",
@@ -350,6 +361,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "bat_disable",
@@ -426,6 +438,7 @@
       hwaccess: "hro",
       regwen: "REGWEN",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "pwrb_in_H2L",
@@ -481,11 +494,11 @@
       desc: "Debounce timer control register for key-triggered interrupt",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe:  "true",
       regwen: "REGWEN",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
-        { bits: "15:0",
+        { bits: "TimerWidth-1:0",
           name: "debounce_timer",
           desc: "Define the timer valure so that the key or input is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
         }
@@ -495,9 +508,9 @@
       desc: "Debounce timer control register for pwrb_in H2L transition",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe:  "true",
       regwen: "REGWEN",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "15:0",
           name: "debounce_timer",
@@ -515,6 +528,7 @@
       hwaccess: "hro",
       regwen: "REGWEN",
       resval: "0",
+      async: "clk_aon_i",
       fields: [
         { bits: "0",
           name: "key0_out_sel",
@@ -559,6 +573,7 @@
         hwaccess: "hro",
         regwen:   "REGWEN",
         resval:   "0",
+        async: "clk_aon_i",
         fields: [
           { bits: "0",
             name: "key0_in_sel",
@@ -590,11 +605,11 @@
                     ''',
         count: "NumCombo",
         cname: "sysrst_ctrl",
-        hwqe:  "true",
         swaccess: "rw",
         hwaccess: "hro",
         regwen:   "REGWEN",
         resval:   "0",
+        async: "clk_aon_i",
         fields: [
           { bits: "31:0",
             name: "detection_timer",
@@ -618,6 +633,7 @@
         hwaccess: "hro",
         regwen:   "REGWEN",
         resval:   "0",
+        async: "clk_aon_i",
         fields: [
           { bits: "0",
             name: "bat_disable",

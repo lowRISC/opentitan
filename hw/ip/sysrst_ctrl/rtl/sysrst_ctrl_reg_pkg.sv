@@ -8,6 +8,7 @@ package sysrst_ctrl_reg_pkg;
 
   // Param list
   parameter int NumCombo = 4;
+  parameter int TimerWidth = 16;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
@@ -37,22 +38,18 @@ package sysrst_ctrl_reg_pkg;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t;
 
   typedef struct packed {
@@ -236,17 +233,14 @@ package sysrst_ctrl_reg_pkg;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-      logic        qe;
     } debounce_timer;
     struct packed {
       logic        q;
-      logic        qe;
     } auto_block_enable;
   } sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t;
 
@@ -291,7 +285,6 @@ package sysrst_ctrl_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } sysrst_ctrl_reg2hw_com_det_ctl_mreg_t;
 
   typedef struct packed {
@@ -427,26 +420,26 @@ package sysrst_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [337:337]
-    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [336:336]
-    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [335:334]
-    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [333:332]
-    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [331:315]
-    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [314:298]
-    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [297:281]
-    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [280:264]
-    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [263:263]
-    sysrst_ctrl_reg2hw_wk_status_reg_t wk_status; // [262:262]
-    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [261:250]
-    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [249:236]
-    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [235:229]
-    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [228:222]
-    sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [221:210]
-    sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [209:193]
-    sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [192:174]
-    sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t auto_block_out_ctl; // [173:168]
-    sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [167:148]
-    sysrst_ctrl_reg2hw_com_det_ctl_mreg_t [3:0] com_det_ctl; // [147:16]
+    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [326:326]
+    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [325:325]
+    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [324:323]
+    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [322:321]
+    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [320:305]
+    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [304:289]
+    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [288:273]
+    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [272:257]
+    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [256:256]
+    sysrst_ctrl_reg2hw_wk_status_reg_t wk_status; // [255:255]
+    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [254:243]
+    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [242:229]
+    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [228:222]
+    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [221:215]
+    sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [214:203]
+    sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [202:187]
+    sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [186:170]
+    sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t auto_block_out_ctl; // [169:164]
+    sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [163:144]
+    sysrst_ctrl_reg2hw_com_det_ctl_mreg_t [3:0] com_det_ctl; // [143:16]
     sysrst_ctrl_reg2hw_com_out_ctl_mreg_t [3:0] com_out_ctl; // [15:0]
   } sysrst_ctrl_reg2hw_t;
 

@@ -6,8 +6,6 @@
 //
 
 module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
-  input  clk_aon_i,
-  input  rst_aon_ni,
   input  clk_i,
   input  rst_ni,
 
@@ -43,428 +41,87 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
 );
 
-  logic cfg_ac_present_i_pin;
-  logic cfg_ec_rst_l_i_pin;
-  logic cfg_pwrb_in_i_pin;
-  logic cfg_key0_in_i_pin;
-  logic cfg_key1_in_i_pin;
-  logic cfg_key2_in_i_pin;
-  logic cfg_lid_open_i_pin;
-
-  logic cfg_bat_disable_0_allow;
-  logic cfg_ec_rst_l_0_allow;
-  logic cfg_pwrb_out_0_allow;
-  logic cfg_key0_out_0_allow;
-  logic cfg_key1_out_0_allow;
-  logic cfg_key2_out_0_allow;
-  logic cfg_z3_wakeup_0_allow;
-  logic cfg_bat_disable_1_allow;
-  logic cfg_ec_rst_l_1_allow;
-  logic cfg_pwrb_out_1_allow;
-  logic cfg_key0_out_1_allow;
-  logic cfg_key1_out_1_allow;
-  logic cfg_key2_out_1_allow;
-  logic cfg_z3_wakeup_1_allow;
-
-  logic cfg_bat_disable_ov;
-  logic cfg_ec_rst_l_ov;
-  logic cfg_pwrb_out_ov;
-  logic cfg_key0_out_ov;
-  logic cfg_key1_out_ov;
-  logic cfg_key2_out_ov;
-  logic cfg_z3_wakeup_ov;
-
-  logic cfg_bat_disable_q;
-  logic cfg_ec_rst_l_q;
-  logic cfg_pwrb_out_q;
-  logic cfg_key0_out_q;
-  logic cfg_key1_out_q;
-  logic cfg_key2_out_q;
-  logic cfg_z3_wakeup_q;
-
-  //Synchronize between GPIO and cfg(24MHz)
+  // Synchronize between GPIO and cfg(24MHz)
+  // Use the raw input values here (not the inverted pass through values)
   prim_flop_2sync # (
-    .Width(1)
+    .Width(7)
   ) u_cfg_ac_present_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_ac_present_i),
-    .q_o(cfg_ac_present_i_pin)
+    .clk_i,
+    .rst_ni,
+    .d_i({cio_ac_present_i,
+          cio_ec_rst_in_l_i,
+          cio_pwrb_in_i,
+          cio_key0_in_i,
+          cio_key1_in_i,
+          cio_key2_in_i,
+          cio_lid_open_i}),
+    .q_o({pin_in_value_o.ac_present.d,
+          pin_in_value_o.ec_rst_l.d,
+          pin_in_value_o.pwrb_in.d,
+          pin_in_value_o.key0_in.d,
+          pin_in_value_o.key1_in.d,
+          pin_in_value_o.key2_in.d,
+          pin_in_value_o.lid_open.d})
   );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_ec_rst_l_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_ec_rst_in_l_i),
-    .q_o(cfg_ec_rst_l_i_pin)
-  );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_pwrb_in_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_pwrb_in_i),
-    .q_o(cfg_pwrb_in_i_pin)
-  );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_key0_in_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_key0_in_i),
-    .q_o(cfg_key0_in_i_pin)
-  );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_key1_in_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_key1_in_i),
-    .q_o(cfg_key1_in_i_pin)
-  );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_key2_in_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_key2_in_i),
-    .q_o(cfg_key2_in_i_pin)
-  );
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_cfg_lid_open_i_pin (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(cio_lid_open_i),
-    .q_o(cfg_lid_open_i_pin)
-  );
-
-  //Use the raw input(not inverted)
-  assign pin_in_value_o.ac_present.d = cfg_ac_present_i_pin;
-  assign pin_in_value_o.ec_rst_l.d = cfg_ec_rst_l_i_pin;
-  assign pin_in_value_o.pwrb_in.d = cfg_pwrb_in_i_pin;
-  assign pin_in_value_o.key0_in.d = cfg_key0_in_i_pin;
-  assign pin_in_value_o.key1_in.d = cfg_key1_in_i_pin;
-  assign pin_in_value_o.key2_in.d = cfg_key2_in_i_pin;
-  assign pin_in_value_o.lid_open.d = cfg_lid_open_i_pin;
 
   assign pin_in_value_o.ac_present.de = 1'b1;
-  assign pin_in_value_o.ec_rst_l.de = 1'b1;
-  assign pin_in_value_o.pwrb_in.de = 1'b1;
-  assign pin_in_value_o.key0_in.de = 1'b1;
-  assign pin_in_value_o.key1_in.de = 1'b1;
-  assign pin_in_value_o.key2_in.de = 1'b1;
-  assign pin_in_value_o.lid_open.de = 1'b1;
+  assign pin_in_value_o.ec_rst_l.de   = 1'b1;
+  assign pin_in_value_o.pwrb_in.de    = 1'b1;
+  assign pin_in_value_o.key0_in.de    = 1'b1;
+  assign pin_in_value_o.key1_in.de    = 1'b1;
+  assign pin_in_value_o.key2_in.de    = 1'b1;
+  assign pin_in_value_o.lid_open.de   = 1'b1;
 
-  //synchronize between cfg(24MHz) and always-on(200KHz)
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_bat_disable_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.bat_disable_0.q),
-    .q_o(cfg_bat_disable_0_allow)
-  );
+  // Pin override logic.
+  localparam int NumSignals = 7;
+  logic [NumSignals-1:0] inputs, outputs, enabled, values, allowed0, allowed1;
+  assign inputs = {pwrb_out_hw_i,
+                   key0_out_hw_i,
+                   key1_out_hw_i,
+                   key2_out_hw_i,
+                   z3_wakeup_hw_i,
+                   bat_disable_hw_i,
+                   ec_rst_l_hw_i};
+  assign enabled = {pin_out_ctl_i.pwrb_out.q,
+                    pin_out_ctl_i.key0_out.q,
+                    pin_out_ctl_i.key1_out.q,
+                    pin_out_ctl_i.key2_out.q,
+                    pin_out_ctl_i.z3_wakeup.q,
+                    pin_out_ctl_i.bat_disable.q,
+                    pin_out_ctl_i.ec_rst_l.q};
+  assign values =  {pin_out_value_i.pwrb_out.q,
+                    pin_out_value_i.key0_out.q,
+                    pin_out_value_i.key1_out.q,
+                    pin_out_value_i.key2_out.q,
+                    pin_out_value_i.z3_wakeup.q,
+                    pin_out_value_i.bat_disable.q,
+                    pin_out_value_i.ec_rst_l.q};
+  assign allowed0 = {pin_allowed_ctl_i.pwrb_out_0.q,
+                     pin_allowed_ctl_i.key0_out_0.q,
+                     pin_allowed_ctl_i.key1_out_0.q,
+                     pin_allowed_ctl_i.key2_out_0.q,
+                     pin_allowed_ctl_i.z3_wakeup_0.q,
+                     pin_allowed_ctl_i.bat_disable_0.q,
+                     pin_allowed_ctl_i.ec_rst_l_0.q};
+  assign allowed1 = {pin_allowed_ctl_i.pwrb_out_1.q,
+                     pin_allowed_ctl_i.key0_out_1.q,
+                     pin_allowed_ctl_i.key1_out_1.q,
+                     pin_allowed_ctl_i.key2_out_1.q,
+                     pin_allowed_ctl_i.z3_wakeup_1.q,
+                     pin_allowed_ctl_i.bat_disable_1.q,
+                     pin_allowed_ctl_i.ec_rst_l_1.q};
 
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue(1'b1)//ec_rst_l_0_allow is enabled by default
-  ) u_cfg_ec_rst_l_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.ec_rst_l_0.q),
-    .q_o(cfg_ec_rst_l_0_allow)
-  );
+  for (genvar k = 0; k < NumSignals; k++) begin : gen_override_logic
+    assign outputs[k] = (enabled[k] && allowed0[k] && !values[k]) ? 1'b0 :
+                        (enabled[k] && allowed1[k] &&  values[k]) ? 1'b1 : inputs[k];
+  end
 
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_pwrb_out_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.pwrb_out_0.q),
-    .q_o(cfg_pwrb_out_0_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key0_out_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key0_out_0.q),
-    .q_o(cfg_key0_out_0_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key1_out_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key1_out_0.q),
-    .q_o(cfg_key1_out_0_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key2_out_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key2_out_0.q),
-    .q_o(cfg_key2_out_0_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_z3_wakeup_0_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.z3_wakeup_0.q),
-    .q_o(cfg_z3_wakeup_0_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_bat_disable_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.bat_disable_1.q),
-    .q_o(cfg_bat_disable_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_ec_rst_l_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.ec_rst_l_1.q),
-    .q_o(cfg_ec_rst_l_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_pwrb_out_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.pwrb_out_1.q),
-    .q_o(cfg_pwrb_out_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key0_out_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key0_out_1.q),
-    .q_o(cfg_key0_out_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key1_out_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key1_out_1.q),
-    .q_o(cfg_key1_out_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key2_out_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.key2_out_1.q),
-    .q_o(cfg_key2_out_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_z3_wakeup_1_allow (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_allowed_ctl_i.z3_wakeup_1.q),
-    .q_o(cfg_z3_wakeup_1_allow)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_bat_disable_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.bat_disable.q),
-    .q_o(cfg_bat_disable_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue(1'b1)//ec_rst_l override is enabled by default
-  ) u_cfg_ec_rst_l_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.ec_rst_l.q),
-    .q_o(cfg_ec_rst_l_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_pwrb_out_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.pwrb_out.q),
-    .q_o(cfg_pwrb_out_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key0_out_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.key0_out.q),
-    .q_o(cfg_key0_out_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key1_out_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.key1_out.q),
-    .q_o(cfg_key1_out_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key2_out_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.key2_out.q),
-    .q_o(cfg_key2_out_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_z3_wakeup_ov (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_ctl_i.z3_wakeup.q),
-    .q_o(cfg_z3_wakeup_ov)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_bat_disable_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.bat_disable.q),
-    .q_o(cfg_bat_disable_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_ec_rst_l_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.ec_rst_l.q),
-    .q_o(cfg_ec_rst_l_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_pwrb_out_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.pwrb_out.q),
-    .q_o(cfg_pwrb_out_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key0_out_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.key0_out.q),
-    .q_o(cfg_key0_out_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key1_out_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.key1_out.q),
-    .q_o(cfg_key1_out_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_key2_out_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.key2_out.q),
-    .q_o(cfg_key2_out_q)
-  );
-
-  prim_flop_2sync # (
-    .Width(1),
-    .ResetValue('0)
-  ) u_cfg_z3_wakeup_q (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(pin_out_value_i.z3_wakeup.q),
-    .q_o(cfg_z3_wakeup_q)
-  );
-
-  assign pwrb_out_int_o = (cfg_pwrb_out_ov && cfg_pwrb_out_0_allow && !cfg_pwrb_out_q) ? 1'b0 :
-          ((cfg_pwrb_out_ov && cfg_pwrb_out_1_allow && cfg_pwrb_out_q) ? 1'b1 : pwrb_out_hw_i);
-
-  assign key0_out_int_o = (cfg_key0_out_ov && cfg_key0_out_0_allow && !cfg_key0_out_q) ? 1'b0 :
-          ((cfg_key0_out_ov && cfg_key0_out_1_allow && cfg_key0_out_q) ? 1'b1 : key0_out_hw_i);
-
-  assign key1_out_int_o = (cfg_key1_out_ov && cfg_key1_out_0_allow && !cfg_key1_out_q) ? 1'b0 :
-          ((cfg_key1_out_ov && cfg_key1_out_1_allow && cfg_key1_out_q) ? 1'b1 : key1_out_hw_i);
-
-  assign key2_out_int_o = (cfg_key2_out_ov && cfg_key2_out_0_allow && !cfg_key2_out_q) ? 1'b0 :
-          ((cfg_key2_out_ov && cfg_key2_out_1_allow && cfg_key2_out_q) ? 1'b1 : key2_out_hw_i);
-
-  assign z3_wakeup_int_o = (cfg_z3_wakeup_ov && cfg_z3_wakeup_0_allow && !cfg_z3_wakeup_q) ? 1'b0 :
-          ((cfg_z3_wakeup_ov && cfg_z3_wakeup_1_allow && cfg_z3_wakeup_q) ? 1'b1 : z3_wakeup_hw_i);
-
-  assign bat_disable_int_o =
-          (cfg_bat_disable_ov && cfg_bat_disable_0_allow && !cfg_bat_disable_q) ? 1'b0 :
-          ((cfg_bat_disable_ov && cfg_bat_disable_1_allow && cfg_bat_disable_q) ? 1'b1 :
-          bat_disable_hw_i);
-
-  assign cio_ec_rst_out_l_o = (cfg_ec_rst_l_ov && cfg_ec_rst_l_0_allow && !cfg_ec_rst_l_q) ? 1'b0 :
-          ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw_i);
+  assign {pwrb_out_int_o,
+          key0_out_int_o,
+          key1_out_int_o,
+          key2_out_int_o,
+          z3_wakeup_int_o,
+          bat_disable_int_o,
+          cio_ec_rst_out_l_o} = outputs;
 
 endmodule
