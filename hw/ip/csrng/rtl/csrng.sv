@@ -18,7 +18,7 @@ module csrng
 ) (
   input logic         clk_i,
   input logic         rst_ni,
-
+  // TODO: remove this comment
   // Tilelink Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
