@@ -49,7 +49,11 @@ module prim_lfsr #(
   // inputs are unused in order to not distort coverage
   // (the SVA will be unreachable in such cases)
   parameter bit                LockupSVA    = 1'b1,
-  parameter bit                ExtSeedSVA   = 1'b1
+  parameter bit                ExtSeedSVA   = 1'b1,
+  // Introduce non-linearity to lfsr output
+  // Note, unlike StatePermEn, this feature is not "for free".
+  // Please double check that this feature is indeed required.
+  parameter bit                NonLinearOut = 1'b0
 ) (
   input                         clk_i,
   input                         rst_ni,
@@ -370,13 +374,28 @@ module prim_lfsr #(
                   (lfsr_en_i)           ? next_lfsr_state :
                                           lfsr_q;
 
+  logic [StateOutDw-1:0] state;
   if (StatePermEn) begin : gen_state_perm
     for (genvar k = 0; k < StateOutDw; k++) begin : gen_perm_loop
-      assign state_o[k] = lfsr_q[StatePerm[k]];
+      assign state[k] = lfsr_q[StatePerm[k]];
     end
   end else begin : gen_no_state_perm
-    assign state_o  = lfsr_q[StateOutDw-1:0];
+    assign state  = lfsr_q[StateOutDw-1:0];
   end
+
+  if (NonLinearOut) begin : gen_out_non_linear
+    localparam int NumBytes = StateOutDw / 8;
+    logic [NumBytes-1:0][7:0] sbox_in, sbox_out;
+    assign sbox_in = state;
+    assign state_o = sbox_out;
+    for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
+      assign sbox_out[b] =
+        prim_cipher_pkg::sbox4_8bit(sbox_in[b], prim_cipher_pkg::PRINCE_SBOX4);
+    end
+  end else begin : gen_out_passthru
+    assign state_o = state;
+  end
+
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
@@ -463,7 +482,7 @@ module prim_lfsr #(
   // output check
   `ASSERT_KNOWN(OutputKnown_A, state_o)
   if (!StatePermEn) begin : gen_output_sva
-    `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
+    `ASSERT(OutputCheck_A, state == StateOutDw'(lfsr_q))
   end
   // if no external input changes the lfsr state, a lockup must not occur (by design)
   //`ASSERT(NoLockups_A, (!entropy_i) && (!seed_en_i) |=> !lockup, clk_i, !rst_ni)
@@ -484,6 +503,18 @@ module prim_lfsr #(
     // check that a stuck LFSR is correctly reseeded
     `ASSERT(LfsrLockupCheck_A, lfsr_en_i && lockup && !seed_en_i |=> !lockup)
   end
+
+  // If non-linear output requested, the output must be multiples of 8-bits
+  if(NonLinearOut) begin : gen_byte_check_sva
+    `ASSERT_INIT(SboxByteAlign_A, StateOutDw % 8 == 0)
+  end
+
+  // It does not make sense to enable non-linear output but not permutation.
+  // Permutation is basically for free, so if NonLinear is enabled so should
+  // permutation.  If non-linear is enabled but permutation is not, it is
+  // perhaps an error where the user intended to enable permutation only.
+  `ASSERT_INIT(SboxOutParamCheck_A, ~(~StatePermEn & NonLinearOut))
+
 
   if (MaxLenSVA) begin : gen_max_len_sva
 
