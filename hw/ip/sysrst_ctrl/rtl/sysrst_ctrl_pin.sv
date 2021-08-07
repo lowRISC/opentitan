@@ -19,13 +19,13 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  cio_ec_rst_in_l_i,
   input  cio_lid_open_i,
 
-  input  pwrb_out_hw,
-  input  key0_out_hw,
-  input  key1_out_hw,
-  input  key2_out_hw,
-  input  bat_disable_hw,
-  input  ec_rst_l_hw,
-  input  z3_wakeup_hw,
+  input  pwrb_out_hw_i,
+  input  key0_out_hw_i,
+  input  key1_out_hw_i,
+  input  key2_out_hw_i,
+  input  bat_disable_hw_i,
+  input  ec_rst_l_hw_i,
+  input  z3_wakeup_hw_i,
 
   input  sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl_i,
   input  sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl_i,
@@ -33,12 +33,12 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   output sysrst_ctrl_hw2reg_pin_in_value_reg_t pin_in_value_o,
 
-  output pwrb_out_int,
-  output key0_out_int,
-  output key1_out_int,
-  output key2_out_int,
-  output bat_disable_int,
-  output z3_wakeup_int,
+  output pwrb_out_int_o,
+  output key0_out_int_o,
+  output key1_out_int_o,
+  output key2_out_int_o,
+  output bat_disable_int_o,
+  output z3_wakeup_int_o,
   output cio_ec_rst_out_l_o
 
 );
@@ -85,7 +85,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   //Synchronize between GPIO and cfg(24MHz)
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ac_present_i_pin (
+  ) u_cfg_ac_present_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_ac_present_i),
@@ -94,7 +94,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ec_rst_l_i_pin (
+  ) u_cfg_ec_rst_l_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_ec_rst_in_l_i),
@@ -103,7 +103,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_pwrb_in_i_pin (
+  ) u_cfg_pwrb_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_pwrb_in_i),
@@ -112,7 +112,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key0_in_i_pin (
+  ) u_cfg_key0_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_key0_in_i),
@@ -121,7 +121,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key1_in_i_pin (
+  ) u_cfg_key1_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_key1_in_i),
@@ -130,7 +130,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key2_in_i_pin (
+  ) u_cfg_key2_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_key2_in_i),
@@ -139,7 +139,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_lid_open_i_pin (
+  ) u_cfg_lid_open_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(cio_lid_open_i),
@@ -167,7 +167,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_bat_disable_0_allow (
+  ) u_cfg_bat_disable_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.bat_disable_0.q),
@@ -177,7 +177,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue(1'b1)//ec_rst_l_0_allow is enabled by default
-  ) i_cfg_ec_rst_l_0_allow (
+  ) u_cfg_ec_rst_l_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.ec_rst_l_0.q),
@@ -187,7 +187,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_pwrb_out_0_allow (
+  ) u_cfg_pwrb_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.pwrb_out_0.q),
@@ -197,7 +197,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key0_out_0_allow (
+  ) u_cfg_key0_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key0_out_0.q),
@@ -207,7 +207,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key1_out_0_allow (
+  ) u_cfg_key1_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key1_out_0.q),
@@ -217,7 +217,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key2_out_0_allow (
+  ) u_cfg_key2_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key2_out_0.q),
@@ -227,7 +227,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_z3_wakeup_0_allow (
+  ) u_cfg_z3_wakeup_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.z3_wakeup_0.q),
@@ -237,7 +237,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_bat_disable_1_allow (
+  ) u_cfg_bat_disable_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.bat_disable_1.q),
@@ -247,7 +247,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_ec_rst_l_1_allow (
+  ) u_cfg_ec_rst_l_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.ec_rst_l_1.q),
@@ -257,7 +257,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_pwrb_out_1_allow (
+  ) u_cfg_pwrb_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.pwrb_out_1.q),
@@ -267,7 +267,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key0_out_1_allow (
+  ) u_cfg_key0_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key0_out_1.q),
@@ -277,7 +277,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key1_out_1_allow (
+  ) u_cfg_key1_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key1_out_1.q),
@@ -287,7 +287,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key2_out_1_allow (
+  ) u_cfg_key2_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key2_out_1.q),
@@ -297,7 +297,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_z3_wakeup_1_allow (
+  ) u_cfg_z3_wakeup_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.z3_wakeup_1.q),
@@ -307,7 +307,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_bat_disable_ov (
+  ) u_cfg_bat_disable_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.bat_disable.q),
@@ -317,7 +317,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue(1'b1)//ec_rst_l override is enabled by default
-  ) i_cfg_ec_rst_l_ov (
+  ) u_cfg_ec_rst_l_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.ec_rst_l.q),
@@ -327,7 +327,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_pwrb_out_ov (
+  ) u_cfg_pwrb_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.pwrb_out.q),
@@ -337,7 +337,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key0_out_ov (
+  ) u_cfg_key0_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key0_out.q),
@@ -347,7 +347,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key1_out_ov (
+  ) u_cfg_key1_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key1_out.q),
@@ -357,7 +357,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key2_out_ov (
+  ) u_cfg_key2_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key2_out.q),
@@ -367,7 +367,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_z3_wakeup_ov (
+  ) u_cfg_z3_wakeup_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.z3_wakeup.q),
@@ -377,7 +377,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_bat_disable_q (
+  ) u_cfg_bat_disable_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.bat_disable.q),
@@ -387,7 +387,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_ec_rst_l_q (
+  ) u_cfg_ec_rst_l_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.ec_rst_l.q),
@@ -397,7 +397,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_pwrb_out_q (
+  ) u_cfg_pwrb_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.pwrb_out.q),
@@ -407,7 +407,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key0_out_q (
+  ) u_cfg_key0_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key0_out.q),
@@ -417,7 +417,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key1_out_q (
+  ) u_cfg_key1_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key1_out.q),
@@ -427,7 +427,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_key2_out_q (
+  ) u_cfg_key2_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key2_out.q),
@@ -437,34 +437,34 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
-  ) i_cfg_z3_wakeup_q (
+  ) u_cfg_z3_wakeup_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.z3_wakeup.q),
     .q_o(cfg_z3_wakeup_q)
   );
 
-  assign pwrb_out_int = (cfg_pwrb_out_ov && cfg_pwrb_out_0_allow && !cfg_pwrb_out_q) ? 1'b0 :
-          ((cfg_pwrb_out_ov && cfg_pwrb_out_1_allow && cfg_pwrb_out_q) ? 1'b1 : pwrb_out_hw);
+  assign pwrb_out_int_o = (cfg_pwrb_out_ov && cfg_pwrb_out_0_allow && !cfg_pwrb_out_q) ? 1'b0 :
+          ((cfg_pwrb_out_ov && cfg_pwrb_out_1_allow && cfg_pwrb_out_q) ? 1'b1 : pwrb_out_hw_i);
 
-  assign key0_out_int = (cfg_key0_out_ov && cfg_key0_out_0_allow && !cfg_key0_out_q) ? 1'b0 :
-          ((cfg_key0_out_ov && cfg_key0_out_1_allow && cfg_key0_out_q) ? 1'b1 : key0_out_hw);
+  assign key0_out_int_o = (cfg_key0_out_ov && cfg_key0_out_0_allow && !cfg_key0_out_q) ? 1'b0 :
+          ((cfg_key0_out_ov && cfg_key0_out_1_allow && cfg_key0_out_q) ? 1'b1 : key0_out_hw_i);
 
-  assign key1_out_int = (cfg_key1_out_ov && cfg_key1_out_0_allow && !cfg_key1_out_q) ? 1'b0 :
-          ((cfg_key1_out_ov && cfg_key1_out_1_allow && cfg_key1_out_q) ? 1'b1 : key1_out_hw);
+  assign key1_out_int_o = (cfg_key1_out_ov && cfg_key1_out_0_allow && !cfg_key1_out_q) ? 1'b0 :
+          ((cfg_key1_out_ov && cfg_key1_out_1_allow && cfg_key1_out_q) ? 1'b1 : key1_out_hw_i);
 
-  assign key2_out_int = (cfg_key2_out_ov && cfg_key2_out_0_allow && !cfg_key2_out_q) ? 1'b0 :
-          ((cfg_key2_out_ov && cfg_key2_out_1_allow && cfg_key2_out_q) ? 1'b1 : key2_out_hw);
+  assign key2_out_int_o = (cfg_key2_out_ov && cfg_key2_out_0_allow && !cfg_key2_out_q) ? 1'b0 :
+          ((cfg_key2_out_ov && cfg_key2_out_1_allow && cfg_key2_out_q) ? 1'b1 : key2_out_hw_i);
 
-  assign z3_wakeup_int = (cfg_z3_wakeup_ov && cfg_z3_wakeup_0_allow && !cfg_z3_wakeup_q) ? 1'b0 :
-          ((cfg_z3_wakeup_ov && cfg_z3_wakeup_1_allow && cfg_z3_wakeup_q) ? 1'b1 : z3_wakeup_hw);
+  assign z3_wakeup_int_o = (cfg_z3_wakeup_ov && cfg_z3_wakeup_0_allow && !cfg_z3_wakeup_q) ? 1'b0 :
+          ((cfg_z3_wakeup_ov && cfg_z3_wakeup_1_allow && cfg_z3_wakeup_q) ? 1'b1 : z3_wakeup_hw_i);
 
-  assign bat_disable_int =
+  assign bat_disable_int_o =
           (cfg_bat_disable_ov && cfg_bat_disable_0_allow && !cfg_bat_disable_q) ? 1'b0 :
           ((cfg_bat_disable_ov && cfg_bat_disable_1_allow && cfg_bat_disable_q) ? 1'b1 :
-          bat_disable_hw);
+          bat_disable_hw_i);
 
   assign cio_ec_rst_out_l_o = (cfg_ec_rst_l_ov && cfg_ec_rst_l_0_allow && !cfg_ec_rst_l_q) ? 1'b0 :
-          ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw);
+          ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw_i);
 
 endmodule

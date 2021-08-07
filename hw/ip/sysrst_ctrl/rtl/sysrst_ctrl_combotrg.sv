@@ -23,7 +23,7 @@ module sysrst_ctrl_combotrg (
 
   assign cfg_input_sel = {cfg_in0_sel, cfg_in1_sel, cfg_in2_sel, cfg_in3_sel, cfg_in4_sel};
 
-  always_comb begin: trigger_combo
+  always_comb begin: p_trigger_combo
 
     unique case (cfg_input_sel)
       5'b00001: begin

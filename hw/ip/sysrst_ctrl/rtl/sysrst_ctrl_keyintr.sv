@@ -10,18 +10,18 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   input  clk_i,
   input  rst_ni,
 
-  input  pwrb_int,
-  input  key0_int,
-  input  key1_int,
-  input  key2_int,
-  input  ac_present_int,
+  input  pwrb_int_i,
+  input  key0_int_i,
+  input  key1_int_i,
+  input  key2_int_i,
+  input  ac_present_int_i,
   input  cio_ec_rst_in_l_i,
 
   input  sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl_i,
   input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
 
   output sysrst_ctrl_hw2reg_key_intr_status_reg_t key_intr_status_o,
-  output sysrst_ctrl_key_intr
+  output sysrst_ctrl_key_intr_o
 
 );
 
@@ -42,10 +42,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   logic        load_key_intr_timer;
   logic [15:0] cfg_key_intr_timer_d;
 
-  logic pwrb_int_i;
-  logic key0_int_i, key1_int_i, key2_int_i;
-  logic ac_present_int_i;
-  logic ec_rst_l_int_i;
+  logic pwrb_int;
+  logic key0_int, key1_int, key2_int;
+  logic ac_present_int;
+  logic ec_rst_l_int;
   logic pwrb_intr_h2l_det, pwrb_intr_h2l_det_q, pwrb_intr_h2l_pulse;
   logic pwrb_intr_l2h_det, pwrb_intr_l2h_det_q, pwrb_intr_l2h_pulse;
   logic key0_intr_h2l_det, key0_intr_h2l_det_q, key0_intr_h2l_pulse;
@@ -69,7 +69,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_pwrb_in_h2l (
+  ) u_cfg_pwrb_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.pwrb_in_h2l.q),
@@ -78,7 +78,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key0_in_h2l (
+  ) u_cfg_key0_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key0_in_h2l.q),
@@ -87,7 +87,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key1_in_h2l (
+  ) u_cfg_key1_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key1_in_h2l.q),
@@ -96,7 +96,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key2_in_h2l (
+  ) u_cfg_key2_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key2_in_h2l.q),
@@ -105,7 +105,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ac_present_h2l (
+  ) u_cfg_ac_present_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.ac_present_h2l.q),
@@ -114,7 +114,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ec_rst_l_h2l (
+  ) u_cfg_ec_rst_l_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.ec_rst_l_h2l.q),
@@ -123,7 +123,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_pwrb_in_l2h (
+  ) u_cfg_pwrb_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.pwrb_in_l2h.q),
@@ -132,7 +132,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key0_in_l2h (
+  ) u_cfg_key0_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key0_in_l2h.q),
@@ -141,7 +141,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key1_in_l2h (
+  ) u_cfg_key1_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key1_in_l2h.q),
@@ -150,7 +150,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_key2_in_l2h (
+  ) u_cfg_key2_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.key2_in_l2h.q),
@@ -159,7 +159,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ac_present_l2h (
+  ) u_cfg_ac_present_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.ac_present_l2h.q),
@@ -168,7 +168,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_cfg_ec_rst_l_l2h (
+  ) u_cfg_ec_rst_l_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(key_intr_ctl_i.ec_rst_l_l2h.q),
@@ -178,7 +178,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   prim_fifo_async #(
     .Width(16),
     .Depth(2)
-  ) i_cfg_key_intr_timer (
+  ) u_cfg_key_intr_timer (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
     .wvalid_i  (key_intr_debounce_ctl_i.qe),
@@ -194,7 +194,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     .rdepth_o  ()
   );
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_cfg_key_intr_timer_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_cfg_key_intr_timer_reg
     if (!rst_aon_ni) begin
       cfg_key_intr_timer    <= '0;
     end else if (load_key_intr_timer) begin
@@ -205,65 +205,65 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   //synchronize between GPIO and always-on(200KHz)
   prim_flop_2sync # (
     .Width(1)
-  ) i_pwrb_int_i (
+  ) u_pwrb_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i(pwrb_int),
-    .q_o(pwrb_int_i)
+    .d_i(pwrb_int_i),
+    .q_o(pwrb_int)
   );
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_key0_int_i (
+  ) u_key0_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i(key0_int),
-    .q_o(key0_int_i)
+    .d_i(key0_int_i),
+    .q_o(key0_int)
   );
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_key1_int_i (
+  ) u_key1_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i(key1_int),
-    .q_o(key1_int_i)
+    .d_i(key1_int_i),
+    .q_o(key1_int)
   );
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_key2_int_i (
+  ) u_key2_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i(key2_int),
-    .q_o(key2_int_i)
+    .d_i(key2_int_i),
+    .q_o(key2_int)
   );
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_ac_present_int_i (
+  ) u_ac_present_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i(ac_present_int),
-    .q_o(ac_present_int_i)
+    .d_i(ac_present_int_i),
+    .q_o(ac_present_int)
   );
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_ec_rst_l_int_i (
+  ) u_ec_rst_l_int (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i(cio_ec_rst_in_l_i),
-    .q_o(ec_rst_l_int_i)
+    .q_o(ec_rst_l_int)
   );
 
   //Instantiate the key state machine
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_pwrbintr_fsm (
+  ) u_pwrbintr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(pwrb_int_i),
+    .trigger_i(pwrb_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_pwrb_in_l2h),
     .cfg_h2l_en_i(cfg_pwrb_in_h2l),
@@ -273,10 +273,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_key0intr_fsm (
+  ) u_key0intr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(key0_int_i),
+    .trigger_i(key0_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_key0_in_l2h),
     .cfg_h2l_en_i(cfg_key0_in_h2l),
@@ -286,10 +286,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_key1intr_fsm (
+  ) u_key1intr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(key1_int_i),
+    .trigger_i(key1_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_key1_in_l2h),
     .cfg_h2l_en_i(cfg_key1_in_h2l),
@@ -299,10 +299,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_key2intr_fsm (
+  ) u_key2intr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(key2_int_i),
+    .trigger_i(key2_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_key2_in_l2h),
     .cfg_h2l_en_i(cfg_key2_in_h2l),
@@ -312,10 +312,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_ac_presentintr_fsm (
+  ) u_ac_presentintr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(ac_present_int_i),
+    .trigger_i(ac_present_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_ac_present_l2h),
     .cfg_h2l_en_i(cfg_ac_present_h2l),
@@ -325,10 +325,10 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
-  ) i_ec_rst_lintr_fsm (
+  ) u_ec_rst_lintr_fsm (
     .clk_aon_i(clk_aon_i),
     .rst_aon_ni(rst_aon_ni),
-    .trigger_i(ec_rst_l_int_i),
+    .trigger_i(ec_rst_l_int),
     .cfg_timer_i(cfg_key_intr_timer),
     .cfg_l2h_en_i(cfg_ec_rst_l_l2h),
     .cfg_h2l_en_i(cfg_ec_rst_l_h2l),
@@ -338,7 +338,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
 
   //delay the level signal to generate a pulse
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_pwrb_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_pwrb_intr_h2l_det
     if (!rst_aon_ni) begin
       pwrb_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -346,7 +346,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_pwrb_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_pwrb_intr_l2h_det
     if (!rst_aon_ni) begin
       pwrb_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -354,7 +354,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key0_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key0_intr_h2l_det
     if (!rst_aon_ni) begin
       key0_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -362,7 +362,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key0_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key0_intr_l2h_det
     if (!rst_aon_ni) begin
       key0_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -370,7 +370,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key1_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key1_intr_h2l_det
     if (!rst_aon_ni) begin
       key1_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -378,7 +378,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key1_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key1_intr_l2h_det
     if (!rst_aon_ni) begin
       key1_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -386,7 +386,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key2_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key2_intr_h2l_det
     if (!rst_aon_ni) begin
       key2_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -394,7 +394,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_key2_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_key2_intr_l2h_det
     if (!rst_aon_ni) begin
       key2_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -402,7 +402,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_ac_present_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_ac_present_intr_h2l_det
     if (!rst_aon_ni) begin
       ac_present_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -410,7 +410,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_ac_present_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_ac_present_intr_l2h_det
     if (!rst_aon_ni) begin
       ac_present_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -418,7 +418,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_ec_rst_l_intr_h2l_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_ec_rst_l_intr_h2l_det
     if (!rst_aon_ni) begin
       ec_rst_l_intr_h2l_det_q    <= 1'b0;
     end else begin
@@ -426,7 +426,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_ec_rst_l_intr_l2h_det
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_ec_rst_l_intr_l2h_det
     if (!rst_aon_ni) begin
       ec_rst_l_intr_l2h_det_q    <= 1'b0;
     end else begin
@@ -453,7 +453,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
           (ec_rst_l_intr_h2l_det == 1'b0);
 
   //Synchronize from 200KHz always-onclock to 24MHz cfg clock
-  prim_pulse_sync i_pwrb_h2l (
+  prim_pulse_sync u_pwrb_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -464,7 +464,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.pwrb_h2l.de = pwrb_h2l_intr;
 
-  prim_pulse_sync i_pwrb_l2h (
+  prim_pulse_sync u_pwrb_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -475,7 +475,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.pwrb_l2h.de = pwrb_l2h_intr;
 
-  prim_pulse_sync i_key0_in_h2l (
+  prim_pulse_sync u_key0_in_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -486,7 +486,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key0_in_h2l.de = key0_in_h2l_intr;
 
-  prim_pulse_sync i_key0_in_l2h (
+  prim_pulse_sync u_key0_in_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -497,7 +497,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key0_in_l2h.de = key0_in_l2h_intr;
 
-  prim_pulse_sync i_key1_in_h2l (
+  prim_pulse_sync u_key1_in_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -508,7 +508,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key1_in_h2l.de = key1_in_h2l_intr;
 
-  prim_pulse_sync i_key1_in_l2h (
+  prim_pulse_sync u_key1_in_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -519,7 +519,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key1_in_l2h.de = key1_in_l2h_intr;
 
-  prim_pulse_sync i_key2_in_h2l (
+  prim_pulse_sync u_key2_in_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -530,7 +530,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key2_in_h2l.de = key2_in_h2l_intr;
 
-  prim_pulse_sync i_key2_in_l2h (
+  prim_pulse_sync u_key2_in_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -541,7 +541,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.key2_in_l2h.de = key2_in_l2h_intr;
 
-  prim_pulse_sync i_ac_present_h2l (
+  prim_pulse_sync u_ac_present_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -552,7 +552,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.ac_present_h2l.de = ac_present_h2l_intr;
 
-  prim_pulse_sync i_ac_present_l2h (
+  prim_pulse_sync u_ac_present_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -563,7 +563,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.ac_present_l2h.de = ac_present_l2h_intr;
 
-  prim_pulse_sync i_ec_rst_l_h2l (
+  prim_pulse_sync u_ec_rst_l_h2l (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -574,7 +574,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.ec_rst_l_h2l.de = ec_rst_l_h2l_intr;
 
-  prim_pulse_sync i_ec_rst_l_l2h (
+  prim_pulse_sync u_ec_rst_l_l2h (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
     .rst_src_ni  (rst_aon_ni),
@@ -585,7 +585,7 @@ module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
 
   assign key_intr_status_o.ec_rst_l_l2h.de = ec_rst_l_l2h_intr;
 
-  assign sysrst_ctrl_key_intr = pwrb_h2l_intr | pwrb_l2h_intr |
+  assign sysrst_ctrl_key_intr_o = pwrb_h2l_intr | pwrb_l2h_intr |
    key0_in_h2l_intr | key0_in_l2h_intr |
    key1_in_h2l_intr | key1_in_l2h_intr |
    key2_in_h2l_intr | key2_in_l2h_intr |

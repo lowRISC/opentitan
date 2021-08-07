@@ -27,7 +27,7 @@ module sysrst_ctrl_combofsm #(
   logic [TIMER2BIT-1:0] timer2_cnt_d, timer2_cnt_q;
   logic timer2_cnt_clr, timer2_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_h_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_h_reg
     if (!rst_aon_ni) begin
       trigger_h_q    <= 1'b0;
     end else begin
@@ -35,7 +35,7 @@ module sysrst_ctrl_combofsm #(
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_l_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_l_reg
     if (!rst_aon_ni) begin
       trigger_l_q    <= 1'b0;
     end else begin
@@ -65,7 +65,7 @@ module sysrst_ctrl_combofsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_state_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_state_reg
     if (!rst_aon_ni) begin
       timer_state_q    <= IDLE;
     end else begin
@@ -76,7 +76,7 @@ module sysrst_ctrl_combofsm #(
   assign timer1_cnt_d = (timer1_cnt_en) ? timer1_cnt_q + 1'b1 : timer1_cnt_q;
   assign timer2_cnt_d = (timer2_cnt_en) ? timer2_cnt_q + 1'b1 : timer2_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer1_cnt_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer1_cnt_reg
     if (!rst_aon_ni) begin
       timer1_cnt_q    <= '0;
     end
@@ -87,7 +87,7 @@ module sysrst_ctrl_combofsm #(
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer2_cnt_reg
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer2_cnt_reg
     if (!rst_aon_ni) begin
       timer2_cnt_q    <= '0;
     end
@@ -98,7 +98,7 @@ module sysrst_ctrl_combofsm #(
     end
   end
 
-  always_comb begin: timer_fsm
+  always_comb begin: p_timer_fsm
     timer_state_d = timer_state_q;
     //outputs
     timer_h2l_cond_met = 1'b0;
