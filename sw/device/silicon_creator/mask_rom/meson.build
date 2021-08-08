@@ -284,6 +284,8 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
       sw_lib_testing_bitfield,
     ],
     native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )
