@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include <cstring>
+#include <numeric>
 #include <unordered_set>
 
 #include "gtest/gtest.h"
@@ -28,28 +29,137 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-class SigverifyRsaKeys : public mask_rom_test::MaskRomTest {
+/**
+ * Mock keys used in tests.
+ *
+ * We only initialize the first word of `n`, which is the key ID, and `key_type`
+ * since these are the only fields that are used for determining the validity of
+ * a key. The remaining fields are initialized only because non-trivial
+ * designated initializers are not supported.
+ */
+constexpr sigverify_mask_rom_key_t kMockKeys[]{
+    {
+        .key = {.n = {{0xA0}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeTest,
+    },
+    {
+        .key = {.n = {{0xB0}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeProd,
+    },
+    {
+        .key = {.n = {{0xC0}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeDev,
+    },
+    {
+        .key = {.n = {{0xA1}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeTest,
+    },
+    {
+        .key = {.n = {{0xB1}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeProd,
+    },
+    {
+        .key = {.n = {{0xC1}}, .n0_inv = {0}, .exponent = 0},
+        .key_type = kSigverifyKeyTypeDev,
+    },
+};
+
+/**
+ * Returns the indices of mock keys of the given type.
+ *
+ * @param key_type A key type.
+ * @return Indices of mock keys of the given type.
+ */
+std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
+  std::vector<size_t> res;
+  auto begin = std::begin(kMockKeys);
+  auto end = std::end(kMockKeys);
+  auto iter = begin;
+  while (
+      (iter = std::find_if(iter, end, [&](sigverify_mask_rom_key_t const &key) {
+         return key.key_type == key_type;
+       })) != end) {
+    res.push_back(std::distance(begin, iter));
+    ++iter;
+  }
+  return res;
+}
+
+const std::vector<size_t> kMockTestKeyIndices =
+    MockKeyIndicesOfType(kSigverifyKeyTypeTest);
+
+const std::vector<size_t> kMockProdKeyIndices =
+    MockKeyIndicesOfType(kSigverifyKeyTypeProd);
+
+const std::vector<size_t> kMockDevKeyIndices =
+    MockKeyIndicesOfType(kSigverifyKeyTypeDev);
+
+const std::vector<size_t> kMockAllKeyIndices = []() {
+  std::vector<size_t> res(
+      std::distance(std::begin(kMockKeys), std::end(kMockKeys)));
+  std::iota(res.begin(), res.end(), 0);
+  return res;
+}();
+
+/**
+ * Life cycle states used in parameterized tests.
+ */
+
+const std::array<lifecycle_state_t, 8> kLcStatesTest{
+    kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
+    kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
+    kLcStateTestUnlocked6, kLcStateTestUnlocked7,
+};
+
+const std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
+    kLcStateDev,
+    kLcStateProd,
+    kLcStateProdEnd,
+    kLcStateRma,
+};
+
+const std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
+    kLcStateRaw,         kLcStateTestLocked0,
+    kLcStateTestLocked1, kLcStateTestLocked2,
+    kLcStateTestLocked3, kLcStateTestLocked4,
+    kLcStateTestLocked5, kLcStateTestLocked6,
+    kLcStateScrap,       kLcStatePostTransition,
+    kLcStateEscalate,    kLcStateInvalid,
+};
+
+const std::unordered_set<lifecycle_state_t> kLcStatesAll = []() {
+  std::unordered_set<lifecycle_state_t> res;
+  res.insert(kLcStatesTest.begin(), kLcStatesTest.end());
+  res.insert(kLcStatesNonTestOperational.begin(),
+             kLcStatesNonTestOperational.end());
+  res.insert(kLcStatesNonOperational.begin(), kLcStatesNonOperational.end());
+  return res;
+}();
+
+TEST(LcStateCount, IsCorrect) {
+  EXPECT_EQ(kLcStateNumStates, kLcStatesAll.size());
+}
+
+class SigverifyKeys : public mask_rom_test::MaskRomTest {
  protected:
   /**
-   * Sets an expectation for getting the keys stored in the Mask ROM.
+   * Sets expectations for getting the keys stored in the Mask ROM.
    *
-   * @param keys A pointer to an array of `sigverify_mask_rom_t`
-   * @param num_keys Size of this array.
+   * @param keys An array of keys.
    */
   template <size_t N>
   void ExpectKeysPtrGet(const sigverify_mask_rom_key_t (&keys)[N]) {
-    EXPECT_CALL(sigverify_keys_ptrs_, rsa_keys_ptr_get())
-        .WillOnce(Return(keys));
-    EXPECT_CALL(sigverify_keys_ptrs_, num_rsa_keys_get())
-        .WillOnce(Return(std::distance(std::begin(keys), std::end(keys))));
+    ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
+    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysPtrGet()).WillOnce(Return(keys));
+    EXPECT_CALL(sigverify_keys_ptrs_, NumRsaKeysGet()).WillOnce(Return(N));
   }
 
   /**
    * Sets an expectation for an OTP read for the key at the given index.
    *
-   * The value that corresponds to `key_index` will be `is_valid` and the values
-   * for all other keys in the corresponding OTP word will be the complement of
-   * `is_valid`.
+   * The value that corresponds to `key_index` will be `is_valid` and the
+   * values for all other keys in the corresponding OTP word will be the
+   * complement of `is_valid`.
    *
    * @param key_index Index of a key.
    * @param is_valid Validitiy of the key.
@@ -74,46 +184,173 @@ class SigverifyRsaKeys : public mask_rom_test::MaskRomTest {
 
   mask_rom_test::MockOtp otp_;
   mask_rom_test::MockSigverifyKeysPtrs sigverify_keys_ptrs_;
+};  // namespace
+
+class BadKeyIdTypeTest : public SigverifyKeys,
+                         public testing::WithParamInterface<lifecycle_state_t> {
 };
 
-TEST_F(SigverifyRsaKeys, InvalidId) {
-  const sigverify_rsa_key_t *key;
+TEST_P(BadKeyIdTypeTest, BadKeyId) {
   ExpectKeysPtrGet(kSigVerifyRsaKeys);
-  EXPECT_EQ(sigverify_rsa_key_get(0, &key), kErrorSigverifyBadKey);
+
+  const sigverify_rsa_key_t *key;
+  EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key), kErrorSigverifyBadKey);
 }
 
-class KeyValidityTest : public SigverifyRsaKeys,
-                        public testing::WithParamInterface<size_t> {
- protected:
-};
+TEST_P(BadKeyIdTypeTest, BadKeyType) {
+  uint32_t key_id = 0xFF;
+  sigverify_key_type_t bad_key_type =
+      static_cast<sigverify_key_type_t>(kSigverifyKeyTypeDev + 1);
+  sigverify_mask_rom_key_t keys[]{
+      {
+          .key = {.n = {{key_id}}, .n0_inv = {0}, .exponent = 0},
+          .key_type = bad_key_type,
+      },
+  };
 
-TEST_P(KeyValidityTest, ValidInOtp) {
-  const size_t key_index = GetParam();
-  ExpectKeysPtrGet(kSigVerifyRsaKeys);
+  ExpectKeysPtrGet(keys);
+
+  const sigverify_rsa_key_t *key;
+  EXPECT_EQ(sigverify_rsa_key_get(key_id, GetParam(), &key),
+            kErrorSigverifyBadKey);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
+                         testing::ValuesIn(kLcStatesAll));
+
+/**
+ * Base class for paramaterized tests below.
+ */
+class KeyValidityTest : public SigverifyKeys,
+                        public testing::WithParamInterface<
+                            std::tuple<size_t, lifecycle_state_t>> {};
+
+class NonOperationalState : public KeyValidityTest {};
+
+TEST_P(NonOperationalState, BadKey) {
+  size_t key_index;
+  lifecycle_state_t lc_state;
+  std::tie(key_index, lc_state) = GetParam();
+
+  ExpectKeysPtrGet(kMockKeys);
+
+  const sigverify_rsa_key_t *key;
+  EXPECT_EQ(sigverify_rsa_key_get(
+                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+                &key),
+            kErrorSigverifyBadKey);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllKeysAndNonOperationalStates, NonOperationalState,
+    testing::Combine(testing::ValuesIn(kMockAllKeyIndices),
+                     testing::ValuesIn(kLcStatesNonOperational)));
+
+class ValidBasedOnOtp : public KeyValidityTest {};
+
+TEST_P(ValidBasedOnOtp, ValidInOtp) {
+  size_t key_index;
+  lifecycle_state_t lc_state;
+  std::tie(key_index, lc_state) = GetParam();
+
+  ExpectKeysPtrGet(kMockKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(
-      sigverify_rsa_key_get(
-          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].key.n), &key),
-      kErrorOk);
-  EXPECT_EQ(key, &kSigVerifyRsaKeys[key_index].key);
+  EXPECT_EQ(sigverify_rsa_key_get(
+                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+                &key),
+            kErrorOk);
+  EXPECT_EQ(key, &kMockKeys[key_index].key);
 }
 
-TEST_P(KeyValidityTest, InvalidInOtp) {
-  const size_t key_index = GetParam();
-  ExpectKeysPtrGet(kSigVerifyRsaKeys);
+TEST_P(ValidBasedOnOtp, InvalidInOtp) {
+  size_t key_index;
+  lifecycle_state_t lc_state;
+  std::tie(key_index, lc_state) = GetParam();
+
+  ExpectKeysPtrGet(kMockKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolFalse);
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(
-      sigverify_rsa_key_get(
-          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].key.n), &key),
-      kErrorSigverifyBadKey);
+  EXPECT_EQ(sigverify_rsa_key_get(
+                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+                &key),
+            kErrorSigverifyBadKey);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllMaskRomKeys, KeyValidityTest,
-                         testing::Range<size_t>(0, kSigVerifyNumRsaKeys));
+INSTANTIATE_TEST_SUITE_P(
+    ProdKeysInNonTestStates, ValidBasedOnOtp,
+    testing::Combine(testing::ValuesIn(kMockProdKeyIndices),
+                     testing::ValuesIn(kLcStatesNonTestOperational)));
+
+INSTANTIATE_TEST_SUITE_P(
+    TestKeysInRmaState, ValidBasedOnOtp,
+    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
+                     testing::Values(kLcStateRma)));
+
+INSTANTIATE_TEST_SUITE_P(DevKeysInDevState, ValidBasedOnOtp,
+                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
+                                          testing::Values(kLcStateDev)));
+
+class ValidInState : public KeyValidityTest {};
+
+TEST_P(ValidInState, Get) {
+  size_t key_index;
+  lifecycle_state_t lc_state;
+  std::tie(key_index, lc_state) = GetParam();
+
+  ExpectKeysPtrGet(kMockKeys);
+
+  const sigverify_rsa_key_t *key;
+  EXPECT_EQ(sigverify_rsa_key_get(
+                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+                &key),
+            kErrorOk);
+  EXPECT_EQ(key, &kMockKeys[key_index].key);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ProdKeysInTestStates, ValidInState,
+    testing::Combine(testing::ValuesIn(kMockProdKeyIndices),
+                     testing::ValuesIn(kLcStatesTest)));
+
+INSTANTIATE_TEST_SUITE_P(
+    TestKeysInTestStates, ValidInState,
+    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
+                     testing::ValuesIn(kLcStatesTest)));
+
+class InvalidInState : public KeyValidityTest {};
+
+TEST_P(InvalidInState, Get) {
+  size_t key_index;
+  lifecycle_state_t lc_state;
+  std::tie(key_index, lc_state) = GetParam();
+
+  ExpectKeysPtrGet(kMockKeys);
+
+  const sigverify_rsa_key_t *key;
+  EXPECT_EQ(sigverify_rsa_key_get(
+                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+                &key),
+            kErrorSigverifyBadKey);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    TestKeysAndProdDevStates, InvalidInState,
+    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
+                     testing::Values(kLcStateProd, kLcStateProdEnd,
+                                     kLcStateDev)));
+
+INSTANTIATE_TEST_SUITE_P(DevKeysAndTestStates, InvalidInState,
+                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
+                                          testing::ValuesIn(kLcStatesTest)));
+
+INSTANTIATE_TEST_SUITE_P(DevKeysAndNonDevOperStates, InvalidInState,
+                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
+                                          testing::Values(kLcStateProd,
+                                                          kLcStateProdEnd,
+                                                          kLcStateRma)));
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
