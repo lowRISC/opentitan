@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/mask_rom/mock_sigverify_keys_ptrs.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
 
 #include "otp_ctrl_regs.h"
@@ -27,9 +28,22 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
-class SigverifyRsaKeyGet : public mask_rom_test::MaskRomTest,
-                           public testing::WithParamInterface<size_t> {
+class SigverifyRsaKeys : public mask_rom_test::MaskRomTest {
  protected:
+  /**
+   * Sets an expectation for getting the keys stored in the Mask ROM.
+   *
+   * @param keys A pointer to an array of `sigverify_mask_rom_t`
+   * @param num_keys Size of this array.
+   */
+  template <size_t N>
+  void ExpectKeysPtrGet(const sigverify_mask_rom_key_t (&keys)[N]) {
+    EXPECT_CALL(sigverify_keys_ptrs_, rsa_keys_ptr_get())
+        .WillOnce(Return(keys));
+    EXPECT_CALL(sigverify_keys_ptrs_, num_rsa_keys_get())
+        .WillOnce(Return(std::distance(std::begin(keys), std::end(keys))));
+  }
+
   /**
    * Sets an expectation for an OTP read for the key at the given index.
    *
@@ -57,11 +71,25 @@ class SigverifyRsaKeyGet : public mask_rom_test::MaskRomTest,
     std::memcpy(&read_val, entries.data(), sizeof(read_val));
     EXPECT_CALL(otp_, read32(read_addr)).WillOnce(Return(read_val));
   }
+
   mask_rom_test::MockOtp otp_;
+  mask_rom_test::MockSigverifyKeysPtrs sigverify_keys_ptrs_;
 };
 
-TEST_P(SigverifyRsaKeyGet, ValidInOtp) {
+TEST_F(SigverifyRsaKeys, InvalidId) {
+  const sigverify_rsa_key_t *key;
+  ExpectKeysPtrGet(kSigVerifyRsaKeys);
+  EXPECT_EQ(sigverify_rsa_key_get(0, &key), kErrorSigverifyBadKey);
+}
+
+class KeyValidityTest : public SigverifyRsaKeys,
+                        public testing::WithParamInterface<size_t> {
+ protected:
+};
+
+TEST_P(KeyValidityTest, ValidInOtp) {
   const size_t key_index = GetParam();
+  ExpectKeysPtrGet(kSigVerifyRsaKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
   const sigverify_rsa_key_t *key;
@@ -72,8 +100,9 @@ TEST_P(SigverifyRsaKeyGet, ValidInOtp) {
   EXPECT_EQ(key, &kSigVerifyRsaKeys[key_index].key);
 }
 
-TEST_P(SigverifyRsaKeyGet, InvalidInOtp) {
+TEST_P(KeyValidityTest, InvalidInOtp) {
   const size_t key_index = GetParam();
+  ExpectKeysPtrGet(kSigVerifyRsaKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolFalse);
 
   const sigverify_rsa_key_t *key;
@@ -83,13 +112,8 @@ TEST_P(SigverifyRsaKeyGet, InvalidInOtp) {
       kErrorSigverifyBadKey);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllMaskRomKeys, SigverifyRsaKeyGet,
+INSTANTIATE_TEST_SUITE_P(AllMaskRomKeys, KeyValidityTest,
                          testing::Range<size_t>(0, kSigVerifyNumRsaKeys));
-
-TEST(SigverifyRsaKeyGet, InvalidId) {
-  const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(0, &key), kErrorSigverifyBadKey);
-}
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
