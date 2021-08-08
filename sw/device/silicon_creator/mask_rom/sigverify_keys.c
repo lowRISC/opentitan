@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
 
 #include "otp_ctrl_regs.h"
 
@@ -151,8 +152,10 @@ static rom_error_t key_is_valid_in_otp(size_t key_index) {
 
 rom_error_t sigverify_rsa_key_get(uint32_t key_id,
                                   const sigverify_rsa_key_t **key) {
-  for (size_t i = 0; i < kSigVerifyNumRsaKeys; ++i) {
-    const sigverify_mask_rom_key_t *cand_key = &kSigVerifyRsaKeys[i];
+  const sigverify_mask_rom_key_t *keys = sigverify_rsa_keys_ptr_get();
+  size_t num_keys = sigverify_num_rsa_keys_get();
+  for (size_t i = 0; i < num_keys; ++i) {
+    const sigverify_mask_rom_key_t *cand_key = &keys[i];
     if (sigverify_rsa_key_id_get(&cand_key->key.n) == key_id) {
       RETURN_IF_ERROR(key_is_valid_in_otp(i));
       *key = &cand_key->key;
@@ -161,3 +164,6 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id,
   }
   return kErrorSigverifyBadKey;
 }
+
+extern const sigverify_mask_rom_key_t *sigverify_rsa_keys_ptr_get(void);
+extern size_t sigverify_num_rsa_keys_get(void);
