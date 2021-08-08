@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
@@ -29,15 +30,16 @@ enum {
 /**
  * Returns the key with the given ID.
  *
- * This function also checks whether the key with the given ID is valid by
- * reading the corresponding entry from the `CREATOR_SW_CFG_KEY_IS_VALID` OTP
- * item.
+ * This function returns the key only if it can be used in the given life cycle
+ * state and is valid in OTP. OTP check is performed only if the device is in a
+ * non-test operational state (PROD, PROD_END, DEV, RMA).
  *
  * @param key_id A key ID.
+ * @param lc_state Life cycle state of the device.
  * @param key Key with the given ID, valid only if it exists.
  * @return Result of the operation.
  */
-rom_error_t sigverify_rsa_key_get(uint32_t key_id,
+rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key);
 
 #ifdef __cplusplus
