@@ -16,10 +16,6 @@ extern "C" {
 
 enum {
   /**
-   * Number of RSA public keys.
-   */
-  kSigVerifyNumRsaKeys = 2,
-  /**
    * Number of key validity entries per OTP word.
    *
    * Validity of each public key is encoded using a byte-sized
@@ -29,55 +25,6 @@ enum {
    */
   kSigverifyNumEntriesPerOtpWord = sizeof(uint32_t),
 };
-
-/**
- * Key types.
- *
- * The life cycle states in which a key can be used depend on its type.
- */
-typedef enum sigverify_key_type {
-  /**
-   * A key used for manufacturing, testing, and RMA.
-   *
-   * Keys of this type can be used only in TEST_UNLOCKED* and RMA life cycle
-   * states.
-   */
-  kSigverifyKeyTypeTest,
-  /**
-   * A production key.
-   *
-   * Keys of this type can be used in all operational life cycle states, i.e.
-   * states in which CPU execution is enabled.
-   */
-  kSigverifyKeyTypeProd,
-  /**
-   * A development key.
-   *
-   * Keys of this type can be used only in the DEV life cycle state.
-   */
-  kSigVerifyKeyTypeDev,
-} sigverify_key_type_t;
-
-/**
- * An RSA public key stored in mask ROM.
- */
-typedef struct sigverify_mask_rom_key {
-  /**
-   * An RSA public key.
-   */
-  sigverify_rsa_key_t key;
-  /**
-   * Type of the key.
-   */
-  sigverify_key_type_t key_type;
-} sigverify_mask_rom_key_t;
-
-/**
- * Public keys for signature verification.
- *
- * Note: Declared here to be able to use in tests.
- */
-extern const sigverify_mask_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys];
 
 /**
  * Returns the key with the given ID.
