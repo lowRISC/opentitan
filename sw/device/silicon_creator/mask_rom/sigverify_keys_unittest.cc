@@ -66,9 +66,9 @@ TEST_P(SigverifyRsaKeyGet, ValidInOtp) {
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(
       sigverify_rsa_key_get(
-          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].n), &key),
+          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].key.n), &key),
       kErrorOk);
-  EXPECT_EQ(key, &kSigVerifyRsaKeys[key_index]);
+  EXPECT_EQ(key, &kSigVerifyRsaKeys[key_index].key);
 }
 
 TEST_P(SigverifyRsaKeyGet, InvalidInOtp) {
@@ -78,7 +78,7 @@ TEST_P(SigverifyRsaKeyGet, InvalidInOtp) {
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(
       sigverify_rsa_key_get(
-          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].n), &key),
+          sigverify_rsa_key_id_get(&kSigVerifyRsaKeys[key_index].key.n), &key),
       kErrorSigverifyBadKey);
 }
 
@@ -92,8 +92,8 @@ TEST(SigverifyRsaKeyGet, InvalidId) {
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
-  for (auto const &key : kSigVerifyRsaKeys) {
-    ids.insert(sigverify_rsa_key_id_get(&key.n));
+  for (auto const &entry : kSigVerifyRsaKeys) {
+    ids.insert(sigverify_rsa_key_id_get(&entry.key.n));
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
@@ -147,7 +147,7 @@ struct RsaVerifyTestCase {
 constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
     // message: "test"
     {
-        .key = &kSigVerifyRsaKeys[0],
+        .key = &kSigVerifyRsaKeys[0].key,
         .sig =
             {
                 0xeb28a6d3, 0x936b42bb, 0x76d3973d, 0x6322d536, 0x253c7547,
@@ -174,7 +174,7 @@ constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
     },
     // message: "test"
     {
-        .key = &kSigVerifyRsaKeys[1],
+        .key = &kSigVerifyRsaKeys[1].key,
         .sig =
             {
                 0xb13844fa, 0x9c7622d8, 0xda09bdc4, 0x79fde5c6, 0x7037a98b,
