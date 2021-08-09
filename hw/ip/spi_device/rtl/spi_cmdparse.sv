@@ -22,16 +22,6 @@ module spi_cmdparse
   // Configurations
   input spi_mode_e spi_mode_i,
 
-  // 256b indicator determines which commands to be uploaded
-  // If 1 and the command does not fall into other modules
-  // (SFDP/JEDEC/Read/etc), Command Processor triggers upload module.
-  // Other upload related configurations (Address/ Payload) are used
-  // in upload module.
-  //
-  // If Command Config (from DPSRAM) is implemented, this signal shall be
-  // changed to 8bit width.
-  input logic [255:0] upload_mask_i,
-
   // Command info slot
   //
   // cmdparse uses the command info slot to activate sub-datapath. It uses
@@ -64,16 +54,11 @@ module spi_cmdparse
   assign cmd_config_req_o = 1'b 0;
   assign cmd_config_idx_o = data_i[4:0];
 
-  // among the command slots, Passthrough related slots are not used. So tie them down here.
-  logic unused_cmdinfo;
-  assign unused_cmdinfo = ^{
-    cmd_info_i[CmdInfoPassthroughEnd:CmdInfoPassthroughStart]};
-
   // Only opcode in the cmd_info is used. Tie the rest of the members.
   logic unused_cmdinfo_members;
   always_comb begin
     unused_cmdinfo_members = 1'b 0;
-    for (int unsigned i = 0 ; i <= CmdInfoPassthroughEnd ; i++) begin
+    for (int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
       unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_4b_affected,
                                    cmd_info_i[i].addr_en,
                                    cmd_info_i[i].addr_swap_en,
@@ -83,16 +68,6 @@ module spi_cmdparse
                                   ^cmd_info_i[i].payload_en};
     end
   end
-
-  // Unnecessary but for ascentlint error only
-  logic unused_cmdinfo_opcode;
-  always_comb begin
-    unused_cmdinfo_opcode = 1'b 0;
-    for (int unsigned i = CmdInfoPassthroughStart ; i <= CmdInfoPassthroughEnd ; i++) begin
-      unused_cmdinfo_opcode ^= ^cmd_info_i[i].opcode;
-    end
-  end
-
 
   ////////////////
   // Definition //
@@ -172,6 +147,14 @@ module spi_cmdparse
   end
 
   // cmd_info latch
+  // TODO: This can be furthur optimized. At 7th beat, check the opcode[7:1]
+  // with cmd_info[NumCmdInfo-1:0].opcode[7:1]. Unless SW configures more than
+  // one cmd_info slots with same opcode, at most two slots match with the
+  // opcode[7:1]. The two can be latched then at 8th beat, only the last bit
+  // of the opcode in the two cmd_info entries can be compared.
+  //
+  // It reduces the logic from 8bit compare with 24 logic depth into 1bit
+  // compare with 1 logic depth.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cmd_info_o     <= '{default: '0};
@@ -186,7 +169,7 @@ module spi_cmdparse
     cmd_info_d     = '{default: '0};
     cmd_info_idx_d = '0;
     if ((st == StIdle) && module_active && data_valid_i) begin
-      for (int unsigned i = 0 ; i <= CmdInfoReadCmdEnd ; i++ ) begin
+      for (int unsigned i = 0 ; i < NumCmdInfo ; i++ ) begin
         if (data_i == cmd_info_i[i].opcode) begin
           cmd_info_d     = cmd_info_i[i];
           cmd_info_idx_d = CmdInfoIdxW'(i);
@@ -195,6 +178,9 @@ module spi_cmdparse
     end
   end
 
+  // Check upload field in the cmd_info
+  logic upload;
+  assign upload = cmd_info_d.upload;
   ///////////////////
   // State Machine //
   ///////////////////
@@ -258,31 +244,30 @@ module spi_cmdparse
               st_d = StReadCmd;
             end
 
+            upload: begin
+              st_d = StUpload;
+
+              // Reason to select dp here is for Opcode-only commands such as
+              // ChipErase. As no further SCK is given after 8th bit, need to
+              // write the command to FIFO at the same cycle.
+              //
+              // May sel_dp have glitch. As Opcode isn't yet fully stable, it
+              // has a chance to select datapath to Upload and back to None.
+              // If we can write opcode in negedge of SCK, then selecting DP
+              // at 8th posedge of SCK is also possible.
+              //
+              // If not, then we may end up latch `sel_dp` at negedge of SCK.
+              // Then when 8th bit is visible here (`data_valid_i`), the
+              // sel_dp may change. But the output of sel_dp affects only when
+              // 8th negedge of SCK.
+
+              sel_dp = DpUpload;
+            end
+
             default: begin
-              // If Command Config in DPSRAM, need to change as below
-              // if (upload_mask_i[data_i[2:0]]) begin
-              if (upload_mask_i[data_i]) begin
-                st_d = StUpload;
+              st_d = StWait;
 
-                // Reason to select dp here is for Opcode-only commands such as
-                // ChipErase. As no further SCK is given after 8th bit, need to
-                // write the command to FIFO at the same cycle.
-                //
-                // May sel_dp have glitch. As Opcode isn't yet fully stable, it
-                // has a chance to select datapath to Upload and back to None.
-                // If we can write opcode in negedge of SCK, then selecting DP
-                // at 8th posedge of SCK is also possible.
-                //
-                // If not, then we may end up latch `sel_dp` at negedge of SCK.
-                // Then when 8th bit is visible here (`data_valid_i`), the
-                // sel_dp may change. But the output of sel_dp affects only when
-                // 8th negedge of SCK.
-                sel_dp = DpUpload;
-              end else begin
-                st_d = StWait;
-
-                // DpNone
-              end
+              // DpNone
             end
           endcase
         end

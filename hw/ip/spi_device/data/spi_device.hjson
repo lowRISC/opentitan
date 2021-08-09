@@ -50,7 +50,7 @@
     { name:    "NumCmdInfo"
       desc:    "Define the number of Command Info slots."
       type:    "int unsigned"
-      default: "16"
+      default: "24"
       local:   "true"
     }
   ],
@@ -581,6 +581,27 @@
             name:   "payload_dir"
             desc:   "Set to 1 if the command returns data. If 0, the payload sends to the downstream Flash device."
           }
+          { bits: "24"
+            name: "upload"
+            desc: '''Set to 1 to upload the command.
+
+              If upload field in the command info entry is set, the cmdparse
+              activates the upload submodule when the opcode is received.
+              `addr_en`, `addr_4B_affected`, and `addr_4b_forced` (TBD) affect
+              the upload functionality. The three address related configs
+              defines the command address field size.
+
+              The logic assumes the following SPI input stream as payload,
+              which max size is 256B. If the command exceeds the maximum payload size 256B, the logic wraps the payload and overwrites.
+              '''
+          } // f: upload
+          { bits: "25"
+            name: "busy"
+            desc: '''Set to 1 to set the BUSY bit in the FLASH_STATUS when the
+              command is received.  This bit is active only when `upload` bit is
+              set.
+              '''
+          } // f: busy
         ]
       }
     }

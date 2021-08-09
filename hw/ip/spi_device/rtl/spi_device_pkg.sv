@@ -129,6 +129,21 @@ package spi_device_pkg;
     logic [3:0]   payload_en;
     payload_dir_e payload_dir;
 
+    // upload: If upload field in the command info entry is set, the cmdparse
+    // activates the upload submodule when the opcode is received. `addr_en`,
+    // `addr_4B_affected`, and `addr_4b_forced` (TBD) affect the upload
+    // functionality. The three address related configs defines the command
+    // address field size.
+
+    // The logic assumes the following SPI input stream as payload, which max
+    // size is 256B. If the command exceeds the maximum payload size 256B, the
+    // logic wraps the payload and overwrites.
+    logic upload;
+
+    // busy: Set to 1 to set the BUSY bit in the FLASH_STATUS when the command
+    // is received.  This bit is active only when `upload` bit is set.
+    logic busy;
+
   } cmd_info_t;
 
   // CmdInfoInput parameter is the default value if no opcode in the cmd info
@@ -142,7 +157,9 @@ package spi_device_pkg;
     dummy_en:         1'b 0,
     dummy_size:       3'h 0,
     payload_en:       4'b 0001, // MOSI active
-    payload_dir:      PayloadIn
+    payload_dir:      PayloadIn,
+    upload:           1'b 0,
+    busy:             1'b 0
   };
 
   // SPI_DEVICE HWIP has 16 command info slots. A few of them are pre-assigned.
@@ -171,13 +188,13 @@ package spi_device_pkg;
     CmdInfoReadCmdStart = 5,
     CmdInfoReadCmdEnd   = 10,
 
-    // other 5 slots are used in the Passthrough mode only. These free slots may
-    // be used for the commands that are not processed in the flash mode.
-    // Examples are "Release Power-down / ID", "Manufacture/Device ID", etc.
-    // They are not always Input mode. Some has a dummy cycle followed by the
-    // output field.
-    CmdInfoPassthroughStart = 11,
-    CmdInfoPassthroughEnd   = 15
+    // other slots are used in the Passthrough and/or upload submodules. These
+    // free slots may be used for the commands that are not processed in the
+    // flash mode.  Examples are "Release Power-down / ID",
+    // "Manufacture/Device ID", etc.  They are not always Input mode. Some has
+    // a dummy cycle followed by the output field.
+    CmdInfoReserveStart = 11,
+    CmdInfoReserveEnd   = spi_device_reg_pkg::NumCmdInfo -1
   } cmd_info_index_e;
 
   parameter int unsigned NumReadCmdInfo = CmdInfoReadCmdEnd - CmdInfoReadCmdStart + 1;

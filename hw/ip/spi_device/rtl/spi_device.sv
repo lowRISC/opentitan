@@ -131,7 +131,6 @@ module spi_device
   //spi_addr_size_e addr_size; // Not used in fwmode
   spi_mode_e spi_mode;
   //spi_byte_t fw_dummy_byte;
-  logic [255:0] cfg_upload_mask;
   logic cfg_addr_4b_en;
 
   logic intr_sram_rxf_full, intr_fwm_rxerr;
@@ -285,9 +284,6 @@ module spi_device
 
   assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
 
-  // TODO: Define and connect masks.
-  assign cfg_upload_mask = '0;
-
   // Async FIFO level
   //  rx rdepth, tx wdepth to be in main clock domain
   assign hw2reg.async_fifo_level.txlvl.d  = {{(8-AsFifoDepthW){1'b0}}, as_txfifo_depth};
@@ -421,7 +417,9 @@ module spi_device
         dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
         payload_en:       reg2hw.cmd_info[i].payload_en.q,
-        payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q)
+        payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
+        upload:           reg2hw.cmd_info[i].upload.q,
+        busy:             reg2hw.cmd_info[i].busy.q
       };
     end
   end
@@ -867,8 +865,6 @@ module spi_device
     .data_i       (s2p_data),
 
     .spi_mode_i   (spi_mode),
-
-    .upload_mask_i(cfg_upload_mask),
 
     .cmd_info_i   (cmd_info),
 

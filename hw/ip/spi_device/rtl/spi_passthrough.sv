@@ -572,7 +572,9 @@ module spi_passthrough
                                     cmd_info.addr_en,
                                     cmd_info.addr_swap_en,
                                     cmd_info.addr_4b_affected,
-                                    cmd_info.opcode};
+                                    cmd_info.opcode,
+                                    cmd_info.upload,
+                                    cmd_info.busy};
 
   always_comb begin
     cmd_info_d = '0;
