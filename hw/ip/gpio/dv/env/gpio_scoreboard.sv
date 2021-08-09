@@ -36,6 +36,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   uvm_reg_data_t masked_out_lower_mask;
   uvm_reg_data_t masked_out_upper_mask;
 
+  string common_seq_type;
+
   `uvm_component_utils(gpio_scoreboard)
 
   `uvm_component_new
@@ -47,6 +49,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   // Task: run_phase
   task run_phase(uvm_phase phase);
+    void'($value$plusargs("run_%0s", common_seq_type));
     super.run_phase(phase);
     fork
       monitor_gpio_i();
@@ -107,6 +110,14 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
+        // GPIO scoreboard is cycle accurate and will only update `intr_state` mirrored value at
+        // the address phase of the next read operation.
+        // This is too late for intr_test and intr_test does not need this cycle accurate model,
+        // So we use csr predict function right after the write operations.
+        if ((common_seq_type == "intr_test") &&
+            (csr.get_name() inside {"intr_state", "intr_enable", "intr_test"})) begin
+          void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+        end
         if (csr.get_name() == "intr_state") begin
           // As per rtl definition of W1C, hardware must get a chance to make update
           // to interrupt state first, so we need to clear interrupt only after possible
