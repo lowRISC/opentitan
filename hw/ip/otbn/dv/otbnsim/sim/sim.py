@@ -18,6 +18,8 @@ _TEST_RND_DATA = \
 # new_cnt.
 LoopWarps = Dict[int, Dict[int, int]]
 
+SEC_WIPE_CNT = 96
+
 
 class OTBNSim:
     def __init__(self) -> None:
@@ -59,7 +61,9 @@ class OTBNSim:
         self.state.set_urnd_reseed_complete()
         while self.state.running:
             self.step(verbose, collect_stats)
-            insn_count += 1
+
+            if not self.state.wiping:
+                insn_count += 1
 
             if self.state.wsrs.RND.pending_request:
                 # If an instruction requests RND data, make it available
@@ -81,6 +85,29 @@ class OTBNSim:
         if not self.state.running:
             return (None, [])
 
+        if self.state.wiping:
+            if self.state.wiping_cnt < SEC_WIPE_CNT:
+                self.state.wiping_run()
+            else:
+                self.state.stop()
+
+            if (self.state.wiping_cnt == 1):
+                squash_changes = True
+                self.state.wipe_registers()
+            else:
+                squash_changes = False
+
+            changes = self.state.changes()
+            if squash_changes:
+                changes = []
+            self.state.commit(sim_stalled=False)
+            disasm = '(wipe)'
+
+            if verbose:
+                self._print_trace(self.state.pc, disasm, changes)
+
+            return (None, changes)
+
         assert self.stats is not None
 
         # Program counter before commit
@@ -99,7 +126,7 @@ class OTBNSim:
         insn = self.program[word_pc]
 
         sim_stalled = self.state.non_insn_stall
-        if not sim_stalled:
+        if not sim_stalled and (not self.state.wiping):
             if self._execute_generator is None:
                 # This is the first cycle for an instruction. Run any setup for
                 # the state object and then start running the instruction
@@ -122,7 +149,7 @@ class OTBNSim:
 
             sim_stalled = (self._execute_generator is not None)
 
-        if sim_stalled:
+        if sim_stalled or self.state.wiping:
             self.state.commit(sim_stalled=True)
             disasm = '(stall)'
             changes = []
@@ -139,11 +166,17 @@ class OTBNSim:
             if self.state.pending_halt:
                 # We've reached the end of the run (either because of an ECALL
                 # instruction or an error).
-                self.state.stop()
+                # self.state.stop()
+                self.state.start_wiping()
 
-            changes = self.state.changes()
+            # changes = self.state.changes()
 
-            # Only commit() may change the program counter.
+            if not self.state.wiping:
+                changes = self.state.changes()
+            else:
+                changes = []
+
+            # Only commit() may change the program counter
             assert pc_before == self.state.pc
 
             self.state.commit(sim_stalled=False)

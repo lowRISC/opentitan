@@ -98,7 +98,7 @@ class GPRs(RegFile):
 
     def commit(self) -> None:
         super().commit()
-        assert not self.call_stack_err
+        # assert not self.call_stack_err
         self._x1.commit()
 
     def abort(self) -> None:

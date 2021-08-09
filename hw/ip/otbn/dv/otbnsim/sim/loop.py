@@ -71,6 +71,10 @@ class LoopStack:
         self.err_flag = False
         self._pop_stack_on_commit = False
 
+    def wipe(self) -> None:
+        while self.stack:
+            self.stack.pop()
+
     def start_loop(self,
                    start_addr: int,
                    loop_count: int,

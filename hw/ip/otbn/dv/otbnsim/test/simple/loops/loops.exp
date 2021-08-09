@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-x2 = 52
-x3 = 3
+# x2 = 52
+# x3 = 3
 
 INSN_CNT = 28

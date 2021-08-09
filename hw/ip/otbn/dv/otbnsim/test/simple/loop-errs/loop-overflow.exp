@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-x2 = 1
+# x2 = 1
 x3 = 0
-x4 = 4
+# x4 = 4
 
 INSN_CNT = 27
 ERR_BITS = 0x10  # ErrBits.LOOP

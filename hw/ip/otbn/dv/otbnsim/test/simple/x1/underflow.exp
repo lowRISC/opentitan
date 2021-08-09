@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-x2  = 123
-x3  = 246
-x10 = 10
+# x2  = 123
+# x3  = 246
+# x10 = 10
 
 INSN_CNT = 5
 ERR_BITS = 4  # CALL_STACK

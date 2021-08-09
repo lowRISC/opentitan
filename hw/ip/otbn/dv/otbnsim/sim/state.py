@@ -17,6 +17,8 @@ from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
 
+WIPING_DELAY = 96
+
 
 class OTBNState:
     def __init__(self) -> None:
@@ -49,6 +51,8 @@ class OTBNState:
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
         self.running = False
+        self.wiping = False
+        self.wiping_cnt = 0
 
         self._err_bits = 0
         self.pending_halt = False
@@ -103,18 +107,20 @@ class OTBNState:
     def commit(self, sim_stalled: bool) -> None:
         # In case of a pending halt only commit the external registers, which
         # contain e.g. the ERR_BITS field, but nothing else.
-        if self.pending_halt:
+        if self.pending_halt and not self.wiping:
             self.ext_regs.commit()
+            self._abort()
+            self.wiping = True
             return
 
         # If error bits are set, pending_halt should have been set as well.
-        assert self._err_bits == 0
+        assert self.pending_halt or self._err_bits == 0
 
-        if self._new_rnd_data:
+        if self._new_rnd_data and not self.pending_halt:
             self.wsrs.RND.set_unsigned(self._new_rnd_data)
             self._new_rnd_data = None
 
-        if self._urnd_stall:
+        if self._urnd_stall and not self.pending_halt:
             if self._urnd_reseed_complete:
                 self._urnd_stall = False
 
@@ -124,6 +130,7 @@ class OTBNState:
         # of a run. Clear self.non_insn_stall and self._start_stall
         # and commit self.ext_regs (so the start flag becomes visible).
         if self._start_stall:
+            assert not self.pending_halt
             self._start_stall = False
             self.non_insn_stall = False
             self.ext_regs.commit()
@@ -135,13 +142,15 @@ class OTBNState:
 
         self.dmem.commit()
         self.gprs.commit()
-        self.pc = self.get_next_pc()
-        self._pc_next_override = None
-        self.loop_stack.commit()
         self.ext_regs.commit()
         self.wsrs.commit()
         self.csrs.flags.commit()
         self.wdrs.commit()
+
+        if not self.pending_halt:
+            self.pc = self.get_next_pc()
+            self._pc_next_override = None
+            self.loop_stack.commit()
 
     def _abort(self) -> None:
         '''Abort any pending state changes'''
@@ -207,6 +216,18 @@ class OTBNState:
         self.ext_regs.write('STOP_PC', self.pc, True)
 
         self.running = False
+        self.wiping = False
+
+    def start_secure_wipe(self) -> None:
+        if self._err_bits:
+            # Abort all pending changes, including changes to external registers.
+            self._abort()
+        self.wipe_counter = 0
+        self.wiping = True
+        # self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        # self.ext_regs.write('STATUS', Status.IDLE, True)
+        # self.ext_regs.write('ERR_BITS', self._err_bits, True)
+        # self.ext_regs.write('STOP_PC', self.pc, True)
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
         '''Update flags for a flag group'''
@@ -240,11 +261,13 @@ class OTBNState:
 
     def post_insn(self, loop_warps: Dict[int, int]) -> None:
         '''Update state after running an instruction but before commit'''
-        self.ext_regs.increment_insn_cnt()
+
         self.loop_step(loop_warps)
         self.gprs.post_insn()
 
         self._err_bits |= self.gprs.err_bits() | self.loop_stack.err_bits()
+        if (not self._err_bits):
+            self.ext_regs.increment_insn_cnt()
         if self._err_bits:
             self.pending_halt = True
 
@@ -282,3 +305,19 @@ class OTBNState:
         '''
         self._err_bits |= err_bits
         self.pending_halt = True
+
+    def start_wiping(self) -> None:
+        self.wiping = True
+        self.wiping_cnt = 0
+
+    def wiping_run(self) -> None:
+        self.wiping_cnt += 1
+
+    def wipe_registers(self) -> None:
+        for i in range(32):
+            self.wdrs._registers[i].write_unsigned(0)
+        for i in range(2, 32):
+            self.gprs._registers[i].write_unsigned(0)
+        # Clear call stack
+        self.gprs.start()
+        self.loop_stack.wipe()

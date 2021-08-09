@@ -93,6 +93,8 @@ class OtbnTraceChecker : public OtbnTraceListener {
   bool done_;
   bool seen_err_;
 
+  bool seen_secure_wipe_;
+
   // The ISS entry for the last pair of trace entries that went through
   // MatchPair.
   bool last_data_vld_;
