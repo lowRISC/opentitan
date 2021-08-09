@@ -209,7 +209,7 @@ class Model:
         # entry of None means an entry with an architectural value, but where
         # we don't actually know what it is (usually a result of some
         # arithmetic operation that got written to x1).
-        self._call_stack = CallStack()
+        self.call_stack = CallStack()
 
         # The loop stack.
         self.loop_stack = LoopStack()
@@ -249,7 +249,7 @@ class Model:
         for entry in self._const_stack:
             ret._const_stack.append({n: regs.copy()
                                      for n, regs in entry.items()})
-        ret._call_stack = self._call_stack.copy()
+        ret.call_stack = self.call_stack.copy()
         ret.loop_stack = self.loop_stack.copy()
         ret._known_mem = {n: mem.copy()
                           for n, mem in self._known_mem.items()}
@@ -318,7 +318,7 @@ class Model:
 
         assert self._const_stack == other._const_stack
 
-        self._call_stack.merge(other._call_stack)
+        self.call_stack.merge(other.call_stack)
         self.loop_stack.merge(other.loop_stack)
 
         for mem_type, self_mem in self._known_mem.items():
@@ -336,7 +336,7 @@ class Model:
         if reg_type == 'gpr' and idx == 1:
             # We shouldn't ever read from x1 if it is marked constant
             assert not self.is_const('gpr', 1)
-            self._call_stack.pop()
+            self.call_stack.pop()
 
     def write_reg(self,
                   reg_type: str,
@@ -364,7 +364,7 @@ class Model:
 
             if idx == 1:
                 # Special-case writes to x1
-                self._call_stack.write(value, update)
+                self.call_stack.write(value, update)
                 return
 
         self._known_regs.setdefault(reg_type, {})[idx] = value
@@ -372,7 +372,7 @@ class Model:
     def get_reg(self, reg_type: str, idx: int) -> Optional[int]:
         '''Get a register value, if known.'''
         if reg_type == 'gpr' and idx == 1:
-            return self._call_stack.peek()
+            return self.call_stack.peek()
 
         return self._known_regs.setdefault(reg_type, {}).get(idx)
 
@@ -446,9 +446,9 @@ class Model:
         # when the stack is full, because we only do one operand at a time.
         if op_type.reg_type == 'gpr':
             can_use_x1 = not self.is_const('gpr', 1)
-            if is_src and self._call_stack.empty():
+            if is_src and self.call_stack.empty():
                 can_use_x1 = False
-            if is_dst and self._call_stack.full():
+            if is_dst and self.call_stack.full():
                 can_use_x1 = False
 
             # Since x1 isn't tracked in known_regs, we add it here if wanted
@@ -533,8 +533,8 @@ class Model:
         # not None and can be read iff it isn't marked constant.
         if reg_type == 'gpr':
             assert 1 not in known_regs
-            if not self._call_stack.empty():
-                x1 = self._call_stack.peek()
+            if not self.call_stack.empty():
+                x1 = self.call_stack.peek()
                 if x1 is not None:
                     if not self.is_const('gpr', 1):
                         ret.append((1, x1))
@@ -550,7 +550,7 @@ class Model:
         # stack is not empty.
         if reg_type == 'gpr':
             assert 1 not in arch_regs
-            if not self._call_stack.empty():
+            if not self.call_stack.empty():
                 if not self.is_const('gpr', 1):
                     arch_regs.append(1)
 
@@ -603,7 +603,7 @@ class Model:
 
             # x1 (the call stack) has different handling
             if reg_idx == 1:
-                self._call_stack.forget_value()
+                self.call_stack.forget_value()
                 return
 
         # Set the value in known_regs to None, but only if the register already

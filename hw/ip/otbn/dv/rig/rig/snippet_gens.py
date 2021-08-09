@@ -14,6 +14,7 @@ from .snippet import Snippet
 from .snippet_gen import GenRet, SnippetGen
 
 from .gens.branch import Branch
+from .gens.call_stack_rw import CallStackRW
 from .gens.ecall import ECall
 from .gens.jump import Jump
 from .gens.loop import Loop
@@ -33,6 +34,7 @@ class SnippetGens:
     '''A collection of snippet generators'''
     _CLASSES = [
         Branch,
+        CallStackRW,
         Jump,
         Loop,
         LoopDupEnd,
