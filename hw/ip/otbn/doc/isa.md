@@ -61,6 +61,9 @@ Memory loads are represented as `DMEM.load_u32(addr)`, `DMEM.load_u256(addr)`.
 Memory stores are represented as `DMEM.store_u32(addr, value)` and `DMEM.store_u256(addr, value)`.
 In all cases, memory values are interpreted as unsigned integers and, as for register accesses, the instruction descriptions are written to ensure that any value stored to memory is representable.
 
+Some instructions can stall for one or more cycles (those instructions that access memory, CSRs or WSRs).
+To represent this precisely in the pseudo-code, and the simulator reference model, such instructions execute a `yield` statement to stall the processor for a cycle.
+
 There are a few other helper functions, defined here to avoid having to inline their bodies into each instruction.
 ```python3
 def from_2s_complement(n: int) -> int:

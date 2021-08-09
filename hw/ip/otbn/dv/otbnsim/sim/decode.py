@@ -5,7 +5,7 @@
 '''Code to load instruction words into a simulator'''
 
 import struct
-from typing import List
+from typing import List, Optional, Iterator
 
 from .err_bits import ILLEGAL_INSN
 from .isa import INSNS_FILE, DecodeError, OTBNInsn
@@ -35,8 +35,9 @@ class IllegalInsn(OTBNInsn):
         # disassembling the underlying DummyInsn.
         self._disasm = (pc, '?? 0x{:08x}'.format(raw))
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        return None
 
 
 def _decode_word(pc: int, word: int) -> OTBNInsn:
