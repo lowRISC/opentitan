@@ -3521,7 +3521,6 @@
           width: 1
           default: "'0"
           inst_name: sram_ctrl_ret_aon
-          top_signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
           index: -1
         }
         {
@@ -6894,7 +6893,6 @@
       lc_ctrl.otp_manuf_state
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
-      sram_ctrl_ret_aon.otp_en_sram_ifetch
     ]
     external:
     {
@@ -14916,7 +14914,6 @@
         width: 1
         default: "'0"
         inst_name: sram_ctrl_ret_aon
-        top_signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
         index: -1
       }
       {
@@ -19914,15 +19911,6 @@
         package: otp_ctrl_pkg
         struct: otp_en
         signame: sram_ctrl_main_otp_en_sram_ifetch
-        width: 1
-        type: uni
-        end_idx: -1
-        default: "'0"
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: otp_en
-        signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
         width: 1
         type: uni
         end_idx: -1
