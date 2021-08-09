@@ -60,9 +60,6 @@ class Dmem:
         self.data = [uninit] * num_words
         self.trace = []  # type: List[TraceDmemStore]
 
-        self._load_begun = False
-        self._load_ready = False
-
     def _get_u32s(self, idx: int) -> List[int]:
         '''Return the value at idx as 8 uint32's
 
@@ -229,23 +226,10 @@ class Dmem:
         # And write back
         self._set_u32s(idxW, u32s)
 
-    def commit(self, stalled: bool) -> None:
-        if self._load_begun:
-            self._load_begun = False
-            self._load_ready = True
-        else:
-            self._load_ready = False
-
+    def commit(self) -> None:
         for item in self.trace:
             self._commit_store(item)
         self.trace = []
 
     def abort(self) -> None:
         self.trace = []
-
-    def in_progress_load_complete(self) -> bool:
-        '''Returns true if a previously started load has completed'''
-        return self._load_ready
-
-    def begin_load(self) -> None:
-        self._load_begun = True

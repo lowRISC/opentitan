@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict
+from typing import Dict, Iterator, Optional
 
 from sim import err_bits
 from .flags import FlagReg
-from .isa import (DecodeError, OTBNInsn, OTBNLDInsn, RV32RegReg, RV32RegImm,
+from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
                   extract_quarter_word)
 from .state import OTBNState
@@ -172,7 +172,7 @@ class XORI(RV32RegImm):
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
-class LW(OTBNLDInsn):
+class LW(OTBNInsn):
     insn = insn_for_mnemonic('lw', 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
@@ -181,15 +181,26 @@ class LW(OTBNLDInsn):
         self.offset = op_vals['offset']
         self.grs1 = op_vals['grs1']
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # LW executes over two cycles. On the first cycle, we read the base
+        # address, compute the load address and check it for correctness, then
+        # perform the load itself, returning the result.
+        #
+        # On the second cycle, we write the result to the destination register.
+
         base = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (base + self.offset) & ((1 << 32) - 1)
 
         if not state.dmem.is_valid_32b_addr(addr):
             state.stop_at_end_of_cycle(BAD_DATA_ADDR)
-        else:
-            result = state.dmem.load_u32(addr)
-            state.gprs.get_reg(self.grd).write_unsigned(result)
+            return
+
+        result = state.dmem.load_u32(addr)
+
+        # Stall for a single cycle for memory to respond
+        yield
+
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SW(OTBNInsn):
@@ -208,8 +219,9 @@ class SW(OTBNInsn):
 
         if not state.dmem.is_valid_32b_addr(addr):
             state.stop_at_end_of_cycle(BAD_DATA_ADDR)
-        else:
-            state.dmem.store_u32(addr, value)
+            return
+
+        state.dmem.store_u32(addr, value)
 
 
 class BEQ(OTBNInsn):
@@ -289,24 +301,25 @@ class CSRRS(OTBNInsn):
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
 
-    def pre_execute(self, state: OTBNState) -> bool:
-        if self.csr == 0xfc0:
-            # Will return False if RND value not available, causing instruction
-            # to stall
-            return state.wsrs.RND.request_value()
-
-        return True
-
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
             return
 
-        old_val = state.read_csr(self.csr)
         bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
-        new_val = old_val | bits_to_set
 
+        if self.csr == 0xfc0:
+            # A read from RND. If a RND value is not available, request_value()
+            # initiates or continues an EDN request and returns False. If a RND
+            # value is available, it returns True.
+            while not state.wsrs.RND.request_value():
+                # There's a pending EDN request. Stall for a cycle.
+                yield
+
+        # At this point, the CSR is ready. Read, update and write back to grs1.
+        old_val = state.read_csr(self.csr)
+        new_val = old_val | bits_to_set
         state.gprs.get_reg(self.grd).write_unsigned(old_val)
         if self.grs1 != 0:
             state.write_csr(self.csr, new_val)
@@ -321,21 +334,24 @@ class CSRRW(OTBNInsn):
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
 
-    def pre_execute(self, state: OTBNState) -> bool:
-        if self.csr == 0xfc0 and self.grd != 0:
-            # Will return False if RND value not available, causing instruction
-            # to stall
-            return state.wsrs.RND.request_value()
-
-        return True
-
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
             return
 
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
+
+        if self.csr == 0xfc0 and self.grd != 0:
+            # A read from RND. If a RND value is not available, request_value()
+            # initiates or continues an EDN request and returns False. If a RND
+            # value is available, it returns True.
+            while not state.wsrs.RND.request_value():
+                # There's a pending EDN request. Stall for a cycle.
+                yield
+
+        # At this point, the CSR is either ready or unneeded. Read it if
+        # necessary and write to grd, then overwrite with new_val.
 
         if self.grd != 0:
             old_val = state.read_csr(self.csr)
@@ -886,7 +902,7 @@ class BNCMPB(OTBNInsn):
         state.set_flags(self.flag_group, flags)
 
 
-class BNLID(OTBNLDInsn):
+class BNLID(OTBNInsn):
     insn = insn_for_mnemonic('bn.lid', 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
@@ -900,27 +916,39 @@ class BNLID(OTBNLDInsn):
         if self.grd_inc and self.grs1_inc:
             raise DecodeError('grd_inc and grs1_inc both set')
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # BN.LID executes over two cycles. On the first cycle, we read the base
+        # address, compute the load address and check it for correctness,
+        # increment any GPRs, then perform the load itself. On the second
+        # cycle, update the WDR with the result.
+
         grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
 
         if grd_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
-        elif not state.dmem.is_valid_256b_addr(addr):
+            return
+
+        if not state.dmem.is_valid_256b_addr(addr):
             state.stop_at_end_of_cycle(BAD_DATA_ADDR)
-        else:
-            wrd = grd_val & 0x1f
-            value = state.dmem.load_u256(addr)
-            state.wdrs.get_reg(wrd).write_unsigned(value)
+            return
 
-            if self.grd_inc:
-                new_grd_val = grd_val + 1
-                state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+        wrd = grd_val & 0x1f
+        value = state.dmem.load_u256(addr)
 
-            if self.grs1_inc:
-                new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
-                state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+        if self.grd_inc:
+            new_grd_val = grd_val + 1
+            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+
+        if self.grs1_inc:
+            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+
+        # Stall for a single cycle for memory to respond
+        yield
+
+        state.wdrs.get_reg(wrd).write_unsigned(value)
 
 
 class BNSID(OTBNInsn):
@@ -945,21 +973,24 @@ class BNSID(OTBNInsn):
 
         if grs2_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
-        elif not state.dmem.is_valid_256b_addr(addr):
+            return
+
+        if not state.dmem.is_valid_256b_addr(addr):
             state.stop_at_end_of_cycle(BAD_DATA_ADDR)
-        else:
-            wrs = grs2_val & 0x1f
-            wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
+            return
 
-            state.dmem.store_u256(addr, wrs_val)
+        wrs = grs2_val & 0x1f
+        wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
 
-            if self.grs1_inc:
-                new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
-                state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+        state.dmem.store_u256(addr, wrs_val)
 
-            if self.grs2_inc:
-                new_grs2_val = grs2_val + 1
-                state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
+        if self.grs1_inc:
+            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+
+        if self.grs2_inc:
+            new_grs2_val = grs2_val + 1
+            state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
 
 
 class BNMOV(OTBNInsn):
@@ -1020,20 +1051,23 @@ class BNWSRR(OTBNInsn):
         self.wrd = op_vals['wrd']
         self.wsr = op_vals['wsr']
 
-    def pre_execute(self, state: OTBNState) -> bool:
-        if self.wsr == 0x1:
-            # Will return False if RND value not available, causing instruction
-            # to stall
-            return state.wsrs.RND.request_value()
-
-        return True
-
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # The first, and possibly only, cycle of execution.
         if not state.wsrs.check_idx(self.wsr):
             # Invalid WSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
             return
 
+        if self.wsr == 0x1:
+            # A read from RND. If a RND value is not available, request_value()
+            # initiates or continues an EDN request and returns False. If a RND
+            # value is available, it returns True.
+            while not state.wsrs.RND.request_value():
+                # There's a pending EDN request. Stall for a cycle.
+                yield
+
+        # At this point, the WSR is ready. Read it, and update wrd with the
+        # result.
         val = state.wsrs.read_at_idx(self.wsr)
         state.wdrs.get_reg(self.wrd).write_unsigned(val)
 
@@ -1047,11 +1081,6 @@ class BNWSRW(OTBNInsn):
         self.wrs = op_vals['wrs']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.check_idx(self.wsr):
-            # Invalid WSR index. Stop with an illegal instruction error.
-            state.stop_at_end_of_cycle(ILLEGAL_INSN)
-            return
-
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
         state.wsrs.write_at_idx(self.wsr, val)
 

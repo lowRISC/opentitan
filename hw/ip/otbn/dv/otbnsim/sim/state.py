@@ -35,8 +35,8 @@ class OTBNState:
         self.dmem = Dmem()
 
         # Stalling support: Instructions can indicate they should stall by
-        # returning false from OTBNInsn.pre_execute. For non instruction related
-        # stalls setting self.non_insn_stall will produce a stall.
+        # yielding in OTBNInsn.execute. For non instruction related stalls,
+        # setting self.non_insn_stall will produce a stall.
         #
         # As a special case, we stall until the URND reseed is completed then
         # stall for one more cycle before fetching the first instruction (to
@@ -127,13 +127,12 @@ class OTBNState:
             self.non_insn_stall = False
             self.ext_regs.commit()
 
-        self.dmem.commit(sim_stalled)
-
-        # If we're stalled, there's nothing more to do: we only commit when we
-        # finish our stall cycles.
+        # If we're stalled, there's nothing more to do: we only commit the rest
+        # of the architectural state when we finish our stall cycles.
         if sim_stalled:
             return
 
+        self.dmem.commit()
         self.gprs.commit()
         self.pc = self.get_next_pc()
         self._pc_next_override = None

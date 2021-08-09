@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 from .isa import OTBNInsn
 from .state import OTBNState
@@ -18,6 +18,7 @@ class OTBNSim:
         self.state = OTBNState()
         self.program = []  # type: List[OTBNInsn]
         self.stats = None  # type: Optional[ExecutionStats]
+        self._execute_generator = None  # type: Optional[Iterator[None]]
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
@@ -32,6 +33,7 @@ class OTBNSim:
 
         '''
         self.stats = ExecutionStats(self.program)
+        self._execute_generator = None
         self.state.start()
 
     def run(self, verbose: bool, collect_stats: bool) -> int:
@@ -58,7 +60,7 @@ class OTBNSim:
     def step(self,
              verbose: bool,
              collect_stats: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
-        '''Run a single instruction.
+        '''Run a single cycle.
 
         Returns the instruction, together with a list of the architectural
         changes that have happened. If the model isn't currently running,
@@ -87,8 +89,27 @@ class OTBNSim:
 
         sim_stalled = self.state.non_insn_stall
         if not sim_stalled:
-            # Instruction can stall sim by returning False from `pre_execute`
-            sim_stalled = not insn.pre_execute(self.state)
+            if self._execute_generator is None:
+                # This is the first cycle for an instruction. Run any setup for
+                # the state object and then start running the instruction
+                # itself.
+                self.state.pre_insn(insn.affects_control)
+
+                # Either execute the instruction directly (if it is a
+                # single-cycle instruction without a `yield` in execute()), or
+                # return a generator for multi-cycle instructions. Note that
+                # this doesn't consume the first yielded value.
+                self._execute_generator = insn.execute(self.state)
+
+            if self._execute_generator is not None:
+                # This is a cycle for a multi-cycle instruction (which possibly
+                # started just above)
+                try:
+                    next(self._execute_generator)
+                except StopIteration:
+                    self._execute_generator = None
+
+            sim_stalled = (self._execute_generator is not None)
 
         if sim_stalled:
             self.state.commit(sim_stalled=True)
@@ -98,8 +119,7 @@ class OTBNSim:
             if collect_stats:
                 self.stats.record_stall()
         else:
-            self.state.pre_insn(insn.affects_control)
-            insn.execute(self.state)
+            assert self._execute_generator is None
             self.state.post_insn()
 
             if collect_stats:
