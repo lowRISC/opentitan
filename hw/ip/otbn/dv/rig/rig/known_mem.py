@@ -172,7 +172,7 @@ class KnownMem:
                         offset_range: Tuple[int, int],
                         offset_align: int,
                         width: int,
-                        addr_align: int) -> Optional[int]:
+                        addr_align: int) -> Optional[Tuple[int, int]]:
         '''Try to pick an address with base and offset.
 
         If loads_value is true, the memory needs a known value for at least
@@ -181,17 +181,27 @@ class KnownMem:
         is a multiple of offset_align. The address must be a multiple of
         addr_align.
 
-        On failure, returns None. On success, returns the chosen address.
+        On failure, returns None. On success, returns (addr, offset) where addr
+        is the chosen address and offset is the signed value that should be
+        added to base_addr to get that address.
 
         '''
+        assert 0 <= base_addr < (1 << 32)
         assert offset_range[0] <= offset_range[1]
         assert 1 <= offset_align
         assert 1 <= width
         assert 1 <= addr_align
 
+        # The code below assumes signed integers and no overflows. That doesn't
+        # allow us to handle things like when base_addr = 0xffffffff, where
+        # adding an offset of 1 would get us back to zero.
+        #
+        # Convert to a signed 32-bit representation here to make that work.
+        ibase_addr = base_addr - (1 << 32) if base_addr >> 31 else base_addr
+
         # We're trying to pick an offset and an address so that
         #
-        #   base_addr + offset = addr
+        #   ibase_addr + offset = addr
         #
         # Let's ignore offset_range and questions about valid memory addresses
         # for a second. We have two alignment requirements from offset and
@@ -200,7 +210,7 @@ class KnownMem:
         #
         #    a = b i + c j
         #
-        # for a = base_addr; b = -offset_align; c = addr_align: find solutions
+        # for a = ibase_addr; b = -offset_align; c = addr_align: find solutions
         # i, j.
         #
         # This is a 2-variable linear Diophantine equation. If gcd(b, c) does
@@ -226,12 +236,15 @@ class KnownMem:
         assert gcd == -offset_align * x0 + addr_align * y0
         assert 0 < gcd
 
-        if base_addr % gcd:
+        if ibase_addr % gcd:
             return None
 
-        # If gcd divides base_addr, we convert x0 and y0 to an initial solution
-        # (i0, j0) as described above by multiplying up by base_addr / gcd.
-        scale_factor = base_addr // gcd
+        # If gcd divides ibase_addr, we convert x0 and y0 to an initial solution
+        # (i0, j0) as described above by multiplying up by ibase_addr / gcd.
+        #
+        # Note: the floor divisions below for scale_factor, minus_u and v are
+        # actually exact
+        scale_factor = ibase_addr // gcd
         i0 = x0 * scale_factor
         j0 = y0 * scale_factor
         minus_u = offset_align // gcd
@@ -345,5 +358,5 @@ class KnownMem:
         offset = offset_align * i
         addr = addr_align * j
 
-        assert addr == base_addr + offset
-        return addr
+        assert addr == ibase_addr + offset
+        return addr, offset

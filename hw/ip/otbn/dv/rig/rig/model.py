@@ -556,18 +556,20 @@ class Model:
             reg_indices[name] = idx
 
         known_mem = self._known_mem[mem_type]
-        addr = known_mem.pick_lsu_target(loads_value,
-                                         reg_sum,
-                                         imm_rng,
-                                         1 << imm_shift,
-                                         byte_width,
-                                         byte_width)
+        ret = known_mem.pick_lsu_target(loads_value,
+                                        reg_sum,
+                                        imm_rng,
+                                        1 << imm_shift,
+                                        byte_width,
+                                        byte_width)
 
         # If there was no address we could use, give up.
-        if addr is None:
+        if ret is None:
             return None
 
-        return (addr, addr - reg_sum, reg_indices)
+        addr, offset = ret
+
+        return (addr, offset, reg_indices)
 
     def update_for_lui(self, prog_insn: ProgInsn) -> None:
         '''Update model state after a LUI
