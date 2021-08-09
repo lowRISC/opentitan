@@ -177,13 +177,13 @@
     {
       name: reset_wakeup_race
       desc: '''
-            Test low power entry and reset request almost coinciding.
+            Test wakeup from low power and reset request almost coinciding.
 
-            If a low power entry and a reset occur at nearly the same time
+            If a wakeup from low power and a reset occur at nearly the same time
             the system handles them one at a time.
 
             **Stimulus**:
-            - Trigger reset and low power entry as described for other
+            - Trigger reset and wakeup from low power as described for other
               testpoints.
             - Make sure to test them coinciding also.
 
@@ -200,7 +200,8 @@
             Test wakeups coming close to lowpower entry.
 
             If low power entry and a wakeup are closely aligned the hardware
-            could get confused.
+            could get confused. Notice this is very unlikely, since wakeup is
+            only sensed when the slow fsm is in LowPower state.
 
             **Stimulus**:
             - Trigger low power entry as described for other testpoints.

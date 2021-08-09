@@ -69,7 +69,7 @@ Note, most of the states are transitional states, and only the following state c
 *   Slow FSM `Idle` and fast FSM `Active`
 *   Slow FSM `Low Power` and fast FSM `Low Power`
 
-The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts useful when examining [reset handling](#Reset-Request-Handling).
+The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts useful when examining [reset handling](#reset-request-handling).
 
 
 ## Slow Clock Domain FSM
@@ -93,7 +93,7 @@ Once these steps are complete, the slow FSM transitions to a low power state and
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
-Once received, the fast FSM releases the life cycle reset stage (see [reset controller](https://docs.google.com/document/d/1oprdDwbm-_opDwMuu-kmmaFVwt4-f1EGqCf0nkO8VpM/edit?usp=sharing) for more details).
+Once received, the fast FSM releases the life cycle reset stage (see [reset controller]({{< relref "hw/ip/rstmgr/doc" >}}) for more details).
 This allows the [OTP]({{< relref "hw/ip/otp_ctrl/doc" >}}) to begin sensing.
 Once OTP sensing completes , the life cycle controller is initialized.
 The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details).
@@ -101,7 +101,7 @@ The initialization of the life cycle controller puts the device into its allowed
 Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller]({{< relref "hw/ip/clkmgr/doc" >}}) for more details) and initiates strap sampling.
 For more details on what exactly the strap samples, please see [here](https://docs.google.com/spreadsheets/d/1pH8T1MhQ7TXtP_bFNT85T9jSVIHlxHAfbMnPbsMdjc0/edit?usp=sharing).
 
-Once strap sampling is complete, the system is ready to begin normal operations (note flash initialization is explicitly not done here, please see [sections below](#Flash-Handling) for more details).
+Once strap sampling is complete, the system is ready to begin normal operations (note flash initialization is explicitly not done here, please see [sections below](#flash-handling) for more details).
 The fast FSM acknowledges the slow FSM (which made the original power up request) and releases the system reset stage - this enables the processor to begin operation.
 Afterwards, the fast FSM transitions to `Active` state and waits for a software low power entry request.
 
@@ -118,7 +118,7 @@ Once the request is acknowledged, the fast FSM transitions to low power and wait
 ## Reset Request Handling
 
 There are 3 reset requests in the system - peripheral requested reset such as watchdog, alert escalation reset and non-debug module reset.
-Flash brownout is handled separately and described in [flash handling section](#Flash-Handling) below.
+Flash brownout is handled separately and described in [flash handling section](#flash-handling) below.
 
 Watchdog and alert escalation resets are handled directly by the power manager, while the non-debug module reset is handled by the reset controller.
 This separation is because the non-debug reset does not affect the life cycle controller, non-volatile storage controllers and alert states.
@@ -128,7 +128,7 @@ The power controller only observes reset requests in two states - the slow FSM `
 When a reset request is received during slow FSM `Low Power` state, the system begins its usual power up sequence even if a wakeup has not been received.
 
 When a reset request is received during fast FSM `Active` state, the fast FSM asserts resets and transitions back to its `Low Power` state.
-The normal power-up process described [above](#Fast-Clock-Domain-FSM) is then followed to release the resets.
+The normal power-up process described [above](#fast-clock-domain-fsm) is then followed to release the resets.
 Note in this case, the slow FSM is "not activated" and remains in its `Idle` state.
 
 
@@ -173,7 +173,7 @@ Ultimately when control is returned to software, it may see two reset reasons an
 
 ## Wakeup Recording
 
-Similar to [reset handling](#Reset-Request-Handling), wakeup signals are only observed during slow FSM `Low Power`; however their recording is continuous until explicitly disabled by software.
+Similar to [reset handling](#reset-request-handling), wakeup signals are only observed during slow FSM `Low Power`; however their recording is continuous until explicitly disabled by software.
 
 Wakeup recording begins when the fast FSM transitions out of `Active` state and continues until explicitly disabled by software.
 This ensures wakeup events are not missed until software has set up the appropriate peripherals.

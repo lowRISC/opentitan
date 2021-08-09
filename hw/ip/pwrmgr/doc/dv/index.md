@@ -41,14 +41,13 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
-`pwrmgr_env_pkg`. Some of them in use are:
+`pwrmgr_env_pkg`.
+Some of them in use are:
 ```systemverilog
 [list a few parameters, types & methods; no need to mention all]
 ```
 ### TL_agent
-PWRMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-which provides the ability to drive and independently monitor random traffic via
-TL host interface into PWRMGR device.
+PWRMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into PWRMGR device.
 
 ### UVM RAL Model
 The PWRMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -85,17 +84,17 @@ The tasks in question are:
   Handles input changes for the fast state machine.
   * Completes the handshake with rstmgr for lc and sys resets: some random cycles after an output reset is requested the corresponding reset src input must go low.
   * Completes the handshake with clkmgr: the `clk_status` input needs to match the `ip_clk_en` output after some cycles.
-  * Completes the handshake with lc and otp: either *_done input must match the corresponding *_init output after some cycles.
+  * Completes the handshake with lc and otp: both *_done input must match the corresponding *_init output after some cycles.
 
 These tasks are started by the parent sequence's `pre_start` task, and terminated gracefully in the parent sequence's `post_start` task.
-Notice we plan to implement these responders in drivers instead of the base sequence.
 
 The `pwrmgr_smoke_vseq` sequence tests the pwrmgr through POR, entry and exit from software initiated low power and reset.
 
 The `pwrmgr_wakeup_vseq` sequence checks the transitions to low power and the wakeup settings.
 It randomizes wakeup inputs, wakeup enables, the wakeup info capture enable, and the interrupt enable.
 
-The `pwrmgr_clks_en_vseq` sequence checks that the peripheral clock enables match the settings of the `control` CSR during low power. It uses a subset of the wakeup sequence.
+The `pwrmgr_clks_en_vseq` sequence checks that the peripheral clock enables match the settings of the `control` CSR during low power.
+It uses a subset of the wakeup sequence.
 
 The `pwrmgr_aborted_lowpower_vseq` sequence creates scenarios that lead to aborting a lowpower transition.
 The abort can be due to the processor waking up very soon, or otp, lc, or flash being busy.
@@ -104,7 +103,10 @@ The `pwrmgr_reset_vseq` sequence checks the pwrmgr response to resets and reset 
 
 The `pwrmgr_escalation_reset_vseq` sequence checks the response to an escalation reset.
 
-The `pwrmgr_reset_wakeup_vseq` sequence aligns reset and low power entry
+The `pwrmgr_reset_wakeup_vseq` sequence aligns reset and wakeup from low power.
+
+The `pwrmgr_lowpower_wakeup_race_vseq` sequence aligns a wakeup event coming in proximity to low power entry.
+Notice the wakeup is not expected to impact low power entry, since it is not sampled at this time.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
@@ -148,6 +150,12 @@ See also the test plan for specific ways these are driven to trigger different t
 - Input `main_pok` should turn on for the slow fsm to start power up sequence.
   Sequences will turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
   Lack of a high transition causes a timeout, and would point to `main_pd_n` being set incorrectly.
+- Output transitions of `pwr_clamp_env` must always precede transitions of
+  `pwr_clamp` output.
+  Output transitions of `pwr_clamp` to active must always precede transitions
+  of `main_pd_n` output to active.
+  Output transitions of `pwr_clamp` to inactive must always follow transitions
+  of `main_pd_n` output to inactive.
 
 ##### RSTMGR
 - Output `rst_lc_req` resets to 1, also set on reset transition, and on low power transitions that turn off main clock.
@@ -162,8 +170,10 @@ Cleared right before the fast fsm goes active.
   Transitions go high when `rst_sysd_req` clears (and lc is reset).
   Fast fsm waits for it to go low before deactivating.
   Checked implicitly by lack of timeout.
-- Output `rstreqs` correspond to the enabled pwrmgr rstreqs inputs plus escalation reset. Checked in scoreboard.
-- Output `reset_cause` indicates a reset is due to low power entry or a reset request. Checked in scoreboard.
+- Output `rstreqs` correspond to the enabled pwrmgr rstreqs inputs plus escalation reset.
+  Checked in scoreboard.
+- Output `reset_cause` indicates a reset is due to low power entry or a reset request.
+  Checked in scoreboard.
 
 ##### CLKMGR
 - Output `ip_clk_en` resets low, is driven high by fast fsm when going active, and driven low when going inactive.
