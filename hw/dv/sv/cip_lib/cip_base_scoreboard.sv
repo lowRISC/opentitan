@@ -495,40 +495,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   virtual function void update_tl_alert_field_prediction();
-    string        regname;
-    string        fldname;
-    string        name_components[$];
-    uvm_reg       register;
-    uvm_reg_field field;
+    foreach (cfg.tl_intg_alert_fields[field]) begin
+      uvm_reg_data_t value = cfg.tl_intg_alert_fields[field];
+      `DV_CHECK_FATAL(field, "field is Null in tl_intg_alert_fields")
 
-    if (cfg.tl_intg_alert_field == "") begin
-      // No field configured. Return immediately.
-      return;
+      // Set the field
+      `DV_CHECK_FATAL(field.predict(.value(value), .kind(UVM_PREDICT_READ)));
     end
-
-    // Split the string into register and field name.
-    str_utils_pkg::str_split(.s(cfg.tl_intg_alert_field),
-                             .result(name_components),
-                             .delim("."),
-                             .strip_whitespaces(1'b0));
-    `DV_CHECK_EQ_FATAL(name_components.size(), 2,
-                       $sformatf("tl_intg_alert_field must have form REG.FIELD. It is `%0s'.",
-                                 cfg.tl_intg_alert_field))
-
-    regname = name_components[0];
-    fldname = name_components[1];
-
-    register = ral.get_reg_by_name(regname);
-    `DV_CHECK_FATAL(register,
-                    $sformatf("No register called %0s (from tl_intg_alert_field)", regname))
-
-    field = register.get_field_by_name(fldname);
-    `DV_CHECK_FATAL(field,
-                    $sformatf("No field called %0s in the %0s register (from tl_intg_alert_field)",
-                              fldname, regname))
-
-    // Set the field
-    `DV_CHECK_FATAL(field.predict(.value(1), .kind(UVM_PREDICT_READ)));
   endfunction
 
 endclass

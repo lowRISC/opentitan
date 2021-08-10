@@ -16,7 +16,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // If there is a bit in an "alert cause" register that will be set by a corrupt bus access, this
   // should be the name of that field (with syntax "reg.field"). Used by cip_base_scoreboard to
   // update the relevant field in the RAL model if it sees an error.
-  string              tl_intg_alert_field = "";
+  // Format: tl_intg_alert_fields[ral.a_reg.a_field] = value
+  uvm_reg_data_t      tl_intg_alert_fields[dv_base_reg_field];
   // Enables TL integrity generation & checking with *_user bits.
   // Assume ALL TL agents have integrity check enabled or disabled altogether.
   bit                 en_tl_intg_gen = 1;
@@ -48,7 +49,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     `uvm_field_aa_object_string(m_tl_agent_cfgs,   UVM_DEFAULT)
     `uvm_field_aa_object_string(m_alert_agent_cfg, UVM_DEFAULT)
     `uvm_field_int             (num_interrupts,    UVM_DEFAULT)
- `uvm_object_utils_end
+  `uvm_object_utils_end
 
   `uvm_object_new
 
