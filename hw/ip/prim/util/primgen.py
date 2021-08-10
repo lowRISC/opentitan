@@ -7,7 +7,7 @@ import os
 import sys
 
 # Make vendored packages available in the search path.
-sys.path.append('vendor')
+sys.path.append(os.path.join(os.path.dirname(__file__), 'vendor'))
 
 import re
 import shutil
