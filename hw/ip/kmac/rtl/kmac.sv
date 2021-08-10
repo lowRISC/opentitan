@@ -20,6 +20,8 @@ module kmac
   // This parameter only affects when `EnMasking` is set.
   parameter bit ReuseShare = 0,
 
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input clk_i,
@@ -893,7 +895,9 @@ module kmac
       .edn_i (entropy_i)
     );
 
-    kmac_entropy u_entropy (
+    kmac_entropy #(
+     .RndCnstLfsrPerm(RndCnstLfsrPerm)
+    ) u_entropy (
       .clk_i,
       .rst_ni,
 
