@@ -20,10 +20,15 @@ module top_earlgrey #(
   // parameters for gpio
   // parameters for spi_device
   // parameters for spi_host0
+  parameter bit SpiHost0Stub = 0,
   // parameters for spi_host1
+  parameter bit SpiHost1Stub = 0,
   // parameters for i2c0
+  parameter bit I2c0Stub = 0,
   // parameters for i2c1
+  parameter bit I2c1Stub = 0,
   // parameters for i2c2
+  parameter bit I2c2Stub = 0,
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for usbdev
@@ -36,6 +41,7 @@ module top_earlgrey #(
   // parameters for clkmgr_aon
   // parameters for sysrst_ctrl_aon
   // parameters for adc_ctrl_aon
+  parameter bit AdcCtrlAonStub = 0,
   // parameters for pwm_aon
   // parameters for pinmux_aon
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
@@ -1079,7 +1085,8 @@ module top_earlgrey #(
   );
 
   spi_host #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6]),
+    .Stub(SpiHost0Stub)
   ) u_spi_host0 (
 
       // Input
@@ -1115,7 +1122,8 @@ module top_earlgrey #(
   );
 
   spi_host #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7]),
+    .Stub(SpiHost1Stub)
   ) u_spi_host1 (
 
       // Input
@@ -1151,7 +1159,8 @@ module top_earlgrey #(
   );
 
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8]),
+    .Stub(I2c0Stub)
   ) u_i2c0 (
 
       // Input
@@ -1195,7 +1204,8 @@ module top_earlgrey #(
   );
 
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[9:9])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[9:9]),
+    .Stub(I2c1Stub)
   ) u_i2c1 (
 
       // Input
@@ -1239,7 +1249,8 @@ module top_earlgrey #(
   );
 
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[10:10])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[10:10]),
+    .Stub(I2c2Stub)
   ) u_i2c2 (
 
       // Input
@@ -1712,7 +1723,8 @@ module top_earlgrey #(
   );
 
   adc_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[24:24])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[24:24]),
+    .Stub(AdcCtrlAonStub)
   ) u_adc_ctrl_aon (
 
       // Interrupt

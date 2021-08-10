@@ -747,7 +747,18 @@
       }
       domain: "0"
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out spi host design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SpiHost0Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -802,7 +813,18 @@
       }
       domain: "0"
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out spi host design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SpiHost1Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -852,7 +874,18 @@
       }
       domain: "0"
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out core design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: I2c0Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -892,7 +925,18 @@
       }
       domain: "0"
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out core design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: I2c1Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -932,7 +976,18 @@
       }
       domain: "0"
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out core design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: I2c2Stub
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -2776,7 +2831,18 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
       }
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out design.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: AdcCtrlAonStub
+        }
+      ]
       inter_signal_list:
       [
         {
