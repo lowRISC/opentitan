@@ -64,6 +64,8 @@ ips_reg = $(addsuffix _reg, $(IPS))
 
 ips_reg_header = $(addsuffix _reg_header, $(IPS))
 
+ips_reg_rust = $(addsuffix _reg_constants, $(IPS))
+
 tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
@@ -82,6 +84,9 @@ pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
 	mkdir -p ${REG_OUTPUT_DV_DIR}
 	mkdir -p ${REG_OUTPUT_SW_DIR}
+	if ! [ -z "$(TOCK_ROOT)" ]; then \
+		mkdir -p ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
+	fi
 
 $(ips_reg): pre_reg otp-mmap lc-state-enc
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
@@ -102,6 +107,17 @@ $(ips_reg_header): pre_reg
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson ]; then \
 		${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$(subst _reg_header,_reg_headers,$@).h\
 		${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson; \
+	fi
+
+regs-rust: $(ips_reg_rust) banner
+
+$(ips_reg_rust): pre_reg
+	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_constants,,$@)/$(dir_hjson)/$(subst _reg_constants,,$@).hjson ]; then \
+		${PRJ_DIR}/util/regtool.py -R -o ${REG_OUTPUT_SW_DIR}/$@.rs\
+		${PRJ_DIR}/hw/ip/$(subst _reg_constants,,$@)/$(dir_hjson)/$(subst _reg_constants,,$@).hjson; \
+		if ! [ -z "$(TOCK_ROOT)" ]; then \
+			cp ${REG_OUTPUT_SW_DIR}/$@.rs ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
+		fi \
 	fi
 
 clean-regs-header:
