@@ -273,6 +273,8 @@
       desc: "Hardware detection of error conditions status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [ // The internal HW can modify the error code registers
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0",
           name: "SFIFO_CMD_ERR",
