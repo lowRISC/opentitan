@@ -32,7 +32,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
 
     // Tell the CIP base code what bit gets set if we see a TL fault.
-    tl_intg_alert_field = "fatal_alert_cause.integrity_error";
+    tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
   endfunction
 
 endclass
