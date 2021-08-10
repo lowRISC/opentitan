@@ -8,7 +8,9 @@
 `include "prim_assert.sv"
 
 // We should also check for input validity
-module keymgr_input_checks import keymgr_pkg::*;(
+module keymgr_input_checks import keymgr_pkg::*; #(
+  parameter bit KmacEnMasking = 1'b1
+) (
   input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
   input [2**StageWidth-1:0][31:0] max_key_versions_i,
   input keymgr_stage_e stage_sel_i,
@@ -77,10 +79,11 @@ module keymgr_input_checks import keymgr_pkg::*;(
   logic unused_key_vld;
   assign unused_key_vld = key_i.valid;
 
-  logic [Shares-1:0][MaxWidth-1:0] key_padded;
-  logic [Shares-1:0] key_chk;
+  localparam int KeyShares = KmacEnMasking ? Shares : 1;
+  logic [KeyShares-1:0][MaxWidth-1:0] key_padded;
+  logic [KeyShares-1:0] key_chk;
 
-  for (genvar i = 0; i < Shares; i++) begin : gen_key_chk
+  for (genvar i = 0; i < KeyShares; i++) begin : gen_key_chk
     prim_msb_extend #(
       .InWidth(KeyWidth),
       .OutWidth(MaxWidth)

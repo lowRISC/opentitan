@@ -752,6 +752,7 @@ module chip_earlgrey_cw310 #(
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
     .KmacEnMasking(0),
+    .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),

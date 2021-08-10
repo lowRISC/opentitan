@@ -4419,6 +4419,20 @@
           index: 2
         }
         {
+          name: en_masking
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: kmac
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: kmac_en_masking
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -4461,6 +4475,14 @@
       memory: {}
       param_list:
       [
+        {
+          name: KmacEnMasking
+          desc: Flag indicating with kmac masking is enabled
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: KeymgrKmacEnMasking
+        }
         {
           name: RndCnstLfsrSeed
           desc: Compile-time random bits for initial LFSR seed
@@ -4722,6 +4744,18 @@
           inst_name: keymgr
           default: ""
           top_signame: rom_ctrl_keymgr_data
+          index: -1
+        }
+        {
+          name: kmac_en_masking
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr
+          default: ""
+          package: ""
+          top_signame: kmac_en_masking
           index: -1
         }
         {
@@ -6529,6 +6563,10 @@
         keymgr.kmac_data
         lc_ctrl.kmac_data
         rom_ctrl.kmac_data
+      ]
+      kmac.en_masking:
+      [
+        keymgr.kmac_en_masking
       ]
       clkmgr_aon.idle:
       [
@@ -15540,6 +15578,20 @@
         index: 2
       }
       {
+        name: en_masking
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: kmac
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: kmac_en_masking
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15680,6 +15732,18 @@
         inst_name: keymgr
         default: ""
         top_signame: rom_ctrl_keymgr_data
+        index: -1
+      }
+      {
+        name: kmac_en_masking
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr
+        default: ""
+        package: ""
+        top_signame: kmac_en_masking
         index: -1
       }
       {
@@ -18362,6 +18426,17 @@
         act: rsp
         suffix: rsp
         default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: kmac_en_masking
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
       }
       {
         package: ""

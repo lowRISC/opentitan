@@ -810,6 +810,7 @@
       'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',   // LC needs to be at index 1
                                    'rom_ctrl.kmac_data'], // ROM needs to be at index 2
+      'kmac.en_masking'         : ['keymgr.kmac_en_masking']
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than

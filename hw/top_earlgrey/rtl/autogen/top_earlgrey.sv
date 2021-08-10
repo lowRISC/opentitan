@@ -58,6 +58,7 @@ module top_earlgrey #(
   parameter bit KmacEnMasking = 1,
   parameter int KmacReuseShare = 0,
   // parameters for keymgr
+  parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
@@ -557,6 +558,7 @@ module top_earlgrey #(
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
+  logic       kmac_en_masking;
   logic [4:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
@@ -2098,6 +2100,7 @@ module top_earlgrey #(
       .entropy_o(edn0_edn_req[3]),
       .entropy_i(edn0_edn_rsp[3]),
       .idle_o(clkmgr_aon_idle[2]),
+      .en_masking_o(kmac_en_masking),
       .tl_i(kmac_tl_req),
       .tl_o(kmac_tl_rsp),
 
@@ -2110,6 +2113,7 @@ module top_earlgrey #(
 
   keymgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:52]),
+    .KmacEnMasking(KeymgrKmacEnMasking),
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
     .RndCnstRandPerm(RndCnstKeymgrRandPerm),
@@ -2146,6 +2150,7 @@ module top_earlgrey #(
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
       .rom_digest_i(rom_ctrl_keymgr_data),
+      .kmac_en_masking_i(kmac_en_masking),
       .tl_i(keymgr_tl_req),
       .tl_o(keymgr_tl_rsp),
 

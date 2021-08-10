@@ -7,7 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_ctrl import keymgr_pkg::*; (
+module keymgr_ctrl import keymgr_pkg::*; #(
+  parameter bit KmacEnMasking = 1'b1
+) (
   input clk_i,
   input rst_ni,
 
@@ -180,7 +182,8 @@ module keymgr_ctrl import keymgr_pkg::*; (
   assign sw_binding_unlock_o = adv_en_o & op_ack & ~|error_o;
 
   // check incoming kmac data validity
-  assign kmac_out_valid = valid_data_chk(kmac_data_i[0]) & valid_data_chk(kmac_data_i[1]);
+  assign kmac_out_valid = valid_data_chk(kmac_data_i[0]) &
+                          (~KmacEnMasking | valid_data_chk(kmac_data_i[1]));
 
   // error definition
   assign op_fault_err_d = |fault_o | ~kmac_out_valid | op_fault_err_q;
@@ -277,8 +280,13 @@ module keymgr_ctrl import keymgr_pkg::*; (
       KeyUpdateRoot: begin
         if (root_key_valid_q) begin
           for (int i = 0; i < CDIs; i++) begin
-            key_state_d[i][0] = root_key_i.key_share0;
-            key_state_d[i][1] = root_key_i.key_share1;
+            if (KmacEnMasking) begin : gen_two_share_key
+              key_state_d[i][0] = root_key_i.key_share0;
+              key_state_d[i][1] = root_key_i.key_share1;
+            end else begin : gen_one_share_key
+              key_state_d[i][0] = root_key_i.key_share0 ^ root_key_i.key_share1;
+              key_state_d[i][1] = '0;
+            end
           end
         end
       end

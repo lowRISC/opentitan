@@ -108,6 +108,11 @@
       struct:  "logic",
       width:   "1"
     }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "en_masking"
+      act:     "req"
+    }
   ]
   regwidth: "32"
   registers: [
