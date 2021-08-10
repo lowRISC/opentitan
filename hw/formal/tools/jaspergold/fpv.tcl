@@ -69,6 +69,12 @@ if {$env(DUT_TOP) == "rv_dm"} {
 #   clock clk_main_i -both_edges
 #   reset -expr {!rst_main_ni}
 
+} elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_fpv"} {
+  clock clk_wr_i -factor 2
+  clock -rate {wvalid_i, wready_o, wdata_i} clk_wr_i
+  clock clk_rd_i -factor 3
+  clock -rate {rvalid_o, rready_i, rdata_o} clk_rd_i
+  reset -expr {!rst_ni}
 } else {
   clock clk_i -both_edges
   reset -expr {!rst_ni}
