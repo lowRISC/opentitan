@@ -29,11 +29,59 @@ typedef struct RstMgrAlertInfo {
 extern rstmgr_alert_info_t rstmgr_alert_info;
 
 /**
- * Get the reason for the last reset.
+ * Reset reason bitfield indices.
+ *
+ * Note that the reset reasons are not necessarily mutually exclusive.
+ */
+typedef enum rstmgr_reason {
+  /**
+   * Power on reset (POR).
+   */
+  kRstmgrReasonPowerOn = 0,
+
+  /**
+   * Low power exit (LOW_POWER_EXIT).
+   */
+  kRstmgrReasonLowPowerExit = 1,
+
+  /**
+   * Non-debug module (NDM).
+   */
+  kRstmgrReasonNonDebugModule = 2,
+
+  /**
+   * Hardware requests (HW_REQ).
+   */
+  kRstmgrReasonSysrstCtrl = 3,
+  kRstmgrReasonWatchdog = 4,
+  kRstmgrReasonEscalation = 5,
+
+  /**
+   * Last used bit index (inclusive).
+   */
+  kRstmgrReasonLast = 5,
+} rstmgr_reason_t;
+
+/**
+ * Get the reason(s) for the last reset.
+ *
+ * The reset reason is a bitfield. Individual bits may be extracted using
+ * the indices provided by the `rstmgr_reason_t` enumeration. The reset
+ * reasons are not necessarily mutually exclusive.
  *
  * This function also captures alert information into `rstmgr_alert_info`.
  */
 uint32_t rstmgr_reason_get(void);
+
+/**
+ * Clear the reset reason(s) set in the given mask.
+ *
+ * A value of all ones will clear all the reset reasons while zero will
+ * leave the register unchanged.
+ *
+ * @param reasons A mask containing the bit fields to clear.
+ */
+void rstmgr_reason_clear(uint32_t reasons);
 
 /**
  * Enable capturing of alert info in the event of an alert escalation.

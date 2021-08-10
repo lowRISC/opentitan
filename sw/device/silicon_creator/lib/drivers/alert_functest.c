@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
@@ -23,14 +24,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
-
-// The reset reason value is really a bitfield. The power-on-reset indicator
-// is defined by rstmgr_regs.h.
-#define RESET_REASON_POR (1 << RSTMGR_RESET_INFO_POR_BIT)
-// FIXME: I don't know where the HW_REQ field of the reset reason register
-// is defined.  I observe a value of 4 for alerts.
-#define RESET_REASON_ALERT \
-  ((4 << RSTMGR_RESET_INFO_HW_REQ_OFFSET) | RESET_REASON_POR)
 
 enum {
   kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
@@ -88,16 +81,21 @@ bool test_main(void) {
   rom_error_t result = kErrorOk;
   uint32_t reason = rstmgr_reason_get();
   rstmgr_alert_info_enable();
-
   LOG_INFO("reset_info = %08x", reason);
-  if (reason == RESET_REASON_POR) {
+
+  // Clear the existing reset reason(s) so that they do not appear after the
+  // next reset.
+  rstmgr_reason_clear(reason);
+
+  // This test assumes that the reset reason is unique.
+  CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
+
+  if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
     EXECUTE_TEST(result, alert_no_escalate_test);
     EXECUTE_TEST(result, alert_escalate_test);
-    // We should never get here - the escalate test should cause a reset
-    // and we should see a reset reason of 0x21.
     LOG_ERROR("Test failure: should have reset before this line.");
     result = kErrorUnknown;
-  } else if (reason == RESET_REASON_ALERT) {
+  } else if (bitfield_bit32_read(reason, kRstmgrReasonEscalation)) {
     LOG_INFO("Detected reset after escalation test");
   } else {
     LOG_ERROR("Unknown reset reason");

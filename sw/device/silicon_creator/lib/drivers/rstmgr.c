@@ -4,6 +4,8 @@
 //
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
@@ -30,8 +32,42 @@ static void rstmgr_alert_info_collect(void) {
 }
 
 uint32_t rstmgr_reason_get(void) {
+  // Static assertions for bitfield indices.
+#define REASON_ASSERT(index, expect) \
+  static_assert((index) == (expect), #index " value incorrect.");
+
+  REASON_ASSERT(kRstmgrReasonPowerOn, RSTMGR_RESET_INFO_POR_BIT);
+  REASON_ASSERT(kRstmgrReasonLowPowerExit,
+                RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT);
+  REASON_ASSERT(kRstmgrReasonNonDebugModule, RSTMGR_RESET_INFO_NDM_RESET_BIT);
+  REASON_ASSERT(kRstmgrReasonSysrstCtrl,
+                RSTMGR_RESET_INFO_HW_REQ_OFFSET +
+                    kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonGscRst);
+  REASON_ASSERT(
+      kRstmgrReasonWatchdog,
+      RSTMGR_RESET_INFO_HW_REQ_OFFSET +
+          kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq);
+
+  // Alert escalation is one bit after the reset request index for the last
+  // peripheral.
+  REASON_ASSERT(kRstmgrReasonEscalation,
+                RSTMGR_RESET_INFO_HW_REQ_OFFSET +
+                    kTopEarlgreyPowerManagerResetRequestsLast + 1)
+
+  // Check that the last index corresponds to the last bit in HW_REQ.
+  static_assert(
+      ((1 << (kRstmgrReasonLast - RSTMGR_RESET_INFO_HW_REQ_OFFSET + 1)) - 1) ==
+          RSTMGR_RESET_INFO_HW_REQ_MASK,
+      "kRstmgrReasonLast value incorrect.");
+
+#undef REASON_ASSERT
+
   rstmgr_alert_info_collect();
   return abs_mmio_read32(kBase + RSTMGR_RESET_INFO_REG_OFFSET);
+}
+
+void rstmgr_reason_clear(uint32_t reasons) {
+  return abs_mmio_write32(kBase + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
 }
 
 void rstmgr_alert_info_enable(void) {
