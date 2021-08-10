@@ -208,6 +208,8 @@ module otbn_controller
   logic insn_cnt_en;
   logic [31:0] insn_cnt_d, insn_cnt_q;
 
+  logic [4:0] ld_insn_bignum_wr_addr_q;
+
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
   // TODO: Possibility of error response on store? Probably still don't need to stall in that case
@@ -464,20 +466,18 @@ module otbn_controller
                               insn_dec_base_i.rf_we                          &
                               lsu_store_req_raw;
       end else if (insn_dec_shared_i.ld_insn) begin
-        // For loads, the A read happens in the same cycle as the request, giving the address from
-        // which to load. The B read is only used for BN.LID and should take place when the
-        // instruction is unstalled, giving the index of the register to write the result to.
+        // For loads, both base reads happen in the same cycle as the request. The address is
+        // required for the request and the indirect destination register (only used for Bignum
+        // loads) is flopped in ld_insn_bignum_wr_addr_q to correctly deal with the case where it's
+        // updated by an increment.
         rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & lsu_load_req_raw;
-        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
+        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & lsu_load_req_raw;
 
         if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
-          // Bignum loads can update the base register file where an increment is used. When
-          // incrementing the base address this must happen in the same cycle as the request and the
-          // A read. When incrementing the indirect destination register this should happen when the
-          // instruction is unstalled and the B read occurs. This ensures correct call stack
-          // behaviour when x1 is being incremented.
-          rf_base_wr_en_o = insn_dec_bignum_i.d_inc ? insn_dec_base_i.rf_we & ~stall            :
-                                                      insn_dec_base_i.rf_we & lsu_load_req_raw;
+          // Bignum loads can update the base register file where an increment is used. This must
+          // always happen in the same cycle as the request as this is where both registers are
+          // read.
+          rf_base_wr_en_o = insn_dec_base_i.rf_we & lsu_load_req_raw;
         end else begin
           // For Base loads write the base register file when the instruction is unstalled (meaning
           // the load data is available).
@@ -641,9 +641,28 @@ module otbn_controller
     end
   end
 
-  assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? rf_base_rd_data_b_no_intg[4:0] :
-                                                                 insn_dec_bignum_i.d;
+  // For BN.LID sample the indirect destination register index in first cycle as an increment might
+  // change it for the second cycle where the load data is written to the bignum register file.
+  always_ff @(posedge clk_i) begin
+    if (insn_dec_bignum_i.rf_d_indirect & lsu_load_req_raw) begin
+      ld_insn_bignum_wr_addr_q <= rf_base_rd_data_b_no_intg[4:0];
+    end
+  end
 
+  always_comb begin
+    rf_bignum_wr_addr_o = insn_dec_bignum_i.d;
+
+    if (insn_dec_bignum_i.rf_d_indirect) begin
+      if (insn_dec_shared_i.ld_insn) begin
+        // Use sampled register index from first cycle of the load (in case the increment has
+        // changed the value in the mean-time).
+        rf_bignum_wr_addr_o = ld_insn_bignum_wr_addr_q;
+      end else begin
+        // Use read register index directly
+        rf_bignum_wr_addr_o = rf_base_rd_data_b_no_intg[4:0];
+      end
+    end
+  end
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
   // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom
@@ -686,9 +705,17 @@ module otbn_controller
     endcase
   end
 
-  assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect & (|rf_base_rd_data_a_no_intg[31:5]);
-  assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect & (|rf_base_rd_data_b_no_intg[31:5]);
-  assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect & (|rf_base_rd_data_b_no_intg[31:5]);
+  assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect    &
+                             (|rf_base_rd_data_a_no_intg[31:5]) &
+                             rf_base_rd_en_a_o;
+
+  assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect    &
+                             (|rf_base_rd_data_b_no_intg[31:5]) &
+                             rf_base_rd_en_b_o;
+
+  assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect    &
+                             (|rf_base_rd_data_b_no_intg[31:5]) &
+                             rf_base_rd_en_b_o;
 
   assign rf_indirect_err =
       insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
