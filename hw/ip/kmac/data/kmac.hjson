@@ -73,6 +73,12 @@
       desc:    "Width of the hash counter in the entropy"
       local:   "true"
     }
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "kmac_pkg::lfsr_perm_t"
+      randcount: "64",
+      randtype:  "perm",
+    }
   ]
   inter_signal_list: [
     { struct:  "hw_key_req"

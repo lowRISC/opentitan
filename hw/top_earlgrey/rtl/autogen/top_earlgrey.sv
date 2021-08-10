@@ -2081,7 +2081,8 @@ module top_earlgrey #(
   kmac #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[51:51]),
     .EnMasking(KmacEnMasking),
-    .ReuseShare(KmacReuseShare)
+    .ReuseShare(KmacReuseShare),
+    .RndCnstLfsrPerm(RndCnstKmacLfsrPerm)
   ) u_kmac (
 
       // Interrupt

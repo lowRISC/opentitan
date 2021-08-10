@@ -90,6 +90,14 @@ package kmac_pkg;
     EntropyModeSw   = 2'h 2
   } entropy_mode_e;
 
+  // entropy lfsr related
+  parameter int unsigned EntropyLfsrW = 64;
+  typedef logic [EntropyLfsrW-1:0][$clog2(EntropyLfsrW)-1:0] lfsr_perm_t;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    128'h810970222da1b1b1187551c3ff94574a,
+    256'h970d171aa41948cbe3a58167d3b47c268acfcbb2fa627b9c0a2fdf578f4ed32b
+  };
+
   ///////////////////////////
   // Application interface //
   ///////////////////////////

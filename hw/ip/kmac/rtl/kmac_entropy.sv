@@ -7,8 +7,9 @@
 `include "prim_assert.sv"
 
 module kmac_entropy
-  import kmac_pkg::*;
-(
+  import kmac_pkg::*; #(
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
+) (
   input clk_i,
   input rst_ni,
 
@@ -67,7 +68,6 @@ module kmac_entropy
   // Timer Widths are defined in kmac_pkg
 
   // storage width
-  localparam int unsigned EntropyLfsrW    = 64;
   localparam int unsigned EntropyStorageW = 320;
   localparam int unsigned EntropyMultiply = sha3_pkg::StateW / EntropyStorageW;
   `ASSERT_INIT(StorageNoRemainder_A, (sha3_pkg::StateW%EntropyStorageW) == 0)
@@ -300,7 +300,10 @@ module kmac_entropy
   prim_lfsr #(
     .LfsrDw(EntropyLfsrW),
     .EntropyDw(EntropyLfsrW),
-    .StateOutDw(EntropyLfsrW)
+    .StateOutDw(EntropyLfsrW),
+    .StatePermEn(1'b1),
+    .StatePerm(RndCnstLfsrPerm),
+    .NonLinearOut(1'b1)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
@@ -601,4 +604,3 @@ module kmac_entropy
   `ASSERT(StorageIdxInBound_A, storage_filled |-> !storage_update)
 
 endmodule : kmac_entropy
-
