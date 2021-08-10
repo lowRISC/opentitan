@@ -71,6 +71,22 @@ The following is a list of common features and settings:
 * **ral**: This is the instance to the auto-generated RAL model that is
   extended from `dv_base_reg_block`. In the base class, this is created using
   the RAL_T class parameter which the extended IP env cfg class sets correctly.
+* **tl_intg_alert_name**: Name of the alert that will be triggered on  TLUL
+  integrity error detection. The default name used for this type of alert is
+  "fatal_fault". The block may use a different name too - in that case, please
+  update this member to reflect the correct name in the `initialize()` method.
+* **tl_intg_alert_fields**: An associative array of CSR fields keyed with the
+  objection handle of the corresponding CSR field and valued with the expected
+  value. This is the list of CSR fields that are modified when an alert triggers
+  due to TL integrity violation event. The DV user is required to build this list
+  in the `initialize()` method after `super.initialize(csr_base_addr);`
+```systemverilog
+virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  super.initialize(csr_base_addr); // ral model is created in `super.initialize`
+  tl_intg_alert_fields[ral.a_status_reg.a_field] = value;
+```
+* **en_tl_intg_gen**: Controls whether the TLUL integrity error is generated in
+  sequences / checked by the scoreboard.
 
 Apart from these, there are several common settings such as `zero_delays`,
 `clk_freq_mhz`, which are randomized as well as knobs such as `en_scb` and
@@ -197,9 +213,14 @@ Some examples:
   etc. All the items sent in this task will trigger d_error and won't change the
   CSR/memory value.
 * **task run_tl_intg_err_vseq**: This task will test TLUL integrity error. It contains
-  2 parallel threads. One thread calls `csr_rw` seq to do random CSR accesses. The
-  other issues a TLUL item with integrity error on `a_user` and then check the fatal
-  alert is triggered.
+  2 parallel threads. The first one invokes the `csr_rw` seq to drive random, legal
+  CSR accesses. The second drives a bad TLUL transaction that violates the payload
+  integrity. The bad packet is created by corrupting upto 3 bits either in the integrity
+  (ECC) fields (`a_user.cmd_intg`, `a_user.d_intg`), or in their corresponding command /
+  data payload itself. The sequence then verifies that the DUT not only returns an error
+  response (with `d_error` = 1), but also triggers a fatal alert. The list of CSRs that
+  are impacted by this alert event, maintained in `cfg.tl_intg_alert_fields`, are also
+  checked for correctness.
 * **task run_stress_all_with_rand_reset_vseq**: This task runs 3 parallel threads,
   which are ip_stress_all_vseq, run_tl_errors_vseq and reset sequence. After
   reset occurs, the other threads will be killed and then all the CSRs will be read
