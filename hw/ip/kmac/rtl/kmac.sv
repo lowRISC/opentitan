@@ -53,6 +53,9 @@ module kmac
   output logic intr_fifo_empty_o,
   output logic intr_kmac_err_o,
 
+  // parameter consistency check with keymgr
+  output logic en_masking_o,
+
   // Idle signal
   output logic idle_o
 );
@@ -1014,6 +1017,8 @@ module kmac
     );
   end
 
+  assign en_masking_o = EnMasking;
+
   ////////////////
   // Assertions //
   ////////////////
@@ -1025,6 +1030,7 @@ module kmac
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `ASSERT_KNOWN(EnMaskingKnown_A, en_masking_o)
 
   // Parameter as desired
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)

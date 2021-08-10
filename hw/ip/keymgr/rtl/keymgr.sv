@@ -12,6 +12,7 @@ module keymgr
   import keymgr_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit KmacEnMasking                  = 1'b1,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
   parameter rand_perm_t RndCnstRandPerm        = RndCnstRandPermDefault,
@@ -43,6 +44,12 @@ module keymgr
   // data interface to/from crypto modules
   output kmac_pkg::app_req_t kmac_data_o,
   input  kmac_pkg::app_rsp_t kmac_data_i,
+
+  // whether kmac is masked
+  // Note this input is not driving ANY logic directly.  Instead it is only used
+  // as part of assertions.  This is done because if boundary optimization were
+  // ever disabled, it would provide a VERY obvious location for attacks.
+  input kmac_en_masking_i,
 
   // the following signals should eventually be wrapped into structs from other modules
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
@@ -214,7 +221,9 @@ module keymgr
 
   logic ctrl_state_intg_err;
 
-  keymgr_ctrl u_ctrl (
+  keymgr_ctrl #(
+    .KmacEnMasking(KmacEnMasking)
+  ) u_ctrl (
     .clk_i,
     .rst_ni,
     .en_i(lc_keymgr_en[KeyMgrEnCtrl] == lc_ctrl_pkg::On),
@@ -490,7 +499,6 @@ module keymgr
     assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
   end
 
-
   /////////////////////////////////////
   //  Alerts and Interrupts
   /////////////////////////////////////
@@ -620,6 +628,11 @@ module keymgr
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o.valid)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 
+  // kmac parameter consistency
+  // Both modules must be consistent with regards to masking assumptions
+  logic unused_kmac_en_masking;
+  assign unused_kmac_en_masking = kmac_en_masking_i;
+  `ASSERT_INIT(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 
 
 endmodule // keymgr

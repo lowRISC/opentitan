@@ -91,9 +91,21 @@
       act:     "rcv"
       package: "rom_ctrl_pkg"
     },
+    { struct:  "logic"
+      type:    "uni"
+      name:    "kmac_en_masking"
+      act:     "rcv"
+    },
   ],
 
   param_list: [
+    { name:      "KmacEnMasking",
+      desc:      "Flag indicating with kmac masking is enabled",
+      type:      "bit",
+      default:   "1",
+      local:     "false",
+      expose:    "true",
+    }
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",

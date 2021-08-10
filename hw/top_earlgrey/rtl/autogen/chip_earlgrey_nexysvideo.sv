@@ -731,6 +731,7 @@ module chip_earlgrey_nexysvideo #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
     .KmacEnMasking(1'b0),
+    .KeymgrKmacEnMasking(0),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .SecAesSkipPRNGReseeding(1'b0),
