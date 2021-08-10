@@ -12,7 +12,7 @@
 package ast_pkg;
 
   // Alerts
-  parameter int NumAlerts  = 13;
+  parameter int NumAlerts  = 14;
   parameter int NumIoRails = 2;
   parameter int AsSel      = 0;
   parameter int CgSel      = 1;
@@ -27,6 +27,7 @@ package ast_pkg;
   parameter int Ot3Sel     = 10;
   parameter int Ot4Sel     = 11;
   parameter int Ot5Sel     = 12;
+  parameter int IntgSel    = 13;
   //
   parameter int EntropyStreams  = 4;
   parameter int AdcChannels     = 2;

@@ -12636,6 +12636,13 @@
       module_name: sensor_ctrl_aon
     }
     {
+      name: sensor_ctrl_aon_fatal_intg
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sensor_ctrl_aon
+    }
+    {
       name: sram_ctrl_ret_aon_fatal_bus_integ_error
       width: 1
       type: alert

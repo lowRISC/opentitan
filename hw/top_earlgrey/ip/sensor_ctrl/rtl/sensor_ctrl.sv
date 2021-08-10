@@ -46,6 +46,7 @@ module sensor_ctrl
   sensor_ctrl_reg2hw_t reg2hw;
   sensor_ctrl_hw2reg_t hw2reg;
 
+  logic intg_err;
   sensor_ctrl_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -53,7 +54,7 @@ module sensor_ctrl
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(intg_err),
     .devmode_i(1'b1)
   );
 
@@ -107,6 +108,8 @@ module sensor_ctrl
                                         reg2hw.alert_test.recov_ot4.q;
   assign alert_test[ast_pkg::Ot5Sel]  = reg2hw.alert_test.recov_ot5.qe   &
                                         reg2hw.alert_test.recov_ot5.q;
+  assign alert_test[ast_pkg::IntgSel] = reg2hw.alert_test.fatal_intg.qe &
+                                        reg2hw.alert_test.fatal_intg.q;
 
 
   // fire an alert whenever indicated
@@ -120,7 +123,12 @@ module sensor_ctrl
                             ast_ack_mode_e'(reg2hw.ack_mode[i].q) == InvalidAck;
 
     // if differential checks fail, generate alert
-    assign valid_alert = alerts_vld[i];
+    if (ast_pkg::IntgSel == i) begin : gen_fatal_intg
+      assign valid_alert = alerts_vld[i] | intg_err;
+    end else begin : gen_recov_fault
+      assign valid_alert = alerts_vld[i];
+    end
+
     assign hw2reg.alert_state[i].d  = sw_ack_mode[i];
     assign hw2reg.alert_state[i].de = valid_alert;
 
@@ -130,7 +138,7 @@ module sensor_ctrl
 
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(0)
+      .IsFatal(ast_pkg::IntgSel == i)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,

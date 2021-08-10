@@ -485,6 +485,7 @@ ast_pkg::ast_dif_t ot2_alert_src;
 ast_pkg::ast_dif_t ot3_alert_src;
 ast_pkg::ast_dif_t ot4_alert_src;
 ast_pkg::ast_dif_t ot5_alert_src;
+ast_pkg::ast_dif_t integ_alert_src;
 
 assign as_alert_src    = '{p: 1'b0, n: 1'b1};
 assign cg_alert_src    = '{p: 1'b0, n: 1'b1};
@@ -645,6 +646,16 @@ ast_alert u_alert_ot5 (
   .alert_req_o ( alert_req_o.alerts[Ot5Sel] )
 ); // of u_alert_ot5
 
+// Bus integrity alert
+///////////////////////////////////////
+ast_alert u_alert_integ (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( integ_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[IntgSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[IntgSel] ),
+  .alert_req_o ( alert_req_o.alerts[IntgSel] )
+); // of u_alert_integ
 
 ///////////////////////////////////////
 // AST Registers (Always ON)
@@ -652,6 +663,7 @@ ast_alert u_alert_ot5 (
 ast_reg_pkg::ast_reg2hw_t reg2hw; // Write (To HW)
 ast_reg_pkg::ast_hw2reg_t hw2reg; // Read  (From HW)
 
+logic intg_err;
 ast_reg_top u_reg (
   .clk_i ( clk_ast_tlul_i ),
   .rst_ni ( rst_ast_tlul_ni ),
@@ -659,9 +671,24 @@ ast_reg_top u_reg (
   .tl_o ( tl_o ),
   .reg2hw ( reg2hw ),
   .hw2reg ( hw2reg ),
-  .intg_err_o ( ),
+  .intg_err_o ( intg_err ),
   .devmode_i ( 1'b0 )
 );  // u_reg
+
+
+// Sync bus integrity error to alert sender clock domain
+logic intg_err_synced;
+prim_flop_2sync#(
+  .Width(1)
+) u_prim_flop_2sync (
+  .clk_i(clk_ast_alert_i),
+  .rst_ni(rst_ast_alert_ni),
+  .d_i(intg_err),
+  .q_o(intg_err_synced)
+);
+
+assign integ_alert_src.p = intg_err_synced;
+assign integ_alert_src.n = ~intg_err_synced;
 
 // AST to Registers Input
 for (genvar i=0; i<10; i++ ) begin : gen_regb

@@ -46,6 +46,7 @@ parameter string LIST_OF_ALERTS[] = {
   "sensor_ctrl_aon_recov_ot3",
   "sensor_ctrl_aon_recov_ot4",
   "sensor_ctrl_aon_recov_ot5",
+  "sensor_ctrl_aon_fatal_intg",
   "sram_ctrl_ret_aon_fatal_bus_integ_error",
   "flash_ctrl_recov_err",
   "flash_ctrl_recov_mp_err",
@@ -74,4 +75,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 67;
+parameter uint NUM_ALERTS = 68;

@@ -21,12 +21,6 @@
   ],
   regwidth: "32",
   param_list: [
-    { name:    "NumAlerts",
-      type:    "int",
-      default: "13",
-      desc:    "Number of alerts",
-      local:   "true"
-    },
     { name:    "NumIoRails",
       type:    "int",
       default: "2",
@@ -75,6 +69,11 @@
     { name: "recov_ot5",
       desc: "Triggered through AST",
     },
+    { name: "fatal_intg",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected in sensor_ctrl or AST.
+      '''
+    }
   ]
 
 
