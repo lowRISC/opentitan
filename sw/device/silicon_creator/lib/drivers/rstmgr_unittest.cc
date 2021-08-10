@@ -43,6 +43,12 @@ TEST_F(RstmgrTest, GetResetReason) {
               ElementsAre(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 }
 
+TEST_F(RstmgrTest, ClearResetReason) {
+  uint32_t mask = 1u << kRstmgrReasonPowerOn;
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_RESET_INFO_REG_OFFSET, mask);
+  rstmgr_reason_clear(mask);
+}
+
 TEST_F(RstmgrTest, EnableAlertInfo) {
   EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
   rstmgr_alert_info_enable();
