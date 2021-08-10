@@ -328,9 +328,12 @@ def _instance_sv(prim_name, techlib, parameters):
 
 def _create_instances(prim_name, techlibs, parameters):
     """ Build SystemVerilog code instantiating primitives from the techlib """
-    techlibs_wo_generic = [
+
+    # Sort list of technology libraries to produce a stable ordering in the
+    # generated wrapper.
+    techlibs_wo_generic = sorted([
         techlib for techlib in techlibs if techlib != 'generic'
-    ]
+    ])
     techlibs_generic_last = techlibs_wo_generic + ['generic']
 
     if not techlibs_wo_generic:
