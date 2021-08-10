@@ -40,7 +40,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
+    // OTP has dut and edn reset. If assign OTP values after `super.dut_init()`, and if dut reset
+    // deasserts earlier than edn reset, some OTP outputs might remain X or Z when dut clock is
+    // running.
+    otp_ctrl_vif_init();
     super.dut_init(reset_kind);
+
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
@@ -57,6 +62,22 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dut_shutdown();
     // check for pending otp_ctrl operations and wait for them to complete
     // TODO
+  endtask
+
+  virtual task otp_ctrl_vif_init();
+    cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(On);
+    cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(randomize_lc_tx_t_val());
+    cfg.otp_ctrl_vif.drive_lc_dft_en(Off);
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(Off);
+    cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
+
+    // Unused signals in open sourced OTP memory
+    `DV_CHECK_RANDOMIZE_FATAL(cfg.dut_cfg)
+    cfg.otp_ctrl_vif.otp_ast_pwr_seq_h_i = cfg.dut_cfg.otp_ast_pwr_seq_h;
+    cfg.otp_ctrl_vif.scan_en_i           = cfg.dut_cfg.scan_en;
+    cfg.otp_ctrl_vif.scan_rst_ni         = cfg.dut_cfg.scan_rst_n;
+    cfg.otp_ctrl_vif.scanmode_i          = cfg.dut_cfg.scanmode;
+    cfg.otp_ctrl_vif.otp_test_ctrl_i     = cfg.dut_cfg.otp_test_ctrl;
   endtask
 
   // drive otp_pwr req pin to initialize OTP, and wait until init is done

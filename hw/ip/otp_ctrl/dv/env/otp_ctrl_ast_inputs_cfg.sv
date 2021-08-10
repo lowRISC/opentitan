@@ -29,7 +29,7 @@ class otp_ctrl_ast_inputs_cfg extends uvm_object;
 
   //  Group: Constraints
   constraint dut_values_c {
-    otp_test_ctrl            == 8'h0;
+    otp_test_ctrl == 8'h0;
   }
 
 endclass: otp_ctrl_ast_inputs_cfg

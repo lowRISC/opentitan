@@ -94,39 +94,25 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req | lc_esc_on;
 
-  task automatic init();
-    lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;     // drive it in specific task
-    lc_seed_hw_rd_en_i         = randomize_lc_tx_t_val();
-    lc_dft_en_i                = lc_ctrl_pkg::Off;    // drive it in specific task
-    lc_escalate_en_i           = lc_ctrl_pkg::Off;    // drive it in specific task
-    pwr_otp_init_i             = 0;
-
-    // `DV_CHECK_RANDOMIZE_FATAL won't work inside an interface as an interface doesn't
-    // have a `get_full_name` method
-    `DV_CHECK_RANDOMIZE_FATAL(dut_cfg, ,msg_id)
-    //Unused signals in open sourced OTP memory
-    otp_ast_pwr_seq_h_i        = dut_cfg.otp_ast_pwr_seq_h;
-    scan_en_i                  = dut_cfg.scan_en;
-    scan_rst_ni                = dut_cfg.scan_rst_n;
-    scanmode_i                 = dut_cfg.scanmode;
-    otp_test_ctrl_i            = dut_cfg.otp_test_ctrl;
-  endtask
-
-  task automatic drive_pwr_otp_init(logic val);
+  function automatic void drive_pwr_otp_init(logic val);
     pwr_otp_init_i = val;
-  endtask
+  endfunction
 
-  task automatic drive_lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::lc_tx_t val);
+  function automatic void drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::lc_tx_t val);
     lc_creator_seed_sw_rw_en_i = val;
-  endtask
+  endfunction
 
-  task automatic drive_lc_dft_en(lc_ctrl_pkg::lc_tx_t val);
+  function automatic void drive_lc_dft_en(lc_ctrl_pkg::lc_tx_t val);
     lc_dft_en_i = val;
-  endtask
+  endfunction
 
-  task automatic drive_lc_escalate_en(lc_ctrl_pkg::lc_tx_t val);
+  function automatic void drive_lc_escalate_en(lc_ctrl_pkg::lc_tx_t val);
     lc_escalate_en_i = val;
-  endtask
+  endfunction
+
+  function automatic void drive_lc_seed_hw_rd_en(lc_ctrl_pkg::lc_tx_t val);
+    lc_seed_hw_rd_en_i = val;
+  endfunction
 
   function automatic bit under_error_states();
     return lc_esc_on | alert_reqs;
@@ -200,13 +186,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       end
     endcase
   endtask
-
-  initial begin
-    forever begin
-      @(posedge rst_ni);
-      init();
-    end
-  end
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
