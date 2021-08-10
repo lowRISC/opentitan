@@ -11,7 +11,9 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // stub out design
+  parameter bit Stub = 1'b0
 ) (
   input              clk_i,
   input              rst_ni,
@@ -440,11 +442,19 @@ module spi_host
     .q_o      ({core_en, core_sw_rst})
   );
 
+  logic rst_core_n;
+  // Stub out spi host where it is not required
+  if (Stub) begin : gen_stub_out_core
+    assign rst_core_n = 1'b0;
+  end else begin : gen_normal_core
+    assign rst_core_n = rst_core_ni;
+  end
+
   spi_host_core #(
     .NumCS(NumCS)
   ) u_spi_core (
     .clk_i           (clk_core_i),
-    .rst_ni          (rst_core_ni),
+    .rst_ni          (rst_core_n),
 
     .command_i       (core_command),
     .command_valid_i (core_command_valid),

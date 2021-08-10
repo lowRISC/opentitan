@@ -46,6 +46,13 @@
       type: "int",
       default: "64"
     },
+    { name: "Stub",
+      desc: "Stub out spi host design.",
+      type: "bit",
+      default: "0",
+      local: "false",
+      expose: "true"
+    },
   ],
   available_output_list: [
     { name:  "sck"
