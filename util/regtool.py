@@ -12,7 +12,7 @@ import sys
 from pathlib import PurePath
 
 from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
-                    gen_json, gen_rtl, gen_selfdoc, version)
+                    gen_json, gen_rtl, gen_rust, gen_selfdoc, version)
 from reggen.ip_block import IpBlock
 
 DESC = """regtool, generate register info from Hjson source"""
@@ -46,6 +46,10 @@ def main():
                         '-D',
                         action='store_true',
                         help='Output C defines header')
+    parser.add_argument('--rust',
+                        '-R',
+                        action='store_true',
+                        help='Output Rust constants')
     parser.add_argument('--doc',
                         action='store_true',
                         help='Output source file documentation (gfm)')
@@ -117,7 +121,8 @@ def main():
     arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
                      ('d', ('html', None)), ('doc', ('doc', None)),
                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
-                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None))]
+                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
+                     ('rust', ('rs', None))]
     format = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -225,6 +230,8 @@ def main():
                 return gen_html.gen_html(obj, outfile)
             elif format == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+            elif format == 'rs':
+                return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
             else:
                 return gen_json.gen_json(obj, outfile, format)
 
