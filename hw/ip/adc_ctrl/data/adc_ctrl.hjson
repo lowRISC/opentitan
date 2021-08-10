@@ -53,6 +53,13 @@
       desc:    "Number for ADC channels",
       local:   "true",
     }
+    { name: "Stub",
+      desc: "Stub out design.",
+      type: "bit",
+      default: "0",
+      local: "false",
+      expose: "true"
+    },
   ],
   regwidth: "32",
   registers: [

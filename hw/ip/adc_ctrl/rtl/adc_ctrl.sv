@@ -9,7 +9,8 @@
 module adc_ctrl
   import adc_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit Stub = 1'b0
 ) (
   input clk_i,  //regular core clock for SW config interface
   input clk_aon_i,  //always-on slow clock for internal logic
@@ -84,10 +85,18 @@ module adc_ctrl
     .devmode_i(1'b1)
   );
 
+  logic rst_aon_n;
+  // Stub out spi host where it is not required
+  if (Stub) begin : gen_stub_out_core
+    assign rst_aon_n = 1'b0;
+  end else begin : gen_normal_core
+    assign rst_aon_n = rst_aon_ni;
+  end
+
   // Instantiate DCD core module
   adc_ctrl_core u_adc_ctrl_core (
     .clk_aon_i(clk_aon_i),
-    .rst_aon_ni(rst_aon_ni),
+    .rst_aon_ni(rst_aon_n),
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .reg2hw_i(reg2hw),
