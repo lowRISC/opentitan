@@ -9,7 +9,8 @@
 module i2c
   import i2c_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit Stub = 1'b0
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -91,9 +92,17 @@ module i2c
   logic scl_int;
   logic sda_int;
 
+  logic rst_core_n;
+  // Stub out spi host where it is not required
+  if (Stub) begin : gen_stub_out_core
+    assign rst_core_n = 1'b0;
+  end else begin : gen_normal_core
+    assign rst_core_n = rst_ni;
+  end
+
   i2c_core i2c_core (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_core_n),
     .reg2hw,
     .hw2reg,
 

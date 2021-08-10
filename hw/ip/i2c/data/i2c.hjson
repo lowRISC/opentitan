@@ -76,6 +76,13 @@
       type: "int",
       default: "64",
     }
+    { name: "Stub",
+      desc: "Stub out core design.",
+      type: "bit",
+      default: "0",
+      local: "false",
+      expose: "true"
+    },
   ],
 
   // REGISTER definition
