@@ -167,4 +167,8 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   assign state_debug_o = astate_q;
 
+  // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
+  `ASSERT(UsbWkupStable_A, wake_req_alw_o |=> wake_req_alw_o ||
+      $past(wake_ack) && !low_power_alw_i, clk_aon_i, !rst_aon_ni)
+
 endmodule
