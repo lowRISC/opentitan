@@ -470,7 +470,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (!wr_blank_err) begin
       // Find valid next state and next cnt using lc_ctrl_dv_utils_pkg.
       // If terminal state or max LcCnt reaches, will not program any new data.
-      if ((lc_state != LcStScrap) && (lc_cnt != LcCnt16)) begin
+      if ((lc_state != LcStScrap) && (lc_cnt != LcCnt24)) begin
         lc_state_dec = lc_ctrl_dv_utils_pkg::dec_lc_state(lc_state);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
                                            next_lc_state inside {VALID_NEXT_STATES[lc_state_dec]};)
