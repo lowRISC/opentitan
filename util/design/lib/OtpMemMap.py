@@ -20,6 +20,9 @@ DIGEST_SIZE = 8
 # the same seed for different classes)
 OTP_SEED_DIVERSIFIER = 177149201092001677687
 
+# This must match the rtl parameter ScrmblBlockWidth / 8
+SCRAMBLE_BLOCK_WIDTH = 8
+
 
 def _validate_otp(otp):
     '''Validate OTP entry'''
@@ -59,29 +62,67 @@ def _validate_scrambling(scr):
         random_or_hexvalue(dig, "cnst_value", scr["cnst_size"] * 8)
 
 
-def _validate_part(part, offset, key_names):
+# if remaining number of bytes are not perfectly aligned, truncate
+def _avail_blocks(size):
+    return int(size / SCRAMBLE_BLOCK_WIDTH)
+
+
+# distribute number of blocks among partitions
+def _dist_blocks(num_blocks, parts):
+    num_parts = len(parts)
+
+    if not num_parts:
+        return
+
+    # Very slow looping
+    for i in range(num_blocks):
+        parts[i % num_parts]['size'] += SCRAMBLE_BLOCK_WIDTH
+
+
+# distribute unused otp bits
+def _dist_unused(config, allocated):
+
+    # determine how many aligned blocks are left
+    # unaligned bits are not used
+    leftover_blocks = _avail_blocks(config['otp']['size'] - allocated)
+
+    # sponge partitions are partitions that will accept leftover allocation
+    sponge_parts = [part for part in config['partitions'] if part['absorb']]
+
+    # spread out the blocks
+    _dist_blocks(leftover_blocks, sponge_parts)
+
+
+# return aligned partition size
+def _calc_size(part, size):
+
+    size = SCRAMBLE_BLOCK_WIDTH * \
+        int((size + SCRAMBLE_BLOCK_WIDTH - 1) / SCRAMBLE_BLOCK_WIDTH)
+
+    if part["sw_digest"] or part["hw_digest"]:
+        size += DIGEST_SIZE
+
+    return size
+
+
+def _validate_part(part, key_names):
     '''Validates a partition within the OTP memory map'''
-    part.setdefault("offset", offset)
     part.setdefault("name", "unknown_name")
     part.setdefault("variant", "Unbuffered")
-    part.setdefault("size", "0")
-    part.setdefault("secret", "false")
-    part.setdefault("sw_digest", "false")
-    part.setdefault("hw_digest", "false")
+    part.setdefault("secret", False)
+    part.setdefault("sw_digest", False)
+    part.setdefault("hw_digest", False)
     part.setdefault("write_lock", "none")
     part.setdefault("read_lock", "none")
     part.setdefault("key_sel", "NoKey")
-    log.info("Partition {} at offset {} with size {}".format(
-        part["name"], part["offset"], part["size"]))
+    part.setdefault("absorb", False)
+    log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
     part["secret"] = check_bool(part["secret"])
     part["sw_digest"] = check_bool(part["sw_digest"])
     part["hw_digest"] = check_bool(part["hw_digest"])
     part["bkout_type"] = check_bool(part["bkout_type"])
-
-    # Make sure this has integer type.
-    part["size"] = check_int(part["size"])
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
@@ -117,22 +158,35 @@ def _validate_part(part, offset, key_names):
                 "A partition can only be write/read lockable if it has a hw or sw digest."
             )
 
-    if check_int(part["offset"]) % 8:
-        raise RuntimeError("Partition offset must be 64bit aligned")
-
-    if check_int(part["size"]) % 8:
-        raise RuntimeError("Partition size must be 64bit aligned")
+    if not isinstance(part['items'], list):
+        raise RuntimeError('the "items" key must contain a list')
 
     if len(part["items"]) == 0:
         log.warning("Partition does not contain any items.")
 
+    # validate items and calculate partition size if necessary
+    size = 0
+    for item in part["items"]:
+        _validate_item(item)
+        size += item["size"]
 
-def _validate_item(item, offset):
+    # if size not previously defined, set it
+    if "size" not in part:
+        part["size"] = _calc_size(part, size)
+
+    # Make sure this has integer type.
+    part["size"] = check_int(part["size"])
+
+    # Make sure partition size is aligned.
+    if part["size"] % SCRAMBLE_BLOCK_WIDTH:
+        raise RuntimeError("Partition size must be 64bit aligned")
+
+
+def _validate_item(item):
     '''Validates an item within a partition'''
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
-    item.setdefault("offset", offset)
 
     # Make sure this has integer type.
     item["size"] = check_int(item["size"])
@@ -153,25 +207,39 @@ def _validate_mmap(config):
     if not isinstance(config['partitions'], list):
         raise RuntimeError('the "partitions" key must contain a list')
 
+    # validate inputs before use
+    allocated = 0
+    for part in config["partitions"]:
+        _validate_part(part, key_names)
+        allocated += part['size']
+
+    # distribute unallocated bits
+    _dist_unused(config, allocated)
+
+    # Determine offsets and generation dicts
     offset = 0
     part_dict = {}
     for j, part in enumerate(config["partitions"]):
-        _validate_part(part, offset, key_names)
 
         if part['name'] in part_dict:
             raise RuntimeError('Partition name {} is not unique'.format(
                 part['name']))
 
-        if not isinstance(part['items'], list):
-            raise RuntimeError('the "items" key must contain a list')
+        part['offset'] = offset
+        if check_int(part['offset']) % SCRAMBLE_BLOCK_WIDTH:
+            raise RuntimeError("Partition {} offset must be 64bit aligned".format(
+                part['name']))
+
+        log.info("Partition {} at offset {} size {}".format(
+            part["name"], part["offset"], part["size"]))
 
         # Loop over items within a partition
         item_dict = {}
         for k, item in enumerate(part["items"]):
-            _validate_item(item, offset)
             if item['name'] in item_dict:
                 raise RuntimeError('Item name {} is not unique'.format(
                     item['name']))
+            item['offset'] = offset
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])

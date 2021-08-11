@@ -76,14 +76,15 @@
         {
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
+            //absorb:     true,
             size:       "768", // in bytes
-            secret:     "False",
-            sw_digest:  "True",
-            hw_digest:  "False",
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            bkout_type: "False", // Do not generate a breakout type for this partition.
+            bkout_type: false, // Do not generate a breakout type for this partition.
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
@@ -110,14 +111,15 @@
         {
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
+            //absorb:     true,
             size:       "768", // in bytes
-            secret:     "False",
-            sw_digest:  "True",
-            hw_digest:  "False",
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            bkout_type: "False",
+            bkout_type: false,
             items: [
                 {
                     name: "ROM_ERROR_REPORTING",
@@ -169,14 +171,13 @@
         {
             name:       "HW_CFG",
             variant:    "Buffered",
-            size:       "208", // in bytes
-            secret:     "False",
-            sw_digest:  "False",
-            hw_digest:  "True",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  true,
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
-            bkout_type: "True",
+            bkout_type: true,
             items: [
                 {
                     name:        "DEVICE_ID",
@@ -224,14 +225,13 @@
         {
             name:       "SECRET0",
             variant:    "Buffered",
-            size:       "40", // in bytes
-            secret:     "True",
-            sw_digest:  "False",
-            hw_digest:  "True",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret0Key",
-            bkout_type: "False",
+            bkout_type: false,
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -253,14 +253,13 @@
         {
             name:       "SECRET1",
             variant:    "Buffered",
-            size:       "88", // in bytes
-            secret:     "True",
-            sw_digest:  "False",
-            hw_digest:  "True",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret1Key",
-            bkout_type: "False",
+            bkout_type: false,
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
@@ -285,14 +284,13 @@
         {
             name:       "SECRET2",
             variant:    "Buffered",
-            size:       "88", // in bytes
-            secret:     "True",
-            sw_digest:  "False",
-            hw_digest:  "True",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret2Key",
-            bkout_type: "False",
+            bkout_type: false,
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -316,14 +314,13 @@
         {
             name:       "LIFE_CYCLE",
             variant:    "LifeCycle",
-            size:       "88", // in bytes
-            secret:     "False",
-            sw_digest:  "False",
-            hw_digest:  "False",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  false,
             write_lock: "None",
             read_lock:  "None",
             key_sel:    "NoKey",
-            bkout_type: "False",
+            bkout_type: false,
             items: [
                 // The life cycle transition count is specified
                 // first such that any programming attempt of the life cycle
