@@ -6,15 +6,15 @@
 
 module sysrst_ctrl_keyfsm #(
   parameter int unsigned TimerWidth = 16
-  ) (
-  input                clk_i,
-  input                rst_ni,
-  input                trigger_i,
-  input [TimerWidth-1:0] cfg_timer_i,
-  input                cfg_l2h_en_i,
-  input                cfg_h2l_en_i,
-  output logic         timer_l2h_cond_met_o,
-  output logic         timer_h2l_cond_met_o
+) (
+  input                         clk_i,
+  input                         rst_ni,
+  input                         trigger_i,
+  input        [TimerWidth-1:0] cfg_timer_i,
+  input                         cfg_l2h_en_i,
+  input                         cfg_h2l_en_i,
+  output logic                  timer_l2h_cond_met_o,
+  output logic                  timer_h2l_cond_met_o
 
 );
 
@@ -25,11 +25,11 @@ module sysrst_ctrl_keyfsm #(
   logic [TimerWidth-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_trigger_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_trigger_reg
     if (!rst_ni) begin
-      trigger_q    <= 1'b0;
+      trigger_q <= 1'b0;
     end else begin
-      trigger_q    <= trigger_i;
+      trigger_q <= trigger_i;
     end
   end
 
@@ -49,37 +49,36 @@ module sysrst_ctrl_keyfsm #(
   //FSM will be able to detect a key or button being pressed then
   //releaseed in one complete path
   typedef enum logic [2:0] {
-                            IDLE = 3'h0,
-                            WAITL2H = 3'h1,
-                            WAITH2L = 3'h2,
-                            DONEL2H = 3'h3,
-                            DONEH2L = 3'h4
-                            } timer_state_e;
+    IDLE    = 3'h0,
+    WAITL2H = 3'h1,
+    WAITH2L = 3'h2,
+    DONEL2H = 3'h3,
+    DONEH2L = 3'h4
+  } timer_state_e;
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_state_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_timer_state_reg
     if (!rst_ni) begin
-      timer_state_q    <= IDLE;
+      timer_state_q <= IDLE;
     end else begin
-      timer_state_q    <= timer_state_d;
+      timer_state_q <= timer_state_d;
     end
   end
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_cnt_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_timer_cnt_reg
     if (!rst_ni) begin
-      timer_cnt_q    <= '0;
-    end
-    else if (timer_cnt_clr) begin
+      timer_cnt_q <= '0;
+    end else if (timer_cnt_clr) begin
       timer_cnt_q <= '0;
     end else begin
       timer_cnt_q <= timer_cnt_d;
     end
   end
 
-  always_comb begin: timer_fsm
+  always_comb begin : timer_fsm
     timer_state_d = timer_state_q;
     //outputs
     timer_l2h_cond_met_o = 1'b0;
@@ -89,10 +88,9 @@ module sysrst_ctrl_keyfsm #(
 
     unique case (timer_state_q)
       IDLE: begin
-        if (cfg_l2h_en_i &&  trigger_l2h) begin
+        if (cfg_l2h_en_i && trigger_l2h) begin
           timer_state_d = WAITL2H;
-        end
-        else if (cfg_h2l_en_i &&  trigger_h2l) begin
+        end else if (cfg_h2l_en_i && trigger_h2l) begin
           timer_state_d = WAITH2L;
         end
       end
@@ -100,12 +98,10 @@ module sysrst_ctrl_keyfsm #(
       WAITL2H: begin
         if (timer_cnt_q != cfg_timer_i) begin
           timer_cnt_en = 1'b1;
-        end
-        else if (!trigger_h2h && (timer_cnt_q == cfg_timer_i)) begin
+        end else if (!trigger_h2h && (timer_cnt_q == cfg_timer_i)) begin
           timer_state_d = IDLE;
           timer_cnt_clr = 1'b1;
-        end
-        else if (trigger_h2h && (timer_cnt_q == cfg_timer_i)) begin
+        end else if (trigger_h2h && (timer_cnt_q == cfg_timer_i)) begin
           timer_state_d = DONEL2H;
           timer_cnt_clr = 1'b1;
         end
@@ -114,11 +110,9 @@ module sysrst_ctrl_keyfsm #(
       DONEL2H: begin
         if (trigger_h2h) begin
           timer_l2h_cond_met_o = 1'b1;
-        end
-        else if (!cfg_h2l_en_i && trigger_h2l) begin
+        end else if (!cfg_h2l_en_i && trigger_h2l) begin
           timer_state_d = IDLE;
-        end
-        else if (cfg_h2l_en_i && trigger_h2l) begin
+        end else if (cfg_h2l_en_i && trigger_h2l) begin
           timer_state_d = WAITH2L;
         end
       end
@@ -126,12 +120,10 @@ module sysrst_ctrl_keyfsm #(
       WAITH2L: begin
         if (timer_cnt_q != cfg_timer_i) begin
           timer_cnt_en = 1'b1;
-        end
-        else if (!trigger_l2l && (timer_cnt_q == cfg_timer_i)) begin
+        end else if (!trigger_l2l && (timer_cnt_q == cfg_timer_i)) begin
           timer_state_d = IDLE;
           timer_cnt_clr = 1'b1;
-        end
-        else if (trigger_l2l && (timer_cnt_q == cfg_timer_i)) begin
+        end else if (trigger_l2l && (timer_cnt_q == cfg_timer_i)) begin
           timer_state_d = DONEH2L;
           timer_cnt_clr = 1'b1;
         end
@@ -140,11 +132,9 @@ module sysrst_ctrl_keyfsm #(
       DONEH2L: begin
         if (trigger_l2l) begin
           timer_h2l_cond_met_o = 1'b1;
-        end
-        else if (!cfg_l2h_en_i && trigger_l2h) begin
+        end else if (!cfg_l2h_en_i && trigger_l2h) begin
           timer_state_d = IDLE;
-        end
-        else if (cfg_l2h_en_i && trigger_l2h) begin
+        end else if (cfg_l2h_en_i && trigger_l2h) begin
           timer_state_d = WAITL2H;
         end
       end

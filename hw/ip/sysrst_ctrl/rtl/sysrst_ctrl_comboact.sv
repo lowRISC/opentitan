@@ -4,18 +4,20 @@
 //
 // Description: sysrst_ctrl combo action Module
 //
-module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
-  input  clk_i,
-  input  rst_ni,
+module sysrst_ctrl_comboact
+  import sysrst_ctrl_reg_pkg::*;
+(
+  input clk_i,
+  input rst_ni,
 
-  input  combo_det_i,
-  input  ec_rst_l_i,
+  input combo_det_i,
+  input ec_rst_l_i,
 
-  input  cfg_bat_disable_en_i,
-  input  cfg_ec_rst_en_i,
-  input  cfg_gsc_rst_en_i,
-  input  cfg_intr_en_i,
-  input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
+  input cfg_bat_disable_en_i,
+  input cfg_ec_rst_en_i,
+  input cfg_gsc_rst_en_i,
+  input cfg_intr_en_i,
+  input sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
 
   output combo_intr_pulse_o,
   output bat_disable_o,
@@ -34,9 +36,9 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   // mask combo detection pulse with config bits
   logic combo_bat_disable_pulse, combo_gsc_pulse, combo_ec_rst_pulse;
   assign combo_bat_disable_pulse = cfg_bat_disable_en_i & combo_det_pulse;
-  assign combo_ec_rst_pulse      = cfg_ec_rst_en_i      & combo_det_pulse;
-  assign combo_gsc_pulse         = cfg_gsc_rst_en_i     & combo_det_pulse;
-  assign combo_intr_pulse_o      = cfg_intr_en_i        & combo_det_pulse;
+  assign combo_ec_rst_pulse      = cfg_ec_rst_en_i & combo_det_pulse;
+  assign combo_gsc_pulse         = cfg_gsc_rst_en_i & combo_det_pulse;
+  assign combo_intr_pulse_o      = cfg_intr_en_i & combo_det_pulse;
 
   //ec_rst_l_i high->low detection
   logic ec_rst_l_det_pulse, ec_rst_l_det_q;
@@ -78,13 +80,13 @@ module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   // Registers //
   ///////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_regs
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       combo_det_q    <= 1'b0;
       bat_disable_q  <= 1'b0;
-      ec_rst_l_det_q <= 1'b1; // active low signal
+      ec_rst_l_det_q <= 1'b1;  // active low signal
       gsc_rst_q      <= 1'b0;
-      ec_rst_l_q     <= 1'b0; // asserted when power-on-reset is asserted
+      ec_rst_l_q     <= 1'b0;  // asserted when power-on-reset is asserted
       timer_cnt_q    <= '0;
     end else begin
       combo_det_q    <= combo_det_i;
