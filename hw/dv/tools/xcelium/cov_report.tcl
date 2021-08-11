@@ -35,7 +35,6 @@ report -summary \
   -type \
   -all \
   -metrics covergroup \
-  -kind abstract \
   -source off \
   -out $cov_report_dir/cov_report_cg.txt
 

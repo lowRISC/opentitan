@@ -36,14 +36,16 @@ def xcelium_cov_summary_table(buf):
             # Change first item to 'Score'.
             metrics[0] = 'Score'
 
-            # metric.
+            # Gather the list of metrics.
             items = OrderedDict()
             for metric in metrics:
                 items[metric] = {}
                 items[metric]['covered'] = 0
                 items[metric]['total'] = 0
+
             # Next line is a separator.
             line = buf.readline()
+
             # Subsequent lines are coverage items to be aggregated.
             for line in buf:
                 line = re.sub(r"%\s+\(", "%(", line)
@@ -69,7 +71,7 @@ def xcelium_cov_summary_table(buf):
                     values.append(value)
                     if metric == 'Score':
                         cov_total = value
-            return [metrics, values], cov_total
+            return [items.keys(), values], cov_total
 
     # If we reached here, then we were unable to extract the coverage.
     raise SyntaxError(f"Coverage data not found in {buf.name}!")
