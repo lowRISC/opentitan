@@ -34,11 +34,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint flash_op_c {
-    solve flash_op.partition before flash_op.op;
-    solve flash_op.op before flash_op.erase_type;
-    solve flash_op.op before flash_op.num_words;
-    solve flash_op.addr before flash_op.num_words;
-    solve flash_op.partition before flash_op.addr;
 
     flash_op.addr inside {[0:FlashSizeBytes-1]};
 
