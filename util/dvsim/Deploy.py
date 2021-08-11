@@ -612,21 +612,16 @@ class CovReport(Deploy):
     def post_finish(self, status):
         """Extract the coverage results summary for the dashboard.
 
-        If that fails for some reason, report the job as a failure.
+        If the extraction fails, an appropriate exception is raised, which must
+        be caught by the caller to mark the job as a failure.
         """
 
         if self.dry_run or status != 'P':
             return
 
-        results, self.cov_total, ex_msg = get_cov_summary_table(
+        results, self.cov_total = get_cov_summary_table(
             self.cov_report_txt, self.sim_cfg.tool)
 
-        if ex_msg:
-            self.launcher.fail_msg += ex_msg
-            log.error(ex_msg)
-            return
-
-        # Succeeded in obtaining the coverage data.
         colalign = (("center", ) * len(results[0]))
         self.cov_results = tabulate(results,
                                     headers="firstrow",

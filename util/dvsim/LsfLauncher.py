@@ -119,10 +119,6 @@ class LsfLauncher(Launcher):
     def __init__(self, deploy):
         super().__init__(deploy)
 
-        # Set the status. Only update after the job is done - i.e. status will
-        # transition from None to P/F/K.
-        self.status = None
-
         # Maintain the job script output as an instance variable for polling
         # and cleanup.
         self.bsub_out = None
@@ -390,7 +386,6 @@ class LsfLauncher(Launcher):
     def _post_finish(self, status, err_msg):
         if self.bsub_out_fd:
             self.bsub_out_fd.close()
-        self.status = status
         if self.exit_code is None:
             self.exit_code = 0 if status == 'P' else 1
         super()._post_finish(status, err_msg)
