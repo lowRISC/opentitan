@@ -112,6 +112,7 @@ module sram_ctrl_regs_reg_top (
   logic alert_test_we;
   logic alert_test_wd;
   logic status_bus_integ_error_qs;
+  logic status_init_error_qs;
   logic status_escalated_qs;
   logic status_scr_key_valid_qs;
   logic status_scr_key_seed_valid_qs;
@@ -174,7 +175,33 @@ module sram_ctrl_regs_reg_top (
   );
 
 
-  //   F[escalated]: 1:1
+  //   F[init_error]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_status_init_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.init_error.de),
+    .d      (hw2reg.status.init_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.init_error.q),
+
+    // to register interface (read)
+    .qs     (status_init_error_qs)
+  );
+
+
+  //   F[escalated]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -200,7 +227,7 @@ module sram_ctrl_regs_reg_top (
   );
 
 
-  //   F[scr_key_valid]: 2:2
+  //   F[scr_key_valid]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -226,7 +253,7 @@ module sram_ctrl_regs_reg_top (
   );
 
 
-  //   F[scr_key_seed_valid]: 3:3
+  //   F[scr_key_seed_valid]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -252,7 +279,7 @@ module sram_ctrl_regs_reg_top (
   );
 
 
-  //   F[init_done]: 4:4
+  //   F[init_done]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -466,10 +493,11 @@ module sram_ctrl_regs_reg_top (
 
       addr_hit[1]: begin
         reg_rdata_next[0] = status_bus_integ_error_qs;
-        reg_rdata_next[1] = status_escalated_qs;
-        reg_rdata_next[2] = status_scr_key_valid_qs;
-        reg_rdata_next[3] = status_scr_key_seed_valid_qs;
-        reg_rdata_next[4] = status_init_done_qs;
+        reg_rdata_next[1] = status_init_error_qs;
+        reg_rdata_next[2] = status_escalated_qs;
+        reg_rdata_next[3] = status_scr_key_valid_qs;
+        reg_rdata_next[4] = status_scr_key_seed_valid_qs;
+        reg_rdata_next[5] = status_init_done_qs;
       end
 
       addr_hit[2]: begin

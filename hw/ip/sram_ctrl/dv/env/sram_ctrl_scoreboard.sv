@@ -326,6 +326,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
       exp_status[SramCtrlEscalated]       = 1;
       exp_status[SramCtrlScrKeySeedValid] = 0;
+      exp_status[SramCtrlScrKeyValid]     = 0;
       exp_status[SramCtrlInitDone]        = 0;
 
       // escalation resets the key and nonce back to defaults

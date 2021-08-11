@@ -17,8 +17,11 @@
   ///////////////////////////
 
   alert_list: [
-    { name: "fatal_bus_integ_error",
-      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    { name: "fatal_error",
+      desc: '''
+            This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected,
+            or if the initialization mechanism has reached an invalid state.
+            '''
     }
   ],
 
@@ -126,11 +129,21 @@
             name: "BUS_INTEG_ERROR"
             desc: '''
                   This bit is set to 1 if a fatal bus integrity fault is detected.
-                  This error triggers a fatal_bus_integ_error alert.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
                   ''',
             resval: 0,
           }
           { bits: "1"
+            name: "INIT_ERROR"
+            desc: '''
+                  This bit is set to 1 if a the initialization counter has reached an invalid state.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
+          { bits: "2"
             name: "ESCALATED"
             desc: '''
                   Set to 1 if the sram controller has received an escalate request.
@@ -140,7 +153,7 @@
                   ''',
             resval: 0,
           }
-          { bits: "2"
+          { bits: "3"
             name: "SCR_KEY_VALID"
             desc: '''
                   Set to 1 if a new scrambling key has been successfully obtained from OTP.
@@ -149,7 +162,7 @@
                   ''',
             resval: 0,
           }
-          { bits: "3"
+          { bits: "4"
             name: "SCR_KEY_SEED_VALID"
             desc: '''
                   Set to 1 if the scrambling key has been derived from a valid key seed in OTP.
@@ -160,7 +173,7 @@
                   ''',
             resval: 0,
           }
-          { bits: "4"
+          { bits: "5"
             name: "INIT_DONE"
             desc: '''
                   Set to 1 if the hardware initialization triggered via !!CTRL.INIT has completed.

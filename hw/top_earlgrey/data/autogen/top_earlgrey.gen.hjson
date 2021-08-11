@@ -12801,7 +12801,7 @@
       module_name: sensor_ctrl_aon
     }
     {
-      name: sram_ctrl_ret_aon_fatal_bus_integ_error
+      name: sram_ctrl_ret_aon_fatal_error
       width: 1
       type: alert
       async: "1"
@@ -12927,7 +12927,7 @@
       module_name: edn1
     }
     {
-      name: sram_ctrl_main_fatal_bus_integ_error
+      name: sram_ctrl_main_fatal_error
       width: 1
       type: alert
       async: "1"
