@@ -178,37 +178,6 @@ TEST_F(IrqEnableSetTest, Target0Disable) {
   }
 }
 
-<<<<<<< HEAD:sw/device/lib/dif/dif_rv_plic_unittest.cc
-class IrqTriggerTypeSetTest : public IrqTest {};
-
-TEST_F(IrqTriggerTypeSetTest, NullArgs) {
-  EXPECT_EQ(
-      dif_rv_plic_irq_set_trigger(nullptr, kFirstIrq, kDifRvPlicIrqTriggerEdge),
-      kDifRvPlicBadArg);
-}
-
-TEST_F(IrqTriggerTypeSetTest, Enable) {
-  ExpectIrqSetTests(kTriggerRegisters, true);
-
-  // Enable every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-    EXPECT_EQ(dif_rv_plic_irq_set_trigger(&plic_, i, kDifRvPlicIrqTriggerEdge),
-              kDifRvPlicOk);
-  }
-}
-
-TEST_F(IrqTriggerTypeSetTest, Disable) {
-  ExpectIrqSetTests(kTriggerRegisters, false);
-
-  // Enable every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-    EXPECT_EQ(dif_rv_plic_irq_set_trigger(&plic_, i, kDifRvPlicIrqTriggerLevel),
-              kDifRvPlicOk);
-  }
-}
-
-=======
->>>>>>> 06e3cae3c ([rv_plic] Standardize on level triggered interrupts in the system):sw/device/lib/dif/dif_plic_unittest.cc
 class IrqPrioritySetTest : public PlicTest {};
 
 TEST_F(IrqPrioritySetTest, NullArgs) {
