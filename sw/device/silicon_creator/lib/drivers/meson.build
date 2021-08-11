@@ -485,3 +485,35 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM GPIO driver
+sw_silicon_creator_lib_driver_gpio = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_gpio',
+    sources: [
+      hw_ip_gpio_reg_h,
+      'gpio.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_gpio_unittest', executable(
+    'sw_silicon_creator_lib_driver_gpio_unittest',
+    sources: [
+      'gpio_unittest.cc',
+      hw_ip_gpio_reg_h,
+      'gpio.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
