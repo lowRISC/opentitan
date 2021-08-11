@@ -415,36 +415,39 @@ module prim_lfsr #(
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
 `ifndef SYNTHESIS
-  function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0]    lfsrcoeffs,
-                                                          logic[EntropyDw-1:0] entropy,
-                                                          logic[LfsrDw-1:0]    state);
+  function automatic logic [LfsrDw-1:0] compute_next_state(logic [LfsrDw-1:0]    lfsrcoeffs,
+                                                           logic [EntropyDw-1:0] entropy,
+                                                           logic [LfsrDw-1:0]    current_state);
     logic state0;
+    logic [LfsrDw-1:0] next_state;
+
+    next_state = current_state;
 
     // Galois XOR
     if (64'(LfsrType) == 64'("GAL_XOR")) begin
-      if (state == 0) begin
-        state = DefaultSeed;
+      if (next_state == 0) begin
+        next_state = DefaultSeed;
       end else begin
-        state0 = state[0];
-        state = state >> 1;
-        if (state0) state ^= lfsrcoeffs;
-        state ^= LfsrDw'(entropy);
+        state0 = next_state[0];
+        next_state = next_state >> 1;
+        if (state0) next_state ^= lfsrcoeffs;
+        next_state ^= LfsrDw'(entropy);
       end
     // Fibonacci XNOR
     end else if (64'(LfsrType) == "FIB_XNOR") begin
-      if (&state) begin
-        state = DefaultSeed;
+      if (&next_state) begin
+        next_state = DefaultSeed;
       end else begin
-        state0 = ~(^(state & lfsrcoeffs));
-        state = state << 1;
-        state[0] = state0;
-        state ^= LfsrDw'(entropy);
+        state0 = ~(^(next_state & lfsrcoeffs));
+        next_state = next_state << 1;
+        next_state[0] = state0;
+        next_state ^= LfsrDw'(entropy);
       end
     end else begin
       $error("unknown lfsr type");
     end
 
-    return state;
+    return next_state;
   endfunction : compute_next_state
 
   // check whether next state is computed correctly
