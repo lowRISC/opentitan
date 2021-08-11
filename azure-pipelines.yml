@@ -416,7 +416,6 @@ jobs:
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
   dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
   pool:
     vmImage: ubuntu-18.04
   timeoutInMinutes: 10
