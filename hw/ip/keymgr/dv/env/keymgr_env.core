@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:kmac_app_agent
       - lowrisc:ip:keymgr
+      - lowrisc:ip:kmac_pkg
     files:
       - keymgr_env_pkg.sv
       - keymgr_if.sv
@@ -24,6 +25,7 @@ filesets:
       - seq_lib/keymgr_common_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_sideload_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_sideload_one_intf_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_random_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_cfg_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_direct_to_disabled_vseq.sv: {is_include_file: true}

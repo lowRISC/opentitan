@@ -17,9 +17,11 @@ interface keymgr_if(input clk, input rst_n);
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
+  keymgr_pkg::otbn_key_req_t otbn_key;
 
   keymgr_pkg::hw_key_req_t kmac_key_exp;
   keymgr_pkg::hw_key_req_t aes_key_exp;
+  keymgr_pkg::otbn_key_req_t otbn_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;
@@ -34,6 +36,7 @@ interface keymgr_if(input clk, input rst_n);
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
   bit is_kmac_key_good;
   bit is_aes_key_good;
+  bit is_otbn_key_good;
 
   // when kmac sideload key is generated, kmac may be used to do other OP, but once the OP is done,
   // it should automatically switch back to sideload key
@@ -80,8 +83,10 @@ interface keymgr_if(input clk, input rst_n);
   function automatic void reset();
     kmac_key_exp = '0;
     aes_key_exp  = '0;
+    otbn_key_exp = '0;
     is_kmac_key_good = 0;
     is_aes_key_good  = 0;
+    is_otbn_key_good = 0;
     is_kmac_sideload_avail = 0;
 
     // edn related
@@ -184,26 +189,33 @@ interface keymgr_if(input clk, input rst_n);
 
   // update sideload key for comparison
   // if it's good key, store it to compare for future invalid OP
-  function automatic void update_sideload_key(keymgr_env_pkg::key_shares_t key_shares,
+  function automatic void update_sideload_key(keymgr_env_pkg::kmac_digests_t key_shares,
                                               keymgr_pkg::keymgr_working_state_e state,
                                               keymgr_cdi_type_e cdi_type,
                                               keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac,
                                               bit good_key = 1);
+    keymgr_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
+                                                    key_shares[0][keymgr_pkg::KeyWidth-1:0]};
     case (dest)
       keymgr_pkg::Kmac: begin
-        kmac_key_exp             <= '{1'b1, key_shares};
+        kmac_key_exp             <= '{1'b1, trun_key_shares};
         is_kmac_key_good         <= good_key;
         is_kmac_sideload_avail   <= 1;
-        kmac_sideload_key_shares <= key_shares;
+        kmac_sideload_key_shares <= trun_key_shares;
       end
       keymgr_pkg::Aes: begin
-        aes_key_exp     <= '{1'b1, key_shares};
+        aes_key_exp     <= '{1'b1, trun_key_shares};
         is_aes_key_good <= good_key;
+      end
+      keymgr_pkg::Otbn: begin
+        // only otbn uses full 384 bits digest data
+        otbn_key_exp     <= '{1'b1, key_shares};
+        is_otbn_key_good <= good_key;
       end
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
-    if (good_key) keys_a_array[state][cdi_type][dest.name]  = key_shares;
+    if (good_key) keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
   endfunction
 
   function automatic bit get_keymgr_en();
@@ -314,9 +326,6 @@ interface keymgr_if(input clk, input rst_n);
   `KM_ASSERT(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
 
   // TODO update hmac and aes checker later
-  //`KM_ASSERT(HmacKeyStable, $stable(hmac_key_exp) |=> $stable(hmac_key))
-  //`KM_ASSERT(HmacKeyUpdate, !$stable(hmac_key_exp) |=> hmac_key == hmac_key_exp)
-
   //`KM_ASSERT(AesKeyStable, $stable(aes_key_exp) |=> $stable(aes_key))
   //`KM_ASSERT(AesKeyUpdate, !$stable(aes_key_exp) |=> aes_key == aes_key_exp)
 

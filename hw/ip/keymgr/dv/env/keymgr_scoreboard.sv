@@ -206,7 +206,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       UpdateHwOut: begin
-        key_shares_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
+        kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
         bit good_key = (get_err_code() == 0);
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control.dest_sel));
@@ -897,6 +897,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
       keymgr_pkg::Aes:  exp.KeyID = keymgr_pkg::RndCnstAesSeedDefault;
+      keymgr_pkg::Otbn: exp.KeyID = keymgr_pkg::RndCnstOtbnSeedDefault;
       keymgr_pkg::None: exp.KeyID = keymgr_pkg::RndCnstNoneSeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
     endcase

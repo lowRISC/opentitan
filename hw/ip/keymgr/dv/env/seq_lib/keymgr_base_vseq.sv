@@ -19,6 +19,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
   // do operations at StReset
   rand bit do_op_before_init;
   rand keymgr_pkg::keymgr_ops_e gen_operation;
+  rand keymgr_pkg::keymgr_key_dest_e key_dest;
 
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
@@ -86,7 +87,8 @@ class keymgr_base_vseq extends cip_base_vseq #(
       update_key_version();
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
-      keymgr_generate(.operation(gen_operation), .wait_done(wait_done));
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(key_dest)
+      keymgr_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
       if (clr_output) keymgr_rd_clr();
     end
   endtask : keymgr_operations
@@ -203,15 +205,15 @@ class keymgr_base_vseq extends cip_base_vseq #(
   endtask : keymgr_advance
 
   // by default generate for software
-  virtual task keymgr_generate(keymgr_pkg::keymgr_ops_e operation, bit wait_done = 1);
+  virtual task keymgr_generate(keymgr_pkg::keymgr_ops_e operation,
+                               keymgr_pkg::keymgr_key_dest_e key_dest,
+                               bit wait_done = 1);
     `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
 
     ral.control.start.set(1'b1);
     ral.control.operation.set(int'(operation));
     `DV_CHECK_RANDOMIZE_FATAL(ral.control.cdi_sel)
-    // TODO, test KMAC interface only since the other interface may be removed later
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control.dest_sel,
-                                   value inside {keymgr_pkg::None, keymgr_pkg::Kmac};);
+    ral.control.dest_sel.set(int'(key_dest));
     csr_update(.csr(ral.control));
     ral.control.start.set(1'b0);
 
