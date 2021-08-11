@@ -478,4 +478,8 @@ module pinmux
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)
 
+  // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
+  `ASSERT(PinmuxWkupStable_A, aon_wkup_req_o |=> aon_wkup_req_o ||
+      $fell(|reg2hw.wkup_cause) && !sleep_en_i, clk_aon_i, !rst_aon_ni)
+
 endmodule : pinmux

@@ -165,18 +165,12 @@ module aon_timer import aon_timer_reg_pkg::*;
   assign hw2reg.wkup_cause.de = aon_wkup_intr_set | aon_wdog_intr_set;
   assign hw2reg.wkup_cause.d  = 1'b1;
 
-  // wakeup output is flopped in case of clock domain crossing
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      aon_timer_wkup_req_o <= '0;
-    end else begin
-      aon_timer_wkup_req_o <= reg2hw.wkup_cause.q & aon_sleep_mode;
-    end
-  end
+  // cause register resides in AON domain.
+  assign aon_timer_wkup_req_o = reg2hw.wkup_cause.q;
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
-  `ASSERT(WkupStable_A, aon_timer_wkup_req_o && aon_sleep_mode |=>
-          aon_timer_wkup_req_o || $fell(reg2hw.wkup_cause.q), clk_aon_i, !rst_aon_ni)
+  `ASSERT(WkupStable_A, aon_timer_wkup_req_o |=> aon_timer_wkup_req_o ||
+      $fell(reg2hw.wkup_cause.q) && !aon_sleep_mode, clk_aon_i, !rst_aon_ni)
 
   ////////////////////////
   // Interrupt Handling //
