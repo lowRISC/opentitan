@@ -70,7 +70,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     StTxLast  = 10'b0101000000,
     StOpWait  = 10'b1000101001,
     StClean   = 10'b1111111101,
-    StInvalid = 10'b0011101110
+    StError   = 10'b0011101110
   } data_state_e;
 
   localparam int AdvRem = AdvDataWidth % KmacDataIfWidth;
@@ -218,7 +218,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         end
 
         if (cnt_err) begin
-          state_d = StInvalid;
+          state_d = StError;
         end
 
       end
@@ -240,7 +240,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         state_d = kmac_data_i.ready ? StOpWait : StTxLast;
 
         if (cnt_err) begin
-          state_d = StInvalid;
+          state_d = StError;
         end
       end
 
