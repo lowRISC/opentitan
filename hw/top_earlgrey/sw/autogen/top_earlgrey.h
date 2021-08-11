@@ -1296,7 +1296,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt3 = 38, /**< sensor_ctrl_aon_recov_ot3 */
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt4 = 39, /**< sensor_ctrl_aon_recov_ot4 */
   kTopEarlgreyAlertIdSensorCtrlAonRecovOt5 = 40, /**< sensor_ctrl_aon_recov_ot5 */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalBusIntegError = 41, /**< sram_ctrl_ret_aon_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalError = 41, /**< sram_ctrl_ret_aon_fatal_error */
   kTopEarlgreyAlertIdFlashCtrlRecovErr = 42, /**< flash_ctrl_recov_err */
   kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 43, /**< flash_ctrl_recov_mp_err */
   kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 44, /**< flash_ctrl_recov_ecc_err */
@@ -1314,7 +1314,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdEntropySrcFatalAlert = 56, /**< entropy_src_fatal_alert */
   kTopEarlgreyAlertIdEdn0FatalAlert = 57, /**< edn0_fatal_alert */
   kTopEarlgreyAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalBusIntegError = 59, /**< sram_ctrl_main_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdSramCtrlMainFatalError = 59, /**< sram_ctrl_main_fatal_error */
   kTopEarlgreyAlertIdOtbnFatal = 60, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 61, /**< otbn_recov */
   kTopEarlgreyAlertIdRomCtrlFatal = 62, /**< rom_ctrl_fatal */

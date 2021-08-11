@@ -49,7 +49,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   //
   virtual task req_mem_init();
     csr_wr(.ptr(ral.ctrl), .value(3));
-    csr_spinwait(.ptr(ral.ctrl.init), .exp_data(0));
+    csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
   endtask
 
   // Request a new scrambling key from the OTP interface.

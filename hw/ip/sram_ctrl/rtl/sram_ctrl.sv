@@ -51,8 +51,8 @@ module sram_ctrl
 );
 
   // This is later on pruned to the correct width at the SRAM wrapper interface.
-  parameter int Depth = MemSizeRam >> 2;
-  parameter int AddrWidth = prim_util_pkg::vbits(Depth);
+  parameter int unsigned Depth = MemSizeRam >> 2;
+  parameter int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
@@ -91,10 +91,13 @@ module sram_ctrl
   logic alert_test;
   assign alert_test = reg2hw.alert_test.q & reg2hw.alert_test.qe;
 
-  logic bus_integ_error, bus_integ_error_q;
-  assign bus_integ_error_q                = reg2hw.status.bus_integ_error.q;
+  logic bus_integ_error;
   assign hw2reg.status.bus_integ_error.d  = 1'b1;
-  assign hw2reg.status.bus_integ_error.de = bus_integ_error | bus_integ_error_q;
+  assign hw2reg.status.bus_integ_error.de = bus_integ_error;
+
+  logic init_error;
+  assign hw2reg.status.init_error.d  = 1'b1;
+  assign hw2reg.status.init_error.de = init_error;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -102,17 +105,17 @@ module sram_ctrl
   ) u_prim_alert_sender_parity (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test        ),
-    .alert_req_i   ( bus_integ_error   ),
-    .alert_ack_o   (                   ),
-    .alert_state_o (                   ),
-    .alert_rx_i    ( alert_rx_i[0]     ),
-    .alert_tx_o    ( alert_tx_o[0]     )
+    .alert_test_i  ( alert_test                   ),
+    .alert_req_i   ( bus_integ_error | init_error ),
+    .alert_ack_o   (                              ),
+    .alert_state_o (                              ),
+    .alert_rx_i    ( alert_rx_i[0]                ),
+    .alert_tx_o    ( alert_tx_o[0]                )
   );
 
-  //////////////////////////////////////////
-  // Lifecycle Escalation Synchronization //
-  //////////////////////////////////////////
+  /////////////////////////
+  // Escalation Triggers //
+  /////////////////////////
 
   lc_ctrl_pkg::lc_tx_t escalate_en;
   prim_lc_sync #(
@@ -123,6 +126,76 @@ module sram_ctrl
     .lc_en_i (lc_escalate_en_i),
     .lc_en_o (escalate_en)
   );
+
+  logic escalate;
+  assign escalate = (escalate_en != lc_ctrl_pkg::Off);
+  assign hw2reg.status.escalated.d  = 1'b1;
+  assign hw2reg.status.escalated.de = escalate;
+
+  // Aggregate external and internal escalation sources. This is used on countermeasures further
+  // below (key reset, transaction blocking and scrambling nonce reversal).
+  logic local_esc;
+  assign local_esc = escalate                   |
+                     init_error                 |
+                     bus_integ_error            |
+                     reg2hw.status.escalated.q  |
+                     reg2hw.status.init_error.q |
+                     reg2hw.status.bus_integ_error.q;
+
+  ///////////////////////
+  // HW Initialization //
+  ///////////////////////
+
+  // A write to the init register reloads the LFSR seed, resets the init counter and
+  // sets init_q to flag a pending initialization request.
+  logic init_trig;
+  assign init_trig = reg2hw.ctrl.init.q & reg2hw.ctrl.init.qe;
+
+  // We employ two redundant counters to guard against FI attacks.
+  // If any of the two is glitched and the two counter states do not agree,
+  // we trigger an alert.
+  logic [1:0] init_req, init_done, init_q;
+  logic [1:0][AddrWidth-1:0] init_cnt_q;
+  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
+
+    // These size_only buffers are instantiated in order to prevent
+    // optimization / merging of the two counters.
+    logic init_trig_buf;
+    prim_buf u_prim_buf_trig (
+      .in_i(init_trig),
+      .out_o(init_trig_buf)
+    );
+
+    // This waits until the scrambling keys are actually valid (this allows the SW to trigger
+    // key renewal and initialization at the same time).
+    assign init_req[k]  = init_q[k] & reg2hw.status.scr_key_valid.q;
+    assign init_done[k] = (init_cnt_q[k] == AddrWidth'(Depth - 1)) & init_req[k];
+
+    logic init_d;
+    assign init_d     = (init_done[k])  ? 1'b0 :
+                        (init_trig_buf) ? 1'b1 : init_q[k];
+
+    logic [AddrWidth-1:0] init_cnt_d;
+    assign init_cnt_d = (init_trig_buf) ? '0                   :
+                        (init_req[k])   ? init_cnt_q[k] + 1'b1 : init_cnt_q[k];
+
+    prim_flop #(
+      .Width(1+AddrWidth)
+    ) u_prim_flop_cnt (
+      .clk_i,
+      .rst_ni,
+      .d_i({init_d, init_cnt_d}),
+      .q_o({init_q[k], init_cnt_q[k]})
+    );
+  end
+
+  // Clear this bit on local escalation.
+  assign hw2reg.status.init_done.d  = init_done[0] & ~init_trig & ~local_esc;
+  assign hw2reg.status.init_done.de = init_done[0] | init_trig | local_esc;
+
+  // Check whether counter is glitched into an invalid state
+  assign init_error = {init_q[0], init_cnt_q[0]} !=
+                      {init_q[1], init_cnt_q[1]};
 
   ////////////////////////////
   // Scrambling Key Request //
@@ -138,33 +211,6 @@ module sram_ctrl
   assign key_req_pending_d = (key_req) ? 1'b1 :
                              (key_ack) ? 1'b0 : key_req_pending_q;
 
-  logic init_q, init_d;
-  logic init_trig, init_req, init_done;
-  logic [AddrWidth-1:0] init_cnt_d, init_cnt_q;
-  // A write to the init register reloads the LFSR seed, resets the init counter and
-  // sets init_q to flag a pending initialization request.
-  assign init_trig = reg2hw.ctrl.init.q & reg2hw.ctrl.init.qe;
-  // This waits until the scrambling keys are actually valid (this allows the SW to trigger
-  // key renewal and initialization at the same time).
-  assign init_req  = init_q & reg2hw.status.scr_key_valid.q;
-  assign init_done = (init_cnt_q == Depth - 1) & init_req;
-
-  assign init_d      = (init_done) ? 1'b0 :
-                       (init_trig) ? 1'b1 : init_q;
-
-  // TODO: Do we need to harden this counter long term?
-  assign init_cnt_d  = (init_trig) ? '0                :
-                       (init_req)  ? init_cnt_q + 1'b1 : init_cnt_q;
-
-  assign hw2reg.status.init_done.d  = init_done & ~init_trig;
-  assign hw2reg.status.init_done.de = init_done | init_trig;
-
-  // Trigger escalation
-  logic escalate;
-  assign escalate = (escalate_en != lc_ctrl_pkg::Off) | reg2hw.status.escalated.q;
-  assign hw2reg.status.escalated.d  = 1'b1;
-  assign hw2reg.status.escalated.de = escalate;
-
   // The SRAM scrambling wrapper will not accept any transactions while
   // the key req is pending or if we have escalated.
   // Note that we're not using key_valid_q here, such that the SRAM can be used
@@ -172,30 +218,28 @@ module sram_ctrl
   logic key_valid;
   assign key_valid = ~(key_req_pending_q | reg2hw.status.escalated.q);
 
-  assign hw2reg.status.scr_key_valid.d   = key_ack & ~key_req;
-  assign hw2reg.status.scr_key_valid.de  = key_req | key_ack;
+  // Clear this bit on local escalation.
+  assign hw2reg.status.scr_key_valid.d   = key_ack & ~key_req & ~local_esc;
+  assign hw2reg.status.scr_key_valid.de  = key_req | key_ack | local_esc;
 
+  // Clear this bit on local escalation.
   logic key_seed_valid;
-  assign hw2reg.status.scr_key_seed_valid.d  = key_seed_valid & ~escalate;
-  assign hw2reg.status.scr_key_seed_valid.de = key_ack | escalate;
+  assign hw2reg.status.scr_key_seed_valid.d  = key_seed_valid & ~local_esc;
+  assign hw2reg.status.scr_key_seed_valid.de = key_ack | local_esc;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      init_q            <= '0;
-      init_cnt_q        <= '0;
       key_req_pending_q <= 1'b0;
       key_q             <= RndCnstSramKey;
       nonce_q           <= RndCnstSramNonce;
     end else begin
-      init_q            <= init_d;
-      init_cnt_q        <= init_cnt_d;
       key_req_pending_q <= key_req_pending_d;
       if (key_ack) begin
         key_q   <= key_d;
         nonce_q <= nonce_d;
       end
       // This scraps the keys.
-      if (escalate) begin
+      if (local_esc) begin
         key_q   <= RndCnstSramKey;
         nonce_q <= RndCnstSramNonce;
       end
@@ -264,7 +308,7 @@ module sram_ctrl
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .lfsr_en_i(init_req),
+    .lfsr_en_i(init_req[0]),
     .seed_en_i(init_trig),
     .seed_i(nonce_q[NonceWidth +: LfsrWidth]),
     .entropy_i('0),
@@ -319,13 +363,13 @@ module sram_ctrl
   );
 
   // Interposing mux logic for initialization with pseudo random data.
-  assign sram_req        = tlul_req | init_req;
-  assign tlul_gnt        = sram_gnt & ~init_req;
-  assign sram_we         = tlul_we | init_req;
-  assign sram_intg_error = bus_integ_error_q & ~init_req;
-  assign sram_addr       = (init_req) ? init_cnt_q        : tlul_addr;
-  assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
-  assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
+  assign sram_req        = tlul_req | init_req[0];
+  assign tlul_gnt        = sram_gnt & ~init_req[0];
+  assign sram_we         = tlul_we | init_req[0];
+  assign sram_intg_error = local_esc & ~init_req[0];
+  assign sram_addr       = (init_req[0]) ? init_cnt_q[0]     : tlul_addr;
+  assign sram_wdata      = (init_req[0]) ? lfsr_out_integ    : tlul_wdata;
+  assign sram_wmask      = (init_req[0]) ? {DataWidth{1'b1}} : tlul_wmask;
 
   prim_ram_1p_scr #(
     .Width(DataWidth),

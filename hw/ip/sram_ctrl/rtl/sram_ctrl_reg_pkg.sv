@@ -28,6 +28,9 @@ package sram_ctrl_reg_pkg;
     } bus_integ_error;
     struct packed {
       logic        q;
+    } init_error;
+    struct packed {
+      logic        q;
     } escalated;
     struct packed {
       logic        q;
@@ -63,6 +66,10 @@ package sram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } init_error;
+    struct packed {
+      logic        d;
+      logic        de;
     } escalated;
     struct packed {
       logic        d;
@@ -80,15 +87,15 @@ package sram_ctrl_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [13:12]
-    sram_ctrl_reg2hw_status_reg_t status; // [11:7]
+    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [14:13]
+    sram_ctrl_reg2hw_status_reg_t status; // [12:7]
     sram_ctrl_reg2hw_exec_reg_t exec; // [6:4]
     sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [3:0]
   } sram_ctrl_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    sram_ctrl_hw2reg_status_reg_t status; // [9:0]
+    sram_ctrl_hw2reg_status_reg_t status; // [11:0]
   } sram_ctrl_regs_hw2reg_t;
 
   // Register offsets for regs interface
@@ -101,7 +108,7 @@ package sram_ctrl_reg_pkg;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_ERROR_RESVAL = 1'h 0;
 
   // Register index for regs interface
   typedef enum int {

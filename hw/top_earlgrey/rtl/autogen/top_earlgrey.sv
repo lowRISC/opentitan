@@ -1888,7 +1888,7 @@ module top_earlgrey #(
     .MemSizeRam(4096),
     .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
-      // [41]: fatal_bus_integ_error
+      // [41]: fatal_error
       .alert_tx_o  ( alert_tx[41:41] ),
       .alert_rx_i  ( alert_rx[41:41] ),
 
@@ -2280,7 +2280,7 @@ module top_earlgrey #(
     .MemSizeRam(131072),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
-      // [59]: fatal_bus_integ_error
+      // [59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),
       .alert_rx_i  ( alert_rx[59:59] ),
 

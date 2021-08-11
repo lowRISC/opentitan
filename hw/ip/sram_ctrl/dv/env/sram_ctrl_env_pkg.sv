@@ -24,7 +24,7 @@ package sram_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = { "fatal_bus_integ_error"};
+  parameter string LIST_OF_ALERTS[] = { "fatal_error"};
   parameter uint   NUM_ALERTS = 1;
 
   // Number of bits in the otp_ctrl_pkg::sram_otp_key_rsp_t struct:
@@ -48,11 +48,12 @@ package sram_ctrl_env_pkg;
   } sram_ctrl_e;
 
   typedef enum bit [2:0] {
-    SramCtrlError           = 0,
-    SramCtrlEscalated       = 1,
-    SramCtrlScrKeyValid     = 2,
-    SramCtrlScrKeySeedValid = 3,
-    SramCtrlInitDone        = 4
+    SramCtrlBusIntegError   = 0,
+    SramCtrlInitError       = 1,
+    SramCtrlEscalated       = 2,
+    SramCtrlScrKeyValid     = 3,
+    SramCtrlScrKeySeedValid = 4,
+    SramCtrlInitDone        = 5
   } sram_ctrl_status_e;
 
   // package sources

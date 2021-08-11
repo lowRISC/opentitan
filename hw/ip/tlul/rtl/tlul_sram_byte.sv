@@ -69,6 +69,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
   logic wr_txn;
   logic byte_wr_txn;
   logic byte_req_ack;
+  logic a_ack_q, a_ack_d;
 
   assign a_ack = tl_i.a_valid & tl_o.a_ready;
   assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
@@ -80,9 +81,12 @@ module tlul_sram_byte import tlul_pkg::*; #(
   if (EnableIntg) begin : gen_dyn_sel
     assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
     assign sel_int = byte_wr_txn | stall_host ? SelInt : SelPassThru;
+    // TODO(#7461): remove this register, once this issue has been addressed.
+    assign a_ack_d = a_ack;
   end else begin : gen_static_sel
     assign byte_wr_txn = '0;
     assign sel_int = SelPassThru;
+    assign a_ack_d = 1'b0;
   end
 
   // state machine handling
@@ -94,8 +98,13 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     unique case (state_q)
       StPassThru: begin
-
-        if (byte_req_ack) begin
+        // TODO(#7461): remove the first if condition once all RAW corner cases are handled in DV.
+        // This introduces an artificial bubble before entering a read modify write operation
+        // in case there was another transaction right before this one. This ensures that the
+        // previous operation can complete.
+        if (byte_wr_txn && a_ack_q) begin
+          stall_host = 1'b1;
+        end else if (byte_req_ack) begin
           state_d = StWaitRd;
         end
       end
@@ -119,6 +128,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       end
 
       // TODO(#7461): remove this once all RAW corner cases are handled in DV.
+      // This state artificially introduces a bubble after each read modify write
+      // operation such that it can complete.
       StWait: begin
         stall_host = 1'b1;
         state_d = StPassThru;
@@ -128,6 +139,14 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     endcase // unique case (state_q)
 
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+       a_ack_q <= 1'b0;
+    end else begin
+       a_ack_q <= a_ack_d;
+    end
   end
 
   // prim fifo for capturing info

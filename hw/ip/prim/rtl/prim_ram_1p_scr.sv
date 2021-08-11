@@ -337,16 +337,18 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic rvalid_q;
   assign rvalid_o = rvalid_q;
 
+  logic intg_error_q;
   logic [Width-1:0] wmask_q;
   always_comb begin : p_forward_mux
     rdata_o = '0;
-    // regular reads
-    if (rvalid_q) begin
+    // regular reads. note that we just return zero in case
+    // an integrity error was signalled.
+    if (rvalid_q && !intg_error_q) begin
       rdata_o = rdata;
     end
     // In case of a collision, we forward the valid bytes of the write data from the unscrambled
     // holding register.
-    if (addr_collision_q) begin
+    if (addr_collision_q && !intg_error_q) begin
       for (int k = 0; k < Width; k++) begin
         if (wmask_q[k]) begin
           rdata_o[k] = wdata_q[k];
@@ -365,6 +367,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       addr_collision_q    <= 1'b0;
       rvalid_q            <= 1'b0;
       write_en_q          <= 1'b0;
+      intg_error_q        <= 1'b0;
       raddr_q             <= '0;
       waddr_q             <= '0;
       wmask_q             <= '0;
@@ -375,6 +378,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       addr_collision_q    <= addr_collision_d;
       rvalid_q            <= read_en;
       write_en_q          <= write_en_d;
+      intg_error_q        <= intg_error_i;
 
       if (read_en) begin
         raddr_q <= addr_i;
