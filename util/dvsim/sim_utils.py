@@ -16,21 +16,15 @@ from collections import OrderedDict
 # and the coverage was extracted successfully. It returns a tuple of:
 #   List of metrics and values
 #   Final coverage total
-#   Error message, if failed
+#
+# Raises the appropriate exception if the coverage summary extraction fails.
 def get_cov_summary_table(cov_report_txt, tool):
-    try:
-        with open(cov_report_txt, 'r') as f:
-            if tool == 'xcelium':
-                return xcelium_cov_summary_table(f)
-            if tool == 'vcs':
-                return vcs_cov_summary_table(f)
-
-            err_msg = "Unsupported tool for cov extraction: {}".format(tool)
-            return None, None, err_msg
-
-    except Exception as e:
-        err_msg = "Exception occurred: {}".format(str(e))
-        return None, None, err_msg
+    with open(cov_report_txt, 'r') as f:
+        if tool == 'xcelium':
+            return xcelium_cov_summary_table(f)
+        if tool == 'vcs':
+            return vcs_cov_summary_table(f)
+        raise NotImplementedError(f"{tool} is unsupported for cov extraction.")
 
 
 # Same desc as above, but specific to Xcelium and takes an opened input stream.
@@ -56,7 +50,7 @@ def xcelium_cov_summary_table(buf):
                 values = line.strip().split()
                 for i, value in enumerate(values):
                     value = value.strip()
-                    m = re.search(r"\((\d+)/(\d+)\)", value)
+                    m = re.search(r"\((\d+)/(\d+).*\)", value)
                     if m:
                         items[metrics[i]]['covered'] += int(m.group(1))
                         items[metrics[i]]['total'] += int(m.group(2))
@@ -75,11 +69,10 @@ def xcelium_cov_summary_table(buf):
                     values.append(value)
                     if metric == 'Score':
                         cov_total = value
-            return [metrics, values], cov_total, None
+            return [metrics, values], cov_total
 
     # If we reached here, then we were unable to extract the coverage.
-    err_msg = "ParseError: coverage data not found!"
-    return None, None, err_msg
+    raise SyntaxError(f"Coverage data not found in {buf.name}!")
 
 
 # Same desc as above, but specific to VCS and takes an opened input stream.
@@ -100,8 +93,7 @@ def vcs_cov_summary_table(buf):
                 values.append(val)
             # first row is coverage total
             cov_total = values[0]
-            return [metrics, values], cov_total, None
+            return [metrics, values], cov_total
 
     # If we reached here, then we were unable to extract the coverage.
-    err_msg = "ParseError: coverage data not found!"
-    return None, None, err_msg
+    raise SyntaxError(f"Coverage data not found in {buf.name}!")

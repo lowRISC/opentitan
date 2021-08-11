@@ -134,6 +134,12 @@ class Launcher:
         # Store the deploy object handle.
         self.deploy = deploy
 
+        # Status of the job. This is primarily determined by the
+        # _check_status() method, but eventually updated by the _post_finish()
+        # method, in case any of the cleanup tasks fails. This value is finally
+        # returned to the Scheduler by the poll() method.
+        self.status = None
+
         # Return status of the process running the job.
         self.exit_code = None
 
@@ -160,7 +166,6 @@ class Launcher:
         """
 
         dest = Path(self.deploy.sim_cfg.links[status], self.deploy.qual_name)
-
         mk_symlink(self.deploy.odir, dest)
 
         # Delete the symlink from dispatched directory if it exists.
@@ -302,11 +307,24 @@ class Launcher:
         """
 
         assert status in ['P', 'F', 'K']
-        if status in ['P', 'F']:
-            self._link_odir(status)
-        self.deploy.post_finish(status)
+        self._link_odir(status)
         log.debug("Item %s has completed execution: %s", self, status)
-        if status != "P":
+
+        try:
+            # Run the target-specific cleanup tasks regardless of the job's
+            # outcome.
+            self.deploy.post_finish(status)
+        except Exception as e:
+            # If the job had already failed, then don't do anything. If it's
+            # cleanup task failed, then mark the job as failed.
+            if status == "P":
+                status = "F"
+                err_msg = ErrorMessage(line_number=None,
+                                       message=f"{e}",
+                                       context=[])
+
+        self.status = status
+        if self.status != "P":
             assert err_msg and isinstance(err_msg, ErrorMessage)
             self.fail_msg = err_msg
             log.log(VERBOSE, err_msg.message)

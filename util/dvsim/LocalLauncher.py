@@ -80,7 +80,7 @@ class LocalLauncher(Launcher):
         self.exit_code = self.process.returncode
         status, err_msg = self._check_status()
         self._post_finish(status, err_msg)
-        return status
+        return self.status
 
     def kill(self):
         '''Kill the running process.
@@ -104,9 +104,9 @@ class LocalLauncher(Launcher):
                                             context=[]))
 
     def _post_finish(self, status, err_msg):
-        super()._post_finish(status, err_msg)
         self._close_process()
         self.process = None
+        super()._post_finish(status, err_msg)
 
     def _close_process(self):
         '''Close the file descriptors associated with the process.'''
