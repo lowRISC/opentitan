@@ -66,6 +66,30 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
     case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED3:
       *state = kDifLcCtrlStateTestUnlocked3;
       break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED3:
+      *state = kDifLcCtrlStateTestLocked3;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED4:
+      *state = kDifLcCtrlStateTestUnlocked4;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED4:
+      *state = kDifLcCtrlStateTestLocked4;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED5:
+      *state = kDifLcCtrlStateTestUnlocked5;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED5:
+      *state = kDifLcCtrlStateTestLocked5;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED6:
+      *state = kDifLcCtrlStateTestUnlocked6;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED6:
+      *state = kDifLcCtrlStateTestLocked6;
+      break;
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED7:
+      *state = kDifLcCtrlStateTestUnlocked7;
+      break;
     case LC_CTRL_LC_STATE_STATE_VALUE_DEV:
       *state = kDifLcCtrlStateDev;
       break;
@@ -316,6 +340,30 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
       break;
     case kDifLcCtrlStateTestUnlocked3:
       target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED3;
+      break;
+    case kDifLcCtrlStateTestLocked3:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_LOCKED3;
+      break;
+    case kDifLcCtrlStateTestUnlocked4:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED4;
+      break;
+    case kDifLcCtrlStateTestLocked4:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_LOCKED4;
+      break;
+    case kDifLcCtrlStateTestUnlocked5:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED5;
+      break;
+    case kDifLcCtrlStateTestLocked5:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_LOCKED5;
+      break;
+    case kDifLcCtrlStateTestUnlocked6:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED6;
+      break;
+    case kDifLcCtrlStateTestLocked6:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_LOCKED6;
+      break;
+    case kDifLcCtrlStateTestUnlocked7:
+      target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED7;
       break;
     case kDifLcCtrlStateDev:
       target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_DEV;

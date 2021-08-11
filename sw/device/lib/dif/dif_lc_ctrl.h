@@ -141,6 +141,54 @@ typedef enum dif_lc_ctrl_state_t {
    */
   kDifLcCtrlStateTestUnlocked3,
   /**
+   * The third locked test state.
+   *
+   * All functions are disabled.
+   */
+  kDifLcCtrlStateTestLocked3,
+  /**
+   * The fourth test state.
+   *
+   * Debug functions are enabled.
+   */
+  kDifLcCtrlStateTestUnlocked4,
+  /**
+   * The fourth locked test state.
+   *
+   * All functions are disabled.
+   */
+  kDifLcCtrlStateTestLocked4,
+  /**
+   * The fifth test state.
+   *
+   * Debug functions are enabled.
+   */
+  kDifLcCtrlStateTestUnlocked5,
+  /**
+   * The fifth locked test state.
+   *
+   * All functions are disabled.
+   */
+  kDifLcCtrlStateTestLocked5,
+  /**
+   * The sixth test state.
+   *
+   * Debug functions are enabled.
+   */
+  kDifLcCtrlStateTestUnlocked6,
+  /**
+   * The sixth locked test state.
+   *
+   * All functions are disabled.
+   */
+  kDifLcCtrlStateTestLocked6,
+  /**
+   * The seventh test state.
+   *
+   * Debug functions are enabled.
+   */
+  kDifLcCtrlStateTestUnlocked7,
+  /**
    * The development state.
    *
    * Some debug functions are enabled.
