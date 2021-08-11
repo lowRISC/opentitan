@@ -124,20 +124,6 @@ typedef uint32_t dif_rv_plic_irq_id_t;
 typedef uint32_t dif_rv_plic_target_t;
 
 /**
- * An interrupt trigger type.
- */
-typedef enum dif_rv_plic_irq_trigger {
-  /**
-   * Trigger on an edge (when the signal changes from low to high).
-   */
-  kDifRvPlicIrqTriggerEdge,
-  /**
-   * Trigger on a level (when the signal remains high).
-   */
-  kDifRvPlicIrqTriggerLevel,
-} dif_rv_plic_irq_trigger_t;
-
-/**
  * Creates a new handle for PLIC.
  *
  * This function does not actuate the hardware.

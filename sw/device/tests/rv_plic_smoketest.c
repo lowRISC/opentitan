@@ -128,7 +128,7 @@ static void uart_configure_irqs(dif_uart_t *uart) {
 /**
  * Configures all the relevant interrupts in PLIC.
  */
-static void plic_configure_irqs(dif_plic_t *plic) {
+static void plic_configure_irqs(dif_rv_plic_t *plic) {
   // Set IRQ priorities to MAX
   CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
                                      kDifRvPlicMaxPriority) == kDifRvPlicOk,

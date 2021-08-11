@@ -221,6 +221,11 @@ def checkAddressOverlap(addr, ranges):
     return len(result) != 0
 
 
+# this returns 1 if the size mask overlapps with the address base
+def checkBaseSizeOverlap(addr_base, size):
+    return ((size - 1) & addr_base)
+
+
 def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
     xbar = Xbar()
     xbar.name = obj["name"].lower()
@@ -281,6 +286,13 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
                 address_to = address_from + size - 1
 
                 addr_entry = (address_from, address_to)
+
+                if checkBaseSizeOverlap(address_from, size):
+                    log.error(
+                        "Size mask and base address are overlapping. "
+                        " Check the config. Addr(0x%x - 0x%x)"
+                        % (addr_entry[0], addr_entry[1]))
+                    raise SystemExit("Base/size overlapping error occurred")
 
                 if checkAddressOverlap(addr_entry, addr_ranges):
                     log.error(
