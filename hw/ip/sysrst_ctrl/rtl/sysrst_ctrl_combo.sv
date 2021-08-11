@@ -4,28 +4,30 @@
 //
 // Description: sysrst_ctrl combo Module
 //
-module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
-  input  clk_i,
-  input  rst_ni,
+module sysrst_ctrl_combo
+  import sysrst_ctrl_reg_pkg::*;
+(
+  input                                                                clk_i,
+  input                                                                rst_ni,
   // (Optionally) inverted input signals on AON clock
-  input  pwrb_int_i,
-  input  key0_int_i,
-  input  key1_int_i,
-  input  key2_int_i,
-  input  ac_present_int_i,
-  input  ec_rst_l_int_i,
+  input                                                                pwrb_int_i,
+  input                                                                key0_int_i,
+  input                                                                key1_int_i,
+  input                                                                key2_int_i,
+  input                                                                ac_present_int_i,
+  input                                                                ec_rst_l_int_i,
   // CSRs synced to AON clock
-  input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t                  ec_rst_ctl_i,
-  input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t       key_intr_debounce_ctl_i,
-  input  sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t [NumCombo-1:0] com_sel_ctl_i,
-  input  sysrst_ctrl_reg2hw_com_det_ctl_mreg_t [NumCombo-1:0] com_det_ctl_i,
-  input  sysrst_ctrl_reg2hw_com_out_ctl_mreg_t [NumCombo-1:0] com_out_ctl_i,
-  output sysrst_ctrl_hw2reg_combo_intr_status_reg_t           combo_intr_status_o,
+  input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t                           ec_rst_ctl_i,
+  input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t                key_intr_debounce_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t          [NumCombo-1:0] com_sel_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_det_ctl_mreg_t          [NumCombo-1:0] com_det_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_out_ctl_mreg_t          [NumCombo-1:0] com_out_ctl_i,
+  output sysrst_ctrl_hw2reg_combo_intr_status_reg_t                    combo_intr_status_o,
   // Output signals on AON clock
-  output sysrst_ctrl_combo_intr_o,
-  output bat_disable_hw_o,
-  output gsc_rst_o,
-  output ec_rst_l_hw_o
+  output                                                               sysrst_ctrl_combo_intr_o,
+  output                                                               bat_disable_hw_o,
+  output                                                               gsc_rst_o,
+  output                                                               ec_rst_l_hw_o
 );
 
   // There are four possible combos
@@ -36,20 +38,18 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   logic [NumCombo-1:0] combo_intr_pulse;
 
   logic [4:0] in;
-  assign in = {pwrb_int_i,
-               key0_int_i,
-               key1_int_i,
-               key2_int_i,
-               ac_present_int_i};
+  assign in = {pwrb_int_i, key0_int_i, key1_int_i, key2_int_i, ac_present_int_i};
 
-  for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combo_trigger
+  for (genvar k = 0; k < NumCombo; k++) begin : gen_combo_trigger
     // Generate the trigger for each combo
     logic [4:0] cfg_in_sel;
-    assign cfg_in_sel = {com_sel_ctl_i[k].pwrb_in_sel.q,
-                         com_sel_ctl_i[k].key0_in_sel.q,
-                         com_sel_ctl_i[k].key1_in_sel.q,
-                         com_sel_ctl_i[k].key2_in_sel.q,
-                         com_sel_ctl_i[k].ac_present_sel.q};
+    assign cfg_in_sel = {
+      com_sel_ctl_i[k].pwrb_in_sel.q,
+      com_sel_ctl_i[k].key0_in_sel.q,
+      com_sel_ctl_i[k].key1_in_sel.q,
+      com_sel_ctl_i[k].key2_in_sel.q,
+      com_sel_ctl_i[k].ac_present_sel.q
+    };
 
     // If the config bits are all-zero, we tie both trigger outputs to zero.
     // Otherwise:
@@ -68,7 +68,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
 
     //Instantiate the combo detection state machine
     logic combo_det;
-    sysrst_ctrl_combofsm # (
+    sysrst_ctrl_combofsm #(
       .Timer1Width(TimerWidth),
       .Timer2Width(DetTimerWidth)
     ) u_combo_fsm (
@@ -97,7 +97,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
       .bat_disable_o(combo_bat_disable[k]),
       .gsc_rst_o(combo_gsc_rst[k]),
       .ec_rst_l_o(combo_ec_rst_l[k])
-   );
+    );
   end
 
   // bat_disable

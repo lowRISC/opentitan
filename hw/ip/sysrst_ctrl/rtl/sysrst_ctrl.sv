@@ -57,16 +57,13 @@ module sysrst_ctrl
   // Alerts and CSR Node //
   /////////////////////////
 
-  import sysrst_ctrl_reg_pkg::* ;
+  import sysrst_ctrl_reg_pkg::*;
 
   sysrst_ctrl_reg2hw_t reg2hw;
   sysrst_ctrl_hw2reg_t hw2reg;
 
   logic [NumAlerts-1:0] alert_test, alerts;
-  assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
-  };
+  assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -75,12 +72,12 @@ module sysrst_ctrl
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
-      .alert_ack_o   (               ),
-      .alert_state_o (               ),
-      .alert_rx_i    ( alert_rx_i[i] ),
-      .alert_tx_o    ( alert_tx_o[i] )
+      .alert_test_i (alert_test[i]),
+      .alert_req_i  (alerts[0]),
+      .alert_ack_o  (),
+      .alert_state_o(),
+      .alert_rx_i   (alert_rx_i[i]),
+      .alert_tx_o   (alert_tx_o[i])
     );
   end
 
@@ -93,8 +90,8 @@ module sysrst_ctrl
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (alerts[0]),
-    .devmode_i  (1'b1)
+    .intg_err_o(alerts[0]),
+    .devmode_i (1'b1)
   );
 
   ///////////////////////////////////////
@@ -103,37 +100,33 @@ module sysrst_ctrl
 
   // Optionally invert some of the input signals
   logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int, ec_rst_l_int;
-  assign pwrb_int        = reg2hw.key_invert_ctl.pwrb_in.q     ^ cio_pwrb_in_i;
-  assign key0_int        = reg2hw.key_invert_ctl.key0_in.q     ^ cio_key0_in_i;
-  assign key1_int        = reg2hw.key_invert_ctl.key1_in.q     ^ cio_key1_in_i;
-  assign key2_int        = reg2hw.key_invert_ctl.key2_in.q     ^ cio_key2_in_i;
-  assign ac_present_int  = reg2hw.key_invert_ctl.ac_present.q  ^ cio_ac_present_i;
-  assign lid_open_int    = reg2hw.key_invert_ctl.lid_open.q    ^ cio_lid_open_i;
+  assign pwrb_int       = reg2hw.key_invert_ctl.pwrb_in.q ^ cio_pwrb_in_i;
+  assign key0_int       = reg2hw.key_invert_ctl.key0_in.q ^ cio_key0_in_i;
+  assign key1_int       = reg2hw.key_invert_ctl.key1_in.q ^ cio_key1_in_i;
+  assign key2_int       = reg2hw.key_invert_ctl.key2_in.q ^ cio_key2_in_i;
+  assign ac_present_int = reg2hw.key_invert_ctl.ac_present.q ^ cio_ac_present_i;
+  assign lid_open_int   = reg2hw.key_invert_ctl.lid_open.q ^ cio_lid_open_i;
   // Uninverted input
-  assign ec_rst_l_int    = cio_ec_rst_in_l_i;
+  assign ec_rst_l_int   = cio_ec_rst_in_l_i;
 
   // Synchronize input signals to AON clock
   logic aon_pwrb_int, aon_key0_int, aon_key1_int, aon_key2_int;
   logic aon_ac_present_int, aon_lid_open_int, aon_ec_rst_l_int;
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(7)
   ) u_prim_flop_2sync_input (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i({pwrb_int,
-          key0_int,
-          key1_int,
-          key2_int,
-          ac_present_int,
-          lid_open_int,
-          ec_rst_l_int}),
-    .q_o({aon_pwrb_int,
-          aon_key0_int,
-          aon_key1_int,
-          aon_key2_int,
-          aon_ac_present_int,
-          aon_lid_open_int,
-          aon_ec_rst_l_int})
+    .d_i({pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int, ec_rst_l_int}),
+    .q_o({
+      aon_pwrb_int,
+      aon_key0_int,
+      aon_key1_int,
+      aon_key2_int,
+      aon_ac_present_int,
+      aon_lid_open_int,
+      aon_ec_rst_l_int
+    })
   );
 
   ///////////////
@@ -291,22 +284,22 @@ module sysrst_ctrl
   );
 
   // Optionally invert some of the output signals
-  assign cio_pwrb_out_o     = reg2hw.key_invert_ctl.pwrb_out.q    ^ pwrb_out_int;
-  assign cio_key0_out_o     = reg2hw.key_invert_ctl.key0_out.q    ^ key0_out_int;
-  assign cio_key1_out_o     = reg2hw.key_invert_ctl.key1_out.q    ^ key1_out_int;
-  assign cio_key2_out_o     = reg2hw.key_invert_ctl.key2_out.q    ^ key2_out_int;
-  assign cio_bat_disable_o  = reg2hw.key_invert_ctl.bat_disable.q ^ aon_bat_disable_out_int;
-  assign cio_z3_wakeup_o    = reg2hw.key_invert_ctl.z3_wakeup.q   ^ aon_z3_wakeup_out_int;
+  assign cio_pwrb_out_o = reg2hw.key_invert_ctl.pwrb_out.q ^ pwrb_out_int;
+  assign cio_key0_out_o = reg2hw.key_invert_ctl.key0_out.q ^ key0_out_int;
+  assign cio_key1_out_o = reg2hw.key_invert_ctl.key1_out.q ^ key1_out_int;
+  assign cio_key2_out_o = reg2hw.key_invert_ctl.key2_out.q ^ key2_out_int;
+  assign cio_bat_disable_o = reg2hw.key_invert_ctl.bat_disable.q ^ aon_bat_disable_out_int;
+  assign cio_z3_wakeup_o = reg2hw.key_invert_ctl.z3_wakeup.q ^ aon_z3_wakeup_out_int;
   // uninverted output
   assign cio_ec_rst_out_l_o = aon_ec_rst_out_int;
 
   // These outputs are always enabled
-  assign cio_pwrb_out_en_o     = 1'b1;
-  assign cio_key0_out_en_o     = 1'b1;
-  assign cio_key1_out_en_o     = 1'b1;
-  assign cio_key2_out_en_o     = 1'b1;
-  assign cio_bat_disable_en_o  = 1'b1;
-  assign cio_z3_wakeup_en_o    = 1'b1;
+  assign cio_pwrb_out_en_o = 1'b1;
+  assign cio_key0_out_en_o = 1'b1;
+  assign cio_key1_out_en_o = 1'b1;
+  assign cio_key2_out_en_o = 1'b1;
+  assign cio_bat_disable_en_o = 1'b1;
+  assign cio_z3_wakeup_en_o = 1'b1;
   assign cio_ec_rst_out_l_en_o = 1'b1;
 
   ///////////////////////////
@@ -337,14 +330,14 @@ module sysrst_ctrl
   ) u_prim_intr_hw (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (gsc_wk),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
-    .intr_o                 (intr_sysrst_ctrl_o)
+    .event_intr_i          (gsc_wk),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.d),
+    .intr_o                (intr_sysrst_ctrl_o)
   );
 
   // All outputs should be known value after reset

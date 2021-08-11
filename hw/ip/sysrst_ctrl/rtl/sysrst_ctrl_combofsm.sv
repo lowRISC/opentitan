@@ -7,15 +7,15 @@
 module sysrst_ctrl_combofsm #(
   parameter int unsigned Timer1Width = 16,
   parameter int unsigned Timer2Width = 32
-  ) (
-  input                   clk_i,
-  input                   rst_ni,
-  input                   trigger_h_i,//input vector is all "1"
-  input                   trigger_l_i,//input vector is all "0"
-  input [Timer1Width-1:0] cfg_timer1_i,//debounce
-  input [Timer2Width-1:0] cfg_timer2_i,//detection
-  input                   cfg_h2l_en_i,
-  output logic            timer_h2l_cond_met_o
+) (
+  input                          clk_i,
+  input                          rst_ni,
+  input                          trigger_h_i,  //input vector is all "1"
+  input                          trigger_l_i,  //input vector is all "0"
+  input        [Timer1Width-1:0] cfg_timer1_i,  //debounce
+  input        [Timer2Width-1:0] cfg_timer2_i,  //detection
+  input                          cfg_h2l_en_i,
+  output logic                   timer_h2l_cond_met_o
 
 );
 
@@ -27,19 +27,19 @@ module sysrst_ctrl_combofsm #(
   logic [Timer2Width-1:0] timer2_cnt_d, timer2_cnt_q;
   logic timer2_cnt_clr, timer2_cnt_en;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_trigger_h_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_trigger_h_reg
     if (!rst_ni) begin
-      trigger_h_q    <= 1'b0;
+      trigger_h_q <= 1'b0;
     end else begin
-      trigger_h_q    <= trigger_h_i;
+      trigger_h_q <= trigger_h_i;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_trigger_l_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_trigger_l_reg
     if (!rst_ni) begin
-      trigger_l_q    <= 1'b0;
+      trigger_l_q <= 1'b0;
     end else begin
-      trigger_l_q    <= trigger_l_i;
+      trigger_l_q <= trigger_l_i;
     end
   end
 
@@ -57,48 +57,46 @@ module sysrst_ctrl_combofsm #(
   //Detection timer defines the time for input to be held(pressed)
   //FSM will enter the done state after the detection period
   typedef enum logic [1:0] {
-                            IDLE = 2'h0,
-                            WAIT1 = 2'h1,
-                            WAIT2 = 2'h2,
-                            DONE = 2'h3
-                            } timer_state_e;
+    IDLE  = 2'h0,
+    WAIT1 = 2'h1,
+    WAIT2 = 2'h2,
+    DONE  = 2'h3
+  } timer_state_e;
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_state_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_timer_state_reg
     if (!rst_ni) begin
-      timer_state_q    <= IDLE;
+      timer_state_q <= IDLE;
     end else begin
-      timer_state_q    <= timer_state_d;
+      timer_state_q <= timer_state_d;
     end
   end
 
   assign timer1_cnt_d = (timer1_cnt_en) ? timer1_cnt_q + 1'b1 : timer1_cnt_q;
   assign timer2_cnt_d = (timer2_cnt_en) ? timer2_cnt_q + 1'b1 : timer2_cnt_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer1_cnt_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_timer1_cnt_reg
     if (!rst_ni) begin
-      timer1_cnt_q    <= '0;
-    end
-    else if (timer1_cnt_clr) begin
+      timer1_cnt_q <= '0;
+    end else if (timer1_cnt_clr) begin
       timer1_cnt_q <= '0;
     end else begin
       timer1_cnt_q <= timer1_cnt_d;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer2_cnt_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_timer2_cnt_reg
     if (!rst_ni) begin
-      timer2_cnt_q    <= '0;
-    end
-    else if (timer2_cnt_clr) begin
+      timer2_cnt_q <= '0;
+    end else if (timer2_cnt_clr) begin
       timer2_cnt_q <= '0;
     end else begin
       timer2_cnt_q <= timer2_cnt_d;
     end
   end
 
-  always_comb begin: p_timer_fsm
+  always_comb begin : p_timer_fsm
     timer_state_d = timer_state_q;
     //outputs
     timer_h2l_cond_met_o = 1'b0;
@@ -109,7 +107,7 @@ module sysrst_ctrl_combofsm #(
 
     unique case (timer_state_q)
       IDLE: begin
-        if (cfg_h2l_en_i &&  trigger_h2l) begin
+        if (cfg_h2l_en_i && trigger_h2l) begin
           timer_state_d = WAIT1;
         end
       end
@@ -117,13 +115,11 @@ module sysrst_ctrl_combofsm #(
       WAIT1: begin
         if (timer1_cnt_q != cfg_timer1_i) begin
           timer1_cnt_en = 1'b1;
-        end
-        else if (!trigger_l2l && (timer1_cnt_q == cfg_timer1_i)) begin
-          timer_state_d = IDLE;
+        end else if (!trigger_l2l && (timer1_cnt_q == cfg_timer1_i)) begin
+          timer_state_d  = IDLE;
           timer1_cnt_clr = 1'b1;
-        end
-        else if (trigger_l2l && (timer1_cnt_q == cfg_timer1_i)) begin
-          timer_state_d = WAIT2;
+        end else if (trigger_l2l && (timer1_cnt_q == cfg_timer1_i)) begin
+          timer_state_d  = WAIT2;
           timer1_cnt_clr = 1'b1;
         end
       end
@@ -131,13 +127,11 @@ module sysrst_ctrl_combofsm #(
       WAIT2: begin
         if (timer2_cnt_q != cfg_timer2_i) begin
           timer2_cnt_en = 1'b1;
-        end
-        else if (!trigger_l2l && (timer2_cnt_q == cfg_timer2_i)) begin
-          timer_state_d = IDLE;
+        end else if (!trigger_l2l && (timer2_cnt_q == cfg_timer2_i)) begin
+          timer_state_d  = IDLE;
           timer2_cnt_clr = 1'b1;
-        end
-        else if (trigger_l2l && (timer2_cnt_q == cfg_timer2_i)) begin
-          timer_state_d = DONE;
+        end else if (trigger_l2l && (timer2_cnt_q == cfg_timer2_i)) begin
+          timer_state_d  = DONE;
           timer2_cnt_clr = 1'b1;
         end
       end
@@ -145,8 +139,7 @@ module sysrst_ctrl_combofsm #(
       DONE: begin
         if (trigger_l2l) begin
           timer_h2l_cond_met_o = 1'b1;
-        end
-        else if (trigger_l2h) begin
+        end else if (trigger_l2h) begin
           timer_state_d = IDLE;
         end
       end

@@ -4,28 +4,30 @@
 //
 // Description sysrst_ctrl PWRB autoblock module
 
-module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
-  input  clk_aon_i,
-  input  rst_aon_ni,
+module sysrst_ctrl_autoblock
+  import sysrst_ctrl_reg_pkg::*;
+(
+  input                                                   clk_aon_i,
+  input                                                   rst_aon_ni,
   // (Optionally) inverted input signals on AON clock
-  input  aon_pwrb_int_i,
+  input                                                   aon_pwrb_int_i,
   // (Optionally) inverted input signals (not synced to AON clock)
-  input  pwrb_int_i,
-  input  key0_int_i,
-  input  key1_int_i,
-  input  key2_int_i,
+  input                                                   pwrb_int_i,
+  input                                                   key0_int_i,
+  input                                                   key1_int_i,
+  input                                                   key2_int_i,
   // CSRs synced to AON clock
   input  sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t aon_auto_block_debounce_ctl_i,
   input  sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t      aon_auto_block_out_ctl_i,
   // Output signals to pin override logic (not synced to AON clock)
-  output pwrb_out_hw_o,
-  output key0_out_hw_o,
-  output key1_out_hw_o,
-  output key2_out_hw_o
+  output                                                  pwrb_out_hw_o,
+  output                                                  key0_out_hw_o,
+  output                                                  key1_out_hw_o,
+  output                                                  key2_out_hw_o
 );
 
   logic aon_ab_cond_met;
-  sysrst_ctrl_timerfsm # (
+  sysrst_ctrl_timerfsm #(
     .TimerWidth(TimerWidth)
   ) u_ab_fsm (
     .clk_i(clk_aon_i),
