@@ -1606,7 +1606,7 @@ typedef enum top_earlgrey_pinmux_outsel {
  * Power Manager Wakeup Signals
  */
 typedef enum top_earlgrey_power_manager_wake_ups {
-  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlAonGscWk = 0, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlAonAonGscWk = 0, /**<  */
   kTopEarlgreyPowerManagerWakeUpsAdcCtrlAonDebugCableWakeup = 1, /**<  */
   kTopEarlgreyPowerManagerWakeUpsPinmuxAonAonWkupReq = 2, /**<  */
   kTopEarlgreyPowerManagerWakeUpsPinmuxAonUsbWkupReq = 3, /**<  */
@@ -1632,7 +1632,7 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
  * Power Manager Reset Request Signals
  */
 typedef enum top_earlgrey_power_manager_reset_requests {
-  kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonGscRst = 0, /**<  */
+  kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonAonGscRst = 0, /**<  */
   kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 1, /**<  */
   kTopEarlgreyPowerManagerResetRequestsLast = 1, /**< \internal Last valid pwrmgr reset_request signal */
 } top_earlgrey_power_manager_reset_requests_t;

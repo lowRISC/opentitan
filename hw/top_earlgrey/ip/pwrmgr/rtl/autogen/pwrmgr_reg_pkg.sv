@@ -8,7 +8,7 @@ package pwrmgr_reg_pkg;
 
   // Param list
   parameter int NumWkups = 5;
-  parameter int GSC_WK_IDX = 0;
+  parameter int AON_GSC_WK_IDX = 0;
   parameter int DEBUG_CABLE_WAKEUP_IDX = 1;
   parameter int AON_WKUP_REQ_IDX = 2;
   parameter int USB_WKUP_REQ_IDX = 3;

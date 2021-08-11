@@ -1701,8 +1701,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[23:23] ),
 
       // Inter-module signals
-      .gsc_wk_o(pwrmgr_aon_wakeups[0]),
-      .gsc_rst_o(pwrmgr_aon_rstreqs[0]),
+      .aon_gsc_wk_o(pwrmgr_aon_wakeups[0]),
+      .aon_gsc_rst_o(pwrmgr_aon_rstreqs[0]),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 

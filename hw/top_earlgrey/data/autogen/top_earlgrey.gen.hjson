@@ -2709,7 +2709,7 @@
       inter_signal_list:
       [
         {
-          name: gsc_wk
+          name: aon_gsc_wk
           struct: logic
           type: uni
           act: req
@@ -2721,7 +2721,7 @@
           index: 0
         }
         {
-          name: gsc_rst
+          name: aon_gsc_rst
           struct: logic
           type: uni
           act: req
@@ -6701,7 +6701,7 @@
       ]
       pwrmgr_aon.wakeups:
       [
-        sysrst_ctrl_aon.gsc_wk
+        sysrst_ctrl_aon.aon_gsc_wk
         adc_ctrl_aon.debug_cable_wakeup
         pinmux_aon.aon_wkup_req
         pinmux_aon.usb_wkup_req
@@ -6709,7 +6709,7 @@
       ]
       pwrmgr_aon.rstreqs:
       [
-        sysrst_ctrl_aon.gsc_rst
+        sysrst_ctrl_aon.aon_gsc_rst
         aon_timer_aon.aon_timer_rst_req
       ]
       main.tl_rv_core_ibex__corei:
@@ -11506,7 +11506,7 @@
   wakeups:
   [
     {
-      name: gsc_wk
+      name: aon_gsc_wk
       width: "1"
       module: sysrst_ctrl_aon
     }
@@ -11534,7 +11534,7 @@
   reset_requests:
   [
     {
-      name: gsc_rst
+      name: aon_gsc_rst
       width: "1"
       module: sysrst_ctrl_aon
     }
@@ -14576,7 +14576,7 @@
         index: -1
       }
       {
-        name: gsc_wk
+        name: aon_gsc_wk
         struct: logic
         type: uni
         act: req
@@ -14588,7 +14588,7 @@
         index: 0
       }
       {
-        name: gsc_rst
+        name: aon_gsc_rst
         struct: logic
         type: uni
         act: req

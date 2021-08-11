@@ -16,8 +16,6 @@ filesets:
       - rtl/sysrst_ctrl_autoblock.sv
       - rtl/sysrst_ctrl_comboact.sv
       - rtl/sysrst_ctrl_combotrg.sv
-      - rtl/sysrst_ctrl_intr.sv
-      - rtl/sysrst_ctrl_inv.sv
       - rtl/sysrst_ctrl_pin.sv
       - rtl/sysrst_ctrl_keyintr.sv
       - rtl/sysrst_ctrl_timerfsm.sv
