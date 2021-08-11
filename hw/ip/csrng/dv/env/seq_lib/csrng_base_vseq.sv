@@ -56,6 +56,8 @@ class csrng_base_vseq extends cip_base_vseq #(
       // Drive cmd_req
       m_edn_push_seq[hwapp].start(p_sequencer.edn_sequencer_h[hwapp].m_cmd_push_sequencer);
     join_none
+    // Wait for ack
+    cfg.m_edn_agent_cfg[hwapp].vif.wait_cmd_ack();
   endtask
 
 endclass : csrng_base_vseq

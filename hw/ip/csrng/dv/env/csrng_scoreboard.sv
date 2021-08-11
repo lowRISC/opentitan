@@ -161,7 +161,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // From NIST.SP.800-90Ar1
-  function automatic bit [csrng_env_pkg::BLOCK_LEN-1:0] block_encrypt(
+  function bit [csrng_env_pkg::BLOCK_LEN-1:0] block_encrypt(
       bit [csrng_env_pkg::KEY_LEN-1:0]   key,
       bit [csrng_env_pkg::BLOCK_LEN-1:0] input_block);
 
@@ -175,7 +175,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     return output_block;
   endfunction
 
-  function automatic void ctr_drbg_update(uint hwapp,
+  function void ctr_drbg_update(uint hwapp,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] provided_data);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   temp;
@@ -206,22 +206,22 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.v[hwapp] = temp[csrng_env_pkg::BLOCK_LEN-1:0];
   endfunction
 
-  function automatic void ctr_drbg_instantiate(uint hwapp,
+  function void ctr_drbg_instantiate(uint hwapp,
                                      bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
                                      bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                          personalization_string = 'h0);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
 
-    seed_material = entropy_input ^ personalization_string;
+    seed_material  = entropy_input ^ personalization_string;
     cfg.key[hwapp] = 'h0;
-    cfg.v[hwapp] = 'h0;
+    cfg.v[hwapp]   = 'h0;
     ctr_drbg_update(hwapp, seed_material);
     cfg.reseed_counter[hwapp] = 1'b1;
-    cfg.status[hwapp] = 1'b1;
+    cfg.status[hwapp]         = 1'b1;
   endfunction
 
-  function automatic void ctr_drbg_reseed(uint hwapp,
+  function void ctr_drbg_reseed(uint hwapp,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                     additional_input = 'h0);
@@ -233,7 +233,14 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.reseed_counter[hwapp] = 1'b1;
   endfunction
 
-  task automatic process_csrng_cmd_fifo(uint hwapp);
+  function void ctr_drbg_uninstantiate(uint hwapp);
+    cfg.key[hwapp] = 'h0;
+    cfg.v[hwapp]   = 'h0;
+    cfg.reseed_counter[hwapp] = 1'b0;
+    cfg.status[hwapp]         = 1'b0;
+  endfunction
+
+  task process_csrng_cmd_fifo(uint hwapp);
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed;
     csrng_item                                   cs_item;
 
@@ -247,6 +254,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         case (cs_item.acmd)
           csrng_pkg::INS: begin
             ctr_drbg_instantiate(hwapp, seed);
+          end
+          csrng_pkg::UNI: begin
+            ctr_drbg_uninstantiate(hwapp);
           end
         endcase
       end
