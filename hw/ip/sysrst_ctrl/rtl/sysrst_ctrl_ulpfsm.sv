@@ -5,26 +5,25 @@
 // Description sysrst_ctrl ULP FSM module
 
 module sysrst_ctrl_ulpfsm #(
-  parameter bit [15:0] EDGE_TYPE = "H", // can be LH, HL and H
-  parameter int unsigned TIMERBIT = 16
-  ) (
-  input                clk_aon_i,
-  input                rst_aon_ni,
-  input                trigger_i,
-  input [TIMERBIT-1:0] cfg_timer_i,
-  input                cfg_en_i,
-  output logic         timer_cond_met_o
-
+  parameter bit [15:0] EdgeType = "H", // can be LH, HL and H
+  parameter int unsigned TimerWidth = 16
+) (
+  input                  clk_i,
+  input                  rst_ni,
+  input                  trigger_i,
+  input [TimerWidth-1:0] cfg_timer_i,
+  input                  cfg_en_i,
+  output logic           timer_cond_met_o
 );
 
   logic trigger_q;
   logic trigger, trigger_stable;
 
-  logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
+  logic [TimerWidth-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_trigger_reg
+    if (!rst_ni) begin
       trigger_q    <= 1'b0;
     end
     else if (!cfg_en_i) begin
@@ -34,10 +33,10 @@ module sysrst_ctrl_ulpfsm #(
     end
   end
 
-  if (EDGE_TYPE == "LH") begin : gen_trigger_l2h
+  if (EdgeType == "LH") begin : gen_trigger_l2h
     assign trigger = (trigger_q == 1'b0) && (trigger_i == 1'b1);
     assign trigger_stable = (trigger_q == trigger_i) && (trigger_i == 1'b1);
-  end else if (EDGE_TYPE == "HL")  begin : gen_trigger_h2l
+  end else if (EdgeType == "HL")  begin : gen_trigger_h2l
     assign trigger = (trigger_q == 1'b1) && (trigger_i == 1'b0);
     assign trigger_stable = (trigger_q == trigger_i) && (trigger_i == 1'b0);
   end else begin: gen_trigger_h
@@ -60,8 +59,8 @@ module sysrst_ctrl_ulpfsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_state_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_state_reg
+    if (!rst_ni) begin
       timer_state_q    <= IDLE_ST;
     end
     else begin
@@ -71,8 +70,8 @@ module sysrst_ctrl_ulpfsm #(
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_cnt_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_cnt_reg
+    if (!rst_ni) begin
       timer_cnt_q    <= '0;
     end
     else if (timer_cnt_clr ) begin

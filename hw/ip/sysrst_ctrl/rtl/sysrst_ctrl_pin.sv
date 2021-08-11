@@ -8,7 +8,7 @@
 module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  clk_i,
   input  rst_ni,
-
+  // Raw input signals (not synced to AON clock)
   input  cio_pwrb_in_i,
   input  cio_key0_in_i,
   input  cio_key1_in_i,
@@ -16,28 +16,30 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  cio_ac_present_i,
   input  cio_ec_rst_in_l_i,
   input  cio_lid_open_i,
-
+  // Signals from autoblock (not synced to AON clock)
   input  pwrb_out_hw_i,
   input  key0_out_hw_i,
   input  key1_out_hw_i,
   input  key2_out_hw_i,
-  input  bat_disable_hw_i,
-  input  ec_rst_l_hw_i,
-  input  z3_wakeup_hw_i,
-
-  input  sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl_i,
-  input  sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl_i,
-  input  sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value_i,
-
+  // Generated signals, running on AON clock
+  input  aon_bat_disable_hw_i,
+  input  aon_ec_rst_l_hw_i,
+  input  aon_z3_wakeup_hw_i,
+  // CSRs synced to AON clock
+  input  sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t aon_pin_allowed_ctl_i,
+  input  sysrst_ctrl_reg2hw_pin_out_ctl_reg_t aon_pin_out_ctl_i,
+  input  sysrst_ctrl_reg2hw_pin_out_value_reg_t aon_pin_out_value_i,
+  // CSRs synced to bus clock
   output sysrst_ctrl_hw2reg_pin_in_value_reg_t pin_in_value_o,
-
+  // Output signals (not synced to AON clock)
   output pwrb_out_int_o,
   output key0_out_int_o,
   output key1_out_int_o,
   output key2_out_int_o,
-  output bat_disable_int_o,
-  output z3_wakeup_int_o,
-  output cio_ec_rst_out_l_o
+  // Output signals running on AON clock
+  output aon_bat_disable_out_int_o,
+  output aon_z3_wakeup_out_int_o,
+  output aon_ec_rst_out_int_l_o
 
 );
 
@@ -74,54 +76,54 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
 
   // Pin override logic.
   localparam int NumSignals = 7;
-  logic [NumSignals-1:0] inputs, outputs, enabled, values, allowed0, allowed1;
+  logic [NumSignals-1:0] inputs, outputs, aon_enabled, aon_values, aon_allowed0, aon_allowed1;
   assign inputs = {pwrb_out_hw_i,
                    key0_out_hw_i,
                    key1_out_hw_i,
                    key2_out_hw_i,
-                   z3_wakeup_hw_i,
-                   bat_disable_hw_i,
-                   ec_rst_l_hw_i};
-  assign enabled = {pin_out_ctl_i.pwrb_out.q,
-                    pin_out_ctl_i.key0_out.q,
-                    pin_out_ctl_i.key1_out.q,
-                    pin_out_ctl_i.key2_out.q,
-                    pin_out_ctl_i.z3_wakeup.q,
-                    pin_out_ctl_i.bat_disable.q,
-                    pin_out_ctl_i.ec_rst_l.q};
-  assign values =  {pin_out_value_i.pwrb_out.q,
-                    pin_out_value_i.key0_out.q,
-                    pin_out_value_i.key1_out.q,
-                    pin_out_value_i.key2_out.q,
-                    pin_out_value_i.z3_wakeup.q,
-                    pin_out_value_i.bat_disable.q,
-                    pin_out_value_i.ec_rst_l.q};
-  assign allowed0 = {pin_allowed_ctl_i.pwrb_out_0.q,
-                     pin_allowed_ctl_i.key0_out_0.q,
-                     pin_allowed_ctl_i.key1_out_0.q,
-                     pin_allowed_ctl_i.key2_out_0.q,
-                     pin_allowed_ctl_i.z3_wakeup_0.q,
-                     pin_allowed_ctl_i.bat_disable_0.q,
-                     pin_allowed_ctl_i.ec_rst_l_0.q};
-  assign allowed1 = {pin_allowed_ctl_i.pwrb_out_1.q,
-                     pin_allowed_ctl_i.key0_out_1.q,
-                     pin_allowed_ctl_i.key1_out_1.q,
-                     pin_allowed_ctl_i.key2_out_1.q,
-                     pin_allowed_ctl_i.z3_wakeup_1.q,
-                     pin_allowed_ctl_i.bat_disable_1.q,
-                     pin_allowed_ctl_i.ec_rst_l_1.q};
+                   aon_z3_wakeup_hw_i,
+                   aon_bat_disable_hw_i,
+                   aon_ec_rst_l_hw_i};
+  assign aon_enabled = {aon_pin_out_ctl_i.pwrb_out.q,
+                        aon_pin_out_ctl_i.key0_out.q,
+                        aon_pin_out_ctl_i.key1_out.q,
+                        aon_pin_out_ctl_i.key2_out.q,
+                        aon_pin_out_ctl_i.z3_wakeup.q,
+                        aon_pin_out_ctl_i.bat_disable.q,
+                        aon_pin_out_ctl_i.ec_rst_l.q};
+  assign aon_values =  {aon_pin_out_value_i.pwrb_out.q,
+                        aon_pin_out_value_i.key0_out.q,
+                        aon_pin_out_value_i.key1_out.q,
+                        aon_pin_out_value_i.key2_out.q,
+                        aon_pin_out_value_i.z3_wakeup.q,
+                        aon_pin_out_value_i.bat_disable.q,
+                        aon_pin_out_value_i.ec_rst_l.q};
+  assign aon_allowed0 = {aon_pin_allowed_ctl_i.pwrb_out_0.q,
+                         aon_pin_allowed_ctl_i.key0_out_0.q,
+                         aon_pin_allowed_ctl_i.key1_out_0.q,
+                         aon_pin_allowed_ctl_i.key2_out_0.q,
+                         aon_pin_allowed_ctl_i.z3_wakeup_0.q,
+                         aon_pin_allowed_ctl_i.bat_disable_0.q,
+                         aon_pin_allowed_ctl_i.ec_rst_l_0.q};
+  assign aon_allowed1 = {aon_pin_allowed_ctl_i.pwrb_out_1.q,
+                         aon_pin_allowed_ctl_i.key0_out_1.q,
+                         aon_pin_allowed_ctl_i.key1_out_1.q,
+                         aon_pin_allowed_ctl_i.key2_out_1.q,
+                         aon_pin_allowed_ctl_i.z3_wakeup_1.q,
+                         aon_pin_allowed_ctl_i.bat_disable_1.q,
+                         aon_pin_allowed_ctl_i.ec_rst_l_1.q};
 
   for (genvar k = 0; k < NumSignals; k++) begin : gen_override_logic
-    assign outputs[k] = (enabled[k] && allowed0[k] && !values[k]) ? 1'b0 :
-                        (enabled[k] && allowed1[k] &&  values[k]) ? 1'b1 : inputs[k];
+    assign outputs[k] = (aon_enabled[k] && aon_allowed0[k] && !aon_values[k]) ? 1'b0 :
+                        (aon_enabled[k] && aon_allowed1[k] &&  aon_values[k]) ? 1'b1 : inputs[k];
   end
 
   assign {pwrb_out_int_o,
           key0_out_int_o,
           key1_out_int_o,
           key2_out_int_o,
-          z3_wakeup_int_o,
-          bat_disable_int_o,
-          cio_ec_rst_out_l_o} = outputs;
+          aon_z3_wakeup_out_int_o,
+          aon_bat_disable_out_int_o,
+          aon_ec_rst_out_int_l_o} = outputs;
 
 endmodule

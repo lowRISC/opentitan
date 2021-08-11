@@ -144,8 +144,8 @@
       local: "true"
     },
 
-    { name: "GSC_WK_IDX",
-      desc: "Vector index for gsc_wk, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "AON_GSC_WK_IDX",
+      desc: "Vector index for aon_gsc_wk, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "0",
       local: "true"

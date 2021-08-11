@@ -160,6 +160,7 @@ module sysrst_ctrl_reg_top (
   logic wk_status_we;
   logic wk_status_qs;
   logic wk_status_wd;
+  logic wk_status_busy;
   logic key_invert_ctl_we;
   logic key_invert_ctl_key0_in_qs;
   logic key_invert_ctl_key0_in_wd;
@@ -493,37 +494,53 @@ module sysrst_ctrl_reg_top (
   logic combo_intr_status_we;
   logic combo_intr_status_combo0_h2l_qs;
   logic combo_intr_status_combo0_h2l_wd;
+  logic combo_intr_status_combo0_h2l_busy;
   logic combo_intr_status_combo1_h2l_qs;
   logic combo_intr_status_combo1_h2l_wd;
+  logic combo_intr_status_combo1_h2l_busy;
   logic combo_intr_status_combo2_h2l_qs;
   logic combo_intr_status_combo2_h2l_wd;
+  logic combo_intr_status_combo2_h2l_busy;
   logic combo_intr_status_combo3_h2l_qs;
   logic combo_intr_status_combo3_h2l_wd;
+  logic combo_intr_status_combo3_h2l_busy;
   logic key_intr_status_we;
   logic key_intr_status_pwrb_h2l_qs;
   logic key_intr_status_pwrb_h2l_wd;
+  logic key_intr_status_pwrb_h2l_busy;
   logic key_intr_status_key0_in_h2l_qs;
   logic key_intr_status_key0_in_h2l_wd;
+  logic key_intr_status_key0_in_h2l_busy;
   logic key_intr_status_key1_in_h2l_qs;
   logic key_intr_status_key1_in_h2l_wd;
+  logic key_intr_status_key1_in_h2l_busy;
   logic key_intr_status_key2_in_h2l_qs;
   logic key_intr_status_key2_in_h2l_wd;
+  logic key_intr_status_key2_in_h2l_busy;
   logic key_intr_status_ac_present_h2l_qs;
   logic key_intr_status_ac_present_h2l_wd;
+  logic key_intr_status_ac_present_h2l_busy;
   logic key_intr_status_ec_rst_l_h2l_qs;
   logic key_intr_status_ec_rst_l_h2l_wd;
+  logic key_intr_status_ec_rst_l_h2l_busy;
   logic key_intr_status_pwrb_l2h_qs;
   logic key_intr_status_pwrb_l2h_wd;
+  logic key_intr_status_pwrb_l2h_busy;
   logic key_intr_status_key0_in_l2h_qs;
   logic key_intr_status_key0_in_l2h_wd;
+  logic key_intr_status_key0_in_l2h_busy;
   logic key_intr_status_key1_in_l2h_qs;
   logic key_intr_status_key1_in_l2h_wd;
+  logic key_intr_status_key1_in_l2h_busy;
   logic key_intr_status_key2_in_l2h_qs;
   logic key_intr_status_key2_in_l2h_wd;
+  logic key_intr_status_key2_in_l2h_busy;
   logic key_intr_status_ac_present_l2h_qs;
   logic key_intr_status_ac_present_l2h_wd;
+  logic key_intr_status_ac_present_l2h_busy;
   logic key_intr_status_ec_rst_l_l2h_qs;
   logic key_intr_status_ec_rst_l_l2h_wd;
+  logic key_intr_status_ec_rst_l_l2h_busy;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -779,28 +796,24 @@ module sysrst_ctrl_reg_top (
 
   // R[wk_status]: V(False)
 
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_wk_status (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (wk_status_we),
-    .wd     (wk_status_wd),
-
-    // from internal hardware
-    .de     (hw2reg.wk_status.de),
-    .d      (hw2reg.wk_status.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.wk_status.q),
-
-    // to register interface (read)
-    .qs     (wk_status_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (wk_status_we),
+    .src_wd_i     (wk_status_wd),
+    .dst_de_i     (hw2reg.wk_status.de),
+    .dst_d_i      (hw2reg.wk_status.d),
+    .src_busy_o   (wk_status_busy),
+    .src_qs_o     (wk_status_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.wk_status.q)
   );
 
 
@@ -3262,420 +3275,356 @@ module sysrst_ctrl_reg_top (
   // R[combo_intr_status]: V(False)
 
   //   F[combo0_h2l]: 0:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo0_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (combo_intr_status_we),
-    .wd     (combo_intr_status_combo0_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.combo_intr_status.combo0_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo0_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (combo_intr_status_combo0_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (combo_intr_status_we),
+    .src_wd_i     (combo_intr_status_combo0_h2l_wd),
+    .dst_de_i     (hw2reg.combo_intr_status.combo0_h2l.de),
+    .dst_d_i      (hw2reg.combo_intr_status.combo0_h2l.d),
+    .src_busy_o   (combo_intr_status_combo0_h2l_busy),
+    .src_qs_o     (combo_intr_status_combo0_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[combo1_h2l]: 1:1
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo1_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (combo_intr_status_we),
-    .wd     (combo_intr_status_combo1_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.combo_intr_status.combo1_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo1_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (combo_intr_status_combo1_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (combo_intr_status_we),
+    .src_wd_i     (combo_intr_status_combo1_h2l_wd),
+    .dst_de_i     (hw2reg.combo_intr_status.combo1_h2l.de),
+    .dst_d_i      (hw2reg.combo_intr_status.combo1_h2l.d),
+    .src_busy_o   (combo_intr_status_combo1_h2l_busy),
+    .src_qs_o     (combo_intr_status_combo1_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[combo2_h2l]: 2:2
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo2_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (combo_intr_status_we),
-    .wd     (combo_intr_status_combo2_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.combo_intr_status.combo2_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo2_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (combo_intr_status_combo2_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (combo_intr_status_we),
+    .src_wd_i     (combo_intr_status_combo2_h2l_wd),
+    .dst_de_i     (hw2reg.combo_intr_status.combo2_h2l.de),
+    .dst_d_i      (hw2reg.combo_intr_status.combo2_h2l.d),
+    .src_busy_o   (combo_intr_status_combo2_h2l_busy),
+    .src_qs_o     (combo_intr_status_combo2_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[combo3_h2l]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo3_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (combo_intr_status_we),
-    .wd     (combo_intr_status_combo3_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.combo_intr_status.combo3_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo3_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (combo_intr_status_combo3_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (combo_intr_status_we),
+    .src_wd_i     (combo_intr_status_combo3_h2l_wd),
+    .dst_de_i     (hw2reg.combo_intr_status.combo3_h2l.de),
+    .dst_d_i      (hw2reg.combo_intr_status.combo3_h2l.d),
+    .src_busy_o   (combo_intr_status_combo3_h2l_busy),
+    .src_qs_o     (combo_intr_status_combo3_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   // R[key_intr_status]: V(False)
 
   //   F[pwrb_h2l]: 0:0
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_pwrb_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_pwrb_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.pwrb_h2l.de),
-    .d      (hw2reg.key_intr_status.pwrb_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_pwrb_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_pwrb_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.pwrb_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.pwrb_h2l.d),
+    .src_busy_o   (key_intr_status_pwrb_h2l_busy),
+    .src_qs_o     (key_intr_status_pwrb_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key0_in_h2l]: 1:1
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key0_in_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key0_in_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key0_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key0_in_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key0_in_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key0_in_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key0_in_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.key0_in_h2l.d),
+    .src_busy_o   (key_intr_status_key0_in_h2l_busy),
+    .src_qs_o     (key_intr_status_key0_in_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key1_in_h2l]: 2:2
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key1_in_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key1_in_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key1_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key1_in_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key1_in_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key1_in_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key1_in_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.key1_in_h2l.d),
+    .src_busy_o   (key_intr_status_key1_in_h2l_busy),
+    .src_qs_o     (key_intr_status_key1_in_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key2_in_h2l]: 3:3
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key2_in_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key2_in_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key2_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key2_in_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key2_in_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key2_in_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key2_in_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.key2_in_h2l.d),
+    .src_busy_o   (key_intr_status_key2_in_h2l_busy),
+    .src_qs_o     (key_intr_status_key2_in_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[ac_present_h2l]: 4:4
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ac_present_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_ac_present_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.ac_present_h2l.de),
-    .d      (hw2reg.key_intr_status.ac_present_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_ac_present_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_ac_present_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.ac_present_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.ac_present_h2l.d),
+    .src_busy_o   (key_intr_status_ac_present_h2l_busy),
+    .src_qs_o     (key_intr_status_ac_present_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[ec_rst_l_h2l]: 5:5
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ec_rst_l_h2l (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_ec_rst_l_h2l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.ec_rst_l_h2l.de),
-    .d      (hw2reg.key_intr_status.ec_rst_l_h2l.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_ec_rst_l_h2l_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_ec_rst_l_h2l_wd),
+    .dst_de_i     (hw2reg.key_intr_status.ec_rst_l_h2l.de),
+    .dst_d_i      (hw2reg.key_intr_status.ec_rst_l_h2l.d),
+    .src_busy_o   (key_intr_status_ec_rst_l_h2l_busy),
+    .src_qs_o     (key_intr_status_ec_rst_l_h2l_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[pwrb_l2h]: 6:6
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_pwrb_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_pwrb_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.pwrb_l2h.de),
-    .d      (hw2reg.key_intr_status.pwrb_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_pwrb_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_pwrb_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.pwrb_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.pwrb_l2h.d),
+    .src_busy_o   (key_intr_status_pwrb_l2h_busy),
+    .src_qs_o     (key_intr_status_pwrb_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key0_in_l2h]: 7:7
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key0_in_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key0_in_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key0_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key0_in_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key0_in_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key0_in_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key0_in_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.key0_in_l2h.d),
+    .src_busy_o   (key_intr_status_key0_in_l2h_busy),
+    .src_qs_o     (key_intr_status_key0_in_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key1_in_l2h]: 8:8
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key1_in_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key1_in_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key1_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key1_in_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key1_in_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key1_in_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key1_in_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.key1_in_l2h.d),
+    .src_busy_o   (key_intr_status_key1_in_l2h_busy),
+    .src_qs_o     (key_intr_status_key1_in_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[key2_in_l2h]: 9:9
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key2_in_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_key2_in_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.key2_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key2_in_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_key2_in_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_key2_in_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.key2_in_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.key2_in_l2h.d),
+    .src_busy_o   (key_intr_status_key2_in_l2h_busy),
+    .src_qs_o     (key_intr_status_key2_in_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[ac_present_l2h]: 10:10
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ac_present_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_ac_present_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.ac_present_l2h.de),
-    .d      (hw2reg.key_intr_status.ac_present_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_ac_present_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_ac_present_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.ac_present_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.ac_present_l2h.d),
+    .src_busy_o   (key_intr_status_ac_present_l2h_busy),
+    .src_qs_o     (key_intr_status_ac_present_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
   //   F[ec_rst_l_l2h]: 11:11
-  prim_subreg #(
+  prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ec_rst_l_l2h (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (key_intr_status_we),
-    .wd     (key_intr_status_ec_rst_l_l2h_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_intr_status.ec_rst_l_l2h.de),
-    .d      (hw2reg.key_intr_status.ec_rst_l_l2h.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (key_intr_status_ec_rst_l_l2h_qs)
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (key_intr_status_we),
+    .src_wd_i     (key_intr_status_ec_rst_l_l2h_wd),
+    .dst_de_i     (hw2reg.key_intr_status.ec_rst_l_l2h.de),
+    .dst_d_i      (hw2reg.key_intr_status.ec_rst_l_l2h.d),
+    .src_busy_o   (key_intr_status_ec_rst_l_l2h_busy),
+    .src_qs_o     (key_intr_status_ec_rst_l_l2h_qs),
+    .dst_qe_o     (),
+    .q            ()
   );
 
 
@@ -4328,6 +4277,9 @@ module sysrst_ctrl_reg_top (
       addr_hit[10]: begin
         reg_busy = ulp_status_busy;
       end
+      addr_hit[11]: begin
+        reg_busy = wk_status_busy;
+      end
       addr_hit[12]: begin
         reg_busy =
           key_invert_ctl_key0_in_busy |
@@ -4483,6 +4435,28 @@ module sysrst_ctrl_reg_top (
           com_out_ctl_3_interrupt_3_busy |
           com_out_ctl_3_ec_rst_3_busy |
           com_out_ctl_3_gsc_rst_3_busy;
+      end
+      addr_hit[33]: begin
+        reg_busy =
+          combo_intr_status_combo0_h2l_busy |
+          combo_intr_status_combo1_h2l_busy |
+          combo_intr_status_combo2_h2l_busy |
+          combo_intr_status_combo3_h2l_busy;
+      end
+      addr_hit[34]: begin
+        reg_busy =
+          key_intr_status_pwrb_h2l_busy |
+          key_intr_status_key0_in_h2l_busy |
+          key_intr_status_key1_in_h2l_busy |
+          key_intr_status_key2_in_h2l_busy |
+          key_intr_status_ac_present_h2l_busy |
+          key_intr_status_ec_rst_l_h2l_busy |
+          key_intr_status_pwrb_l2h_busy |
+          key_intr_status_key0_in_l2h_busy |
+          key_intr_status_key1_in_l2h_busy |
+          key_intr_status_key2_in_l2h_busy |
+          key_intr_status_ac_present_l2h_busy |
+          key_intr_status_ec_rst_l_l2h_busy;
       end
       default: begin
         reg_busy  = '0;

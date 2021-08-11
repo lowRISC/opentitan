@@ -5,12 +5,12 @@
 // Description sysrst_ctrl timer-based FSM module
 
 module sysrst_ctrl_timerfsm #(
-  parameter int unsigned TIMERBIT = 16
+  parameter int unsigned TimerWidth = 16
 ) (
-  input                clk_aon_i,
-  input                rst_aon_ni,
+  input                clk_i,
+  input                rst_ni,
   input                trigger_i,
-  input [TIMERBIT-1:0] cfg_timer_i,
+  input [TimerWidth-1:0] cfg_timer_i,
   input                cfg_l2h_en_i,
   input                cfg_h2l_en_i,
   output logic         timer_l2h_cond_met,
@@ -22,11 +22,11 @@ module sysrst_ctrl_timerfsm #(
   logic trigger_h2l, trigger_l2h, trigger_h2h, trigger_l2l;
   //logic trigger_tgl, trigger_sty;
 
-  logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
+  logic [TimerWidth-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_trigger_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_trigger_reg
+    if (!rst_ni) begin
       trigger_q    <= 1'b0;
     end else begin
       trigger_q    <= trigger_i;
@@ -56,8 +56,8 @@ module sysrst_ctrl_timerfsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_state_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_state_reg
+    if (!rst_ni) begin
       timer_state_q    <= IDLE;
     end else begin
       timer_state_q    <= timer_state_d;
@@ -66,8 +66,8 @@ module sysrst_ctrl_timerfsm #(
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: p_timer_cnt_reg
-    if (!rst_aon_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin: p_timer_cnt_reg
+    if (!rst_ni) begin
       timer_cnt_q    <= '0;
     end
     else if (timer_cnt_clr) begin
