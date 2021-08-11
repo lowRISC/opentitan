@@ -35,30 +35,36 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   logic [NumCombo-1:0] combo_gsc_rst;
   logic [NumCombo-1:0] combo_intr_pulse;
 
+  logic [4:0] in;
+  assign in = {pwrb_int_i,
+               key0_int_i,
+               key1_int_i,
+               key2_int_i,
+               ac_present_int_i};
+
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combo_trigger
     // Generate the trigger for each combo
+    logic [4:0] cfg_in_sel;
+    assign cfg_in_sel = {com_sel_ctl_i[k].pwrb_in_sel.q,
+                         com_sel_ctl_i[k].key0_in_sel.q,
+                         com_sel_ctl_i[k].key1_in_sel.q,
+                         com_sel_ctl_i[k].key2_in_sel.q,
+                         com_sel_ctl_i[k].ac_present_sel.q};
+
+    // If the config bits are all-zero, we tie both trigger outputs to zero.
+    // Otherwise:
+    //           - assert trigger_h_o when all selected bits are 1
+    //           - assert trigger_l_o when all selected bits are 0
     logic trigger_h, trigger_l;
-    sysrst_ctrl_combotrg u_combo_trg (
-      .cfg_in0_sel(com_sel_ctl_i[k].pwrb_in_sel.q),
-      .cfg_in1_sel(com_sel_ctl_i[k].key0_in_sel.q),
-      .cfg_in2_sel(com_sel_ctl_i[k].key1_in_sel.q),
-      .cfg_in3_sel(com_sel_ctl_i[k].key2_in_sel.q),
-      .cfg_in4_sel(com_sel_ctl_i[k].ac_present_sel.q),
-      .in0(pwrb_int_i),
-      .in1(key0_int_i),
-      .in2(key1_int_i),
-      .in3(key2_int_i),
-      .in4(ac_present_int_i),
-      .trigger_h_o(trigger_h),
-      .trigger_l_o(trigger_l)
-    );
+    assign trigger_h = (|cfg_in_sel) && ((in & cfg_in_sel) == cfg_in_sel);
+    assign trigger_l = (|cfg_in_sel) && ((in & cfg_in_sel) == '0);
 
     logic cfg_combo_en;
     assign cfg_combo_en = com_sel_ctl_i[k].pwrb_in_sel.q |
-                              com_sel_ctl_i[k].key0_in_sel.q |
-                              com_sel_ctl_i[k].key1_in_sel.q |
-                              com_sel_ctl_i[k].key2_in_sel.q |
-                              com_sel_ctl_i[k].ac_present_sel.q;
+                          com_sel_ctl_i[k].key0_in_sel.q |
+                          com_sel_ctl_i[k].key1_in_sel.q |
+                          com_sel_ctl_i[k].key2_in_sel.q |
+                          com_sel_ctl_i[k].ac_present_sel.q;
 
     //Instantiate the combo detection state machine
     logic combo_det;
