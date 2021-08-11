@@ -58,6 +58,24 @@
     }
 
     {
+      name: keymgr_sideload_kmac
+      uvm_test_seq: keymgr_sideload_one_intf_vseq
+      run_opts: ["+sideload_dest=Kmac"]
+    }
+
+    {
+      name: keymgr_sideload_aes
+      uvm_test_seq: keymgr_sideload_one_intf_vseq
+      run_opts: ["+sideload_dest=Aes"]
+    }
+
+    {
+      name: keymgr_sideload_otbn
+      uvm_test_seq: keymgr_sideload_one_intf_vseq
+      run_opts: ["+sideload_dest=Otbn"]
+    }
+
+    {
       name: keymgr_random
       uvm_test_seq: keymgr_random_vseq
     }

@@ -46,6 +46,7 @@ module tb;
     .clk_edn_i            (edn_clk    ),
     .rst_edn_ni           (edn_rst_n  ),
     .aes_key_o            (keymgr_if.aes_key),
+    .otbn_key_o           (keymgr_if.otbn_key),
     .kmac_key_o           (keymgr_if.kmac_key),
     .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
     .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),

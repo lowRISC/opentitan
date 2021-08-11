@@ -6,6 +6,7 @@
 `include "keymgr_smoke_vseq.sv"
 `include "keymgr_common_vseq.sv"
 `include "keymgr_sideload_vseq.sv"
+`include "keymgr_sideload_one_intf_vseq.sv"
 `include "keymgr_random_vseq.sv"
 `include "keymgr_cfg_regwen_vseq.sv"
 `include "keymgr_direct_to_disabled_vseq.sv"
