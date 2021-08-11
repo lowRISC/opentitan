@@ -54,6 +54,18 @@ TEST_F(StateTest, GetState) {
       {LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED2, kDifLcCtrlStateTestLocked2},
       {LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED3,
        kDifLcCtrlStateTestUnlocked3},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED3, kDifLcCtrlStateTestLocked3},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED4,
+       kDifLcCtrlStateTestUnlocked4},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED4, kDifLcCtrlStateTestLocked4},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED5,
+       kDifLcCtrlStateTestUnlocked5},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED5, kDifLcCtrlStateTestLocked5},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED6,
+       kDifLcCtrlStateTestUnlocked6},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_LOCKED6, kDifLcCtrlStateTestLocked6},
+      {LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED7,
+       kDifLcCtrlStateTestUnlocked7},
       {LC_CTRL_LC_STATE_STATE_VALUE_DEV, kDifLcCtrlStateDev},
       {LC_CTRL_LC_STATE_STATE_VALUE_PROD, kDifLcCtrlStateProd},
       {LC_CTRL_LC_STATE_STATE_VALUE_PROD_END, kDifLcCtrlStateProdEnd},
@@ -212,6 +224,17 @@ TEST_F(TransitionTest, WithToken) {
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
   EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked2, &token),
+            kDifLcCtrlMutexOk);
+
+  EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
+                 LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED6);
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET, LeInt("this"));
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_1_REG_OFFSET, LeInt(" is "));
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET, LeInt("a to"));
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
+  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked6, &token),
             kDifLcCtrlMutexOk);
 }
 
