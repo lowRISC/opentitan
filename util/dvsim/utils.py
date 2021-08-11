@@ -528,6 +528,14 @@ def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
     return md_results
 
 
+def purge_latest_report_dirs(path):
+    ''' Find and remove directories named `latest` under the given path'''
+
+    for subdir, dirs, files in os.walk(path):
+        for dirname in dirs:
+            if (dirname == "latest"):
+                rm_path(os.path.join(subdir, dirname))
+
 def rm_path(path, ignore_error=False):
     '''Removes the specified path if it exists.
 

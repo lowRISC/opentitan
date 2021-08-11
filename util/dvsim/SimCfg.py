@@ -19,7 +19,7 @@ from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from SimResults import SimResults
 from tabulate import tabulate
 from Testplan import Testplan
-from utils import VERBOSE, rm_path
+from utils import VERBOSE, purge_latest_report_dirs, mk_path, mk_symlink, rm_path
 
 
 # This affects the bucketizer failure report.
@@ -248,6 +248,7 @@ class SimCfg(FlowCfg):
         assert self.scratch_path
         log.info("Purging scratch path %s", self.scratch_path)
         rm_path(self.scratch_path)
+        purge_latest_report_dirs(os.path.join(self.scratch_base_path, "reports"))
 
     def _create_objects(self):
         # Create build and run modes objects
@@ -659,6 +660,14 @@ class SimCfg(FlowCfg):
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
+
+                    # Copy cov_report to the report directory and create a
+                    # symlink to the latest directory.
+                    dest_target_dir = os.path.join(self.results_path, "cov_report")
+                    dest_symlink_dir = os.path.join(self.symlink_path, "cov_report")
+                    mk_path(dest_symlink_dir)
+                    shutil.copytree(self.cov_report_dir, dest_target_dir)
+                    mk_symlink(dest_target_dir, dest_symlink_dir)
                 else:
                     self.results_summary["Coverage"] = "--"
 

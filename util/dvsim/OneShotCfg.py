@@ -12,7 +12,7 @@ from collections import OrderedDict
 from Deploy import CompileOneShot
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes
-from utils import rm_path
+from utils import purge_latest_report_dirs, rm_path
 
 
 class OneShotCfg(FlowCfg):
@@ -114,6 +114,7 @@ class OneShotCfg(FlowCfg):
         assert self.scratch_path
         log.info("Purging scratch path %s", self.scratch_path)
         rm_path(self.scratch_path)
+        purge_latest_report_dirs(os.path.join(self.scratch_base_path, "reports"))
 
     def _create_objects(self):
         # Create build and run modes objects
