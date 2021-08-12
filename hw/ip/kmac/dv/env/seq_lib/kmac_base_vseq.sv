@@ -140,16 +140,22 @@ class kmac_base_vseq extends cip_base_vseq #(
     }
   }
 
+  // Constrain valid and invalid mode/strength combinations based on the following:
+  // - only 128/256 bit strengths are supported for Shake/CShake
+  // - 128 bit strength is not supported for Sha3
   constraint strength_c {
     solve kmac_err_type before hash_mode;
     solve kmac_err_type before strength;
 
-    if (kmac_err_type != kmac_pkg::ErrUnexpectedModeStrength) {
-      // only 128/256 bit strengths are supported for the XOFs
+    if (kmac_err_type == kmac_pkg::ErrUnexpectedModeStrength) {
+      (hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake}) ->
+        !(strength inside {sha3_pkg::L128, sha3_pkg::L256});
+
+      (hash_mode == sha3_pkg::Sha3) -> (strength == sha3_pkg::L128);
+    } else {
       (hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake}) ->
         (strength inside {sha3_pkg::L128, sha3_pkg::L256});
 
-      // SHA3-128 is not supported
       (hash_mode == sha3_pkg::Sha3) -> (strength != sha3_pkg::L128);
     }
   }
