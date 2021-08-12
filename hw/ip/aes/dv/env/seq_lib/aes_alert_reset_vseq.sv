@@ -31,14 +31,19 @@ class aes_alert_reset_vseq extends aes_base_vseq;
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             if (cfg.error_types.mal_inject && (cfg.flip_rst == Flip_bits)) begin
               void'(randomize(mal_error)  with { $countones(mal_error) > 1; });
-              if (!uvm_hdl_check_path("tb.dut.u_aes_core.u_ctrl_reg_shadowed.committed_q")) begin
+              if (!uvm_hdl_check_path(
+                  "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"
+                  )) begin
                 `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
               end else begin
                 $assertoff(0, "tb.dut.u_aes_core.AesModeValid");
                 $assertoff(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
-                void'(uvm_hdl_force("tb.dut.u_aes_core.u_ctrl_reg_shadowed.committed_q[6:1]", mal_error));
+                void'(uvm_hdl_force(
+                    "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q",
+                    mal_error));
                 wait(!cfg.clk_rst_vif.rst_n);
-                void'(uvm_hdl_release("tb.dut.u_aes_core.u_ctrl_reg_shadowed.committed_q[6:1]"));
+                void'(uvm_hdl_release(
+                    "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"));
                 // turn assertions back on
                 $asserton(0, "tb.dut.u_aes_core.AesModeValid");
                 $asserton(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
