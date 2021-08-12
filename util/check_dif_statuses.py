@@ -52,6 +52,13 @@ class _OTComponent(Enum):
     HW = 2
 
 
+class _DIFFunctionType(Enum):
+    """Type of DIF function."""
+    ALERT = 1
+    IRQ = 2
+    UNIMPLEMENTED = 3
+
+
 class DIFStatus:
     """Holds all DIF status information for displaying.
 
@@ -89,18 +96,23 @@ class DIFStatus:
         self.dif_name = dif_name
         self.ip = self.dif_name[4:]
         self.dif_path = os.path.join(difs_root_path, dif_name)
+
         # Check if header file exists - if not then its not even begun.
         has_started = os.path.isfile(self.dif_path + ".h")
         self.hw_path = (f"hw/{top_level}/ip/{self.ip}"
                         if self.ip in _TOP_LEVEL_IPS else f"hw/ip/{self.ip}")
+
         # Indicates DIF API completeness.
         self.num_functions_defined = -1
         self.num_functions_implemented = -1
         self.api_complete = False
+        self.irq_funcs = set()
+        self.alert_funcs = set()
 
         # Determine last date HW was updated.
         self.hw_last_modified = self._get_last_commit_date(
             repo_top, os.path.join(self.hw_path, "rtl"), [""])
+
         # Determine the main contributor of the HW.
         self.hw_main_contributors = self._get_main_contributor_emails(
             _OTComponent.HW)
@@ -210,7 +222,10 @@ class DIFStatus:
 
     def _get_defined_funcs(self):
         header_file = self.dif_path + ".h"
-        return self._get_funcs(header_file)
+        defined_funcs = self._get_funcs(header_file)
+        self.irq_funcs = self._get_irq_funcs_defined(defined_funcs)
+        self.alert_funcs = self._get_alert_funcs_defined(defined_funcs)
+        return defined_funcs
 
     def _get_implemented_funcs(self):
         c_file = self.dif_path + ".c"
@@ -228,6 +243,32 @@ class DIFStatus:
                 if result is not None:
                     funcs.add(result.group(1))
         return funcs
+
+    def _get_expected_irqs(self):
+        # TODO: parse HJSON to get expected IRQ info per IP
+        logging.error(f"{self._get_expected_irqs.__name__}() unimplemented.")
+        sys.exit(1)
+
+    def _get_expected_alerts(self):
+        # TODO: parse HJSON to get expected Alert info per IP
+        logging.error(f"{self._get_expected_irqs.__name__}() unimplemented.")
+        sys.exit(1)
+
+    def _get_irq_funcs_defined(self, defined_funcs):
+        assert defined_funcs and "Expected defined_funcs to be non-empty."
+        irq_funcs = set()
+        for func in defined_funcs:
+            if "irq" in func:
+                irq_funcs.add(func)
+        return irq_funcs
+
+    def _get_alert_funcs_defined(self, defined_funcs):
+        assert defined_funcs and "Expected defined_funcs to be non-empty."
+        alert_funcs = set()
+        for func in defined_funcs:
+            if "alert" in func:
+                alert_funcs.add(func)
+        return alert_funcs
 
 
 def get_list_of_difs(difs_root_path: str, shared_headers: List[str]) -> None:
@@ -312,29 +353,55 @@ def print_status_table(dif_statuses: List[DIFStatus],
            "work has not yet begun."))
 
 
-def print_unimplemented_functions(dif_statuses: List[DIFStatus],
-                                  table_format: str) -> None:
-    """Print a table of unimplemented DIF functions to STDOUT.
+def print_function_set(dif_statuses: List[DIFStatus],
+                       dif_function_type: _DIFFunctionType,
+                       table_format: str) -> None:
+    """Print a table of specific functions names DIF functions to STDOUT.
 
     Args:
         dif_statuses: List of DIFStatus objects containing metadata about DIF
             development states.
+        dif_function_type: DIFs to display in {ALERT, IRQ, UNIMPLEMENTED}
+        table_format: Format of output table to print. See tabulate module.
 
     Returns:
         None
     """
+    # Print label of function type.
+    if dif_function_type == _DIFFunctionType.ALERT:
+        print("Alert Functions:")
+    elif dif_function_type == _DIFFunctionType.IRQ:
+        print("IRQ Functions:")
+    elif dif_function_type == _DIFFunctionType.UNIMPLEMENTED:
+        print("Unimplemented Functions:")
+    else:
+        logging.error("Invalid function type to print table.")
+        sys.exit(1)
+
+    # Build and print table.
     rows = []
     headers = ["IP", "Function"]
     for dif_status in dif_statuses:
-        if not dif_status.api_complete:
-            rows.append(
-                [dif_status.ip, "\n".join(dif_status.funcs_unimplemented)])
-    print("Unimplemented Functions:")
+        if dif_function_type == _DIFFunctionType.ALERT:
+            if dif_status.alert_funcs:
+                rows.append([dif_status.ip, "\n".join(dif_status.alert_funcs)])
+        elif dif_function_type == _DIFFunctionType.IRQ:
+            if dif_status.irq_funcs:
+                rows.append([dif_status.ip, "\n".join(dif_status.irq_funcs)])
+        elif dif_function_type == _DIFFunctionType.UNIMPLEMENTED:
+            if not dif_status.api_complete:
+                rows.append(
+                    [dif_status.ip, "\n".join(dif_status.funcs_unimplemented)])
+        else:
+            # Unreachable.
+            logging.error("Invalid function type to print table.")
+            sys.exit(1)
     print(tabulate(rows, headers, tablefmt=table_format))
 
 
 def main(argv):
-    # Process args.
+    # Process args and set logging level.
+    # TODO: parallelize data scraping so its much faster
     parser = argparse.ArgumentParser(
         prog="check_dif_statuses",
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -350,12 +417,19 @@ def main(argv):
         "--show-unimplemented",
         action="store_true",
         help="""Show unimplemented functions for each incomplete DIF.""")
+    parser.add_argument("--show-alerts",
+                        action="store_true",
+                        help="""Show alert functions for each DIF.""")
+    parser.add_argument("--show-irqs",
+                        action="store_true",
+                        help="""Show IRQ functions for each DIF.""")
     parser.add_argument("--table-format",
                         type=str,
                         choices=["grid", "github", "pipe"],
                         default="grid",
                         help="""Format to print status tables in.""")
     args = parser.parse_args(argv)
+    logging.basicConfig(level=logging.WARNING)
 
     # Define root path of DIFs.
     difs_root_path = os.path.join("sw", "device", "lib", "dif")
@@ -399,7 +473,14 @@ def main(argv):
     # Build table and print it to STDOUT.
     print_status_table(dif_statuses, args.table_format)
     if args.show_unimplemented:
-        print_unimplemented_functions(dif_statuses, args.table_format)
+        print_function_set(dif_statuses, _DIFFunctionType.UNIMPLEMENTED,
+                           args.table_format)
+    if args.show_alerts:
+        print_function_set(dif_statuses, _DIFFunctionType.ALERT,
+                           args.table_format)
+    if args.show_irqs:
+        print_function_set(dif_statuses, _DIFFunctionType.IRQ,
+                           args.table_format)
 
 
 if __name__ == "__main__":
