@@ -8720,37 +8720,6 @@
       ]
     }
   ]
-  interrupt_module:
-  [
-    uart0
-    uart1
-    uart2
-    uart3
-    gpio
-    spi_device
-    spi_host0
-    spi_host1
-    i2c0
-    i2c1
-    i2c2
-    pattgen
-    usbdev
-    otp_ctrl
-    alert_handler
-    pwrmgr_aon
-    sysrst_ctrl_aon
-    adc_ctrl_aon
-    aon_timer_aon
-    flash_ctrl
-    hmac
-    kmac
-    keymgr
-    csrng
-    entropy_src
-    edn0
-    edn1
-    otbn
-  ]
   pinout:
   {
     banks:
@@ -11537,6 +11506,38 @@
       module: aon_timer_aon
     }
   ]
+  interrupt_module:
+  [
+    uart0
+    uart1
+    uart2
+    uart3
+    gpio
+    spi_device
+    spi_host0
+    spi_host1
+    i2c0
+    i2c1
+    i2c2
+    pattgen
+    rv_timer
+    usbdev
+    otp_ctrl
+    alert_handler
+    pwrmgr_aon
+    sysrst_ctrl_aon
+    adc_ctrl_aon
+    aon_timer_aon
+    flash_ctrl
+    hmac
+    kmac
+    keymgr
+    csrng
+    entropy_src
+    edn0
+    edn1
+    otbn
+  ]
   interrupt:
   [
     {
@@ -12096,6 +12097,12 @@
       width: 1
       type: interrupt
       module_name: pattgen
+    }
+    {
+      name: rv_timer_timer_expired_0_0
+      width: 1
+      type: interrupt
+      module_name: rv_timer
     }
     {
       name: usbdev_pkt_received
