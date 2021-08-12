@@ -972,39 +972,6 @@
     }
   ],
 
-  // Modules whose interrupts are connected to RV_PLIC.
-  interrupt_module: [
-    "uart0",
-    "uart1",
-    "uart2",
-    "uart3",
-    "gpio",
-    "spi_device",
-    "spi_host0",
-    "spi_host1",
-    "i2c0",
-    "i2c1",
-    "i2c2",
-    "pattgen",
-    // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
-    "usbdev",
-    "otp_ctrl",
-    "alert_handler",
-    "pwrmgr_aon",
-    "sysrst_ctrl_aon",
-    "adc_ctrl_aon",
-    "aon_timer_aon",
-    "flash_ctrl",
-    "hmac",
-    "kmac",
-    "keymgr",
-    "csrng",
-    "entropy_src",
-    "edn0",
-    "edn1",
-    "otbn"
-  ]
-
   // ===== PINMUX & PINOUT ======================================================
 
   pinout: {
