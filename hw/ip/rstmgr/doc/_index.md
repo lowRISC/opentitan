@@ -219,7 +219,7 @@ Assuming a leaf output has N power domains and M clock domains, it potentially m
 
 It is alluded above that reset trees may contain both always-on and non-always-on versions.
 This distinction is required to support power manager's various low power states.
-When a power domain goes offline, all of its components must assert, regardless of the reset tree to which it belongs.
+When a power domain goes offline, all of its components must reset, regardless of the reset tree to which it belongs.
 
 For example, assume a system with two power domains - `Domain A` is always-on, and `Domain B` is non-always-on.
 When `Domain B` is powered off, all of `Domain B`'s resets, from `rst_lc_n`, `rst_sys_n` to `rst_module_n` are asserted.
