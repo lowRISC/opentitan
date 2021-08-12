@@ -348,6 +348,7 @@
         desc:  '''
           Select encryption(0) or decryption(1) operation of AES unit.
         '''
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_operation"]
       }
       { bits: "6:1",
         name: "MODE",
@@ -395,6 +396,7 @@
             '''
           }
         ]
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode"]
       }
       { bits: "9:7",
         name: "KEY_LEN",
@@ -426,6 +428,7 @@
             '''
           }
         ]
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_key_len"]
       }
       { bits: "10",
         name: "MANUAL_OPERATION",
@@ -438,6 +441,7 @@
           In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
           This mode is useful if software needs full control over the AES unit.
         '''
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
       }
       { bits: "11",
         name: "FORCE_ZERO_MASKS",
@@ -448,13 +452,13 @@
           To completely disable the masking, the second key share (KEY_SHARE1_0 - KEY_SHARE1_7) must be zero as well.
           Only applicable if both the Masking parameter and the SecAllowForcingMasks parameter are set to one.
         '''
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_force_zero_masks"]
       }
     ]
     tags: [// Updated by the HW.
            // Updates based on writes to this reg (reset test possible).
            // Exclude from write-read checks.
-           "excl:CsrNonInitTests:CsrExclWriteCheck",
-           "shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed"]
+           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   { name: "TRIGGER",
     desc: '''

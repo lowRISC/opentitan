@@ -51,18 +51,14 @@ module aes_core
 );
 
   // Signals
-  logic                                       ctrl_re;
   logic                                       ctrl_qe;
   logic                                       ctrl_we;
   aes_op_e                                    aes_op_q;
-  aes_mode_e                                  mode;
   aes_mode_e                                  aes_mode_q;
   ciph_op_e                                   cipher_op;
-  key_len_e                                   key_len;
   key_len_e                                   key_len_q;
   logic                                       manual_operation_q;
   logic                                       force_zero_masks_q;
-  ctrl_reg_t                                  ctrl_d, ctrl_q;
   logic                                       ctrl_err_update;
   logic                                       ctrl_err_storage;
   logic                                       ctrl_err_storage_d;
@@ -167,7 +163,6 @@ module aes_core
 
   // Unused signals
   logic               [NumRegsData-1:0][31:0] unused_data_out_q;
-  logic                                       unused_force_zero_masks;
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
@@ -452,74 +447,25 @@ module aes_core
   // Control Register //
   //////////////////////
 
-  // Get and resolve values from register interface.
-  assign ctrl_d.operation = aes_op_e'(reg2hw.ctrl_shadowed.operation.q);
-
-  assign mode = aes_mode_e'(reg2hw.ctrl_shadowed.mode.q);
-  always_comb begin : mode_get
-    unique case (mode)
-      AES_ECB: ctrl_d.mode = AES_ECB;
-      AES_CBC: ctrl_d.mode = AES_CBC;
-      AES_CFB: ctrl_d.mode = AES_CFB;
-      AES_OFB: ctrl_d.mode = AES_OFB;
-      AES_CTR: ctrl_d.mode = AES_CTR;
-      default: ctrl_d.mode = AES_NONE; // unsupported values are mapped to AES_NONE
-    endcase
-  end
-
-  assign key_len = key_len_e'(reg2hw.ctrl_shadowed.key_len.q);
-  always_comb begin : key_len_get
-    unique case (key_len)
-      AES_128: ctrl_d.key_len = AES_128;
-      AES_256: ctrl_d.key_len = AES_256;
-      AES_192: ctrl_d.key_len = AES192Enable ? AES_192 : AES_256;
-      default: ctrl_d.key_len = AES_256; // unsupported values are mapped to AES_256
-    endcase
-  end
-
-  assign ctrl_d.manual_operation = reg2hw.ctrl_shadowed.manual_operation.q;
-
-  // SecAllowForcingMasks forbids forcing the masks. Forcing the masks to zero is only
-  // useful for SCA.
-  assign ctrl_d.force_zero_masks = SecAllowForcingMasks ?
-      reg2hw.ctrl_shadowed.force_zero_masks.q : 1'b0;
-  assign unused_force_zero_masks = SecAllowForcingMasks ?
-      1'b0 : reg2hw.ctrl_shadowed.force_zero_masks.q;
-
-  // Get and forward write enable. Writes are only allowed if the module is idle.
-  assign ctrl_re = reg2hw.ctrl_shadowed.operation.re & reg2hw.ctrl_shadowed.mode.re &
-      reg2hw.ctrl_shadowed.key_len.re & reg2hw.ctrl_shadowed.manual_operation.re &
-      reg2hw.ctrl_shadowed.force_zero_masks.re;
-  assign ctrl_qe = reg2hw.ctrl_shadowed.operation.qe & reg2hw.ctrl_shadowed.mode.qe &
-      reg2hw.ctrl_shadowed.key_len.qe & reg2hw.ctrl_shadowed.manual_operation.qe &
-      reg2hw.ctrl_shadowed.force_zero_masks.qe;
-
   // Shadowed register primitve
-  prim_subreg_shadow #(
-    .DW       ( $bits(ctrl_reg_t)           ),
-    .SwAccess ( prim_subreg_pkg::SwAccessWO ),
-    .RESVAL   ( CTRL_RESET                  )
+  aes_ctrl_reg_shadowed #(
+    .AES192Enable         ( AES192Enable         ),
+    .SecAllowForcingMasks ( SecAllowForcingMasks )
   ) u_ctrl_reg_shadowed (
-    .clk_i       ( clk_i              ),
-    .rst_ni      ( rst_ni             ),
-    .re          ( ctrl_re            ),
-    .we          ( ctrl_we            ),
-    .wd          ( ctrl_d             ),
-    .de          ( 1'b0               ),
-    .d           ( '0                 ),
-    .qe          (                    ),
-    .q           ( ctrl_q             ),
-    .qs          (                    ),
-    .err_update  ( ctrl_err_update    ),
-    .err_storage ( ctrl_err_storage_d )
+    .clk_i              ( clk_i                ),
+    .rst_ni             ( rst_ni               ),
+    .qe_o               ( ctrl_qe              ),
+    .we_i               ( ctrl_we              ),
+    .operation_o        ( aes_op_q             ),
+    .mode_o             ( aes_mode_q           ),
+    .key_len_o          ( key_len_q            ),
+    .manual_operation_o ( manual_operation_q   ),
+    .force_zero_masks_o ( force_zero_masks_q   ),
+    .err_update_o       ( ctrl_err_update      ),
+    .err_storage_o      ( ctrl_err_storage_d   ),
+    .reg2hw_ctrl_i      ( reg2hw.ctrl_shadowed ),
+    .hw2reg_ctrl_o      ( hw2reg.ctrl_shadowed )
   );
-
-  // Get shorter references.
-  assign aes_op_q           = ctrl_q.operation;
-  assign aes_mode_q         = ctrl_q.mode;
-  assign key_len_q          = ctrl_q.key_len;
-  assign manual_operation_q = ctrl_q.manual_operation;
-  assign force_zero_masks_q = ctrl_q.force_zero_masks;
 
   /////////////
   // Control //
@@ -818,14 +764,6 @@ module aes_core
       hw2reg.data_out[i].d = data_out_q[i];
     end
   end
-
-  assign hw2reg.ctrl_shadowed.mode.d    = {aes_mode_q};
-  assign hw2reg.ctrl_shadowed.key_len.d = {key_len_q};
-
-  // These fields are actually hro. But software must be able observe the current value (rw).
-  assign hw2reg.ctrl_shadowed.operation.d        = {aes_op_q};
-  assign hw2reg.ctrl_shadowed.manual_operation.d = manual_operation_q;
-  assign hw2reg.ctrl_shadowed.force_zero_masks.d = force_zero_masks_q;
 
   ////////////
   // Alerts //
