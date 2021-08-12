@@ -1489,24 +1489,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MNEM_CROSS(oob_addr_neg)
 
     // Misaligned address tracking (see DV document for why we have these exact crosses)
-    grs1_align_cp:
-      coverpoint operand_a[4:0] {
-         bins zero = {0};
-         bins middling = {[1:30]};
-         bins high = {31};
-      }
-    offset_align_cp:
-      coverpoint offset[4:0] {
-         bins zero = {0};
-         bins middling = {[1:30]};
-         bins high = {31};
-      }
-    addr_align_cp: coverpoint operand_a[4:0] + offset[4:0];
+    addr_align_cp: coverpoint operand_a[4:0];
 
-    part_align_cross:
-      cross mnemonic_cp, grs1_align_cp, offset_align_cp
-        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
-             (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte));
     addr_align_cross:
       cross mnemonic_cp, addr_align_cp
         iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
