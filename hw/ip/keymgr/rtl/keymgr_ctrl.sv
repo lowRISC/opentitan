@@ -392,8 +392,9 @@ module keymgr_ctrl import keymgr_pkg::*; (
       // reseed entropy
       StCtrlEntropyReseed: begin
         prng_reseed_req_o = 1'b1;
+
         if (prng_reseed_ack_i) begin
-          state_d = StCtrlRandom;
+          state_d = en_i ? StCtrlRandom : StCtrlWipe;
         end
       end
 
@@ -403,7 +404,7 @@ module keymgr_ctrl import keymgr_pkg::*; (
         random_req = 1'b1;
 
         if (random_ack) begin
-          state_d = StCtrlRootKey;
+          state_d = en_i ? StCtrlRootKey : StCtrlWipe;
         end
       end
 
