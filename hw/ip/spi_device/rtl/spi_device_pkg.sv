@@ -162,6 +162,13 @@ package spi_device_pkg;
     busy:             1'b 0
   };
 
+  function automatic logic is_cmdinfo_addr_4b(cmd_info_t ci, logic addr_4b_en);
+    logic result;
+    // TODO: Add force 4B
+    result = ci.addr_4b_affected ? addr_4b_en : 1'b 0;
+    return result;
+  endfunction : is_cmdinfo_addr_4b
+
   // SPI_DEVICE HWIP has 16 command info slots. A few of them are pre-assigned.
   // (defined in the spi_device_pkg)
   //
