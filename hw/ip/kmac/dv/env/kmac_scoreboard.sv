@@ -1222,6 +1222,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               // latched by the flushing logic.
                               // We can also increment the fifo_rd_ptr and increment
                               // num_blocks_filled as a result.
+                              //
+                              // We need to also check the exact timestep that this code starts
+                              // executing, so insert a zero delay.
+                              #0;
+                              if (fifo_wr_ptr > fifo_rd_ptr) begin
+                                do_increment = 1;
+                                incr_fifo_wr_in_flush = 1;
+                              end
                               @(fifo_wr_ptr);
                               incr_fifo_wr_in_flush = 1;
                               do_increment = 1;

@@ -151,8 +151,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           //
           // We disable all error case subprocesses once the valid data transfer has finished as
           // to not cause spurious issues later on in the simulation.
+          `uvm_info(`gfn, "starting kmac_app requests", UVM_HIGH)
           begin : send_kmac_req
-            `uvm_info(`gfn, "starting kmac_app requests", UVM_HIGH)
             send_kmac_app_req(app_mode);
             disable invalid_msgfifo_wr;
             disable sw_cmd_in_app;
@@ -198,7 +198,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
             end
           end : check_invalid_key_err
         join
-        if (process_key_err_before_app_done) begin
+        if (kmac_err_type != kmac_pkg::ErrNone && process_key_err_before_app_done) begin
           continue;
         end else begin
           // Wait until the KMAC engine has completely finished
@@ -294,6 +294,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // Drop the sideloaded key if it was provided to the DUT.
       if (kmac_en && (en_sideload || provide_sideload_key)) begin
+        `uvm_info(`gfn, "dropping sideload key", UVM_HIGH)
         cfg.sideload_vif.drive_sideload_key(0);
       end
 
