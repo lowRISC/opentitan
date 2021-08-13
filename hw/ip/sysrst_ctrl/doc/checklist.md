@@ -37,8 +37,8 @@ Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES][]        | Done        |
 Documentation | [BLOCK_DIAGRAM][]       | Done        |
-Documentation | [DOC_INTERFACE][]       | In progress | Interface tables missing in markdown (carry over from design doc).
-Documentation | [MISSING_FUNC][]        | In progress | Align documentation with latest feature set (carry over from design doc).
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | Done        |
 Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        |
@@ -49,7 +49,7 @@ RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | Waived      | CDC tool setup not yet available.
 Code Quality  | [FPGA_TIMING][]         | Done        |
-Code Quality  | [CDC_SYNCMACRO][]       | In progress | Modify the CDC handling of the wakeup signal.
+Code Quality  | [CDC_SYNCMACRO][]       | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
 Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
 Security      | [SEC_SHADOW_REGS][]     | N/A         |
