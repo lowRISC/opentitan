@@ -59,6 +59,15 @@ class dv_base_reg extends uvm_reg;
     return dv_fld;
   endfunction
 
+  // Return a mask of valid bits in the register.
+  virtual function uvm_reg_data_t get_reg_mask();
+    dv_base_reg_field flds[$];
+    this.get_dv_base_reg_fields(flds);
+    foreach (flds[i]) begin
+      get_reg_mask |= flds[i].get_field_mask();
+    end
+  endfunction
+
   // this function can only be called when this reg is intr_state reg
   // Example: ral.intr_state.get_intr_pins_exp_value(). And it returns value of
   // intr_state & intr_enable, which represents value of interrupt pins
@@ -199,8 +208,10 @@ class dv_base_reg extends uvm_reg;
             end
           end
           shadow_update_err = 1;
+        end else begin
+          // If there is no shadow_update error, update the entire committed value.
+          committed_val = staged_shadow_val;
         end
-        committed_val = staged_shadow_val;
         shadowed_val  = ~committed_val;
       end
       lock_lockable_flds(committed_val);
@@ -228,7 +239,6 @@ class dv_base_reg extends uvm_reg;
   // 2). The shadow_reg is locked due to fatal storage error and it is not a backdoor write.
   // Note that if shadow_register write has update error, we will still try to update the value,
   // because it might be partially updated.
-
   virtual function void do_predict(uvm_reg_item      rw,
                                    uvm_predict_e     kind = UVM_PREDICT_DIRECT,
                                    uvm_reg_byte_en_t be = -1);
