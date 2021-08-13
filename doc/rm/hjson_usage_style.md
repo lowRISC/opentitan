@@ -8,7 +8,7 @@ title: "Hjson Usage and Style Guide"
 
 Json files are used to provide input data to many of the tools.
 The preference is to use [Hjson](https://hjson.org/), which is a variation of regular JSON that is easier to write.
-In particular it allows the quote marks to be left off the key names, it allows a single string to be quoted with triple quote marks and flow over multiple lines (which is often needed in text descriptions) and it allows comments using the # or // style.
+In particular, it allows the quote marks to be left off the key names, it allows a single string to be quoted with triple quote marks and flow over multiple lines (which is often needed in text descriptions) and it allows comments using the # or // style.
 
 This guide covers the enhancements provided by Hjson that are used in the project along with a recommended style.
 As with all style guides the intention is to:
@@ -43,7 +43,7 @@ It is always okay to deviate from the style guide by necessity, as long as that 
 ## Hjson file format
 
 Hjson is a variation of regular JSON that is easier to write.
-There are parsers in a number of languages and the tools make extensive used of the `hjson` package provided for Python 3.
+There are parsers in a number of languages and the tools make extensive use of the `hjson` package provided for Python 3.
 A full description can be found on the [Hjson website](https://hjson.org/), but the main features that make it convenient are that it keeps files cleaner by allowing the quote marks to be left off the key names, it enables long descriptive text by allowing a single string to flow over multiple lines and it allows comments using the # or // style.
 
 For example:
@@ -69,7 +69,7 @@ Unicode may be used when referring to proper names.
 ***Include a header comment with copyright and license information***
 
 The file must start with a `{` and end with a `}` to be well-formed json.
-In both cases these should be on a single line and have no indentation.
+In both cases, these should be on a single line and have no indentation.
 Anything enclosed should have two space indentation.
 (Hjson allows these to be omitted but this is not recommended style.)
 
@@ -84,7 +84,7 @@ In most cases, before the opening `{` the file should start with a comment conta
 }
 ```
 
-In cases where the file may need to be parsed by a standard JSON parser the comments must be omitted, but the SPDX license information should be provided as a top-level key/value using pure JSON syntax and ignored by any tool.
+In cases where the file may need to be parsed by a standard JSON parser, the comments must be omitted, but the SPDX license information should be provided as a top-level key/value using pure JSON syntax and ignored by any tool.
 
 ```json {.good}
 
@@ -134,9 +134,9 @@ For example
     { name:"odd", value:"1", desc:"odd parity"}
 ```
 
-In most cases a group will be too long for a single line, particularly where it has a good descriptive string.
-In that case the entry should contain one key-value pair per line with a 2 character indent from the opening bracket.
-The closing bracket should should not have the extra indentation.
+In most cases, a group will be too long for a single line, particularly where it has a good descriptive string.
+In that case, the entry should contain one key-value pair per line with a 2 character indent from the opening bracket.
+The closing bracket should not have the extra indentation.
 
 ```hjson {.good}
     {
@@ -168,14 +168,14 @@ Unless the group fits on a single line, the closing bracket should not be on the
 
 ***Use two character indentation for items in lists***
 
-A list value is a comma separated list of entries or groups enclosed in [].
-For example a list of groups could be presented:
+A list value is a comma-separated list of entries or groups enclosed in [].
+For example, a list of groups could be presented:
 ```hjson
   registers: [{name:"reg1", desc:"description 1"},
               {name:"reg2", desc:"description 2"}]
 ```
 
-Longer lists and any where elements split over multiple lines should use a 2 character indent from the opening bracket.
+Longer lists and anywhere elements split over multiple lines should use a 2 character indent from the opening bracket.
 The closing bracket should not have the extra indentation.
 
 
@@ -194,7 +194,7 @@ The closing bracket should not have the extra indentation.
 
 Hjson allows commas to be omitted when an item that would be terminated with a comma is terminated by the end of a line, and will tolerate extra "trailing" commas.
 There is currently no style-guide rule on this.
-In general, use the comma if it is likely items may be combined on a single line and ommit it if it keeps the file cleaner.
+In general, use the comma if it is likely items may be combined on a single line and omit it if it keeps the file cleaner.
 
 
 ### Long strings
