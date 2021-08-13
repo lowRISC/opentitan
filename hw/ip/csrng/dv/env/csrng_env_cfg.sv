@@ -79,6 +79,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   hw_reseed_counter;
 
     csr_wr(.ptr(ral.int_state_num), .value(hwapp));
+    csr_rd_check(.ptr(ral.int_state_num), .compare_vs_ral(1'b1));
     for (int i = 0; i < RSD_CTR_LEN/TL_DW; i++) begin
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_reseed_counter = (rdata<<TL_DW*i) + hw_reseed_counter;
