@@ -5,10 +5,10 @@
   name: "clkmgr"
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     // Disable alert and interrupt tests until RTL adds support.'
-                     // "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     // "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -136,6 +136,25 @@
       tests: ["clkmgr_extclk"]
     }
     {
+      name: clk_status
+      desc: '''Test clk_status output.
+
+            The clk_status is set in response to ip_clk_en. Of particular
+            interest is the case where the usb clock is disabled by pwrmgr in
+            active state. When a low power transition occurs it is possible
+            clk_status may not be set to all off. See
+            https://github.com/lowRISC/opentitan/issues/6504.
+
+            **Stimulus**:
+            - Send low transition on ip_clk_en with the usb clock disabled.
+
+            **Check**:
+            - The clk_status eventually drops.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
       name: jitter
       desc: '''
             This tests the jitter functionality.
@@ -153,7 +172,21 @@
       milestone: V2
       tests: []
     }
+    {
+      name: stress
+      desc: '''Create standard stress tests.
+
+            Stress with the following sequences:
+            - clkmgr_extclk_vseq,
+            - clkmgr_peri_vseq,
+            - clkmgr_smoke_vseq,
+            - clkmgr_trans_vseq
+            '''
+      milestone: V3
+      tests: []
+    }
   ]
+
   covergroups: [
     {
       name: peri_cg
