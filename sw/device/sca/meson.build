@@ -23,6 +23,21 @@ sca_programs += {
   },
 }
 
+sha3_serial = declare_dependency(
+  sources: [
+    'sha3_serial.c',
+    hw_ip_kmac_reg_h,
+  ],
+  dependencies: [
+    sw_lib_dif_kmac,
+  ],
+)
+sca_programs += {
+  'sha3_serial': {
+    'dependency': sha3_serial,
+  },
+}
+
 foreach sca_program_name, sca_program_info: sca_programs
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sca_program_elf = executable(
