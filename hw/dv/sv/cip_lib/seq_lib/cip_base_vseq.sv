@@ -83,6 +83,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `uvm_object_utils_end
 
   `include "cip_base_vseq__tl_errors.svh"
+  `include "cip_base_vseq__shadow_reg_errors.svh"
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
@@ -664,48 +665,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  // callback for individual modules to override
-  // can be used to update storage error status register
-  virtual function void shadow_reg_storage_err_post_write();
-  endfunction
-
-  // alert triggers as soon as design accept the TLUL transaction, if wait until csr_wr() finishes
-  // then check alert, the alert transaction might already finished
-  // this task can be override in block level common_vseq for specific shadow_regs
-  virtual task shadow_reg_wr(dv_base_reg csr, uvm_reg_data_t wdata, output bit alert_triggered);
-    fork
-      begin
-        fork
-          begin
-            csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
-          end
-          begin
-            string alert_name = csr.get_update_err_alert_name();
-            while (1) begin
-              cfg.clk_rst_vif.wait_clks(1);
-              if (!alert_triggered) begin
-                alert_triggered = cfg.m_alert_agent_cfg[alert_name].vif.get_alert();
-              end
-            end
-          end
-        join_any
-        disable fork;
-      end
-    join
-  endtask
-
-  // this function will return a storage_err value to backdoor poke shadow_reg's storage registers
-  // it can generate a rand value, or randomly flip one bit from the original value
-  virtual function bit [BUS_DW-1:0] gen_storage_err_val(dv_base_reg csr,
-                                                        bit [BUS_DW-1:0] origin_val,
-                                                        bit gen_rand_val = $urandom_range(0, 1));
-    int addr_index = $urandom_range(0, csr.get_msb_pos());
-    int shift_bits = BUS_DW - addr_index - 1;
-    gen_storage_err_val = (gen_rand_val) ? $urandom() : origin_val;
-    gen_storage_err_val[addr_index] = ~gen_storage_err_val[addr_index];
-    gen_storage_err_val = gen_storage_err_val << shift_bits >> shift_bits;
-  endfunction
-
   virtual task check_fatal_alert_nonblocking(string alert_name);
     fork
       `DV_SPINWAIT_EXIT(
@@ -721,146 +680,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end,
           wait(cfg.under_reset);)
     join_none
-  endtask
-
-  virtual task run_shadow_reg_errors(int num_times);
-    csr_excl_item      csr_excl;
-    dv_base_reg        shadowed_csrs[$], test_csrs[$];
-    uvm_reg_data_t     wdata;
-    bit                alert_triggered;
-
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_shadowed_regs(shadowed_csrs);
-
-    for (int trans = 1; trans <= num_times; trans++) begin
-      `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
-                                num_times), UVM_LOW)
-      repeat ($urandom_range(10, 100)) begin
-        all_csrs.shuffle();
-        test_csrs.delete();
-        test_csrs = {shadowed_csrs, all_csrs[0: $urandom_range(0, all_csrs.size()-1)]};
-        test_csrs.shuffle();
-
-        if ($urandom_range(1, 10) == 10) dut_init("HARD");
-
-        foreach (test_csrs[i]) begin
-          csr_excl = get_excl_item(test_csrs[i]);
-          // check if parent block or register is excluded from write
-          // if the excluded reg is shadow_reg, it won't skip writing
-          if (csr_excl.is_excl(test_csrs[i], CsrExclWrite, CsrRwTest) &&
-              !test_csrs[i].get_is_shadowed()) begin
-            `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclWrite exclusion",
-                                      test_csrs[i].get_full_name()), UVM_MEDIUM)
-            continue;
-          end
-
-          // skip alert_test register because it will trigger alerts
-          if (test_csrs[i].get_name() == "alert_test") continue;
-
-          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-          wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrRwTest, csr_excl);
-
-          // if the write is shadow register's second write, there is a 50% possibility that the
-          // second write value is identical to its staged_value
-          if (test_csrs[i].is_staged()) begin
-            if ($urandom_range(0, 1)) wdata = test_csrs[i].get_staged_shadow_val();
-          end
-          if (test_csrs[i].get_is_shadowed()) shadow_reg_wr(test_csrs[i], wdata, alert_triggered);
-          else csr_wr(.ptr(test_csrs[i]), .value(wdata), .en_shadow_wr(0), .predict(1));
-
-          // check shadow_reg update error
-          if (test_csrs[i].get_shadow_update_err()) begin
-            string alert_name = test_csrs[i].get_update_err_alert_name();
-            `DV_SPINWAIT(if(!alert_triggered) begin
-                           while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                           cfg.clk_rst_vif.wait_clks(1);
-                         end,
-                         $sformatf("%0s update_err alert not detected", test_csrs[i].get_name()))
-            `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
-                         $sformatf("timeout for alert:%0s", alert_name))
-            test_csrs[i].clear_shadow_update_err();
-            alert_triggered = 0;
-          end else if (alert_triggered) begin
-            `uvm_error(`gfn, $sformatf("unexpect %0s update_err alert triggered",
-                                       test_csrs[i].get_name()))
-          end
-
-          // randomly backdoor write a shadow_reg to create storage error
-          if ($urandom_range(1, 10) == 10) begin
-            int             index = $urandom_range(0, shadowed_csrs.size() - 1);
-            uvm_reg_data_t  rand_val, origin_val;
-            bkdr_reg_path_e kind;
-            int             shadow_reg_width = shadowed_csrs[index].get_msb_pos() + 1;
-
-            if (shadowed_csrs[index].shadow_reg_is_locked() == 0) begin
-              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
-                  kind, kind inside {BkdrRegPathRtlCommitted, BkdrRegPathRtlShadow};)
-              csr_peek(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind));
-              rand_val = gen_storage_err_val(shadowed_csrs[index], origin_val);
-
-              csr_poke(.ptr(shadowed_csrs[index]), .value(rand_val), .kind(kind), .predict(1));
-              `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
-                        shadowed_csrs[index].`gfn, kind.name, rand_val),
-                        UVM_MEDIUM);
-
-              // check shadow_reg storage error
-              if ((origin_val ^ rand_val) & ((1 << shadow_reg_width) - 1)) begin
-                string alert_name = shadowed_csrs[index].get_storage_err_alert_name();
-                bit    has_storage_error;
-                shadow_reg_storage_err_post_write();
-                has_storage_error = shadowed_csrs[index].get_shadow_storage_err();
-
-                if (has_storage_error && do_lock_shadow_reg) begin
-                  shadowed_csrs[index].lock_shadow_reg();
-                  check_fatal_alert_nonblocking(alert_name);
-
-                  // Wait two clock cycles then backdoor write back original value.
-                  // This won't stop fatal alert from firing.
-                  cfg.clk_rst_vif.wait_clks(2);
-                  csr_poke(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
-                end else begin
-                  `DV_CHECK_EQ(has_storage_error, 1,
-                               "dv_base_reg did not predict shadow storage error");
-                  `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                               cfg.clk_rst_vif.wait_clks(1);,
-                               $sformatf("%0s shadow_reg storage_err alert not detected",
-                                         shadowed_csrs[index].get_name()));
-
-                  // backdoor write back original value to avoid alert keep firing
-                  csr_poke(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
-                  `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
-                               $sformatf("timeout for alert:%0s", alert_name))
-
-                  // wait at least two clock cycle between alert_handshakes
-                  cfg.clk_rst_vif.wait_clks(2);
-                end
-              end
-            end
-          end
-        end
-
-        // random read to check if the register values are equal to the predicted values,
-        // reading shadow registers after their first write will clear the phase tracker
-        if ($urandom_range(0, 1)) begin
-          all_csrs.shuffle();
-          foreach (all_csrs[i]) begin
-            do_check_csr_or_field_rd(.csr(all_csrs[i]),
-                                     .blocking(0),
-                                     .compare(1),
-                                     .compare_vs_ral(1),
-                                     .csr_excl_type(CsrExclWriteCheck),
-                                     .csr_test_type(CsrRwTest));
-            csr_utils_pkg::wait_if_max_outstanding_accesses_reached();
-          end
-          // read shadow_regs again in case they are excluded from read_check
-          foreach (shadowed_csrs[i]) begin
-            csr_rd_check(.ptr(shadowed_csrs[i]), .compare_vs_ral(1), .blocking(1));
-          end
-          csr_utils_pkg::wait_no_outstanding_access();
-        end
-      end
-    end
-    // Shadow register fatal error will continuously trigger alerts until reset
-    dut_init();
   endtask
 
   // test partial mem read with non-blocking random read/write

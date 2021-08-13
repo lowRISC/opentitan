@@ -11,6 +11,7 @@ class alert_handler_sig_int_fail_vseq extends alert_handler_smoke_vseq;
 
   constraint sig_int_c {
     esc_int_err == 0;
+    esc_standalone_int_err == 0;
   }
 
   constraint esc_accum_thresh_c {

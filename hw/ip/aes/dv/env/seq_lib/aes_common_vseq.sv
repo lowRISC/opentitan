@@ -17,17 +17,13 @@ class aes_common_vseq extends aes_base_vseq;
     cfg.en_scb = 0;
   endtask
 
-  virtual function void shadow_reg_storage_err_post_write();
-    void'(ral.status.alert_fatal_fault.predict(1));
-  endfunction
-
   // for AES ctrl_shadowed register, the write transaction is valid only if the status is Idle
   // to ensure the shadow_reg_tests predict correct value, only write ctrl_shadowed when Idle
-  virtual task shadow_reg_wr(dv_base_reg csr, uvm_reg_data_t wdata, output bit alert_triggered);
+  virtual task shadow_reg_wr(dv_base_reg csr, uvm_reg_data_t wdata);
     bit [TL_DW-1:0] rdata;
     csr_rd(ral.status, rdata);
     if (get_field_val(ral.status.idle, rdata) == 1) begin
-      super.shadow_reg_wr(csr, wdata, alert_triggered);
+      super.shadow_reg_wr(csr, wdata);
       // update predict value based on design
       ctrl_reg_map_invalid_value(wdata);
       csr.update_shadowed_val(wdata, 1);
