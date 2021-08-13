@@ -2,6 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define OTP_CLK_CONSTRAINT(FREQ_) \
+  FREQ_ dist { \
+    6       :/ 2, \
+    [24:25] :/ 2, \
+    [26:47] :/ 1, \
+    [48:50] :/ 2, \
+    [51:95] :/ 1, \
+    96      :/ 1, \
+    [97:99] :/ 1, \
+    100     :/ 1  \
+  };
+
 class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block));
 
   // ext component cfgs
@@ -34,14 +46,18 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   `uvm_object_new
 
+  constraint clk_freq_mhz_c {
+    `OTP_CLK_CONSTRAINT(clk_freq_mhz)
+    foreach (clk_freqs_mhz[i]) {
+      `OTP_CLK_CONSTRAINT(clk_freqs_mhz[i])
+    }
+  }
+
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
     has_edn = 1;
     tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
-
-    // OTP can run with 6Mhz, disable this constraint which limits freq >= 24Mhz
-    clk_freq_mhz_c.constraint_mode(0);
 
     // create push_pull agent config obj
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
@@ -82,3 +98,5 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   endfunction
 
 endclass
+
+`undef OTP_CLK_CONSTRAINT

@@ -35,7 +35,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   constraint baud_rate_c {
     // when the uart frequency is very close to core freq, disable noise filter and glitch,
     // otherwise, not enough timing margin to predict status correctly in scb
-    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz == ClkFreq24Mhz) {
+    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz < 48) {
       en_noise_filter == 0;
       uart_period_glitch_pct == 0;
     }
@@ -72,7 +72,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     // we skip writting some CSRs at the last 1-2 uart cycles, when baud rate is 1.5Mbps, uart
     // cycle is small, need to reduce the TL delay, so that the write doesn't happen at the
     // ignore period
-    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz == ClkFreq24Mhz) begin
+    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz < 48) begin
       if (cfg.m_tl_agent_cfg.d_ready_delay_max > 5) cfg.m_tl_agent_cfg.d_ready_delay_max = 5;
     end
 

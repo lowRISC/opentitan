@@ -20,8 +20,11 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_regs_reg_blo
   mem_bkdr_util mem_bkdr_util_h;
 
   // otp clk freq
-  rand dv_utils_pkg::clk_freq_mhz_e otp_freq_mhz;
+  rand uint otp_freq_mhz;
 
+  constraint otp_freq_mhz_c {
+    `DV_COMMON_CLK_CONSTRAINT(otp_freq_mhz)
+  }
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = sram_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_error";
