@@ -26,7 +26,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 
   // EDN clk freq setting, if EDN is present.
-  rand clk_freq_mhz_e edn_clk_freq_mhz;
+  rand uint edn_clk_freq_mhz;
+  rand clk_freq_diff_e tlul_and_edn_clk_freq_diff;
 
   // Common interfaces - intrrupts, alerts, edn clk.
   intr_vif    intr_vif;
@@ -45,6 +46,21 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // function is called
   string list_of_alerts[] = {};
 
+  constraint edn_clk_freq_mhz_c {
+    solve tlul_and_edn_clk_freq_diff before edn_clk_freq_mhz;
+
+    if (tlul_and_edn_clk_freq_diff == HostReqNone) {
+      edn_clk_freq_mhz == clk_freq_mhz;
+    } else if (tlul_and_edn_clk_freq_diff == ClkFreqDiffSmall) {
+      edn_clk_freq_mhz != clk_freq_mhz;
+      absolute(edn_clk_freq_mhz - clk_freq_mhz) <= 2;
+    } else if (tlul_and_edn_clk_freq_diff == ClkFreqDiffBig) {
+      // max diff is 100-24=76
+      absolute(edn_clk_freq_mhz - clk_freq_mhz) > 70;
+    }
+
+    `DV_COMMON_CLK_CONSTRAINT(edn_clk_freq_mhz)
+  }
   `uvm_object_param_utils_begin(cip_base_env_cfg #(RAL_T))
     `uvm_field_aa_object_string(m_tl_agent_cfgs,   UVM_DEFAULT)
     `uvm_field_aa_object_string(m_alert_agent_cfg, UVM_DEFAULT)

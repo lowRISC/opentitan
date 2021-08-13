@@ -510,3 +510,18 @@
 `endif
 
 `endif // UVM
+
+// Macros for constrain clk with common frequencies
+// constrain clock to run at 24Mhz - 100Mhz and use higher weights on 24, 25, 48, 50, 100
+`ifndef DV_COMMON_CLK_CONSTRAINT
+`define DV_COMMON_CLK_CONSTRAINT(FREQ_) \
+  FREQ_ dist { \
+    [24:25] :/ 2, \
+    [26:47] :/ 1, \
+    [48:50] :/ 2, \
+    [51:95] :/ 1, \
+    96      :/ 1, \
+    [97:99] :/ 1, \
+    100     :/ 1  \
+  };
+`endif
