@@ -71,7 +71,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   // TODO: Fixing core clk freq to 50MHz for now.
   // Need to find a way to pass this to the SW test.
   constraint clk_freq_mhz_c {
-    clk_freq_mhz == dv_utils_pkg::ClkFreq50Mhz;
+    clk_freq_mhz == 50;
   }
 
   `uvm_object_new
