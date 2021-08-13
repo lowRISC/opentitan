@@ -16,7 +16,7 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   input prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   input prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   input [NumTarget-1:0] irq_o,
-  input [$clog2(NumSrc+1)-1:0] irq_id_o [NumTarget],
+  input [$clog2(NumSrc)-1:0] irq_id_o [NumTarget],
   input [NumTarget-1:0] msip_o,
   // probe design signals
   input [NumSrc-1:0] ip,
@@ -31,7 +31,7 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   logic claim_reg, claimed;
   logic max_priority;
   logic irq;
-  logic [$clog2(NumSrc+1)-1:0] i_high_prio;
+  logic [$clog2(NumSrc)-1:0] i_high_prio;
 
   // symbolic variables
   int unsigned src_sel;
@@ -103,7 +103,7 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
           max_priority && ie[tgt_sel][src_sel] |=> irq_o[tgt_sel])
 
   `ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[tgt_sel]) |->
-          $past(irq) && (irq_id_o[tgt_sel]) == $past(i_high_prio))
+          $past(irq) && (irq_id_o[tgt_sel] == $past(i_high_prio)))
 
   // when irq ID changed, but not to ID=0, irq_o should be high, or irq represents the largest prio
   // but smaller than the threshold

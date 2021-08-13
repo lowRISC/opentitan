@@ -16,7 +16,7 @@ module rv_plic_generic_fpv import rv_plic_reg_pkg::*; #(
   input  prim_alert_pkg::alert_rx_t [NumInstances-1:0][NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumInstances-1:0][NumAlerts-1:0] alert_tx_o,
   output [NumInstances-1:0][NumTarget-1:0]       irq_o,
-  output [$clog2(NumSrc+1)-1:0]                  irq_id_o [NumInstances][NumTarget],
+  output [$clog2(NumSrc)-1:0]                    irq_id_o [NumInstances][NumTarget],
   output logic [NumInstances-1:0][NumTarget-1:0] msip_o
 );
 
