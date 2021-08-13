@@ -207,13 +207,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       UpdateHwOut: begin
         kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
-        bit good_key = (get_err_code() == 0);
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control.dest_sel));
 
         if (dest != keymgr_pkg::None) begin
-          cfg.keymgr_vif.update_sideload_key(key_shares, current_state, current_cdi,
-                                             dest, good_key);
+          cfg.keymgr_vif.update_sideload_key(key_shares, current_state, current_cdi, dest);
           `uvm_info(`gfn, $sformatf("Update sideload key 0x%0h for %s", key_shares, dest.name),
                     UVM_MEDIUM)
         end

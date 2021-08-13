@@ -192,30 +192,30 @@ interface keymgr_if(input clk, input rst_n);
   function automatic void update_sideload_key(keymgr_env_pkg::kmac_digests_t key_shares,
                                               keymgr_pkg::keymgr_working_state_e state,
                                               keymgr_cdi_type_e cdi_type,
-                                              keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac,
-                                              bit good_key = 1);
+                                              keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac
+                                              );
     keymgr_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
                                                     key_shares[0][keymgr_pkg::KeyWidth-1:0]};
     case (dest)
       keymgr_pkg::Kmac: begin
         kmac_key_exp             <= '{1'b1, trun_key_shares};
-        is_kmac_key_good         <= good_key;
+        is_kmac_key_good         <= 1;
         is_kmac_sideload_avail   <= 1;
         kmac_sideload_key_shares <= trun_key_shares;
       end
       keymgr_pkg::Aes: begin
         aes_key_exp     <= '{1'b1, trun_key_shares};
-        is_aes_key_good <= good_key;
+        is_aes_key_good <= 1;
       end
       keymgr_pkg::Otbn: begin
         // only otbn uses full 384 bits digest data
         otbn_key_exp     <= '{1'b1, key_shares};
-        is_otbn_key_good <= good_key;
+        is_otbn_key_good <= 1;
       end
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
-    if (good_key) keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
+    keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
   endfunction
 
   function automatic bit get_keymgr_en();
@@ -322,12 +322,14 @@ interface keymgr_if(input clk, input rst_n);
   // These asserts are commented out because the advance operation is now 2-pass and will require
   // updated handling
   `KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
-
   `KM_ASSERT(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
 
   // TODO update hmac and aes checker later
-  //`KM_ASSERT(AesKeyStable, $stable(aes_key_exp) |=> $stable(aes_key))
-  //`KM_ASSERT(AesKeyUpdate, !$stable(aes_key_exp) |=> aes_key == aes_key_exp)
+  `KM_ASSERT(CheckAesKey, is_aes_key_good && aes_key_exp.valid -> aes_key == aes_key_exp)
+  `KM_ASSERT(CheckAesKeyValid, aes_key_exp.valid == aes_key.valid)
+
+  `KM_ASSERT(CheckOtbnKey, is_otbn_key_good && otbn_key_exp.valid -> otbn_key == otbn_key_exp)
+  `KM_ASSERT(CheckOtbnKeyValid, otbn_key_exp.valid == otbn_key.valid)
 
   // for EDN assertion
   // sync req/ack to core clk domain
