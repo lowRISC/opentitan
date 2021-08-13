@@ -2406,6 +2406,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       void'(ral.err_code.predict(.value(TL_DW'(kmac_err)), .kind(UVM_PREDICT_DIRECT)));
     end
 
+    // collect coverage
+    if (cfg.en_cov) begin
+      cov.error_cg.sample(kmac_err.code, unchecked_kmac_cmd, hash_mode, strength);
+    end
+
     kmac_err = '{valid: 1'b0,
                  code: kmac_pkg::ErrNone,
                  info: '0};
