@@ -15,9 +15,43 @@
  */
 
 /**
- * Initializes the peripherals (pinmux, uart, gpio, and timer) used by SCA code.
+ * Trigger sources.
+ *
+ * The trigger signal for a peripheral is based on its clkmgr_aon_idle signal.
+ * These values must match the values in chiplevel.sv.tpl.
  */
-void sca_init(void);
+typedef enum sca_trigger_source {
+  /**
+   * Use AES for capture trigger.
+   *
+   * The trigger signal will go high 40 cycles after `dif_aes_trigger()` is
+   * called and remain high until the operation is complete.
+   */
+  kScaTriggerSourceAes,
+  /**
+   * Use HMAC for capture trigger.
+   */
+  kScaTriggerSourceHmac,
+  /**
+   * Use KMAC for capture trigger.
+   */
+  kScaTriggerSourceKmac,
+  /**
+   * Use OTBN (IO_DIV4 clock) for capture trigger.
+   */
+  kScaTriggerSourceOtbnIoDiv4,
+  /**
+   * Use OTBN for capture trigger.
+   */
+  kScaTriggerSourceOtbn,
+} sca_trigger_source_t;
+
+/**
+ * Initializes the peripherals (pinmux, uart, gpio, and timer) used by SCA code.
+ *
+ * @param trigger Peripheral to use for the trigger signal.
+ */
+void sca_init(sca_trigger_source_t trigger);
 
 /**
  * Disables the entropy complex and clocks of IPs not needed for SCA to reduce
@@ -40,10 +74,8 @@ void sca_get_uart(const dif_uart_t **uart_out);
  * Sets capture trigger high.
  *
  * The actual trigger signal used for capture is a combination (logical AND) of:
- * - GPIO15 enabled here, and
- * - the busy signal of the AES unit. This signal will go high 40 cycles
- *   after aes_manual_trigger() is executed below and remain high until
- *   the operation has finished.
+ * - the trigger gate enabled here, and
+ * - the busy signal of the peripheral of interest.
  */
 void sca_set_trigger_high(void);
 
