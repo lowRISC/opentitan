@@ -100,7 +100,7 @@
         {
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
-            //absorb:     true,
+            absorb:     true,
             size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,
@@ -136,7 +136,7 @@
         {
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
-            //absorb:     true,
+            absorb:     true,
             size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,

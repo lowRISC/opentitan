@@ -391,7 +391,7 @@ TEST_F(DaiReadTest, Read32) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x660);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x6a0);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
@@ -489,7 +489,7 @@ TEST_F(DaiProgramTest, Program32) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x660);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x6a0);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x12345678);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
@@ -542,7 +542,7 @@ TEST_F(DaiProgramTest, Unaligned) {
 TEST_F(DaiProgramTest, OutOfRange) {
   // Check that we can't write a digest directly.
   EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionCreatorSwCfg,
-                                       /*address=*/0x2f8, /*value=*/42),
+                                       /*address=*/0x338, /*value=*/42),
             kDifOtpCtrlDaiOutOfRange);
 
   // Same digest check for 64-bit.
@@ -597,7 +597,7 @@ TEST_F(DaiDigestTest, DigestHw) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x640);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x680);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
 
@@ -759,7 +759,7 @@ TEST_F(BlockingIoTest, OutOfRange) {
                                        0x300, buf.data(), buf.size()),
             kDifOtpCtrlDaiOutOfRange);
   EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionOwnerSwCfg,
-                                       0x10, buf.data(), 0x2f0),
+                                       0x10, buf.data(), 0x330),
             kDifOtpCtrlDaiOutOfRange);
 }
 
