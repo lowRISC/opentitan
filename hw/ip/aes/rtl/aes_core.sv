@@ -426,9 +426,25 @@ module aes_core
   if (!Masking) begin : gen_state_out_unmasked
     assign state_out = state_done[0];
   end else begin : gen_state_out_masked
-    // Unmask the cipher core output. This causes SCA leakage and should thus be avoided. This will
-    // be reworked in the future when masking the counter and feedback path through the IV regs.
-    assign state_out = state_done[0] ^ state_done[1];
+    // Unmask the cipher core output. This might get reworked in the future when masking the
+    // counter and feedback path through the IV regs.
+
+    // Only unmask the final cipher core output. Unmasking intermediate output data causes
+    // additional SCA leakage and thus has to be avoided.
+    logic [3:0][3:0][7:0] state_done_muxed [NumShares];
+    assign state_done_muxed = (cipher_out_valid == SP2V_HIGH) ? state_done : '{default: '0};
+
+    // Avoid aggressive synthesis optimizations.
+    logic [3:0][3:0][7:0] state_done_buf [NumShares];
+    prim_buf #(
+      .Width ( 128 * NumShares )
+    ) u_prim_state_done_muxed (
+      .in_i  ( {state_done_muxed[1], state_done_muxed[0]} ),
+      .out_o ( {state_done_buf[1],   state_done_buf[0]}   )
+    );
+
+    // Unmask the cipher core output.
+    assign state_out = state_done_buf[0] ^ state_done_buf[1];
   end
 
   // Mux for addition to state output
