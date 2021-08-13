@@ -131,7 +131,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Unbuffered,
       offset:     11'd64,
-      size:       768,
+      size:       800,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b0,
@@ -142,8 +142,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:    Unbuffered,
-      offset:     11'd832,
-      size:       768,
+      offset:     11'd864,
+      size:       800,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b0,
@@ -154,7 +154,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG
     '{
       variant:    Buffered,
-      offset:     11'd1600,
+      offset:     11'd1664,
       size:       80,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -166,7 +166,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1680,
+      offset:     11'd1744,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -178,7 +178,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1720,
+      offset:     11'd1784,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -190,7 +190,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1808,
+      offset:     11'd1872,
       size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -202,7 +202,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     11'd1896,
+      offset:     11'd1960,
       size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -270,7 +270,7 @@ package otp_ctrl_part_pkg;
   };
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [15871:0] PartInvDefault = 15872'({
+  parameter logic [16383:0] PartInvDefault = 16384'({
     704'({
       320'hDAAF8720F255C5C84D1D9C10648A878DB1D5ABE9610E8395490EC23C0A1EDCCE280E8ECA88CEA2E9,
       384'h9470329E17324EDB1E2960279AB8F882A991BEA2CF16541724A52D80A891BCD52BE973D4C5752E3A6912899150240B3A
@@ -302,9 +302,9 @@ package otp_ctrl_part_pkg;
       256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34,
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
     }),
-    6144'({
+    6400'({
       64'h39EB436F1D5AF2D7,
-      2080'h0, // unallocated space
+      2336'h0, // unallocated space
       512'h0,
       128'h0,
       128'h0,
@@ -316,9 +316,9 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    6144'({
+    6400'({
       64'h7D7EA64D850E128D,
-      3904'h0, // unallocated space
+      4160'h0, // unallocated space
       64'h0,
       32'h0,
       32'h0,
