@@ -29,15 +29,11 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   typedef enum logic [2:0] {
     StSideloadReset,
     StSideloadIdle,
-    StSideloadClear,
     StSideloadWipe,
     StSideloadStop
   } keymgr_sideload_e;
 
   keymgr_sideload_e state_q, state_d;
-  logic [3:0] cnt_q, cnt_d;
-  logic cnt_end;
-  logic clr;
   logic keys_en;
 
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
@@ -45,38 +41,31 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     assign data_truncated[i] = data_i[i][KeyWidth-1:0];
   end
 
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StSideloadReset;
-      cnt_q <= '0;
     end else begin
       state_q <= state_d;
-      cnt_q <= cnt_d;
     end
   end
 
-  assign cnt_end = cnt_q[3];
-  assign cnt_d = cnt_end ? cnt_q :
-                 clr     ? cnt_q + 1'b1 : cnt_q;
-
-  logic clr_key;
-  assign clr_key = (clr_key_i != SideLoadClrIdle);
-
+  // clear all keys when selected by software, or when
+  // wipe command is received
   logic clr_all_keys;
-  assign clr_all_keys = !(clr_key_i inside {SideLoadClrIdle,
+  assign clr_all_keys = wipe_key_i |
+                        !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
                                             SideLoadClrOtbn});
-
   logic aes_clr, kmac_clr, otbn_clr;
-  assign aes_clr  = clr & (clr_all_keys | (clr_key_i == SideLoadClrAes));
-  assign kmac_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrKmac));
-  assign otbn_clr = clr & (clr_all_keys | (clr_key_i == SideLoadClrOtbn));
+  assign aes_clr  = clr_all_keys | (clr_key_i == SideLoadClrAes);
+  assign kmac_clr = clr_all_keys | (clr_key_i == SideLoadClrKmac);
+  assign otbn_clr = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
+
+  logic clr;
+  assign clr = aes_clr | kmac_clr | otbn_clr;
 
   always_comb begin
-
-    clr = 1'b0;
     keys_en = 1'b0;
     state_d = state_q;
 
@@ -87,29 +76,17 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
         end
       end
 
-      // when clear is received, delete the key and return to idle.
+      // when clear is received, delete the selected key
       // when wipe is received, delete the key and disable sideload until reboot.
       StSideloadIdle: begin
         keys_en = 1'b1;
-        if (wipe_key_i || clr_key) begin
-          state_d = wipe_key_i ? StSideloadWipe : StSideloadClear;
-        end
-      end
-
-      // if wipe asserts while clearing, follow the normal wipe protocol
-      StSideloadClear: begin
-        keys_en = 1'b0;
-        clr = 1'b1;
         if (wipe_key_i) begin
           state_d = StSideloadWipe;
-        end else if (!clr_key) begin
-          state_d = StSideloadIdle;
         end
       end
 
       StSideloadWipe: begin
         keys_en = 1'b0;
-        clr = 1'b1;
         if (!wipe_key_i) begin
           state_d = StSideloadStop;
         end
