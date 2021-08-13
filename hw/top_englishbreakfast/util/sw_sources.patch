@@ -56,7 +56,7 @@ index 50bee15fa..8f5976a83 100644
 --- a/sw/device/sca/aes_serial.c
 +++ b/sw/device/sca/aes_serial.c
 @@ -203,21 +203,13 @@ int main(void) {
-   sca_init();
+   sca_init(kScaTriggerSourceAes);
    sca_get_uart(&uart1);
  
 -  LOG_INFO("Running AES serial");

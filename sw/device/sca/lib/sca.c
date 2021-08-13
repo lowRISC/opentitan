@@ -5,6 +5,7 @@
 #include "sw/device/sca/lib/sca.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -30,19 +31,24 @@
   if (expr) {               \
   }
 
+/**
+ * Bitfield for the trigger source.
+ *
+ * Bits 9 to 11 are used to select the trigger source. See chiplevel.sv.tpl for
+ * details.
+ */
+static const bitfield_field32_t kTriggerSourceBitfield = {
+    .index = 9,
+    .mask = 0x7,
+};
+
 enum {
   /**
-   * GPIO capture trigger values.
+   * Bit index of the trigger gate signal for gating the trigger from software.
    *
-   * GPIO10[11:9]: Trigger select, 000 for AES, see chiplevel.sv.tpl for
-   *               details.
-   * GPIO8:        Trigger enable
+   * See chiplevel.sv.tpl for details.
    */
-  kGpioCaptureTriggerSelMask = 0x00E00,
-  kGpioCaptureTriggerEnMask = 0x00100,
-  kGpioCaptureTriggerSel = 0x00000,
-  kGpioCaptureTriggerHigh = 0x00100,
-  kGpioCaptureTriggerLow = 0x00000,
+  kTriggerGateBitIndex = 8,
   /**
    * RV timer settings.
    */
@@ -86,15 +92,23 @@ static void sca_init_uart(void) {
 
 /**
  * Initializes the GPIO peripheral.
+ *
+ * @param trigger Trigger source.
  */
-static void sca_init_gpio(void) {
+static void sca_init_gpio(sca_trigger_source_t trigger) {
   dif_gpio_params_t gpio_params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
   IGNORE_RESULT(dif_gpio_init(gpio_params, &gpio));
-  IGNORE_RESULT(dif_gpio_output_set_enabled_all(
-      &gpio, kGpioCaptureTriggerSelMask | kGpioCaptureTriggerEnMask));
-  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerSelMask,
-                                      kGpioCaptureTriggerSel));
+
+  uint32_t select_mask =
+      bitfield_field32_write(0, kTriggerSourceBitfield, UINT32_MAX);
+  uint32_t enable_mask = bitfield_bit32_write(0, kTriggerGateBitIndex, true);
+  IGNORE_RESULT(
+      dif_gpio_output_set_enabled_all(&gpio, select_mask | enable_mask));
+
+  IGNORE_RESULT(dif_gpio_write_masked(
+      &gpio, select_mask,
+      bitfield_field32_write(0, kTriggerSourceBitfield, trigger)));
 }
 
 /**
@@ -129,10 +143,10 @@ void handler_irq_timer(void) {
       dif_rv_timer_irq_clear(&timer, kRvTimerHart, kRvTimerComparator));
 }
 
-void sca_init(void) {
+void sca_init(sca_trigger_source_t trigger) {
   pinmux_init();
   sca_init_uart();
-  sca_init_gpio();
+  sca_init_gpio(trigger);
   sca_init_timer();
 }
 
@@ -181,13 +195,11 @@ void sca_reduce_noise() {
 void sca_get_uart(const dif_uart_t **uart_out) { *uart_out = &uart1; }
 
 void sca_set_trigger_high() {
-  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerEnMask,
-                                      kGpioCaptureTriggerHigh));
+  IGNORE_RESULT(dif_gpio_write(&gpio, kTriggerGateBitIndex, true));
 }
 
 void sca_set_trigger_low() {
-  IGNORE_RESULT(dif_gpio_write_masked(&gpio, kGpioCaptureTriggerEnMask,
-                                      kGpioCaptureTriggerLow));
+  IGNORE_RESULT(dif_gpio_write(&gpio, kTriggerGateBitIndex, false));
 }
 
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {

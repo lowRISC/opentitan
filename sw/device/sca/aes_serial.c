@@ -200,7 +200,7 @@ static void init_aes(void) {
 int main(void) {
   const dif_uart_t *uart1;
 
-  sca_init();
+  sca_init(kScaTriggerSourceAes);
   sca_get_uart(&uart1);
 
   LOG_INFO("Running AES serial");
