@@ -302,25 +302,69 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
   endgroup
 
   covergroup error_cg with function sample(kmac_pkg::err_code_e kmac_err,
-                                           sha3_pkg::err_code_e sha3_err);
-    // placeholder comment
+                                           kmac_pkg::kmac_cmd_e kcmd,
+                                           sha3_pkg::sha3_mode_e kmode,
+                                           sha3_pkg::keccak_strength_e kstrength);
     kmac_err_code: coverpoint kmac_err {
-      bins err_none = {kmac_pkg::ErrNone};
-      bins err_key_not_valid = {kmac_pkg::ErrKeyNotValid};
-      bins err_sw_pushed_msg_fifo = {kmac_pkg::ErrSwPushedMsgFifo};
-      bins err_sw_issued_cmd_in_app_active = {kmac_pkg::ErrSwIssuedCmdInAppActive};
-      bins err_wait_timer_expired = {kmac_pkg::ErrWaitTimerExpired};
-      bins err_incorrect_entropy_mode = {kmac_pkg::ErrIncorrectEntropyMode};
-
-      bins invalid = default;
+      ignore_bins ignore = {kmac_pkg::ErrNone};
     }
 
-    sha3_err_code: coverpoint sha3_err {
-      bins err_none            = {sha3_pkg::ErrNone};
-      bins err_sha3_sw_control = {sha3_pkg::ErrSha3SwControl};
-
-      bins invalid = default;
+    cmd: coverpoint kcmd {
+      ignore_bins ignore = {kmac_pkg::CmdNone};
     }
+
+    mode: coverpoint kmode;
+
+    strength: coverpoint kstrength;
+
+    all_invalid_cmd_in_app_active: cross kmac_err_code, cmd {
+      bins invalid_cmds = binsof(kmac_err_code) intersect {kmac_pkg::ErrSwIssuedCmdInAppActive} &&
+                          binsof(cmd);
+
+      ignore_bins ignore = !binsof(kmac_err_code) intersect {kmac_pkg::ErrSwIssuedCmdInAppActive};
+    }
+
+    all_invalid_mode_strength_cfgs: cross kmac_err_code, mode, strength {
+      bins sha3_128_cfgs = binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+                           binsof(mode) intersect {sha3_pkg::Sha3} &&
+                           binsof(strength) intersect {sha3_pkg::L128};
+
+      bins shake_224_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::Shake} &&
+          binsof(strength) intersect {sha3_pkg::L224};
+
+      bins shake_384_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::Shake} &&
+          binsof(strength) intersect {sha3_pkg::L384};
+
+      bins shake_512_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::Shake} &&
+          binsof(strength) intersect {sha3_pkg::L512};
+
+      bins cshake_224_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::CShake} &&
+          binsof(strength) intersect {sha3_pkg::L224};
+
+      bins cshake_384_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::CShake} &&
+          binsof(strength) intersect {sha3_pkg::L384};
+
+      bins cshake_512_invalid_cfg =
+          binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} &&
+          binsof(mode) intersect {sha3_pkg::CShake} &&
+          binsof(strength) intersect {sha3_pkg::L512};
+
+      ignore_bins ignore = !binsof(kmac_err_code) intersect {kmac_pkg::ErrUnexpectedModeStrength} ||
+                           ((binsof(mode) intersect {sha3_pkg::Sha3} &&
+                             !binsof(strength) intersect {sha3_pkg::L128}) ||
+                            (binsof(mode) intersect {sha3_pkg::Shake, sha3_pkg::CShake} &&
+                             binsof(strength) intersect {sha3_pkg::L128, sha3_pkg::L256}));
+   }
   endgroup
 
   function sample_cfg(bit kmac,
@@ -359,7 +403,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     state_read_mask_cg = new();
     cmd_process_cg = new();
     sideload_cg = new();
-    error_cg = new(); // TODO sample this in scb
+    error_cg = new();
     do begin
       app_cg_wrappers[app_name] = new({app_name.name(), "_cg"});
       app_name = app_name.next;
