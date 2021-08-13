@@ -47,21 +47,67 @@ typedef enum sca_trigger_source {
 } sca_trigger_source_t;
 
 /**
+ * Peripherals.
+ *
+ * Constants below are bitmasks that can be used to specify a set of
+ * peripherals.
+ *
+ * See also: `sca_peripherals_t`.
+ */
+typedef enum sca_peripheral {
+  /**
+   * EDN.
+   */
+  kScaPeripheralEdn = 1 << 0,
+  /**
+   * CSRNG.
+   */
+  kScaPeripheralCsrng = 1 << 1,
+  /**
+   * Entropy source.
+   */
+  kScaPeripheralEntropy = 1 << 2,
+  /**
+   * AES.
+   */
+  kScaPeripheralAes = 1 << 3,
+  /**
+   * HMAC.
+   */
+  kScaPeripheralHmac = 1 << 4,
+  /**
+   * KMAC.
+   */
+  kScaPeripheralKmac = 1 << 5,
+  /**
+   * OTBN.
+   */
+  kScaPeripheralOtbn = 1 << 6,
+  /**
+   * USB.
+   */
+  kScaPeripheralUsb = 1 << 7,
+} sca_peripheral_t;
+
+/**
+ * A set of peripherals.
+ *
+ * This type is used for specifying which peripherals should be enabled when
+ * calling `sca_init()`. Remaining peripherals will be disabled to reduce noise
+ * during SCA.
+ *
+ * See also: `sca_peripheral_t`, `sca_init()`.
+ */
+typedef uint32_t sca_peripherals_t;
+
+/**
  * Initializes the peripherals (pinmux, uart, gpio, and timer) used by SCA code.
  *
  * @param trigger Peripheral to use for the trigger signal.
+ * @param enable Set of peripherals to enable. Remaining peripherals will
+ * be disabled to reduce noise during SCA.
  */
-void sca_init(sca_trigger_source_t trigger);
-
-/**
- * Disables the entropy complex and clocks of IPs not needed for SCA to reduce
- * noise in the power traces.
- *
- * We can only disable the entropy complex as AES features a parameter to skip
- * PRNG reseeding for SCA experiments. Without this parameter, AES would simply
- * get stalled with a disabled entropy complex.
- */
-void sca_reduce_noise(void);
+void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable);
 
 /**
  * Returns a handle to the intialized UART device.

@@ -143,30 +143,38 @@ void handler_irq_timer(void) {
       dif_rv_timer_irq_clear(&timer, kRvTimerHart, kRvTimerComparator));
 }
 
-void sca_init(sca_trigger_source_t trigger) {
-  pinmux_init();
-  sca_init_uart();
-  sca_init_gpio(trigger);
-  sca_init_timer();
-}
-
-void sca_reduce_noise() {
-  // Disable/stopping functionality not yet provided by EDN and CSRNG DIFs.
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                      CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
-
-  // Disable entropy source through DIF.
-  const dif_entropy_src_params_t entropy_params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-  };
-  dif_entropy_src_t entropy;
-  IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy) ==
-                kDifEntropySrcOk);
-  IGNORE_RESULT(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
+/**
+ * Disables the given peripherals to reduce noise during SCA.
+ *
+ * Care must be taken when disabling the entropy complex if a peripheral that
+ * depends on it will be used in SCA. E.g., We can disable the entropy complex
+ * when analyzing AES only because AES features a parameter to skip PRNG
+ * reseeding for SCA experiments. Without this parameter, AES would simply get
+ * stalled with a disabled entropy complex.
+ *
+ * @param disable Set of peripherals to disable.
+ */
+void sca_disable_peripherals(sca_peripherals_t disable) {
+  if (disable & kScaPeripheralEdn) {
+    // TODO(#5465): Replace with `dif_edn_stop()` when it is implemented.
+    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
+                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+  }
+  if (disable & kScaPeripheralCsrng) {
+    // TODO(#7837): Replace with `dif_csrng_stop()` when it is implemented.
+    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
+                        CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  }
+  if (disable & kScaPeripheralEntropy) {
+    const dif_entropy_src_params_t entropy_params = {
+        .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+    };
+    dif_entropy_src_t entropy;
+    IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy));
+    IGNORE_RESULT(dif_entropy_src_disable(&entropy));
+  }
 
   // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
   const dif_clkmgr_params_t clkmgr_params = {
@@ -174,22 +182,44 @@ void sca_reduce_noise() {
       .last_gateable_clock = CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
       .last_hintable_clock = CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT};
   dif_clkmgr_t clkmgr;
-  IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr) == kDifClkmgrOk);
-  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
-                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
-  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
-                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
-  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-                    &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
-                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
-  IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-                    &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
-                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
-  IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
-                    &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
-                    kDifClkmgrToggleDisabled) == kDifClkmgrOk);
+  IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr));
+
+  if (disable & kScaPeripheralAes) {
+    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT,
+        kDifClkmgrToggleDisabled));
+  }
+  if (disable & kScaPeripheralHmac) {
+    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
+        kDifClkmgrToggleDisabled));
+  }
+  if (disable & kScaPeripheralKmac) {
+    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
+        kDifClkmgrToggleDisabled));
+  }
+  if (disable & kScaPeripheralOtbn) {
+    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+        &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
+        kDifClkmgrToggleDisabled));
+    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
+        kDifClkmgrToggleDisabled));
+  }
+  if (disable & kScaPeripheralUsb) {
+    IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
+        &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
+        kDifClkmgrToggleDisabled));
+  }
+}
+
+void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
+  pinmux_init();
+  sca_init_uart();
+  sca_init_gpio(trigger);
+  sca_init_timer();
+  sca_disable_peripherals(~enable);
 }
 
 void sca_get_uart(const dif_uart_t **uart_out) { *uart_out = &uart1; }
