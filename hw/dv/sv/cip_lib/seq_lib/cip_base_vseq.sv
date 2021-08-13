@@ -796,8 +796,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               rand_val = gen_storage_err_val(shadowed_csrs[index], origin_val);
 
               csr_poke(.ptr(shadowed_csrs[index]), .value(rand_val), .kind(kind), .predict(1));
-              `uvm_info(`gfn, $sformatf("backdoor write %0s with value %0h", kind.name, rand_val),
-                        UVM_HIGH);
+              `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
+                        shadowed_csrs[index].`gfn, kind.name, rand_val),
+                        UVM_MEDIUM);
 
               // check shadow_reg storage error
               if ((origin_val ^ rand_val) & ((1 << shadow_reg_width) - 1)) begin
