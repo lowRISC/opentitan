@@ -4,63 +4,83 @@
 
 subdir('lib')
 
-foreach device_name, device_lib : sw_lib_arch_core_devices
-  aes_serial_elf = executable(
-    'aes_serial_' + device_name,
-    sources: ['aes_serial.c'],
-    name_suffix: 'elf',
-    dependencies: [
-      device_lib,
-      riscv_crt,
-      sw_lib_dif_aes,
-      sw_lib_mmio,
-      sw_lib_runtime_hart,
-      sw_lib_runtime_log,
-      sw_sca_lib_prng,
-      sw_sca_lib_sca,
-      sw_sca_lib_simple_serial,
-    ],
-  )
+# Dictionary for SCA programs.
+sca_programs = {
+  # 'program_name': {
+  #   'dependency': dependency_name,
+  # },
+}
 
-  target_name = 'aes_serial_@0@_' + device_name
+aes_serial = declare_dependency(
+  sources: ['aes_serial.c'],
+  dependencies: [
+    sw_lib_dif_aes,
+  ],
+)
+sca_programs += {
+  'aes_serial': {
+    'dependency': aes_serial,
+  },
+}
 
-  aes_serial_dis = custom_target(
-    target_name.format('dis'),
-    input: aes_serial_elf,
-    kwargs: elf_to_dis_custom_target_args,
-  )
+foreach sca_program_name, sca_program_info: sca_programs
+  foreach device_name, device_lib : sw_lib_arch_core_devices
+    sca_program_elf = executable(
+      '@0@_@1@'.format(sca_program_name, device_name),
+      name_suffix: 'elf',
+      dependencies: [
+        device_lib,
+        riscv_crt,
+        sw_lib_mmio,
+        sw_lib_runtime_hart,
+        sw_lib_runtime_log,
+        sw_sca_lib_prng,
+        sw_sca_lib_sca,
+        sw_sca_lib_simple_serial,
+        sca_program_info['dependency'],
+      ]
+    )
 
-  aes_serial_bin = custom_target(
-    target_name.format('bin'),
-    input: aes_serial_elf,
-    kwargs: elf_to_bin_custom_target_args,
-  )
+    target_name = sca_program_name + '_@0@_' + device_name
 
-  aes_serial_vmem32 = custom_target(
-    target_name.format('vmem32'),
-    input: aes_serial_bin,
-    kwargs: bin_to_vmem32_custom_target_args,
-  )
+    sca_program_dis = custom_target(
+      target_name.format('dis'),
+      input: sca_program_elf,
+      kwargs: elf_to_dis_custom_target_args,
+    )
 
-  aes_serial_vmem64 = custom_target(
-    target_name.format('vmem64'),
-    input: aes_serial_bin,
-    kwargs: bin_to_vmem64_custom_target_args,
-  )
+    sca_program_bin = custom_target(
+      target_name.format('bin'),
+      input: sca_program_elf,
+      kwargs: elf_to_bin_custom_target_args,
+    )
 
-  custom_target(
-    target_name.format('export'),
-    command: export_target_command,
-    depend_files: [export_target_depend_files,],
-    input: [
-      aes_serial_elf,
-      aes_serial_dis,
-      aes_serial_bin,
-      aes_serial_vmem32,
-      aes_serial_vmem64,
-    ],
-    output: target_name.format('export'),
-    build_always_stale: true,
-    build_by_default: true,
-  )
+    sca_program_vmem32 = custom_target(
+      target_name.format('vmem32'),
+      input: sca_program_bin,
+      kwargs: bin_to_vmem32_custom_target_args,
+    )
+
+    sca_program_vmem64 = custom_target(
+      target_name.format('vmem64'),
+      input: sca_program_bin,
+      kwargs: bin_to_vmem64_custom_target_args,
+    )
+
+    custom_target(
+      target_name.format('export'),
+      command: export_target_command,
+      depend_files: [export_target_depend_files,],
+      input: [
+        sca_program_elf,
+        sca_program_dis,
+        sca_program_bin,
+        sca_program_vmem32,
+        sca_program_vmem64,
+      ],
+      output: target_name.format('export'),
+      build_always_stale: true,
+      build_by_default: true,
+    )
+  endforeach
 endforeach
