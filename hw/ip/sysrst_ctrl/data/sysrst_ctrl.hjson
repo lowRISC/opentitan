@@ -265,7 +265,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      resval: "2",
       async: "clk_aon_i",
       fields: [
         { bits: "0",
@@ -275,6 +274,7 @@
         { bits: "1",
           name: "ec_rst_l_0",
           desc: "0: disable; 1: enable",
+          resval: "1",
         }
         { bits: "2",
           name: "pwrb_out_0",
@@ -330,7 +330,6 @@
       desc: "configure the pin out directly to override the function",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "2",
       async: "clk_aon_i",
       fields: [
         { bits: "0",
@@ -340,6 +339,7 @@
         { bits: "1",
           name: "ec_rst_l",
           desc: "0: disable override; 1: enable override",
+          resval: "1",
         }
         { bits: "2",
           name: "pwrb_out",
@@ -507,7 +507,7 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "debounce_timer",
-          desc: "Define the timer valure so that the key or input is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: "Define the timer value so that the key or input is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
         }
       ],
     }
@@ -521,7 +521,7 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "debounce_timer",
-          desc: "Define the timer valure so that pwrb_in is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: "Define the timer value so that pwrb_in is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
         }
         { bits: "16",
           name: "auto_block_enable",
