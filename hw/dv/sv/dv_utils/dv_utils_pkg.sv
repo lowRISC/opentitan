@@ -44,16 +44,6 @@ package dv_utils_pkg;
     Device
   } if_mode_e;
 
-  // speed for the clock
-  typedef enum int {
-    ClkFreq6Mhz   = 6,
-    ClkFreq24Mhz  = 24,
-    ClkFreq25Mhz  = 25,
-    ClkFreq48Mhz  = 48,
-    ClkFreq50Mhz  = 50,
-    ClkFreq100Mhz = 100
-  } clk_freq_mhz_e;
-
   // compare operator types
   typedef enum {
     CompareOpEq,
@@ -85,6 +75,14 @@ package dv_utils_pkg;
     HostReqWriteOnly = 2,
     HostReqReadWrite = 3
   } host_req_type_e;
+
+  // Enum representing clock frequency difference on 2 clocks
+  typedef enum bit [1:0] {
+    ClkFreqDiffNone,
+    ClkFreqDiffSmall,
+    ClkFreqDiffBig,
+    ClkFreqDiffAny
+  } clk_freq_diff_e;
 
   string msg_id = "dv_utils_pkg";
 

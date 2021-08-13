@@ -43,14 +43,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // clk_rst_vif and clk_freq_mhz can be found from the associative arrays
   virtual clk_rst_if  clk_rst_vif;
   virtual clk_rst_if  clk_rst_vifs[string];
-  rand clk_freq_mhz_e clk_freq_mhz;
-  rand clk_freq_mhz_e clk_freqs_mhz[string];
+  rand uint clk_freq_mhz;
+  rand uint clk_freqs_mhz[string];
 
-  // TODO(#7647), only run with 24Mhz or higher
   constraint clk_freq_mhz_c {
-    clk_freq_mhz >= ClkFreq24Mhz;
+    `DV_COMMON_CLK_CONSTRAINT(clk_freq_mhz)
     foreach (clk_freqs_mhz[i]) {
-      clk_freqs_mhz[i] >= ClkFreq24Mhz;
+      `DV_COMMON_CLK_CONSTRAINT(clk_freqs_mhz[i])
     }
   }
 
@@ -82,7 +81,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
     // add items to clk_freqs_mhz before randomizing it
     foreach (ral_model_names[i]) begin
-      clk_freqs_mhz[ral_model_names[i]] = ClkFreq24Mhz;
+      clk_freqs_mhz[ral_model_names[i]] = 0;
     end
   endfunction
 
