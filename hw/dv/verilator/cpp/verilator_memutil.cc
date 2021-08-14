@@ -38,8 +38,10 @@ static LoadArg ParseMemArg(std::string mem_argument) {
     if (pos == end_pos) {
       std::ostringstream oss;
       oss << "empty field in: `" << mem_argument << "'.";
-      throw std::runtime_error(oss.str());
+      std::cerr << oss.str());
+      abort();
     }
+
     if (end_pos == std::string::npos) {
       args[i] = mem_argument.substr(pos);
       break;
@@ -53,7 +55,8 @@ static LoadArg ParseMemArg(std::string mem_argument) {
     std::ostringstream oss;
     oss << "meminit must be in the format `name,file[,type]'. Got: `"
         << mem_argument << "'.";
-    throw std::runtime_error(oss.str());
+    std::cerr << oss.str());
+    abort();
   }
 
   const char *str_type = (2 <= i) ? args[2].c_str() : nullptr;

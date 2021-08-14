@@ -57,7 +57,8 @@ void MemArea::Write(uint32_t word_offset,
       std::ostringstream oss;
       oss << "Could not set memory at byte offset 0x" << std::hex
           << dst_word * width_byte_ << ".";
-      throw std::runtime_error(oss.str());
+      std::cerr << oss.str();
+      abort();
     }
   }
 }

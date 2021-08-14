@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
 
 Ecc32MemArea::Ecc32MemArea(const std::string &scope, uint32_t size,
                            uint32_t width_32)
@@ -25,8 +26,8 @@ Ecc32MemArea::Ecc32MemArea(const std::string &scope, uint32_t size,
 }
 
 void Ecc32MemArea::LoadVmem(const std::string &path) const {
-  throw std::runtime_error(
-      "vmem files are not supported for memories with ECC bits");
+  std::cerr << "vmem files are not supported for memories with ECC bits";
+  abort();
 }
 
 void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],

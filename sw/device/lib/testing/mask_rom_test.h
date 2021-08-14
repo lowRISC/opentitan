@@ -45,7 +45,8 @@ class GlobalMock {
  public:
   GlobalMock() {
     if (instance_ != nullptr) {
-      throw std::runtime_error("Mock is already instantiated.");
+      std::cerr("Mock is already instantiated.");
+      abort();
     }
     instance_ = static_cast<Mock *>(this);
   }
@@ -56,7 +57,8 @@ class GlobalMock {
 
   static Mock &Instance() {
     if (instance_ == nullptr) {
-      throw std::runtime_error("Mock is not instantiated yet.");
+      std::cerr << "Mock is not instantiated yet.";
+      abort();
     }
     return *instance_;
   }

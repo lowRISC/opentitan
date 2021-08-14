@@ -12,7 +12,8 @@
 static svScope SetAbsScope(const std::string &name) {
   svScope new_scope = svGetScopeFromName(name.c_str());
   if (!new_scope)
-    throw SVScoped::Error(name);
+    std::cerr << SVScoped::Error(name);
+    abort();
   return svSetScope(new_scope);
 }
 

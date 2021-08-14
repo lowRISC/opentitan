@@ -118,7 +118,8 @@ static std::string find_repo_top() {
   if (!self_path) {
     std::ostringstream oss;
     oss << "Cannot resolve /proc/self/exe: " << strerror(errno);
-    throw std::runtime_error(oss.str());
+    std::cerr << oss.str();
+    abort();
   }
 
   // Take a copy of self_path as a std::string and modify it, walking backwards

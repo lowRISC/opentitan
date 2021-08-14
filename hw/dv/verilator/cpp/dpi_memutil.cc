@@ -38,18 +38,21 @@ class ElfFile {
   ElfFile(const std::string &path) : path_(path) {
     (void)elf_errno();
     if (elf_version(EV_CURRENT) == EV_NONE) {
-      throw std::runtime_error(elf_errmsg(-1));
+      std::cerr << elf_errmsg(-1);
+      abort();
     }
 
     fd_ = open(path.c_str(), O_RDONLY, 0);
     if (fd_ < 0) {
-      throw ElfError(path, "could not open file.");
+      std::cerr << ElfError(path, "could not open file.");
+      abort();
     }
 
     ptr_ = elf_begin(fd_, ELF_C_READ, NULL);
     if (!ptr_) {
       close(fd_);
-      throw ElfError(path, elf_errmsg(-1));
+      std::cerr << ElfError(path, elf_errmsg(-1));
+      abort();
     }
 
     if (elf_kind(ptr_) != ELF_K_ELF) {

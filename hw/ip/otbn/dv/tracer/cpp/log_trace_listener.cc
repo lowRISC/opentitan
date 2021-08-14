@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 #include "log_trace_listener.h"
 
@@ -16,7 +17,8 @@ LogTraceListener::LogTraceListener(const std::string &log_filename)
   if (!trace_log.is_open()) {
     std::ostringstream oss;
     oss << "Could not open log file: " << log_filename;
-    throw std::runtime_error(oss.str());
+    std::cerr << oss.str();
+    abort();
   }
 }
 
