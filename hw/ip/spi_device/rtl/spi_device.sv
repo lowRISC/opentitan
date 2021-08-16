@@ -672,7 +672,7 @@ module spi_device
 
             // Leave SRAM default;
           end
-          DpReadCmd: begin
+          DpReadCmd, DpReadSFDP: begin
             io_mode = sub_iomode[IoModeReadCmd];
 
             p2s_valid = sub_p2s_valid[IoModeReadCmd];
@@ -694,14 +694,13 @@ module spi_device
             // default memory (tied)
           end
 
-          DpReadSFDP: begin
+          DpReadJEDEC: begin
             io_mode = sub_iomode[IoModeJedec];
 
             p2s_valid = sub_p2s_valid[IoModeJedec];
             p2s_data  = sub_p2s_data[IoModeJedec];
             sub_p2s_sent[IoModeJedec] = p2s_sent;
           end
-          // DpReadJEDEC:
           // DpUpload:
           // DpUnknown:
           default: begin
