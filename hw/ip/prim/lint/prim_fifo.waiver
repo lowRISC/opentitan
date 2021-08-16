@@ -24,3 +24,8 @@ waive -rules VAR_INDEX_RANGE      -location {prim_fifo_*sync.sv} -regexp {maximu
 
 waive -rules EXPLICIT_BITLEN      -location {prim_fifo_*sync.sv} -regexp {Bit length not specified for constant '1'} \
       -comment "index is protected by control logic"
+
+## prim_fifo_async_sram_adapter
+waive -rules ARITH_CONTEXT -location {prim_fifo_async_sram_adapter.sv} \
+      -regexp {(r|w)_wptr_v.*_rptr_v} \
+      -comment "The pointer value width is determined. Remove the casting for readability"

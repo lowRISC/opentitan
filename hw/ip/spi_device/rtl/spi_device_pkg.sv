@@ -230,7 +230,8 @@ package spi_device_pkg;
     IoModeReadCmd  = 2,
     IoModeStatus   = 3,
     IoModeJedec    = 4,
-    IoModeEnd      = 5 // Indicate of Length
+    IoModeUpload   = 5,
+    IoModeEnd      = 6 // Indicate of Length
   } sub_io_mode_e;
 
   // SPI Line Mode (Mode0 <-> Mode3)

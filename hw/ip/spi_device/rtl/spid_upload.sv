@@ -45,9 +45,8 @@ module spid_upload
   localparam int unsigned CmdPtrW  = $clog2(CmdFifoDepth+1),
   localparam int unsigned AddrPtrW = $clog2(AddrFifoDepth+1),
 
-  localparam int unsigned PayloadByte    = PayloadDepth * (SramDw/SpiByte),
-  localparam int unsigned PayloadW       = $clog2(PayloadByte),
-  localparam int unsigned PayloadPtrW    = $clog2(PayloadByte+1)
+  localparam int unsigned PayloadByte = PayloadDepth * (SramDw/SpiByte),
+  localparam int unsigned PayloadPtrW = $clog2(PayloadByte+1)
 ) (
   input clk_i,
   input rst_ni,
@@ -107,6 +106,8 @@ module spid_upload
   output logic sys_addrfifo_notempty_o,
   output logic sys_addrfifo_full_o,
 
+  output logic [CmdPtrW-1:0]     sys_cmdfifo_depth_o,
+  output logic [AddrPtrW-1:0]    sys_addrfifo_depth_o,
   output logic [PayloadPtrW-1:0] sys_payload_depth_o
 );
 
@@ -382,7 +383,7 @@ module spid_upload
     .rvalid_o  (sys_cmdfifo_rvalid_o),
     .rready_i  (sys_cmdfifo_rready_i),
     .rdata_o   (sys_cmdfifo_rdata_o),
-    .rdepth_o  (), // not used
+    .rdepth_o  (sys_cmdfifo_depth_o),
 
     .r_full_o     (sys_cmdfifo_full_o),
     .r_notempty_o (sys_cmdfifo_notempty_o),
@@ -443,7 +444,7 @@ module spid_upload
     .rvalid_o  (sys_addrfifo_rvalid_o),
     .rready_i  (sys_addrfifo_rready_i),
     .rdata_o   (sys_addrfifo_rdata_o),
-    .rdepth_o  (),
+    .rdepth_o  (sys_addrfifo_depth_o),
 
     .r_full_o     (sys_addrfifo_full_o),
     .r_notempty_o (sys_addrfifo_notempty_o),
