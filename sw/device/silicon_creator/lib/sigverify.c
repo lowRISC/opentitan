@@ -72,17 +72,61 @@ static rom_error_t sigverify_padding_and_digest_check(
   return kErrorOk;
 }
 
+/**
+ * Determines whether the software implementation should be used for signature
+ * verification.
+ *
+ * During manufacturing (TEST_UNLOCKED*), software implementation is used by
+ * default since OTP may not have been programmed yet. The implementation to use
+ * after manufacturing (PROD, PROD_END, DEV, RMA) is determined by the OTP
+ * value.
+ *
+ * @param lc_state Life cycle state of the device.
+ * @param[out] use_sw Use software implementation for signature verification.
+ * @return Result of the operation.
+ */
+static rom_error_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state,
+                                               hardened_bool_t *use_sw) {
+  switch (lc_state) {
+    case kLcStateTestUnlocked0:
+    case kLcStateTestUnlocked1:
+    case kLcStateTestUnlocked2:
+    case kLcStateTestUnlocked3:
+    case kLcStateTestUnlocked4:
+    case kLcStateTestUnlocked5:
+    case kLcStateTestUnlocked6:
+    case kLcStateTestUnlocked7:
+      // Don't read from OTP during manufacturing. Use software
+      // implementation by default.
+      *use_sw = kHardenedBoolTrue;
+      return kErrorOk;
+    case kLcStateProd:
+    case kLcStateProdEnd:
+    case kLcStateDev:
+    case kLcStateRma:
+      *use_sw =
+          otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+      return kErrorOk;
+    default:
+      return kErrorSigverifyBadLcState;
+  }
+}
+
 rom_error_t sigverify_rsa_verify(const void *signed_message,
                                  size_t signed_message_len,
                                  const sigverify_rsa_buffer_t *signature,
-                                 const sigverify_rsa_key_t *key) {
+                                 const sigverify_rsa_key_t *key,
+                                 lifecycle_state_t lc_state) {
   hmac_digest_t act_digest;
   hmac_sha256_init();
   RETURN_IF_ERROR(hmac_sha256_update(signed_message, signed_message_len));
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
+  hardened_bool_t use_sw;
+  RETURN_IF_ERROR(sigverify_use_sw_rsa_verify(lc_state, &use_sw));
+
   sigverify_rsa_buffer_t enc_msg;
-  switch (otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET)) {
+  switch (use_sw) {
     case kHardenedBoolTrue:
       RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
       break;

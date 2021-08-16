@@ -491,7 +491,7 @@ TEST_P(SigverifyRsaVerify, Ibex) {
       .WillOnce(Return(kHardenedBoolTrue));
 
   EXPECT_EQ(sigverify_rsa_verify(kMessage.data(), kMessage.size(),
-                                 &GetParam().sig, GetParam().key),
+                                 &GetParam().sig, GetParam().key, kLcStateProd),
             kErrorOk);
 }
 

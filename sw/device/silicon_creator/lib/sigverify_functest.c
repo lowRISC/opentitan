@@ -124,18 +124,18 @@ static const sigverify_rsa_key_t kKeyExp3 = {
 
 rom_error_t sigverify_test_exp_3(void) {
   return sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1, &kSignatureExp3,
-                              &kKeyExp3);
+                              &kKeyExp3, kLcStateRma);
 }
 
 rom_error_t sigverify_test_exp_65537(void) {
   return sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1,
-                              &kSignatureExp65537, &kKeyExp65537);
+                              &kSignatureExp65537, &kKeyExp65537, kLcStateRma);
 }
 
 rom_error_t sigverify_test_negative(void) {
   // Signature verification should fail when using the wrong signature.
   if (sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1, &kSignatureExp65537,
-                           &kKeyExp3) == kErrorOk) {
+                           &kKeyExp3, kLcStateRma) == kErrorOk) {
     return kErrorUnknown;
   }
   return kErrorOk;

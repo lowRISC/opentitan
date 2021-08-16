@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
@@ -32,16 +33,21 @@ inline uint32_t sigverify_rsa_key_id_get(
 /**
  * Verifies an RSASSA-PKCS1-v1_5 signature.
  *
+ * The actual implementation that is used (software or OTBN) is determined by
+ * the life cycle state of the device and the OTP value.
+ *
  * @param signed_message Message whose signature is to be verified.
  * @param signed_message_len Length of the signed message in bytes.
  * @param signature Signature to be verified.
  * @param key Signer's RSA public key.
+ * @param lc_state Life cycle state of the device.
  * @return Result of the operation.
  */
 rom_error_t sigverify_rsa_verify(const void *signed_message,
                                  size_t signed_message_len,
                                  const sigverify_rsa_buffer_t *signature,
-                                 const sigverify_rsa_key_t *key);
+                                 const sigverify_rsa_key_t *key,
+                                 lifecycle_state_t lc_state);
 
 #ifdef __cplusplus
 }  // extern "C"
