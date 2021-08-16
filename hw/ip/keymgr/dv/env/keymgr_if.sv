@@ -8,6 +8,19 @@ interface keymgr_if(input clk, input rst_n);
   import uvm_pkg::*;
   import keymgr_env_pkg::*;
 
+  // Represents the keymgr sideload state for each sideload interface.
+  //
+  // The initial status is SideLoadNotAvail. After the sideload key is generated, it becomes
+  // SideLoadAvail.
+  // Status can't be directly changed from SideLoadClear to SideLoadAvail.
+  // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
+  // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
+  typedef enum bit[1:0] {
+    SideLoadNotAvail,
+    SideLoadAvail,
+    SideLoadClear
+  } keymgr_sideload_status_e;
+
   lc_ctrl_pkg::lc_tx_t            keymgr_en;
   lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
   otp_ctrl_pkg::otp_device_id_t   otp_device_id;
@@ -34,13 +47,19 @@ interface keymgr_if(input clk, input rst_n);
   lc_ctrl_pkg::lc_tx_t keymgr_en_sync1, keymgr_en_sync2;
 
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
+  // when a good KDF is ongoing or kmac sideload key is available, this flag is set to 1
   bit is_kmac_key_good;
-  bit is_aes_key_good;
-  bit is_otbn_key_good;
 
-  // when kmac sideload key is generated, kmac may be used to do other OP, but once the OP is done,
-  // it should automatically switch back to sideload key
-  bit is_kmac_sideload_avail;
+  // sideload status
+  keymgr_sideload_status_e aes_sideload_status;
+  keymgr_sideload_status_e otbn_sideload_status;
+
+  // When kmac sideload key is generated, `kmac_key` becomes valid with the generated digest data.
+  // If SW requests keymgr to do another operation, kmac_key will be updated to the internal key
+  // to perform a KMAC KDF operation.
+  // Once the operation is done, `kmac_key` is expected to switch automatically to the previous KMAC
+  // sideload key.
+  keymgr_sideload_status_e kmac_sideload_status;
   keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
@@ -81,13 +100,14 @@ interface keymgr_if(input clk, input rst_n);
 
   // reset local exp variables when reset is issued
   function automatic void reset();
+    keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
     kmac_key_exp = '0;
     aes_key_exp  = '0;
     otbn_key_exp = '0;
     is_kmac_key_good = 0;
-    is_aes_key_good  = 0;
-    is_otbn_key_good = 0;
-    is_kmac_sideload_avail = 0;
+    kmac_sideload_status = SideLoadNotAvail;
+    aes_sideload_status = SideLoadNotAvail;
+    otbn_sideload_status = SideLoadNotAvail;
 
     // edn related
     edn_interval  = 'h100;
@@ -176,7 +196,7 @@ interface keymgr_if(input clk, input rst_n);
                                          bit good_key = 1);
 
     kmac_key_exp <= '{1'b1, key_shares};
-    is_kmac_key_good = good_key;
+    is_kmac_key_good <= good_key;
   endfunction
 
   // store internal key once it's available and use to compare if future OP is invalid
@@ -198,24 +218,70 @@ interface keymgr_if(input clk, input rst_n);
                                                     key_shares[0][keymgr_pkg::KeyWidth-1:0]};
     case (dest)
       keymgr_pkg::Kmac: begin
-        kmac_key_exp             <= '{1'b1, trun_key_shares};
-        is_kmac_key_good         <= 1;
-        is_kmac_sideload_avail   <= 1;
-        kmac_sideload_key_shares <= trun_key_shares;
+        if (kmac_sideload_status != SideLoadClear) begin
+          kmac_sideload_status     <= SideLoadAvail;
+          kmac_key_exp             <= '{1'b1, trun_key_shares};
+          is_kmac_key_good         <= 1;
+          kmac_sideload_key_shares <= trun_key_shares;
+        end
       end
       keymgr_pkg::Aes: begin
-        aes_key_exp     <= '{1'b1, trun_key_shares};
-        is_aes_key_good <= 1;
+        if (aes_sideload_status != SideLoadClear) begin
+          aes_key_exp         <= '{1'b1, trun_key_shares};
+          aes_sideload_status <= SideLoadAvail;
+        end
       end
       keymgr_pkg::Otbn: begin
-        // only otbn uses full 384 bits digest data
-        otbn_key_exp     <= '{1'b1, key_shares};
-        is_otbn_key_good <= 1;
+        if (otbn_sideload_status != SideLoadClear) begin
+          // only otbn uses full 384 bits digest data
+          otbn_key_exp         <= '{1'b1, key_shares};
+          otbn_sideload_status <= SideLoadAvail;
+        end
       end
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
     keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
+  endfunction
+
+  function automatic void clear_sideload_key(bit[2:0] clear_dest);
+    // reset from Clear to NotAvail
+    if (kmac_sideload_status == SideLoadClear) kmac_sideload_status <= SideLoadNotAvail;
+    if (aes_sideload_status == SideLoadClear)  aes_sideload_status  <= SideLoadNotAvail;
+    if (otbn_sideload_status == SideLoadClear) otbn_sideload_status <= SideLoadNotAvail;
+    case (clear_dest)
+      keymgr_pkg::SideLoadClrIdle: ; // do nothing
+      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrOtbn: begin
+        clear_one_sideload_key(clear_dest);
+      end
+      // clear all
+      default: begin
+        clear_one_sideload_key(keymgr_pkg::SideLoadClrAes);
+        clear_one_sideload_key(keymgr_pkg::SideLoadClrKmac);
+        clear_one_sideload_key(keymgr_pkg::SideLoadClrOtbn);
+      end
+    endcase
+  endfunction
+
+  function automatic void clear_one_sideload_key(keymgr_pkg::keymgr_sideload_clr_e clear_dest);
+    case (clear_dest)
+      keymgr_pkg::SideLoadClrAes: begin
+        aes_sideload_status <= SideLoadClear;
+        aes_key_exp.valid <= 0;
+      end
+      keymgr_pkg::SideLoadClrKmac: begin
+        is_kmac_key_good <= 0;
+        kmac_key_exp.valid <= 0;
+        kmac_sideload_status <= SideLoadClear;
+      end
+      keymgr_pkg::SideLoadClrOtbn: begin
+        otbn_sideload_status <= SideLoadClear;
+        otbn_key_exp.valid <= 0;
+      end
+      default: begin
+        `uvm_fatal(msg_id, $sformatf("Unexpected clear_dest %0d", clear_dest))
+      end
+    endcase
   endfunction
 
   function automatic bit get_keymgr_en();
@@ -270,7 +336,7 @@ interface keymgr_if(input clk, input rst_n);
     forever begin
       @(posedge clk);
       if (kmac_data_rsp.done) begin
-        if (is_kmac_sideload_avail) begin
+        if (kmac_sideload_status == SideLoadAvail) begin
           kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
         end else begin
@@ -284,52 +350,49 @@ interface keymgr_if(input clk, input rst_n);
   initial begin
     fork
       forever begin
-        @(posedge clk);
+        @(kmac_key or is_kmac_key_good);
+        #1ps; // avoid race condition
         if (!is_kmac_key_good) check_invalid_key(kmac_key, "KMAC");
       end
       forever begin
-        @(posedge clk);
-        if (!is_aes_key_good) check_invalid_key(aes_key, "AES");
+        @(aes_key or aes_sideload_status);
+        #1ps; // avoid race condition
+        if (aes_sideload_status != SideLoadAvail) check_invalid_key(aes_key, "AES");
+      end
+      forever begin
+        @(otbn_key or otbn_sideload_status);
+        #1ps; // avoid race condition
+        if (otbn_sideload_status != SideLoadAvail) check_invalid_key(otbn_key, "OTBN");
       end
     join
-  end
-
-  initial begin
-    forever begin
-      @(posedge rst_n);
-      // This life cycle signal must be stable before
-      // the key manager comes out of reset.
-      // The power/reset manager ensures that
-      // this sequencing is correct.
-      keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
-    end
   end
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && !is_cmd_err && !is_fsm_err) begin
       foreach (keys_a_array[state, cdi, dest]) begin
-        `DV_CHECK_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
+        `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
             $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
             msg_id)
       end
     end
   endfunction
 
-  `define KM_ASSERT(NAME, SEQ) \
+  // Create a macro to skip checking key values when LC is off or fault error occurs
+  `define ASSERT_IFF_KEYMGR_LEGAL(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || is_cmd_err || \
            is_fsm_err)
 
-  // These asserts are commented out because the advance operation is now 2-pass and will require
-  // updated handling
-  `KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
-  `KM_ASSERT(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
+                           kmac_key == kmac_key_exp)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
 
-  // TODO update hmac and aes checker later
-  `KM_ASSERT(CheckAesKey, is_aes_key_good && aes_key_exp.valid -> aes_key == aes_key_exp)
-  `KM_ASSERT(CheckAesKeyValid, aes_key_exp.valid == aes_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
+                           aes_key == aes_key_exp)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_key_exp.valid == aes_key.valid)
 
-  `KM_ASSERT(CheckOtbnKey, is_otbn_key_good && otbn_key_exp.valid -> otbn_key == otbn_key_exp)
-  `KM_ASSERT(CheckOtbnKeyValid, otbn_key_exp.valid == otbn_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
+                           -> otbn_key == otbn_key_exp)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_key_exp.valid == otbn_key.valid)
 
   // for EDN assertion
   // sync req/ack to core clk domain
@@ -390,5 +453,5 @@ interface keymgr_if(input clk, input rst_n);
   `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |-> edn_wait_cnt < 20,
           clk, !rst_n)
 
-  `undef KM_ASSERT
+  `undef ASSERT_IFF_KEYMGR_LEGAL
 endinterface
