@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/sigverify.h"
 
 #include <cstring>
+#include <unordered_set>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
@@ -86,7 +87,53 @@ constexpr sigverify_rsa_buffer_t kEncMsg{
 constexpr std::array<uint8_t, 4> kSignedRegion{'t', 'e', 's', 't'};
 constexpr sigverify_rsa_buffer_t kSignature{};
 
-class SigVerifyTest : public mask_rom_test::MaskRomTest {
+/**
+ * Life cycle states used in parameterized tests.
+ */
+
+constexpr std::array<lifecycle_state_t, 8> kLcStatesTest{
+    kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
+    kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
+    kLcStateTestUnlocked6, kLcStateTestUnlocked7,
+};
+
+constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
+    kLcStateDev,
+    kLcStateProd,
+    kLcStateProdEnd,
+    kLcStateRma,
+};
+
+constexpr std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
+    kLcStateRaw,         kLcStateTestLocked0,
+    kLcStateTestLocked1, kLcStateTestLocked2,
+    kLcStateTestLocked3, kLcStateTestLocked4,
+    kLcStateTestLocked5, kLcStateTestLocked6,
+    kLcStateScrap,       kLcStatePostTransition,
+    kLcStateEscalate,    kLcStateInvalid,
+};
+
+const std::unordered_set<lifecycle_state_t> &LcStatesAll() {
+  static const std::unordered_set<lifecycle_state_t> *const kLcStatesAll =
+      []() {
+        auto states = new std::unordered_set<lifecycle_state_t>();
+        states->insert(kLcStatesTest.begin(), kLcStatesTest.end());
+        states->insert(kLcStatesNonTestOperational.begin(),
+                       kLcStatesNonTestOperational.end());
+        states->insert(kLcStatesNonOperational.begin(),
+                       kLcStatesNonOperational.end());
+        return states;
+      }();
+  return *kLcStatesAll;
+}
+
+TEST(LcStateCount, IsCorrect) {
+  EXPECT_EQ(kLcStateNumStates, LcStatesAll().size());
+}
+
+class SigverifyInLcState
+    : public mask_rom_test::MaskRomTest,
+      public testing::WithParamInterface<lifecycle_state_t> {
  protected:
   void ExpectSha256() {
     EXPECT_CALL(hmac_, sha256_init());
@@ -105,18 +152,20 @@ class SigVerifyTest : public mask_rom_test::MaskRomTest {
   sigverify_rsa_key_t key_{};
 };
 
-TEST_F(SigVerifyTest, BadOtpValue) {
+class SigverifyInNonTestStates : public SigverifyInLcState {};
+
+TEST_P(SigverifyInNonTestStates, BadOtpValue) {
   ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(0xA5A5A5A5));
 
   EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_),
+                                 &kSignature, &key_, GetParam()),
             kErrorSigverifyBadOtpValue);
 }
 
-TEST_F(SigVerifyTest, GoodSignatureIbex) {
+TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
   ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
@@ -125,11 +174,11 @@ TEST_F(SigVerifyTest, GoodSignatureIbex) {
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_),
+                                 &kSignature, &key_, GetParam()),
             kErrorOk);
 }
 
-TEST_F(SigVerifyTest, GoodSignatureOtbn) {
+TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
   ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
@@ -138,11 +187,11 @@ TEST_F(SigVerifyTest, GoodSignatureOtbn) {
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_),
+                                 &kSignature, &key_, GetParam()),
             kErrorOk);
 }
 
-TEST_F(SigVerifyTest, BadSignature) {
+TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
   // Corrupt the words of the encoded message by flipping their bits and check
   // that signature verification fails.
   for (size_t i = 0; i < kSigVerifyRsaNumWords; ++i) {
@@ -152,15 +201,63 @@ TEST_F(SigVerifyTest, BadSignature) {
     ExpectSha256();
     EXPECT_CALL(otp_,
                 read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
-        .WillOnce(Return(kHardenedBoolTrue));
+        .WillOnce(Return(kHardenedBoolFalse));
+    EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
+        .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
+
+    EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                   &kSignature, &key_, GetParam()),
+              kErrorSigverifyBadEncodedMessage);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(NonTestOperationalStates, SigverifyInNonTestStates,
+                         testing::ValuesIn(kLcStatesNonTestOperational));
+
+class SigverifyInTestStates : public SigverifyInLcState {};
+
+TEST_P(SigverifyInTestStates, GoodSignatureIbex) {
+  ExpectSha256();
+  EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
+      .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
+
+  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                 &kSignature, &key_, GetParam()),
+            kErrorOk);
+}
+
+TEST_P(SigverifyInTestStates, BadSignatureIbex) {
+  // Corrupt the words of the encoded message by flipping their bits and check
+  // that signature verification fails.
+  for (size_t i = 0; i < kSigVerifyRsaNumWords; ++i) {
+    auto bad_enc_msg = kEncMsg;
+    bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
+
+    ExpectSha256();
     EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
     EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                   &kSignature, &key_),
+                                   &kSignature, &key_, GetParam()),
               kErrorSigverifyBadEncodedMessage);
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(TestStates, SigverifyInTestStates,
+                         testing::ValuesIn(kLcStatesTest));
+
+class SigverifyInInvalidStates : public SigverifyInLcState {};
+
+TEST_P(SigverifyInInvalidStates, BadLcState) {
+  ExpectSha256();
+
+  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
+                                 &kSignature, &key_, GetParam()),
+            kErrorSigverifyBadLcState);
+}
+
+INSTANTIATE_TEST_SUITE_P(NonOperationalStates, SigverifyInInvalidStates,
+                         testing::ValuesIn(kLcStatesNonOperational));
 
 }  // namespace
 }  // namespace sigverify_unittest

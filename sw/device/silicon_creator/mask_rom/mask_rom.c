@@ -134,8 +134,9 @@ rom_error_t mask_rom_boot(void) {
     RETURN_IF_ERROR(manifest_signed_region_get(manifest, &signed_region));
     RETURN_IF_ERROR(sigverify_rsa_key_get(
         sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
-    RETURN_IF_ERROR(sigverify_rsa_verify(
-        signed_region.start, signed_region.length, &manifest->signature, key));
+    RETURN_IF_ERROR(sigverify_rsa_verify(signed_region.start,
+                                         signed_region.length,
+                                         &manifest->signature, key, lc_state));
 
     //  // Manifest Failure (check Boot Policy)
     //  // **Open Q:** Does this need different logic to the check after
