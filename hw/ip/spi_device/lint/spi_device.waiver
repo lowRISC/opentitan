@@ -64,6 +64,12 @@ waive -rules CONST_FF -location {spi_fwmode.sv} -regexp {'tx_state' is driven by
 
 waive -rules TWO_STATE_TYPE -location {spi_device.sv} -regexp {'fwm_fifo_e' is of} \
       -comment "Intended declaration"
+waive -rules TWO_STATE_TYPE -location {spi_device.sv} \
+      -regexp {'sys_sram_e' is of two state type} \
+      -comment "Enum int unsigned is used as a index. OK to be two state"
+waive -rules TWO_STATE_TYPE -location {spid_upload.sv} \
+      -regexp {'sramintf_e' is of two state type} \
+      -comment "Enum int unsigned is used as a index. OK to be two state"
 
 waive -rules ONE_BIT_MEM_WIDTH -location {spi_device.sv spi_fwmode.sv} -regexp {Memory 'fwm_sram_.*' has word} \
       -comment "Intended implementation to make it consistent with other signals"
@@ -180,3 +186,17 @@ waive -rules {CALC_NEXT_STATE} -location {spid_status.sv} \
 waive -rules {TERMINAL_STATE} -location {spid_readbuffer.sv} \
       -regexp {'StActive' is detected.} \
       -comment "StActive is final state waiting CSb de-assertion"
+waive -rules {TERMINAL_STATE} -location {spid_upload.sv} \
+      -regexp {'StPayload' is detected.} \
+      -comment "StPayload is the final state waiting CSb"
+
+## PKG
+
+waive -rules {INPUT_NOT_READ} -location {spi_device_pkg.sv} \
+      -regexp {'ci\..*' is not read} \
+      -comment "Only portion of the cmd info struct is used"
+
+## PARAM_ENUM
+waive -rules {PARAM_ENUM_VAL} -location {spi_device.sv} \
+      -regexp {Parameter 'N' is .* 'SysSramEnd'} \
+      -comment "The enum is used as a constant in the design."

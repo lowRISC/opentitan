@@ -461,6 +461,63 @@
         } // f: threshold
       ]
     } // R: READ_THRESHOLD
+    { name: "UPLOAD_STATUS"
+      desc: '''Upload module status register.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "4:0"
+          name: "cmdfifo_depth"
+          desc: "Command FIFO Entry"
+        } // f: cmdfifo_depth
+        { bits: "7"
+          name: "cmdfifo_notempty"
+          desc: "Upload Command FIFO Not Empty"
+        } // f: cmdfifo_notempty
+        { bits: "12:8"
+          name: "addrfifo_depth"
+          desc: "Address FIFO Entry"
+        } // f: addrfifo_depth
+        { bits: "15"
+          name: "addrfifo_notempty"
+          desc: "Upload Address FIFO Not Empty"
+        } // f: addrfifo_notempty
+        { bits: "24:16"
+          name: "payload_depth"
+          desc: '''Payload buffer depth
+            '''
+        } // f: payload_depth
+      ]
+    } // R: UPLOAD_STATUS
+    { name: "UPLOAD_CMDFIFO"
+      desc: '''Command Fifo Read Port.
+        '''
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwre:  "true"
+      hwext: "true"
+      fields: [
+        { bits: "7:0"
+          name: "data"
+          desc: "read data"
+        }
+      ]
+    } // R: UPLOAD_CMDFIFO
+    { name: "UPLOAD_ADDRFIFO"
+      desc: '''Address Fifo Read Port.
+        '''
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwre:  "true"
+      hwext: "true"
+      fields: [
+        { bits: "31:0"
+          name: "data"
+          desc: "read data"
+        }
+      ]
+    } // R: UPLOAD_ADDRFIFO
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"
@@ -592,7 +649,8 @@
               defines the command address field size.
 
               The logic assumes the following SPI input stream as payload,
-              which max size is 256B. If the command exceeds the maximum payload size 256B, the logic wraps the payload and overwrites.
+              which max size is 256B. If the command exceeds the maximum
+              payload size 256B, the logic wraps the payload and overwrites.
               '''
           } // f: upload
           { bits: "25"

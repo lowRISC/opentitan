@@ -86,6 +86,7 @@ module spi_device
   logic              mem_a_write;
   logic [SramAw-1:0] mem_a_addr;
   logic [SramDw-1:0] mem_a_wdata;
+  logic [SramDw-1:0] mem_a_wmask;
   logic              mem_a_rvalid;
   logic [SramDw-1:0] mem_a_rdata;
   logic [1:0]        mem_a_rerror;
@@ -109,6 +110,38 @@ module spi_device
   // Host return path mux
   logic [3:0] internal_sd, internal_sd_en;
   logic [3:0] passthrough_sd, passthrough_sd_en;
+
+  // Upload related interfaces (SRAM, FIFOs)
+  // Initially, SysSramEnd was the end of the enum variable. But lint tool
+  // raises errors the value being used in the parameter. So changed to
+  // localparam
+  typedef enum int unsigned {
+    SysSramFw       = 0,
+    SysSramCmdFifo  = 1,
+    SysSramAddrFifo = 2,
+    SysSramEnd      = 3
+  } sys_sram_e;
+
+  sram_l2m_t sys_sram_l2m [SysSramEnd]; // FW, CMDFIFO, ADDRFIFO
+  sram_m2l_t sys_sram_m2l [SysSramEnd];
+
+  logic       cmdfifo_rvalid, cmdfifo_rready;
+  logic [7:0] cmdfifo_rdata;
+  logic       cmdfifo_notempty;
+
+  logic        addrfifo_rvalid, addrfifo_rready;
+  logic [31:0] addrfifo_rdata;
+  logic        addrfifo_notempty;
+
+  localparam int unsigned CmdFifoPtrW = $clog2(SramCmdFifoDepth+1);
+  localparam int unsigned AddrFifoPtrW = $clog2(SramAddrFifoDepth+1);
+
+  localparam int unsigned PayloadByte = SramPayloadDepth * (SramDw/$bits(spi_byte_t));
+  localparam int unsigned PayloadDepthW = $clog2(PayloadByte+1);
+
+  logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
+  logic [AddrFifoPtrW-1:0]   addrfifo_depth;
+  logic [PayloadDepthW-1:0]  payload_depth;
 
   /////////////////////
   // Control signals //
@@ -701,7 +734,17 @@ module spi_device
             p2s_data  = sub_p2s_data[IoModeJedec];
             sub_p2s_sent[IoModeJedec] = p2s_sent;
           end
-          // DpUpload:
+
+          DpUpload: begin
+            io_mode = sub_iomode[IoModeUpload];
+
+            p2s_valid = sub_p2s_valid[IoModeUpload];
+            p2s_data  = sub_p2s_data[IoModeUpload];
+            sub_p2s_sent[IoModeUpload] = p2s_sent;
+
+            mem_b_l2m = sub_sram_l2m[IoModeUpload];
+            sub_sram_m2l[IoModeUpload] = mem_b_m2l;
+          end
           // DpUnknown:
           default: begin
             io_mode = sub_iomode[IoModeCmdParse];
@@ -968,8 +1011,6 @@ module spi_device
   // Temporary:
   logic unused_busy;
   assign unused_busy = status_busy_broadcast;
-  // TODO: replace to the output of upload module
-  assign status_busy_set = 1'b 0;
 
   // Tie unused
   logic unused_sub_sram_status;
@@ -1009,6 +1050,103 @@ module spi_device
   };
   assign sub_sram_l2m[IoModeJedec] = '0;
 
+  // Begin: Upload ===================================================
+  spid_upload #(
+    .CmdFifoBaseAddr  (SramCmdFifoIdx),
+    .CmdFifoDepth     (SramCmdFifoDepth),
+    .AddrFifoBaseAddr (SramAddrFifoIdx),
+    .AddrFifoDepth    (SramAddrFifoDepth),
+    .PayloadBaseAddr  (SramPayloadIdx),
+    .PayloadDepth     (SramPayloadDepth),
+
+    .SpiByte ($bits(spi_byte_t))
+  ) u_upload (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
+
+    .sys_clk_i  (clk_i),
+    .sys_rst_ni (rst_ni),
+
+    .sys_csb_deasserted_pulse_i (csb_deasserted_busclk),
+
+    .sel_dp_i (cmd_dp_sel),
+
+    .sck_sram_o (sub_sram_l2m[IoModeUpload]),
+    .sck_sram_i (sub_sram_m2l[IoModeUpload]),
+
+    .sys_cmdfifo_sram_o (sys_sram_l2m[SysSramCmdFifo]),
+    .sys_cmdfifo_sram_i (sys_sram_m2l[SysSramCmdFifo]),
+
+    .sys_addrfifo_sram_o (sys_sram_l2m[SysSramAddrFifo]),
+    .sys_addrfifo_sram_i (sys_sram_m2l[SysSramAddrFifo]),
+
+    // SYS clock FIFO interface
+    .sys_cmdfifo_rvalid_o (cmdfifo_rvalid),
+    .sys_cmdfifo_rready_i (cmdfifo_rready),
+    .sys_cmdfifo_rdata_o  (cmdfifo_rdata),
+
+    .sys_addrfifo_rvalid_o (addrfifo_rvalid),
+    .sys_addrfifo_rready_i (addrfifo_rready),
+    .sys_addrfifo_rdata_o  (addrfifo_rdata),
+
+    // Interface: SPI to Parallel
+    .s2p_valid_i  (s2p_data_valid),
+    .s2p_byte_i   (s2p_data),
+    .s2p_bitcnt_i (s2p_bitcnt),
+
+    // Interface: Parallel to SPI
+    .p2s_valid_o (sub_p2s_valid[IoModeUpload]),
+    .p2s_data_o  (sub_p2s_data [IoModeUpload]),
+    .p2s_sent_i  (sub_p2s_sent [IoModeUpload]),
+
+    .spi_mode_i (spi_mode),
+
+    .cfg_addr_4b_en_i (cfg_addr_4b_en),
+
+    .cmd_info_i     (cmd_info_broadcast),
+    .cmd_info_idx_i (cmd_info_idx_broadcast),
+
+    .io_mode_o (sub_iomode[IoModeUpload]),
+
+    .set_busy_o (status_busy_set),
+
+    .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
+    .sys_cmdfifo_full_o      (), // not used
+    .sys_addrfifo_notempty_o (addrfifo_notempty),
+    .sys_addrfifo_full_o     (), // not used
+
+    .sys_cmdfifo_depth_o  (cmdfifo_depth),
+    .sys_addrfifo_depth_o (addrfifo_depth),
+    .sys_payload_depth_o  (payload_depth)
+  );
+  // FIFO connect
+  assign cmdfifo_rready = reg2hw.upload_cmdfifo.re;
+  assign hw2reg.upload_cmdfifo.d = cmdfifo_rdata;
+  logic unused_cmdfifo_q;
+  assign unused_cmdfifo_q = ^{reg2hw.upload_cmdfifo.q, cmdfifo_rvalid};
+
+  assign addrfifo_rready = reg2hw.upload_addrfifo.re;
+  assign hw2reg.upload_addrfifo.d = addrfifo_rdata;
+  logic unused_addrfifo_q;
+  assign unused_addrfifo_q = ^{reg2hw.upload_addrfifo.q, addrfifo_rvalid};
+
+  // Connect UPLOAD_STATUS
+  assign hw2reg.upload_status.cmdfifo_depth.de = 1'b1;
+  assign hw2reg.upload_status.cmdfifo_depth.d  = cmdfifo_depth;
+
+  assign hw2reg.upload_status.cmdfifo_notempty.de = 1'b1;
+  assign hw2reg.upload_status.cmdfifo_notempty.d  = cmdfifo_notempty;
+
+  assign hw2reg.upload_status.addrfifo_depth.de = 1'b 1;
+  assign hw2reg.upload_status.addrfifo_depth.d  = addrfifo_depth;
+
+  assign hw2reg.upload_status.addrfifo_notempty.de = 1'b 1;
+  assign hw2reg.upload_status.addrfifo_notempty.d  = addrfifo_notempty;
+
+  assign hw2reg.upload_status.payload_depth.de = 1'b 1;
+  assign hw2reg.upload_status.payload_depth.d  = payload_depth;
+
+  // End:   Upload ---------------------------------------------------
   /////////////////////
   // SPI Passthrough //
   /////////////////////
@@ -1051,6 +1189,8 @@ module spi_device
   // Common modules //
   ////////////////////
 
+  logic [SramDw-1:0] sys_sram_l2m_fw_wmask;
+
   tlul_adapter_sram #(
     .SramAw      (SramAw),
     .SramDw      (SramDw),
@@ -1063,17 +1203,77 @@ module spi_device
     .tl_i        (tl_sram_h2d),
     .tl_o        (tl_sram_d2h),
     .en_ifetch_i (tlul_pkg::InstrDis),
-    .req_o       (mem_a_req),
+    .req_o       (sys_sram_l2m[SysSramFw].req),
     .req_type_o  (),
-    .gnt_i       (mem_a_req),  //Always grant when request
-    .we_o        (mem_a_write),
-    .addr_o      (mem_a_addr),
-    .wdata_o     (mem_a_wdata),
-    .wmask_o     (),           // Not used
+    .gnt_i       (1'b1),  // TODO: Connect arbiter grant here
+    .we_o        (sys_sram_l2m[SysSramFw].we),
+    .addr_o      (sys_sram_l2m[SysSramFw].addr),
+    .wdata_o     (sys_sram_l2m[SysSramFw].wdata),
+    .wmask_o     (sys_sram_l2m_fw_wmask),           // Not used
     .intg_error_o(),
-    .rdata_i     (mem_a_rdata),
-    .rvalid_i    (mem_a_rvalid),
-    .rerror_i    (mem_a_rerror)
+    .rdata_i     (sys_sram_m2l[SysSramFw].rdata),
+    .rvalid_i    (sys_sram_m2l[SysSramFw].rvalid),
+    .rerror_i    (sys_sram_m2l[SysSramFw].rerror)
+  );
+  assign sys_sram_l2m[SysSramFw].wstrb = sram_mask2strb(sys_sram_l2m_fw_wmask);
+
+  // Arbiter among Upload CmdFifo/AddrFifo & FW access
+  logic [SysSramEnd-1:0] sys_sram_req                ;
+  logic [SysSramEnd-1:0] sys_sram_gnt                ;
+  logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_write              ;
+  logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
+  logic [SramDw-1:0]     sys_sram_wmask  [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_rvalid             ;
+  logic [SramDw-1:0]     sys_sram_rdata  [SysSramEnd];
+  logic [1:0]            sys_sram_rerror [SysSramEnd];
+
+  for (genvar i = 0 ; i < SysSramEnd ; i++) begin : g_sram_connect
+    assign sys_sram_req   [i] = sys_sram_l2m[i].req;
+    assign sys_sram_addr  [i] = sys_sram_l2m[i].addr;
+    assign sys_sram_write [i] = sys_sram_l2m[i].we;
+    assign sys_sram_wdata [i] = sys_sram_l2m[i].wdata;
+    assign sys_sram_wmask [i] = sram_strb2mask(sys_sram_l2m[i].wstrb);
+
+    assign sys_sram_m2l[i].rvalid = sys_sram_rvalid[i];
+    assign sys_sram_m2l[i].rdata  = sys_sram_rdata[i];
+    assign sys_sram_m2l[i].rerror = sys_sram_rerror[i];
+
+    `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
+  end : g_sram_connect
+
+  logic unused_sys_sram_gnt;
+  assign unused_sys_sram_gnt = ^sys_sram_gnt;
+
+  prim_sram_arbiter #(
+    .N      (SysSramEnd),
+    .SramDw (SramDw),
+    .SramAw (SramAw),
+
+    .EnMask (1'b 1)
+  ) u_sys_sram_arbiter (
+    .clk_i,
+    .rst_ni,
+
+    .req_i       (sys_sram_req),
+    .req_addr_i  (sys_sram_addr),
+    .req_write_i (sys_sram_write),
+    .req_wdata_i (sys_sram_wdata),
+    .req_wmask_i (sys_sram_wmask),
+    .gnt_o       (sys_sram_gnt),
+
+    .rsp_rvalid_o (sys_sram_rvalid),
+    .rsp_rdata_o  (sys_sram_rdata),
+    .rsp_error_o  (sys_sram_rerror),
+
+    .sram_req_o    (mem_a_req),
+    .sram_addr_o   (mem_a_addr),
+    .sram_write_o  (mem_a_write),
+    .sram_wdata_o  (mem_a_wdata),
+    .sram_wmask_o  (mem_a_wmask),
+    .sram_rvalid_i (mem_a_rvalid),
+    .sram_rdata_i  (mem_a_rdata),
+    .sram_rerror_i (mem_a_rerror)
   );
 
   // SRAM Wrapper
@@ -1107,7 +1307,7 @@ module spi_device
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),
     .a_wdata_i  (mem_a_wdata),
-    .a_wmask_i  ({SramDw{1'b1}}),
+    .a_wmask_i  (mem_a_wmask),
     .a_rvalid_o (mem_a_rvalid),
     .a_rdata_o  (mem_a_rdata),
     .a_rerror_o (mem_a_rerror),
