@@ -824,7 +824,7 @@
     }
     {
       name: chip_pwrmgr_debug_sleep
-      desc: '''Verify that when the chip being in "debuggable" state prevent the low power entry.
+      desc: '''Verify low power entry is prevented when the chip is in "debuggable" state.
 
             This is an open issue: https://github.com/lowRISC/opentitan/issues/7215
             '''
@@ -840,6 +840,83 @@
     }
 
     // RSTMGR tests:
+    {
+      name: chip_rstrmgr_non_sys_reset_info
+      desc: '''Verify the `reset_info` CSR register for lc or higher resets.
+
+            Generate the 5 types of reset at `lc` level or higher, and check the `reset_info` CSR
+            is as expected. This and other rstmgr testpoints that require different resets
+            cross-reference the individual IP tests that generate those resets, and this testpoint
+            merely adds reset checks in them. Those IP blocks are `pwrmgr`, `alert_handler`,
+            `aon_timer`, and `sysrst_ctrl`.
+
+            This should also check the reset's destination IP to make sure some reset side-effect
+            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
+            after reset seems suitable. The `spi_host` and `usbdev` IPs receive multiple resets
+            so they will need special consideration.
+            TODO(maturana) Add specific tests once they are developed.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rstrmgr_sys_reset_info
+      desc: '''Verify the `reset_info` CSR register for sys reset.
+
+            Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
+            `reset_info` CSR is as expected. This testpoint cross-reference the `rv_dm` tests that
+            generate this reset, and this testpoint merely adds reset checks in them.
+
+            This should also check the reset's destination IP to make sure some reset side-effect
+            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
+            after reset seems suitable. The `spi_host` and `usbdev` IPs receive multiple resets
+            so they will need special consideration.
+            TODO(maturana) Add specific tests once they are developed.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rstrmgr_cpu_info
+      desc: '''Verify the expected values from the `cpu_info` CSR on reset.
+
+            For some software induced resets we can predict the expected contents of `cpu_info`;
+            reads of writes to unmapped addresses for example. Generate these resets and verify
+            the `cpu_info` register contents when reset is handled.
+            Refer to `chip_*sys_rstrmgr_reset_info`.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rstrmgr_alert_info
+      desc: '''Verify the expected values from the `alert_info` CSR on reset.
+
+            Various alerts can be created, for example, timeouts, and integrity errors, and at
+            least part of the `alert_info` CSR can be predicted. To cause some of these to
+            cause a reset, mask the relevant processor interrupts. Trigger these resets and
+            verify the `alert_info` register contents when reset is handled.
+            Refer to `chip_*sys_rstrmgr_reset_info`.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rstrmgr_sw_rst
+      desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
+
+            Check the peripheral is reset via timeout accessing their CSRs while the corresponding
+            reset is active. The per peripheral reset controls in increasing order by
+            `sw_rst_ctrl_n` bit, are as follows: `spi_device`, `spi_host0`, `spi_host0_core`,
+            `spi_host1`, `spi_host1_core`, `usb`, `usbif`, `i2c0`, `i2c1`, `i2c2`.
+
+            Notice the two `spi_host` and `usbdev` IPs receive two different resets each,
+            `spi_host*` and `spi_host*_core`, and `usb` and `usbif` respectively. This means
+            the CSRs to be used for checking may not be obvious.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // ALERT_HANDLER (pre-verified IP) integration tests:
     {
