@@ -628,7 +628,10 @@ module keymgr
   // Both modules must be consistent with regards to masking assumptions
   logic unused_kmac_en_masking;
   assign unused_kmac_en_masking = kmac_en_masking_i;
-  `ASSERT_INIT(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 
+  // Exclude this assertion check from FPV testbench to avoid compilation error
+  `ifndef FPV_ON
+    `ASSERT_INIT(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
+  `endif
 
 endmodule // keymgr
