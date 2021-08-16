@@ -547,8 +547,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "reseed_interval_shadowed": begin
-        if (addr_phase_write)
-          cfg.keymgr_vif.edn_interval = `gmv(ral.reseed_interval_shadowed.val);
+        if (addr_phase_write) cfg.keymgr_vif.edn_interval = `gmv(ral.reseed_interval_shadowed.val);
+      end
+      "sideload_clear": begin
+        if (addr_phase_write) begin
+          fork
+            begin
+              cfg.clk_rst_vif.wait_clks(1);
+              cfg.keymgr_vif.clear_sideload_key(`gmv(ral.sideload_clear.val));
+            end
+          join_none
+        end
       end
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share

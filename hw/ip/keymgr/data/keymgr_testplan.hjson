@@ -85,7 +85,8 @@
             Verify the sideload data and status for correctness.
             '''
       milestone: V2
-      tests: ["keymgr_sideload"]
+      tests: ["keymgr_sideload", "keymgr_sideload_kmac",
+              "keymgr_sideload_aes", "keymgr_sideload_otbn"]
     }
     {
       name: init_n_start
