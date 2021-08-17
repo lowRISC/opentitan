@@ -428,9 +428,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         mem_byte_access_err = 1;
       end
       // check if mem read happens while mem doesn't allow read (WO)
-      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) mem_wo_err = 0;
+      mem_wo_err = (mem_access == "WO") && (item.a_opcode == tlul_pkg::Get);
       // check if mem write happens while mem is RO
-      if (mem_access == "RO" && (item.a_opcode != tlul_pkg::Get)) mem_ro_err = 0;
+      mem_ro_err = (mem_access == "RO") && (item.a_opcode != tlul_pkg::Get);
 
       if (mem_byte_access_err || mem_wo_err || mem_ro_err) return 0;
     end
