@@ -12,6 +12,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+  no_auto_alert_regs: "True",
   param_list: [
     { name:    "NumRegsA",
       type:    "int",

@@ -97,6 +97,13 @@ package ast_pkg;
     logic [NumIoRails-1:0] io_pok;
   } ast_status_t;
 
+  typedef struct packed {
+    logic                  aon_pok;
+    logic                  vcc_pok;
+    logic                  main_pok;
+    logic [NumIoRails-1:0] io_pok;
+  } ast_pwst_t;
+
   // Alerts Interface
   typedef struct packed {
     logic        p;

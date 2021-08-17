@@ -746,7 +746,7 @@ module chip_earlgrey_asic (
     .input_pi      ( USB_P                 ),
     .input_ni      ( USB_N                 ),
     .input_en_i    ( usb_rx_enable         ),
-    .core_pok_i    ( ast_base_pwr.main_pok ),
+    .core_pok_i    ( ast_pwst_h.aon_pok    ),
     .pullup_p_en_i ( usb_pullup_p_en       ),
     .pullup_n_en_i ( usb_pullup_n_en       ),
     .calibration_i ( usb_io_pu_cal         ),
@@ -799,10 +799,10 @@ module chip_earlgrey_asic (
   tlul_pkg::tl_d2h_t ast_base_bus;
 
   // assorted ast status
-  ast_pkg::ast_status_t ast_status;
+  ast_pkg::ast_pwst_t ast_pwst;
+  ast_pkg::ast_pwst_t ast_pwst_h;
 
-  // ast clocks and resets
-  logic aon_pok;
+  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_ast_out_t clks_ast;
@@ -998,10 +998,8 @@ module chip_earlgrey_asic (
     .vioa_supp_i           ( 1'b1 ),
     .viob_supp_i           ( 1'b1 ),
     // pok
-    .vcaon_pok_o           ( aon_pok ),
-    .vcmain_pok_o          ( ast_base_pwr.main_pok ),
-    .vioa_pok_o            ( ast_status.io_pok[0] ),
-    .viob_pok_o            ( ast_status.io_pok[1] ),
+    .ast_pwst_o            ( ast_pwst ),
+    .ast_pwst_h_o          ( ast_pwst_h ),
     // main regulator
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
@@ -1085,7 +1083,7 @@ module chip_earlgrey_asic (
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // ast connections
-    .por_n_i                      ( aon_pok                    ),
+    .por_n_i                      ( ast_pwst.aon_pok           ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
@@ -1097,7 +1095,7 @@ module chip_earlgrey_asic (
     .pwrmgr_ast_rsp_i             ( ast_base_pwr               ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i     ( ast_status                 ),
+    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
     .usbdev_usb_ref_val_o         ( usb_ref_pulse              ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_val                ),
     .ast_tl_req_o                 ( base_ast_bus               ),
