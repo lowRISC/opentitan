@@ -9,22 +9,25 @@ from .trace import Trace
 
 
 class TraceLoopStart(Trace):
-    def __init__(self, iterations: int, bodysize: int):
+    def __init__(self, depth: int, iterations: int, bodysize: int):
+        self.depth = depth
         self.iterations = iterations
         self.bodysize = bodysize
 
     def trace(self) -> str:
-        return "Starting loop, {} iterations, bodysize: {}".format(
-            self.iterations, self.bodysize)
+        return ("Starting loop {}, {} iterations, bodysize: {}"
+                .format(self.depth, self.iterations, self.bodysize))
 
 
 class TraceLoopIteration(Trace):
-    def __init__(self, iteration: int, total: int):
+    def __init__(self, depth: int, iteration: int, total: int):
+        self.depth = depth
         self.iteration = iteration
         self.total = total
 
     def trace(self) -> str:
-        return "Finished loop iteration {}/{}".format(self.iteration, self.total)
+        return ("Finished iteration {}/{} of loop {}"
+                .format(self.iteration, self.total, self.depth))
 
 
 class LoopLevel:
@@ -84,10 +87,12 @@ class LoopStack:
         assert 0 < insn_count
         assert 0 < loop_count
 
-        if len(self.stack) == LoopStack.stack_depth:
+        depth = len(self.stack)
+
+        if depth == LoopStack.stack_depth:
             self.err_flag = True
 
-        self.trace.append(TraceLoopStart(loop_count, insn_count))
+        self.trace.append(TraceLoopStart(depth, loop_count, insn_count))
         self.stack.append(LoopLevel(start_addr, insn_count, loop_count - 1))
 
     def is_last_insn_in_loop_body(self, pc: int) -> bool:
@@ -128,7 +133,8 @@ class LoopStack:
                 top.restarts_left -= 1
                 ret_val = top.start_addr
 
-            self.trace.append(TraceLoopIteration(loop_idx, top.loop_count))
+            self.trace.append(TraceLoopIteration(len(self.stack),
+                                                 loop_idx, top.loop_count))
             return ret_val
 
         return None
