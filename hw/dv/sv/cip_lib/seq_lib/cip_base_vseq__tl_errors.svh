@@ -304,11 +304,19 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
 
         `uvm_info(`gfn, "expected fatal alert is triggered", UVM_LOW)
 
-        // This is a fatal alert and design keeps sending it until reset is issued.
-        // Check alerts are triggered for a few times
-        repeat ($urandom_range(5, 20)) begin
-          wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
-        end
+        // Check both alert and CSR status update
+        fork
+          // This is a fatal alert and design keeps sending it until reset is issued.
+          // Check alerts are triggered for a few times
+          repeat ($urandom_range(5, 20)) begin
+            wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
+          end
+          // Check corresponding CSR status is updated correctly
+          foreach (cfg.tl_intg_alert_fields[csr_field]) begin
+            bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
+            csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
+          end
+        join
       end
     join
 
