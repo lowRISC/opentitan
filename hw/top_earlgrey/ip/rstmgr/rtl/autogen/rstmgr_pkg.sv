@@ -25,11 +25,14 @@ package rstmgr_pkg;
   // positions of software controllable reset bits
   parameter int SPI_DEVICE = 0;
   parameter int SPI_HOST0 = 1;
-  parameter int SPI_HOST1 = 2;
-  parameter int USB = 3;
-  parameter int I2C0 = 4;
-  parameter int I2C1 = 5;
-  parameter int I2C2 = 6;
+  parameter int SPI_HOST0_CORE = 2;
+  parameter int SPI_HOST1 = 3;
+  parameter int SPI_HOST1_CORE = 4;
+  parameter int USB = 5;
+  parameter int USBIF = 6;
+  parameter int I2C0 = 7;
+  parameter int I2C1 = 8;
+  parameter int I2C2 = 9;
 
   // resets generated and broadcast
   // This should be templatized and generated
@@ -41,16 +44,20 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_por_io_div4_n;
     logic [PowerDomains-1:0] rst_por_usb_n;
     logic [PowerDomains-1:0] rst_lc_n;
+    logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
     logic [PowerDomains-1:0] rst_lc_io_div4_n;
+    logic [PowerDomains-1:0] rst_lc_aon_n;
     logic [PowerDomains-1:0] rst_sys_shadowed_n;
     logic [PowerDomains-1:0] rst_sys_n;
-    logic [PowerDomains-1:0] rst_sys_io_div4_shadowed_n;
     logic [PowerDomains-1:0] rst_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_sys_aon_n;
     logic [PowerDomains-1:0] rst_spi_device_n;
     logic [PowerDomains-1:0] rst_spi_host0_n;
+    logic [PowerDomains-1:0] rst_spi_host0_core_n;
     logic [PowerDomains-1:0] rst_spi_host1_n;
+    logic [PowerDomains-1:0] rst_spi_host1_core_n;
     logic [PowerDomains-1:0] rst_usb_n;
+    logic [PowerDomains-1:0] rst_usbif_n;
     logic [PowerDomains-1:0] rst_i2c0_n;
     logic [PowerDomains-1:0] rst_i2c1_n;
     logic [PowerDomains-1:0] rst_i2c2_n;
@@ -64,13 +71,13 @@ package rstmgr_pkg;
 
   // exported resets
   typedef struct packed {
-    logic [PowerDomains-1:0] rst_ast_usbdev_sys_io_div4_n;
-    logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_usbif_n;
     logic [PowerDomains-1:0] rst_ast_adc_ctrl_aon_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_ast_adc_ctrl_aon_sys_aon_n;
-    logic [PowerDomains-1:0] rst_ast_ast_sys_io_div4_n;
-    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_aon_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_ast_lc_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_aon_lc_io_div4_n;
     logic [PowerDomains-1:0] rst_ast_entropy_src_sys_n;
     logic [PowerDomains-1:0] rst_ast_edn0_sys_n;
   } rstmgr_ast_out_t;

@@ -140,26 +140,30 @@
     // likely external or generated from a voltage comparator
     //
     nodes: [
-      { name: "por_aon",     gen: false, type: "top",                    clk: "aon"     }
-      { name: "lc_src",      gen: false, type: "int",                    clk: "io_div4" }
-      { name: "sys_src",     gen: false, type: "int",                    clk: "io_div4" }
-      { name: "por",         gen: true,  type: "top", parent: "por_aon", clk: "main"    }
-      { name: "por_io",      gen: true,  type: "top", parent: "por_aon", clk: "io"      }
-      { name: "por_io_div2", gen: true,  type: "top", parent: "por_aon", clk: "io_div2" }
-      { name: "por_io_div4", gen: true , type: "top", parent: "por_aon", clk: "io_div4" }
-      { name: "por_usb",     gen: true,  type: "top", parent: "por_aon", clk: "usb"     }
-      { name: "lc",          gen: true,  type: "top", parent: "lc_src",  clk: "main"    }
-      { name: "lc_io_div4",  gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
-      { name: "sys",         gen: true,  type: "top", parent: "sys_src", clk: "main"    }
-      { name: "sys_io_div4", gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
-      { name: "sys_aon",     gen: true,  type: "top", parent: "sys_src", clk: "aon"     }
-      { name: "spi_device",  gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
-      { name: "spi_host0",   gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
-      { name: "spi_host1",   gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
-      { name: "usb",         gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
-      { name: "i2c0",        gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true },
-      { name: "i2c1",        gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true },
-      { name: "i2c2",        gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true },
+      { name: "por_aon",        gen: false, type: "top",                    clk: "aon"     }
+      { name: "lc_src",         gen: false, type: "int",                    clk: "io_div4" }
+      { name: "sys_src",        gen: false, type: "int",                    clk: "io_div4" }
+      { name: "por",            gen: true,  type: "top", parent: "por_aon", clk: "main"    }
+      { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clk: "io"      }
+      { name: "por_io_div2",    gen: true,  type: "top", parent: "por_aon", clk: "io_div2" }
+      { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clk: "io_div4" }
+      { name: "por_usb",        gen: true,  type: "top", parent: "por_aon", clk: "usb"     }
+      { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clk: "main"    }
+      { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
+      { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clk: "aon"     }
+      { name: "sys",            gen: true,  type: "top", parent: "sys_src", clk: "main"    }
+      { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
+      { name: "sys_aon",        gen: true,  type: "top", parent: "sys_src", clk: "aon"     }
+      { name: "spi_device",     gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
+      { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
+      { name: "spi_host0_core", gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
+      { name: "spi_host1",      gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
+      { name: "spi_host1_core", gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
+      { name: "usb",            gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
+      { name: "usbif",          gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
+      { name: "i2c0",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
+      { name: "i2c1",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
+      { name: "i2c2",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
     ]
   }
 
@@ -185,7 +189,7 @@
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
       clock_srcs: {clk_i: "io_div4"},
-
+      clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
@@ -200,7 +204,7 @@
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
       clock_srcs: {clk_i: "io_div4"},
-
+      clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
@@ -215,7 +219,7 @@
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
       clock_srcs: {clk_i: "io_div4"},
-
+      clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
@@ -230,7 +234,7 @@
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
       clock_srcs: {clk_i: "io_div4"},
-
+      clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
@@ -255,14 +259,14 @@
       type: "spi_host",
       clock_srcs: {clk_i: "io_div4", clk_core_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "spi_host0", rst_core_ni: "spi_host0"},
+      reset_connections: {rst_ni: "spi_host0", rst_core_ni: "spi_host0_core"},
       base_addr: "0x40060000",
     },
     { name: "spi_host1",
       type: "spi_host",
       clock_srcs: {clk_i: "io_div4", clk_core_i: "io_div2"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "spi_host1", rst_core_ni: "spi_host1"},
+      reset_connections: {rst_ni: "spi_host1", rst_core_ni: "spi_host1_core"},
       base_addr: "0x40070000",
     },
     { name: "i2c0",
@@ -305,28 +309,28 @@
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usbif"},
       base_addr: "0x40110000",
     },
     { name: "otp_ctrl",
       type: "otp_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
-      clock_group: "timers",
+      clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "sys"},
       base_addrs: {core: "0x40130000", prim: "0x40132000"}
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
-      clock_group: "timers",
+      clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "sys"},
       base_addr: "0x40140000",
     },
     { name: "alert_handler",
       type: "alert_handler",
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "sys"},
       base_addr: "0x40150000",
       attr: "templated",
     },
@@ -334,7 +338,7 @@
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
+      reset_connections: {rst_ni: "por_io_div4", rst_slow_ni: "por_aon"},
       domain: "Aon",
       base_addr: "0x40400000",
       attr: "templated",
@@ -363,7 +367,7 @@
     { name: "sysrst_ctrl_aon",
       type: "sysrst_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
-      clock_group: "secure",
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40430000"
@@ -398,7 +402,7 @@
       type: "aon_timer",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
+      reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
       domain: "Aon",
       base_addr: "0x40470000",
       attr: "templated",
@@ -408,7 +412,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40480000",
       attr: "reggen_only",
     },
@@ -417,7 +421,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       domain: "Aon",
       base_addr: "0x40490000",
       attr: "reggen_top",
@@ -537,7 +541,7 @@
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
-      clock_group: "secure",
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys", rst_otp_ni: "lc_io_div4"},
       param_decl: {
         InstrExec: "1",

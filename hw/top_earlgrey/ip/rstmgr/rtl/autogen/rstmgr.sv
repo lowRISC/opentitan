@@ -243,9 +243,9 @@ module rstmgr
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-  lc_ctrl_pkg::lc_tx_t [16:0] leaf_rst_scanmode;
+  lc_ctrl_pkg::lc_tx_t [20:0] leaf_rst_scanmode;
   prim_lc_sync #(
-    .NumCopies(17),
+    .NumCopies(21),
     .AsyncOn(0)
     ) u_leaf_rst_scanmode_sync  (
     .clk_i(1'b0),  // unused clock
@@ -412,7 +412,7 @@ module rstmgr
 
   // Generating resets for lc_io_div4
   // Power Domains: ['0', 'Aon']
-  // Shadowed: False
+  // Shadowed: True
   logic [PowerDomains-1:0] rst_lc_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
@@ -452,6 +452,71 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
   );
 
+  logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_lc_io_div4_shadowed (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_src_n[DomainAonSel]),
+    .d_i(1'b1),
+    .q_o(rst_lc_io_div4_shadowed_n[DomainAonSel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_lc_io_div4_shadowed_mux (
+    .clk0_i(rst_lc_io_div4_shadowed_n[DomainAonSel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_lc_io_div4_shadowed_n[DomainAonSel])
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_lc_io_div4_shadowed (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_lc_io_div4_shadowed_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_lc_io_div4_shadowed_mux (
+    .clk0_i(rst_lc_io_div4_shadowed_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_lc_io_div4_shadowed_n[Domain0Sel])
+  );
+
+  // Generating resets for lc_aon
+  // Power Domains: ['Aon']
+  // Shadowed: False
+  logic [PowerDomains-1:0] rst_lc_aon_n;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_lc_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_lc_src_n[DomainAonSel]),
+    .d_i(1'b1),
+    .q_o(rst_lc_aon_n[DomainAonSel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_lc_aon_mux (
+    .clk0_i(rst_lc_aon_n[DomainAonSel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_lc_aon_n[DomainAonSel])
+  );
+
+  assign rst_lc_aon_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_lc_aon_n[Domain0Sel] = rst_lc_aon_n[Domain0Sel];
+
   // Generating resets for sys
   // Power Domains: ['0']
   // Shadowed: True
@@ -474,7 +539,7 @@ module rstmgr
   ) u_0_sys_mux (
     .clk0_i(rst_sys_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_n[Domain0Sel])
   );
 
@@ -497,13 +562,13 @@ module rstmgr
   ) u_0_sys_shadowed_mux (
     .clk0_i(rst_sys_shadowed_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_shadowed_n[Domain0Sel])
   );
 
   // Generating resets for sys_io_div4
   // Power Domains: ['0', 'Aon']
-  // Shadowed: True
+  // Shadowed: False
   logic [PowerDomains-1:0] rst_sys_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
@@ -520,7 +585,7 @@ module rstmgr
   ) u_aon_sys_io_div4_mux (
     .clk0_i(rst_sys_io_div4_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
   );
 
@@ -539,47 +604,8 @@ module rstmgr
   ) u_0_sys_io_div4_mux (
     .clk0_i(rst_sys_io_div4_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
-  );
-
-  logic [PowerDomains-1:0] rst_sys_io_div4_shadowed_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_sys_io_div4_shadowed (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_io_div4_shadowed_n[DomainAonSel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_sys_io_div4_shadowed_mux (
-    .clk0_i(rst_sys_io_div4_shadowed_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_io_div4_shadowed_n[DomainAonSel])
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_0_sys_io_div4_shadowed (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[Domain0Sel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_io_div4_shadowed_n[Domain0Sel])
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_0_sys_io_div4_shadowed_mux (
-    .clk0_i(rst_sys_io_div4_shadowed_n[Domain0Sel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_io_div4_shadowed_n[Domain0Sel])
   );
 
   // Generating resets for sys_aon
@@ -601,7 +627,7 @@ module rstmgr
   ) u_aon_sys_aon_mux (
     .clk0_i(rst_sys_aon_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_aon_n[DomainAonSel])
   );
 
@@ -620,7 +646,7 @@ module rstmgr
   ) u_0_sys_aon_mux (
     .clk0_i(rst_sys_aon_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_aon_n[Domain0Sel])
   );
 
@@ -635,7 +661,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_spi_device (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[SPI_DEVICE]),
     .q_o(rst_spi_device_n[Domain0Sel])
@@ -646,7 +672,7 @@ module rstmgr
   ) u_0_spi_device_mux (
     .clk0_i(rst_spi_device_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
   );
 
@@ -661,7 +687,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_spi_host0 (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[SPI_HOST0]),
     .q_o(rst_spi_host0_n[Domain0Sel])
@@ -672,8 +698,34 @@ module rstmgr
   ) u_0_spi_host0_mux (
     .clk0_i(rst_spi_host0_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_spi_host0_n[Domain0Sel])
+  );
+
+  // Generating resets for spi_host0_core
+  // Power Domains: ['0']
+  // Shadowed: False
+  logic [PowerDomains-1:0] rst_spi_host0_core_n;
+  assign rst_spi_host0_core_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_spi_host0_core_n[DomainAonSel] = rst_spi_host0_core_n[DomainAonSel];
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_spi_host0_core (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[SPI_HOST0_CORE]),
+    .q_o(rst_spi_host0_core_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_spi_host0_core_mux (
+    .clk0_i(rst_spi_host0_core_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_spi_host0_core_n[Domain0Sel])
   );
 
   // Generating resets for spi_host1
@@ -687,7 +739,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_spi_host1 (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[SPI_HOST1]),
     .q_o(rst_spi_host1_n[Domain0Sel])
@@ -698,8 +750,34 @@ module rstmgr
   ) u_0_spi_host1_mux (
     .clk0_i(rst_spi_host1_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_spi_host1_n[Domain0Sel])
+  );
+
+  // Generating resets for spi_host1_core
+  // Power Domains: ['0']
+  // Shadowed: False
+  logic [PowerDomains-1:0] rst_spi_host1_core_n;
+  assign rst_spi_host1_core_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_spi_host1_core_n[DomainAonSel] = rst_spi_host1_core_n[DomainAonSel];
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_spi_host1_core (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[SPI_HOST1_CORE]),
+    .q_o(rst_spi_host1_core_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_spi_host1_core_mux (
+    .clk0_i(rst_spi_host1_core_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_spi_host1_core_n[Domain0Sel])
   );
 
   // Generating resets for usb
@@ -713,7 +791,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_usb (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[USB]),
     .q_o(rst_usb_n[Domain0Sel])
@@ -724,8 +802,34 @@ module rstmgr
   ) u_0_usb_mux (
     .clk0_i(rst_usb_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_usb_n[Domain0Sel])
+  );
+
+  // Generating resets for usbif
+  // Power Domains: ['0']
+  // Shadowed: False
+  logic [PowerDomains-1:0] rst_usbif_n;
+  assign rst_usbif_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_usbif_n[DomainAonSel] = rst_usbif_n[DomainAonSel];
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_usbif (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[USBIF]),
+    .q_o(rst_usbif_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_usbif_mux (
+    .clk0_i(rst_usbif_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_usbif_n[Domain0Sel])
   );
 
   // Generating resets for i2c0
@@ -739,7 +843,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_i2c0 (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[I2C0]),
     .q_o(rst_i2c0_n[Domain0Sel])
@@ -750,7 +854,7 @@ module rstmgr
   ) u_0_i2c0_mux (
     .clk0_i(rst_i2c0_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
   );
 
@@ -765,7 +869,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_i2c1 (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[I2C1]),
     .q_o(rst_i2c1_n[Domain0Sel])
@@ -776,7 +880,7 @@ module rstmgr
   ) u_0_i2c1_mux (
     .clk0_i(rst_i2c1_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[19] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
   );
 
@@ -791,7 +895,7 @@ module rstmgr
     .Width(1),
     .ResetValue('0)
   ) u_0_i2c2 (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[I2C2]),
     .q_o(rst_i2c2_n[Domain0Sel])
@@ -802,7 +906,7 @@ module rstmgr
   ) u_0_i2c2_mux (
     .clk0_i(rst_i2c2_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
+    .sel_i(leaf_rst_scanmode[20] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c2_n[Domain0Sel])
   );
 
@@ -902,13 +1006,13 @@ module rstmgr
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////
-  assign resets_ast_o.rst_ast_usbdev_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
-  assign resets_ast_o.rst_ast_usbdev_sys_aon_n = resets_o.rst_sys_aon_n;
   assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
+  assign resets_ast_o.rst_ast_usbdev_sys_aon_n = resets_o.rst_sys_aon_n;
+  assign resets_ast_o.rst_ast_usbdev_usbif_n = resets_o.rst_usbif_n;
   assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_aon_n = resets_o.rst_sys_aon_n;
-  assign resets_ast_o.rst_ast_ast_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
-  assign resets_ast_o.rst_ast_sensor_ctrl_aon_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
+  assign resets_ast_o.rst_ast_ast_lc_io_div4_n = resets_o.rst_lc_io_div4_n;
+  assign resets_ast_o.rst_ast_sensor_ctrl_aon_lc_io_div4_n = resets_o.rst_lc_io_div4_n;
   assign resets_ast_o.rst_ast_entropy_src_sys_n = resets_o.rst_sys_n;
   assign resets_ast_o.rst_ast_edn0_sys_n = resets_o.rst_sys_n;
 

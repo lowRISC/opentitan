@@ -782,27 +782,24 @@ module chip_${top["name"]}_${target["name"]} (
   assign unused_usb_clk_io_div4 = clks_ast.clk_ast_usbdev_io_div4_peri;
   assign unused_adc_clk_aon = clks_ast.clk_ast_adc_ctrl_aon_aon_peri;
 
-  logic unused_usb_usb_rst;
-  logic [PowerDomains-1:0] unused_usb_sys_io_div4_rst;
+  logic [PowerDomains-1:0] unused_usb_rst;
+  logic [PowerDomains-1:0] unused_usb_usbif_rst;
   logic [PowerDomains-1:0] unused_usb_sys_aon_rst;
   logic [PowerDomains-1:0] unused_adc_ctrl_sys_aon_rst;
-  logic unused_ast_sys_io_div4_rst;
-  logic unused_sensor_ctrl_sys_io_div4_rst;
-  logic unused_adc_ctrl_sys_io_div4_rst;
-  logic unused_entropy_sys_rst;
-  logic unused_edn_sys_rst;
-  assign unused_usb_usb_rst = rsts_ast.rst_ast_usbdev_usb_n[DomainAonSel];
-  assign unused_usb_sys_io_div4_rst = rsts_ast.rst_ast_usbdev_sys_io_div4_n;
+  logic [PowerDomains-1:0] unused_ast_rst;
+  logic [PowerDomains-1:0] unused_sensor_ctrl_rst;
+  logic [PowerDomains-1:0] unused_adc_ctrl_rst;
+  logic [PowerDomains-1:0] unused_entropy_sys_rst;
+  logic [PowerDomains-1:0] unused_edn_sys_rst;
+  assign unused_usb_rst = rsts_ast.rst_ast_usbdev_usb_n;
   assign unused_usb_sys_aon_rst = rsts_ast.rst_ast_usbdev_sys_aon_n;
+  assign unused_usb_usbif_rst = rsts_ast.rst_ast_usbdev_usbif_n;
   assign unused_adc_ctrl_sys_aon_rst = rsts_ast.rst_ast_adc_ctrl_aon_sys_aon_n;
-  assign unused_ast_sys_io_div4_rst =
-    rsts_ast.rst_ast_ast_sys_io_div4_n[Domain0Sel];
-  assign unused_sensor_ctrl_sys_io_div4_rst =
-    rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[Domain0Sel];
-  assign unused_adc_ctrl_sys_io_div4_rst =
-    rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n[Domain0Sel];
-  assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
-  assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n[DomainAonSel];
+  assign unused_ast_rst = rsts_ast.rst_ast_ast_lc_io_div4_n;
+  assign unused_sensor_ctrl_rst = rsts_ast.rst_ast_sensor_ctrl_aon_lc_io_div4_n;
+  assign unused_adc_ctrl_rst = rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n;
+  assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n;
+  assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n;
 
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
@@ -829,15 +826,15 @@ module chip_${top["name"]}_${target["name"]} (
     .clk_ast_adc_i         ( clks_ast.clk_ast_adc_ctrl_aon_io_div4_peri ),
     .rst_ast_adc_ni        ( rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
     .clk_ast_alert_i       ( clks_ast.clk_ast_sensor_ctrl_aon_io_div4_secure ),
-    .rst_ast_alert_ni      ( rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
+    .rst_ast_alert_ni      ( rsts_ast.rst_ast_sensor_ctrl_aon_lc_io_div4_n[DomainAonSel] ),
     .clk_ast_es_i          ( clks_ast.clk_ast_edn0_main_secure ),
     .rst_ast_es_ni         ( rsts_ast.rst_ast_edn0_sys_n[Domain0Sel] ),
     .clk_ast_rng_i         ( clks_ast.clk_ast_entropy_src_main_secure ),
     .rst_ast_rng_ni        ( rsts_ast.rst_ast_entropy_src_sys_n[Domain0Sel] ),
     .clk_ast_tlul_i        ( clks_ast.clk_ast_ast_io_div4_secure ),
-    .rst_ast_tlul_ni       ( rsts_ast.rst_ast_ast_sys_io_div4_n[DomainAonSel] ),
+    .rst_ast_tlul_ni       ( rsts_ast.rst_ast_ast_lc_io_div4_n[DomainAonSel] ),
     .clk_ast_usb_i         ( clks_ast.clk_ast_usbdev_usb_peri ),
-    .rst_ast_usb_ni        ( rsts_ast.rst_ast_usbdev_usb_n[Domain0Sel] ),
+    .rst_ast_usb_ni        ( rsts_ast.rst_ast_usbdev_usbif_n[Domain0Sel] ),
     .clk_ast_ext_i         ( ext_clk ),
     .por_ni                ( manual_in_por_n ),
     // clocks' oschillator bypass for FPGA
