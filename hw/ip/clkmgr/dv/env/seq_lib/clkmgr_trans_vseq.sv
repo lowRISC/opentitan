@@ -17,10 +17,6 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  // This delay in io_clk cycles is needed to allow updates to the hints_status CSR to go through
-  // synchronizers.
-  localparam int IO_DIV4_SYNC_CYCLES = 8;
-
   rand bit [NUM_TRANS-1:0] initial_hints;
 
   task body();

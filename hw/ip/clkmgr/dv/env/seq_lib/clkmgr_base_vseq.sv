@@ -14,6 +14,10 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // hints_status) are properly set when inputs go through synchronizers.
   localparam int POST_APPLY_RESET_CYCLES = 10;
 
+  // This delay in io_clk cycles is needed to allow updates to the hints_status CSR to go through
+  // synchronizers.
+  localparam int IO_DIV4_SYNC_CYCLES = 8;
+
   typedef enum {
     LcTxTSelOn,
     LcTxTSelOff,
