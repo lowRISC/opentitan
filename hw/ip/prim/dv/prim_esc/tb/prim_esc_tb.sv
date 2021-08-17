@@ -85,7 +85,7 @@ module prim_esc_tb;
   logic error = 0;
 
   function automatic void test_error(string msg);
-    $error(msg);
+    $error($sformatf("%time: %0s", $realtime, msg));
     error = 1;
   endfunction
 
@@ -123,7 +123,8 @@ module prim_esc_tb;
     $display("Escalation esc_p/n integrity sequence passed!");
 
     // 3). Escalation reverse ping request timeout sequence.
-    main_clk.wait_clks($urandom_range(1, 20));
+    // Wait at least two clock cycles to finish the previous sequence's escalation request.
+    main_clk.wait_clks($urandom_range(2, 20));
     ping_req = 1;
     fork
       begin
