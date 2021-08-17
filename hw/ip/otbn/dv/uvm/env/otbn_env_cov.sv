@@ -1150,7 +1150,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   covergroup insn_bxx_cg
     with function sample(mnem_str_t   mnemonic,
                          logic [31:0] insn_addr,
-                         logic [11:0] offset,
+                         logic [12:0] offset,
                          logic [31:0] operand_a,
                          logic [31:0] operand_b,
                          logic        at_current_loop_end_insn);
@@ -1163,10 +1163,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     eq_cp: coverpoint operand_a == operand_b;
 
-    `DEF_SIGN_CP(dir_cp, offset, 12)
+    `DEF_SIGN_CP(dir_cp, offset, 13)
     `DEF_MNEM_CROSS2(eq, dir)
 
-    offset_align_cp: coverpoint offset[1:0];
+    offset_align_cp: coverpoint offset[1];
     `DEF_MNEM_CROSS2(eq, offset_align)
 
     `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
@@ -1781,7 +1781,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       mnem_beq, mnem_bne:
         insn_bxx_cg.sample(mnem,
                            rtl_item.insn_addr,
-                           {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8]},
+                           {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8], 1'b0},
                            rtl_item.gpr_operand_a,
                            rtl_item.gpr_operand_b,
                            rtl_item.at_current_loop_end_insn);

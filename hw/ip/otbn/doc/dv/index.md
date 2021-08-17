@@ -426,7 +426,9 @@ All points should be crossed with branch taken / branch not taken.
 - See each branch direction (forwards, backwards, current address).
   Tracked as `eq_dir_cross`.
 - Branch to a misaligned address (offset not a multiple of 4)
-  Each offset alignment is tracked in `eq_offset_align_cross`.
+  PC is always 4-bit aligned and offset is a multiple of 2 by definition.
+  Therefore the only misalignment would be by setting the second bit of the offset to 1.
+  Offset alignment is tracked in `eq_offset_align_cross`.
 - Branch forwards to an invalid address, above the top of memory
   Tracked as `eq_oob_cross`.
 - Branch backwards to an invalid address (wrapping past zero)
@@ -447,7 +449,9 @@ All points should be crossed with branch taken / branch not taken.
 - See each branch direction (forwards, backwards, current address).
   Tracked as `eq_dir_cross`.
 - Branch to a misaligned address (offset not a multiple of 4)
-  Each offset alignment is tracked in `eq_offset_align_cross`.
+  PC is always 4-bit aligned and offset is a multiple of 2 by definition.
+  Therefore the only misalignment would be by setting the second bit of the offset to 1.
+  Offset alignment is tracked in `eq_offset_align_cross`.
 - Branch forwards to an invalid address, above the top of memory
   Tracked as `eq_oob_cross`.
 - Branch backwards to an invalid address (wrapping past zero)
