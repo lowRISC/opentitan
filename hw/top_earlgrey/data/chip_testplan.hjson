@@ -1580,13 +1580,19 @@
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
       name: chip_entropy_src_ast_rng_req
-      desc: '''Verify the RNG req to ast.
+      desc: '''Verify that entropy src can request RNG from ast.
 
-            - Program the entropy src in normal RNG mode.
-            - Route the entropy data received from RNG to the FIFO.
-            - Verify that the FIFO depth is non-zero via SW - indicating the reception of data over
-              the AST RNG interface.
-            - Verify the correctness of the received data with assertion based connectivity checks.
+            - Program and enable the entropy src; enable the entropy valid interrupt.
+            - Route the entropy data to FIFO so that FW can read.
+            - Enable all health checks, use defaults wherever applicable.
+            - Wait for the entropy valid interrupt bit to assert.
+            - Allow the raw RNG to go through all health checks and the conditioning logic.
+            - On reception of the interrupt, read the entropy_data register to fetch the 384-bit
+              conditioned entropy.
+            - Verify that all health check fail counts are 0.
+            - We don't verify the correctness of the received entropy bits (already done at IP level
+              DV) - we only ensure the system is operational.
+            - Add connectivity assertion checks to verify connectivity of RNG interface to AST.
             '''
       milestone: V2
       tests: []
@@ -1595,18 +1601,75 @@
       name: chip_entropy_src_ast_fips
       desc: '''Verify the connectivity of rng_fips_o feedback signal to RNG.
 
-            Details TBD.
+            - This signal is asserted at boot time when the entropy is generated at low latency.
+            - Add connectivity assertion check to verify connectivity of fips output to AST.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_entropy_src_csrng
-      desc: '''Verify the transfer of entropy bits to CSRNG.
+      name: chip_entropy_src_fuse_en_fw_read
+      desc: '''Verify the FW read fuse input entropy_src.
 
-            Verify the entropy valid interrupt.
-            At the CSRNG, validate the reception of entropy req interrupt.
-            Details TBD.
+            - Initialize the OTP with the entropy_src FW read fuse bit enabled.
+            - Program and enable the entropy_src; enable the observe fifo ready interrupt.
+            - Route the entropy data to register and disable the conditioning logic.
+            - Program the fw_ov_mode to enable SW to read post-health raw entropy from the observe
+              FIFO.
+            - On reception of the interrupt, read the observe FIFO register to fetch the 64 words of
+              unconditioned entropy.
+            - Verify that it matches with the expected value computed from the initially set LFSR in
+              the AST RNG model.
+
+            - Reset the chip and now, initialize the OTP with the entropy_src FW read fuse bit
+              disabled.
+            - Repeat the same steps as before, but this time verify that the read from the observe
+              FIFO register yields 0s.
+            - Read the entropy_data register to fetch the 384-bit unconditioned entropy. Verify that
+              it matches with the expected value computed from the initially set LFSR in the AST RNG
+              model.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_entropy_src_fuse_en_fw_write
+      desc: '''Verify the FW override fuse input entropy_src.
+
+            - Initialize the OTP with the entropy_src FW override fuse bit enabled.
+            - Program and enable the entropy_src; enable the entropy valid interrupt.
+            - Route the entropy data to register and disable the conditioning logic.
+            - Program the fw_ov_control to enable SW to inject entropy into the block.
+            - Write the fw_ov_wr_data register to inject the entropy data.
+            - On reception of the interrupt, read the entropy_data register - it should match what
+              was written to the fw_ov_wr_data register.
+
+            - Reset the chip and now, initialize the OTP with the entropy_src FW override fuse bit
+              disabled.
+            - Repeat the same steps as before, but this time verify that the read from the
+              entropy_data register does not match the fw_ov_wr_data, but it matches with the
+              expected value computed from the initially set LFSR in the AST RNG model.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // CSRNG tests:
+    {
+      name: chip_csrng_entropy_src_req
+      desc: '''Verify the CSRNG can request entropy from entropy_src.
+
+            - Program and enable the entropy_src.
+            - Issue a generate command from CSRNG to request entropy from entropy_src for the
+              SW application interface (registers).
+            - Enable cmd_req_done and entropy_req interrupts.
+            - Verify the reception of entropy_req interrupt - this should cause entropy data to flow
+              from entropy_src into csrng.
+            - Verify the reception of the cmd_done interrupt, verify that the command completed
+              without any errors.
+            - Read the genbits register to fetch the 128-bit data, and verify that it is not all 0s.
+            - We don't verify the correctness of the genbits (already done at IP level DV) - we only
+              ensure the system is operational, and the RNG data is non-zero.
             '''
       milestone: V2
       tests: []
@@ -1615,35 +1678,21 @@
       name: chip_entropy_src_cs_aes_halt
       desc: '''Verify the aes halt handshake with CSRNG.
 
-            Details TBD.
+            - This interface should be exercised by the chip_csrng_entropy_src_req test.
+            - Add assertion check to really prove AES in csrng & SHA3 entropy_src are both not
+              active at the same time when this handshake is valid.
             '''
       milestone: V2
       tests: []
     }
-    {
-      name: chip_entropy_src_fuse_en_fw_read
-      desc: '''Verify the fuse input entropy_src.
-
-            - Initialize the OTP with this fuse bit set to 1.
-            - Perform an entropy request operation.
-            - Read the entropy_data_fifo via SW; verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with this fuse bit set to 0.
-            - Perform an entropy request operation.
-            - Read the internal state via SW; verify that it reads all zeros this time.
-            '''
-      milestone: V2
-      tests: []
-    }
-
-    // CSRNG tests:
     {
       name: chip_csrng_edn_cmd
       desc: '''Verify incoming command interface from EDN.
 
+            - Enable the CSRNG and enable the cmd req done interrupt.
             - Have each EDN instance issue an instantiate command to CSRNG.
             - When done, verify the reception of cmd req done interrupt.
             - Check the data returned to EDN via connectivity assertion checks.
-            - TODO: explore the ability to generate predictable data and verify the received value.
             Details TBD.
             '''
       milestone: V2
@@ -1666,7 +1715,13 @@
       name: chip_csrng_lc_hw_debug_en
       desc: '''Verify the effect of LC HW debug enable on CSRNG.
 
-            TODO: This is pending SCA security review and might be removed.
+            - Initialize the OTP ctrl to boot the chip in PROD LC state (HW debug disabled).
+            - Use the steps from the chip_csrng_entropy_src_req test above.
+            - Read the int_state_val register for the SW app interface 14 times to obtain the
+              448-bit inernal field - it should read back 0s.
+            - Initialize the OTP ctrl to boot the chip in RMA LC state (HW debug enabled).
+            - Repeat the test steps above - this time, reading the int_state_val should return
+              non-zero values, proving that the SW is able to read the internal state of CSRNG.
             '''
       milestone: V2
       tests: []
