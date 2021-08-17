@@ -79,7 +79,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int index = i;
       fork
         forever begin
-          bit alert_en;
+          bit alert_en, loc_alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
           alert_en = ral.alert_en_shadowed[index].get_mirrored_value();
@@ -90,12 +90,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_shadowed[2].get_mirrored_value();
-              if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
+              loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertIntFail].get_mirrored_value();
+              if (loc_alert_en) process_alert_sig(index, 1, LocalAlertIntFail);
             end else if (act_item.alert_esc_type == AlertEscPingTrans &&
                          act_item.ping_timeout) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_shadowed[0].get_mirrored_value();
-              if (loc_alert_en[LocalAlertPingFail]) begin
+              loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertPingFail].get_mirrored_value();
+              if (loc_alert_en) begin
                 process_alert_sig(index, 1, LocalAlertPingFail);
                 `uvm_info(`gfn, $sformatf("alert %0d ping timeout, timeout_cyc reg is %0d",
                           index, ral.ping_timeout_cyc_shadowed.get_mirrored_value()), UVM_LOW);
@@ -121,12 +121,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // escalation integrity fail
           end else if (act_item.alert_esc_type == AlertEscIntFail ||
                (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_shadowed[3].get_mirrored_value();
-            if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
+            bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
+            if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_shadowed[1].get_mirrored_value();
-            if (loc_alert_en[LocalEscPingFail]) begin
+            bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
+            if (loc_alert_en) begin
               process_alert_sig(index, 1, LocalEscPingFail);
               `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",
                         index, ral.ping_timeout_cyc_shadowed.get_mirrored_value()), UVM_LOW);
