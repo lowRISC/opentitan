@@ -52,7 +52,7 @@ class BadDeepLoop(SnippetGen):
             guess = random.randint(bodysize_range[0], bodysize_range[1])
             last_insn_addr = pc + 4 * guess
             if ((last_insn_addr >= program.imem_size or
-                 program.get_insn_space_at(last_insn_addr) != 0)):
+                 program.get_insn_space_at(last_insn_addr) == 0)):
                 bodysize = guess
                 break
 
