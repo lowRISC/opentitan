@@ -9,13 +9,14 @@ gen-weights:
   Jump: 0.1
   Loop: 0.1
   LoopDupEnd: 0.01
-  SmallVal: 0.05
+  SmallVal: 0.2
   StraightLineInsn: 1.0
   KnownWDR: 0.05
 
   # Generators that end the program
   ECall: 1
   BadAtEnd: 1
+  BadBNMovr: 1
   BadDeepLoop: 1
   BadInsn: 1
   BadGiantLoop: 1
