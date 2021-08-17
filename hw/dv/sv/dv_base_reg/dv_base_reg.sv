@@ -242,7 +242,7 @@ class dv_base_reg extends uvm_reg;
       end else if (shadow_wr_staged || (shadow_fatal_lock && rw.path != UVM_BACKDOOR)) begin
         `uvm_info(`gfn, $sformatf(
             "skip predict %s: due to shadow_reg_first_wr=%0b, shadow_fatal_lock=%0b",
-            get_name(), shadow_wr_staged, shadow_fatal_lock), UVM_LOW)
+            get_name(), shadow_wr_staged, shadow_fatal_lock), UVM_HIGH)
         return;
       end
     end
