@@ -225,9 +225,9 @@
     .clk_i(clk_io_div2_i),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
-  prim_clock_buf u_clk_aon_secure_buf (
+  prim_clock_buf u_clk_aon_infra_buf (
     .clk_i(clk_aon_i),
-    .clk_o(clocks_o.clk_aon_secure)
+    .clk_o(clocks_o.clk_aon_infra)
   );
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon_i),
@@ -426,7 +426,6 @@
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
   assign clocks_o.clk_main_secure = clk_main_root;
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
-  assign clocks_o.clk_main_timers = clk_main_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
   ////////////////////////////////////////////////////
