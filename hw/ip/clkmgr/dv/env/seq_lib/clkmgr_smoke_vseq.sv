@@ -74,7 +74,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       idle[trans] = 1'b1;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.
-      cfg.clk_rst_vif.wait_clks(3);
+      cfg.clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
       if (!cfg.under_reset) begin
         `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(
