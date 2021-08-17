@@ -218,9 +218,9 @@ Some examples:
   integrity. The bad packet is created by corrupting upto 3 bits either in the integrity
   (ECC) fields (`a_user.cmd_intg`, `a_user.d_intg`), or in their corresponding command /
   data payload itself. The sequence then verifies that the DUT not only returns an error
-  response (with `d_error` = 1), but also triggers a fatal alert. The list of CSRs that
-  are impacted by this alert event, maintained in `cfg.tl_intg_alert_fields`, are also
-  checked for correctness.
+  response (with `d_error` = 1), but also triggers a fatal alert and updates status CSRs
+  such as `ERR_CODE`. The list of CSRs that are impacted by this alert event, maintained
+  in `cfg.tl_intg_alert_fields`, are also checked for correctness.
 * **task run_stress_all_with_rand_reset_vseq**: This task runs 3 parallel threads,
   which are ip_stress_all_vseq, run_tl_errors_vseq and reset sequence. After
   reset occurs, the other threads will be killed and then all the CSRs will be read
