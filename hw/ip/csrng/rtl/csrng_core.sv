@@ -905,6 +905,7 @@ module csrng_core import csrng_pkg::*; #(
          ((instant_req && flag0_q) ||
           reseed_req ||
           update_req ||
+          uninstant_req ||
           (generate_req && flag0_q));
 
   //-------------------------------------
