@@ -193,9 +193,9 @@ package otp_ctrl_part_pkg;
   };
   % endif
 % endfor
-<% offset =  int(otp_mmap.config["otp"]["depth"]) * int(otp_mmap.config["otp"]["width"]) %>
+<% offset =  int(otp_mmap.config["partitions"][-1]["offset"]) + int(otp_mmap.config["partitions"][-1]["size"]) %>
   // OTP invalid partition default for buffered partitions.
-  parameter logic [${int(otp_mmap.config["otp"]["depth"])*int(otp_mmap.config["otp"]["width"])*8-1}:0] PartInvDefault = ${int(otp_mmap.config["otp"]["depth"])*int(otp_mmap.config["otp"]["width"])*8}'({
+  parameter logic [${offset * 8 - 1}:0] PartInvDefault = ${offset * 8}'({
   % for k, part in enumerate(otp_mmap.config["partitions"][::-1]):
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:

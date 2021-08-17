@@ -248,9 +248,8 @@ package otp_ctrl_part_pkg;
   };
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [16383:0] PartInvDefault = 16384'({
+  parameter logic [15359:0] PartInvDefault = 15360'({
     704'({
-      1024'h0, // unallocated space
       320'hDAAF8720F255C5C84D1D9C10648A878DB1D5ABE9610E8395490EC23C0A1EDCCE280E8ECA88CEA2E9,
       384'h9470329E17324EDB1E2960279AB8F882A991BEA2CF16541724A52D80A891BCD52BE973D4C5752E3A6912899150240B3A
     }),
