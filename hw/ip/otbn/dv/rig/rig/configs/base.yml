@@ -17,6 +17,7 @@ gen-weights:
   ECall: 1
   BadAtEnd: 1
   BadBNMovr: 1
+  BadBranch: 1
   BadCallStackRW: 1
   BadDeepLoop: 1
   BadInsn: 1
