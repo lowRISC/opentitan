@@ -21,6 +21,9 @@
                "-snapshot {tb}",
                // for uvm_hdl_* used by csr backdoor
                "-access +rw",
+               // This is to fix a timescale issue due to using `resetall to reset timescale and
+               // `-sv` compile option. #7178
+               "-enable_strict_timescale",
                // Use this to conditionally compile for Xcelium (example: LRM interpretations differ
                // across tools).
                "+define+XCELIUM",
