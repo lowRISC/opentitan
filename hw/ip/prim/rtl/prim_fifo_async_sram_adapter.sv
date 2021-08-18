@@ -273,7 +273,7 @@ module prim_fifo_async_sram_adapter #(
   // Send SRAM request with sram read pointer.
   assign r_sram_addr_o  = SramBaseAddr + SramAw'(r_sram_rptr[0+:PtrVW]);
 
-  assign rdata_d = r_sram_rdata_i[0+:Width];
+  assign rdata_d = (r_sram_rvalid_i) ? r_sram_rdata_i[0+:Width] : Width'(0);
 
   assign rdata_o = (stored) ? rdata_q : rdata_d;
 
