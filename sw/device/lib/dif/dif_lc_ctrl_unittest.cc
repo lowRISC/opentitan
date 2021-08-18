@@ -207,62 +207,70 @@ TEST_F(TransitionTest, NoToken) {
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
                  LC_CTRL_TRANSITION_TARGET_STATE_VALUE_PROD);
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_CTRL_REG_OFFSET, 0x0);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr),
+  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr, nullptr),
             kDifLcCtrlMutexOk);
 }
 
 TEST_F(TransitionTest, WithToken) {
   dif_lc_ctrl_token_t token = {"this is a token"};
+  dif_lc_ctrl_settings_t settings = {kDifLcCtrlExternalClockEn};
 
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
                  LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED2);
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_CTRL_REG_OFFSET, 0x1);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET, LeInt("this"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_1_REG_OFFSET, LeInt(" is "));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET, LeInt("a to"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked2, &token),
+  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked2, &token,
+                                   &settings),
             kDifLcCtrlMutexOk);
 
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
                  LC_CTRL_TRANSITION_TARGET_STATE_VALUE_TEST_UNLOCKED6);
+  EXPECT_WRITE32(LC_CTRL_TRANSITION_CTRL_REG_OFFSET, 0x1);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET, LeInt("this"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_1_REG_OFFSET, LeInt(" is "));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET, LeInt("a to"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked6, &token),
+  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked6, &token,
+                                   &settings),
             kDifLcCtrlMutexOk);
 }
 
 TEST_F(TransitionTest, Locked) {
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, false);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr),
+  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr, nullptr),
             kDifLcCtrlMutexAlreadyTaken);
 }
 
 TEST_F(TransitionTest, NullArgs) {
   dif_lc_ctrl_token_t token = {"this is a token"};
-  EXPECT_EQ(dif_lc_ctrl_transition(nullptr, kDifLcCtrlStateProd, &token),
-            kDifLcCtrlMutexBadArg);
+  EXPECT_EQ(
+      dif_lc_ctrl_transition(nullptr, kDifLcCtrlStateProd, &token, nullptr),
+      kDifLcCtrlMutexBadArg);
 }
 
-class OtpTestRegTest : public LcTest {};
+class OtpVendorTestRegTest : public LcTest {};
 
-TEST_F(OtpTestRegTest, Read) {
+TEST_F(OtpVendorTestRegTest, Read) {
   uint32_t settings_read = 0;
-  EXPECT_READ32(LC_CTRL_OTP_TEST_CTRL_REG_OFFSET, 0x5A);
-  EXPECT_EQ(dif_lc_ctrl_get_otp_test_reg(&lc_, &settings_read), kDifLcCtrlOk);
+  EXPECT_READ32(LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, 0x5A);
+  EXPECT_EQ(dif_lc_ctrl_get_otp_vendor_test_reg(&lc_, &settings_read),
+            kDifLcCtrlOk);
   EXPECT_EQ(settings_read, 0x5A);
 }
 
-TEST_F(OtpTestRegTest, Write) {
+TEST_F(OtpVendorTestRegTest, Write) {
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
-  EXPECT_WRITE32(LC_CTRL_OTP_TEST_CTRL_REG_OFFSET, 0xA5);
-  EXPECT_EQ(dif_lc_ctrl_set_otp_test_reg(&lc_, 0xA5), kDifLcCtrlMutexOk);
+  EXPECT_WRITE32(LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, 0xA5);
+  EXPECT_EQ(dif_lc_ctrl_set_otp_vendor_test_reg(&lc_, 0xA5), kDifLcCtrlMutexOk);
 }
 }  // namespace
 }  // namespace dif_lc_ctrl_unittest

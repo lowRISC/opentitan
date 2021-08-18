@@ -73,11 +73,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     // Unused signals in open sourced OTP memory
     `DV_CHECK_RANDOMIZE_FATAL(cfg.dut_cfg)
-    cfg.otp_ctrl_vif.otp_ast_pwr_seq_h_i = cfg.dut_cfg.otp_ast_pwr_seq_h;
-    cfg.otp_ctrl_vif.scan_en_i           = cfg.dut_cfg.scan_en;
-    cfg.otp_ctrl_vif.scan_rst_ni         = cfg.dut_cfg.scan_rst_n;
-    cfg.otp_ctrl_vif.scanmode_i          = cfg.dut_cfg.scanmode;
-    cfg.otp_ctrl_vif.otp_test_ctrl_i     = cfg.dut_cfg.otp_test_ctrl;
+    cfg.otp_ctrl_vif.otp_ast_pwr_seq_h_i    = cfg.dut_cfg.otp_ast_pwr_seq_h;
+    cfg.otp_ctrl_vif.scan_en_i              = cfg.dut_cfg.scan_en;
+    cfg.otp_ctrl_vif.scan_rst_ni            = cfg.dut_cfg.scan_rst_n;
+    cfg.otp_ctrl_vif.scanmode_i             = cfg.dut_cfg.scanmode;
+    cfg.otp_ctrl_vif.otp_vendor_test_ctrl_i = cfg.dut_cfg.otp_vendor_test_ctrl;
   endtask
 
   // drive otp_pwr req pin to initialize OTP, and wait until init is done

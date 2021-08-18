@@ -770,8 +770,9 @@
       'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
 
       // OTP LC interface
-      'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
-      'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
+      'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
+      'lc_ctrl.lc_otp_program'     : ['otp_ctrl.lc_otp_program'],
+      'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
 
       // Diversification constant coming from life cycle
       'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],

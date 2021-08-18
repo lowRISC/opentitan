@@ -73,9 +73,11 @@ bool test_main(void) {
 
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
+    dif_lc_ctrl_settings_t settings;
+    settings.clock_select = kDifLcCtrlInternalClockEn;
     memcpy(token.data, lc_exit_token, sizeof(lc_exit_token));
     CHECK(dif_lc_ctrl_mutex_try_acquire(&lc) == kDifLcCtrlMutexOk);
-    CHECK(dif_lc_ctrl_transition(&lc, kDifLcCtrlStateDev, &token) ==
+    CHECK(dif_lc_ctrl_transition(&lc, kDifLcCtrlStateDev, &token, &settings) ==
               kDifLcCtrlMutexOk,
           "LC_transition failed!");
 

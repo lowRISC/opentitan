@@ -80,9 +80,15 @@
       local:   "true"
     }
     { name:    "CsrOtpTestCtrlWidth",
-      desc:    "Number of vendor/test specific OTP control bits.",
+      desc:    "Number of vendor/test-specific OTP control bits.",
       type:    "int"
-      default: "8",
+      default: "32",
+      local:   "true"
+    }
+    { name:    "CsrOtpTestStatusWidth",
+      desc:    "Number of vendor/test-specific OTP status bits.",
+      type:    "int"
+      default: "32",
       local:   "true"
     }
     { name:    "NumDeviceIdWords",
@@ -143,6 +149,14 @@
       act:     "rsp",
       package: "pwrmgr_pkg",
     },
+    // Macro-specific test signals to/from LC TAP
+    { struct:  "lc_otp_vendor_test"
+      type:    "req_rsp"
+      name:    "lc_otp_vendor_test"
+      act:     "req"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    }
     // life cycle state broadcast from OTP
     { struct:  "otp_lc_data"
       type:    "uni"
@@ -483,6 +497,26 @@
         }
       ]
     }
+    { name: "TRANSITION_CTRL",
+      desc: "Control register for state transition requests.",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      hwext:    "true",
+      regwen:   "TRANSITION_REGWEN",
+        tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+                // CLAIM_TRANSITION_IF, so can not auto predict its value.
+                "excl:CsrNonInitTests:CsrExclCheck"],
+      fields: [
+        { bits: "0",
+          name: "EXT_CLOCK_EN",
+          desc: '''
+          When set to 1, the OTP clock will be switched to an externally supplied clock when initiating a life cycle state transition.
+          The clock mux will remain switched until the next system reset.
+          '''
+        }
+      ]
+    }
     { multireg: {
         name:     "TRANSITION_TOKEN",
         desc:     '''
@@ -618,13 +652,13 @@
     //////////////////////////////////
     // Vendor Specific OTP Settings //
     //////////////////////////////////
-    { name: "OTP_TEST_CTRL",
-      desc: '''
-      Test/vendor-specific settings for the OTP macro wrapper.
-      These values are only active during RAW, TEST_* and RMA life cycle states.
-      In all other states, these values will be gated to zero before sending
-      them to the OTP macro wrapper - even if this register is programmed to a non-zero value.
-      ''',
+    { name:     "OTP_VENDOR_TEST_CTRL",
+      desc:     '''
+                Test/vendor-specific settings for the OTP macro wrapper.
+                These values are only active during RAW, TEST_* and RMA life cycle states.
+                In all other states, these values will be gated to zero before sending
+                them to the OTP macro wrapper - even if this register is programmed to a non-zero value.
+                ''',
       swaccess: "rw",
       hwaccess: "hrw",
       hwqe:     "true",
@@ -634,21 +668,29 @@
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "16",
-          name: "EXT_CLOCK",
-          desc: '''
-          Switch to an externally supplied clock when initiating a life cycle state transition.
-          The clock mux will remain switched until the next system reset.
-          ''',
-        }
-        { bits: "CsrOtpTestCtrlWidth-1:0",
-          name: "VAL",
-          desc: '''
-          Settings defined by vendor.
-          '''
+        { bits: "CsrOtpTestCtrlWidth-1:0"
         }
       ]
-    }
+    },
+    { name:     "OTP_VENDOR_TEST_STATUS",
+      desc:     '''
+                Test/vendor-specific settings for the OTP macro wrapper.
+                These values are only active during RAW, TEST_* and RMA life cycle states.
+                In all other states, these values will read as zero.
+                ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "true",
+      hwext:    "true",
+      regwen:   "TRANSITION_REGWEN",
+      tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+              // CLAIM_TRANSITION_IF, so can not auto predict its value.
+              "excl:CsrNonInitTests:CsrExclCheck"],
+      fields: [
+        { bits: "CsrOtpTestStatusWidth-1:0"
+        }
+      ]
+    },
     //////////////////
     // LC State CSR //
     //////////////////

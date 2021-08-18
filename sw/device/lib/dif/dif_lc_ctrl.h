@@ -257,11 +257,37 @@ typedef enum dif_lc_ctrl_id_state {
 } dif_lc_ctrl_id_state_t;
 
 /**
+ * Programming clock settings, indicating whether to use the internal or
+ * external clock to perform the life cycle transition.
+ */
+typedef enum dif_lc_ctrl_clock_settings {
+  /**
+   * Use internal clock for transition.
+   */
+  kDifLcCtrlInternalClockEn,
+  /**
+   * Use external clock for transition.
+   */
+  kDifLcCtrlExternalClockEn
+} dif_lc_ctrl_clock_settings_t;
+
+/**
  * A 128-bit unlock token used for certain kinds of lifecycle transitions.
  */
 typedef struct dif_lc_ctrl_token {
   uint8_t data[128 / 8];
 } dif_lc_ctrl_token_t;
+
+/**
+ * Settings for lifecycle transitions.
+ */
+typedef struct dif_lc_ctrl_settings {
+  /**
+   * Indicates whether an external clock source shall be used to perform the
+   * life cycle transition.
+   */
+  dif_lc_ctrl_clock_settings_t clock_select;
+} dif_lc_ctrl_settings_t;
 
 /**
  * A 256-bit device id stored in OTP's hw_cfg partition.
@@ -508,7 +534,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
 DIF_WARN_UNUSED_RESULT
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
     const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
-    const dif_lc_ctrl_token_t *token);
+    const dif_lc_ctrl_token_t *token, const dif_lc_ctrl_settings_t *settings);
 
 /**
  * Writes settings to the vendor-specific OTP test control register.
@@ -518,8 +544,8 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
-                                                        uint32_t settings);
+dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
+    const dif_lc_ctrl_t *lc, uint32_t settings);
 
 /**
  * Reads settings from the vendor-specific OTP test control register.
@@ -529,8 +555,8 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_test_reg(const dif_lc_ctrl_t *lc,
-                                                  uint32_t *settings);
+dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_vendor_test_reg(
+    const dif_lc_ctrl_t *lc, uint32_t *settings);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -107,7 +107,9 @@ module tb;
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
     .pwr_otp_o                  ({otp_ctrl_if.pwr_otp_done_o, otp_ctrl_if.pwr_otp_idle_o}),
     // lc
-    .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data, otp_ctrl_if.otp_test_ctrl_i}),
+    .lc_otp_vendor_test_o       (otp_ctrl_if.otp_vendor_test_status_o),
+    .lc_otp_vendor_test_i       (otp_ctrl_if.otp_vendor_test_ctrl_i),
+    .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),

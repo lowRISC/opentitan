@@ -1382,6 +1382,18 @@
           index: -1
         }
         {
+          name: lc_otp_vendor_test
+          struct: lc_otp_vendor_test
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          top_signame: lc_ctrl_lc_otp_vendor_test
+          index: -1
+        }
+        {
           name: lc_otp_program
           struct: lc_otp_program
           package: otp_ctrl_pkg
@@ -1687,6 +1699,19 @@
           inst_name: lc_ctrl
           default: ""
           top_signame: pwrmgr_aon_pwr_lc
+          index: -1
+        }
+        {
+          name: lc_otp_vendor_test
+          struct: lc_otp_vendor_test
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_signame: lc_ctrl_lc_otp_vendor_test
           index: -1
         }
         {
@@ -6617,6 +6642,10 @@
       lc_ctrl.lc_otp_program:
       [
         otp_ctrl.lc_otp_program
+      ]
+      lc_ctrl.lc_otp_vendor_test:
+      [
+        otp_ctrl.lc_otp_vendor_test
       ]
       lc_ctrl.lc_keymgr_div:
       [
@@ -13484,6 +13513,18 @@
         index: -1
       }
       {
+        name: lc_otp_vendor_test
+        struct: lc_otp_vendor_test
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        top_signame: lc_ctrl_lc_otp_vendor_test
+        index: -1
+      }
+      {
         name: lc_otp_program
         struct: lc_otp_program
         package: otp_ctrl_pkg
@@ -13730,6 +13771,19 @@
         inst_name: lc_ctrl
         default: ""
         top_signame: pwrmgr_aon_pwr_lc
+        index: -1
+      }
+      {
+        name: lc_otp_vendor_test
+        struct: lc_otp_vendor_test
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_signame: lc_ctrl_lc_otp_vendor_test
         index: -1
       }
       {
@@ -18578,6 +18632,28 @@
         package: otp_ctrl_pkg
         struct: lc_otp_program_rsp
         signame: lc_ctrl_lc_otp_program_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_vendor_test_req
+        signame: lc_ctrl_lc_otp_vendor_test_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_vendor_test_rsp
+        signame: lc_ctrl_lc_otp_vendor_test_rsp
         width: 1
         type: req_rsp
         end_idx: -1

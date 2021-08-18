@@ -48,6 +48,9 @@ module otp_ctrl
   // Power manager interface (inputs are synced to OTP clock domain)
   input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
   output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
+  // Macro-specific test registers going to lifecycle TAP
+  input  lc_otp_vendor_test_req_t                    lc_otp_vendor_test_i,
+  output lc_otp_vendor_test_rsp_t                    lc_otp_vendor_test_o,
   // Lifecycle transition command interface
   input  lc_otp_program_req_t                        lc_otp_program_i,
   output lc_otp_program_rsp_t                        lc_otp_program_o,
@@ -76,8 +79,8 @@ module otp_ctrl
   input                                              scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t                         scanmode_i,
   // Test-related GPIO output
-  output logic [OtpTestCtrlWidth-1:0]                cio_test_o,
-  output logic [OtpTestCtrlWidth-1:0]                cio_test_en_o
+  output logic [OtpTestVectWidth-1:0]                cio_test_o,
+  output logic [OtpTestVectWidth-1:0]                cio_test_en_o
 );
 
   import prim_util_pkg::vbits;
@@ -660,9 +663,9 @@ module otp_ctrl
                              prim_tl_d2h_gated : '0;
 
   // Test-related GPIOs.
-  logic [OtpTestCtrlWidth-1:0] otp_test_vect;
+  logic [OtpTestVectWidth-1:0] otp_test_vect;
   assign cio_test_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? otp_test_vect : '0;
-  assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestCtrlWidth{1'b1}} : '0;
+  assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestVectWidth{1'b1}} : '0;
 
   prim_otp #(
     .Width            ( OtpWidth            ),
@@ -671,6 +674,8 @@ module otp_ctrl
     .PwrSeqWidth      ( OtpPwrSeqWidth      ),
     .TlDepth          ( NumDebugWindowWords ),
     .TestCtrlWidth    ( OtpTestCtrlWidth    ),
+    .TestStatusWidth  ( OtpTestStatusWidth  ),
+    .TestVectWidth    ( OtpTestVectWidth    ),
     .MemInitFile      ( MemInitFile         ),
     .VendorTestOffset ( VendorTestOffset    ),
     .VendorTestSize   ( VendorTestSize      )
@@ -678,14 +683,15 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     // Power sequencing signals to/from AST
-    .pwr_seq_o        ( otp_ast_pwr_seq_o.pwr_seq      ),
-    .pwr_seq_h_i      ( otp_ast_pwr_seq_h_i.pwr_seq_h  ),
-    .ext_voltage_io   ( otp_ext_voltage_h_io           ),
+    .pwr_seq_o        ( otp_ast_pwr_seq_o.pwr_seq     ),
+    .pwr_seq_h_i      ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
+    .ext_voltage_io   ( otp_ext_voltage_h_io          ),
     // Test interface
-    .test_ctrl_i      ( lc_otp_program_i.otp_test_ctrl ),
-    .test_vect_o      ( otp_test_vect                  ),
-    .test_tl_i        ( prim_tl_h2d_gated              ),
-    .test_tl_o        ( prim_tl_d2h_gated              ),
+    .test_ctrl_i      ( lc_otp_vendor_test_i.ctrl     ),
+    .test_status_o    ( lc_otp_vendor_test_o.status   ),
+    .test_vect_o      ( otp_test_vect                 ),
+    .test_tl_i        ( prim_tl_h2d_gated             ),
+    .test_tl_o        ( prim_tl_d2h_gated             ),
     // Other DFT signals
     .scan_en_i,
     .scan_rst_ni,
@@ -985,7 +991,7 @@ module otp_ctrl
   // Partition Instances //
   /////////////////////////
 
-  logic [2**OtpByteAddrWidth-1:0][7:0] part_buf_data;
+  logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data;
 
   for (genvar k = 0; k < NumPart; k ++) begin : gen_partitions
     ////////////////////////////////////////////////////////////////////////////////////////////////
