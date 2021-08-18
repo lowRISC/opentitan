@@ -53,6 +53,8 @@ class BadAtEnd(Loop):
         insns, model = ret
         assert len(insns) == num_insns
 
+        match_addr = model.pc
+
         # We need a model to represent the state just before the last
         # instruction. Of course, we can't "unwind" the state update that we
         # just did. However, a merge between the initial state and the end
@@ -60,7 +62,8 @@ class BadAtEnd(Loop):
         #
         # Since the Model.merge() method expects the two models to have the
         # same PC (which is the usual situation when implementing phi nodes),
-        # we also have to teleport old_model into the right place!
+        # we also have to teleport both models to the right place.
+        model.pc -= 4
         old_model.pc = model.pc
         model.merge(old_model)
 
@@ -91,12 +94,30 @@ class BadAtEnd(Loop):
             else:
                 assert lbj == 2
                 # Jump!
-                retJ = self.jump_gen.gen_tgt(model, program, None)
+
+                # The merge() function above took the minimum of the two
+                # models' amount of fuel. Since Jump.gen_tgt() updates the
+                # model with the new instruction, we need to give it one extra
+                # fuel (to match what got incorrectly subtracted for the
+                # instruction we're replacing). It also adds the generated
+                # instruction to the program: we don't want that, so we give it
+                # a throw-away copy to modify.
+                model.fuel += 1
+
+                retJ = self.jump_gen.gen_tgt(model, program.copy(), None)
                 if retJ is not None:
                     tail_insn, _, _ = retJ
 
         if tail_insn is None:
             return
+
+        # Fix up model.pc. The "head" generators for loop and branch don't
+        # update the model for what they've generated, so we'll be 4 bytes too
+        # early. Jump.gen_tgt() updates the model to match, so we'll be at some
+        # crazy new location! It doesn't really matter (we're faulting anyway),
+        # but Loop expects us to leave model.pc in the right place, so we need
+        # to fix it up here.
+        model.pc = match_addr
 
         insns[-1] = tail_insn
         return (insns, model)
