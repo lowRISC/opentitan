@@ -35,10 +35,12 @@ module pwm
   pwm_reg_top u_reg (
     .clk_i,
     .rst_ni,
-    .tl_i,
-    .tl_o,
-    .reg2hw,
-    .intg_err_o(alerts[0]),
+    .clk_core_i,
+    .rst_core_ni,
+    .tl_i       (tl_i),
+    .tl_o       (tl_o),
+    .reg2hw     (reg2hw),
+    .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );
 
