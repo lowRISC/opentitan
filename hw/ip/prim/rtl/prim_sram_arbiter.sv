@@ -12,18 +12,20 @@
 `include "prim_assert.sv"
 
 module prim_sram_arbiter #(
-  parameter int N  = 4,
-  parameter int SramDw = 32,
-  parameter int SramAw = 12,
-  parameter ArbiterImpl = "PPC"
+  parameter int unsigned N  = 4,
+  parameter int unsigned SramDw = 32,
+  parameter int unsigned SramAw = 12,
+  parameter ArbiterImpl = "PPC",
+  parameter bit EnMask = 1'b 0 // Disable wmask if 0
 ) (
   input clk_i,
   input rst_ni,
 
   input        [     N-1:0] req_i,
   input        [SramAw-1:0] req_addr_i [N],
-  input                     req_write_i[N],
+  input        [     N-1:0] req_write_i,
   input        [SramDw-1:0] req_wdata_i[N],
+  input        [SramDw-1:0] req_wmask_i[N],
   output logic [     N-1:0] gnt_o,
 
   output logic [     N-1:0] rsp_rvalid_o,      // Pulse
@@ -35,30 +37,50 @@ module prim_sram_arbiter #(
   output logic [SramAw-1:0] sram_addr_o,
   output logic              sram_write_o,
   output logic [SramDw-1:0] sram_wdata_o,
+  output logic [SramDw-1:0] sram_wmask_o,
   input                     sram_rvalid_i,
   input        [SramDw-1:0] sram_rdata_i,
   input        [1:0]        sram_rerror_i
 );
 
-
   typedef struct packed {
     logic write;
     logic [SramAw-1:0] addr;
     logic [SramDw-1:0] wdata;
+    logic [SramDw-1:0] wmask;
   } req_t;
-
-  localparam int ARB_DW = $bits(req_t);
 
   req_t req_packed [N];
 
   for (genvar i = 0 ; i < N ; i++) begin : gen_reqs
-    assign req_packed[i] = {req_write_i[i], req_addr_i[i], req_wdata_i[i]};
+    assign req_packed[i] = {
+      req_write_i[i],
+      req_addr_i [i],
+      req_wdata_i[i],
+      (EnMask) ? req_wmask_i[i] : {SramDw{1'b1}}
+    };
   end
+
+  localparam int ARB_DW = $bits(req_t);
 
   req_t sram_packed;
   assign sram_write_o = sram_packed.write;
   assign sram_addr_o  = sram_packed.addr;
   assign sram_wdata_o = sram_packed.wdata;
+  assign sram_wmask_o = (EnMask) ? sram_packed.wmask : {SramDw{1'b1}};
+
+  if (EnMask == 1'b 0) begin : g_unused
+    logic unused_wmask;
+
+    always_comb begin
+      unused_wmask = 1'b 1;
+      for (int unsigned i = 0 ; i < N ; i++) begin
+        unused_wmask ^= ^req_wmask_i[i];
+      end
+      unused_wmask ^= ^sram_packed.wmask;
+    end
+  end
+
 
   if (ArbiterImpl == "PPC") begin : gen_arb_ppc
     prim_arbiter_ppc #(

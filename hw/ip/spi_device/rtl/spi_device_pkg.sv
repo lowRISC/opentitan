@@ -367,6 +367,16 @@ package spi_device_pkg;
     return result;
   endfunction : sram_strb2mask
 
+  function automatic logic [SramStrbW-1:0] sram_mask2strb(
+    logic [SramDw-1:0] mask
+  );
+    logic [SramStrbW-1:0] result;
+    for (int unsigned i = 0 ; i < SramStrbW ; i++) begin
+      result[i] = &mask[8*i+:8];
+    end
+    return result;
+  endfunction : sram_mask2strb
+
   // Calculate each space's base and size
   parameter sram_addr_t SramReadBufferIdx  = sram_addr_t'(0);
   parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);

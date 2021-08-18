@@ -108,8 +108,9 @@ module spi_fwmode
 
   logic        [1:0] fwm_sram_req;
   logic [SramAw-1:0] fwm_sram_addr  [2];
-  logic              fwm_sram_write [2];
+  logic        [1:0] fwm_sram_write;
   logic [SramDw-1:0] fwm_sram_wdata [2];
+  logic [SramDw-1:0] fwm_sram_wmask [2];
   logic        [1:0] fwm_sram_gnt;
   logic        [1:0] fwm_sram_rvalid;    // RXF doesn't use
   logic [SramDw-1:0] fwm_sram_rdata [2]; // RXF doesn't use
@@ -221,6 +222,7 @@ module spi_fwmode
     .sram_rdata  (fwm_sram_rdata [FwModeRxFifo]),
     .sram_error  (fwm_sram_error [FwModeRxFifo])
   );
+  assign fwm_sram_wmask [FwModeRxFifo] = '1;
 
   // TX Fifo control (SRAM read request --> FIFO write)
   spi_fwm_txf_ctrl #(
@@ -252,9 +254,15 @@ module spi_fwmode
     .sram_rdata  (fwm_sram_rdata [FwModeTxFifo]),
     .sram_error  (fwm_sram_error [FwModeTxFifo])
   );
+  assign fwm_sram_wmask [FwModeTxFifo] = '1;
 
   // Arbiter for FIFOs : Connecting between SRAM Ctrls and SRAM interface
-  assign fwm_wstrb_o = '1;
+  logic [SramDw-1:0] fwm_wmask;
+
+  assign fwm_wstrb_o = sram_mask2strb(fwm_wmask);
+
+  // TODO: Assume other 7bits in a byte are same to the first bit
+
   prim_sram_arbiter #(
     .N            (2),  // RXF, TXF
     .SramDw       (SramDw),
@@ -267,6 +275,7 @@ module spi_fwmode
     .req_addr_i   (fwm_sram_addr),
     .req_write_i  (fwm_sram_write),
     .req_wdata_i  (fwm_sram_wdata),
+    .req_wmask_i  (fwm_sram_wmask),
     .gnt_o        (fwm_sram_gnt),
 
     .rsp_rvalid_o (fwm_sram_rvalid),
@@ -277,6 +286,7 @@ module spi_fwmode
     .sram_addr_o  (fwm_addr_o),
     .sram_write_o (fwm_write_o),
     .sram_wdata_o (fwm_wdata_o),
+    .sram_wmask_o (fwm_wmask),
 
     .sram_rvalid_i(fwm_rvalid_i),
     .sram_rdata_i (fwm_rdata_i),
