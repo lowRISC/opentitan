@@ -1,0 +1,76 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "prim_alert"
+  testpoints: [
+    {
+      name: prim_alert_request_test
+      desc: '''Verify alert request from prim_alert_sender.
+
+            - Send an alert request by driving `alert_req` pin to 1.
+            - Verify that `alert_ack` signal is set and the alert handshake completes.
+            - If the alert is fatal, verify if the alert continuous fires until a reset is
+              issued.
+            '''
+      milestone: V1
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
+    }
+
+    {
+      name: prim_alert_test
+      desc: '''Verify alert test request from prim_alert_sender.
+
+             - Send an alert test request by driving `alert_test` pin to 1.
+             - Verify that alert handshake completes and `alert_ack` signal stays low.
+            '''
+      milestone: V1
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
+    }
+
+    {
+      name: prim_alert_ping_request_test
+      desc: '''Verify ping request from prim_alert_sender.
+
+             - Send a ping request by driving `ping_req` pin to 1.
+             - Verify that `ping_ok` signal is set and ping handshake completes.
+             Because ping reqeust is level trigger, in order to cover toggle coverage for
+             `alert_tx.ping_p/n` the above sequence will run twice.
+            '''
+      milestone: V1
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
+    }
+
+    {
+      name: prim_alert_integrity_errors_test
+      desc: '''Verify the integrity errors from the prim_alert_sender and prim_alert_receiver pair.
+
+            1). `Ack_p/n` integrity error:
+                - Send an alert reqeust by driving `alert_req` pin to 1.
+                - Force `ack_p` signal to stay low to trigger an integrity error.
+                - Verify that prim_alert_receiver can identify the integrity error by setting
+                  `integ_fail_o` output to 1.
+            2). `Ping_p/n` integrity error:
+                - Send a ping request by driving `ping_req` to 1.
+                - Force `ping_n` signal to 1 to trigger an integrity error.
+                - Verify that prim_alert_receiver can identify the integrity error by setting
+                  `integ_fail_o` output to 1.
+            '''
+      milestone: V1
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
+    }
+
+  ]
+}
