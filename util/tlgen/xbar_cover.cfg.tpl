@@ -34,8 +34,6 @@
 // due to VCS issue (fixed at VCS/2020.12), can't move this part into begin...end (tgl) or after.
 -node tb.dut tl_*.a_param
 -node tb.dut tl_*.d_param
--node tb.dut tl_*.d_user
--node tb.dut tl_*.a_user.*
 -node tb.dut tl_*.d_opcode[2:1]
 
 // [UNR] these device address bits are always 0
