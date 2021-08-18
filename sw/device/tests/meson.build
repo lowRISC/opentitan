@@ -796,3 +796,59 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     build_by_default: true,
   )
 endforeach
+
+# OpenTitan (FreeRTOS) Test Framework
+foreach device_name, device_lib : sw_lib_arch_core_devices
+  ottf_elf = executable(
+    'ottf_' + device_name,
+    name_suffix: 'elf',
+    dependencies: [
+      riscv_crt,
+      device_lib,
+      sw_lib_ottf,
+      sw_lib_irq_handlers,
+    ],
+  )
+
+  target_name = 'ottf_@0@_' + device_name
+
+  ottf_dis = custom_target(
+    target_name.format('dis'),
+    input: ottf_elf,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  ottf_bin = custom_target(
+    target_name.format('bin'),
+    input: ottf_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  ottf_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: ottf_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  ottf_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: ottf_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
+  )
+
+  custom_target(
+    target_name.format('export'),
+    command: export_target_command,
+    depend_files: [export_target_depend_files,],
+    input: [
+      ottf_elf,
+      ottf_dis,
+      ottf_bin,
+      ottf_vmem32,
+      ottf_vmem64,
+    ],
+    output: target_name.format('export'),
+    build_always_stale: true,
+    build_by_default: true,
+  )
+endforeach
