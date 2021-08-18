@@ -7,7 +7,6 @@ subdir('arch')
 subdir('crt')
 subdir('dif')
 subdir('runtime')
-subdir('testing')
 
 # Flash controller library (sw_lib_flash_ctrl)
 sw_lib_flash_ctrl = declare_dependency(
@@ -98,3 +97,5 @@ sw_lib_usb = declare_dependency(
     ]
   )
 )
+
+subdir('testing')

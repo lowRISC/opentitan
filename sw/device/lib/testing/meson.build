@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-
 # hardware entropy complex (entropy_src, csrng, edn) test utilities.
 sw_lib_testing_entropy_testutils = declare_dependency(
   link_with: static_library(
