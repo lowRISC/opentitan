@@ -287,6 +287,7 @@ module otp_ctrl
 
   logic [ScrmblBlockWidth-1:0] unused_digest;
   logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest;
+  assign hw2reg.vendor_test_digest    = part_digest[VendorTestIdx];
   assign hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
   assign hw2reg.owner_sw_cfg_digest   = part_digest[OwnerSwCfgIdx];
   assign hw2reg.hw_cfg_digest         = part_digest[HwCfgIdx];
@@ -310,6 +311,7 @@ module otp_ctrl
     part_access_csrs[LifeCycleIdx].read_lock = Locked;
 
     // Propagate CSR read enables down to the SW_CFG partitions.
+    if (!reg2hw.vendor_test_read_lock) part_access_csrs[VendorTestIdx].read_lock = Locked;
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
     if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
@@ -663,13 +665,15 @@ module otp_ctrl
   assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestCtrlWidth{1'b1}} : '0;
 
   prim_otp #(
-    .Width         ( OtpWidth            ),
-    .Depth         ( OtpDepth            ),
-    .SizeWidth     ( OtpSizeWidth        ),
-    .PwrSeqWidth   ( OtpPwrSeqWidth      ),
-    .TlDepth       ( NumDebugWindowWords ),
-    .TestCtrlWidth ( OtpTestCtrlWidth    ),
-    .MemInitFile   ( MemInitFile         )
+    .Width            ( OtpWidth            ),
+    .Depth            ( OtpDepth            ),
+    .SizeWidth        ( OtpSizeWidth        ),
+    .PwrSeqWidth      ( OtpPwrSeqWidth      ),
+    .TlDepth          ( NumDebugWindowWords ),
+    .TestCtrlWidth    ( OtpTestCtrlWidth    ),
+    .MemInitFile      ( MemInitFile         ),
+    .VendorTestOffset ( VendorTestOffset    ),
+    .VendorTestSize   ( VendorTestSize      )
   ) u_otp (
     .clk_i,
     .rst_ni,

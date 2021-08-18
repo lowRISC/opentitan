@@ -21,7 +21,10 @@ module prim_generic_otp
   localparam int AddrWidth     = prim_util_pkg::vbits(Depth),
   localparam int IfWidth       = 2**SizeWidth*Width,
   // VMEM file to initialize the memory with
-  parameter      MemInitFile   = ""
+  parameter      MemInitFile   = "",
+  // Vendor test partition offset and size (both in bytes)
+  parameter  int VendorTestOffset,
+  parameter  int VendorTestSize
 ) (
   input                          clk_i,
   input                          rst_ni,

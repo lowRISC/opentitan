@@ -599,7 +599,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               DaiRead: begin
                 // Check if it is sw partition read lock
                 bit sw_read_lock = 0;
-                if (part_idx == CreatorSwCfgIdx) begin
+                if (part_idx == VendorTestIdx) begin
+                  sw_read_lock = `gmv(ral.vendor_test_read_lock) == 0;
+                end else if (part_idx == CreatorSwCfgIdx) begin
                   sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
                 end else if (part_idx == OwnerSwCfgIdx) begin
                   sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
@@ -626,7 +628,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   // Check if write has any write_blank_error, then potentially read might have ECC
                   // error.
                   bit [TL_DW-1:0] err_code = `gmv(ral.err_code[0]);
-                  if (get_field_val(ral.err_code[0].err_code[7], err_code) == OtpMacroWriteBlankError ||
+                  if (get_field_val(ral.err_code[0].err_code[DaiIdx], err_code) ==
+                      OtpMacroWriteBlankError ||
                       cfg.ecc_err != OtpNoEccErr) begin
                     bit [TL_DW-1:0] read_out;
                     int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
@@ -814,14 +817,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1": begin
+      "owner_sw_cfg_digest_1", "vendor_test_digest_0", "vendor_test_digest_1": begin
         if (ignore_digest_chk) do_read_check = 0;
       end
       "direct_access_regwen", "direct_access_wdata_0", "direct_access_wdata_1",
       "direct_access_address", "direct_access_rdata_0", "direct_access_rdata_1",
       "check_regwen", "check_trigger_regwen", "check_trigger", "check_timeout", "intr_enable",
       "creator_sw_cfg_read_lock", "owner_sw_cfg_read_lock", "integrity_check_period",
-      "consistency_check_period", "alert_test": begin
+      "consistency_check_period", "alert_test", "vendor_test_read_lock": begin
         // Do nothing
       end
       default: begin
@@ -944,6 +947,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   // predict digest registers
   virtual function void predict_digest_csrs();
+    void'(ral.vendor_test_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.vendor_test_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
     void'(ral.creator_sw_cfg_digest[0].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
     void'(ral.creator_sw_cfg_digest[1].predict(
@@ -998,7 +1006,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 
     if (get_digest_reg_val(part_idx) != 0 ||
-        part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
+        part_idx inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
     end else if (part_idx == Secret2Idx &&
@@ -1086,7 +1094,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // Update status
     exp_status[status_err_idx] = 1;
 
-    // Only first 8 status errors have corresponding err_code
+    // Only first 9 status errors have corresponding err_code
     if (status_err_idx <= OtpLciErrIdx) begin
       dv_base_reg_field err_code_flds[$];
       if (err_code == OtpNoError) begin
@@ -1150,6 +1158,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function bit [TL_DW*2-1:0] get_digest_reg_val(int part_idx);
     bit [TL_DW*2-1:0] digest;
     case (part_idx)
+      VendorTestIdx: begin
+        digest = {`gmv(ral.vendor_test_digest[1]), `gmv(ral.vendor_test_digest[0])};
+      end
       CreatorSwCfgIdx: begin
         digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
       end
@@ -1169,9 +1180,20 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                                 output bit mem_ro_err);
     // If sw partition is read locked, then access policy changes from RO to no access
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
+    if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
+      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
+                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
+                        VendorTestSize - 1]}) begin
+        predict_err(OtpVendorTestErrIdx, OtpAccessError);
+        `DV_CHECK_EQ(item.d_data, 0,
+                     $sformatf("locked mem read mismatch at TLUL addr %0h in VendorTest", addr))
+        return 0;
+      end
+    end
     if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
-          cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgSize - 1]}) begin
+      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
+                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
+                        CreatorSwCfgSize - 1]}) begin
         predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
         `DV_CHECK_EQ(item.d_data, 0,
                      $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
@@ -1180,8 +1202,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
     if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.under_error_states()) begin
       if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
-                        cfg.ral_models[ral_name].mem_ranges[0].start_addr +
-                            OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
+                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
+                        OwnerSwCfgSize - 1]}) begin
         predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
         `DV_CHECK_EQ(item.d_data, 0,
                      $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))

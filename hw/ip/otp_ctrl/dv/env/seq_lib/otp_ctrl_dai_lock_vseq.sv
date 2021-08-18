@@ -23,9 +23,10 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     num_dai_op inside {[1:50]};
   }
 
-  constraint partition_index_c {part_idx inside {[CreatorSwCfgIdx:LifeCycleIdx]};}
+  constraint partition_index_c {part_idx inside {[VendorTestIdx:LifeCycleIdx]};}
 
   constraint dai_wr_legal_addr_c {
+    if (part_idx == VendorTestIdx)   dai_addr inside `PART_ADDR_RANGE(VendorTestIdx);
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     if (part_idx == HwCfgIdx)        dai_addr inside `PART_ADDR_RANGE(HwCfgIdx);
@@ -45,9 +46,9 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
 
   constraint dai_wr_digests_c {
     {dai_addr[TL_AW-1:2], 2'b0} dist {
-      {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset,HwCfgDigestOffset, Secret0DigestOffset,
-       Secret1DigestOffset, Secret2DigestOffset} :/ 1,
-      [CreatorSwCfgOffset : '1] :/ 9
+      {VendorTestDigestOffset, CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset, HwCfgDigestOffset,
+       Secret0DigestOffset, Secret1DigestOffset, Secret2DigestOffset} :/ 1,
+      [VendorTestOffset : '1] :/ 9
     };
   }
 

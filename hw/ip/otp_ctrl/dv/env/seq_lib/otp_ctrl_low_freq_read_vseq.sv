@@ -17,14 +17,14 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
 
   virtual task body();
     // Backdoor write all partitions.
-    for (int addr = CreatorSwCfgOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
+    for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
       int dai_addr = addr * 4;
         cfg.mem_bkdr_util_h.write32(dai_addr, dai_addr);
         `uvm_info(`gfn, $sformatf("backdoor write dai addr %0h", dai_addr), UVM_HIGH)
     end
 
     // Use low clock frequency to read out each OTP memory.
-    for (int addr = CreatorSwCfgOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
+    for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
       bit [31:0] dai_addr = addr * 4;
       int        part_idx = get_part_index(dai_addr);
 
