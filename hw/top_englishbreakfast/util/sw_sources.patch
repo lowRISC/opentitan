@@ -78,7 +78,7 @@ index 50bee15fa..8f5976a83 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 9e732a812..ca2bd0ab7 100644
+index 1c74eb0ee..cc087c4b9 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -50,7 +50,6 @@ enum {
@@ -107,7 +107,7 @@ index 9e732a812..ca2bd0ab7 100644
  }
  
  /**
-@@ -137,41 +129,16 @@ void sca_init(void) {
+@@ -137,42 +129,16 @@ void sca_init(void) {
  }
  
  void sca_reduce_noise() {
@@ -120,12 +120,13 @@ index 9e732a812..ca2bd0ab7 100644
 -                      CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
 -
 -  // Disable entropy source through DIF.
--  const dif_entropy_params_t entropy_params = {
+-  const dif_entropy_src_params_t entropy_params = {
 -      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
 -  };
--  dif_entropy_t entropy;
--  IGNORE_RESULT(dif_entropy_init(entropy_params, &entropy) == kDifEntropyOk);
--  IGNORE_RESULT(dif_entropy_disable(&entropy) == kDifEntropyOk);
+-  dif_entropy_src_t entropy;
+-  IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy) ==
+-                kDifEntropySrcOk);
+-  IGNORE_RESULT(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
 -
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
    const dif_clkmgr_params_t clkmgr_params = {

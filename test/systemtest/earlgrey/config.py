@@ -91,7 +91,7 @@ TEST_APPS_SELFCHECKING = [
     #   "targets": ["sim_verilator", "fpga_cw310"],
     # },
     {
-        "name": "dif_entropy_smoketest",
+        "name": "dif_entropy_src_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {

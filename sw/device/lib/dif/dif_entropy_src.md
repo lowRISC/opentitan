@@ -4,7 +4,7 @@ title: "Entropy Source DIF Checklist"
 
 <!--
 NOTE: This is a template checklist document that is required to be copied over
-to `sw/device/lib/dif/dif_entropy.md` for a new DIF that transitions
+to `sw/device/lib/dif/dif_entropy_src.md` for a new DIF that transitions
 from L0 (Specification) to L1 (Development) stage, and updated as needed.
 Once done, please remove this comment before checking it in.
 -->

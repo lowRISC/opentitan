@@ -13,7 +13,7 @@
 
 #include "csrng_regs.h"  // Generated
 
-namespace dif_entropy_unittest {
+namespace dif_csrng_unittest {
 namespace {
 
 using ::testing::ElementsAreArray;
@@ -293,4 +293,4 @@ TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
 }
 
 }  // namespace
-}  // namespace dif_entropy_unittest
+}  // namespace dif_csrng_unittest

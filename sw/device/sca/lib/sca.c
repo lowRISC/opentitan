@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_entropy.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -146,12 +146,13 @@ void sca_reduce_noise() {
                       CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
 
   // Disable entropy source through DIF.
-  const dif_entropy_params_t entropy_params = {
+  const dif_entropy_src_params_t entropy_params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
   };
-  dif_entropy_t entropy;
-  IGNORE_RESULT(dif_entropy_init(entropy_params, &entropy) == kDifEntropyOk);
-  IGNORE_RESULT(dif_entropy_disable(&entropy) == kDifEntropyOk);
+  dif_entropy_src_t entropy;
+  IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy) ==
+                kDifEntropySrcOk);
+  IGNORE_RESULT(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
 
   // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
   const dif_clkmgr_params_t clkmgr_params = {

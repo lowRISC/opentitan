@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_entropy.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 
 #include <stddef.h>
 
@@ -15,8 +15,8 @@
  * Sets the `entropy` source configuration register with the settings
  * derived from `config`.
  */
-static void set_config_register(const dif_entropy_t *entropy,
-                                const dif_entropy_config_t *config) {
+static void set_config_register(const dif_entropy_src_t *entropy,
+                                const dif_entropy_src_config_t *config) {
   // TODO: Make this configurable at the API level.
   // TODO: Currently bypass disable cannot be set, as it causes the hw fsm to
   // get stuck
@@ -26,19 +26,21 @@ static void set_config_register(const dif_entropy_t *entropy,
 
   // Configure test cases
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_REPCNT_DISABLE_BIT,
-                             !config->tests[kDifEntropyTestRepCount]);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_ADAPTP_DISABLE_BIT,
-                             !config->tests[kDifEntropyTestAdaptiveProportion]);
+                             !config->tests[kDifEntropySrcTestRepCount]);
+  reg = bitfield_bit32_write(
+      reg, ENTROPY_SRC_CONF_ADAPTP_DISABLE_BIT,
+      !config->tests[kDifEntropySrcTestAdaptiveProportion]);
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_BUCKET_DISABLE_BIT,
-                             !config->tests[kDifEntropyTestBucket]);
+                             !config->tests[kDifEntropySrcTestBucket]);
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_MARKOV_DISABLE_BIT,
-                             !config->tests[kDifEntropyTestMarkov]);
+                             !config->tests[kDifEntropySrcTestMarkov]);
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_HEALTH_TEST_CLR_BIT,
                              config->reset_health_test_registers);
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_EXTHT_ENABLE_BIT, 0);
 
   // Configure single RNG bit mode
-  bool rng_bit_en = config->single_bit_mode != kDifEntropySingleBitModeDisabled;
+  bool rng_bit_en =
+      config->single_bit_mode != kDifEntropySrcSingleBitModeDisabled;
   reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_EN_BIT, rng_bit_en);
 
   uint32_t rng_bit_sel = rng_bit_en ? config->single_bit_mode : 0;
@@ -52,26 +54,26 @@ static void set_config_register(const dif_entropy_t *entropy,
                       reg);
 }
 
-dif_entropy_result_t dif_entropy_init(dif_entropy_params_t params,
-                                      dif_entropy_t *entropy) {
+dif_entropy_src_result_t dif_entropy_src_init(dif_entropy_src_params_t params,
+                                              dif_entropy_src_t *entropy) {
   if (entropy == NULL) {
-    return kDifEntropyBadArg;
+    return kDifEntropySrcBadArg;
   }
-  *entropy = (dif_entropy_t){.params = params};
-  return kDifEntropyOk;
+  *entropy = (dif_entropy_src_t){.params = params};
+  return kDifEntropySrcOk;
 }
 
-dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
-                                           dif_entropy_config_t config) {
+dif_entropy_src_result_t dif_entropy_src_configure(
+    const dif_entropy_src_t *entropy, dif_entropy_src_config_t config) {
   if (entropy == NULL) {
-    return kDifEntropyBadArg;
+    return kDifEntropySrcBadArg;
   }
 
   if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
-    return kDifEntropyBadArg;
+    return kDifEntropySrcBadArg;
   }
 
-  uint32_t seed = config.mode == kDifEntropyModeLfsr ? config.lfsr_seed : 0;
+  uint32_t seed = config.mode == kDifEntropySrcModeLfsr ? config.lfsr_seed : 0;
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
                       seed);
 
@@ -93,33 +95,34 @@ dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
                       ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
 
   set_config_register(entropy, &config);
-  return kDifEntropyOk;
+  return kDifEntropySrcOk;
 }
 
-static bool get_entropy_avail(const dif_entropy_t *entropy) {
+static bool get_entropy_avail(const dif_entropy_src_t *entropy) {
   return mmio_region_get_bit32(entropy->params.base_addr,
                                ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
 }
 
-dif_entropy_result_t dif_entropy_avail(const dif_entropy_t *entropy) {
+dif_entropy_src_result_t dif_entropy_src_avail(
+    const dif_entropy_src_t *entropy) {
   if (entropy == NULL) {
-    return kDifEntropyBadArg;
+    return kDifEntropySrcBadArg;
   }
 
-  return get_entropy_avail(entropy) ? kDifEntropyOk
-                                    : kDifEntropyDataUnAvailable;
+  return get_entropy_avail(entropy) ? kDifEntropySrcOk
+                                    : kDifEntropySrcDataUnAvailable;
 }
 
-dif_entropy_result_t dif_entropy_read(const dif_entropy_t *entropy,
-                                      uint32_t *word) {
+dif_entropy_src_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy,
+                                              uint32_t *word) {
   if (entropy == NULL || word == NULL) {
-    return kDifEntropyBadArg;
+    return kDifEntropySrcBadArg;
   }
 
   // Check if entropy is available
   if (!get_entropy_avail(entropy)) {
-    return kDifEntropyDataUnAvailable;
+    return kDifEntropySrcDataUnAvailable;
   }
 
   *word = mmio_region_read32(entropy->params.base_addr,
@@ -131,13 +134,14 @@ dif_entropy_result_t dif_entropy_read(const dif_entropy_t *entropy,
                                   ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                   ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
 
-  return kDifEntropyOk;
+  return kDifEntropySrcOk;
 }
 
-dif_entropy_result_t dif_entropy_disable(const dif_entropy_t *entropy) {
+dif_entropy_src_result_t dif_entropy_src_disable(
+    const dif_entropy_src_t *entropy) {
   // TODO: should first check if entropy is locked and return error if it is.
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       0);
 
-  return kDifEntropyOk;
+  return kDifEntropySrcOk;
 }
