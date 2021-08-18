@@ -243,6 +243,15 @@
                   <td>BUSY_SEC_WIPE_IMEM</td>
                   <td>OTBN is securely wiping the instruction memory.</td>
                 </tr>
+                <tr>
+                  <td>0xFF</td>
+                  <td>LOCKED</td>
+                  <td>
+                    OTBN is locked as reaction to a fatal error, and must be
+                    reset to unlock it again. See also the section on fatal
+                    error handling.
+                  </td>
+                </tr>
               </tbody>
             </table>
           '''

@@ -82,6 +82,7 @@ typedef enum dif_otbn_status {
   kDifOtbnStatusBusyExecute = 0x01,
   kDifOtbnStatusBusySecWipeDmem = 0x02,
   kDifOtbnStatusBusySecWipeImem = 0x03,
+  kDifOtbnStatusLocked = 0xFF,
 } dif_otbn_status_t;
 
 /**
