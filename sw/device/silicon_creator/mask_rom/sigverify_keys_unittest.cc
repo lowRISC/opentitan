@@ -63,6 +63,7 @@ constexpr sigverify_mask_rom_key_t kMockKeys[]{
         .key_type = kSigverifyKeyTypeDev,
     },
 };
+constexpr size_t kNumMockKeys = std::extent<decltype(kMockKeys)>::value;
 
 /**
  * Returns the indices of mock keys of the given type.
@@ -71,54 +72,33 @@ constexpr sigverify_mask_rom_key_t kMockKeys[]{
  * @return Indices of mock keys of the given type.
  */
 std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
-  std::vector<size_t> res;
-  auto begin = std::begin(kMockKeys);
-  auto end = std::end(kMockKeys);
-  auto iter = begin;
-  while (
-      (iter = std::find_if(iter, end, [&](sigverify_mask_rom_key_t const &key) {
-         return key.key_type == key_type;
-       })) != end) {
-    res.push_back(std::distance(begin, iter));
-    ++iter;
+  std::vector<size_t> indices;
+  for (size_t i = 0; i < kNumMockKeys; ++i) {
+    if (kMockKeys[i].key_type == key_type) {
+      indices.push_back(i);
+    }
   }
-  return res;
+  return indices;
 }
-
-const std::vector<size_t> kMockTestKeyIndices =
-    MockKeyIndicesOfType(kSigverifyKeyTypeTest);
-
-const std::vector<size_t> kMockProdKeyIndices =
-    MockKeyIndicesOfType(kSigverifyKeyTypeProd);
-
-const std::vector<size_t> kMockDevKeyIndices =
-    MockKeyIndicesOfType(kSigverifyKeyTypeDev);
-
-const std::vector<size_t> kMockAllKeyIndices = []() {
-  std::vector<size_t> res(
-      std::distance(std::begin(kMockKeys), std::end(kMockKeys)));
-  std::iota(res.begin(), res.end(), 0);
-  return res;
-}();
 
 /**
  * Life cycle states used in parameterized tests.
  */
 
-const std::array<lifecycle_state_t, 8> kLcStatesTest{
+constexpr std::array<lifecycle_state_t, 8> kLcStatesTest{
     kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
     kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
     kLcStateTestUnlocked6, kLcStateTestUnlocked7,
 };
 
-const std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
+constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
     kLcStateDev,
     kLcStateProd,
     kLcStateProdEnd,
     kLcStateRma,
 };
 
-const std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
+constexpr std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
     kLcStateRaw,         kLcStateTestLocked0,
     kLcStateTestLocked1, kLcStateTestLocked2,
     kLcStateTestLocked3, kLcStateTestLocked4,
@@ -127,17 +107,22 @@ const std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
     kLcStateEscalate,    kLcStateInvalid,
 };
 
-const std::unordered_set<lifecycle_state_t> kLcStatesAll = []() {
-  std::unordered_set<lifecycle_state_t> res;
-  res.insert(kLcStatesTest.begin(), kLcStatesTest.end());
-  res.insert(kLcStatesNonTestOperational.begin(),
-             kLcStatesNonTestOperational.end());
-  res.insert(kLcStatesNonOperational.begin(), kLcStatesNonOperational.end());
-  return res;
-}();
+const std::unordered_set<lifecycle_state_t> &LcStatesAll() {
+  static const std::unordered_set<lifecycle_state_t> *const kLcStatesAll =
+      []() {
+        auto states = new std::unordered_set<lifecycle_state_t>();
+        states->insert(kLcStatesTest.begin(), kLcStatesTest.end());
+        states->insert(kLcStatesNonTestOperational.begin(),
+                       kLcStatesNonTestOperational.end());
+        states->insert(kLcStatesNonOperational.begin(),
+                       kLcStatesNonOperational.end());
+        return states;
+      }();
+  return *kLcStatesAll;
+}
 
 TEST(LcStateCount, IsCorrect) {
-  EXPECT_EQ(kLcStateNumStates, kLcStatesAll.size());
+  EXPECT_EQ(kLcStateNumStates, LcStatesAll().size());
 }
 
 class SigverifyKeys : public mask_rom_test::MaskRomTest {
@@ -184,7 +169,7 @@ class SigverifyKeys : public mask_rom_test::MaskRomTest {
 
   mask_rom_test::MockOtp otp_;
   mask_rom_test::MockSigverifyKeysPtrs sigverify_keys_ptrs_;
-};  // namespace
+};
 
 class BadKeyIdTypeTest : public SigverifyKeys,
                          public testing::WithParamInterface<lifecycle_state_t> {
@@ -216,7 +201,7 @@ TEST_P(BadKeyIdTypeTest, BadKeyType) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
-                         testing::ValuesIn(kLcStatesAll));
+                         testing::ValuesIn(LcStatesAll()));
 
 /**
  * Base class for paramaterized tests below.
@@ -243,7 +228,7 @@ TEST_P(NonOperationalState, BadKey) {
 
 INSTANTIATE_TEST_SUITE_P(
     AllKeysAndNonOperationalStates, NonOperationalState,
-    testing::Combine(testing::ValuesIn(kMockAllKeyIndices),
+    testing::Combine(testing::Range<size_t>(0, kNumMockKeys),
                      testing::ValuesIn(kLcStatesNonOperational)));
 
 class ValidBasedOnOtp : public KeyValidityTest {};
@@ -281,17 +266,21 @@ TEST_P(ValidBasedOnOtp, InvalidInOtp) {
 
 INSTANTIATE_TEST_SUITE_P(
     ProdKeysInNonTestStates, ValidBasedOnOtp,
-    testing::Combine(testing::ValuesIn(kMockProdKeyIndices),
-                     testing::ValuesIn(kLcStatesNonTestOperational)));
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeProd)),
+        testing::ValuesIn(kLcStatesNonTestOperational)));
 
 INSTANTIATE_TEST_SUITE_P(
     TestKeysInRmaState, ValidBasedOnOtp,
-    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
-                     testing::Values(kLcStateRma)));
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeTest)),
+        testing::Values(kLcStateRma)));
 
-INSTANTIATE_TEST_SUITE_P(DevKeysInDevState, ValidBasedOnOtp,
-                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
-                                          testing::Values(kLcStateDev)));
+INSTANTIATE_TEST_SUITE_P(
+    DevKeysInDevState, ValidBasedOnOtp,
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeDev)),
+        testing::Values(kLcStateDev)));
 
 class ValidInState : public KeyValidityTest {};
 
@@ -312,13 +301,15 @@ TEST_P(ValidInState, Get) {
 
 INSTANTIATE_TEST_SUITE_P(
     ProdKeysInTestStates, ValidInState,
-    testing::Combine(testing::ValuesIn(kMockProdKeyIndices),
-                     testing::ValuesIn(kLcStatesTest)));
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeProd)),
+        testing::ValuesIn(kLcStatesTest)));
 
 INSTANTIATE_TEST_SUITE_P(
     TestKeysInTestStates, ValidInState,
-    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
-                     testing::ValuesIn(kLcStatesTest)));
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeTest)),
+        testing::ValuesIn(kLcStatesTest)));
 
 class InvalidInState : public KeyValidityTest {};
 
@@ -338,19 +329,21 @@ TEST_P(InvalidInState, Get) {
 
 INSTANTIATE_TEST_SUITE_P(
     TestKeysAndProdDevStates, InvalidInState,
-    testing::Combine(testing::ValuesIn(kMockTestKeyIndices),
-                     testing::Values(kLcStateProd, kLcStateProdEnd,
-                                     kLcStateDev)));
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeTest)),
+        testing::Values(kLcStateProd, kLcStateProdEnd, kLcStateDev)));
 
-INSTANTIATE_TEST_SUITE_P(DevKeysAndTestStates, InvalidInState,
-                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
-                                          testing::ValuesIn(kLcStatesTest)));
+INSTANTIATE_TEST_SUITE_P(
+    DevKeysAndTestStates, InvalidInState,
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeDev)),
+        testing::ValuesIn(kLcStatesTest)));
 
-INSTANTIATE_TEST_SUITE_P(DevKeysAndNonDevOperStates, InvalidInState,
-                         testing::Combine(testing::ValuesIn(kMockDevKeyIndices),
-                                          testing::Values(kLcStateProd,
-                                                          kLcStateProdEnd,
-                                                          kLcStateRma)));
+INSTANTIATE_TEST_SUITE_P(
+    DevKeysAndNonDevOperStates, InvalidInState,
+    testing::Combine(
+        testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeDev)),
+        testing::Values(kLcStateProd, kLcStateProdEnd, kLcStateRma)));
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
