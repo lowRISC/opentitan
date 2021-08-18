@@ -31,15 +31,21 @@ interface pwrmgr_clock_enables_if (
 
   sequence transitionDown_S; state == pwrmgr_pkg::SlowPwrStatePwrClampOn; endsequence
 
+  sequence usbActiveTransition_S;
+    logic prev_en;
+    (1'b1, prev_en = usb_clk_en_active_i) ##1 usb_clk_en == prev_en;
+  endsequence
+
   `ASSERT(CoreClkPwrUp_A, transitionUp_S |=> core_clk_en == 1'b1, clk_i, reset_or_disable)
   `ASSERT(IoClkPwrUp_A, transitionUp_S |=> io_clk_en == 1'b1, clk_i, reset_or_disable)
   `ASSERT(UsbClkPwrUp_A, transitionUp_S |=> usb_clk_en == usb_clk_en_active_i, clk_i,
           reset_or_disable)
 
+  // This deals with transitions while the fast fsm is active.
   `ASSERT(UsbClkActive_A,
           state == pwrmgr_pkg::SlowPwrStateIdle && $changed(
               usb_clk_en_active_i
-          ) |=> usb_clk_en == usb_clk_en_active_i,
+          ) |-> usbActiveTransition_S,
           clk_i, reset_or_disable)
 
   `ASSERT(CoreClkPwrDown_A, transitionDown_S |=> core_clk_en == core_clk_en_i, clk_i,
