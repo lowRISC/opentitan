@@ -144,12 +144,12 @@
   cover_reg_top_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover_reg_top.cfg"
 
   // Project defaults for Xcelium
-  xcelium_cov_cfg_file: "{dv_root}/tools/xcelium/cover.ccf"
-  xcelium_cov_refine_files: []
+  xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
   xcelium_unr_cfg_file:  "{dv_root}/tools/xcelium/unr.cfg"
-  xcelium_common_excl_file: ["{dv_root}/tools/xcelium/exclude.tcl"]
+  xcelium_common_excl_file: "{dv_root}/tools/xcelium/exclude.tcl"
+  xcelium_cov_refine_files: []
 
   // Build-specific coverage cfg files for Xcelium.
-  // default_xcelium_cov_cfg_file: "-covfile {dv_root}/tools/xcelium/cover.ccf"
-  // cover_reg_top_xcelium_cov_cfg_file: "-covfile {dv_root}/tools/xcelium/cover_reg_top.ccf"
+  default_xcelium_cov_cfg_file: "{dv_root}/tools/xcelium/cover.ccf"
+  cover_reg_top_xcelium_cov_cfg_file: "{dv_root}/tools/xcelium/cover_reg_top.ccf"
 }

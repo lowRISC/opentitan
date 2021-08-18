@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Baesd on our Comportable IP spec, these TL pins are reserved / unused.
+//
+// Add this to the ccf with the following command:
+// set_toggle_excludefile ${dv_root}/tools/xcelium/common_toggle_excl
+//
+// It is not being added right now because it is not working.
+// TODO: Work with AE to understand how can this be achieved.
+-ere module ${DUT_TOP}\.*tl_i\.a_user\.rsvd
+-ere module ${DUT_TOP}\.*tl_i\.a_param
+-ere module ${DUT_TOP}\.*tl_o\.d_param
+-ere module ${DUT_TOP}\.*tl_o\.d_sink

@@ -1,0 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Exclude all but the TL ports of the DUT.
+// TODO: This does not work.
+-ere module ^((?!tl_i$|tl_o$).)*$

@@ -2,20 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Enable scoring of continuous assignments, branch and statements.
-set_assign_scoring
-set_branch_scoring
-set_statement_scoring
+// Include our common coverage CCF.
+include_ccf ${dv_root}/tools/xcelium/common.ccf
 
-// Only collect toggle coverage on the DUT ports.
-deselect_coverage -toggle -instance tb.dut.*...
-set_toggle_portsonly
+// Black-box pre-verified IPs from coverage collection.
+deselect_coverage -betfs -module pins_if
+deselect_coverage -betfs -module clk_rst_if
+deselect_coverage -betfs -module prim_alert_sender...
+deselect_coverage -betfs -module prim_prince...
+deselect_coverage -betfs -module prim_lfsr...
 
-// Enable toggle scoring of MDAs and structs.
-set_toggle_scoring -sv_mda -sv_mda_of_struct
-
-// Filter glitches.
-set_toggle_strobe 0ps
-
-//  Filter unreachable/statically constant blocks
-set_com -log
+// Only collect toggle coverage on the DUT and the black-boxed IP (above) ports.
+deselect_coverage -toggle -module ${DUT_TOP}...
+select_coverage -toggle -module ${DUT_TOP}
+select_coverage -toggle -module prim_alert_sender
+select_coverage -toggle -module prim_prince
+select_coverage -toggle -module prim_lfsr

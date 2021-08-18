@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Include our common coverage CCF.
+include_ccf ${dv_root}/tools/xcelium/common.ccf
+
+// Only collect code coverage on the *_reg_top instance.
+deselect_coverage -betfs -module ${DUT_TOP}...
+select_coverage -befs -module *_reg_top...
+
+// TODO: The intent below is to only enable coverage on the DUT's TL interfaces (tests using this
+// ccf file are meant to fully exercise the TL interfaces, but they do not verify the rest of the
+// functionality of the block). We enable coverage on all DUT ports but exclude ports that do not
+// contain tl_i or tl_o in the port name using a separate excludefile that supports regexes.
+select_coverage -toggle -module ${DUT_TOP}
+set_toggle_excludefile ${dv_root}/tools/xcelium/cover_reg_top_toggle_excl
