@@ -174,7 +174,10 @@
                    // Limit the scope of coverage collection to the DUT.
                    "-covdut {dut}",
                    // Set the coverage configuration file
-                   "-covfile {xcelium_cov_cfg_file}"]
+                   "-covfile {xcelium_cov_cfg_file}",
+                   // Don't warn about the switches we set that will be default in future releases.
+                   "-nowarn COVDEF",
+                  ]
       run_opts:   [// Put the coverage model (*.ucm) and the database (*.ucd) together.
                    "-covmodeldir {cov_db_test_dir}",
                    // Coverage database output location.

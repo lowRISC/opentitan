@@ -1,0 +1,57 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Common coverage commands that apply to all DUTs.
+//
+// This coverge config file is provided by Xcelium and is located at:
+// ${XCELIUM_HOME}/tools/icc/include/all_coverage.ccf
+// Xcelium recommends including it, since it bundles together the common set of commands that enable
+// coverage collection on various design elements, that are otherwise turned off by default. We
+// maintain it locally with minor amends.
+
+// Enables expression coverage of various Verilog operators.
+set_expr_coverable_operators -all -event_or
+
+// Enables expression coverage of operators in various conditions and assignments.
+set_expr_coverable_statements -all
+
+// Enables scoring of Verilog modules compiled with -v/-y or -libcell option but continues to
+// disable the scoring of Verilog modules defined with the 'celldefine compiler directive.
+set_libcell_scoring
+
+// Enables scoring of block and expression coverage for functions and tasks defined directly inside
+// SystemVerilog packages.
+set_subprogram_scoring -svpackage
+
+// Enables scoring of SystemVerilog continuous assignments, which is by disabled by default.
+set_assign_scoring
+
+// Scores branches together with block coverage.
+set_branch_scoring
+
+// Scores statements within a block.
+set_statement_scoring
+
+// Enables expression coverage for expression containing structs (packed and unpacked).
+set_expr_scoring -struct
+
+// Enables Toggle scoring and reporting of SystemVerilog enumerations and multidimensional static
+// arrays , vectors, packed union, modport and generate blocks.
+set_toggle_scoring -sv_enum enable_mda -sv_struct_with_enum -sv_modport -sv_mda 16 -sv_mda_of_struct -sv_generate -sv_packed_union
+
+// Enables scoring of reset states and transitions for identified FSMs.
+set_fsm_reset_scoring
+
+// Enables scoring of immediate assertions inside a class in a package and assertions inside AMS
+// modules.
+select_functional  -ams_control  -imm_asrt_class_package
+
+// Improve the scoping and naming of covergroup instances.
+set_covergroup -new_instance_reporting
+
+// Enable toggle coverage only on ports.
+set_toggle_portsonly
+
+// Enable scoring of FSM arcs (state transitions).
+set_fsm_arc_scoring
