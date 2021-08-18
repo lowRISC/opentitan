@@ -2334,7 +2334,7 @@
               "chip_dif_kmac_cshake_smoketest",
               "chip_dif_otbn_smoketest",
               "chip_dif_otp_ctrl_smoketest",
-              "chip_dif_plic_smoketest",
+              "chip_dif_rv_plic_smoketest",
               "chip_dif_pwrmgr_smoketest",
               "chip_dif_rv_timer_smoketest",
               "chip_dif_rstmgr_smoketest",

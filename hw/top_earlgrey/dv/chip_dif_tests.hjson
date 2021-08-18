@@ -81,9 +81,9 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_plic_smoketest
+      name: chip_dif_rv_plic_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
+      sw_images: ["sw/device/tests/dif_rv_plic_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
@@ -126,7 +126,7 @@
               "chip_dif_kmac_smoketest",
               "chip_dif_otbn_smoketest",
               "chip_dif_otp_ctrl_smoketest",
-              "chip_dif_plic_smoketest",
+              "chip_dif_rv_plic_smoketest",
               "chip_dif_pwrmgr_smoketest",
               "chip_dif_rv_timer_smoketest",
               "chip_dif_rstmgr_smoketest",

@@ -33,12 +33,6 @@ import pydriller
 from tabulate import tabulate
 from termcolor import colored
 
-# The IP suffix of some DIFs are slightly different than the IP directory name
-# in the hw/ip/ directory, so here is the translation for the applicable IPs.
-IP_TRANSLATION = {
-    "plic": "rv_plic",
-}
-
 
 class _OTComponent(Enum):
     """Type of OpenTitan component."""
@@ -81,8 +75,6 @@ class DIFStatus:
             raise ValueError("DIF name should start with \"dif_\".")
         self.dif_name = dif_name
         self.ip = self.dif_name[4:]
-        if self.ip in IP_TRANSLATION:
-            self.ip = IP_TRANSLATION[self.ip]
         self.dif_path = os.path.join(difs_root_path, dif_name)
         self.hw_path = f"hw/ip/{self.ip}"
         # Determine last date DIF and HW was updated.

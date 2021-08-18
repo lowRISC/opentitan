@@ -11,7 +11,7 @@ uart_tx_rx_test_lib = declare_dependency(
       'uart_tx_rx_test.c'],
     dependencies: [
       sw_lib_dif_uart,
-      sw_lib_dif_plic,
+      sw_lib_dif_rv_plic,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_runtime_log,
@@ -34,7 +34,7 @@ gpio_test_lib = declare_dependency(
     sources: ['gpio_test.c'],
     dependencies: [
       sw_lib_dif_gpio,
-      sw_lib_dif_plic,
+      sw_lib_dif_rv_plic,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_pinmux,
@@ -77,7 +77,7 @@ spi_tx_rx_test_lib = declare_dependency(
     sources: ['spi_tx_rx_test.c'],
     dependencies: [
       sw_lib_dif_spi_device,
-      sw_lib_dif_plic,
+      sw_lib_dif_rv_plic,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_runtime_log,

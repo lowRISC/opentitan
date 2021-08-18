@@ -62,7 +62,7 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_plic_smoketest",
+        "name": "dif_rv_plic_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     # TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
@@ -146,7 +146,6 @@ TEST_APPS_SELFCHECKING = [
         "test_dir": "sw/device/silicon_creator/testing",
         # Not running on sim_verilator because this test takes a long time to complete.
         "targets": ["fpga_cw310", "fpga_nexysvideo"],
-
     },
     {
         "name": "sw_silicon_creator_lib_driver_watchdog_functest",
