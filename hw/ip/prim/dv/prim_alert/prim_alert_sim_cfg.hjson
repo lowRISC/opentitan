@@ -17,6 +17,9 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:prim_alert_sim:0.1
 
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/prim/dv/prim_alert/data/prim_alert_testplan.hjson"
+
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
@@ -41,10 +44,10 @@
   // List of test specifications.
   tests: [
     {
-      name: prim_alert_smoke
+      name: prim_async_alert
     }
     {
-      name: prim_fatal_alert
+      name: prim_async_fatal_alert
       build_mode: fatal_alert
     }
     {
@@ -60,7 +63,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["prim_alert_smoke"]
+      tests: ["prim_async_alert"]
     }
   ]
   overrides: [
