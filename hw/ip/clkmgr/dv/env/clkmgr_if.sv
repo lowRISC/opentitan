@@ -59,11 +59,10 @@ interface clkmgr_if (
   } clk_hints_t;
 
   // The CSR values from the testbench side.
-  clk_enables_t        clk_enables;
-  clk_hints_t          clk_hints;
-  clk_hints_t          clk_hints_status;
-  lc_ctrl_pkg::lc_tx_t extclk_sel;
-  logic                jitter_enable;
+  clk_enables_t        clk_enables_csr;
+  clk_hints_t          clk_hints_csr;
+  lc_ctrl_pkg::lc_tx_t extclk_sel_csr;
+  logic                jitter_enable_csr;
 
   // The expected and actual divided io clocks.
   logic                exp_clk_io_div2;
@@ -72,15 +71,15 @@ interface clkmgr_if (
   logic                actual_clk_io_div4;
 
   function automatic void update_extclk_sel(lc_ctrl_pkg::lc_tx_t value);
-    extclk_sel = value;
+    extclk_sel_csr = value;
   endfunction
 
   function automatic void update_clk_enables(clk_enables_t value);
-    clk_enables = value;
+    clk_enables_csr = value;
   endfunction
 
   function automatic void update_clk_hints(clk_hints_t value);
-    clk_hints = value;
+    clk_hints_csr = value;
   endfunction
 
   function automatic void update_idle(bit [NUM_TRANS-1:0] value);
@@ -109,6 +108,10 @@ interface clkmgr_if (
 
   function automatic logic get_clk_status();
     return pwr_o.clk_status;
+  endfunction
+
+  function automatic void update_jitter_enable(bit value);
+    jitter_enable_csr = value;
   endfunction
 
   function automatic void update_exp_clk_io_divs(logic exp_div2_value, logic actual_div2_value,
@@ -145,9 +148,11 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
   always @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
-      clk_enable_div4_ffs <= {clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div4_peri_en};
+      clk_enable_div4_ffs <= {
+        clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div4_peri_en
+      };
       clk_hint_otbn_div4_ffs <= {
-        clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints[TransOtbnIoDiv4]
+        clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints_csr[TransOtbnIoDiv4]
       };
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end else begin
@@ -167,8 +172,10 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div2_ffs;
   always @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
-      clk_enable_div2_ffs <= {clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div2_peri_en};
-      ip_clk_en_div2_ffs  <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      clk_enable_div2_ffs <= {
+        clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
+      };
+      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end else begin
       clk_enable_div2_ffs <= '0;
       ip_clk_en_div2_ffs  <= '0;
@@ -183,7 +190,7 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_ffs;
   always @(posedge clocks_o.clk_io_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
-      clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_peri_en};
+      clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_peri_en};
       ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end else begin
       clk_enable_io_ffs <= '0;
@@ -199,7 +206,7 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_usb_ffs;
   always @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n) begin
     if (rst_usb_n) begin
-      clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables.usb_peri_en};
+      clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.usb_peri_en};
       ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end else begin
       clk_enable_usb_ffs <= '0;
@@ -216,7 +223,7 @@ interface clkmgr_if (
   logic [PIPELINE_DEPTH-1:0]                trans_clk_en_ffs;
   always @(posedge clocks_o.clk_main_powerup or negedge rst_main_n) begin
     if (rst_main_n) begin
-      clk_hints_ffs <= {clk_hints_ffs[PIPELINE_DEPTH-2:0], clk_hints};
+      clk_hints_ffs <= {clk_hints_ffs[PIPELINE_DEPTH-2:0], clk_hints_csr};
       trans_clk_en_ffs <= {trans_clk_en_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
     end else begin
       clk_hints_ffs <= '0;
@@ -229,13 +236,6 @@ interface clkmgr_if (
     input idle_i;
   endclocking
 
-  clocking extclk_cb @(posedge clk);
-    input extclk_sel;
-    input lc_dft_en_i;
-    input ast_clk_byp_req;
-    input lc_clk_byp_req;
-  endclocking
-
   // Pipelining and clocking block for external clock bypass. The divisor control is
   // triggered by an ast ack, which goes through synchronizers.
   logic step_down_ff;
@@ -246,8 +246,14 @@ interface clkmgr_if (
       step_down_ff <= 1'b0;
     end
   end
-  clocking step_down_cb @(posedge clk);
+
+  clocking clk_cb @(posedge clk);
+    input extclk_sel_csr;
+    input lc_dft_en_i;
+    input ast_clk_byp_req;
+    input lc_clk_byp_req;
     input step_down = step_down_ff;
+    input jitter_enable_csr;
   endclocking
 
   clocking div_clks_cb @(posedge clocks_o.clk_io_powerup);
