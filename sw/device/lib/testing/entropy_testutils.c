@@ -4,41 +4,41 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
-#include "sw/device/lib/dif/dif_entropy.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/check.h"
 
 #include "edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static void setup_entropy_src(void) {
-  const dif_entropy_params_t params = {
+  const dif_entropy_src_params_t params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
   };
-  dif_entropy_t entropy;
-  CHECK(dif_entropy_init(params, &entropy) == kDifEntropyOk);
+  dif_entropy_src_t entropy;
+  CHECK(dif_entropy_src_init(params, &entropy) == kDifEntropySrcOk);
 
   // Disable entropy for test purpose, as it has been turned on by ROM
-  CHECK(dif_entropy_disable(&entropy) == kDifEntropyOk);
+  CHECK(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
 
-  const dif_entropy_config_t config = {
-      .mode = kDifEntropyModeLfsr,
+  const dif_entropy_src_config_t config = {
+      .mode = kDifEntropySrcModeLfsr,
       .tests =
           {
-              [kDifEntropyTestRepCount] = false,
-              [kDifEntropyTestAdaptiveProportion] = false,
-              [kDifEntropyTestBucket] = false,
-              [kDifEntropyTestMarkov] = false,
-              [kDifEntropyTestMailbox] = false,
-              [kDifEntropyTestVendorSpecific] = false,
+              [kDifEntropySrcTestRepCount] = false,
+              [kDifEntropySrcTestAdaptiveProportion] = false,
+              [kDifEntropySrcTestBucket] = false,
+              [kDifEntropySrcTestMarkov] = false,
+              [kDifEntropySrcTestMailbox] = false,
+              [kDifEntropySrcTestVendorSpecific] = false,
           },
       // this field needs to manually toggled by software.  Disable for now
       .reset_health_test_registers = false,
-      .single_bit_mode = kDifEntropySingleBitModeDisabled,
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = false,
       .sample_rate = 2,
       .lfsr_seed = 0,
   };
-  CHECK(dif_entropy_configure(&entropy, config) == kDifEntropyOk);
+  CHECK(dif_entropy_src_configure(&entropy, config) == kDifEntropySrcOk);
 }
 
 static void setup_csrng(void) {

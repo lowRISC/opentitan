@@ -598,12 +598,12 @@ test('dif_aon_timer_unittest', executable(
 )
 
 # Entropy Source
-sw_lib_dif_entropy = declare_dependency(
+sw_lib_dif_entropy_src = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_entropy',
+    'sw_lib_dif_entropy_src',
     sources: [
-      hw_ip_entropy_reg_h,
-      'dif_entropy.c',
+      hw_ip_entropy_src_reg_h,
+      'dif_entropy_src.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -612,12 +612,12 @@ sw_lib_dif_entropy = declare_dependency(
   )
 )
 
-test('dif_entropy_unittest', executable(
-    'dif_entropy_unittest',
+test('dif_entropy_src_unittest', executable(
+    'dif_entropy_src_unittest',
     sources: [
-      hw_ip_entropy_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_entropy.c',
-      'dif_entropy_unittest.cc',
+      hw_ip_entropy_src_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_entropy_src.c',
+      'dif_entropy_src_unittest.cc',
     ],
     dependencies: [
       sw_vendor_gtest,

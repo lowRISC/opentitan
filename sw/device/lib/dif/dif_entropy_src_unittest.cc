@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_entropy.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
@@ -10,35 +10,35 @@
 
 #include "entropy_src_regs.h"  // Generated
 
-namespace dif_entropy_unittest {
+namespace dif_entropy_src_unittest {
 namespace {
 
-class DifEntropyTest : public testing::Test, public mock_mmio::MmioTest {
+class DifEntropySrcTest : public testing::Test, public mock_mmio::MmioTest {
  protected:
-  const dif_entropy_params_t params_ = {.base_addr = dev().region()};
-  const dif_entropy_t entropy_ = {
+  const dif_entropy_src_params_t params_ = {.base_addr = dev().region()};
+  const dif_entropy_src_t entropy_ = {
       .params = {.base_addr = dev().region()},
   };
 };
 
-class InitTest : public DifEntropyTest {};
+class InitTest : public DifEntropySrcTest {};
 
 TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_entropy_init(params_, nullptr), kDifEntropyBadArg);
+  EXPECT_EQ(dif_entropy_src_init(params_, nullptr), kDifEntropySrcBadArg);
 }
 
 TEST_F(InitTest, Init) {
-  dif_entropy_t entropy;
-  EXPECT_EQ(dif_entropy_init(params_, &entropy), kDifEntropyOk);
+  dif_entropy_src_t entropy;
+  EXPECT_EQ(dif_entropy_src_init(params_, &entropy), kDifEntropySrcOk);
 }
 
-class ConfigTest : public DifEntropyTest {
+class ConfigTest : public DifEntropySrcTest {
  protected:
-  dif_entropy_config_t config_ = {
-      .mode = kDifEntropyModeLfsr,
+  dif_entropy_src_config_t config_ = {
+      .mode = kDifEntropySrcModeLfsr,
       .tests = {0},
       .reset_health_test_registers = false,
-      .single_bit_mode = kDifEntropySingleBitModeDisabled,
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = false,
       .fips_mode = false,
       .test_config = {0},
@@ -48,17 +48,18 @@ class ConfigTest : public DifEntropyTest {
 };
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_entropy_configure(nullptr, {}), kDifEntropyBadArg);
+  EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifEntropySrcBadArg);
 }
 
 TEST_F(ConfigTest, LfsrSeedBadArg) {
   config_.lfsr_seed = 16;
-  EXPECT_EQ(dif_entropy_configure(&entropy_, config_), kDifEntropyBadArg);
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_),
+            kDifEntropySrcBadArg);
 }
 
 struct ConfigParams {
-  dif_entropy_mode_t mode;
-  dif_entropy_single_bit_mode_t single_bit_mode;
+  dif_entropy_src_mode_t mode;
+  dif_entropy_src_single_bit_mode_t single_bit_mode;
   bool route_to_firmware;
   bool reset_health_test_registers;
 
@@ -103,50 +104,56 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
           {ENTROPY_SRC_CONF_EXTHT_ENABLE_BIT, false},
       });
 
-  EXPECT_EQ(dif_entropy_configure(&entropy_, config_), kDifEntropyOk);
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_), kDifEntropySrcOk);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ConfigTestAllParams, ConfigTestAllParams,
     testing::Values(
         // Test entropy mode.
-        ConfigParams{kDifEntropyModeDisabled, kDifEntropySingleBitModeDisabled,
-                     false, 0, false, 0, 0},
-        ConfigParams{kDifEntropyModePtrng, kDifEntropySingleBitModeDisabled,
-                     false, false, 1, false, 0, 0},
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitModeDisabled,
-                     false, false, 2, false, 0, 4},
+        ConfigParams{kDifEntropySrcModeDisabled,
+                     kDifEntropySrcSingleBitModeDisabled, false, 0, false, 0,
+                     0},
+        ConfigParams{kDifEntropySrcModePtrng,
+                     kDifEntropySrcSingleBitModeDisabled, false, false, 1,
+                     false, 0, 0},
+        ConfigParams{kDifEntropySrcModeLfsr,
+                     kDifEntropySrcSingleBitModeDisabled, false, false, 2,
+                     false, 0, 4},
         // Test route_to_firmware
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitModeDisabled,
-                     true, false, 2, false, 0, 4},
+        ConfigParams{kDifEntropySrcModeLfsr,
+                     kDifEntropySrcSingleBitModeDisabled, true, false, 2, false,
+                     0, 4},
         // Test reset_health_test_registers
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitModeDisabled,
-                     true, true, 2, false, 0, 4},
+        ConfigParams{kDifEntropySrcModeLfsr,
+                     kDifEntropySrcSingleBitModeDisabled, true, true, 2, false,
+                     0, 4},
         // Test single_bit_mode
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitMode0, true, true,
-                     2, true, 0, 4},
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitMode1, true, true,
-                     2, true, 1, 4},
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitMode2, true, true,
-                     2, true, 2, 4},
-        ConfigParams{kDifEntropyModeLfsr, kDifEntropySingleBitMode3, true, true,
-                     2, true, 3, 4}));
+        ConfigParams{kDifEntropySrcModeLfsr, kDifEntropySrcSingleBitMode0, true,
+                     true, 2, true, 0, 4},
+        ConfigParams{kDifEntropySrcModeLfsr, kDifEntropySrcSingleBitMode1, true,
+                     true, 2, true, 1, 4},
+        ConfigParams{kDifEntropySrcModeLfsr, kDifEntropySrcSingleBitMode2, true,
+                     true, 2, true, 2, 4},
+        ConfigParams{kDifEntropySrcModeLfsr, kDifEntropySrcSingleBitMode3, true,
+                     true, 2, true, 3, 4}));
 
-class ReadTest : public DifEntropyTest {};
+class ReadTest : public DifEntropySrcTest {};
 
 TEST_F(ReadTest, EntropyBadArg) {
   uint32_t word;
-  EXPECT_EQ(dif_entropy_read(nullptr, &word), kDifEntropyBadArg);
+  EXPECT_EQ(dif_entropy_src_read(nullptr, &word), kDifEntropySrcBadArg);
 }
 
 TEST_F(ReadTest, WordBadArg) {
-  EXPECT_EQ(dif_entropy_read(&entropy_, nullptr), kDifEntropyBadArg);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_, nullptr), kDifEntropySrcBadArg);
 }
 
 TEST_F(ReadTest, ReadDataUnAvailable) {
   EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET, 0);
   uint32_t got_word;
-  EXPECT_EQ(dif_entropy_read(&entropy_, &got_word), kDifEntropyDataUnAvailable);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_, &got_word),
+            kDifEntropySrcDataUnAvailable);
 }
 
 TEST_F(ReadTest, ReadOk) {
@@ -160,9 +167,9 @@ TEST_F(ReadTest, ReadOk) {
                  {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, true}});
 
   uint32_t got_word;
-  EXPECT_EQ(dif_entropy_read(&entropy_, &got_word), kDifEntropyOk);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_, &got_word), kDifEntropySrcOk);
   EXPECT_EQ(got_word, expected_word);
 }
 
 }  // namespace
-}  // namespace dif_entropy_unittest
+}  // namespace dif_entropy_src_unittest

@@ -262,20 +262,20 @@ sw_tests += {
   }
 }
 
-dif_entropy_smoketest_lib = declare_dependency(
+dif_entropy_src_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_entropy_smoketest_lib',
-    sources: ['dif_entropy_smoketest.c'],
+    'dif_entropy_src_smoketest_lib',
+    sources: ['dif_entropy_src_smoketest.c'],
     dependencies: [
-      sw_lib_dif_entropy,
+      sw_lib_dif_entropy_src,
       sw_lib_mmio,
       sw_lib_runtime_log,
     ],
   ),
 )
 sw_tests += {
-  'dif_entropy_smoketest': {
-    'library': dif_entropy_smoketest_lib,
+  'dif_entropy_src_smoketest': {
+    'library': dif_entropy_src_smoketest_lib,
   }
 }
 

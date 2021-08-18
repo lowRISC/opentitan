@@ -115,8 +115,8 @@
     //  sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
     // }
     {
-      name: dif_entropy_smoketest
-      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
+      name: dif_entropy_src_smoketest
+      sw_images: ["sw/device/tests/dif_entropy_src_smoketest:1"]
     }
     {
       name: dif_gpio_smoketest

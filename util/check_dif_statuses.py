@@ -37,7 +37,6 @@ from termcolor import colored
 # in the hw/ip/ directory, so here is the translation for the applicable IPs.
 IP_TRANSLATION = {
     "plic": "rv_plic",
-    "entropy": "entropy_src",
 }
 
 

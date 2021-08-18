@@ -26,7 +26,7 @@ sw_lib_testing_entropy_testutils_lib = declare_dependency(
     dependencies: [
       top_earlgrey,
       sw_lib_mmio,
-      sw_lib_dif_entropy,
+      sw_lib_dif_entropy_src,
       sw_lib_dif_csrng,
       top_earlgrey,
     ],
