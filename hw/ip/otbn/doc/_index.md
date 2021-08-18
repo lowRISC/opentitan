@@ -523,17 +523,21 @@ The LFSR state is advanced every cycle when OTBN is running.
 
 OTBN can be in different operational states.
 OTBN is *busy* for as long it is performing an operation.
+OTBN is *locked* if a fatal error was observed.
 Otherwise OTBN is *idle*.
 
 The current operational state is reflected in the {{< regref "STATUS" >}} register.
 - If OTBN is idle, the {{< regref "STATUS" >}} register is set to `IDLE`.
 - If OTBN is busy, the {{< regref "STATUS" >}} register is set to one of the values starting with `BUSY_`.
+- If OTBN is locked, the {{< regref "STATUS" >}} register is set to `LOCKED`.
 
 OTBN transitions into the busy state as result of host software [issuing a command](#design-details-commands); OTBN is then said to perform an operation.
 OTBN transitions out of the busy state whenever the operation has completed.
 In the {{< regref "STATUS" >}} register the different `BUSY_*` values represent the operation that is currently being performed.
 
-A transition from busy to idle is signaled by the `done` interrupt ({{< regref "INTR_STATE.done" >}}).
+A transition out of the busy state is signaled by the `done` interrupt ({{< regref "INTR_STATE.done" >}}).
+
+The locked state is a terminal state; transitioning out of it requires an OTBN reset.
 
 ### Operations and Commands {#design-details-commands}
 
@@ -557,7 +561,7 @@ The software then runs to completion, without the ability for host software to i
 - From this point on, all subsequent instructions are executed according to their semantics until either an {{< otbnInsnRef "ECALL" >}} instruction is executed, or an error is detected.
 - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
 - The {{< regref "ERR_BITS" >}} register is set to indicate either a successful execution (value `0`), or to indicate the error that was observed (a non-zero value).
-- OTBN transitions into the [idle state](#design-details-operational-states).
+- OTBN transitions into the [idle state](#design-details-operational-states) (in case of a successful execution, or a recoverable error) or the locked state (in case of a fatal error).
   This transition is signaled by raising the `done` interrupt ({{< regref "INTR_STATE.done" >}}), and reflected in the {{< regref "STATUS" >}} register.
 
 ### Error Handling and Reporting {#design-details-error-handling-and-reporting}
@@ -603,6 +607,7 @@ The following actions are taken when OTBN detects a fatal error:
    - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
    - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
    - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}}.
+   - The {{< regref "STATUS" >}} register is set to `LOCKED`.
 3. A [fatal alert]({{< relref "#alerts" >}}) is raised.
 
 Note that OTBN can detect some errors even when it isn't running.

@@ -62,7 +62,8 @@ package otbn_pkg;
     StatusIdle            = 8'h00,
     StatusBusyExecute     = 8'h01,
     StatusBusySecWipeDmem = 8'h02,
-    StatusBusySecWipeImem = 8'h03
+    StatusBusySecWipeImem = 8'h03,
+    StatusLocked          = 8'hFF
   } status_e;
 
   // Error bits
