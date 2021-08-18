@@ -310,7 +310,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
 
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
     const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
-    const dif_lc_ctrl_token_t *token) {
+    const dif_lc_ctrl_token_t *token, const dif_lc_ctrl_settings_t *settings) {
   if (lc == NULL) {
     return kDifLcCtrlMutexBadArg;
   }
@@ -385,6 +385,27 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
       return kDifLcCtrlMutexBadArg;
   }
 
+  uint32_t ctrl_reg = 0;
+  if (settings != NULL) {
+    switch (settings->clock_select) {
+      case kDifLcCtrlInternalClockEn:
+        ctrl_reg = bitfield_bit32_write(
+            ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
+        break;
+      case kDifLcCtrlExternalClockEn:
+        ctrl_reg = bitfield_bit32_write(
+            ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, true);
+        break;
+
+      default:
+        return kDifLcCtrlMutexBadArg;
+    }
+  } else {
+    // Default to internal clock
+    ctrl_reg = bitfield_bit32_write(
+        ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
+  }
+
   uint32_t busy = mmio_region_read32(lc->params.base_addr,
                                      LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
   if (busy == 0) {
@@ -394,6 +415,10 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
   // Set the target for the transition.
   mmio_region_write32(lc->params.base_addr,
                       LC_CTRL_TRANSITION_TARGET_REG_OFFSET, target);
+
+  // Program the clock selection.
+  mmio_region_write32(lc->params.base_addr, LC_CTRL_TRANSITION_CTRL_REG_OFFSET,
+                      ctrl_reg);
 
   // Fill in a token, if necessary.
   if (token != NULL) {
@@ -411,8 +436,8 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
   return kDifLcCtrlMutexOk;
 }
 
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
-                                                        uint32_t settings) {
+dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
+    const dif_lc_ctrl_t *lc, uint32_t settings) {
   if (lc == NULL) {
     return kDifLcCtrlMutexBadArg;
   }
@@ -423,22 +448,20 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_test_reg(const dif_lc_ctrl_t *lc,
     return kDifLcCtrlMutexAlreadyTaken;
   }
 
-  mmio_region_write32(lc->params.base_addr, LC_CTRL_OTP_TEST_CTRL_REG_OFFSET,
-                      settings);
+  mmio_region_write32(lc->params.base_addr,
+                      LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, settings);
 
   return kDifLcCtrlMutexOk;
 }
 
-dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_test_reg(const dif_lc_ctrl_t *lc,
-                                                  uint32_t *settings) {
+dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_vendor_test_reg(
+    const dif_lc_ctrl_t *lc, uint32_t *settings) {
   if (lc == NULL || settings == NULL) {
     return kDifLcCtrlBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(lc->params.base_addr,
-                                    LC_CTRL_OTP_TEST_CTRL_REG_OFFSET);
-
-  *settings = bitfield_field32_read(reg, LC_CTRL_OTP_TEST_CTRL_VAL_FIELD);
+  *settings = mmio_region_read32(lc->params.base_addr,
+                                 LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET);
 
   return kDifLcCtrlOk;
 }

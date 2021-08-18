@@ -564,6 +564,8 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
+  otp_ctrl_pkg::lc_otp_vendor_test_req_t       lc_ctrl_lc_otp_vendor_test_req;
+  otp_ctrl_pkg::lc_otp_vendor_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
@@ -1377,6 +1379,8 @@ module top_earlgrey #(
       .edn_i(edn0_edn_rsp[1]),
       .pwr_otp_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_o(pwrmgr_aon_pwr_otp_rsp),
+      .lc_otp_vendor_test_i(lc_ctrl_lc_otp_vendor_test_req),
+      .lc_otp_vendor_test_o(lc_ctrl_lc_otp_vendor_test_rsp),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_rsp),
       .otp_lc_data_o(otp_ctrl_otp_lc_data),
@@ -1429,6 +1433,8 @@ module top_earlgrey #(
       .esc_scrap_state1_rx_o(alert_handler_esc_rx[2]),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_rsp),
+      .lc_otp_vendor_test_o(lc_ctrl_lc_otp_vendor_test_req),
+      .lc_otp_vendor_test_i(lc_ctrl_lc_otp_vendor_test_rsp),
       .otp_lc_data_i(otp_ctrl_otp_lc_data),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),

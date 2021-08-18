@@ -11,7 +11,8 @@ package lc_ctrl_reg_pkg;
   parameter int CsrLcStateWidth = 5;
   parameter int CsrLcCountWidth = 5;
   parameter int CsrLcIdStateWidth = 2;
-  parameter int CsrOtpTestCtrlWidth = 8;
+  parameter int CsrOtpTestCtrlWidth = 32;
+  parameter int CsrOtpTestStatusWidth = 32;
   parameter int NumDeviceIdWords = 8;
   parameter int NumManufStateWords = 8;
   parameter int NumAlerts = 3;
@@ -49,6 +50,11 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_reg2hw_transition_cmd_reg_t;
 
   typedef struct packed {
+    logic        q;
+    logic        qe;
+  } lc_ctrl_reg2hw_transition_ctrl_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
     logic        qe;
   } lc_ctrl_reg2hw_transition_token_mreg_t;
@@ -59,15 +65,9 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_reg2hw_transition_target_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } val;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } ext_clock;
-  } lc_ctrl_reg2hw_otp_test_ctrl_reg_t;
+    logic [31:0] q;
+    logic        qe;
+  } lc_ctrl_reg2hw_otp_vendor_test_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -111,6 +111,10 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_hw2reg_transition_regwen_reg_t;
 
   typedef struct packed {
+    logic        d;
+  } lc_ctrl_hw2reg_transition_ctrl_reg_t;
+
+  typedef struct packed {
     logic [31:0] d;
   } lc_ctrl_hw2reg_transition_token_mreg_t;
 
@@ -119,13 +123,12 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_hw2reg_transition_target_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [7:0]  d;
-    } val;
-    struct packed {
-      logic        d;
-    } ext_clock;
-  } lc_ctrl_hw2reg_otp_test_ctrl_reg_t;
+    logic [31:0] d;
+  } lc_ctrl_hw2reg_otp_vendor_test_ctrl_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } lc_ctrl_hw2reg_otp_vendor_test_status_reg_t;
 
   typedef struct packed {
     logic [4:0]  d;
@@ -149,22 +152,25 @@ package lc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [165:160]
-    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [159:151]
-    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [150:149]
-    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [148:17]
-    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [16:11]
-    lc_ctrl_reg2hw_otp_test_ctrl_reg_t otp_test_ctrl; // [10:0]
+    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [189:184]
+    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [183:175]
+    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [174:173]
+    lc_ctrl_reg2hw_transition_ctrl_reg_t transition_ctrl; // [172:171]
+    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [170:39]
+    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [38:33]
+    lc_ctrl_reg2hw_otp_vendor_test_ctrl_reg_t otp_vendor_test_ctrl; // [32:0]
   } lc_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [684:675]
-    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [674:667]
-    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [666:666]
-    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [665:538]
-    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [537:533]
-    lc_ctrl_hw2reg_otp_test_ctrl_reg_t otp_test_ctrl; // [532:524]
+    lc_ctrl_hw2reg_status_reg_t status; // [740:731]
+    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [730:723]
+    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [722:722]
+    lc_ctrl_hw2reg_transition_ctrl_reg_t transition_ctrl; // [721:721]
+    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [720:593]
+    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [592:588]
+    lc_ctrl_hw2reg_otp_vendor_test_ctrl_reg_t otp_vendor_test_ctrl; // [587:556]
+    lc_ctrl_hw2reg_otp_vendor_test_status_reg_t otp_vendor_test_status; // [555:524]
     lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [523:519]
     lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [518:514]
     lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [513:512]
@@ -178,31 +184,33 @@ package lc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 7'h 8;
   parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_REGWEN_OFFSET = 7'h c;
   parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_CMD_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] LC_CTRL_OTP_TEST_CTRL_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_STATE_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_ID_STATE_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_0_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_1_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_2_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_3_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_4_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_5_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_0_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_1_OFFSET = 7'h 5c;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_2_OFFSET = 7'h 60;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_3_OFFSET = 7'h 64;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_4_OFFSET = 7'h 68;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_5_OFFSET = 7'h 6c;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_6_OFFSET = 7'h 70;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_7_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_CTRL_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] LC_CTRL_OTP_VENDOR_TEST_CTRL_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] LC_CTRL_OTP_VENDOR_TEST_STATUS_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_STATE_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_ID_STATE_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_0_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_1_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_2_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_3_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_4_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_5_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_0_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_1_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_2_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_3_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_4_OFFSET = 7'h 70;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_5_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_6_OFFSET = 7'h 78;
+  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_7_OFFSET = 7'h 7c;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] LC_CTRL_ALERT_TEST_RESVAL = 3'h 0;
@@ -214,12 +222,14 @@ package lc_ctrl_reg_pkg;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_CMD_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_CTRL_RESVAL = 1'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_0_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_1_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_2_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_3_RESVAL = 32'h 0;
   parameter logic [4:0] LC_CTRL_TRANSITION_TARGET_RESVAL = 5'h 0;
-  parameter logic [16:0] LC_CTRL_OTP_TEST_CTRL_RESVAL = 17'h 0;
+  parameter logic [31:0] LC_CTRL_OTP_VENDOR_TEST_CTRL_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_OTP_VENDOR_TEST_STATUS_RESVAL = 32'h 0;
   parameter logic [4:0] LC_CTRL_LC_STATE_RESVAL = 5'h 0;
   parameter logic [4:0] LC_CTRL_LC_TRANSITION_CNT_RESVAL = 5'h 0;
   parameter logic [1:0] LC_CTRL_LC_ID_STATE_RESVAL = 2'h 0;
@@ -247,12 +257,14 @@ package lc_ctrl_reg_pkg;
     LC_CTRL_CLAIM_TRANSITION_IF,
     LC_CTRL_TRANSITION_REGWEN,
     LC_CTRL_TRANSITION_CMD,
+    LC_CTRL_TRANSITION_CTRL,
     LC_CTRL_TRANSITION_TOKEN_0,
     LC_CTRL_TRANSITION_TOKEN_1,
     LC_CTRL_TRANSITION_TOKEN_2,
     LC_CTRL_TRANSITION_TOKEN_3,
     LC_CTRL_TRANSITION_TARGET,
-    LC_CTRL_OTP_TEST_CTRL,
+    LC_CTRL_OTP_VENDOR_TEST_CTRL,
+    LC_CTRL_OTP_VENDOR_TEST_STATUS,
     LC_CTRL_LC_STATE,
     LC_CTRL_LC_TRANSITION_CNT,
     LC_CTRL_LC_ID_STATE,
@@ -275,37 +287,39 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] LC_CTRL_PERMIT [30] = '{
+  parameter logic [3:0] LC_CTRL_PERMIT [32] = '{
     4'b 0001, // index[ 0] LC_CTRL_ALERT_TEST
     4'b 0011, // index[ 1] LC_CTRL_STATUS
     4'b 0001, // index[ 2] LC_CTRL_CLAIM_TRANSITION_IF
     4'b 0001, // index[ 3] LC_CTRL_TRANSITION_REGWEN
     4'b 0001, // index[ 4] LC_CTRL_TRANSITION_CMD
-    4'b 1111, // index[ 5] LC_CTRL_TRANSITION_TOKEN_0
-    4'b 1111, // index[ 6] LC_CTRL_TRANSITION_TOKEN_1
-    4'b 1111, // index[ 7] LC_CTRL_TRANSITION_TOKEN_2
-    4'b 1111, // index[ 8] LC_CTRL_TRANSITION_TOKEN_3
-    4'b 0001, // index[ 9] LC_CTRL_TRANSITION_TARGET
-    4'b 0111, // index[10] LC_CTRL_OTP_TEST_CTRL
-    4'b 0001, // index[11] LC_CTRL_LC_STATE
-    4'b 0001, // index[12] LC_CTRL_LC_TRANSITION_CNT
-    4'b 0001, // index[13] LC_CTRL_LC_ID_STATE
-    4'b 1111, // index[14] LC_CTRL_DEVICE_ID_0
-    4'b 1111, // index[15] LC_CTRL_DEVICE_ID_1
-    4'b 1111, // index[16] LC_CTRL_DEVICE_ID_2
-    4'b 1111, // index[17] LC_CTRL_DEVICE_ID_3
-    4'b 1111, // index[18] LC_CTRL_DEVICE_ID_4
-    4'b 1111, // index[19] LC_CTRL_DEVICE_ID_5
-    4'b 1111, // index[20] LC_CTRL_DEVICE_ID_6
-    4'b 1111, // index[21] LC_CTRL_DEVICE_ID_7
-    4'b 1111, // index[22] LC_CTRL_MANUF_STATE_0
-    4'b 1111, // index[23] LC_CTRL_MANUF_STATE_1
-    4'b 1111, // index[24] LC_CTRL_MANUF_STATE_2
-    4'b 1111, // index[25] LC_CTRL_MANUF_STATE_3
-    4'b 1111, // index[26] LC_CTRL_MANUF_STATE_4
-    4'b 1111, // index[27] LC_CTRL_MANUF_STATE_5
-    4'b 1111, // index[28] LC_CTRL_MANUF_STATE_6
-    4'b 1111  // index[29] LC_CTRL_MANUF_STATE_7
+    4'b 0001, // index[ 5] LC_CTRL_TRANSITION_CTRL
+    4'b 1111, // index[ 6] LC_CTRL_TRANSITION_TOKEN_0
+    4'b 1111, // index[ 7] LC_CTRL_TRANSITION_TOKEN_1
+    4'b 1111, // index[ 8] LC_CTRL_TRANSITION_TOKEN_2
+    4'b 1111, // index[ 9] LC_CTRL_TRANSITION_TOKEN_3
+    4'b 0001, // index[10] LC_CTRL_TRANSITION_TARGET
+    4'b 1111, // index[11] LC_CTRL_OTP_VENDOR_TEST_CTRL
+    4'b 1111, // index[12] LC_CTRL_OTP_VENDOR_TEST_STATUS
+    4'b 0001, // index[13] LC_CTRL_LC_STATE
+    4'b 0001, // index[14] LC_CTRL_LC_TRANSITION_CNT
+    4'b 0001, // index[15] LC_CTRL_LC_ID_STATE
+    4'b 1111, // index[16] LC_CTRL_DEVICE_ID_0
+    4'b 1111, // index[17] LC_CTRL_DEVICE_ID_1
+    4'b 1111, // index[18] LC_CTRL_DEVICE_ID_2
+    4'b 1111, // index[19] LC_CTRL_DEVICE_ID_3
+    4'b 1111, // index[20] LC_CTRL_DEVICE_ID_4
+    4'b 1111, // index[21] LC_CTRL_DEVICE_ID_5
+    4'b 1111, // index[22] LC_CTRL_DEVICE_ID_6
+    4'b 1111, // index[23] LC_CTRL_DEVICE_ID_7
+    4'b 1111, // index[24] LC_CTRL_MANUF_STATE_0
+    4'b 1111, // index[25] LC_CTRL_MANUF_STATE_1
+    4'b 1111, // index[26] LC_CTRL_MANUF_STATE_2
+    4'b 1111, // index[27] LC_CTRL_MANUF_STATE_3
+    4'b 1111, // index[28] LC_CTRL_MANUF_STATE_4
+    4'b 1111, // index[29] LC_CTRL_MANUF_STATE_5
+    4'b 1111, // index[30] LC_CTRL_MANUF_STATE_6
+    4'b 1111  // index[31] LC_CTRL_MANUF_STATE_7
   };
 
 endpackage

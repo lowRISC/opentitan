@@ -12,9 +12,11 @@ package otp_ctrl_pkg;
   // General Parameters //
   ////////////////////////
 
-  // Number of vendor-specific test CSR bits coming from
+  // Number of vendor-specific test CSR bits coming from and going to
   // the life cycle TAP registers.
-  parameter int OtpTestCtrlWidth = 8;
+  parameter int OtpTestCtrlWidth   = 32;
+  parameter int OtpTestStatusWidth = 32;
+  parameter int OtpTestVectWidth   = 8;
 
   // Width of entropy input
   parameter int EdnDataWidth = 64;
@@ -156,7 +158,6 @@ package otp_ctrl_pkg;
     logic req;
     lc_ctrl_state_pkg::lc_state_e state;
     lc_ctrl_state_pkg::lc_cnt_e   count;
-    logic [OtpTestCtrlWidth-1:0]  otp_test_ctrl;
   } lc_otp_program_req_t;
 
   typedef struct packed {
@@ -174,6 +175,14 @@ package otp_ctrl_pkg;
     logic ack;
     lc_ctrl_state_pkg::lc_token_t hashed_token;
   } lc_otp_token_rsp_t;
+
+  typedef struct packed {
+    logic [OtpTestCtrlWidth-1:0] ctrl;
+  } lc_otp_vendor_test_req_t;
+
+  typedef struct packed {
+    logic [OtpTestStatusWidth-1:0] status;
+  } lc_otp_vendor_test_rsp_t;
 
   ////////////////////////////////
   // Typedefs for Key Broadcast //

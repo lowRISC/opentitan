@@ -38,7 +38,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
 
   // Unused in prim_generic_otp memory.
-  logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_test_ctrl_i;
+  logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0]   otp_vendor_test_ctrl_i;
+  logic [otp_ctrl_pkg::OtpTestStatusWidth-1:0] otp_vendor_test_status_o;
 
   // Connect with lc_prog push_pull interface.
   logic lc_prog_req, lc_prog_err;

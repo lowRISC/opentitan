@@ -15,6 +15,14 @@ waive -rules CLOCK_USE -location {lc_ctrl.sv} \
       -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
       -comment "This is needed such that the clock can be properly controlled during scanmode."
 
+waive -rules CLOCK_USE -location {lc_ctrl.sv} \
+      -msg {'clk_i' is connected to 'prim_lc_sync' port 'clk_i', and used as a clock at tlul_adapter_reg.sv} \
+      -comment "This message arises since the prim_lc_sync module is used in purely combinational mode."
+
 waive -rules RESET_MUX -location {lc_ctrl.sv} \
       -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at dmi_jtag} \
       -comment "This is needed such that the reset can be properly controlled during scanmode."
+
+waive -rules RESET_USE -location {lc_ctrl.sv} \
+      -msg {'rst_ni' is connected to 'prim_lc_sync' port 'rst_ni', and used as an asynchronous reset or set at lc_ctrl} \
+      -comment "This message arises since the prim_lc_sync module is used in purely combinational mode."
