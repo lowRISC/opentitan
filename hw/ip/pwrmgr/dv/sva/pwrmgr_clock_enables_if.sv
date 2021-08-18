@@ -33,7 +33,9 @@ interface pwrmgr_clock_enables_if (
 
   sequence usbActiveTransition_S;
     logic prev_en;
-    (1'b1, prev_en = usb_clk_en_active_i) ##1 usb_clk_en == prev_en;
+    (1'b1,
+    prev_en = usb_clk_en_active_i
+    ) ##1 usb_clk_en == prev_en;
   endsequence
 
   `ASSERT(CoreClkPwrUp_A, transitionUp_S |=> core_clk_en == 1'b1, clk_i, reset_or_disable)

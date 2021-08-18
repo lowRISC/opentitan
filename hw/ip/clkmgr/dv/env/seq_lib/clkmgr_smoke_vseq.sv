@@ -14,12 +14,25 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   task body();
     update_csrs_with_reset_values();
     cfg.clk_rst_vif.wait_clks(10);
+    test_jitter();
     test_peri_clocks();
     test_trans_clocks();
   endtask : body
 
-  // Flips all clk_enables bits from the reset value with all enabled. All is
-  // checked via assertions in clkmgr_if.sv and behavioral code in the scoreboard.
+  // Simply flip the jitter enable CSR. The side-effects are checked in the scoreboard.
+  // This needs to be done outside the various CSR tests, since they update the jitter_enable
+  // CSR, but the scoreboard is disabled for those tests.
+  task test_jitter();
+    csr_wr(.ptr(ral.jitter_enable), .value(1'b1));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(1'b1));
+    // And set it back.
+    cfg.clk_rst_vif.wait_clks(6);
+    csr_wr(.ptr(ral.jitter_enable), .value(1'b0));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(1'b0));
+  endtask
+
+  // Flips all clk_enables bits from the reset value with all enabled. All is checked
+  // via assertions in clkmgr_if.sv and behavioral code in the scoreboard.
   task test_peri_clocks();
     // Flip all bits of clk_enables.
     logic [NUM_PERI-1:0] value = ral.clk_enables.get();

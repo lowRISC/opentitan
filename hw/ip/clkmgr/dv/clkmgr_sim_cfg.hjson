@@ -67,6 +67,10 @@
       name: clkmgr_trans
       uvm_test_seq: clkmgr_trans_vseq
     }
+    {
+      name: clkmgr_clk_status
+      uvm_test_seq: clkmgr_clk_status_vseq
+    }
     // TODO: add more tests here
   ]
 

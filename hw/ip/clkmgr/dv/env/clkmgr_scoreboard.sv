@@ -130,6 +130,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
             join_none
           end
           monitor_clk_dividers();
+          monitor_jitter_en();
         join_none
       end
     join_none
@@ -279,7 +280,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task monitor_ast_clk_byp();
     lc_tx_t prev_lc_clk_byp_req = Off;
     forever
-      @cfg.clkmgr_vif.extclk_cb begin
+      @cfg.clkmgr_vif.clk_cb begin
         if (cfg.clkmgr_vif.lc_clk_byp_req != prev_lc_clk_byp_req) begin
           `uvm_info(`gfn, $sformatf(
                     "Got lc_clk_byp_req %s", cfg.clkmgr_vif.lc_clk_byp_req == On ? "On" : "Off"),
@@ -287,15 +288,15 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if (((cfg.clkmgr_vif.extclk_cb.extclk_sel == On) &&
-               (cfg.clkmgr_vif.extclk_cb.lc_dft_en_i == On)) ||
-              (cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req == On)) begin
+          if (((cfg.clkmgr_vif.clk_cb.extclk_sel_csr == On) &&
+               (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) ||
+              (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On)) begin
             `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On, "Expected ast_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
-            cov.extclk_cg.sample(
-                cfg.clkmgr_vif.extclk_cb.extclk_sel, cfg.clkmgr_vif.extclk_cb.lc_dft_en_i,
-                cfg.clkmgr_vif.extclk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_sel_csr,
+                                 cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
+                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
           end
         end
       end
@@ -323,9 +324,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("Reset divided clocks: %0s", dividers.show()), UVM_MEDIUM)
         end
       forever
-        @cfg.clkmgr_vif.step_down_cb begin : handle_divider_step_change
+        @cfg.clkmgr_vif.clk_cb begin : handle_divider_step_change
           clock_dividers::div_step_e div_step;
-          bit step_down = cfg.clkmgr_vif.step_down_cb.step_down;
+          bit step_down = cfg.clkmgr_vif.clk_cb.step_down;
           #0;
 
           step_down &= (cfg.clkmgr_vif.scanmode_i != On);
@@ -405,6 +406,31 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     join
   endtask
 
+  task monitor_jitter_en();
+    fork
+      forever
+        @cfg.clkmgr_vif.clk_cb begin
+          if (cfg.clk_rst_vif.rst_n) begin
+            @cfg.clkmgr_vif.jitter_enable_csr begin
+              cfg.clk_rst_vif.wait_clks(2);
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+                           "Mismatching jitter enable output")
+            end
+          end
+        end
+      forever
+        @cfg.clkmgr_vif.clk_cb begin
+          if (cfg.clk_rst_vif.rst_n) begin
+            @cfg.clkmgr_vif.jitter_en_o begin
+              cfg.clk_rst_vif.wait_clks(2);
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+                           "Mismatching jitter enable output")
+            end
+          end
+        end
+    join
+  endtask
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
     bit            do_read_check = 1'b1;
@@ -464,6 +490,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "jitter_enable": begin
+        if (addr_phase_write) begin
+          cfg.clkmgr_vif.update_jitter_enable(item.a_data);
+        end
       end
       "clk_enables": begin
         if (addr_phase_write) begin

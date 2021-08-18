@@ -21,6 +21,7 @@
             - Clears each unit's `clk_hints` bit, which has no effect until
               the unit becomes idle.
             - Sets the unit's `idle_i` bit, which should disable the clock.
+            - Writes both values of the `jitter_enable` CSR.
 
             **Stimulus**:
             - CSR writes to `clk_enables` and `clk_hints`.
@@ -36,6 +37,8 @@
               - If the hint disables it and the unit is idle, the clock stops.
             - For transactional units the CSR `clk_hints_status` is checked
               to correspond to `clk_hints` once the units are idle.
+            - Check in scoreboard the `jitter_en_o` output tracks updates of the
+              `jitter_enable` CSR.
             '''
       milestone: V1
       tests: ["clkmgr_smoke"]
@@ -137,40 +140,45 @@
     }
     {
       name: clk_status
-      desc: '''Test clk_status output.
+      desc: '''
+            This tests the `pwr_o.clk_status` output port.
 
-            The clk_status is set in response to ip_clk_en. Of particular
-            interest is the case where the usb clock is disabled by pwrmgr in
-            active state. When a low power transition occurs it is possible
-            clk_status may not be set to all off. See
-            https://github.com/lowRISC/opentitan/issues/6504.
+            The `pwr_o.clk_status` output must track the `pwr_i.ip_clk_en`
+            input once the clock outputs are enabled when ip_clk_en is active,
+            or disabled when ip_clk_en goes inactive.
 
             **Stimulus**:
-            - Send low transition on ip_clk_en with the usb clock disabled.
+            - Randomize the `pwr_i.ip_clk_en` setting.
+            - Randomize the various pwrmgr clock controls per settings in
+              the pwrmgr `control` CSR.
+            - This will trigger cases where the usb clock is inactive with
+              `ip_clk_en` enabled.
 
             **Check**:
-            - The clk_status eventually drops.
+            - The sequence checks that `pwr_o.clk_status` tracks
+              `pwr_i.ip_clk_en`.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_clk_status"]
     }
     {
       name: jitter
       desc: '''
             This tests the jitter functionality.
 
-            The jitter functionality is implemented by the AST block,
-            but controlled by the `jitter` CSR in this block. This CSR
+            The jitter functionality is implemented by the AST block, but
+            controlled by the `jitter_enable` CSR in this block. This CSR
             directly drives the `jitter_en_o` output pin.
 
             **Stimulus**:
-            - CSR write to `jitter`.
+            - CSR write to `jitter_enable`.
 
             **Check**:
-            - The `jitter_en_o` output pin reflects the `jitter` CSR.
+            - The `jitter_en_o` output pin reflects the `jitter_enable` CSR.
+              Test is implemented in the scoreboard, and runs always.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_smoke"]
     }
     {
       name: stress
