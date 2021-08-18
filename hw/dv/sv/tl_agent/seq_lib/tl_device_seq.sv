@@ -78,7 +78,6 @@ class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
               rsp.d_opcode == tlul_pkg::AccessAck;
             }
             rsp.d_size == rsp.a_size;
-            rsp.d_user == '0; // TODO: Not defined yet, tie it to zero
             rsp.d_source == rsp.a_source;
             d_error dist {0 :/ (100 - d_error_pct), 1 :/ d_error_pct};
         })) begin
