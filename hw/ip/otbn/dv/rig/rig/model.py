@@ -644,8 +644,7 @@ class Model:
     def _inc_gpr(self,
                  gpr: int,
                  gpr_val: Optional[int],
-                 delta: int,
-                 mask: int) -> None:
+                 delta: int) -> None:
         '''Mark gpr as having a value and increment it if known
 
         This passes update=False to self.write_reg: it should be used for
@@ -653,6 +652,7 @@ class Model:
         instruction.
 
         '''
+        mask = (1 << 32) - 1
         new_val = (gpr_val + delta) & mask if gpr_val is not None else None
         self.write_reg('gpr', gpr, new_val, False)
 
@@ -699,9 +699,9 @@ class Model:
             self.write_reg('wdr', grd_val & 31, None, False)
 
         if grs1_inc:
-            self._inc_gpr(grs1, grs1_val, 32, (1 << 32) - 1)
+            self._inc_gpr(grs1, grs1_val, 32)
         elif grd_inc:
-            self._inc_gpr(grd, grd_val, 1, 31)
+            self._inc_gpr(grd, grd_val, 1)
 
     def update_for_bnsid(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.SID'''
@@ -738,9 +738,9 @@ class Model:
         self._generic_update_for_insn(prog_insn)
 
         if grs1_inc:
-            self._inc_gpr(grs1, grs1_val, 32, (1 << 32) - 1)
+            self._inc_gpr(grs1, grs1_val, 32)
         elif grs2_inc:
-            self._inc_gpr(grs2, grs2_val, 1, 31)
+            self._inc_gpr(grs2, grs2_val, 1)
 
     def update_for_bnmovr(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.MOVR'''
@@ -777,9 +777,9 @@ class Model:
             self.write_reg('wdr', grd_val & 31, None, False)
 
         if grd_inc:
-            self._inc_gpr(grd, grd_val, 1, 31)
+            self._inc_gpr(grd, grd_val, 1)
         elif grs_inc:
-            self._inc_gpr(grs, grs_val, 1, 31)
+            self._inc_gpr(grs, grs_val, 1)
 
     def update_for_bnxor(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.XOR
