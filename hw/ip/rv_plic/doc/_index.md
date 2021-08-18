@@ -228,7 +228,7 @@ void interrupt_service() {
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_plic.h" >}}
+{{< dif_listing "sw/device/lib/dif/dif_rv_plic.h" >}}
 
 ## Registers
 

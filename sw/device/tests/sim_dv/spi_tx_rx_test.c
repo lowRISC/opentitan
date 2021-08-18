@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_plic.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
@@ -20,7 +20,7 @@
 #define SPI_DEVICE_NUM_IRQS 6
 
 static const uint16_t kFifoLen = 0x400;
-static dif_plic_t plic0;
+static dif_rv_plic_t plic0;
 static dif_spi_device_t spi_device;
 
 // A set of bytes to be send out by spi_device.
@@ -69,10 +69,10 @@ static volatile bool fired_irqs[SPI_DEVICE_NUM_IRQS];
  */
 void handler_irq_external(void) {
   // Find which interrupt fired at PLIC by claiming it.
-  dif_plic_irq_id_t plic_irq_id;
-  CHECK(dif_plic_irq_claim(&plic0, kTopEarlgreyPlicTargetIbex0, &plic_irq_id) ==
-            kDifPlicOk,
-        "dif_plic_irq_claim failed");
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK(dif_rv_plic_irq_claim(&plic0, kTopEarlgreyPlicTargetIbex0,
+                              &plic_irq_id) == kDifRvPlicOk,
+        "dif_rv_plic_irq_claim failed");
 
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
@@ -129,9 +129,9 @@ void handler_irq_external(void) {
         "dif_spi_device_irq_state_clear failed");
 
   // Complete the IRQ at PLIC.
-  CHECK(dif_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
-                              plic_irq_id) == kDifPlicOk,
-        "dif_plic_irq_complete failed");
+  CHECK(dif_rv_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
+                                 plic_irq_id) == kDifRvPlicOk,
+        "dif_rv_plic_irq_complete failed");
 }
 
 /**
@@ -193,91 +193,94 @@ static void spi_device_init_with_irqs(mmio_region_t base_addr,
 /**
  * Initializes PLIC and enables the relevant SPI DEVICE interrupts.
  */
-static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
+static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   LOG_INFO("Initializing the PLIC.");
 
-  CHECK(dif_plic_init((dif_plic_params_t){.base_addr = base_addr}, plic) ==
-            kDifPlicOk,
-        "dif_plic_init failed");
+  CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
+                         plic) == kDifRvPlicOk,
+        "dif_rv_plic_init failed");
 
   // Enable SPI_DEVICE interrupts at PLIC as edge triggered.
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
-                                 kDifPlicIrqTriggerEdge) == kDifPlicOk,
-        "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
-                                 kDifPlicIrqTriggerEdge) == kDifPlicOk,
-        "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
-                                 kDifPlicIrqTriggerEdge) == kDifPlicOk,
-        "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
-                                 kDifPlicIrqTriggerEdge) == kDifPlicOk,
-        "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
-                                 kDifPlicIrqTriggerEdge) == kDifPlicOk,
-        "dif_plic_irq_set_trigger failed");
-  CHECK(
-      dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
-                               kDifPlicIrqTriggerEdge) == kDifPlicOk,
-      "dif_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic,
+                                    kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
+  CHECK(dif_rv_plic_irq_set_trigger(plic,
+                                    kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
+                                    kDifRvPlicIrqTriggerEdge) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_trigger failed");
 
   // Set the priority of SPI DEVICE interrupts at PLIC to be >=1 (so ensure the
   // target does get interrupted).
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
-                                  kDifPlicMaxPriority) == kDifPlicOk,
-        "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
-                                  kDifPlicMaxPriority) == kDifPlicOk,
-        "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
-                                  kDifPlicMaxPriority) == kDifPlicOk,
-        , "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
-                                  kDifPlicMaxPriority) == kDifPlicOk,
-        "dif_plic_irq_set_priority failed");
-  CHECK(
-      dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
-                                kDifPlicMaxPriority) == kDifPlicOk,
-      "dif_plic_irq_set_priority failed");
-  CHECK(
-      dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
-                                kDifPlicMaxPriority) == kDifPlicOk,
-      "dif_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        , "dif_rv_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic,
+                                     kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_priority failed");
+  CHECK(dif_rv_plic_irq_set_priority(plic,
+                                     kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
+                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_priority failed");
 
   // Set the threshold for the Ibex to 0.
-  CHECK(dif_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0) ==
-            kDifPlicOk,
-        "dif_plic_target_set_threshold failed");
+  CHECK(dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0,
+                                         0x0) == kDifRvPlicOk,
+        "dif_rv_plic_target_set_threshold failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
-                                 kTopEarlgreyPlicTargetIbex0,
-                                 kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxf,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
-                                 kTopEarlgreyPlicTargetIbex0,
-                                 kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxlvl,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
-                                 kTopEarlgreyPlicTargetIbex0,
-                                 kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceTxlvl,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
-                                 kTopEarlgreyPlicTargetIbex0,
-                                 kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxerr,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
-                                 kTopEarlgreyPlicTargetIbex0,
-                                 kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic,
+                                    kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(
-            plic, kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
-            kTopEarlgreyPlicTargetIbex0, kDifPlicToggleEnabled) == kDifPlicOk,
-        "dif_plic_irq_set_enabled failed");
+  CHECK(dif_rv_plic_irq_set_enabled(plic,
+                                    kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow,
+                                    kTopEarlgreyPlicTargetIbex0,
+                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
+        "dif_rv_plic_irq_set_enabled failed");
 }
 
 static bool exp_irqs_fired(void) {

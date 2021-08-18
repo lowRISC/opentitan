@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-dif_plic_smoketest_lib = declare_dependency(
+dif_rv_plic_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_plic_smoketest_lib',
-    sources: ['dif_plic_smoketest.c'],
+    'dif_rv_plic_smoketest_lib',
+    sources: ['dif_rv_plic_smoketest.c'],
     dependencies: [
       sw_lib_dif_uart,
-      sw_lib_dif_plic,
+      sw_lib_dif_rv_plic,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_runtime_log,
@@ -18,8 +18,8 @@ dif_plic_smoketest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_plic_smoketest': {
-    'library': dif_plic_smoketest_lib,
+  'dif_rv_plic_smoketest': {
+    'library': dif_rv_plic_smoketest_lib,
   }
 }
 

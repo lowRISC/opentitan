@@ -112,13 +112,13 @@ test('dif_uart_unittest', executable(
   suite: 'dif',
 )
 
-# PLIC DIF library (dif_plic)
-sw_lib_dif_plic = declare_dependency(
+# PLIC DIF library (dif_rv_plic)
+sw_lib_dif_rv_plic = declare_dependency(
   link_with: static_library(
-    'dif_plic_ot',
+    'dif_rv_plic_ot',
     sources: [
       hw_top_earlgrey_rv_plic_reg_h,
-      'dif_plic.c',
+      'dif_rv_plic.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -127,12 +127,12 @@ sw_lib_dif_plic = declare_dependency(
   )
 )
 
-test('dif_plic_unittest', executable(
-    'dif_plic_unittest',
+test('dif_rv_plic_unittest', executable(
+    'dif_rv_plic_unittest',
     sources: [
       hw_top_earlgrey_rv_plic_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_plic.c',
-      'dif_plic_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_rv_plic.c',
+      'dif_rv_plic_unittest.cc',
     ],
     dependencies: [
       sw_vendor_gtest,
