@@ -69,7 +69,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
   logic wr_txn;
   logic byte_wr_txn;
   logic byte_req_ack;
-  logic a_ack_q, a_ack_d;
+  logic a_ack_q;
 
   assign a_ack = tl_i.a_valid & tl_o.a_ready;
   assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
@@ -82,11 +82,17 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
     assign sel_int = byte_wr_txn | stall_host ? SelInt : SelPassThru;
     // TODO(#7461): remove this register, once this issue has been addressed.
-    assign a_ack_d = a_ack;
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+      if (!rst_ni) begin
+         a_ack_q <= 1'b0;
+      end else begin
+         a_ack_q <= a_ack;
+      end
+    end
   end else begin : gen_static_sel
     assign byte_wr_txn = '0;
     assign sel_int = SelPassThru;
-    assign a_ack_d = 1'b0;
+    assign a_ack_q = 1'b0;
   end
 
   // state machine handling
@@ -139,14 +145,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     endcase // unique case (state_q)
 
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-       a_ack_q <= 1'b0;
-    end else begin
-       a_ack_q <= a_ack_d;
-    end
   end
 
   // prim fifo for capturing info
