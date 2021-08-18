@@ -42,6 +42,12 @@ typedef enum dif_otp_ctrl_toggle {
  */
 typedef enum dif_otp_ctrl_partition {
   /**
+   * The vendor test area.
+   *
+   * This partition is reserved for macro-specific smoke tests.
+   */
+  kDifOtpCtrlPartitionVendorTest,
+  /**
    * The creator software configuration area.
    *
    * This partition contains device-specific calibration data.
@@ -290,9 +296,13 @@ typedef enum dif_otp_ctrl_status_code {
   // Note furthermore that these enum variants are intended as bit indices, so
   // their values should not be randomized.
   /**
+   * Indicates an error occurred in the `VendorTest` partition.
+   */
+  kDifOtpCtrlStatusCodeVendorTestError = 0,
+  /**
    * Indicates an error occurred in the `CreatorSwCfg` partition.
    */
-  kDifOtpCtrlStatusCodeCreatorSwCfgError = 0,
+  kDifOtpCtrlStatusCodeCreatorSwCfgError,
   /**
    * Indicates an error occurred in the `OwnerSwCfg` partition.
    */

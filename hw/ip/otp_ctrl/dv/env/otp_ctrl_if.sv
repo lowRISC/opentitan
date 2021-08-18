@@ -11,7 +11,7 @@
     tb.dut.gen_partitions[``i``].gen_buffered.u_part_buf.otp_cmd_o
 
 `define LC_PART_OTP_CMD_PATH \
-    tb.dut.gen_partitions[6].gen_lifecycle.u_part_buf.otp_cmd_o
+    tb.dut.gen_partitions[LifeCycleIdx].gen_lifecycle.u_part_buf.otp_cmd_o
 
 `ifndef PRIM_GENERIC_OTP_CMD_I_PATH
   `define PRIM_GENERIC_OTP_CMD_I_PATH \
@@ -61,7 +61,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   bit lc_check_byp_en = 1;
 
   // Internal veriable to track which sw partitions have ECC reg error.
-  bit [1:0] force_sw_parts_ecc_reg;
+  bit [2:0] force_sw_parts_ecc_reg;
 
   // DUT configuration object
   otp_ctrl_ast_inputs_cfg dut_cfg;
@@ -120,27 +120,41 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // SW partitions do not have any internal checks.
   // Here we force internal ECC check to fail.
-  task automatic force_sw_check_fail(bit[1:0] fail_idx = $urandom_range(1, 3));
+  task automatic force_sw_check_fail(bit[1:0] fail_idx = $urandom_range(1, 4));
     @(posedge clk_i);
-    if (fail_idx[0]) begin
-      force tb.dut.gen_partitions[0].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
-      force_sw_parts_ecc_reg[0] = 1;
+    if (fail_idx[VendorTestIdx]) begin
+      force tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
+            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+      force_sw_parts_ecc_reg[VendorTestIdx] = 1;
     end
-    if (fail_idx[1]) begin
-      force tb.dut.gen_partitions[1].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
-      force_sw_parts_ecc_reg[1] = 1;
+    if (fail_idx[CreatorSwCfgIdx]) begin
+      force tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
+            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+      force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 1;
+    end
+    if (fail_idx[OwnerSwCfgIdx]) begin
+      force tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
+            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+      force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 1;
     end
   endtask
 
   task automatic release_sw_check_fail();
     @(posedge clk_i);
-    if (force_sw_parts_ecc_reg[0]) begin
-      release tb.dut.gen_partitions[0].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
-      force_sw_parts_ecc_reg[0] = 0;
+    if (force_sw_parts_ecc_reg[VendorTestIdx]) begin
+      release tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
+              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+      force_sw_parts_ecc_reg[VendorTestIdx] = 0;
     end
-    if (force_sw_parts_ecc_reg[1]) begin
-      release tb.dut.gen_partitions[1].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
-      force_sw_parts_ecc_reg[0] = 0;
+    if (force_sw_parts_ecc_reg[CreatorSwCfgIdx]) begin
+      release tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
+              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+      force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 0;
+    end
+    if (force_sw_parts_ecc_reg[OwnerSwCfgIdx]) begin
+      release tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
+              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+      force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 0;
     end
   endtask
 
@@ -159,11 +173,11 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic force_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfgIdx:     force `BUF_PART_OTP_CMD_PATH(2) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(3) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(4) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(5) = prim_otp_pkg::cmd_e'(2'b10);
-      LifeCycleIdx: force `LC_PART_OTP_CMD_PATH     = prim_otp_pkg::cmd_e'(2'b10);
+      HwCfgIdx:     force `BUF_PART_OTP_CMD_PATH(HwCfgIdx)   = prim_otp_pkg::cmd_e'(2'b10);
+      Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      LifeCycleIdx: force `LC_PART_OTP_CMD_PATH              = prim_otp_pkg::cmd_e'(2'b10);
       default: begin
         `uvm_fatal("otp_ctrl_if",
             $sformatf("force invalid otp_cmd_o only supports buffered partitions: %0d", part_idx))
@@ -174,10 +188,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic release_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfgIdx:     release `BUF_PART_OTP_CMD_PATH(2);
-      Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(3);
-      Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(4);
-      Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(5);
+      HwCfgIdx:     release `BUF_PART_OTP_CMD_PATH(HwCfgIdx);
+      Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
+      Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
+      Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
       LifeCycleIdx: release `LC_PART_OTP_CMD_PATH;
       default: begin
         `uvm_fatal("otp_ctrl_if",

@@ -74,6 +74,28 @@
     // Note that the digest items are added automatically to the address map.
     partitions: [
         {
+            name:       "VENDOR_TEST",
+            variant:    "Unbuffered",
+            size:       "64", // in bytes
+            secret:     "False",
+            sw_digest:  "True",
+            hw_digest:  "False",
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            bkout_type: "False", // Do not generate a breakout type for this partition.
+            items: [
+                {
+                    name: "SCRATCH",
+                    size: "56"
+                }
+            ],
+            desc: '''Vendor test partition for OTP smoke checks
+            during manufacturing. The OTP macro control logic is allowed
+            to read/write to this region and ECC checks may be ignored.
+            '''
+        }
+        {
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
             //absorb:     true,
@@ -213,7 +235,8 @@
                     inv_default: "0",
                 },
             ],
-            desc: '''EN_SRAM_IFETCH: TODO: add
+            desc: '''
+            EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
             EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
             to the NIST internal state per instance.
             EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access

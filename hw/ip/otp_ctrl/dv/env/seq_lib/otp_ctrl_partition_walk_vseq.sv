@@ -14,7 +14,7 @@ class otp_ctrl_partition_walk_vseq extends otp_ctrl_base_vseq;
   endtask
 
   virtual task body();
-    for (int addr = CreatorSwCfgOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
+    for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
       int dai_addr = addr * 4;
       `uvm_info(`gfn, $sformatf("writing dai addr %0h", dai_addr), UVM_HIGH)
 

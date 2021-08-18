@@ -100,7 +100,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       for (int i = 0; i < NumPart; i++) begin
         `DV_CHECK_RANDOMIZE_FATAL(this);
 
-        if (i inside {CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
+        if (i inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
           // During OTP init, SW partitions only read digest value
           addr = PART_OTP_DIGEST_ADDRS[i] << 2;
         end else begin
@@ -121,7 +121,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       end else if ($urandom_range(0, 1)) begin
 
         // Randomly force ECC reg in sw partitions to create a check failure
-        bit [1:0] sw_check_fail = $urandom_range(1, 3);
+        bit [1:0] sw_check_fail = $urandom_range(1, 4);
         cfg.otp_ctrl_vif.force_sw_check_fail(sw_check_fail);
         `uvm_info(`gfn, $sformatf("OTP_init SW ECC check failure with index %0h", sw_check_fail),
                   UVM_LOW)

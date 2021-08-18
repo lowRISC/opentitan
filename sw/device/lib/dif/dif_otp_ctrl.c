@@ -115,6 +115,10 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
                                     ptrdiff_t *reg_offset,
                                     bitfield_bit32_index_t *index) {
   switch (partition) {
+    case kDifOtpCtrlPartitionVendorTest:
+      *reg_offset = OTP_CTRL_VENDOR_TEST_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_VENDOR_TEST_READ_LOCK_VENDOR_TEST_READ_LOCK_BIT;
+      break;
     case kDifOtpCtrlPartitionCreatorSwCfg:
       *reg_offset = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT;
@@ -321,6 +325,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
   }
 
   static const bitfield_bit32_index_t kIndices[] = {
+      [kDifOtpCtrlStatusCodeVendorTestError] =
+          OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
       [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
           OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
@@ -363,58 +369,64 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
 
     bitfield_field32_t field;
     switch (i) {
-      case kDifOtpCtrlStatusCodeCreatorSwCfgError:
+      case kDifOtpCtrlStatusCodeVendorTestError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_0_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_0_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeOwnerSwCfgError:
+      case kDifOtpCtrlStatusCodeCreatorSwCfgError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_1_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_1_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeHwCfgError:
+      case kDifOtpCtrlStatusCodeOwnerSwCfgError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_2_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_2_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeSecret0Error:
+      case kDifOtpCtrlStatusCodeHwCfgError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_3_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_3_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeSecret1Error:
+      case kDifOtpCtrlStatusCodeSecret0Error:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_4_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_4_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeSecret2Error:
+      case kDifOtpCtrlStatusCodeSecret1Error:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_5_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_5_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeLifeCycleError:
+      case kDifOtpCtrlStatusCodeSecret2Error:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_6_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_6_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeDaiError:
+      case kDifOtpCtrlStatusCodeLifeCycleError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_7_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_7_OFFSET,
         };
         break;
-      case kDifOtpCtrlStatusCodeLciError:
+      case kDifOtpCtrlStatusCodeDaiError:
         field = (bitfield_field32_t){
             .mask = OTP_CTRL_ERR_CODE_ERR_CODE_8_MASK,
             .index = OTP_CTRL_ERR_CODE_ERR_CODE_8_OFFSET,
+        };
+        break;
+      case kDifOtpCtrlStatusCodeLciError:
+        field = (bitfield_field32_t){
+            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_9_MASK,
+            .index = OTP_CTRL_ERR_CODE_ERR_CODE_9_OFFSET,
         };
         break;
       // Not an error status, so there's nothing to do.
@@ -487,6 +499,13 @@ typedef struct partition_info {
 static const partition_info_t kPartitions[] = {
     // TODO: These should be provided by the gen'd header.
     // See #3904.
+    [kDifOtpCtrlPartitionVendorTest] =
+        {
+            .start_addr = OTP_CTRL_PARAM_VENDOR_TEST_OFFSET,
+            .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
+            .align_mask = 0x3,
+            .is_software = true,
+        },
     [kDifOtpCtrlPartitionCreatorSwCfg] =
         {
             .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
@@ -771,6 +790,10 @@ dif_otp_ctrl_digest_result_t dif_otp_ctrl_get_digest(
 
   ptrdiff_t reg0, reg1;
   switch (partition) {
+    case kDifOtpCtrlPartitionVendorTest:
+      reg0 = OTP_CTRL_VENDOR_TEST_DIGEST_0_REG_OFFSET;
+      reg1 = OTP_CTRL_VENDOR_TEST_DIGEST_1_REG_OFFSET;
+      break;
     case kDifOtpCtrlPartitionCreatorSwCfg:
       reg0 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET;
       reg1 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_REG_OFFSET;

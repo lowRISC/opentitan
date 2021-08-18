@@ -113,10 +113,21 @@ package otp_ctrl_part_pkg;
   ////////////////////////
 
   localparam part_info_t PartInfo [NumPart] = '{
-    // CREATOR_SW_CFG
+    // VENDOR_TEST
     '{
       variant:    Unbuffered,
       offset:     11'd0,
+      size:       64,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      hw_digest:  1'b0,
+      write_lock: 1'b1,
+      read_lock:  1'b0
+    },
+    // CREATOR_SW_CFG
+    '{
+      variant:    Unbuffered,
+      offset:     11'd64,
       size:       768,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -127,7 +138,7 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:    Unbuffered,
-      offset:     11'd768,
+      offset:     11'd832,
       size:       768,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -138,7 +149,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG
     '{
       variant:    Buffered,
-      offset:     11'd1536,
+      offset:     11'd1600,
       size:       80,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -149,7 +160,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1616,
+      offset:     11'd1680,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -160,7 +171,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1656,
+      offset:     11'd1720,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -171,7 +182,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1744,
+      offset:     11'd1808,
       size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -182,7 +193,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     11'd1832,
+      offset:     11'd1896,
       size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -193,6 +204,7 @@ package otp_ctrl_part_pkg;
   };
 
   typedef enum {
+    VendorTestIdx,
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
     HwCfgIdx,
@@ -225,7 +237,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
-    hw_cfg_digest: 64'h39EB436F1D5AF2D7,
+    hw_cfg_digest: 64'h2CD09F705F291B7A,
     unallocated: 32'h0,
     en_entropy_src_fw_over: 8'h0,
     en_entropy_src_fw_read: 8'h0,
@@ -248,30 +260,30 @@ package otp_ctrl_part_pkg;
   };
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [15359:0] PartInvDefault = 15360'({
+  parameter logic [15871:0] PartInvDefault = 15872'({
     704'({
       320'hDAAF8720F255C5C84D1D9C10648A878DB1D5ABE9610E8395490EC23C0A1EDCCE280E8ECA88CEA2E9,
       384'h9470329E17324EDB1E2960279AB8F882A991BEA2CF16541724A52D80A891BCD52BE973D4C5752E3A6912899150240B3A
     }),
     704'({
-      64'hDC793769D983D0,
+      64'h39C052C50C63C3FB,
       256'hD53651B6259AF2A4FB9DCA186AE168595B637FF7F7BF2E7C26917DDC15EB6827,
       256'hA1AFEC939D240482026740905E57CA6C1D96CF9CAB089A9CF80423F61EC116FD,
       128'h7CB3D374E7DF05B66C61869C02BC1100
     }),
     704'({
-      64'h577127F60790BB5D,
+      64'hDC793769D983D0,
       128'h8561BFB99BAFAFC47DED6F942A7014DD,
       256'h9A0656978D66A3C419617EDF0BD69B2320EA378AE9812F1F53911418BCBBCCCA,
       256'h9F4C41511001F6AD24DEEF385A7B3CA65869574E09B5710738066DCD7EF4BB9B
     }),
     320'({
-      64'h2CD09F705F291B7A,
+      64'h577127F60790BB5D,
       128'hC48FDBD8A0031C11FA602470308055C4,
       128'hABFF25A58087D34A37E5AE39A58FACEE
     }),
     640'({
-      64'h39EB436F1D5AF2D7,
+      64'h2CD09F705F291B7A,
       32'h0, // unallocated space
       8'h0,
       8'h0,
@@ -281,7 +293,7 @@ package otp_ctrl_part_pkg;
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
     }),
     6144'({
-      64'h7D7EA64D850E128D,
+      64'h39EB436F1D5AF2D7,
       2080'h0, // unallocated space
       512'h0,
       128'h0,
@@ -295,12 +307,16 @@ package otp_ctrl_part_pkg;
       32'h0
     }),
     6144'({
-      64'h1D00E175E3739EC1,
+      64'h7D7EA64D850E128D,
       3904'h0, // unallocated space
       64'h0,
       32'h0,
       32'h0,
       2048'h0
+    }),
+    512'({
+      64'h1D00E175E3739EC1,
+      448'h0
     })});
 
 endpackage : otp_ctrl_part_pkg
