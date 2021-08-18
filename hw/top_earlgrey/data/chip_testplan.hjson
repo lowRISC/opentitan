@@ -1076,7 +1076,8 @@
       name: chip_sysrst_ctrl_inputs
       desc: '''Verify that the SYSRST ctrl input pin values can be read.
 
-            - Drive a known value on ac_reset, ec_rst_l, pwrb and key* pins at the chip IOs.
+            - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins at
+              the chip inputs.
             - Read the pin_in_value CSR to check for correctness.
             '''
       milestone: V2
@@ -1086,15 +1087,18 @@
       name: chip_sysrst_ctrl_outputs
       desc: '''Verify that the SYSRST ctrl output pin values can be set.
 
-            - Drive a known value on ac_reset, ec_rst_l, pwrb and key* pins at the chip IO inputs.
-            - Verify that SYSRST ctrl correctly loops them back to the chip IO outputs.
+            - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins
+              at the chip inputs.
+            - Verify that SYSRST ctrl correctly loops them back to the chip outputs.
             - Write the pin_allowed_ctl register to allow some of the pins to be overridden with
               either 0 or 1 or both.
             - Write the pin_out_ctl register to enable the override on some of the pins.
             - Write the pin_out_value register to set known values on those pins.
-            - Verify that at the chip IO outputs, pins on which override should be active is
+            - Verify that at the chip outputs, pins on which override should be active is
               reflecting the overridden values. All others should reflect the values driven on chip
               inputs.
+            - Via assertion checks (or equivalent) verify that the transitions at the inputs
+              immediately reflect at the outputs, if not intercepted / debounced by sysrst_ctrl.
             '''
       milestone: V2
       tests: []
@@ -1121,7 +1125,7 @@
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
-              a low power wake up signal.
+              a low power wakeup signal for the pwrmgr.
             - Program the associated detection timer.
             - Program the detection outcome CSR's (com_out_ctl) interrupt bit to 1.
             - Program the pwrmgr to put the chip in deep sleep state and wake up on GSC wake up
@@ -1182,10 +1186,41 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_z3_wakeup
-      desc: '''Placeholder for new z3 wakeup feature.
+      name: chip_sysrst_ctrl_ec_rst_l
+      desc: '''Verify that the ec_rst_l stays asserted on power-on-reset until SW can control it.
 
-            Details TBD.
+            - Verify that ec_rst_l stays asserted as the chip is brought out of reset.
+            - Verify that the pin continues to remain low until SW is alive.
+            - Have the SW write to pin_allowed|out_ctrl CSRs to control the ec_rst_l value and
+              verify the value at the chip output.
+            - Optionally, also verify ec_rst_l pulse stretching by setting the ec_rst_ctl register
+              with a suitable pulse width.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sysrst_ctrl_flash_wp_l
+      desc: '''Verify that the flash_wp_l stays asserted on power-on-reset until SW can control it.
+
+            - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sysrst_ctrl_ulp_z3_wakeup
+      desc: '''Verify the z3_wakeup signaling.
+
+            - Start off with ac_present = 0, lid_open = 0 and pwrb = 0 at the chip inputs.
+            - Program the ulp_ac|lid|pwrb_debounce_ctl registers to debounce these inputs for an
+              appropriate time.
+            - Enable the ULP wakeup feature by writing to the ulp_ctl register.
+            - Read the ulp_wakeup register and verify that no wakeup event is detected, after some
+              amount of delay.
+            - Glitch the lid_open input at the chip IOs before stabilizing on value 1.
+            - Read the ulp_wakeup register to verify that the wakeup event is detected this time.
+            - Verify that the z3_wakeup output at the chip IOs is reflecting the value of 1.
             '''
       milestone: V2
       tests: []
