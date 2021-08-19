@@ -244,8 +244,8 @@ module pinmux
     // input signals for resume detection
     .usb_dp_async_alw_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
     .usb_dn_async_alw_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
-    .usb_dppullup_en_alw_i(dio_oe_o[TargetCfg.usb_dp_pullup_idx]),
-    .usb_dnpullup_en_alw_i(dio_oe_o[TargetCfg.usb_dn_pullup_idx]),
+    .usb_dppullup_en_alw_i(dio_out_o[TargetCfg.usb_dp_pullup_idx]),
+    .usb_dnpullup_en_alw_i(dio_out_o[TargetCfg.usb_dn_pullup_idx]),
 
     // tie this to something from usbdev to indicate its out of reset
     .usb_out_of_rst_upwr_i(usb_out_of_rst_i),
