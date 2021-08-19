@@ -127,7 +127,6 @@
       // Append stub cpu mode to csr_tests_mode, run with 20 reseeds.
       name: csr_tests_mode
       en_run_modes: ["stub_cpu_mode"]
-      reseed: 20
     }
     {
       // Append stub cpu mode to mem_tests_mode, run with 20 reseeds.
