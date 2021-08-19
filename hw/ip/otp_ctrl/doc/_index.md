@@ -147,6 +147,13 @@ This gives software an opportunity to confirm that the locking operation has pro
 
 Calculation of the integrity digest depends on whether the partition requires periodic background verification.
 
+### Vendor Test Partition
+
+The vendor test partition is intended to be used for OTP programming smoke checks during the manufacturing flow.
+The silicon creator may implement these checks inside the proprietary version of the `prim_otp` wrapper.
+This partition behaves like any other SW partition, with the exception that ECC uncorrectable errors will not lead to fatal errors / alerts as they do in all other partitions.
+This is due to the nature of the OTP programming smoke checks, which may leave certain OTP words in a state inconsistent with the ECC polynomial employed upon OTP readout.
+
 ### Software Configuration Partitions
 
 The software configuration partitions are used as non-volatile storage for flags, configuration and calibration data.
@@ -317,6 +324,8 @@ Signal                       | Direction        | Type                        | 
 `otp_edn_i`                  | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
 `pwr_otp_i`                  | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
 `pwr_otp_o`                  | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
+`lc_otp_vendor_test_i`       | `input`          | `lc_otp_vendor_test_req_t`  | Vendor test control signals coming from the life cycle TAP.
+`lc_otp_vendor_test_o`       | `output`         | `lc_otp_vendor_test_rsp_t`  | Vendor test status signals going to the life cycle TAP.
 `lc_otp_program_i`           | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
 `lc_otp_program_o`           | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
 `lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state.
@@ -358,9 +367,15 @@ See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
 
 #### Life Cycle Interfaces
 
-The interface to the life cycle controller can be split into three functional sub-interfaces (state output, state transitions), and these are explained in more detail below.
+The interface to the life cycle controller can be split into three functional sub-interfaces (vendor test, state output, state transitions), and these are explained in more detail below.
 Note that the OTP and life cycle controllers are supposed to be in the same clock domain, hence no additional signal synchronization is required.
 See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
+
+##### Vendor Test Signals
+
+The `lc_otp_vendor_test_i` and `lc_otp_vendor_test_o` signals are connected to a 32bit control and a 32bit status register in the life cycle TAP, respectively, and are directly routed to the `prim_otp` wrapper.
+These control and status signals may be used by the silicon creator to exercise the OTP programming smoke checks on the VENDOR_TEST partition.
+The signals are gated with the life cycle state inside the life cycle controller such that they do not have any effect in production life cycle states.
 
 ##### State, Counter and Token Ouput
 
@@ -402,7 +417,6 @@ In order to perform life cycle state transitions, the life cycle controller can 
   {name: 'lc_otp_program_i.req',           wave: '01.|..0.'},
   {name: 'lc_otp_program_i.state',         wave: '03.|..0.'},
   {name: 'lc_otp_program_i.count',         wave: '03.|..0.'},
-  {name: 'lc_otp_program_i.otp_test_ctrl', wave: 'x..|....'},
   {name: 'lc_otp_program_o.ack',           wave: '0..|.10.'},
   {name: 'lc_otp_program_o.err',           wave: '0..|.40.'},
 ]}
@@ -496,7 +510,7 @@ The following is a high-level block diagram that illustrates everything that has
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions P0-P6 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
+Each of the partitions P0-P7 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
@@ -504,7 +518,7 @@ Note that the access ranges of the DAI and the LCI are mutually exclusive.
 I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
-The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P6) and the OTP wrapper through a gated TL-UL interface.
+The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P7) and the OTP wrapper through a gated TL-UL interface.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 

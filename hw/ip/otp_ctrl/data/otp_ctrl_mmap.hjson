@@ -92,9 +92,9 @@
                 }
             ],
             desc: '''Vendor test partition for OTP smoke checks
-            during manufacturing. The OTP macro control logic is allowed
-            to read/write to this region and ECC uncorrectable errors
-            do not lead to fatal alert conditions.
+            during manufacturing. The OTP wrapper control logic inside prim_otp is allowed
+            to read/write to this region. ECC uncorrectable errors seen on the functional
+            prim_otp interface will not lead to an alert for this partition.
             '''
         }
         {
