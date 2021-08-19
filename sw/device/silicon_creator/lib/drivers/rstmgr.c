@@ -43,7 +43,7 @@ uint32_t rstmgr_reason_get(void) {
   REASON_ASSERT(
       kRstmgrReasonSysrstCtrl,
       RSTMGR_RESET_INFO_HW_REQ_OFFSET +
-          kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonAonGscRst);
+          kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonAonSysrstCtrlRstReq);
   REASON_ASSERT(
       kRstmgrReasonWatchdog,
       RSTMGR_RESET_INFO_HW_REQ_OFFSET +
