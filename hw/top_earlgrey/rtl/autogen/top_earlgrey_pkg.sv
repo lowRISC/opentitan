@@ -603,13 +603,12 @@ package top_earlgrey_pkg;
     MioInFlashCtrlTms = 47,
     MioInFlashCtrlTdi = 48,
     MioInSysrstCtrlAonAcPresent = 49,
-    MioInSysrstCtrlAonEcRstInL = 50,
-    MioInSysrstCtrlAonKey0In = 51,
-    MioInSysrstCtrlAonKey1In = 52,
-    MioInSysrstCtrlAonKey2In = 53,
-    MioInSysrstCtrlAonPwrbIn = 54,
-    MioInSysrstCtrlAonLidOpen = 55,
-    MioInCount = 56
+    MioInSysrstCtrlAonKey0In = 50,
+    MioInSysrstCtrlAonKey1In = 51,
+    MioInSysrstCtrlAonKey2In = 52,
+    MioInSysrstCtrlAonPwrbIn = 53,
+    MioInSysrstCtrlAonLidOpen = 54,
+    MioInCount = 55
   } mio_in_e;
 
   typedef enum {
@@ -686,8 +685,9 @@ package top_earlgrey_pkg;
     MioOutSysrstCtrlAonKey0Out = 70,
     MioOutSysrstCtrlAonKey1Out = 71,
     MioOutSysrstCtrlAonKey2Out = 72,
-    MioOutSysrstCtrlAonZ3Wakeup = 73,
-    MioOutCount = 74
+    MioOutSysrstCtrlAonPwrbOut = 73,
+    MioOutSysrstCtrlAonZ3Wakeup = 74,
+    MioOutCount = 75
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
@@ -703,19 +703,19 @@ package top_earlgrey_pkg;
     DioUsbdevD = 8,
     DioUsbdevDp = 9,
     DioUsbdevDn = 10,
-    DioSpiDeviceSck = 11,
-    DioSpiDeviceCsb = 12,
-    DioUsbdevSense = 13,
-    DioSpiHost0Sck = 14,
-    DioSpiHost0Csb = 15,
-    DioUsbdevSe0 = 16,
-    DioUsbdevDpPullup = 17,
-    DioUsbdevDnPullup = 18,
-    DioUsbdevTxModeSe = 19,
-    DioUsbdevSuspend = 20,
-    DioUsbdevRxEnable = 21,
-    DioSysrstCtrlAonEcRstOutL = 22,
-    DioSysrstCtrlAonPwrbOut = 23,
+    DioSysrstCtrlAonEcRstL = 11,
+    DioSpiDeviceSck = 12,
+    DioSpiDeviceCsb = 13,
+    DioUsbdevSense = 14,
+    DioSpiHost0Sck = 15,
+    DioSpiHost0Csb = 16,
+    DioUsbdevSe0 = 17,
+    DioUsbdevDpPullup = 18,
+    DioUsbdevDnPullup = 19,
+    DioUsbdevTxModeSe = 20,
+    DioUsbdevSuspend = 21,
+    DioUsbdevRxEnable = 22,
+    DioSysrstCtrlAonFlashWpL = 23,
     DioCount = 24
   } dio_e;
 

@@ -16,7 +16,7 @@ module sysrst_ctrl_pin
   input cio_key1_in_i,
   input cio_key2_in_i,
   input cio_ac_present_i,
-  input cio_ec_rst_in_l_i,
+  input cio_ec_rst_l_i,
   input cio_lid_open_i,
   // Signals from autoblock (not synced to AON clock)
   input pwrb_out_hw_i,
@@ -41,7 +41,8 @@ module sysrst_ctrl_pin
   // Output signals running on AON clock
   output aon_bat_disable_out_int_o,
   output aon_z3_wakeup_out_int_o,
-  output aon_ec_rst_out_int_l_o
+  output aon_ec_rst_out_int_l_o,
+  output aon_flash_wp_out_int_l_o
 
 );
 
@@ -54,7 +55,7 @@ module sysrst_ctrl_pin
     .rst_ni,
     .d_i({
       cio_ac_present_i,
-      cio_ec_rst_in_l_i,
+      cio_ec_rst_l_i,
       cio_pwrb_in_i,
       cio_key0_in_i,
       cio_key1_in_i,
@@ -81,7 +82,7 @@ module sysrst_ctrl_pin
   assign pin_in_value_o.lid_open.de   = 1'b1;
 
   // Pin override logic.
-  localparam int NumSignals = 7;
+  localparam int NumSignals = 8;
   logic [NumSignals-1:0] inputs, outputs, aon_enabled, aon_values, aon_allowed0, aon_allowed1;
   assign inputs = {
     pwrb_out_hw_i,
@@ -90,7 +91,8 @@ module sysrst_ctrl_pin
     key2_out_hw_i,
     aon_z3_wakeup_hw_i,
     aon_bat_disable_hw_i,
-    aon_ec_rst_l_hw_i
+    aon_ec_rst_l_hw_i,
+    1'b0 // there is no pass through input value for this signal.
   };
   assign aon_enabled = {
     aon_pin_out_ctl_i.pwrb_out.q,
@@ -99,7 +101,8 @@ module sysrst_ctrl_pin
     aon_pin_out_ctl_i.key2_out.q,
     aon_pin_out_ctl_i.z3_wakeup.q,
     aon_pin_out_ctl_i.bat_disable.q,
-    aon_pin_out_ctl_i.ec_rst_l.q
+    aon_pin_out_ctl_i.ec_rst_l.q,
+    aon_pin_out_ctl_i.flash_wp_l.q
   };
   assign aon_values = {
     aon_pin_out_value_i.pwrb_out.q,
@@ -108,7 +111,8 @@ module sysrst_ctrl_pin
     aon_pin_out_value_i.key2_out.q,
     aon_pin_out_value_i.z3_wakeup.q,
     aon_pin_out_value_i.bat_disable.q,
-    aon_pin_out_value_i.ec_rst_l.q
+    aon_pin_out_value_i.ec_rst_l.q,
+    aon_pin_out_value_i.flash_wp_l.q
   };
   assign aon_allowed0 = {
     aon_pin_allowed_ctl_i.pwrb_out_0.q,
@@ -117,7 +121,8 @@ module sysrst_ctrl_pin
     aon_pin_allowed_ctl_i.key2_out_0.q,
     aon_pin_allowed_ctl_i.z3_wakeup_0.q,
     aon_pin_allowed_ctl_i.bat_disable_0.q,
-    aon_pin_allowed_ctl_i.ec_rst_l_0.q
+    aon_pin_allowed_ctl_i.ec_rst_l_0.q,
+    aon_pin_allowed_ctl_i.flash_wp_l_0.q
   };
   assign aon_allowed1 = {
     aon_pin_allowed_ctl_i.pwrb_out_1.q,
@@ -126,7 +131,8 @@ module sysrst_ctrl_pin
     aon_pin_allowed_ctl_i.key2_out_1.q,
     aon_pin_allowed_ctl_i.z3_wakeup_1.q,
     aon_pin_allowed_ctl_i.bat_disable_1.q,
-    aon_pin_allowed_ctl_i.ec_rst_l_1.q
+    aon_pin_allowed_ctl_i.ec_rst_l_1.q,
+    aon_pin_allowed_ctl_i.flash_wp_l_1.q
   };
 
   for (genvar k = 0; k < NumSignals; k++) begin : gen_override_logic
@@ -140,6 +146,7 @@ module sysrst_ctrl_pin
           key2_out_int_o,
           aon_z3_wakeup_out_int_o,
           aon_bat_disable_out_int_o,
-          aon_ec_rst_out_int_l_o} = outputs;
+          aon_ec_rst_out_int_l_o,
+          aon_flash_wp_out_int_l_o} = outputs;
 
 endmodule

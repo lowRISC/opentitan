@@ -157,10 +157,10 @@ module sysrst_ctrl_reg_top (
   logic ulp_status_qs;
   logic ulp_status_wd;
   logic ulp_status_busy;
-  logic wk_status_we;
-  logic wk_status_qs;
-  logic wk_status_wd;
-  logic wk_status_busy;
+  logic wkup_status_we;
+  logic wkup_status_qs;
+  logic wkup_status_wd;
+  logic wkup_status_busy;
   logic key_invert_ctl_we;
   logic key_invert_ctl_key0_in_qs;
   logic key_invert_ctl_key0_in_wd;
@@ -220,6 +220,9 @@ module sysrst_ctrl_reg_top (
   logic pin_allowed_ctl_z3_wakeup_0_qs;
   logic pin_allowed_ctl_z3_wakeup_0_wd;
   logic pin_allowed_ctl_z3_wakeup_0_busy;
+  logic pin_allowed_ctl_flash_wp_l_0_qs;
+  logic pin_allowed_ctl_flash_wp_l_0_wd;
+  logic pin_allowed_ctl_flash_wp_l_0_busy;
   logic pin_allowed_ctl_bat_disable_1_qs;
   logic pin_allowed_ctl_bat_disable_1_wd;
   logic pin_allowed_ctl_bat_disable_1_busy;
@@ -241,6 +244,9 @@ module sysrst_ctrl_reg_top (
   logic pin_allowed_ctl_z3_wakeup_1_qs;
   logic pin_allowed_ctl_z3_wakeup_1_wd;
   logic pin_allowed_ctl_z3_wakeup_1_busy;
+  logic pin_allowed_ctl_flash_wp_l_1_qs;
+  logic pin_allowed_ctl_flash_wp_l_1_wd;
+  logic pin_allowed_ctl_flash_wp_l_1_busy;
   logic pin_out_ctl_we;
   logic pin_out_ctl_bat_disable_qs;
   logic pin_out_ctl_bat_disable_wd;
@@ -263,6 +269,9 @@ module sysrst_ctrl_reg_top (
   logic pin_out_ctl_z3_wakeup_qs;
   logic pin_out_ctl_z3_wakeup_wd;
   logic pin_out_ctl_z3_wakeup_busy;
+  logic pin_out_ctl_flash_wp_l_qs;
+  logic pin_out_ctl_flash_wp_l_wd;
+  logic pin_out_ctl_flash_wp_l_busy;
   logic pin_out_value_we;
   logic pin_out_value_bat_disable_qs;
   logic pin_out_value_bat_disable_wd;
@@ -285,6 +294,9 @@ module sysrst_ctrl_reg_top (
   logic pin_out_value_z3_wakeup_qs;
   logic pin_out_value_z3_wakeup_wd;
   logic pin_out_value_z3_wakeup_busy;
+  logic pin_out_value_flash_wp_l_qs;
+  logic pin_out_value_flash_wp_l_wd;
+  logic pin_out_value_flash_wp_l_busy;
   logic pin_in_value_ac_present_qs;
   logic pin_in_value_ec_rst_l_qs;
   logic pin_in_value_pwrb_in_qs;
@@ -449,9 +461,9 @@ module sysrst_ctrl_reg_top (
   logic com_out_ctl_0_ec_rst_0_qs;
   logic com_out_ctl_0_ec_rst_0_wd;
   logic com_out_ctl_0_ec_rst_0_busy;
-  logic com_out_ctl_0_gsc_rst_0_qs;
-  logic com_out_ctl_0_gsc_rst_0_wd;
-  logic com_out_ctl_0_gsc_rst_0_busy;
+  logic com_out_ctl_0_rst_req_0_qs;
+  logic com_out_ctl_0_rst_req_0_wd;
+  logic com_out_ctl_0_rst_req_0_busy;
   logic com_out_ctl_1_we;
   logic com_out_ctl_1_bat_disable_1_qs;
   logic com_out_ctl_1_bat_disable_1_wd;
@@ -462,9 +474,9 @@ module sysrst_ctrl_reg_top (
   logic com_out_ctl_1_ec_rst_1_qs;
   logic com_out_ctl_1_ec_rst_1_wd;
   logic com_out_ctl_1_ec_rst_1_busy;
-  logic com_out_ctl_1_gsc_rst_1_qs;
-  logic com_out_ctl_1_gsc_rst_1_wd;
-  logic com_out_ctl_1_gsc_rst_1_busy;
+  logic com_out_ctl_1_rst_req_1_qs;
+  logic com_out_ctl_1_rst_req_1_wd;
+  logic com_out_ctl_1_rst_req_1_busy;
   logic com_out_ctl_2_we;
   logic com_out_ctl_2_bat_disable_2_qs;
   logic com_out_ctl_2_bat_disable_2_wd;
@@ -475,9 +487,9 @@ module sysrst_ctrl_reg_top (
   logic com_out_ctl_2_ec_rst_2_qs;
   logic com_out_ctl_2_ec_rst_2_wd;
   logic com_out_ctl_2_ec_rst_2_busy;
-  logic com_out_ctl_2_gsc_rst_2_qs;
-  logic com_out_ctl_2_gsc_rst_2_wd;
-  logic com_out_ctl_2_gsc_rst_2_busy;
+  logic com_out_ctl_2_rst_req_2_qs;
+  logic com_out_ctl_2_rst_req_2_wd;
+  logic com_out_ctl_2_rst_req_2_busy;
   logic com_out_ctl_3_we;
   logic com_out_ctl_3_bat_disable_3_qs;
   logic com_out_ctl_3_bat_disable_3_wd;
@@ -488,9 +500,9 @@ module sysrst_ctrl_reg_top (
   logic com_out_ctl_3_ec_rst_3_qs;
   logic com_out_ctl_3_ec_rst_3_wd;
   logic com_out_ctl_3_ec_rst_3_busy;
-  logic com_out_ctl_3_gsc_rst_3_qs;
-  logic com_out_ctl_3_gsc_rst_3_wd;
-  logic com_out_ctl_3_gsc_rst_3_busy;
+  logic com_out_ctl_3_rst_req_3_qs;
+  logic com_out_ctl_3_rst_req_3_wd;
+  logic com_out_ctl_3_rst_req_3_busy;
   logic combo_intr_status_we;
   logic combo_intr_status_combo0_h2l_qs;
   logic combo_intr_status_combo0_h2l_wd;
@@ -794,26 +806,26 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  // R[wk_status]: V(False)
+  // R[wkup_status]: V(False)
 
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_wk_status (
+  ) u_wkup_status (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
-    .src_we_i     (wk_status_we),
-    .src_wd_i     (wk_status_wd),
-    .dst_de_i     (hw2reg.wk_status.de),
-    .dst_d_i      (hw2reg.wk_status.d),
-    .src_busy_o   (wk_status_busy),
-    .src_qs_o     (wk_status_qs),
+    .src_we_i     (wkup_status_we),
+    .src_wd_i     (wkup_status_wd),
+    .dst_de_i     (hw2reg.wkup_status.de),
+    .dst_d_i      (hw2reg.wkup_status.d),
+    .src_busy_o   (wkup_status_busy),
+    .src_qs_o     (wkup_status_qs),
     .dst_qe_o     (),
-    .q            (reg2hw.wk_status.q)
+    .q            (reg2hw.wkup_status.q)
   );
 
 
@@ -1239,7 +1251,29 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[bat_disable_1]: 7:7
+  //   F[flash_wp_l_0]: 7:7
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_flash_wp_l_0 (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (pin_allowed_ctl_we & regwen_qs),
+    .src_wd_i     (pin_allowed_ctl_flash_wp_l_0_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (pin_allowed_ctl_flash_wp_l_0_busy),
+    .src_qs_o     (pin_allowed_ctl_flash_wp_l_0_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.pin_allowed_ctl.flash_wp_l_0.q)
+  );
+
+
+  //   F[bat_disable_1]: 8:8
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1261,7 +1295,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[ec_rst_l_1]: 8:8
+  //   F[ec_rst_l_1]: 9:9
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1283,7 +1317,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[pwrb_out_1]: 9:9
+  //   F[pwrb_out_1]: 10:10
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1305,7 +1339,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[key0_out_1]: 10:10
+  //   F[key0_out_1]: 11:11
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1327,7 +1361,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[key1_out_1]: 11:11
+  //   F[key1_out_1]: 12:12
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1349,7 +1383,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[key2_out_1]: 12:12
+  //   F[key2_out_1]: 13:13
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1371,7 +1405,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  //   F[z3_wakeup_1]: 13:13
+  //   F[z3_wakeup_1]: 14:14
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1390,6 +1424,28 @@ module sysrst_ctrl_reg_top (
     .src_qs_o     (pin_allowed_ctl_z3_wakeup_1_qs),
     .dst_qe_o     (),
     .q            (reg2hw.pin_allowed_ctl.z3_wakeup_1.q)
+  );
+
+
+  //   F[flash_wp_l_1]: 15:15
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_flash_wp_l_1 (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (pin_allowed_ctl_we & regwen_qs),
+    .src_wd_i     (pin_allowed_ctl_flash_wp_l_1_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (pin_allowed_ctl_flash_wp_l_1_busy),
+    .src_qs_o     (pin_allowed_ctl_flash_wp_l_1_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.pin_allowed_ctl.flash_wp_l_1.q)
   );
 
 
@@ -1549,6 +1605,28 @@ module sysrst_ctrl_reg_top (
   );
 
 
+  //   F[flash_wp_l]: 7:7
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_pin_out_ctl_flash_wp_l (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (pin_out_ctl_we),
+    .src_wd_i     (pin_out_ctl_flash_wp_l_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (pin_out_ctl_flash_wp_l_busy),
+    .src_qs_o     (pin_out_ctl_flash_wp_l_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.pin_out_ctl.flash_wp_l.q)
+  );
+
+
   // R[pin_out_value]: V(False)
 
   //   F[bat_disable]: 0:0
@@ -1702,6 +1780,28 @@ module sysrst_ctrl_reg_top (
     .src_qs_o     (pin_out_value_z3_wakeup_qs),
     .dst_qe_o     (),
     .q            (reg2hw.pin_out_value.z3_wakeup.q)
+  );
+
+
+  //   F[flash_wp_l]: 7:7
+  prim_subreg_async #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_pin_out_value_flash_wp_l (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_we_i     (pin_out_value_we),
+    .src_wd_i     (pin_out_value_flash_wp_l_wd),
+    .dst_de_i     (1'b0),
+    .dst_d_i      ('0),
+    .src_busy_o   (pin_out_value_flash_wp_l_busy),
+    .src_qs_o     (pin_out_value_flash_wp_l_qs),
+    .dst_qe_o     (),
+    .q            (reg2hw.pin_out_value.flash_wp_l.q)
   );
 
 
@@ -2976,25 +3076,25 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  // F[gsc_rst_0]: 3:3
+  // F[rst_req_0]: 3:3
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_com_out_ctl_0_gsc_rst_0 (
+  ) u_com_out_ctl_0_rst_req_0 (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
     .src_we_i     (com_out_ctl_0_we & regwen_qs),
-    .src_wd_i     (com_out_ctl_0_gsc_rst_0_wd),
+    .src_wd_i     (com_out_ctl_0_rst_req_0_wd),
     .dst_de_i     (1'b0),
     .dst_d_i      ('0),
-    .src_busy_o   (com_out_ctl_0_gsc_rst_0_busy),
-    .src_qs_o     (com_out_ctl_0_gsc_rst_0_qs),
+    .src_busy_o   (com_out_ctl_0_rst_req_0_busy),
+    .src_qs_o     (com_out_ctl_0_rst_req_0_qs),
     .dst_qe_o     (),
-    .q            (reg2hw.com_out_ctl[0].gsc_rst.q)
+    .q            (reg2hw.com_out_ctl[0].rst_req.q)
   );
 
 
@@ -3067,25 +3167,25 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  // F[gsc_rst_1]: 3:3
+  // F[rst_req_1]: 3:3
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_com_out_ctl_1_gsc_rst_1 (
+  ) u_com_out_ctl_1_rst_req_1 (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
     .src_we_i     (com_out_ctl_1_we & regwen_qs),
-    .src_wd_i     (com_out_ctl_1_gsc_rst_1_wd),
+    .src_wd_i     (com_out_ctl_1_rst_req_1_wd),
     .dst_de_i     (1'b0),
     .dst_d_i      ('0),
-    .src_busy_o   (com_out_ctl_1_gsc_rst_1_busy),
-    .src_qs_o     (com_out_ctl_1_gsc_rst_1_qs),
+    .src_busy_o   (com_out_ctl_1_rst_req_1_busy),
+    .src_qs_o     (com_out_ctl_1_rst_req_1_qs),
     .dst_qe_o     (),
-    .q            (reg2hw.com_out_ctl[1].gsc_rst.q)
+    .q            (reg2hw.com_out_ctl[1].rst_req.q)
   );
 
 
@@ -3158,25 +3258,25 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  // F[gsc_rst_2]: 3:3
+  // F[rst_req_2]: 3:3
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_com_out_ctl_2_gsc_rst_2 (
+  ) u_com_out_ctl_2_rst_req_2 (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
     .src_we_i     (com_out_ctl_2_we & regwen_qs),
-    .src_wd_i     (com_out_ctl_2_gsc_rst_2_wd),
+    .src_wd_i     (com_out_ctl_2_rst_req_2_wd),
     .dst_de_i     (1'b0),
     .dst_d_i      ('0),
-    .src_busy_o   (com_out_ctl_2_gsc_rst_2_busy),
-    .src_qs_o     (com_out_ctl_2_gsc_rst_2_qs),
+    .src_busy_o   (com_out_ctl_2_rst_req_2_busy),
+    .src_qs_o     (com_out_ctl_2_rst_req_2_qs),
     .dst_qe_o     (),
-    .q            (reg2hw.com_out_ctl[2].gsc_rst.q)
+    .q            (reg2hw.com_out_ctl[2].rst_req.q)
   );
 
 
@@ -3249,25 +3349,25 @@ module sysrst_ctrl_reg_top (
   );
 
 
-  // F[gsc_rst_3]: 3:3
+  // F[rst_req_3]: 3:3
   prim_subreg_async #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_com_out_ctl_3_gsc_rst_3 (
+  ) u_com_out_ctl_3_rst_req_3 (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
     .src_we_i     (com_out_ctl_3_we & regwen_qs),
-    .src_wd_i     (com_out_ctl_3_gsc_rst_3_wd),
+    .src_wd_i     (com_out_ctl_3_rst_req_3_wd),
     .dst_de_i     (1'b0),
     .dst_d_i      ('0),
-    .src_busy_o   (com_out_ctl_3_gsc_rst_3_busy),
-    .src_qs_o     (com_out_ctl_3_gsc_rst_3_qs),
+    .src_busy_o   (com_out_ctl_3_rst_req_3_busy),
+    .src_qs_o     (com_out_ctl_3_rst_req_3_qs),
     .dst_qe_o     (),
-    .q            (reg2hw.com_out_ctl[3].gsc_rst.q)
+    .q            (reg2hw.com_out_ctl[3].rst_req.q)
   );
 
 
@@ -3644,7 +3744,7 @@ module sysrst_ctrl_reg_top (
     addr_hit[ 8] = (reg_addr == SYSRST_CTRL_ULP_PWRB_DEBOUNCE_CTL_OFFSET);
     addr_hit[ 9] = (reg_addr == SYSRST_CTRL_ULP_CTL_OFFSET);
     addr_hit[10] = (reg_addr == SYSRST_CTRL_ULP_STATUS_OFFSET);
-    addr_hit[11] = (reg_addr == SYSRST_CTRL_WK_STATUS_OFFSET);
+    addr_hit[11] = (reg_addr == SYSRST_CTRL_WKUP_STATUS_OFFSET);
     addr_hit[12] = (reg_addr == SYSRST_CTRL_KEY_INVERT_CTL_OFFSET);
     addr_hit[13] = (reg_addr == SYSRST_CTRL_PIN_ALLOWED_CTL_OFFSET);
     addr_hit[14] = (reg_addr == SYSRST_CTRL_PIN_OUT_CTL_OFFSET);
@@ -3744,9 +3844,9 @@ module sysrst_ctrl_reg_top (
   assign ulp_status_we = addr_hit[10] & reg_we & !reg_error;
 
   assign ulp_status_wd = reg_wdata[0];
-  assign wk_status_we = addr_hit[11] & reg_we & !reg_error;
+  assign wkup_status_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign wk_status_wd = reg_wdata[0];
+  assign wkup_status_wd = reg_wdata[0];
   assign key_invert_ctl_we = addr_hit[12] & reg_we & !reg_error;
 
   assign key_invert_ctl_key0_in_wd = reg_wdata[0];
@@ -3788,19 +3888,23 @@ module sysrst_ctrl_reg_top (
 
   assign pin_allowed_ctl_z3_wakeup_0_wd = reg_wdata[6];
 
-  assign pin_allowed_ctl_bat_disable_1_wd = reg_wdata[7];
+  assign pin_allowed_ctl_flash_wp_l_0_wd = reg_wdata[7];
 
-  assign pin_allowed_ctl_ec_rst_l_1_wd = reg_wdata[8];
+  assign pin_allowed_ctl_bat_disable_1_wd = reg_wdata[8];
 
-  assign pin_allowed_ctl_pwrb_out_1_wd = reg_wdata[9];
+  assign pin_allowed_ctl_ec_rst_l_1_wd = reg_wdata[9];
 
-  assign pin_allowed_ctl_key0_out_1_wd = reg_wdata[10];
+  assign pin_allowed_ctl_pwrb_out_1_wd = reg_wdata[10];
 
-  assign pin_allowed_ctl_key1_out_1_wd = reg_wdata[11];
+  assign pin_allowed_ctl_key0_out_1_wd = reg_wdata[11];
 
-  assign pin_allowed_ctl_key2_out_1_wd = reg_wdata[12];
+  assign pin_allowed_ctl_key1_out_1_wd = reg_wdata[12];
 
-  assign pin_allowed_ctl_z3_wakeup_1_wd = reg_wdata[13];
+  assign pin_allowed_ctl_key2_out_1_wd = reg_wdata[13];
+
+  assign pin_allowed_ctl_z3_wakeup_1_wd = reg_wdata[14];
+
+  assign pin_allowed_ctl_flash_wp_l_1_wd = reg_wdata[15];
   assign pin_out_ctl_we = addr_hit[14] & reg_we & !reg_error;
 
   assign pin_out_ctl_bat_disable_wd = reg_wdata[0];
@@ -3816,6 +3920,8 @@ module sysrst_ctrl_reg_top (
   assign pin_out_ctl_key2_out_wd = reg_wdata[5];
 
   assign pin_out_ctl_z3_wakeup_wd = reg_wdata[6];
+
+  assign pin_out_ctl_flash_wp_l_wd = reg_wdata[7];
   assign pin_out_value_we = addr_hit[15] & reg_we & !reg_error;
 
   assign pin_out_value_bat_disable_wd = reg_wdata[0];
@@ -3831,6 +3937,8 @@ module sysrst_ctrl_reg_top (
   assign pin_out_value_key2_out_wd = reg_wdata[5];
 
   assign pin_out_value_z3_wakeup_wd = reg_wdata[6];
+
+  assign pin_out_value_flash_wp_l_wd = reg_wdata[7];
   assign key_intr_ctl_we = addr_hit[17] & reg_we & !reg_error;
 
   assign key_intr_ctl_pwrb_in_h2l_wd = reg_wdata[0];
@@ -3941,7 +4049,7 @@ module sysrst_ctrl_reg_top (
 
   assign com_out_ctl_0_ec_rst_0_wd = reg_wdata[2];
 
-  assign com_out_ctl_0_gsc_rst_0_wd = reg_wdata[3];
+  assign com_out_ctl_0_rst_req_0_wd = reg_wdata[3];
   assign com_out_ctl_1_we = addr_hit[30] & reg_we & !reg_error;
 
   assign com_out_ctl_1_bat_disable_1_wd = reg_wdata[0];
@@ -3950,7 +4058,7 @@ module sysrst_ctrl_reg_top (
 
   assign com_out_ctl_1_ec_rst_1_wd = reg_wdata[2];
 
-  assign com_out_ctl_1_gsc_rst_1_wd = reg_wdata[3];
+  assign com_out_ctl_1_rst_req_1_wd = reg_wdata[3];
   assign com_out_ctl_2_we = addr_hit[31] & reg_we & !reg_error;
 
   assign com_out_ctl_2_bat_disable_2_wd = reg_wdata[0];
@@ -3959,7 +4067,7 @@ module sysrst_ctrl_reg_top (
 
   assign com_out_ctl_2_ec_rst_2_wd = reg_wdata[2];
 
-  assign com_out_ctl_2_gsc_rst_2_wd = reg_wdata[3];
+  assign com_out_ctl_2_rst_req_2_wd = reg_wdata[3];
   assign com_out_ctl_3_we = addr_hit[32] & reg_we & !reg_error;
 
   assign com_out_ctl_3_bat_disable_3_wd = reg_wdata[0];
@@ -3968,7 +4076,7 @@ module sysrst_ctrl_reg_top (
 
   assign com_out_ctl_3_ec_rst_3_wd = reg_wdata[2];
 
-  assign com_out_ctl_3_gsc_rst_3_wd = reg_wdata[3];
+  assign com_out_ctl_3_rst_req_3_wd = reg_wdata[3];
   assign combo_intr_status_we = addr_hit[33] & reg_we & !reg_error;
 
   assign combo_intr_status_combo0_h2l_wd = reg_wdata[0];
@@ -4053,7 +4161,7 @@ module sysrst_ctrl_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[0] = wk_status_qs;
+        reg_rdata_next[0] = wkup_status_qs;
       end
 
       addr_hit[12]: begin
@@ -4079,13 +4187,15 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next[4] = pin_allowed_ctl_key1_out_0_qs;
         reg_rdata_next[5] = pin_allowed_ctl_key2_out_0_qs;
         reg_rdata_next[6] = pin_allowed_ctl_z3_wakeup_0_qs;
-        reg_rdata_next[7] = pin_allowed_ctl_bat_disable_1_qs;
-        reg_rdata_next[8] = pin_allowed_ctl_ec_rst_l_1_qs;
-        reg_rdata_next[9] = pin_allowed_ctl_pwrb_out_1_qs;
-        reg_rdata_next[10] = pin_allowed_ctl_key0_out_1_qs;
-        reg_rdata_next[11] = pin_allowed_ctl_key1_out_1_qs;
-        reg_rdata_next[12] = pin_allowed_ctl_key2_out_1_qs;
-        reg_rdata_next[13] = pin_allowed_ctl_z3_wakeup_1_qs;
+        reg_rdata_next[7] = pin_allowed_ctl_flash_wp_l_0_qs;
+        reg_rdata_next[8] = pin_allowed_ctl_bat_disable_1_qs;
+        reg_rdata_next[9] = pin_allowed_ctl_ec_rst_l_1_qs;
+        reg_rdata_next[10] = pin_allowed_ctl_pwrb_out_1_qs;
+        reg_rdata_next[11] = pin_allowed_ctl_key0_out_1_qs;
+        reg_rdata_next[12] = pin_allowed_ctl_key1_out_1_qs;
+        reg_rdata_next[13] = pin_allowed_ctl_key2_out_1_qs;
+        reg_rdata_next[14] = pin_allowed_ctl_z3_wakeup_1_qs;
+        reg_rdata_next[15] = pin_allowed_ctl_flash_wp_l_1_qs;
       end
 
       addr_hit[14]: begin
@@ -4096,6 +4206,7 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next[4] = pin_out_ctl_key1_out_qs;
         reg_rdata_next[5] = pin_out_ctl_key2_out_qs;
         reg_rdata_next[6] = pin_out_ctl_z3_wakeup_qs;
+        reg_rdata_next[7] = pin_out_ctl_flash_wp_l_qs;
       end
 
       addr_hit[15]: begin
@@ -4106,6 +4217,7 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next[4] = pin_out_value_key1_out_qs;
         reg_rdata_next[5] = pin_out_value_key2_out_qs;
         reg_rdata_next[6] = pin_out_value_z3_wakeup_qs;
+        reg_rdata_next[7] = pin_out_value_flash_wp_l_qs;
       end
 
       addr_hit[16]: begin
@@ -4203,28 +4315,28 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next[0] = com_out_ctl_0_bat_disable_0_qs;
         reg_rdata_next[1] = com_out_ctl_0_interrupt_0_qs;
         reg_rdata_next[2] = com_out_ctl_0_ec_rst_0_qs;
-        reg_rdata_next[3] = com_out_ctl_0_gsc_rst_0_qs;
+        reg_rdata_next[3] = com_out_ctl_0_rst_req_0_qs;
       end
 
       addr_hit[30]: begin
         reg_rdata_next[0] = com_out_ctl_1_bat_disable_1_qs;
         reg_rdata_next[1] = com_out_ctl_1_interrupt_1_qs;
         reg_rdata_next[2] = com_out_ctl_1_ec_rst_1_qs;
-        reg_rdata_next[3] = com_out_ctl_1_gsc_rst_1_qs;
+        reg_rdata_next[3] = com_out_ctl_1_rst_req_1_qs;
       end
 
       addr_hit[31]: begin
         reg_rdata_next[0] = com_out_ctl_2_bat_disable_2_qs;
         reg_rdata_next[1] = com_out_ctl_2_interrupt_2_qs;
         reg_rdata_next[2] = com_out_ctl_2_ec_rst_2_qs;
-        reg_rdata_next[3] = com_out_ctl_2_gsc_rst_2_qs;
+        reg_rdata_next[3] = com_out_ctl_2_rst_req_2_qs;
       end
 
       addr_hit[32]: begin
         reg_rdata_next[0] = com_out_ctl_3_bat_disable_3_qs;
         reg_rdata_next[1] = com_out_ctl_3_interrupt_3_qs;
         reg_rdata_next[2] = com_out_ctl_3_ec_rst_3_qs;
-        reg_rdata_next[3] = com_out_ctl_3_gsc_rst_3_qs;
+        reg_rdata_next[3] = com_out_ctl_3_rst_req_3_qs;
       end
 
       addr_hit[33]: begin
@@ -4278,7 +4390,7 @@ module sysrst_ctrl_reg_top (
         reg_busy = ulp_status_busy;
       end
       addr_hit[11]: begin
-        reg_busy = wk_status_busy;
+        reg_busy = wkup_status_busy;
       end
       addr_hit[12]: begin
         reg_busy =
@@ -4304,13 +4416,15 @@ module sysrst_ctrl_reg_top (
           pin_allowed_ctl_key1_out_0_busy |
           pin_allowed_ctl_key2_out_0_busy |
           pin_allowed_ctl_z3_wakeup_0_busy |
+          pin_allowed_ctl_flash_wp_l_0_busy |
           pin_allowed_ctl_bat_disable_1_busy |
           pin_allowed_ctl_ec_rst_l_1_busy |
           pin_allowed_ctl_pwrb_out_1_busy |
           pin_allowed_ctl_key0_out_1_busy |
           pin_allowed_ctl_key1_out_1_busy |
           pin_allowed_ctl_key2_out_1_busy |
-          pin_allowed_ctl_z3_wakeup_1_busy;
+          pin_allowed_ctl_z3_wakeup_1_busy |
+          pin_allowed_ctl_flash_wp_l_1_busy;
       end
       addr_hit[14]: begin
         reg_busy =
@@ -4320,7 +4434,8 @@ module sysrst_ctrl_reg_top (
           pin_out_ctl_key0_out_busy |
           pin_out_ctl_key1_out_busy |
           pin_out_ctl_key2_out_busy |
-          pin_out_ctl_z3_wakeup_busy;
+          pin_out_ctl_z3_wakeup_busy |
+          pin_out_ctl_flash_wp_l_busy;
       end
       addr_hit[15]: begin
         reg_busy =
@@ -4330,7 +4445,8 @@ module sysrst_ctrl_reg_top (
           pin_out_value_key0_out_busy |
           pin_out_value_key1_out_busy |
           pin_out_value_key2_out_busy |
-          pin_out_value_z3_wakeup_busy;
+          pin_out_value_z3_wakeup_busy |
+          pin_out_value_flash_wp_l_busy;
       end
       addr_hit[17]: begin
         reg_busy =
@@ -4413,28 +4529,28 @@ module sysrst_ctrl_reg_top (
           com_out_ctl_0_bat_disable_0_busy |
           com_out_ctl_0_interrupt_0_busy |
           com_out_ctl_0_ec_rst_0_busy |
-          com_out_ctl_0_gsc_rst_0_busy;
+          com_out_ctl_0_rst_req_0_busy;
       end
       addr_hit[30]: begin
         reg_busy =
           com_out_ctl_1_bat_disable_1_busy |
           com_out_ctl_1_interrupt_1_busy |
           com_out_ctl_1_ec_rst_1_busy |
-          com_out_ctl_1_gsc_rst_1_busy;
+          com_out_ctl_1_rst_req_1_busy;
       end
       addr_hit[31]: begin
         reg_busy =
           com_out_ctl_2_bat_disable_2_busy |
           com_out_ctl_2_interrupt_2_busy |
           com_out_ctl_2_ec_rst_2_busy |
-          com_out_ctl_2_gsc_rst_2_busy;
+          com_out_ctl_2_rst_req_2_busy;
       end
       addr_hit[32]: begin
         reg_busy =
           com_out_ctl_3_bat_disable_3_busy |
           com_out_ctl_3_interrupt_3_busy |
           com_out_ctl_3_ec_rst_3_busy |
-          com_out_ctl_3_gsc_rst_3_busy;
+          com_out_ctl_3_rst_req_3_busy;
       end
       addr_hit[33]: begin
         reg_busy =
