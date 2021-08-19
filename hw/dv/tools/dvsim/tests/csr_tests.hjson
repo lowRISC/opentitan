@@ -22,6 +22,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_hw_reset"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 5
     }
 
     {
@@ -29,6 +30,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_rw"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 20
     }
 
     {
@@ -36,6 +38,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_bit_bash"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 5
     }
 
     {
@@ -43,6 +46,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_aliasing"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 5
     }
 
     {
@@ -50,6 +54,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+run_same_csr_outstanding"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 20
     }
 
     {
@@ -57,6 +62,7 @@
       build_mode: "cover_reg_top"
       run_opts: ["+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 20
     }
   ]
 
