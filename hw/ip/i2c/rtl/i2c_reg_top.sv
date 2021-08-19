@@ -3221,7 +3221,6 @@ module i2c_reg_top (
   end
 
 
-
   // Unused signal tieoff
 
   // wdata / byte enable are not always fully used
