@@ -124,7 +124,8 @@ module otbn_controller
   input  logic rnd_valid_i,
 
   input  logic        state_reset_i,
-  output logic [31:0] insn_cnt_o
+  output logic [31:0] insn_cnt_o,
+  input  logic        illegal_bus_access_i
 );
   otbn_state_e state_q, state_d, state_raw;
 
@@ -326,7 +327,7 @@ module otbn_controller
     end
   end
 
-  assign err_bits_o.fatal_illegal_bus_access = 1'b0; // TODO: implement
+  assign err_bits_o.fatal_illegal_bus_access = illegal_bus_access_i;
   assign err_bits_o.fatal_reg                = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
   assign err_bits_o.fatal_imem               = insn_fetch_err_i;
   assign err_bits_o.fatal_dmem               = lsu_rdata_err_i;
