@@ -99,10 +99,8 @@ class Branch(SnippetGen):
         off_min, off_max = off_rng
 
         # Pick the source GPRs that we're comparing.
-        assert isinstance(grs1_op.op_type, RegOperandType)
-        assert isinstance(grs2_op.op_type, RegOperandType)
-        grs1 = model.pick_reg_operand_value(grs1_op.op_type)
-        grs2 = model.pick_reg_operand_value(grs2_op.op_type)
+        grs1 = model.pick_operand_value(grs1_op.op_type)
+        grs2 = model.pick_operand_value(grs2_op.op_type)
         if grs1 is None or grs2 is None:
             return None
 
