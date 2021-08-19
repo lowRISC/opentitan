@@ -70,7 +70,6 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.cmd_data_q.push_back(item.h_data);
         end
       end
-      @(posedge cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack);
       `uvm_info(`gfn, $sformatf("Captured item: %s", cs_item.convert2string()), UVM_HIGH)
       analysis_port.write(cs_item);
     end
