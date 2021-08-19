@@ -54,6 +54,10 @@ class CallStack:
         assert self._max_depth <= 8
         return self._max_depth == 8
 
+    def depth_range(self) -> Tuple[int, int]:
+        '''Return the (inclusive) range of possible depths'''
+        return (self._min_depth, self._max_depth)
+
     def pop(self) -> None:
         assert 0 < self._min_depth
         self._min_depth -= 1
