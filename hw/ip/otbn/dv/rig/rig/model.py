@@ -12,6 +12,9 @@ from shared.operand import (OperandType, EnumOperandType,
 from .known_mem import KnownMem
 from .program import ProgInsn
 
+# A dictionary mapping integers to weights
+WDict = Dict[int, float]
+
 
 class CallStack:
     '''An abstract model of the x1 call stack'''
@@ -378,37 +381,35 @@ class Model:
         assert mem_type in self._known_mem
         self._known_mem[mem_type].touch_range(base, width)
 
-    def pick_operand_value(self, op_type: OperandType) -> Optional[int]:
+    def pick_operand_value(self,
+                           op_type: OperandType,
+                           weights: Optional[WDict] = None) -> Optional[int]:
         '''Pick a random value for an operand
 
         The result will always be non-negative: if the operand is a signed
         immediate, this is encoded as 2s complement.
 
+        If op_type is a RegOperandType, the weights argument will be used to
+        bias towards particular values. Registers that don't appear in the
+        dictionary get a default weight of 1.
+
         '''
         if isinstance(op_type, RegOperandType):
-            return self.pick_reg_operand_value(op_type)
-
-        op_rng = op_type.get_op_val_range(self.pc)
-        if op_rng is None:
-            # If we don't know the width, the only immediate that we *know*
-            # is going to be valid is 0.
-            return 0
-
-        if isinstance(op_type, ImmOperandType):
-            shift = op_type.shift
+            return self._pick_reg_operand_value(op_type, weights)
         else:
-            shift = 0
+            assert weights is None
+            if isinstance(op_type, ImmOperandType):
+                return self._pick_imm_operand_value(op_type)
+            elif isinstance(op_type, EnumOperandType):
+                return random.randrange(0, len(op_type.items))
+            if isinstance(op_type, OptionOperandType):
+                return random.randint(0, 1)
 
-        align = 1 << shift
+            assert 0
 
-        lo, hi = op_rng
-        sh_lo = (lo + align - 1) // align
-        sh_hi = hi // align
-
-        op_val = random.randint(sh_lo, sh_hi) << shift
-        return op_type.op_val_to_enc_val(op_val, self.pc)
-
-    def pick_reg_operand_value(self, op_type: RegOperandType) -> Optional[int]:
+    def _pick_reg_operand_value(self,
+                                op_type: RegOperandType,
+                                weights: Optional[WDict]) -> Optional[int]:
         '''Pick a random value for a register operand
 
         Returns None if there's no valid value possible.
@@ -458,7 +459,43 @@ class Model:
             else:
                 reg_set.discard(1)
 
-        return None if not reg_set else random.choice(list(reg_set))
+        if not reg_set:
+            return None
+
+        if weights is None:
+            return random.choice(list(reg_set))
+
+        regs = []
+        reg_weights = []
+        for reg in reg_set:
+            weight = weights.get(reg, 1)
+            assert weight >= 0
+            if weight > 0:
+                regs.append(reg)
+                reg_weights.append(weight)
+
+        if not regs:
+            return None
+
+        return random.choices(regs, weights=reg_weights)[0]
+
+    def _pick_imm_operand_value(self,
+                                op_type: ImmOperandType) -> Optional[int]:
+
+        op_rng = op_type.get_op_val_range(self.pc)
+        if op_rng is None:
+            # If we don't know the width, the only immediate that we *know*
+            # is going to be valid is 0.
+            return 0
+
+        align = 1 << op_type.shift
+
+        lo, hi = op_rng
+        sh_lo = (lo + align - 1) // align
+        sh_hi = hi // align
+
+        op_val = random.randint(sh_lo, sh_hi) << op_type.shift
+        return op_type.op_val_to_enc_val(op_val, self.pc)
 
     def all_regs_with_known_vals(self) -> Dict[str, List[Tuple[int, int]]]:
         '''Like regs_with_known_vals, but returns all reg types'''
