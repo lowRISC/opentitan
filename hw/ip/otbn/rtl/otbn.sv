@@ -88,6 +88,7 @@ module otbn
   logic start_d, start_q;
   logic busy_d, busy_q;
   logic done;
+  logic illegal_bus_access_d, illegal_bus_access_q;
 
   err_bits_t err_bits;
 
@@ -170,6 +171,7 @@ module otbn
   logic imem_rvalid;
   logic [1:0] imem_rerror_vec;
   logic imem_rerror;
+  logic imem_illegal_bus_access;
 
   logic imem_req_core;
   logic imem_write_core;
@@ -180,6 +182,7 @@ module otbn
   logic imem_rerror_core;
 
   logic imem_req_bus;
+  logic imem_dummy_response_q, imem_dummy_response_d;
   logic imem_write_bus;
   logic [ImemIndexWidth-1:0] imem_index_bus;
   logic [38:0] imem_wdata_bus;
@@ -283,7 +286,8 @@ module otbn
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
-  assign imem_gnt_bus = imem_req_bus & ~imem_access_core;
+  // Always grant to bus accesses, when OTBN is running a dummy response is returned
+  assign imem_gnt_bus = imem_req_bus;
 
   tlul_adapter_sram #(
     .SramAw      (ImemIndexWidth),
@@ -311,6 +315,7 @@ module otbn
     .rerror_i    (imem_rerror_bus         )
   );
 
+
   // Mux core and bus access into IMEM
   assign imem_access_core = busy_q | start_q;
 
@@ -318,6 +323,17 @@ module otbn
   assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
   assign imem_index = imem_access_core ? imem_index_core      : imem_index_bus;
   assign imem_wdata = imem_access_core ? 39'(imem_wdata_core) : imem_wdata_bus;
+
+  assign imem_illegal_bus_access = imem_req_bus & imem_access_core;
+
+  assign imem_dummy_response_d = imem_illegal_bus_access;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      imem_dummy_response_q <= 1'b0;
+    end else begin
+      imem_dummy_response_q <= imem_dummy_response_d;
+    end
+  end
 
   // The instruction memory only supports 32b word writes, so we hardcode its
   // wmask here.
@@ -334,10 +350,11 @@ module otbn
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
-  assign imem_rdata_bus  = !imem_access_core ? imem_rdata : 39'b0;
+  assign imem_rdata_bus  = !imem_access_core && !illegal_bus_access_q ? imem_rdata : 39'b0;
   assign imem_rdata_core = imem_rdata[31:0];
 
-  assign imem_rvalid_bus  = !imem_access_core ? imem_rvalid : 1'b0;
+  // When an illegal bus access is seen, always return a dummy response the follow cycle.
+  assign imem_rvalid_bus  = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
   // imem_rerror_bus is passed to a TLUL adapter to report read errors back to the TL interface.
@@ -368,6 +385,7 @@ module otbn
   logic dmem_rvalid;
   logic [BaseWordsPerWLEN*2-1:0] dmem_rerror_vec;
   logic dmem_rerror;
+  logic dmem_illegal_bus_access;
 
   logic dmem_req_core;
   logic dmem_write_core;
@@ -380,6 +398,7 @@ module otbn
   logic dmem_rerror_core;
 
   logic dmem_req_bus;
+  logic dmem_dummy_response_q, dmem_dummy_response_d;
   logic dmem_write_bus;
   logic [DmemIndexWidth-1:0] dmem_index_bus;
   logic [ExtWLEN-1:0] dmem_wdata_bus;
@@ -465,7 +484,8 @@ module otbn
 
   // DMEM access from main TL-UL bus
   logic dmem_gnt_bus;
-  assign dmem_gnt_bus = dmem_req_bus & ~dmem_access_core;
+  // Always grant to bus accesses, when OTBN is running a dummy response is returned
+  assign dmem_gnt_bus = dmem_req_bus;
 
   tlul_adapter_sram #(
     .SramAw      (DmemIndexWidth),
@@ -502,13 +522,26 @@ module otbn
   assign dmem_index = dmem_access_core ? dmem_index_core : dmem_index_bus;
   assign dmem_wdata = dmem_access_core ? dmem_wdata_core : dmem_wdata_bus;
 
+  assign dmem_illegal_bus_access = dmem_req_bus & dmem_access_core;
+
+  assign dmem_dummy_response_d = dmem_illegal_bus_access;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dmem_dummy_response_q <= 1'b0;
+    end else begin
+      dmem_dummy_response_q <= dmem_dummy_response_d;
+    end
+  end
+
   // Explicitly tie off bus interface during core operation to avoid leaking
-  // DMEM data through the bus unintentionally.
-  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata : '0;
+  // DMEM data through the bus unintentionally. Once an illegal bus access is seen always return
+  // 0 data.
+  assign dmem_rdata_bus  = !dmem_access_core && !illegal_bus_access_q ? dmem_rdata : '0;
   assign dmem_rdata_core = dmem_rdata;
 
-  assign dmem_rvalid_bus  = !dmem_access_core ? dmem_rvalid : 1'b0;
-  assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
+  // When an illegal bus access is seen, always return a dummy response the follow cycle.
+  assign dmem_rvalid_bus  = (~dmem_access_core & dmem_rvalid) | dmem_dummy_response_q;
+  assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid : 1'b0;
 
   // Expand the error signal to 2 bits and mask when the core has access. See note above
   // imem_rerror_bus for details.
@@ -547,12 +580,17 @@ module otbn
   // CMD.start ("start" is omitted by reggen since it is the only field).
   // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
   assign start_d = reg2hw.cmd.qe & reg2hw.cmd.q;
+  assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
+  // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
+  // path from the TL interface into the OTBN core.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      start_q <= 1'b0;
+      start_q              <= 1'b0;
+      illegal_bus_access_q <= 1'b0;
     end else begin
-      start_q <= start_d;
+      start_q              <= start_d;
+      illegal_bus_access_q <= illegal_bus_access_d;
     end
   end
 
@@ -606,8 +644,8 @@ module otbn
   // TODO: Register file errors
   assign hw2reg.fatal_alert_cause.reg_error.de = 0;
   assign hw2reg.fatal_alert_cause.reg_error.d  = 0;
-  assign hw2reg.fatal_alert_cause.illegal_bus_access.de = 1'b0; // TODO: implement
-  assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = 1'b0; // TODO: implement
+  assign hw2reg.fatal_alert_cause.illegal_bus_access.de = illegal_bus_access_d;
+  assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
@@ -622,7 +660,10 @@ module otbn
                                   reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = bus_integrity_error | imem_rerror | dmem_rerror;
+  assign alerts[AlertFatal] = illegal_bus_access_d |
+                              bus_integrity_error  |
+                              imem_rerror          |
+                              dmem_rerror;
   assign alerts[AlertRecov] = 1'b0; // TODO: Implement
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
@@ -765,41 +806,42 @@ module otbn
       .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni (rst_n),
+      .rst_ni               (rst_n),
 
-      .start_i (start_rtl),
-      .done_o  (done_rtl),
+      .start_i              (start_rtl),
+      .done_o               (done_rtl),
 
-      .err_bits_o (err_bits_rtl),
+      .err_bits_o           (err_bits_rtl),
 
-      .start_addr_i  (start_addr),
+      .start_addr_i         (start_addr),
 
-      .imem_req_o    (imem_req_core),
-      .imem_addr_o   (imem_addr_core),
-      .imem_wdata_o  (imem_wdata_core),
-      .imem_rdata_i  (imem_rdata_core),
-      .imem_rvalid_i (imem_rvalid_core),
-      .imem_rerror_i (imem_rerror_core),
+      .imem_req_o           (imem_req_core),
+      .imem_addr_o          (imem_addr_core),
+      .imem_wdata_o         (imem_wdata_core),
+      .imem_rdata_i         (imem_rdata_core),
+      .imem_rvalid_i        (imem_rvalid_core),
+      .imem_rerror_i        (imem_rerror_core),
 
-      .dmem_req_o    (dmem_req_core),
-      .dmem_write_o  (dmem_write_core),
-      .dmem_addr_o   (dmem_addr_core),
-      .dmem_wdata_o  (dmem_wdata_core),
-      .dmem_wmask_o  (dmem_wmask_core),
-      .dmem_rmask_o  (dmem_rmask_core_d),
-      .dmem_rdata_i  (dmem_rdata_core),
-      .dmem_rvalid_i (dmem_rvalid_core),
-      .dmem_rerror_i (dmem_rerror_core),
+      .dmem_req_o           (dmem_req_core),
+      .dmem_write_o         (dmem_write_core),
+      .dmem_addr_o          (dmem_addr_core),
+      .dmem_wdata_o         (dmem_wdata_core),
+      .dmem_wmask_o         (dmem_wmask_core),
+      .dmem_rmask_o         (dmem_rmask_core_d),
+      .dmem_rdata_i         (dmem_rdata_core),
+      .dmem_rvalid_i        (dmem_rvalid_core),
+      .dmem_rerror_i        (dmem_rerror_core),
 
-      .edn_rnd_req_o   (edn_rnd_req),
-      .edn_rnd_ack_i   (edn_rnd_ack),
-      .edn_rnd_data_i  (edn_rnd_data),
+      .edn_rnd_req_o        (edn_rnd_req),
+      .edn_rnd_ack_i        (edn_rnd_ack),
+      .edn_rnd_data_i       (edn_rnd_data),
 
-      .edn_urnd_req_o  (edn_urnd_req),
-      .edn_urnd_ack_i  (edn_urnd_ack),
-      .edn_urnd_data_i (edn_urnd_data),
+      .edn_urnd_req_o       (edn_urnd_req),
+      .edn_urnd_ack_i       (edn_urnd_ack),
+      .edn_urnd_data_i      (edn_urnd_data),
 
-      .insn_cnt_o      (insn_cnt_rtl)
+      .insn_cnt_o           (insn_cnt_rtl),
+      .illegal_bus_access_i (illegal_bus_access_q)
     );
   `else
     otbn_core #(
@@ -810,41 +852,42 @@ module otbn
       .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni          (rst_n),
+      .rst_ni               (rst_n),
 
-      .start_i         (start_q),
-      .done_o          (done),
+      .start_i              (start_q),
+      .done_o               (done),
 
-      .err_bits_o      (err_bits),
+      .err_bits_o           (err_bits),
 
-      .start_addr_i    (start_addr),
+      .start_addr_i         (start_addr),
 
-      .imem_req_o      (imem_req_core),
-      .imem_addr_o     (imem_addr_core),
-      .imem_wdata_o    (imem_wdata_core),
-      .imem_rdata_i    (imem_rdata_core),
-      .imem_rvalid_i   (imem_rvalid_core),
-      .imem_rerror_i   (imem_rerror_core),
+      .imem_req_o           (imem_req_core),
+      .imem_addr_o          (imem_addr_core),
+      .imem_wdata_o         (imem_wdata_core),
+      .imem_rdata_i         (imem_rdata_core),
+      .imem_rvalid_i        (imem_rvalid_core),
+      .imem_rerror_i        (imem_rerror_core),
 
-      .dmem_req_o      (dmem_req_core),
-      .dmem_write_o    (dmem_write_core),
-      .dmem_addr_o     (dmem_addr_core),
-      .dmem_wdata_o    (dmem_wdata_core),
-      .dmem_wmask_o    (dmem_wmask_core),
-      .dmem_rmask_o    (dmem_rmask_core_d),
-      .dmem_rdata_i    (dmem_rdata_core),
-      .dmem_rvalid_i   (dmem_rvalid_core),
-      .dmem_rerror_i   (dmem_rerror_core),
+      .dmem_req_o           (dmem_req_core),
+      .dmem_write_o         (dmem_write_core),
+      .dmem_addr_o          (dmem_addr_core),
+      .dmem_wdata_o         (dmem_wdata_core),
+      .dmem_wmask_o         (dmem_wmask_core),
+      .dmem_rmask_o         (dmem_rmask_core_d),
+      .dmem_rdata_i         (dmem_rdata_core),
+      .dmem_rvalid_i        (dmem_rvalid_core),
+      .dmem_rerror_i        (dmem_rerror_core),
 
-      .edn_rnd_req_o   (edn_rnd_req),
-      .edn_rnd_ack_i   (edn_rnd_ack),
-      .edn_rnd_data_i  (edn_rnd_data),
+      .edn_rnd_req_o        (edn_rnd_req),
+      .edn_rnd_ack_i        (edn_rnd_ack),
+      .edn_rnd_data_i       (edn_rnd_data),
 
-      .edn_urnd_req_o  (edn_urnd_req),
-      .edn_urnd_ack_i  (edn_urnd_ack),
-      .edn_urnd_data_i (edn_urnd_data),
+      .edn_urnd_req_o       (edn_urnd_req),
+      .edn_urnd_ack_i       (edn_urnd_ack),
+      .edn_urnd_data_i      (edn_urnd_data),
 
-      .insn_cnt_o      (insn_cnt)
+      .insn_cnt_o           (insn_cnt),
+      .illegal_bus_access_i (illegal_bus_access_q)
     );
   `endif
 

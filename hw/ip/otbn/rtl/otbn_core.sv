@@ -66,7 +66,11 @@ module otbn_core
   input  logic                    edn_urnd_ack_i,
   input  logic [EdnDataWidth-1:0] edn_urnd_data_i,
 
-  output logic [31:0]             insn_cnt_o
+  output logic [31:0]             insn_cnt_o,
+
+  // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in an
+  // fatal error.
+  input  logic                    illegal_bus_access_i
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -348,7 +352,8 @@ module otbn_core
     .rnd_valid_i        (rnd_valid),
 
     .state_reset_i      (state_reset),
-    .insn_cnt_o         (insn_cnt)
+    .insn_cnt_o         (insn_cnt),
+    .illegal_bus_access_i
   );
 
   assign insn_cnt_o = insn_cnt;
