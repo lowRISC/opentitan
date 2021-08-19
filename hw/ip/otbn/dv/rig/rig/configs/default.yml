@@ -10,3 +10,6 @@ inherit:
 
   - cfgs: loopy
     weight: 0.1
+
+  - cfgs: straight-line
+    weight: 0.1

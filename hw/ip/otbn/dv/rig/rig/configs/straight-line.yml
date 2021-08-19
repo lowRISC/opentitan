@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# An custom configuration that doesn't generate any branches, and
+# increases the weight for BadCallStackRW. The idea is that
+# BadCallStackRW needs to know the depth of the call stack in order to
+# under- or overflow it. Branches tend to make this less likely
+# (because if the two sides of the branch use x1 differently, we'll
+# end up with an unknown depth after the phi node), so turning them
+# off makes it much more likely to work.
+
+inherit: base
+
+gen-weights:
+  Branch: 0
+  BadCallStackRW: 100

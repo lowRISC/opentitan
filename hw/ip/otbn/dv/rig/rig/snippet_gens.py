@@ -14,7 +14,7 @@ from .snippet import Snippet
 from .snippet_gen import GenRet, SnippetGen
 
 from .gens.branch import Branch
-from .gens.call_stack_rw import CallStackRW
+from .gens.call_stack_rw import CallStackRW, BadCallStackRW
 from .gens.ecall import ECall
 from .gens.jump import Jump
 from .gens.loop import Loop
@@ -46,6 +46,7 @@ class SnippetGens:
         ECall,
         BadAtEnd,
         BadBNMovr,
+        BadCallStackRW,
         BadDeepLoop,
         BadInsn,
         BadGiantLoop,
