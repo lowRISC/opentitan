@@ -286,13 +286,14 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       exp_status[SramCtrlInitDone] = 0;
       // initialization process only starts once the corresponding key request finishes
       @(negedge in_key_req);
-      // wait 1 cycle for initialization to start
-      cfg.clk_rst_vif.wait_clks(1);
       // initialization process will randomize each line in the SRAM, one cycle each
       //
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space
+      `uvm_info(`gfn, "starting to wait for init", UVM_HIGH)
       cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
+      // Wait a small delay to latch the updated CSR status
+      #1;
       // if we are in escalated state, scr_key_seed_valid will always stay low. otherwise
       // we can set the init done flag here.
       exp_status[SramCtrlInitDone] = status_lc_esc ? 0 : 1;
@@ -654,11 +655,15 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       kdi_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received transaction from kdi_fifo:\n%0s", item.convert2string()), UVM_HIGH)
 
-      // after a KDI transaction is completed, it takes 4 clock cycles in the SRAM domain
+      // after a KDI transaction is completed, it takes 3 clock cycles in the SRAM domain
       // to properly synchronize and propagate the data through the DUT
-      cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
+      cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES + 1);
+
+      // Wait a small delay before updating CSR status
+      #1;
 
       in_key_req = 0;
+      `uvm_info(`gfn, "dropped in_key_req", UVM_HIGH)
 
       // When KDI item is seen, update key, nonce
       {key, nonce, seed_valid} = item.d_data;
@@ -673,7 +678,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       exp_status[SramCtrlScrKeyValid]     = 1;
 
       // if we are in escalated state, scr_key_seed_valid will always stay low
-      exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 :seed_valid;
+      exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 : seed_valid;
 
       `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_HIGH)
@@ -800,6 +805,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
           if (item.a_data[SramCtrlRenewScrKey]) begin
             in_key_req = 1;
             exp_status[SramCtrlScrKeyValid] = 0;
+            `uvm_info(`gfn, "raised in_key_req", UVM_HIGH)
           end
           if (item.a_data[SramCtrlInit]) begin
             in_init = 1;
