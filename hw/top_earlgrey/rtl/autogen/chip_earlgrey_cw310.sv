@@ -84,8 +84,8 @@ module chip_earlgrey_cw310 #(
   parameter int Tap1PadIdx = 16;
   parameter int Dft0PadIdx = 23;
   parameter int Dft1PadIdx = 34;
-  parameter int TckPadIdx = 58;
-  parameter int TmsPadIdx = 59;
+  parameter int TckPadIdx = 59;
+  parameter int TmsPadIdx = 60;
   parameter int TrstNPadIdx = 18;
   parameter int TdiPadIdx = 51;
   parameter int TdoPadIdx = 52;
@@ -108,8 +108,7 @@ module chip_earlgrey_cw310 #(
     usb_dn_pullup_idx: DioUsbdevDnPullup,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirOd, // DIO sysrst_ctrl_aon_pwrb_out
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_out_l
+      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
       BidirTol, // DIO usbdev_tx_mode_se
@@ -121,6 +120,7 @@ module chip_earlgrey_cw310 #(
       BidirTol, // DIO usbdev_sense
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
       BidirTol, // DIO usbdev_dn
       BidirTol, // DIO usbdev_dp
       BidirTol, // DIO usbdev_d
@@ -304,10 +304,10 @@ module chip_earlgrey_cw310 #(
   assign mio_in[42] = 1'b0;
   assign mio_in_raw[42] = 1'b0;
   assign unused_sig[63] = mio_out[42] ^ mio_oe[42];
-  assign dio_in[DioSysrstCtrlAonEcRstOutL] = 1'b0;
-  assign unused_sig[64] = dio_out[DioSysrstCtrlAonEcRstOutL] ^ dio_oe[DioSysrstCtrlAonEcRstOutL];
-  assign dio_in[DioSysrstCtrlAonPwrbOut] = 1'b0;
-  assign unused_sig[65] = dio_out[DioSysrstCtrlAonPwrbOut] ^ dio_oe[DioSysrstCtrlAonPwrbOut];
+  assign dio_in[DioSysrstCtrlAonEcRstL] = 1'b0;
+  assign unused_sig[64] = dio_out[DioSysrstCtrlAonEcRstL] ^ dio_oe[DioSysrstCtrlAonEcRstL];
+  assign dio_in[DioSysrstCtrlAonFlashWpL] = 1'b0;
+  assign unused_sig[65] = dio_out[DioSysrstCtrlAonFlashWpL] ^ dio_oe[DioSysrstCtrlAonFlashWpL];
   assign mio_in[43] = 1'b0;
   assign mio_in_raw[43] = 1'b0;
   assign unused_sig[66] = mio_out[43] ^ mio_oe[43];

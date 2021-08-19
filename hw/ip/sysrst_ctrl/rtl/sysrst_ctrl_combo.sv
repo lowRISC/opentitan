@@ -26,7 +26,7 @@ module sysrst_ctrl_combo
   // Output signals on AON clock
   output                                                               sysrst_ctrl_combo_intr_o,
   output                                                               bat_disable_hw_o,
-  output                                                               gsc_rst_o,
+  output                                                               rst_req_o,
   output                                                               ec_rst_l_hw_o
 );
 
@@ -34,7 +34,7 @@ module sysrst_ctrl_combo
   // Each key combo can select different triggers
   logic [NumCombo-1:0] combo_bat_disable;
   logic [NumCombo-1:0] combo_ec_rst_l;
-  logic [NumCombo-1:0] combo_gsc_rst;
+  logic [NumCombo-1:0] combo_rst_req;
   logic [NumCombo-1:0] combo_intr_pulse;
 
   logic [4:0] in;
@@ -89,13 +89,13 @@ module sysrst_ctrl_combo
       .cfg_intr_en_i(com_out_ctl_i[k].interrupt.q),
       .cfg_bat_disable_en_i(com_out_ctl_i[k].bat_disable.q),
       .cfg_ec_rst_en_i(com_out_ctl_i[k].ec_rst.q),
-      .cfg_gsc_rst_en_i(com_out_ctl_i[k].gsc_rst.q),
+      .cfg_rst_req_en_i(com_out_ctl_i[k].rst_req.q),
       .combo_det_i(combo_det),
       .ec_rst_l_i(ec_rst_l_int_i),
       .ec_rst_ctl_i(ec_rst_ctl_i),
       .combo_intr_pulse_o(combo_intr_pulse[k]),
       .bat_disable_o(combo_bat_disable[k]),
-      .gsc_rst_o(combo_gsc_rst[k]),
+      .rst_req_o(combo_rst_req[k]),
       .ec_rst_l_o(combo_ec_rst_l[k])
     );
   end
@@ -104,8 +104,8 @@ module sysrst_ctrl_combo
   // If any combo triggers bat_disable, assert the signal
   assign bat_disable_hw_o = |(combo_bat_disable);
 
-  // If any combo triggers GSC or EC RST(active low), assert the signal
-  assign gsc_rst_o = |(combo_gsc_rst);
+  // If any combo triggers OT or EC RST(active low), assert the signal
+  assign rst_req_o = |(combo_rst_req);
   assign ec_rst_l_hw_o = &(combo_ec_rst_l);
 
   // Write interrupt status registers using the synced IRQ pulses.

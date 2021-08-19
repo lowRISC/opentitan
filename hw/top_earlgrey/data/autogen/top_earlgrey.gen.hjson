@@ -2709,7 +2709,7 @@
       inter_signal_list:
       [
         {
-          name: aon_gsc_wk
+          name: aon_sysrst_ctrl_wkup_req
           struct: logic
           type: uni
           act: req
@@ -2721,7 +2721,7 @@
           index: 0
         }
         {
-          name: aon_gsc_rst
+          name: aon_sysrst_ctrl_rst_req
           struct: logic
           type: uni
           act: req
@@ -6701,7 +6701,7 @@
       ]
       pwrmgr_aon.wakeups:
       [
-        sysrst_ctrl_aon.aon_gsc_wk
+        sysrst_ctrl_aon.aon_sysrst_ctrl_wkup_req
         adc_ctrl_aon.debug_cable_wakeup
         pinmux_aon.aon_wkup_req
         pinmux_aon.usb_wkup_req
@@ -6709,7 +6709,7 @@
       ]
       pwrmgr_aon.rstreqs:
       [
-        sysrst_ctrl_aon.aon_gsc_rst
+        sysrst_ctrl_aon.aon_sysrst_ctrl_rst_req
         aon_timer_aon.aon_timer_rst_req
       ]
       main.tl_rv_core_ibex__corei:
@@ -9294,7 +9294,7 @@
         type: BidirOd
         bank: VCC
         connection: direct
-        desc: Dedicated sysrst_ctrl output (pwrb_out)
+        desc: Dedicated sysrst_ctrl output (flash_wp_l))
         idx: 22
       }
       {
@@ -9633,14 +9633,6 @@
       }
       {
         instance: sysrst_ctrl_aon
-        port: ec_rst_in_l
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
         port: key0_in
         connection: muxed
         pad: ""
@@ -9681,9 +9673,17 @@
       }
       {
         instance: sysrst_ctrl_aon
-        port: ec_rst_out_l
+        port: ec_rst_l
         connection: direct
         pad: IOR8
+        desc: ""
+        attr: BidirOd
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: flash_wp_l
+        connection: direct
+        pad: IOR9
         desc: ""
         attr: BidirOd
       }
@@ -9714,10 +9714,10 @@
       {
         instance: sysrst_ctrl_aon
         port: pwrb_out
-        connection: direct
-        pad: IOR9
+        connection: muxed
+        pad: ""
         desc: ""
-        attr: BidirOd
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -10324,6 +10324,17 @@
         glob_idx: 41
       }
       {
+        name: sysrst_ctrl_aon_ec_rst_l
+        width: 1
+        type: inout
+        idx: -1
+        pad: IOR8
+        attr: BidirOd
+        connection: direct
+        desc: ""
+        glob_idx: 11
+      }
+      {
         name: spi_device_sck
         width: 1
         type: input
@@ -10332,7 +10343,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 11
+        glob_idx: 12
       }
       {
         name: spi_device_csb
@@ -10343,7 +10354,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 12
+        glob_idx: 13
       }
       {
         name: usbdev_sense
@@ -10354,7 +10365,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 13
+        glob_idx: 14
       }
       {
         name: uart0_rx
@@ -10445,7 +10456,7 @@
         glob_idx: 49
       }
       {
-        name: sysrst_ctrl_aon_ec_rst_in_l
+        name: sysrst_ctrl_aon_key0_in
         width: 1
         type: input
         idx: -1
@@ -10456,7 +10467,7 @@
         glob_idx: 50
       }
       {
-        name: sysrst_ctrl_aon_key0_in
+        name: sysrst_ctrl_aon_key1_in
         width: 1
         type: input
         idx: -1
@@ -10467,7 +10478,7 @@
         glob_idx: 51
       }
       {
-        name: sysrst_ctrl_aon_key1_in
+        name: sysrst_ctrl_aon_key2_in
         width: 1
         type: input
         idx: -1
@@ -10478,7 +10489,7 @@
         glob_idx: 52
       }
       {
-        name: sysrst_ctrl_aon_key2_in
+        name: sysrst_ctrl_aon_pwrb_in
         width: 1
         type: input
         idx: -1
@@ -10489,7 +10500,7 @@
         glob_idx: 53
       }
       {
-        name: sysrst_ctrl_aon_pwrb_in
+        name: sysrst_ctrl_aon_lid_open
         width: 1
         type: input
         idx: -1
@@ -10500,17 +10511,6 @@
         glob_idx: 54
       }
       {
-        name: sysrst_ctrl_aon_lid_open
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 55
-      }
-      {
         name: spi_host0_sck
         width: 1
         type: output
@@ -10519,7 +10519,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 14
+        glob_idx: 15
       }
       {
         name: spi_host0_csb
@@ -10530,7 +10530,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 15
+        glob_idx: 16
       }
       {
         name: usbdev_se0
@@ -10541,7 +10541,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 16
+        glob_idx: 17
       }
       {
         name: usbdev_dp_pullup
@@ -10552,7 +10552,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 17
+        glob_idx: 18
       }
       {
         name: usbdev_dn_pullup
@@ -10563,7 +10563,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 18
+        glob_idx: 19
       }
       {
         name: usbdev_tx_mode_se
@@ -10574,7 +10574,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 19
+        glob_idx: 20
       }
       {
         name: usbdev_suspend
@@ -10585,7 +10585,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 20
+        glob_idx: 21
       }
       {
         name: usbdev_rx_enable
@@ -10596,7 +10596,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 21
+        glob_idx: 22
       }
       {
         name: uart0_tx
@@ -10907,15 +10907,15 @@
         glob_idx: 69
       }
       {
-        name: sysrst_ctrl_aon_ec_rst_out_l
+        name: sysrst_ctrl_aon_flash_wp_l
         width: 1
         type: output
         idx: -1
-        pad: IOR8
+        pad: IOR9
         attr: BidirOd
         connection: direct
         desc: ""
-        glob_idx: 22
+        glob_idx: 23
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -10955,11 +10955,11 @@
         width: 1
         type: output
         idx: -1
-        pad: IOR9
-        attr: BidirOd
-        connection: direct
+        pad: ""
+        attr: ""
+        connection: muxed
         desc: ""
-        glob_idx: 23
+        glob_idx: 73
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -10970,23 +10970,23 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 73
+        glob_idx: 74
       }
     ]
     io_counts:
     {
       dedicated:
       {
-        inouts: 11
+        inouts: 12
         inputs: 3
-        outputs: 10
+        outputs: 9
         pads: 23
       }
       muxed:
       {
         inouts: 42
-        inputs: 14
-        outputs: 32
+        inputs: 13
+        outputs: 33
         pads: 47
       }
     }
@@ -11243,13 +11243,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 58
+            idx: 59
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 59
+            idx: 60
           }
           {
             name: trst_n
@@ -11440,13 +11440,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 58
+            idx: 59
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 59
+            idx: 60
           }
           {
             name: trst_n
@@ -11506,7 +11506,7 @@
   wakeups:
   [
     {
-      name: aon_gsc_wk
+      name: aon_sysrst_ctrl_wkup_req
       width: "1"
       module: sysrst_ctrl_aon
     }
@@ -11534,7 +11534,7 @@
   reset_requests:
   [
     {
-      name: aon_gsc_rst
+      name: aon_sysrst_ctrl_rst_req
       width: "1"
       module: sysrst_ctrl_aon
     }
@@ -14576,7 +14576,7 @@
         index: -1
       }
       {
-        name: aon_gsc_wk
+        name: aon_sysrst_ctrl_wkup_req
         struct: logic
         type: uni
         act: req
@@ -14588,7 +14588,7 @@
         index: 0
       }
       {
-        name: aon_gsc_rst
+        name: aon_sysrst_ctrl_rst_req
         struct: logic
         type: uni
         act: req

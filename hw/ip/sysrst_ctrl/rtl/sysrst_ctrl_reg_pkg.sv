@@ -59,7 +59,7 @@ package sysrst_ctrl_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } sysrst_ctrl_reg2hw_wk_status_reg_t;
+  } sysrst_ctrl_reg2hw_wkup_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -124,6 +124,9 @@ package sysrst_ctrl_reg_pkg;
     } z3_wakeup_0;
     struct packed {
       logic        q;
+    } flash_wp_l_0;
+    struct packed {
+      logic        q;
     } bat_disable_1;
     struct packed {
       logic        q;
@@ -143,6 +146,9 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } z3_wakeup_1;
+    struct packed {
+      logic        q;
+    } flash_wp_l_1;
   } sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t;
 
   typedef struct packed {
@@ -167,6 +173,9 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } z3_wakeup;
+    struct packed {
+      logic        q;
+    } flash_wp_l;
   } sysrst_ctrl_reg2hw_pin_out_ctl_reg_t;
 
   typedef struct packed {
@@ -191,6 +200,9 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } z3_wakeup;
+    struct packed {
+      logic        q;
+    } flash_wp_l;
   } sysrst_ctrl_reg2hw_pin_out_value_reg_t;
 
   typedef struct packed {
@@ -300,7 +312,7 @@ package sysrst_ctrl_reg_pkg;
     } ec_rst;
     struct packed {
       logic        q;
-    } gsc_rst;
+    } rst_req;
   } sysrst_ctrl_reg2hw_com_out_ctl_mreg_t;
 
   typedef struct packed {
@@ -316,7 +328,7 @@ package sysrst_ctrl_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } sysrst_ctrl_hw2reg_wk_status_reg_t;
+  } sysrst_ctrl_hw2reg_wkup_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -421,20 +433,20 @@ package sysrst_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [326:326]
-    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [325:325]
-    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [324:323]
-    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [322:321]
-    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [320:305]
-    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [304:289]
-    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [288:273]
-    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [272:257]
-    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [256:256]
-    sysrst_ctrl_reg2hw_wk_status_reg_t wk_status; // [255:255]
-    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [254:243]
-    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [242:229]
-    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [228:222]
-    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [221:215]
+    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [330:330]
+    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [329:329]
+    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [328:327]
+    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [326:325]
+    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [324:309]
+    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [308:293]
+    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [292:277]
+    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [276:261]
+    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [260:260]
+    sysrst_ctrl_reg2hw_wkup_status_reg_t wkup_status; // [259:259]
+    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [258:247]
+    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [246:231]
+    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [230:223]
+    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [222:215]
     sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [214:203]
     sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [202:187]
     sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [186:170]
@@ -448,7 +460,7 @@ package sysrst_ctrl_reg_pkg;
   typedef struct packed {
     sysrst_ctrl_hw2reg_intr_state_reg_t intr_state; // [51:50]
     sysrst_ctrl_hw2reg_ulp_status_reg_t ulp_status; // [49:48]
-    sysrst_ctrl_hw2reg_wk_status_reg_t wk_status; // [47:46]
+    sysrst_ctrl_hw2reg_wkup_status_reg_t wkup_status; // [47:46]
     sysrst_ctrl_hw2reg_pin_in_value_reg_t pin_in_value; // [45:32]
     sysrst_ctrl_hw2reg_combo_intr_status_reg_t combo_intr_status; // [31:24]
     sysrst_ctrl_hw2reg_key_intr_status_reg_t key_intr_status; // [23:0]
@@ -466,7 +478,7 @@ package sysrst_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_ULP_PWRB_DEBOUNCE_CTL_OFFSET = 8'h 20;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_ULP_CTL_OFFSET = 8'h 24;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_ULP_STATUS_OFFSET = 8'h 28;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_WK_STATUS_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_WKUP_STATUS_OFFSET = 8'h 2c;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_KEY_INVERT_CTL_OFFSET = 8'h 30;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_PIN_ALLOWED_CTL_OFFSET = 8'h 34;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_PIN_OUT_CTL_OFFSET = 8'h 38;
@@ -510,7 +522,7 @@ package sysrst_ctrl_reg_pkg;
     SYSRST_CTRL_ULP_PWRB_DEBOUNCE_CTL,
     SYSRST_CTRL_ULP_CTL,
     SYSRST_CTRL_ULP_STATUS,
-    SYSRST_CTRL_WK_STATUS,
+    SYSRST_CTRL_WKUP_STATUS,
     SYSRST_CTRL_KEY_INVERT_CTL,
     SYSRST_CTRL_PIN_ALLOWED_CTL,
     SYSRST_CTRL_PIN_OUT_CTL,
@@ -549,7 +561,7 @@ package sysrst_ctrl_reg_pkg;
     4'b 0011, // index[ 8] SYSRST_CTRL_ULP_PWRB_DEBOUNCE_CTL
     4'b 0001, // index[ 9] SYSRST_CTRL_ULP_CTL
     4'b 0001, // index[10] SYSRST_CTRL_ULP_STATUS
-    4'b 0001, // index[11] SYSRST_CTRL_WK_STATUS
+    4'b 0001, // index[11] SYSRST_CTRL_WKUP_STATUS
     4'b 0011, // index[12] SYSRST_CTRL_KEY_INVERT_CTL
     4'b 0011, // index[13] SYSRST_CTRL_PIN_ALLOWED_CTL
     4'b 0001, // index[14] SYSRST_CTRL_PIN_OUT_CTL

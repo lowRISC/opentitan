@@ -32,8 +32,8 @@ module chip_earlgrey_asic (
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_out_l
-  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_pwrb_out
+  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
+  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -120,8 +120,7 @@ module chip_earlgrey_asic (
     usb_dn_pullup_idx: DioUsbdevDnPullup,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirOd, // DIO sysrst_ctrl_aon_pwrb_out
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_out_l
+      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
       BidirTol, // DIO usbdev_tx_mode_se
@@ -133,6 +132,7 @@ module chip_earlgrey_asic (
       BidirTol, // DIO usbdev_sense
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
       BidirTol, // DIO usbdev_dn
       BidirTol, // DIO usbdev_dp
       BidirTol, // DIO usbdev_d
@@ -557,8 +557,8 @@ module chip_earlgrey_asic (
 
     // Core-facing
     .dio_in_o ({
-        dio_in[DioSysrstCtrlAonPwrbOut],
-        dio_in[DioSysrstCtrlAonEcRstOutL],
+        dio_in[DioSysrstCtrlAonFlashWpL],
+        dio_in[DioSysrstCtrlAonEcRstL],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -582,8 +582,8 @@ module chip_earlgrey_asic (
         manual_in_por_n
       }),
     .dio_out_i ({
-        dio_out[DioSysrstCtrlAonPwrbOut],
-        dio_out[DioSysrstCtrlAonEcRstOutL],
+        dio_out[DioSysrstCtrlAonFlashWpL],
+        dio_out[DioSysrstCtrlAonEcRstL],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -607,8 +607,8 @@ module chip_earlgrey_asic (
         manual_out_por_n
       }),
     .dio_oe_i ({
-        dio_oe[DioSysrstCtrlAonPwrbOut],
-        dio_oe[DioSysrstCtrlAonEcRstOutL],
+        dio_oe[DioSysrstCtrlAonFlashWpL],
+        dio_oe[DioSysrstCtrlAonEcRstL],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -632,8 +632,8 @@ module chip_earlgrey_asic (
         manual_oe_por_n
       }),
     .dio_attr_i ({
-        dio_attr[DioSysrstCtrlAonPwrbOut],
-        dio_attr[DioSysrstCtrlAonEcRstOutL],
+        dio_attr[DioSysrstCtrlAonFlashWpL],
+        dio_attr[DioSysrstCtrlAonEcRstL],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],

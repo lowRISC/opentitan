@@ -185,9 +185,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [55:0] mio_p2d;
-  logic [73:0] mio_d2p;
-  logic [73:0] mio_en_d2p;
+  logic [54:0] mio_p2d;
+  logic [74:0] mio_d2p;
+  logic [74:0] mio_en_d2p;
   logic [23:0] dio_p2d;
   logic [23:0] dio_d2p;
   logic [23:0] dio_en_d2p;
@@ -297,16 +297,16 @@ module top_earlgrey #(
   // clkmgr_aon
   // sysrst_ctrl_aon
   logic        cio_sysrst_ctrl_aon_ac_present_p2d;
-  logic        cio_sysrst_ctrl_aon_ec_rst_in_l_p2d;
   logic        cio_sysrst_ctrl_aon_key0_in_p2d;
   logic        cio_sysrst_ctrl_aon_key1_in_p2d;
   logic        cio_sysrst_ctrl_aon_key2_in_p2d;
   logic        cio_sysrst_ctrl_aon_pwrb_in_p2d;
   logic        cio_sysrst_ctrl_aon_lid_open_p2d;
+  logic        cio_sysrst_ctrl_aon_ec_rst_l_p2d;
   logic        cio_sysrst_ctrl_aon_bat_disable_d2p;
   logic        cio_sysrst_ctrl_aon_bat_disable_en_d2p;
-  logic        cio_sysrst_ctrl_aon_ec_rst_out_l_d2p;
-  logic        cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p;
+  logic        cio_sysrst_ctrl_aon_flash_wp_l_d2p;
+  logic        cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
   logic        cio_sysrst_ctrl_aon_key0_out_d2p;
   logic        cio_sysrst_ctrl_aon_key0_out_en_d2p;
   logic        cio_sysrst_ctrl_aon_key1_out_d2p;
@@ -317,6 +317,8 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
   logic        cio_sysrst_ctrl_aon_z3_wakeup_d2p;
   logic        cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
+  logic        cio_sysrst_ctrl_aon_ec_rst_l_d2p;
+  logic        cio_sysrst_ctrl_aon_ec_rst_l_en_d2p;
   // adc_ctrl_aon
   // pwm_aon
   logic [5:0]  cio_pwm_aon_pwm_d2p;
@@ -1670,29 +1672,31 @@ module top_earlgrey #(
   ) u_sysrst_ctrl_aon (
 
       // Input
-      .cio_ac_present_i      (cio_sysrst_ctrl_aon_ac_present_p2d),
-      .cio_ec_rst_in_l_i     (cio_sysrst_ctrl_aon_ec_rst_in_l_p2d),
-      .cio_key0_in_i         (cio_sysrst_ctrl_aon_key0_in_p2d),
-      .cio_key1_in_i         (cio_sysrst_ctrl_aon_key1_in_p2d),
-      .cio_key2_in_i         (cio_sysrst_ctrl_aon_key2_in_p2d),
-      .cio_pwrb_in_i         (cio_sysrst_ctrl_aon_pwrb_in_p2d),
-      .cio_lid_open_i        (cio_sysrst_ctrl_aon_lid_open_p2d),
+      .cio_ac_present_i     (cio_sysrst_ctrl_aon_ac_present_p2d),
+      .cio_key0_in_i        (cio_sysrst_ctrl_aon_key0_in_p2d),
+      .cio_key1_in_i        (cio_sysrst_ctrl_aon_key1_in_p2d),
+      .cio_key2_in_i        (cio_sysrst_ctrl_aon_key2_in_p2d),
+      .cio_pwrb_in_i        (cio_sysrst_ctrl_aon_pwrb_in_p2d),
+      .cio_lid_open_i       (cio_sysrst_ctrl_aon_lid_open_p2d),
+      .cio_ec_rst_l_i       (cio_sysrst_ctrl_aon_ec_rst_l_p2d),
 
       // Output
-      .cio_bat_disable_o     (cio_sysrst_ctrl_aon_bat_disable_d2p),
-      .cio_bat_disable_en_o  (cio_sysrst_ctrl_aon_bat_disable_en_d2p),
-      .cio_ec_rst_out_l_o    (cio_sysrst_ctrl_aon_ec_rst_out_l_d2p),
-      .cio_ec_rst_out_l_en_o (cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p),
-      .cio_key0_out_o        (cio_sysrst_ctrl_aon_key0_out_d2p),
-      .cio_key0_out_en_o     (cio_sysrst_ctrl_aon_key0_out_en_d2p),
-      .cio_key1_out_o        (cio_sysrst_ctrl_aon_key1_out_d2p),
-      .cio_key1_out_en_o     (cio_sysrst_ctrl_aon_key1_out_en_d2p),
-      .cio_key2_out_o        (cio_sysrst_ctrl_aon_key2_out_d2p),
-      .cio_key2_out_en_o     (cio_sysrst_ctrl_aon_key2_out_en_d2p),
-      .cio_pwrb_out_o        (cio_sysrst_ctrl_aon_pwrb_out_d2p),
-      .cio_pwrb_out_en_o     (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
-      .cio_z3_wakeup_o       (cio_sysrst_ctrl_aon_z3_wakeup_d2p),
-      .cio_z3_wakeup_en_o    (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
+      .cio_bat_disable_o    (cio_sysrst_ctrl_aon_bat_disable_d2p),
+      .cio_bat_disable_en_o (cio_sysrst_ctrl_aon_bat_disable_en_d2p),
+      .cio_flash_wp_l_o     (cio_sysrst_ctrl_aon_flash_wp_l_d2p),
+      .cio_flash_wp_l_en_o  (cio_sysrst_ctrl_aon_flash_wp_l_en_d2p),
+      .cio_key0_out_o       (cio_sysrst_ctrl_aon_key0_out_d2p),
+      .cio_key0_out_en_o    (cio_sysrst_ctrl_aon_key0_out_en_d2p),
+      .cio_key1_out_o       (cio_sysrst_ctrl_aon_key1_out_d2p),
+      .cio_key1_out_en_o    (cio_sysrst_ctrl_aon_key1_out_en_d2p),
+      .cio_key2_out_o       (cio_sysrst_ctrl_aon_key2_out_d2p),
+      .cio_key2_out_en_o    (cio_sysrst_ctrl_aon_key2_out_en_d2p),
+      .cio_pwrb_out_o       (cio_sysrst_ctrl_aon_pwrb_out_d2p),
+      .cio_pwrb_out_en_o    (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
+      .cio_z3_wakeup_o      (cio_sysrst_ctrl_aon_z3_wakeup_d2p),
+      .cio_z3_wakeup_en_o   (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
+      .cio_ec_rst_l_o       (cio_sysrst_ctrl_aon_ec_rst_l_d2p),
+      .cio_ec_rst_l_en_o    (cio_sysrst_ctrl_aon_ec_rst_l_en_d2p),
 
       // Interrupt
       .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
@@ -1701,8 +1705,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[23:23] ),
 
       // Inter-module signals
-      .aon_gsc_wk_o(pwrmgr_aon_wakeups[0]),
-      .aon_gsc_rst_o(pwrmgr_aon_rstreqs[0]),
+      .aon_sysrst_ctrl_wkup_req_o(pwrmgr_aon_wakeups[0]),
+      .aon_sysrst_ctrl_rst_req_o(pwrmgr_aon_rstreqs[0]),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 
@@ -2880,7 +2884,6 @@ module top_earlgrey #(
   assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
   assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
   assign cio_sysrst_ctrl_aon_ac_present_p2d = mio_p2d[MioInSysrstCtrlAonAcPresent];
-  assign cio_sysrst_ctrl_aon_ec_rst_in_l_p2d = mio_p2d[MioInSysrstCtrlAonEcRstInL];
   assign cio_sysrst_ctrl_aon_key0_in_p2d = mio_p2d[MioInSysrstCtrlAonKey0In];
   assign cio_sysrst_ctrl_aon_key1_in_p2d = mio_p2d[MioInSysrstCtrlAonKey1In];
   assign cio_sysrst_ctrl_aon_key2_in_p2d = mio_p2d[MioInSysrstCtrlAonKey2In];
@@ -2961,6 +2964,7 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_d2p;
 
   // All muxed output enables
@@ -3037,6 +3041,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
 
   // All dedicated inputs
@@ -3053,6 +3058,7 @@ module top_earlgrey #(
   assign cio_usbdev_d_p2d = dio_p2d[DioUsbdevD];
   assign cio_usbdev_dp_p2d = dio_p2d[DioUsbdevDp];
   assign cio_usbdev_dn_p2d = dio_p2d[DioUsbdevDn];
+  assign cio_sysrst_ctrl_aon_ec_rst_l_p2d = dio_p2d[DioSysrstCtrlAonEcRstL];
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
   assign cio_usbdev_sense_p2d = dio_p2d[DioUsbdevSense];
@@ -3069,6 +3075,7 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevD] = cio_usbdev_d_d2p;
   assign dio_d2p[DioUsbdevDp] = cio_usbdev_dp_d2p;
   assign dio_d2p[DioUsbdevDn] = cio_usbdev_dn_d2p;
+  assign dio_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_d2p;
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_d2p[DioUsbdevSense] = 1'b0;
@@ -3080,8 +3087,7 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_d2p;
   assign dio_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_d2p;
   assign dio_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_d2p;
-  assign dio_d2p[DioSysrstCtrlAonEcRstOutL] = cio_sysrst_ctrl_aon_ec_rst_out_l_d2p;
-  assign dio_d2p[DioSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_d2p;
+  assign dio_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_d2p;
 
   // All dedicated output enables
   assign dio_en_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_en_d2p[0];
@@ -3095,6 +3101,7 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevD] = cio_usbdev_d_en_d2p;
   assign dio_en_d2p[DioUsbdevDp] = cio_usbdev_dp_en_d2p;
   assign dio_en_d2p[DioUsbdevDn] = cio_usbdev_dn_en_d2p;
+  assign dio_en_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_en_d2p;
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_en_d2p[DioUsbdevSense] = 1'b0;
@@ -3106,8 +3113,7 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_en_d2p;
   assign dio_en_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_en_d2p;
   assign dio_en_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_en_d2p;
-  assign dio_en_d2p[DioSysrstCtrlAonEcRstOutL] = cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p;
-  assign dio_en_d2p[DioSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
+  assign dio_en_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
 
 
   // make sure scanmode_i is never X (including during reset)
