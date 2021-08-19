@@ -4,27 +4,12 @@
 //
 // Testbench module for prim_esc_sender and prim_esc_receiver_pair.
 //
-// This test has four sequnces:
-// 1). Escalation request sequence:
-//     Drive `esc_req` signal to send an escalation request.
-//     Wait random length of cycles and check `esc_en` and `integ_fail` signals.
-//     Drive `esc_req` back to zero.
-// 2). Esc_tx integrity error sequence:
-//     Drive `esc_req` signal to send an escalation request.
-//     Force `esc_tx.esc_n` to stay high to create signal integrity errors.
-//     Wait for `integ_fail` to fire then release the forced signal.
-//     Drive `esc_req` back to zero.
-// 3). Escalation reverse ping request timeout sequence:
-//     Drive `ping_req` signal to send an escalation ping request.
-//     Wait for ping handshake to finish by waiting for `ping_ok` signal to set.
-//     Drive `ping_req` signal back to 0 and check `esc_en` and `integ_fail` signals.
-//     In the meantime, wait until ping counter timeout for next ping request, and check if
-//     `esc_en` is set.
-//     Reset DUT to clear `esc_en`.
-// 4). Escalation receiver counter fail sequence:
-//     Drive `ping_req` signal to send an escalation ping request.
-//     Wait until `ping_ok` to ensure the ping counter starts to increment.
-//     Force one of the two identical counters to 0 and wait for `esc_en` to set.
+// This test has five sequnces:
+// 1). Random reset during escalation handshake sequence.
+// 2). Escalation request sequence.
+// 3). `Esc_tx` integrity error sequence.
+// 4). Escalation reverse ping timeout sequence.
+// 5). Escalation receiver counter fail sequence.
 
 module prim_esc_tb;
 
@@ -100,7 +85,16 @@ module prim_esc_tb;
     main_clk.set_active();
     main_clk.apply_reset();
 
-    // 1). Escalation request sequence.
+    // Sequence 1. Random reset during escalation handshake sequence.
+    ping_req = 1;
+    // Issue async reset between first and fifth clock cycle to reach FSM coverages.
+    #(($urandom_range(1, ClkPeriod) + $urandom_range(1, 5) * ClkPeriod) * 1ps);
+    main_clk.apply_reset();
+    ping_req = 0;
+
+    $display("Random reset during escalation handshake sequence finished!");
+
+    // Sequence 2. Escalation request sequence.
     esc_req = 1;
     // Drive random length of esc_req and check `esc_en` and `integ_fail` outputs.
     main_clk.wait_clks($urandom_range(1, 20));
@@ -108,22 +102,24 @@ module prim_esc_tb;
     if (esc_en == 0)     test_error("Esc_req did not set esc_en!");
     esc_req = 0;
 
-    $display("Escalation request sequence passed!");
+    $display("Escalation request sequence finished!");
 
-    // 2). Esc_tx integrity error sequence.
+    // Sequence 3. `Esc_tx` integrity error sequence.
     main_clk.wait_clks($urandom_range(1, 20));
     esc_req = 1;
     // Force esc_tx signal to create a integrity fail error case.
     force esc_tx.esc_n = 1;
     wait (integ_fail == 1);
     release esc_tx.esc_n;
+    // Wait #1ps to avoid a race condition on clock edge.
+    #1ps;
     if (esc_en == 1) test_error("Signal integrity error should not set esc_en!");
     esc_req = 0;
 
-    $display("Escalation esc_p/n integrity sequence passed!");
+    $display("Escalation esc_p/n integrity sequence finished!");
 
-    // 3). Escalation reverse ping request timeout sequence.
-    // Wait at least two clock cycles to finish the previous sequence's escalation request.
+    // Sequence 4. Escalation reverse ping timeout sequence.
+    // Wait at least two clock cycles for the previous sequence to finish its escalation request.
     main_clk.wait_clks($urandom_range(2, 20));
     ping_req = 1;
     fork
@@ -137,6 +133,7 @@ module prim_esc_tb;
       begin
         // Wait for a ping handshake to complete.
         wait (ping_ok == 1);
+        main_clk.wait_clks(2);
         ping_req = 0;
         if (integ_fail == 1) test_error("Ping_req unexpected signal integrity error!");
         if (esc_en == 1)     test_error("Ping request should not set esc_en!");
@@ -144,12 +141,13 @@ module prim_esc_tb;
     join
     main_clk.apply_reset();
 
-    $display("Escalation ping request timeout sequence passed!");
+    $display("Escalation ping request timeout sequence finished!");
 
-    // 4). Escalation receiver counter fail sequence.
+    // Sequence 5. Escalation receiver counter fail sequence.
     ping_req = 1;
     // Wait until ping request is acknowledged and counter starts to increment.
     wait (ping_ok == 1);
+    main_clk.wait_clks(2);
     ping_req = 0;
     // If cnt_q[0] and cnt_q[1]'s value do not match, deisgn will set `esc_en_o` signal.
     force prim_esc_tb.i_esc_receiver.cnt_q[1] = 0;
@@ -158,7 +156,7 @@ module prim_esc_tb;
       test_error("Escalation receiver counter unexpected signal integrity error!");
     end
 
-    $display("Escalation couter error sequence passed!");
+    $display("Escalation couter error sequence finished!");
 
     dv_test_status_pkg::dv_test_status(.passed(!error));
     $finish();

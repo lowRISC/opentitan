@@ -17,11 +17,14 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:prim_esc_sim:0.1
 
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/prim/dv/prim_esc/data/prim_esc_testplan.hjson"
+
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 5
+  reseed: 20
 
   // List of test specifications.
   tests: [
