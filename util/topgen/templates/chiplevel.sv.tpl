@@ -576,11 +576,11 @@ module chip_${top["name"]}_${target["name"]} (
 
   // Pullups
   logic usb_pullup_p_en, usb_pullup_n_en;
-  assign usb_pullup_p_en = dio_out[DioUsbdevDpPullup] & dio_oe[DioUsbdevDpPullup];
-  assign usb_pullup_n_en = dio_out[DioUsbdevDnPullup] & dio_oe[DioUsbdevDnPullup];
+  assign usb_pullup_p_en = dio_out[DioUsbdevDpPullup];
+  assign usb_pullup_n_en = dio_out[DioUsbdevDnPullup];
 
   logic usb_rx_enable;
-  assign usb_rx_enable = dio_out[DioUsbdevRxEnable] & dio_oe[DioUsbdevRxEnable];
+  assign usb_rx_enable = dio_out[DioUsbdevRxEnable];
 
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
@@ -594,7 +594,7 @@ module chip_${top["name"]}_${target["name"]} (
     .input_pi      ( USB_P                 ),
     .input_ni      ( USB_N                 ),
     .input_en_i    ( usb_rx_enable         ),
-    .core_pok_i    ( ast_pwst_h.aon_pok    ),
+    .core_pok_h_i  ( ast_pwst_h.aon_pok    ),
     .pullup_p_en_i ( usb_pullup_p_en       ),
     .pullup_n_en_i ( usb_pullup_n_en       ),
     .calibration_i ( usb_io_pu_cal         ),
@@ -629,12 +629,15 @@ module chip_${top["name"]}_${target["name"]} (
     dio_oe[DioUsbdevSuspend],
     dio_attr[DioUsbdevSuspend],
     // Rx enable
+    dio_oe[DioUsbdevRxEnable],
     dio_attr[DioUsbdevRxEnable],
     // D is used as an input only
     dio_out[DioUsbdevD],
     dio_oe[DioUsbdevD],
     dio_attr[DioUsbdevD],
     // Pullup/down
+    dio_oe[DioUsbdevDpPullup],
+    dio_oe[DioUsbdevDnPullup],
     dio_attr[DioUsbdevDpPullup],
     dio_attr[DioUsbdevDnPullup]
   };

@@ -1059,8 +1059,8 @@ module usbdev
   assign cio_rx_enable_en_o  = 1'b1;
 
   // Pullup
-  assign cio_dp_pullup_o     = 1'b1;
-  assign cio_dn_pullup_o     = 1'b1;
+  assign cio_dp_pullup_o     = cio_dp_pullup_en_o;
+  assign cio_dn_pullup_o     = cio_dn_pullup_en_o;
 
   /////////////////////////////////////////
   // SOF Reference for Clock Calibration //
