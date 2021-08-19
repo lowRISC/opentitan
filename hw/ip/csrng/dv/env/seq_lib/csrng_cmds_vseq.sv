@@ -14,9 +14,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   bit                                               uninstantiate;
 
   task body();
-    // TODO: Create/start entropy_src device sequence still under development. Will remove/modify
-    // as necessary. Also consider making task if it stays.
-    // TODO: Enhance to run all cmds in the queues
+    // TODO: Add/randomize other commands. Use/add prediction for entropy from entropy_src agent.
 
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::type_id::
@@ -29,27 +27,34 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
     // Generate queues of csrng commands
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      uint   num_cmds;
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_cmds, num_cmds inside {[1:10]};)
-      for (int j = 0; j < num_cmds; j++) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                       cs_item.acmd  == csrng_pkg::INS;
-                                       cs_item.flags == 4'h1;
-                                       cs_item.glen  == 'h0;)
-        `downcast(cs_item_clone, cs_item.clone());
-        cs_item_q[i].push_back(cs_item_clone);
-      end
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::INS;
+                                     cs_item.flags == 4'h1;
+                                     cs_item.clen  inside {[0:12]};)
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
 
-      // Generate uninstantiate cmds
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::GEN;
+                                     cs_item.flags == 4'h0;
+                                     cs_item.clen  == 4'h0;
+                                     cs_item.glen inside {[1:32]};)
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
+
+      // Randomize whether to add an uninstantiate command
+      // so it checks internal state without uninstantiate sometimes
       `DV_CHECK_STD_RANDOMIZE_FATAL(uninstantiate)
-      if (cs_item_q[i].size() && uninstantiate) begin
+      if (uninstantiate) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                        cs_item.acmd  == csrng_pkg::UNI;)
         `downcast(cs_item_clone, cs_item.clone());
         cs_item_q[i].push_back(cs_item_clone);
       end
+    end
 
-      // Print cs_items
+    // Print cs_items
+    for (int i = 0; i < NUM_HW_APPS; i++) begin
       foreach (cs_item_q[i][j]) begin
         cmds_gen += 1;
         `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j, cs_item_q[i][j].convert2string()), UVM_DEBUG)
@@ -82,22 +87,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
       wait (cmds_sent == cmds_gen);
     join
-
-        // TODO: add other commands
-        // //generate cmd
-        // send_cmd_req(.acmd(csrng_pkg::GEN), .clen(4'h0), .flags(4'h0), .glen(19'h1));
-        // genbits = ctr_drbg_generate();
-
-        // //reseed cmd
-        // send_cmd_req(.acmd(csrng_pkg::RES), .clen(4'h0), .flags(4'h0), .glen(19'h0));
-        // ctr_drbg_reseed(384'hbeefdead);
-
-        // //update cmd
-        // cmd_data_q.push_back(32'hdeadbeef);
-        // send_cmd_req(.acmd(csrng_pkg::UPD), .clen(4'h1), .flags(4'h0), .glen(19'h0), .data_q(cmd_data_q));
-        // csrng_update(384'hdeadbeef);
-
-        // send_cmd_req(.acmd(csrng_pkg::UNI), .clen(4'h0), .flags(4'h0), .glen(19'h0));
 
     // Check internal state
     if (cfg.chk_int_state) begin
