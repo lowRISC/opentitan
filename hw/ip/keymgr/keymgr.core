@@ -13,8 +13,10 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
       - lowrisc:prim:msb_extend
+      - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
     files:
       - rtl/keymgr_reg_top.sv
