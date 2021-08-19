@@ -546,8 +546,8 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
     else:
       reg_field_name = reg_name + "_" + field.name.lower()
 
-    if reg.async_name and not reg.hwext:
-      reg_field_name += ".u_subreg"
+    ##if reg.async_name and not reg.hwext:
+    ##  reg_field_name += ".u_subreg"
 %>\
 %   if ((field.hwaccess.value[1] == HwAccess.NONE and\
        field.swaccess.swrd() == SwRdAccess.RD and\

@@ -464,6 +464,13 @@ class Register(RegBase):
                                  wen_fld.swaccess.key,
                                  wen_fld.hwaccess.key))
 
+    def bitmask(self) -> str:
+        reg_bitmask = 0
+        for f in self.fields:
+            reg_bitmask |= f.bits.bitmask()
+
+        return format(reg_bitmask, "x")
+
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'name': self.name,

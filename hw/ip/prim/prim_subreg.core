@@ -11,6 +11,7 @@ filesets:
       - rtl/prim_subreg_pkg.sv
       - rtl/prim_subreg_arb.sv
       - rtl/prim_subreg_cdc.sv
+      - rtl/prim_reg_cdc.sv
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_async.sv
       - rtl/prim_subreg_ext.sv

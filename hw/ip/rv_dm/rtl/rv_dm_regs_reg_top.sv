@@ -177,7 +177,6 @@ module rv_dm_regs_reg_top (
   end
 
 
-
   // Unused signal tieoff
 
   // wdata / byte enable are not always fully used
