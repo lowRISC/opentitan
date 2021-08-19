@@ -444,19 +444,8 @@ module pinmux
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  // `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o)
   `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
-  // `ASSERT_KNOWN(DioToPeriphKnownO_A, dio_to_periph_o)
   `ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
-
-  // TODO: need to check why some outputs are not valid (e.g. SPI device SDO)
-  // for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_known_if
-  //   `ASSERT_KNOWN_IF(MioOutKnownO_A, mio_out_o[k], mio_oe_o[k])
-  // end
-
-  // for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_known_if
-  //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
-  // end
 
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
   `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
@@ -477,9 +466,26 @@ module pinmux
 
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT_KNOWN(UsbStateDebugKnownO_A, usb_state_debug_o, clk_aon_i, !rst_aon_ni)
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
   `ASSERT(PinmuxWkupStable_A, aon_wkup_req_o |=> aon_wkup_req_o ||
       $fell(|reg2hw.wkup_cause) && !sleep_en_i, clk_aon_i, !rst_aon_ni)
+
+  // Some inputs at the chip-level may be forced to X in chip-level simulations.
+  // Therefore, we do not instantiate these assertions.
+  // `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o)
+  // `ASSERT_KNOWN(DioToPeriphKnownO_A, dio_to_periph_o)
+
+  // The assertions below are not instantiated for a similar reason as the assertions above.
+  // I.e., some IPs have pass-through paths, which may lead to X'es propagating
+  // from input to output.
+  // for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_known_if
+  //   `ASSERT_KNOWN_IF(MioOutKnownO_A, mio_out_o[k], mio_oe_o[k])
+  // end
+  // for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_known_if
+  //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
+  // end
 
 endmodule : pinmux
