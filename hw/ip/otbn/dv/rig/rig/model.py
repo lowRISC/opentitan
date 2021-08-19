@@ -463,6 +463,13 @@ class Model:
             return None
 
         if weights is None:
+            if op_type.reg_type == 'gpr' and is_dst and not is_src:
+                # Destination registers without a specific set of weights get a
+                # default that makes x1 more likely. The idea is that we'll be
+                # more likely to fill the call stack this way.
+                weights = {1: 8}
+
+        if weights is None:
             return random.choice(list(reg_set))
 
         regs = []
