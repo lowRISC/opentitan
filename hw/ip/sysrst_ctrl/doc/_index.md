@@ -5,7 +5,7 @@ title: "System Reset Control (Chrome OS) Technical Specification"
 # Overview
 
 This document specifies the functionality of the System Reset Control (`sysrst_ctrl`) block which implements Chrome-OS-Platform-specific system and reset functionality.
-This IP block implements keyboard and button combination-triggered action and EC+GSC reset logic.
+This IP block implements keyboard and button combination-triggered action and the Embedded Controller (EC) reset stretching and OpenTitan reset request logic.
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}}).
 See that document for integration overview within the broader top level system.
 
@@ -24,7 +24,7 @@ The IP block implements the following features:
 
 The `sysrst_ctrl` logic is very simple.
 It looks up the configuration registers to decide how long the EC reset pulse duration and how long the keyboard debounce timer should be. 
-Also what actions to take (e.g. Interrupt, EC reset, GSC reset, disconnect the battery from the power tree).
+Also what actions to take (e.g. Interrupt, EC reset, OpenTitan reset request, disconnect the battery from the power tree).
 
 ## Compatibility
 
@@ -43,10 +43,11 @@ Combinations of the inputs being active for a specified time can be detected and
 The override logic allows the output to be overridden (i.e. not follow the corresponding input) based either on trigger or software settings. 
 This allows the security chip to take over the inputs for its own use without disturbing the main user.
 
-The `sysrst_ctrl` also controls an active-low open drain reset I/O `ec_rst_out_l` that is typically used for the embedded controller (EC) reset.
-This output is always asserted when the IP block is reset (allowing its use as a power-on reset) and remains asserted until released by software. 
-Software can program certain trigger actions to assert `ec_rst_out_l` with a programmable pulse width.
-If the `ec_rst_in_l` input is asserted by some other agent in the system then the `sysrst_ctrl` will stretch the assertion of `ec_rst_out_l` according to the pulse width programmed.
+The `sysrst_ctrl` also controls two active-low open-drain I/Os named `flash_wp_out_l` and `ec_rst_in_l` / `ec_rst_out_l`.
+The `ec_rst_in_l` / `ec_rst_out_l` signals are connected to the same bidirectional pin of the OpenTitan chip, and are used to either reset the embedded controller (EC), or to detect self-reset of the EC and stretch the reset pulse (hence the bidirectional nature of this pin).
+This output is always asserted when `sysrst_ctrl` is reset (allowing its use as a power-on reset) and remains asserted until released by software.
+The flash write-protect output `flash_wp_out_l` is typically connected to the BIOS flash chip in the system.
+This output is always asserted when the `sysrst_ctrl` block is reset and remains asserted until released by software.
 
 ## Hardware Interfaces
 
@@ -58,8 +59,8 @@ The table below lists the `sysrst_ctrl` intermodule signals.
 
 Signal                                 | Direction | Type    | Description
 ---------------------------------------|-----------|---------|---------------
-`aon_gsc_wk_o`                         | `output`  | `logic` |  GSC wake request signal to `pwrmgr` (running on AON clock).
-`aon_gsc_rst_o`                        | `output`  | `logic` |  GSC reset request to `rstmgr` (running on AON clock).
+`aon_ot_wkup_req_o`                    | `output`  | `logic` |  OpenTitan wake request signal to `pwrmgr` (running on AON clock).
+`aon_ot_rst_req_o`                     | `output`  | `logic` |  OpenTitan reset request to `rstmgr` (running on AON clock).
 `intr_sysrst_ctrl_o`                   | `output`  | `logic` |  Interrupt request to PLIC (running on bus clock).
 
 
@@ -112,22 +113,33 @@ To this end, the hardware samples the raw input values of `pwrb_in`, `key[0,1,2]
 Software can optionally override all output signals, and change the signal polarity of some of the input and output signals.
 The output signal override feature always has higher priority than any of the combo pattern detection mechanisms described above.
 
-The selection of output signals to override, and the override values are programmable and lockable via the {{< regref PIN_ALLOWED_CTL >}} register.
-For example, {{< regref PIN_ALLOWED_CTL.EC_RST_L_0 >}} to 1 and {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} to 0 means that software allows `ec_rst_out_l` to be overridden with logic 0, but not with logic 1.
-If the SW locks the configuration with {{< regref REGWEN >}}, {{< regref PIN_ALLOWED_CTL >}} cannot be modified until the next GSC reset.
+The selection of output signals to override, and the override values are programmable and lockable via the {{< regref PIN_LEGAL_CTL >}} register.
+For example, {{< regref PIN_LEGAL_CTL.EC_RST_L_0 >}} to 1 and {{< regref PIN_LEGAL_CTL.EC_RST_L_1 >}} to 0 means that software allows `ec_rst_out_l` to be overridden with logic 0, but not with logic 1.
+If the SW locks the configuration with {{< regref REGWEN >}}, {{< regref PIN_LEGAL_CTL >}} cannot be modified until the next OpenTitan reset.
 
 When the system is up and running, the software can modify {{< regref PIN_OUT_CTL >}} and {{< regref PIN_OUT_VALUE >}} to enable or disable the feature.
-For example, to release `ec_rst_out_l` after GSC completes the reset, software can set {{< regref PIN_OUT_CTL >}} to 0 to stop the hardware from driving `ec_rst_out_l` to 0.
+For example, to release `ec_rst_out_l` after OpenTitan completes the reset, software can set {{< regref PIN_OUT_CTL >}} to 0 to stop the hardware from driving `ec_rst_out_l` to 0.
 
 The input / output signal inversions can be programmed via the {{< regref KEY_INVERT_CTL >}} register.
 Input signals will be inverted before the combo detection logic, while output signals will be inverted after the output signal override logic.
 
 ## EC and Power-on-reset
 
-GSC and EC will be reset together during power-on. 
-When GSC is in reset, `ec_rst_out_l` will be asserted (active low).
-The power-on-reset value of {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_out_l` remains asserted after GSC reset is released.
-The software can release `ec_rst_out_l` explicitly by setting {{< regref PIN_OUT_CTL.EC_RST_L >}} to 0 after we entering the GSC-RW boot stage in order to complete the GSC and EC power-on-reset sequence.
+OpenTitan and EC will be reset together during power-on.
+When OpenTitan is in reset, `ec_rst_out_l` will be asserted (active low).
+The power-on-reset value of {{< regref PIN_LEGAL_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_out_l` remains asserted after OpenTitan reset is released.
+The software can release `ec_rst_out_l` explicitly by setting {{< regref PIN_OUT_CTL.EC_RST_L >}} to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
+
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `ec_rst_out_l`.
+
+## Flash Write Protect Output
+
+Upon reset, the `flash_wp_out_l` signal will be asserted active low.
+The software can release `flash_wp_out_l` explicitly by setting {{< regref PIN_OUT_CTL.FLASH_WP_L >}} to 0 when needed.
+The `flash_wp_out_l` signal does not have a corresponding input signal such as the `pwrb_in` or `key[0,1,2]_in`.
+Hence, the value of `flash_wp_out_l` defaults to logic 0 when it is not explicitly driven via the override function.
+
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `flash_wp_out_l`.
 
 ## Registers
 
