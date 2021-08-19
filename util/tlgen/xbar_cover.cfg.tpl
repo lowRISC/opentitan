@@ -71,8 +71,8 @@
   % endfor
 
 % if host_unr_source_bits > 0:
--node tb.dut tl_*.a_source[7:${7 - host_unr_source_bits}]
--node tb.dut tl_*.d_source[7:${7 - host_unr_source_bits}]
+-node tb.dut tl_*.a_source[7:${8 - host_unr_source_bits}]
+-node tb.dut tl_*.d_source[7:${8 - host_unr_source_bits}]
 % endif
 begin tgl
   -tree tb
