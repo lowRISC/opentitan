@@ -190,6 +190,13 @@
              // FPV only verifies TLUL interface and build-in assertions,
              // so will not collect FPV coverage.
              {
+               name: adc_ctrl
+               fusesoc_core: lowrisc:dv:adc_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/adc_ctrl/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
                name: aes
                fusesoc_core: lowrisc:dv:aes_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
@@ -201,6 +208,20 @@
                fusesoc_core: lowrisc:dv:alert_handler_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/alert_handler/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
+               name: aon_timer
+               fusesoc_core: lowrisc:dv:aon_timer_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aon_timer/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
+               name: clkmgr
+               fusesoc_core: lowrisc:dv:clkmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/clkmgr/{sub_flow}/{tool}"
                cov: false
              }
              {
@@ -253,13 +274,6 @@
                cov: false
              }
              {
-               name: pattgen
-               fusesoc_core: lowrisc:dv:pattgen_sva
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/pattgen/{sub_flow}/{tool}"
-               cov: false
-             }
-             {
                name: keymgr
                fusesoc_core: lowrisc:dv:keymgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
@@ -285,6 +299,27 @@
                fusesoc_core: lowrisc:dv:otbn_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
+               name: pattgen
+               fusesoc_core: lowrisc:dv:pattgen_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pattgen/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
+               name: pwrmgr
+               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               cov: false
+             }
+             {
+               name: rom_ctrl
+               fusesoc_core: lowrisc:dv:rom_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rom_ctrl/{sub_flow}/{tool}"
                cov: false
              }
              {
