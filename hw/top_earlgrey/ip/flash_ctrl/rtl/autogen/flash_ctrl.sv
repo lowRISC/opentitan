@@ -142,11 +142,16 @@ module flash_ctrl
   logic rd_flash_req;
   logic rd_flash_ovfl;
   logic [BusAddrW-1:0] rd_flash_addr;
+  logic rd_op_valid;
 
   // Erase Control Connections
   logic erase_flash_req;
   logic [BusAddrW-1:0] erase_flash_addr;
   flash_erase_e erase_flash_type;
+  logic erase_op_valid;
+
+  // combined indication that an operation has started
+  logic op_valid;
 
   // Done / Error signaling from ctrl modules
   logic prog_done, rd_done, erase_done;
@@ -200,6 +205,8 @@ module flash_ctrl
   logic op_start;
   logic [11:0] op_num_words;
   logic [BusAddrW-1:0] op_addr;
+  // SW or HW supplied address is out of bounds
+  logic op_addr_oob;
   flash_op_e op_type;
   flash_part_e op_part;
   logic [InfoTypesWidth-1:0] op_info_sel;
@@ -377,6 +384,9 @@ module flash_ctrl
   assign op_erase_type = flash_erase_e'(muxed_ctrl.erase_sel.q);
   assign op_prog_type  = flash_prog_e'(muxed_ctrl.prog_sel.q);
   assign op_addr       = muxed_addr[BusByteWidth +: BusAddrW];
+  // The supplied address by software is completely beyond the flash
+  // and will wrap.  Instead of allowing this, explicitly error back.
+  assign op_addr_oob   = muxed_addr >= EndAddr;
   assign op_type       = flash_op_e'(muxed_ctrl.op.q);
   assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
   assign op_info_sel   = muxed_ctrl.info_sel.q;
@@ -384,6 +394,7 @@ module flash_ctrl
   assign prog_op       = op_type == FlashOpProgram;
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
+  assign op_valid      = prog_op_valid | rd_op_valid | erase_op_valid;
 
   // software privilege to creator seed
   assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
@@ -516,6 +527,7 @@ module flash_ctrl
     .op_done_o      (prog_done),
     .op_err_o       (prog_err),
     .op_addr_i      (op_addr),
+    .op_addr_oob_i  (op_addr_oob),
     .op_type_i      (op_prog_type),
     .type_avail_i   (prog_type_en),
 
@@ -586,16 +598,18 @@ module flash_ctrl
   );
 
   // Read handler is consumer of rd_fifo
+  assign rd_op_valid = op_start & rd_op;
   flash_ctrl_rd  u_flash_ctrl_rd (
     .clk_i,
     .rst_ni,
 
     // To arbiter Interface
-    .op_start_i     (op_start & rd_op),
+    .op_start_i     (rd_op_valid),
     .op_num_words_i (op_num_words),
     .op_done_o      (rd_done),
     .op_err_o       (rd_err),
     .op_addr_i      (op_addr),
+    .op_addr_oob_i  (op_addr_oob),
 
     // FIFO Interface
     .data_rdy_i     (rd_fifo_wready),
@@ -612,13 +626,15 @@ module flash_ctrl
   );
 
   // Erase handler does not consume fifo
+  assign erase_op_valid = op_start & erase_op;
   flash_ctrl_erase u_flash_ctrl_erase (
     // Software Interface
-    .op_start_i     (op_start & erase_op),
+    .op_start_i     (erase_op_valid),
     .op_type_i      (op_erase_type),
     .op_done_o      (erase_done),
     .op_err_o       (erase_err),
     .op_addr_i      (op_addr),
+    .op_addr_oob_i  (op_addr_oob),
 
     // Flash Macro Interface
     .flash_req_o    (erase_flash_req),
@@ -909,11 +925,13 @@ module flash_ctrl
   // Errors and Interrupts
   //////////////////////////////////////
 
+  assign hw2reg.err_code.oob_err.d = 1'b1;
   assign hw2reg.err_code.mp_err.d = 1'b1;
   assign hw2reg.err_code.ecc_single_err.d = 1'b1;
   assign hw2reg.err_code.ecc_multi_err.d = 1'b1;
   assign hw2reg.err_code.flash_err.d = 1'b1;
   assign hw2reg.err_code.flash_alert.d = 1'b1;
+  assign hw2reg.err_code.oob_err.de = op_valid & op_addr_oob;
   assign hw2reg.err_code.mp_err.de = flash_mp_error;
   assign hw2reg.err_code.ecc_single_err.de = |flash_phy_rsp.ecc_single_err;
   assign hw2reg.err_code.ecc_multi_err.de = |flash_phy_rsp.ecc_multi_err;
@@ -1113,7 +1131,10 @@ module flash_ctrl
     .scan_rst_ni
   );
 
+  /////////////////////////////////
   // Assertions
+  /////////////////////////////////
+
   `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
   `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
@@ -1130,5 +1151,12 @@ module flash_ctrl
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
   `ASSERT_KNOWN(IntrErrO_A,             intr_err_o       )
+
+
+
+  // if there is an out of bounds error, flash request should never assert
+  `ASSERT(OutofBoundsReq_A, op_valid & op_addr_oob |-> ~flash_phy_req.req)
+
+  // add more assertions
 
 endmodule

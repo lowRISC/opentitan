@@ -7,6 +7,9 @@
 
 package flash_ctrl_pkg;
 
+  // End address of flash
+  parameter logic [top_pkg::TL_AW-1:0] EndAddr = 'h20100000;
+
   // design parameters that can be altered through topgen
   parameter int unsigned NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
   parameter int unsigned PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;

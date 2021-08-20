@@ -22,7 +22,8 @@ class Flash:
     max_banks = 4
     max_pages_per_bank = 1024
 
-    def __init__(self, mem):
+    def __init__(self, mem, base_addr):
+        self.base_addr = int(base_addr, 16)
         self.banks = mem.get('banks', 2)
         self.pages_per_bank = mem.get('pages_per_bank', 8)
         self.program_resolution = mem.get('program_resolution', 128)
@@ -39,7 +40,10 @@ class Flash:
         self.bytes_per_page = self.word_bytes * self.words_per_page
         self.bytes_per_bank = self.bytes_per_page * self.pages_per_bank
         self.total_bytes = self.bytes_per_bank * self.banks
-        self.size = hex(int(self.total_bytes))
+
+        size_int = int(self.total_bytes)
+        self.size = hex(size_int)
+        self.end_addr = self.base_addr + size_int
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
@@ -86,7 +90,8 @@ def main():
         log.error("This design does not currently support multiple flashes")
         return
 
-    cfg = Flash(flash_mems[0]['memory']['mem']['config'])
+    cfg = Flash(flash_mems[0]['memory']['mem']['config'],
+                flash_mems[0]['base_addrs']['mem'])
 
     # generate hjson
     hjson_out.write_text(hjson_tpl.render(cfg=cfg))

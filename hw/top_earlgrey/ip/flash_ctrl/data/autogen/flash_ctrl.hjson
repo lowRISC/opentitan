@@ -1409,14 +1409,18 @@
             desc: "interrupt mask for flash alert"
           },
           { bits: "2",
+            name: "oob_err",
+            desc: "interrupt mask for software address out of bounds error"
+          },
+          { bits: "3",
             name: "mp_err",
             desc: "interrupt mask for memory properties error"
           },
-          { bits: "3",
+          { bits: "4",
             name: "ecc_single_err",
             desc: "interrupt mask for single bit ecc error"
           },
-          { bits: "4",
+          { bits: "5",
             name: "ecc_multi_err",
             desc: "interrupt mask for multiple bits ecc error"
           },
@@ -1446,20 +1450,26 @@
             '''
           },
           { bits: "2",
+            name: "oob_err",
+            desc: '''
+              The supplied address !!ADDR is invalid and out of bounds.
+            '''
+          },
+          { bits: "3",
             name: "mp_err",
             desc: '''
               Flash access has encountered an access permission error.
               Please see !!ERR_ADDR for exact address.
             '''
           },
-          { bits: "3",
+          { bits: "4",
             name: "ecc_single_err",
             desc: '''
               Flash access has encountered a single bit ECC error.
               Please see !!ECC_SINGLE_ERR_ADDR for exact address.
             '''
           },
-          { bits: "4",
+          { bits: "5",
             name: "ecc_multi_err",
             desc: '''
               Flash access has encountered a multi bit ECC error.

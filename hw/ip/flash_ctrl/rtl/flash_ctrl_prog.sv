@@ -15,6 +15,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   output logic             op_done_o,
   output logic             op_err_o,
   input [BusAddrW-1:0]     op_addr_i,
+  input                    op_addr_oob_i,
   input flash_prog_e       op_type_i,
   input [ProgTypes-1:0]    type_avail_i,
 
@@ -73,7 +74,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   assign end_addr = op_addr_i + BusAddrW'(op_num_words_i);
   assign start_window = op_addr_i[BusAddrW-1:BusPgmResWidth];
   assign end_window = end_addr[BusAddrW-1:BusPgmResWidth];
-  assign win_err = start_window != end_window;
+  assign win_err = (start_window != end_window) | op_addr_oob_i;
 
   // when error'd, continue to drain all program fifo contents like normal operation
   // if this is not done, software may fill up the fifo without anyone
