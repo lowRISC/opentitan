@@ -151,52 +151,68 @@ typedef struct manifest_signed_region {
 #define MANIFEST_LENGTH_FIELD_MAX 65536
 
 /**
- * Gets the signed region of an image.
+ * Checks the fields of a manifest.
  *
- * This function also performs a basic check to ensure that the length of the
- * image is within a reasonable range.
+ * This function performs several basic checks to ensure that
+ * - Length of the image is within a reasonable range,
+ * - Executable region is non-empty, inside the image, located after the
+ * manifest, and word aligned, and
+ * - Entry point is inside the executable region and word aligned.
  *
- * @param manifest A manifest
- * @param[out] signed_region Signed region of an image.
- * @return The result of the operation.
+ * @param manfiest A manifest.
+ * @return Result of the operation.
  */
-inline rom_error_t manifest_signed_region_get(
-    const manifest_t *manifest, manifest_signed_region_t *signed_region) {
+inline rom_error_t manifest_check(const manifest_t *manifest) {
+  // Length of the image must be within bounds.
   if (manifest->length < MANIFEST_LENGTH_FIELD_MIN ||
       manifest->length > MANIFEST_LENGTH_FIELD_MAX) {
     return kErrorManifestBadLength;
   }
-  *signed_region = (manifest_signed_region_t){
+
+  // Executable region must be empty, inside the image, located after the
+  // manifest, and word aligned.
+  if (manifest->code_start >= manifest->code_end ||
+      manifest->code_start < sizeof(manifest_t) ||
+      manifest->code_end > manifest->length ||
+      (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
+    return kErrorManifestBadCodeRegion;
+  }
+
+  // Entry point must be inside the executable region and word aligned.
+  if (manifest->entry_point < manifest->code_start ||
+      manifest->entry_point >= manifest->code_end ||
+      (manifest->entry_point & 0x3) != 0) {
+    return kErrorManifestBadEntryPoint;
+  }
+
+  return kErrorOk;
+}
+
+/**
+ * Gets the signed region of an image.
+ *
+ * @param manifest A manifest
+ * return signed_region Signed region of an image.
+ */
+inline manifest_signed_region_t manifest_signed_region_get(
+    const manifest_t *manifest) {
+  return (manifest_signed_region_t){
       .start = (const char *)manifest + sizeof(manifest->signature),
       .length = manifest->length - sizeof(manifest->signature),
   };
-  return kErrorOk;
 }
 
 /**
  * Gets the executable region of the image.
  *
- * This function also checks that the executable region is non-empty, inside
- * the image, located after the manifest, and word aligned.
- *
  * @param manifest A manifest.
- * @param[out] code_region Executable region of the image.
- * @return The result of the operation.
+ * return Executable region of the image.
  */
-inline rom_error_t manifest_code_region_get(const manifest_t *manifest,
-                                            epmp_region_t *code_region) {
-  if (manifest->code_start >= manifest->code_end ||
-      manifest->code_start < sizeof(manifest_t) ||
-      manifest->code_end > manifest->length ||
-      // FIXME: Replace this when we have a function/macro for alignment checks.
-      (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
-    return kErrorManifestBadCodeRegion;
-  }
-  *code_region = (epmp_region_t){
+inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
+  return (epmp_region_t){
       .start = (uintptr_t)manifest + manifest->code_start,
       .end = (uintptr_t)manifest + manifest->code_end,
   };
-  return kErrorOk;
 }
 
 /**
@@ -207,24 +223,11 @@ inline rom_error_t manifest_code_region_get(const manifest_t *manifest,
  * of a function pointer to accommodate for entry points with different
  * parameters and return types.
  *
- * This function also checks that the entry point is inside both the image and
- * the executable region of the image and word aligned.
- *
  * @param manfiest A manifest.
- * @param[out] entry_point Entry point address.
- * @return The result of the operation.
+ * return Entry point address.
  */
-inline rom_error_t manifest_entry_point_get(const manifest_t *manifest,
-                                            uintptr_t *entry_point) {
-  if (manifest->entry_point < manifest->code_start ||
-      manifest->entry_point >= manifest->code_end ||
-      manifest->entry_point >= manifest->length ||
-      // FIXME: Replace this when we have a function/macro for alignment checks.
-      (manifest->entry_point & 0x3) != 0) {
-    return kErrorManifestBadEntryPoint;
-  }
-  *entry_point = (uintptr_t)manifest + manifest->entry_point;
-  return kErrorOk;
+inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
+  return (uintptr_t)manifest + manifest->entry_point;
 }
 
 // TODO: Move this definition to a more suitable place. Defined here for now
