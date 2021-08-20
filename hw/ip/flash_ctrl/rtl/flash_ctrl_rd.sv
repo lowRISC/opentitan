@@ -15,6 +15,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   output logic             op_done_o,
   output logic             op_err_o,
   input [BusAddrW-1:0]     op_addr_i,
+  input                    op_addr_oob_i,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -30,9 +31,10 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   input                    flash_error_i
 );
 
-  typedef enum logic {
-    StNorm  = 'h0,
-    StErr   = 'h1
+  typedef enum logic [1:0] {
+    StIdle,
+    StNorm,
+    StErr
   } state_e;
 
   state_e st, st_nxt;
@@ -45,7 +47,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cnt <= '0;
-      st <= StNorm;
+      st <= StIdle;
     end else begin
       cnt <= cnt_nxt;
       st <= st_nxt;
@@ -69,6 +71,14 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
     err_sel = 1'b0;
 
     unique case (st)
+      StIdle: begin
+        if (op_start_i && op_addr_oob_i) begin
+          st_nxt = StErr;
+        end else if (op_start_i) begin
+          st_nxt = StNorm;
+        end
+      end
+
       StNorm: begin
         flash_req_o = op_start_i & data_rdy_i;
 
@@ -81,15 +91,16 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
           cnt_nxt = cnt + 1'b1;
           data_wr_o = 1'b1;
           err_sel = flash_error_i;
-          st_nxt = flash_error_i ? StErr : StNorm;
+          st_nxt = flash_error_i ? StErr : StIdle;
         end
       end
+
       StErr: begin
         data_wr_o = data_rdy_i;
         err_sel = 1'b1;
 
         if (data_rdy_i && cnt_hit) begin
-          st_nxt = StNorm;
+          st_nxt = StIdle;
           cnt_nxt = '0;
           op_done_o = 1'b1;
           op_err_o = 1'b1;

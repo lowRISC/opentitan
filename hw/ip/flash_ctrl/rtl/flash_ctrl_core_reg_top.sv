@@ -913,6 +913,8 @@ module flash_ctrl_core_reg_top (
   logic err_code_intr_en_flash_err_en_wd;
   logic err_code_intr_en_flash_alert_en_qs;
   logic err_code_intr_en_flash_alert_en_wd;
+  logic err_code_intr_en_oob_err_qs;
+  logic err_code_intr_en_oob_err_wd;
   logic err_code_intr_en_mp_err_qs;
   logic err_code_intr_en_mp_err_wd;
   logic err_code_intr_en_ecc_single_err_qs;
@@ -924,6 +926,8 @@ module flash_ctrl_core_reg_top (
   logic err_code_flash_err_wd;
   logic err_code_flash_alert_qs;
   logic err_code_flash_alert_wd;
+  logic err_code_oob_err_qs;
+  logic err_code_oob_err_wd;
   logic err_code_mp_err_qs;
   logic err_code_mp_err_wd;
   logic err_code_ecc_single_err_qs;
@@ -9934,7 +9938,33 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[mp_err]: 2:2
+  //   F[oob_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_err_code_intr_en_oob_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_intr_en_we),
+    .wd     (err_code_intr_en_oob_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.err_code_intr_en.oob_err.q),
+
+    // to register interface (read)
+    .qs     (err_code_intr_en_oob_err_qs)
+  );
+
+
+  //   F[mp_err]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9960,7 +9990,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[ecc_single_err]: 3:3
+  //   F[ecc_single_err]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9986,7 +10016,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[ecc_multi_err]: 4:4
+  //   F[ecc_multi_err]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10066,7 +10096,33 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[mp_err]: 2:2
+  //   F[oob_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_oob_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_oob_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.oob_err.de),
+    .d      (hw2reg.err_code.oob_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.err_code.oob_err.q),
+
+    // to register interface (read)
+    .qs     (err_code_oob_err_qs)
+  );
+
+
+  //   F[mp_err]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -10092,7 +10148,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[ecc_single_err]: 3:3
+  //   F[ecc_single_err]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -10118,7 +10174,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  //   F[ecc_multi_err]: 4:4
+  //   F[ecc_multi_err]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -11603,22 +11659,26 @@ module flash_ctrl_core_reg_top (
 
   assign err_code_intr_en_flash_alert_en_wd = reg_wdata[1];
 
-  assign err_code_intr_en_mp_err_wd = reg_wdata[2];
+  assign err_code_intr_en_oob_err_wd = reg_wdata[2];
 
-  assign err_code_intr_en_ecc_single_err_wd = reg_wdata[3];
+  assign err_code_intr_en_mp_err_wd = reg_wdata[3];
 
-  assign err_code_intr_en_ecc_multi_err_wd = reg_wdata[4];
+  assign err_code_intr_en_ecc_single_err_wd = reg_wdata[4];
+
+  assign err_code_intr_en_ecc_multi_err_wd = reg_wdata[5];
   assign err_code_we = addr_hit[85] & reg_we & !reg_error;
 
   assign err_code_flash_err_wd = reg_wdata[0];
 
   assign err_code_flash_alert_wd = reg_wdata[1];
 
-  assign err_code_mp_err_wd = reg_wdata[2];
+  assign err_code_oob_err_wd = reg_wdata[2];
 
-  assign err_code_ecc_single_err_wd = reg_wdata[3];
+  assign err_code_mp_err_wd = reg_wdata[3];
 
-  assign err_code_ecc_multi_err_wd = reg_wdata[4];
+  assign err_code_ecc_single_err_wd = reg_wdata[4];
+
+  assign err_code_ecc_multi_err_wd = reg_wdata[5];
   assign ecc_single_err_cnt_we = addr_hit[87] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_wd = reg_wdata[7:0];
@@ -12247,17 +12307,19 @@ module flash_ctrl_core_reg_top (
       addr_hit[84]: begin
         reg_rdata_next[0] = err_code_intr_en_flash_err_en_qs;
         reg_rdata_next[1] = err_code_intr_en_flash_alert_en_qs;
-        reg_rdata_next[2] = err_code_intr_en_mp_err_qs;
-        reg_rdata_next[3] = err_code_intr_en_ecc_single_err_qs;
-        reg_rdata_next[4] = err_code_intr_en_ecc_multi_err_qs;
+        reg_rdata_next[2] = err_code_intr_en_oob_err_qs;
+        reg_rdata_next[3] = err_code_intr_en_mp_err_qs;
+        reg_rdata_next[4] = err_code_intr_en_ecc_single_err_qs;
+        reg_rdata_next[5] = err_code_intr_en_ecc_multi_err_qs;
       end
 
       addr_hit[85]: begin
         reg_rdata_next[0] = err_code_flash_err_qs;
         reg_rdata_next[1] = err_code_flash_alert_qs;
-        reg_rdata_next[2] = err_code_mp_err_qs;
-        reg_rdata_next[3] = err_code_ecc_single_err_qs;
-        reg_rdata_next[4] = err_code_ecc_multi_err_qs;
+        reg_rdata_next[2] = err_code_oob_err_qs;
+        reg_rdata_next[3] = err_code_mp_err_qs;
+        reg_rdata_next[4] = err_code_ecc_single_err_qs;
+        reg_rdata_next[5] = err_code_ecc_multi_err_qs;
       end
 
       addr_hit[86]: begin
