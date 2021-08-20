@@ -177,6 +177,14 @@
   /////////////////////////////
 
   inter_signal_list: [
+    // OTP dedicated power connection from AST
+    { struct:  ""
+      type:    "io"
+      name:    "otp_ext_voltage_h"
+      act:     "none"
+      default: "'0"
+      package: "",
+    }
     // Power sequencing signals to AST
     { struct:  "otp_ast_req"
       type:    "uni"

@@ -943,6 +943,7 @@
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         'otp_ctrl.otp_ast_pwr_seq'     : '',
         'otp_ctrl.otp_ast_pwr_seq_h'   : '',
+        'otp_ctrl.otp_ext_voltage_h'   : 'otp_ext_voltage_h',
         'otp_ctrl.otp_alert'           : 'otp_alert',
         'rstmgr_aon.por_n'             : 'por_n'
         'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
