@@ -5,20 +5,45 @@
   testpoints: [
     {
       // this testplan should be imported by all IPs containing shadowed CSRs
-      name: shadow_reg_errors
-      desc: '''Verify shadowed registers' update and storage errors.
+      name: shadow_reg_update_error
+      desc: '''Verify shadowed registers' update error.
 
-            For all shadow registers in the DUT:
-            - Randomly pick a shadowed register.
-            - Write it twice with different values, verify that the update error alert is triggered
-              and the register value remains unchanged.
+            - Randomly pick a shadowed register in the DUT.
+            - Write it twice with different values.
+            - Verify that the update error alert is triggered and the register value remains
+              unchanged.
+            - Verify the update_error status register field is set to 1.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V1
+      tests: ["{name}_shadow_reg_errors"]
+    }
+
+    {
+      name: shadow_reg_read_clear_staged_value
+      desc: '''Verify reading a shadowed register will clear its staged value.
+
+            - Randomly pick a shadowed register in the DUT.
             - Write it once and read it back to clear the staged value.
             - Then write it twice with the same new value (but different from the previous step).
             - Read it back to verify the new value and ensure that the update error alert did not
               trigger.
+            - Verify the update_error status register field remains the same value.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V1
+      tests: ["{name}_shadow_reg_errors"]
+    }
+
+    {
+      name: shadow_reg_storage_error
+      desc: '''Verify shadowed registers' storage error.
+
+            - Randomly pick a shadowed register in the DUT.
             - Backdoor write to shadowed or committed flops to create a storage fatal alert.
             - Check if fatal alert continuously fires until reset.
             - Verify that all other frontdoor write attempts are blocked during the storage error.
+            - Verify that storage_error status register field is set to 1.
             - Reset the DUT.
             - Read all CSRs to ensure the DUT is properly reset.
             - Repeat the above steps a bunch of times.

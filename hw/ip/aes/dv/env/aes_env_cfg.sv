@@ -182,6 +182,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     has_edn = 1;
     super.initialize(csr_base_addr);
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
+    shadow_update_err_status_fields[ral.status.alert_recov_ctrl_update_err] = 1;
+    shadow_storage_err_status_fields[ral.status.alert_fatal_fault] = 1;
   endfunction
 
 endclass

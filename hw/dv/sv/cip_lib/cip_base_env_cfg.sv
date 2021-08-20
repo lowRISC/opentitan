@@ -13,11 +13,18 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   // Override this alert name at `initialize` if it's not as below
   string              tl_intg_alert_name = "fatal_fault";
+
   // If there is a bit in an "alert cause" register that will be set by a corrupt bus access, this
   // should be the name of that field (with syntax "reg.field"). Used by cip_base_scoreboard to
   // update the relevant field in the RAL model if it sees an error.
   // Format: tl_intg_alert_fields[ral.a_reg.a_field] = value
   uvm_reg_data_t      tl_intg_alert_fields[dv_base_reg_field];
+
+  // Similar as the associative array above, if DUT has shadow registers, these two associative
+  // arrays contains register fields related to shadow register's update and storage error status.
+  uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
+  uvm_reg_data_t      shadow_storage_err_status_fields[dv_base_reg_field];
+
   // Enables TL integrity generation & checking with *_user bits.
   // Assume ALL TL agents have integrity check enabled or disabled altogether.
   bit                 en_tl_intg_gen = 1;
