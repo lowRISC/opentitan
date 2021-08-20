@@ -110,6 +110,28 @@ module rv_dm
     );
   end
 
+  // debug enable gating
+  typedef enum logic [2:0] {
+    EnFetch,
+    EnRom,
+    EnSba,
+    EnDebugReq,
+    EnResetReq,
+    EnDmiReq,
+    EnLastPos
+  } rv_dm_en_e;
+
+  lc_ctrl_pkg::lc_tx_t [EnLastPos-1:0] lc_hw_debug_en;
+  prim_lc_sync #(
+    .NumCopies(int'(EnLastPos))
+  ) u_lc_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_en_i),
+    .lc_en_o(lc_hw_debug_en)
+  );
+
+
   // Debug CSRs
   dm::hartinfo_t [NrHarts-1:0]      hartinfo;
   logic [NrHarts-1:0]               halted;
@@ -169,6 +191,14 @@ module rv_dm
     assign hartinfo[i] = DebugHartInfo;
   end
 
+  logic reset_req_en;
+  logic ndmreset_req;
+  assign reset_req_en = (lc_hw_debug_en[EnResetReq] == lc_ctrl_pkg::On);
+  assign ndmreset_req_o = ndmreset_req & reset_req_en;
+
+  logic dmi_en;
+  assign dmi_en = (lc_hw_debug_en[EnDmiReq] == lc_ctrl_pkg::On);
+
   dm_csrs #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
@@ -178,13 +208,13 @@ module rv_dm
     .rst_ni                  ( rst_ni                ),
     .testmode_i              ( testmode              ),
     .dmi_rst_ni              ( dmi_rst_n             ),
-    .dmi_req_valid_i         ( dmi_req_valid         ),
+    .dmi_req_valid_i         ( dmi_req_valid & dmi_en),
     .dmi_req_ready_o         ( dmi_req_ready         ),
     .dmi_req_i               ( dmi_req               ),
     .dmi_resp_valid_o        ( dmi_rsp_valid         ),
-    .dmi_resp_ready_i        ( dmi_rsp_ready         ),
+    .dmi_resp_ready_i        ( dmi_rsp_ready & dmi_en),
     .dmi_resp_o              ( dmi_rsp               ),
-    .ndmreset_o              ( ndmreset_req_o        ),
+    .ndmreset_o              ( ndmreset_req          ),
     .dmactive_o              ( dmactive_o            ),
     .hartsel_o               ( hartsel               ),
     .hartinfo_i              ( hartinfo              ),
@@ -261,6 +291,18 @@ module rv_dm
     .sberror_o               ( sberror               )
   );
 
+  logic sba_en;
+  tlul_pkg::tl_h2d_t  sba_tl_h_o_int;
+  tlul_pkg::tl_d2h_t  sba_tl_h_i_int;
+  assign sba_en = (lc_hw_debug_en[EnSba] == lc_ctrl_pkg::On);
+
+  always_comb begin
+    sba_tl_h_o = sba_tl_h_o_int;
+    sba_tl_h_i_int = sba_tl_h_i;
+    sba_tl_h_o.a_valid = sba_tl_h_o_int.a_valid & sba_en;
+    sba_tl_h_i_int.d_valid = sba_tl_h_i.d_valid & sba_en;
+  end
+
   tlul_adapter_host #(
     .MAX_REQS(1)
   ) tl_adapter_host_sba (
@@ -277,8 +319,8 @@ module rv_dm
     .rdata_o      (host_r_rdata),
     .err_o        (host_r_err),
     .intg_err_o   (),
-    .tl_o         (sba_tl_h_o),
-    .tl_i         (sba_tl_h_i)
+    .tl_o         (sba_tl_h_o_int),
+    .tl_i         (sba_tl_h_i_int)
   );
 
   // DBG doesn't handle error responses so raise assertion if we see one
@@ -306,6 +348,12 @@ module rv_dm
 
   assign addr_b = {addr_w, {$clog2(BusWidth/8){1'b0}}};
 
+  logic debug_req_en;
+  logic debug_req;
+  assign debug_req_en = (lc_hw_debug_en[EnDebugReq] == lc_ctrl_pkg::On);
+  assign debug_req_o = debug_req & debug_req_en;
+
+
   dm_mem #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
@@ -319,7 +367,7 @@ module rv_dm
   ) i_dm_mem (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
-    .debug_req_o             ( debug_req_o           ),
+    .debug_req_o             ( debug_req             ),
     .hartsel_i               ( hartsel               ),
     .haltreq_i               ( haltreq               ),
     .resumereq_i             ( resumereq             ),
@@ -377,11 +425,11 @@ module rv_dm
     .dmi_rst_no       (dmi_rst_n),
     .dmi_req_o        (dmi_req),
     .dmi_req_valid_o  (dmi_req_valid),
-    .dmi_req_ready_i  (dmi_req_ready),
+    .dmi_req_ready_i  (dmi_req_ready & dmi_en),
 
     .dmi_resp_i       (dmi_rsp      ),
     .dmi_resp_ready_o (dmi_rsp_ready),
-    .dmi_resp_valid_i (dmi_rsp_valid),
+    .dmi_resp_valid_i (dmi_rsp_valid & dmi_en),
 
     //JTAG
     .tck_i            (tck_muxed),
@@ -393,20 +441,13 @@ module rv_dm
   );
 `endif
 
-
   tlul_pkg::tl_instr_en_e en_ifetch;
-  lc_ctrl_pkg::lc_tx_t [0:0] lc_hw_debug_en;
+  assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
+                     tlul_pkg::InstrEn : tlul_pkg::InstrDis;
 
-  prim_lc_sync #(
-    .NumCopies(1)
-  ) u_lc_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_hw_debug_en_i),
-    .lc_en_o(lc_hw_debug_en)
-  );
+  logic rom_en;
+  assign rom_en = (lc_hw_debug_en[EnRom] == lc_ctrl_pkg::On);
 
-  assign en_ifetch = (lc_hw_debug_en == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
@@ -419,15 +460,15 @@ module rv_dm
     .en_ifetch_i (en_ifetch),
     .req_o       (req),
     .req_type_o  (),
-    .gnt_i       (1'b1),
+    .gnt_i       (rom_en),
     .we_o        (we),
     .addr_o      (addr_w),
     .wdata_o     (wdata),
     .wmask_o     (),
     .intg_error_o(),
-    .rdata_i     (rdata),
-    .rvalid_i    (rvalid),
-    .rerror_i    (2'b00),
+    .rdata_i     (rdata & {BusWidth{rom_en}}),
+    .rvalid_i    (rvalid & rom_en),
+    .rerror_i    ({2{~rom_en}}),
 
     .tl_o        (rom_tl_win_d2h),
     .tl_i        (rom_tl_win_h2d)
