@@ -533,7 +533,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .value = 1,
             }},
             .exp_val = kDifKeymgrStatusCodeIdle |
-                       kDifKeymgrStatusCodeInvalidKmacCommand,
+                       kDifKeymgrStatusCodeInvalidState,
         },
         GetStatusCodesTestCase{
             .reg_val = {{
@@ -542,14 +542,6 @@ INSTANTIATE_TEST_SUITE_P(
             }},
             .exp_val = kDifKeymgrStatusCodeIdle |
                        kDifKeymgrStatusCodeInvalidKmacInput,
-        },
-        GetStatusCodesTestCase{
-            .reg_val = {{
-                .offset = KEYMGR_ERR_CODE_INVALID_KMAC_DATA_BIT,
-                .value = 1,
-            }},
-            .exp_val = kDifKeymgrStatusCodeIdle |
-                       kDifKeymgrStatusCodeInvalidKmacOutput,
         },
         GetStatusCodesTestCase{
             .reg_val = {{
@@ -564,19 +556,12 @@ INSTANTIATE_TEST_SUITE_P(
                        kDifKeymgrStatusCodeInvalidOperation |
                        kDifKeymgrStatusCodeInvalidKmacInput,
         },
-        GetStatusCodesTestCase{
-            .reg_val = {{
-                            .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
-                            .value = 1,
-                        },
-                        {
-                            .offset = KEYMGR_ERR_CODE_INVALID_KMAC_DATA_BIT,
-                            .value = 1,
-                        }},
-            .exp_val = kDifKeymgrStatusCodeIdle |
-                       kDifKeymgrStatusCodeInvalidKmacCommand |
-                       kDifKeymgrStatusCodeInvalidKmacOutput,
-        }));
+        GetStatusCodesTestCase{.reg_val = {{
+                                   .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
+                                   .value = 1,
+                               }},
+                               .exp_val = kDifKeymgrStatusCodeIdle |
+                                          kDifKeymgrStatusCodeInvalidState}));
 
 class GetStateTest : public DifKeymgrInitialized {};
 

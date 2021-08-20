@@ -144,9 +144,9 @@ package keymgr_pkg;
   // Error is encoded as 1 error per bit
   typedef enum logic [2:0] {
     ErrInvalidOp,
-    ErrInvalidStates,
     ErrInvalidIn,
-    ErrInvalidOut,
+    ErrShadowUpdate,
+    ErrInvalidStates,
     ErrLastPos
   } keymgr_err_pos_e;
 
@@ -155,6 +155,7 @@ package keymgr_pkg;
     FaultCmd,
     FaultKmacFsm,
     FaultKmacOp,
+    FaultKmacOut,
     FaultRegFileIntg,
     FaultShadow,
     FaultCtrlFsm,

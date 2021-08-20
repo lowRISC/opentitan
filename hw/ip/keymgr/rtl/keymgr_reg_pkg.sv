@@ -114,16 +114,13 @@ package keymgr_reg_pkg;
     } invalid_op;
     struct packed {
       logic        q;
-    } invalid_states;
-    struct packed {
-      logic        q;
     } invalid_kmac_input;
     struct packed {
       logic        q;
-    } invalid_kmac_data;
+    } invalid_shadow_update;
     struct packed {
       logic        q;
-    } invalid_shadow_update;
+    } invalid_states;
   } keymgr_reg2hw_err_code_reg_t;
 
   typedef struct packed {
@@ -174,19 +171,15 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_states;
-    struct packed {
-      logic        d;
-      logic        de;
     } invalid_kmac_input;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_kmac_data;
+    } invalid_shadow_update;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_shadow_update;
+    } invalid_states;
   } keymgr_hw2reg_err_code_reg_t;
 
   typedef struct packed {
@@ -202,6 +195,10 @@ package keymgr_reg_pkg;
       logic        d;
       logic        de;
     } kmac_op;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_out;
     struct packed {
       logic        d;
       logic        de;
@@ -222,22 +219,22 @@ package keymgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [937:937]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [936:936]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [935:934]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [933:930]
-    keymgr_reg2hw_control_reg_t control; // [929:922]
-    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [921:919]
-    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [918:903]
-    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [902:901]
-    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [900:645]
-    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [644:389]
-    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [388:133]
-    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [132:101]
-    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [100:69]
-    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [68:37]
-    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [36:5]
-    keymgr_reg2hw_err_code_reg_t err_code; // [4:0]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [936:936]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [935:935]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [934:933]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [932:929]
+    keymgr_reg2hw_control_reg_t control; // [928:921]
+    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [920:918]
+    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [917:902]
+    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [901:900]
+    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [899:644]
+    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [643:388]
+    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [387:132]
+    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [131:100]
+    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [99:68]
+    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [67:36]
+    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [35:4]
+    keymgr_reg2hw_err_code_reg_t err_code; // [3:0]
   } keymgr_reg2hw_t;
 
   // HW -> register type
@@ -250,8 +247,8 @@ package keymgr_reg_pkg;
     keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [294:31]
     keymgr_hw2reg_working_state_reg_t working_state; // [30:27]
     keymgr_hw2reg_op_status_reg_t op_status; // [26:24]
-    keymgr_hw2reg_err_code_reg_t err_code; // [23:14]
-    keymgr_hw2reg_fault_status_reg_t fault_status; // [13:0]
+    keymgr_hw2reg_err_code_reg_t err_code; // [23:16]
+    keymgr_hw2reg_fault_status_reg_t fault_status; // [15:0]
   } keymgr_hw2reg_t;
 
   // Register offsets
