@@ -88,17 +88,14 @@ module top_${top["name"]} #(
 
   // Inter-module Signal External type
   % for sig in top["inter_signal"]["external"]:
-  ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
+  ${lib.get_direction(sig)} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 
+% endif
   // Flash specific voltages
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
 
-  // OTP specific voltages
-  inout otp_ext_voltage_h_io,
-
-% endif
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
   input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
@@ -443,6 +440,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
         % if sig['type'] == "req_rsp":
       .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
       .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
+        % elif sig['type'] == "io":
+      .${lib.im_portname(sig,"io")}(${lib.im_netname(sig, "io")}),
         % elif sig['type'] == "uni":
           ## TODO: Broadcast type
           ## TODO: default for logic type
@@ -478,9 +477,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
-    % endif
-    % if m["type"] == "otp_ctrl":
-      .otp_ext_voltage_h_io,
     % endif
     % if block.scan:
       .scanmode_i,

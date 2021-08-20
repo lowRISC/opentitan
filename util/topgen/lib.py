@@ -16,7 +16,8 @@ from reggen.ip_block import IpBlock
 # Ignore flake8 warning as the function is used in the template
 # disable isort formating, as conflicting with flake8
 from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
-from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
+from .intermodule import im_portname, im_defname, im_netname # noqa : F401 # isort:skip
+from .intermodule import get_direction # noqa : F401 # isort:skip
 from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
 
 
