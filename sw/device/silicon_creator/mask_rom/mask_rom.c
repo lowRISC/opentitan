@@ -128,10 +128,11 @@ rom_error_t mask_rom_boot(void) {
     //}
 
     const manifest_t *manifest;
-    manifest_signed_region_t signed_region;
     const sigverify_rsa_key_t *key;
     RETURN_IF_ERROR(romextimage_manifest_get(kFlashSlotA, &manifest));
-    RETURN_IF_ERROR(manifest_signed_region_get(manifest, &signed_region));
+    RETURN_IF_ERROR(manifest_check(manifest));
+    manifest_signed_region_t signed_region =
+        manifest_signed_region_get(manifest);
     RETURN_IF_ERROR(sigverify_rsa_key_get(
         sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
     RETURN_IF_ERROR(sigverify_rsa_verify(signed_region.start,
@@ -188,16 +189,12 @@ rom_error_t mask_rom_boot(void) {
     if (true) {
       // Unlock execution of ROM_EXT executable code (text) sections.
       RETURN_IF_ERROR(epmp_state_check(&epmp));
-      epmp_region_t rom_ext_text;
-      RETURN_IF_ERROR(manifest_code_region_get(manifest, &rom_ext_text));
-      mask_rom_epmp_unlock_rom_ext_rx(&epmp, rom_ext_text);
+      mask_rom_epmp_unlock_rom_ext_rx(&epmp,
+                                      manifest_code_region_get(manifest));
       RETURN_IF_ERROR(epmp_state_check(&epmp));
 
       // Jump to ROM_EXT entry point.
-      uintptr_t entry_point;
-      if (manifest_entry_point_get(manifest, &entry_point) != kErrorOk) {
-        break;
-      }
+      uintptr_t entry_point = manifest_entry_point_get(manifest);
       base_printf("rom_ext_entry: %p\r\n", entry_point);
       ((romextimage_entry_point *)entry_point)();
       // NOTE: never expecting a return, but if something were to go wrong
