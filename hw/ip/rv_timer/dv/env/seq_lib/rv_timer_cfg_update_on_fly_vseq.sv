@@ -40,7 +40,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
       `uvm_info(`gfn, $sformatf("Running test iteration %0d/%0d", trans, num_trans), UVM_LOW)
 
       // disable timers
-      csr_wr(.ptr(ral.ctrl), .value(ral.ctrl.get_reset()));
+      csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
 
       for (int hart = 0; hart < NUM_HARTS; hart++) begin
         for (int timer = 0; timer < NUM_TIMERS; timer++) begin

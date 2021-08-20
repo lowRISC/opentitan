@@ -17,7 +17,7 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
       // disable timers
-      csr_wr(.ptr(ral.ctrl), .value(ral.ctrl.get_reset()));
+      csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
 
       // configure the timers and harts based on rand fields
       cfg_all_timers();

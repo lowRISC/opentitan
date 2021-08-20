@@ -18,7 +18,7 @@
       if r.dv_compact:
         inst_base = r.reg.name.lower()
         for idx, reg in enumerate(r.regs):
-          inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
+          inst_name = f'{inst_base}[{idx}]'
           inst_regs[inst_name] = reg
       else:
         for r0 in r.regs:
@@ -85,22 +85,22 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
     // registers
   % for r in rb.all_regs:
 <%
+      # If it's dv_compact, then create it as an array even when it only contains one item
+      count = 0
       if isinstance(r, MultiRegister):
         if r.dv_compact:
           regs = [r.reg]
           count = len(r.regs)
         else:
           regs = r.regs
-          count = 1
       else:
         regs = [r]
-        count = 1
 %>\
     % for r0 in regs:
 <%
       reg_type = gen_dv.rcname(esc_if_name, r0)
       inst_name = r0.name.lower()
-      inst_decl = f'{inst_name}[{count}]' if count > 1 else inst_name
+      inst_decl = f'{inst_name}[{count}]' if count > 0 else inst_name
 %>\
     rand ${reg_type} ${inst_decl};
     % endfor
@@ -146,7 +146,7 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
 <%
         if r.dv_compact:
           inst_base = r0.name.lower()
-          inst_name = f'{inst_base}[{idx}]' if len(r.regs) > 1 else inst_base
+          inst_name = f'{inst_base}[{idx}]'
         else:
           inst_name = reg.name.lower()
           reg_type = gen_dv.rcname(esc_if_name, reg)

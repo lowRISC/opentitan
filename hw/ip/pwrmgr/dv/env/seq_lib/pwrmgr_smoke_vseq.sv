@@ -25,12 +25,12 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
     bit [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    csr_rd_check(.ptr(ral.wake_status), .compare_value(0));
-    csr_rd_check(.ptr(ral.reset_status), .compare_value(0));
+    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
 
     // Enable all wakeups so a peripheral can cause a wakeup.
     wakeup_en = '1;
-    csr_wr(.ptr(ral.wakeup_en), .value(wakeup_en));
+    csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeup_en));
     wait_for_csr_to_propagate_to_slow_domain();
     `uvm_info(`gfn, "smoke waiting for wakeup propagate", UVM_MEDIUM)
 
@@ -49,13 +49,13 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     wait_for_fast_fsm_active();
     `uvm_info(`gfn, "smoke back from wakeup", UVM_MEDIUM)
 
-    csr_rd_check(.ptr(ral.wake_status), .compare_value(wakeups & wakeup_en),
+    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeup_en),
                  .err_msg("failed wake_status check"));
-    csr_rd_check(.ptr(ral.reset_status), .compare_value(0), .err_msg("failed reset_status check"));
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0), .err_msg("failed reset_status check"));
 
     // Enable resets.
     reset_en = '1;
-    csr_wr(.ptr(ral.reset_en), .value(reset_en));
+    csr_wr(.ptr(ral.reset_en[0]), .value(reset_en));
     wait_for_csr_to_propagate_to_slow_domain();
 
     // Trigger a reset.
@@ -70,7 +70,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // The reset_status CSR should be clear since the unit requesting reset
     // should have been reset, so the incoming reset should have cleared.
-    csr_rd_check(.ptr(ral.reset_status), .compare_value('0));
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);

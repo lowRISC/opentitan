@@ -664,7 +664,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function bit get_sw_invalid_input();
     if (get_operation() inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
-      return get_current_max_version() < `gmv(ral.key_version);
+      return get_current_max_version() < `gmv(ral.key_version[0]);
     end else begin
       return 0;
     end
@@ -892,7 +892,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
-    exp.KeyVersion = `gmv(ral.key_version);
+    exp.KeyVersion = `gmv(ral.key_version[0]);
     for (int i = 0; i < keymgr_reg_pkg::NumSaltReg; i++) begin
       uvm_reg rg = ral.get_reg_by_name($sformatf("salt_%0d", i));
       exp.Salt[i] = `gmv(rg);

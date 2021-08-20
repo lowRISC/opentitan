@@ -107,7 +107,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
       if (trans > 1) `DV_CHECK_RANDOMIZE_FATAL(this)
 
       // disable timers first
-      csr_wr(.ptr(ral.ctrl), .value(ral.ctrl.get_reset()));
+      csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
 
       // configure the timers and harts based on rand fields
       cfg_all_timers();
@@ -151,7 +151,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
       join
 
       // Disable timers.
-      csr_wr(.ptr(ral.ctrl), .value(ral.ctrl.get_reset()));
+      csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
 
       // Write one to clear the interrupt status.
       for (int i = 0; i < NUM_HARTS; i++) begin

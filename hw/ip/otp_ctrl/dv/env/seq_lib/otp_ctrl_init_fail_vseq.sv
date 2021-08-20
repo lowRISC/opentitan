@@ -160,7 +160,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
                                   OtpCheckFailError : OtpMacroEccUncorrError;
     otp_err_code_e err_code;
     dv_base_reg_field err_code_flds[$];
-    ral.err_code.get_dv_base_reg_fields(err_code_flds);
+    ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
 
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
