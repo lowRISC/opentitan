@@ -280,7 +280,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task wait_for_reset_status_clear();
-    csr_spinwait(.ptr(ral.reset_status), .exp_data('0), .timeout_ns(ActiveTimeoutInNanoSeconds));
+    csr_spinwait(.ptr(ral.reset_status[0]), .exp_data('0), .timeout_ns(ActiveTimeoutInNanoSeconds));
     `uvm_info(`gfn, "pwrmgr reset_status CSR cleared", UVM_MEDIUM)
   endtask
 

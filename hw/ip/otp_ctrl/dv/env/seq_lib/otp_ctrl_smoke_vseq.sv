@@ -121,7 +121,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_lc_transition(do_lc_trans, lc_prog_blocking);
-        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
       end
 
       if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
@@ -138,7 +138,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         // OTP write via DAI
         if (rand_wr && !digest_calculated[part_idx]) begin
           dai_wr(dai_addr, wdata0, wdata1);
-          if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+          if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
         end
 
         if (rand_rd) begin
@@ -155,7 +155,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
-        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
       end
 
       // Read/write test access memory
@@ -168,7 +168,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       write_sw_digests();
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
 
-      if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+      if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
 
       if ($urandom_range(0, 1)) rd_digests();
       dut_init();
@@ -179,7 +179,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // send request to the interfaces again after partitions are locked
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_lc_transition(do_lc_trans, lc_prog_blocking);
-        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
       end
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin

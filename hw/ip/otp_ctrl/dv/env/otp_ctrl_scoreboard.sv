@@ -625,8 +625,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   // Check if write has any write_blank_error, then potentially read might have ECC
                   // error.
-                  bit [TL_DW-1:0] err_code = `gmv(ral.err_code);
-                  if (get_field_val(ral.err_code.err_code[7], err_code) == OtpMacroWriteBlankError ||
+                  bit [TL_DW-1:0] err_code = `gmv(ral.err_code[0]);
+                  if (get_field_val(ral.err_code[0].err_code[7], err_code) == OtpMacroWriteBlankError ||
                       cfg.ecc_err != OtpNoEccErr) begin
                     bit [TL_DW-1:0] read_out;
                     int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
@@ -1092,7 +1092,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (err_code == OtpNoError) begin
         `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
       end
-      ral.err_code.get_dv_base_reg_fields(err_code_flds);
+      ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
 
       if (`gmv(err_code_flds[status_err_idx]) inside {OTP_TERMINAL_ERRS}) begin
         `uvm_info(`gfn, "terminal error cannot be updated", UVM_HIGH)
@@ -1115,7 +1115,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     if (status_err_idx <= OtpLciErrIdx) begin
       dv_base_reg_field err_code_flds[$];
-      ral.err_code.get_dv_base_reg_fields(err_code_flds);
+      ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
       void'(err_code_flds[status_err_idx].predict(OtpNoError));
     end
   endfunction

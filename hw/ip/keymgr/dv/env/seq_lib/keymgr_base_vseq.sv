@@ -101,7 +101,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] max_owner_key_ver_val;
     bit [TL_DW-1:0] max_key_ver_val;
 
-    key_version_val           = `gmv(ral.key_version);
+    key_version_val           = `gmv(ral.key_version[0]);
     max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver_shadowed);
     max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver_shadowed);
     max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver_shadowed);
@@ -122,14 +122,14 @@ class keymgr_base_vseq extends cip_base_vseq #(
                                        } else {
                                          key_version_val <= max_key_ver_val;
                                        })
-    ral.key_version.set(key_version_val);
-    csr_update(ral.key_version);
+    ral.key_version[0].set(key_version_val);
+    csr_update(ral.key_version[0]);
   endtask
 
   virtual task wait_op_done();
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
-    int key_verion = `gmv(ral.key_version);
+    int key_verion = `gmv(ral.key_version[0]);
     keymgr_pkg::keymgr_ops_e operation = `gmv(ral.control.operation);
     bit[TL_DW-1:0] rd_val;
 

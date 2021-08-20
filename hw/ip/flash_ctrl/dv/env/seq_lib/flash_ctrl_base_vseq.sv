@@ -99,7 +99,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Configure bank erasability.
   virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en);
-    csr_wr(.ptr(ral.mp_bank_cfg), .value(bank_erase_en));
+    csr_wr(.ptr(ral.mp_bank_cfg[0]), .value(bank_erase_en));
   endtask
 
   // Configure read and program fifo levels for interrupt.
