@@ -44,6 +44,13 @@ endtask
 
 virtual task run_shadow_reg_errors(int num_times);
   dv_base_reg shadowed_csrs[$];
+
+  // Verify that status register fields are set in CFG.
+  if (cfg.shadow_update_err_status_fields.size() == 0 ||
+      cfg.shadow_storage_err_status_fields.size() == 0) begin
+    `uvm_fatal(`gfn, "Please assign shadow reg status register fields in env_cfg!")
+  end
+
   foreach (cfg.ral_models[i]) cfg.ral_models[i].get_shadowed_regs(shadowed_csrs);
 
   for (int trans = 1; trans <= num_times; trans++) begin
@@ -53,25 +60,30 @@ virtual task run_shadow_reg_errors(int num_times);
     shadowed_csrs.shuffle();
 
     foreach (shadowed_csrs[i]) begin
-      write_and_check_update_error(shadowed_csrs[i]);
-      check_csr_read_clear_staged_val(shadowed_csrs[i]);
-      poke_and_check_storage_error(shadowed_csrs[i]);
-      dut_init();
-      read_and_check_all_csrs_after_reset();
+      repeat(5) begin
+        randcase
+          1: write_and_check_update_error(shadowed_csrs[i]);
+          1: check_csr_read_clear_staged_val(shadowed_csrs[i]);
+          1: poke_and_check_storage_error(shadowed_csrs[i]);
+        endcase
+      end
     end
   end
 endtask
 
 // Write shadow register twice with different value and expect a shadow register update alert.
 virtual task write_and_check_update_error(dv_base_reg shadowed_csr);
-  uvm_reg_data_t    wdata, err_wdata;
-  string alert_name = shadowed_csr.get_update_err_alert_name();
+  uvm_reg_data_t wdata, err_wdata;
+  string         alert_name = shadowed_csr.get_update_err_alert_name();
   err_wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
   `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
 
   csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(0), .predict(1));
 
   shadow_reg_wr(shadowed_csr, err_wdata);
+  predict_shadow_reg_status(.predict_update_err(1));
+
+  read_check_shadow_reg_status("Write_and_check_update_error task");
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
 endtask
 
@@ -94,6 +106,8 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
 
   `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
                $sformatf("Unexpected alert: %s fired", alert_name))
+
+  read_check_shadow_reg_status("Check_csr_read_clear_staged_val task");
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
 endtask
 
@@ -113,6 +127,7 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
   err_val = get_shadow_reg_diff_val(shadowed_csr, origin_val);
 
   csr_poke(.ptr(shadowed_csr), .value(err_val), .kind(kind), .predict(1));
+  predict_shadow_reg_status(.predict_storage_err(1));
   `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
             shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH);
 
@@ -130,5 +145,36 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
 
   // Backdoor write back to original value and ensure the fatal alert is continuously firing.
   csr_poke(.ptr(shadowed_csr), .value(origin_val), .kind(kind), .predict(1));
+
+  read_check_shadow_reg_status("Poke_and_check_storage_error task");
   cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
+
+  dut_init();
+  read_and_check_all_csrs_after_reset();
+endtask
+
+virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
+                                                bit predict_storage_err = 0);
+  if (predict_update_err) begin
+    foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+      void'(status_field.predict(cfg.shadow_update_err_status_fields[status_field]));
+    end
+  end
+  if (predict_storage_err) begin
+    foreach (cfg.shadow_storage_err_status_fields[status_field]) begin
+      void'(status_field.predict(cfg.shadow_storage_err_status_fields[status_field]));
+    end
+  end
+endfunction
+
+// Verify update and storage error status with RAL mirrored value.
+virtual task read_check_shadow_reg_status(string msg_id);
+  foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+    csr_rd_check(.ptr(status_field), .compare_vs_ral(1),
+                 .err_msg($sformatf(" %0s: check update_err status", msg_id)));
+  end
+  foreach (cfg.shadow_storage_err_status_fields[status_field]) begin
+    csr_rd_check(.ptr(status_field), .compare_vs_ral(1),
+                 .err_msg($sformatf(" %0s: check storage_err status", msg_id)));
+  end
 endtask
