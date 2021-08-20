@@ -11,17 +11,16 @@ interface otbn_rf_base_if (
   // Signal names from the otbn_rf_base module (where we are bound)
   input logic pop_stack_a, 
   input logic pop_stack_b,
-  input logic pop_stack,
-  input logic push_stack,
+  input logic push_stack_reqd,
   input logic stack_full,
   input logic stack_data_valid 
 );
 
   function automatic otbn_env_pkg::call_stack_flags_t get_call_stack_flags();
     return '{
-              pop_a: pop_stack && pop_stack_a,
-              pop_b: pop_stack && pop_stack_b,
-              push: push_stack
+              pop_a: pop_stack_a,
+              pop_b: pop_stack_b,
+              push: push_stack_reqd
             };
   endfunction
 
