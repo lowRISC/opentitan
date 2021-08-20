@@ -1251,6 +1251,19 @@
       inter_signal_list:
       [
         {
+          name: otp_ext_voltage_h
+          struct: ""
+          type: io
+          act: none
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          package: ""
+          external: true
+          top_signame: otp_ext_voltage_h
+          index: -1
+        }
+        {
           name: otp_ast_pwr_seq
           struct: otp_ast_req
           package: otp_ctrl_pkg
@@ -6969,6 +6982,7 @@
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
+      otp_ctrl.otp_ext_voltage_h: otp_ext_voltage_h
       otp_ctrl.otp_alert: otp_alert
       rstmgr_aon.por_n: por_n
       sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
@@ -13379,6 +13393,19 @@
         index: -1
       }
       {
+        name: otp_ext_voltage_h
+        struct: ""
+        type: io
+        act: none
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        package: ""
+        external: true
+        top_signame: otp_ext_voltage_h
+        index: -1
+      }
+      {
         name: otp_ast_pwr_seq
         struct: otp_ast_req
         package: otp_ctrl_pkg
@@ -17740,6 +17767,18 @@
         conn_type: false
         index: -1
         netname: otp_ctrl_otp_ast_pwr_seq_h
+      }
+      {
+        package: ""
+        struct: ""
+        signame: otp_ext_voltage_h_io
+        width: 1
+        type: io
+        default: "'0"
+        direction: inout
+        conn_type: false
+        index: -1
+        netname: otp_ext_voltage_h
       }
       {
         package: ast_pkg

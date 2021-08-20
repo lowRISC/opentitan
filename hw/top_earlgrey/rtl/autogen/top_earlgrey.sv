@@ -141,6 +141,7 @@ module top_earlgrey #(
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
   output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
+  inout         otp_ext_voltage_h_io,
   output ast_pkg::ast_dif_t       otp_alert_o,
   input  logic       por_n_i,
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
@@ -156,9 +157,6 @@ module top_earlgrey #(
   // Flash specific voltages
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
-
-  // OTP specific voltages
-  inout otp_ext_voltage_h_io,
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -1431,6 +1429,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[16:14] ),
 
       // Inter-module signals
+      .otp_ext_voltage_h_io(otp_ext_voltage_h_io),
       .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
       .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
       .otp_alert_o(otp_alert_o),
@@ -1458,7 +1457,6 @@ module top_earlgrey #(
       .core_tl_o(otp_ctrl_core_tl_rsp),
       .prim_tl_i(otp_ctrl_prim_tl_req),
       .prim_tl_o(otp_ctrl_prim_tl_rsp),
-      .otp_ext_voltage_h_io,
       .scanmode_i,
       .scan_rst_ni,
       .scan_en_i,
