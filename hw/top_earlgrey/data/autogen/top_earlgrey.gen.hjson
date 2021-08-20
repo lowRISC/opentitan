@@ -3582,6 +3582,27 @@
       {
         core: 0x41000000
         prim: 0x41008000
+        mem: 0x20000000
+      }
+      memory:
+      {
+        mem:
+        {
+          label: eflash
+          swaccess: ro
+          exec: True
+          byte_write: False
+          config:
+          {
+            banks: 2
+            pages_per_bank: 256
+            program_resolution: 64
+            bytes_per_page: 2048
+            bytes_per_bank: 524288
+            size: 0x100000
+          }
+          size: 0x100000
+        }
       }
       attr: templated
       clock_connections:
@@ -3591,7 +3612,6 @@
       }
       domain: "0"
       param_decl: {}
-      memory: {}
       param_list:
       [
         {
@@ -3638,19 +3658,6 @@
       inter_signal_list:
       [
         {
-          name: flash
-          struct: flash
-          package: flash_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_signame: flash_ctrl_flash
-          index: -1
-        }
-        {
           name: otp
           struct: flash_otp_key
           package: otp_ctrl_pkg
@@ -3661,6 +3668,96 @@
           default: ""
           end_idx: -1
           top_signame: flash_ctrl_otp
+          index: -1
+        }
+        {
+          name: lc_nvm_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          top_signame: lc_ctrl_lc_nvm_debug_en
+          index: -1
+        }
+        {
+          name: flash_bist_enable
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          external: true
+          top_signame: flash_bist_enable
+          index: -1
+        }
+        {
+          name: flash_power_down_h
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_power_down_h
+          index: -1
+        }
+        {
+          name: flash_power_ready_h
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_power_ready_h
+          index: -1
+        }
+        {
+          name: flash_test_mode_a
+          struct: ""
+          type: io
+          act: none
+          width: 2
+          inst_name: flash_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_test_mode_a
+          index: -1
+        }
+        {
+          name: flash_test_voltage_h
+          struct: ""
+          type: io
+          act: none
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_test_voltage_h
+          index: -1
+        }
+        {
+          name: flash_alert
+          struct: ast_dif
+          package: ast_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          external: true
+          top_signame: flash_alert
           index: -1
         }
         {
@@ -3827,6 +3924,19 @@
           default: ""
           end_idx: -1
           top_signame: flash_ctrl_prim_tl
+          index: -1
+        }
+        {
+          name: mem_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: flash_ctrl_mem_tl
           index: -1
         }
       ]
@@ -6171,155 +6281,7 @@
       }
     }
   ]
-  memory:
-  [
-    {
-      name: eflash
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: infra
-      reset_connections:
-      {
-        rst_ni: lc
-      }
-      type: eflash
-      base_addr: 0x20000000
-      banks: 2
-      pages_per_bank: 256
-      program_resolution: 8
-      swaccess: ro
-      inter_signal_list:
-      [
-        {
-          struct: flash
-          type: req_rsp
-          name: flash_ctrl
-          act: rsp
-          inst_name: eflash
-          width: 1
-          default: ""
-          package: flash_ctrl_pkg
-          top_signame: flash_ctrl_flash
-          index: -1
-        }
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: eflash
-          width: 1
-          default: ""
-          end_idx: -1
-          top_signame: eflash_tl
-          index: -1
-        }
-        {
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          name: lc_nvm_debug_en
-          inst_name: eflash
-          width: 1
-          default: ""
-          top_signame: lc_ctrl_lc_nvm_debug_en
-          index: -1
-        }
-        {
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          name: flash_bist_enable
-          inst_name: eflash
-          width: 1
-          default: ""
-          external: true
-          top_signame: flash_bist_enable
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          type: uni
-          act: rcv
-          name: flash_power_down_h
-          inst_name: eflash
-          width: 1
-          default: ""
-          external: true
-          top_signame: flash_power_down_h
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          type: uni
-          act: rcv
-          name: flash_power_ready_h
-          inst_name: eflash
-          width: 1
-          default: ""
-          external: true
-          top_signame: flash_power_ready_h
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          width: "4"
-          type: uni
-          act: rcv
-          name: flash_test_mode_a
-          inst_name: eflash
-          index: -1
-        }
-        {
-          struct: logic
-          package: ""
-          type: uni
-          act: rcv
-          name: flash_test_voltage_h
-          inst_name: eflash
-          index: -1
-        }
-        {
-          struct: ast_dif
-          package: ast_pkg
-          type: uni
-          act: req
-          name: flash_alert
-          inst_name: eflash
-          width: 1
-          default: ""
-          external: true
-          top_signame: flash_alert
-          index: -1
-        }
-      ]
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_infra
-      }
-      words_per_page: 256
-      data_width: 64
-      metadata_width: 12
-      info_types: 3
-      infos_per_bank:
-      [
-        10
-        1
-        2
-      ]
-      size: 0x100000
-      pgm_resolution_bytes: 64
-      domain: "0"
-    }
-  ]
+  memory: []
   port:
   [
     {
@@ -6454,10 +6416,6 @@
       csrng.cs_aes_halt:
       [
         entropy_src.cs_aes_halt
-      ]
-      flash_ctrl.flash:
-      [
-        eflash.flash_ctrl
       ]
       flash_ctrl.keymgr:
       [
@@ -6618,7 +6576,7 @@
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
-        eflash.lc_nvm_debug_en
+        flash_ctrl.lc_nvm_debug_en
       ]
       lc_ctrl.lc_hw_debug_en:
       [
@@ -6753,10 +6711,6 @@
       [
         main.tl_rom_ctrl__regs
       ]
-      eflash.tl:
-      [
-        main.tl_eflash
-      ]
       main.tl_peri:
       [
         peri.tl_main
@@ -6768,6 +6722,10 @@
       flash_ctrl.prim_tl:
       [
         main.tl_flash_ctrl__prim
+      ]
+      flash_ctrl.mem_tl:
+      [
+        main.tl_flash_ctrl__mem
       ]
       hmac.tl:
       [
@@ -6970,10 +6928,12 @@
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.ast_clk_byp_req: ast_clk_byp_req
       clkmgr_aon.ast_clk_byp_ack: ast_clk_byp_ack
-      eflash.flash_alert: flash_alert
-      eflash.flash_bist_enable: flash_bist_enable
-      eflash.flash_power_down_h: flash_power_down_h
-      eflash.flash_power_ready_h: flash_power_ready_h
+      flash_ctrl.flash_alert: flash_alert
+      flash_ctrl.flash_bist_enable: flash_bist_enable
+      flash_ctrl.flash_power_down_h: flash_power_down_h
+      flash_ctrl.flash_power_ready_h: flash_power_ready_h
+      flash_ctrl.flash_test_mode_a: flash_test_mode_a
+      "flash_ctrl.flash_test_voltage_h ": flash_test_voltage_h
       entropy_src.entropy_src_rng: es_rng
       entropy_src.rng_fips: es_rng_fips
       peri.tl_ast: ast_tl
@@ -7024,7 +6984,7 @@
           rom_ctrl.rom
           rv_dm.rom
           sram_ctrl_main.ram
-          eflash
+          flash_ctrl.mem
         ]
         rv_core_ibex.cored:
         [
@@ -7033,10 +6993,10 @@
           rv_dm.rom
           rv_dm.regs
           sram_ctrl_main.ram
-          eflash
           peri
           flash_ctrl.core
           flash_ctrl.prim
+          flash_ctrl.mem
           aes
           entropy_src
           csrng
@@ -7056,10 +7016,10 @@
           rom_ctrl.regs
           rv_dm.regs
           sram_ctrl_main.ram
-          eflash
           peri
           flash_ctrl.core
           flash_ctrl.prim
+          flash_ctrl.mem
           aes
           entropy_src
           csrng
@@ -7182,24 +7142,6 @@
           pipeline_byp: "true"
         }
         {
-          name: eflash
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          pipeline: "false"
-          inst_type: eflash
-          addr_range:
-          [
-            {
-              base_addr: 0x20000000
-              size_byte: 0x100000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
           name: peri
           type: device
           clock: clk_fixed_i
@@ -7246,6 +7188,24 @@
             {
               base_addr: 0x41008000
               size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: flash_ctrl.mem
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: flash_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x20000000
+              size_byte: 0x100000
             }
           ]
           xbar: false
@@ -7579,18 +7539,6 @@
           index: -1
         }
         {
-          name: tl_eflash
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: eflash_tl
-          index: -1
-        }
-        {
           name: tl_peri
           struct: tl
           package: tlul_pkg
@@ -7625,6 +7573,18 @@
           inst_name: main
           default: ""
           top_signame: flash_ctrl_prim_tl
+          index: -1
+        }
+        {
+          name: tl_flash_ctrl__mem
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: flash_ctrl_mem_tl
           index: -1
         }
         {
@@ -15151,19 +15111,6 @@
         index: -1
       }
       {
-        name: flash
-        struct: flash
-        package: flash_ctrl_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_signame: flash_ctrl_flash
-        index: -1
-      }
-      {
         name: otp
         struct: flash_otp_key
         package: otp_ctrl_pkg
@@ -15174,6 +15121,96 @@
         default: ""
         end_idx: -1
         top_signame: flash_ctrl_otp
+        index: -1
+      }
+      {
+        name: lc_nvm_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        top_signame: lc_ctrl_lc_nvm_debug_en
+        index: -1
+      }
+      {
+        name: flash_bist_enable
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        external: true
+        top_signame: flash_bist_enable
+        index: -1
+      }
+      {
+        name: flash_power_down_h
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_power_down_h
+        index: -1
+      }
+      {
+        name: flash_power_ready_h
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_power_ready_h
+        index: -1
+      }
+      {
+        name: flash_test_mode_a
+        struct: ""
+        type: io
+        act: none
+        width: 2
+        inst_name: flash_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_test_mode_a
+        index: -1
+      }
+      {
+        name: flash_test_voltage_h
+        struct: ""
+        type: io
+        act: none
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_test_voltage_h
+        index: -1
+      }
+      {
+        name: flash_alert
+        struct: ast_dif
+        package: ast_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        external: true
+        top_signame: flash_alert
         index: -1
       }
       {
@@ -15340,6 +15377,19 @@
         default: ""
         end_idx: -1
         top_signame: flash_ctrl_prim_tl
+        index: -1
+      }
+      {
+        name: mem_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: flash_ctrl_mem_tl
         index: -1
       }
       {
@@ -16562,114 +16612,6 @@
         index: -1
       }
       {
-        struct: flash
-        type: req_rsp
-        name: flash_ctrl
-        act: rsp
-        inst_name: eflash
-        width: 1
-        default: ""
-        package: flash_ctrl_pkg
-        top_signame: flash_ctrl_flash
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: eflash
-        width: 1
-        default: ""
-        end_idx: -1
-        top_signame: eflash_tl
-        index: -1
-      }
-      {
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        name: lc_nvm_debug_en
-        inst_name: eflash
-        width: 1
-        default: ""
-        top_signame: lc_ctrl_lc_nvm_debug_en
-        index: -1
-      }
-      {
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        name: flash_bist_enable
-        inst_name: eflash
-        width: 1
-        default: ""
-        external: true
-        top_signame: flash_bist_enable
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        type: uni
-        act: rcv
-        name: flash_power_down_h
-        inst_name: eflash
-        width: 1
-        default: ""
-        external: true
-        top_signame: flash_power_down_h
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        type: uni
-        act: rcv
-        name: flash_power_ready_h
-        inst_name: eflash
-        width: 1
-        default: ""
-        external: true
-        top_signame: flash_power_ready_h
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        width: "4"
-        type: uni
-        act: rcv
-        name: flash_test_mode_a
-        inst_name: eflash
-        index: -1
-      }
-      {
-        struct: logic
-        package: ""
-        type: uni
-        act: rcv
-        name: flash_test_voltage_h
-        inst_name: eflash
-        index: -1
-      }
-      {
-        struct: ast_dif
-        package: ast_pkg
-        type: uni
-        act: req
-        name: flash_alert
-        inst_name: eflash
-        width: 1
-        default: ""
-        external: true
-        top_signame: flash_alert
-        index: -1
-      }
-      {
         name: tl_rv_core_ibex__corei
         struct: tl
         package: tlul_pkg
@@ -16757,18 +16699,6 @@
         index: -1
       }
       {
-        name: tl_eflash
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: eflash_tl
-        index: -1
-      }
-      {
         name: tl_peri
         struct: tl
         package: tlul_pkg
@@ -16803,6 +16733,18 @@
         inst_name: main
         default: ""
         top_signame: flash_ctrl_prim_tl
+        index: -1
+      }
+      {
+        name: tl_flash_ctrl__mem
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: flash_ctrl_mem_tl
         index: -1
       }
       {
@@ -17637,6 +17579,30 @@
         netname: flash_power_ready_h
       }
       {
+        package: ""
+        struct: ""
+        signame: flash_test_mode_a_io
+        width: 2
+        type: io
+        default: ""
+        direction: inout
+        conn_type: false
+        index: -1
+        netname: flash_test_mode_a
+      }
+      {
+        package: ""
+        struct: ""
+        signame: flash_test_voltage_h_io
+        width: 1
+        type: io
+        default: ""
+        direction: inout
+        conn_type: false
+        index: -1
+        netname: flash_test_voltage_h
+      }
+      {
         package: entropy_src_pkg
         struct: entropy_src_rng_req
         signame: es_rng_req_o
@@ -18057,28 +18023,6 @@
         act: rsp
         suffix: rsp
         default: ""
-      }
-      {
-        package: flash_ctrl_pkg
-        struct: flash_req
-        signame: flash_ctrl_flash_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: flash_ctrl_pkg
-        struct: flash_rsp
-        signame: flash_ctrl_flash_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: flash_ctrl_pkg::FLASH_RSP_DEFAULT
       }
       {
         package: flash_ctrl_pkg
@@ -19029,28 +18973,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: eflash_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: eflash_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: main_tl_peri_req
         width: 1
         type: req_rsp
@@ -19107,6 +19029,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: flash_ctrl_prim_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: flash_ctrl_mem_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: flash_ctrl_mem_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

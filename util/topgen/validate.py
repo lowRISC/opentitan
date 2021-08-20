@@ -168,18 +168,10 @@ special_sig_optional = {
 special_sig_added = {}
 
 eflash_required = {
+    'type': ['s', 'string indicating type of memory'],
     'banks': ['d', 'number of flash banks'],
-    'base_addr': ['s', 'hex start address of memory'],
-    'clock_connections': ['g', 'generated, elaborated version of clock_srcs'],
-    'clock_group': ['s', 'associated clock attribute group'],
-    'clock_srcs': ['g', 'clock connections'],
-    'inter_signal_list': ['lg', 'intersignal list'],
-    'name': ['s', 'name of flash memory'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
     'program_resolution': ['d', 'maximum number of flash words allowed to program'],
-    'reset_connections': ['g', 'reset connections'],
-    'swaccess': ['s', 'software accessibility'],
-    'type': ['s', 'type of memory']
 }
 
 eflash_optional = {}
@@ -217,11 +209,12 @@ memory_required = {
     'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
     'exec': ['pb', 'executable region indication for the linker script'],
     'byte_write': ['pb', 'indicate whether the memory supports byte write accesses'],
-    'size': ['d', 'memory region size in bytes for the linker script, '
-                  'xbar and RTL parameterisations'],
 }
 
 memory_optional = {
+    'size': ['d', 'memory region size in bytes for the linker script, '
+                  'xbar and RTL parameterisations'],
+    'config': ['d', 'Extra configuration for a particular memory'],
 }
 
 memory_added = {
@@ -274,14 +267,23 @@ class Flash:
     max_pages_per_bank = 1024
 
     def __init__(self, mem):
-        self.banks = mem['banks']
-        self.pages_per_bank = mem['pages_per_bank']
-        self.program_resolution = mem['program_resolution']
+        self.banks = mem.get('banks', 2)
+        self.pages_per_bank = mem.get('pages_per_bank', 8)
+        self.program_resolution = mem.get('program_resolution', 128)
         self.words_per_page = 256
         self.data_width = 64
         self.metadata_width = 12
         self.info_types = 3
         self.infos_per_bank = [10, 1, 2]
+        self.word_bytes = int(self.data_width / 8)
+        self.pgm_resolution_bytes = int(self.program_resolution * self.word_bytes)
+        self.check_values()
+
+        # populate size variable
+        self.bytes_per_page = self.word_bytes * self.words_per_page
+        self.bytes_per_bank = self.bytes_per_page * self.pages_per_bank
+        self.total_bytes = self.bytes_per_bank * self.banks
+        self.size = hex(int(self.total_bytes))
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
@@ -293,25 +295,22 @@ class Flash:
         limit_check = ((self.banks <= Flash.max_banks) and
                        (self.pages_per_bank <= Flash.max_pages_per_bank))
 
-        return pow2_check and limit_check
+        if not pow2_check:
+            raise ValueError(f'flash power of 2 check failed. A supplied parameter '
+                             'is not power of 2')
 
-    def calc_size(self):
-        word_bytes = self.data_width / 8
-        bytes_per_page = word_bytes * self.words_per_page
-        bytes_per_bank = bytes_per_page * self.pages_per_bank
-        return bytes_per_bank * self.banks
+        if not limit_check:
+            raise ValueError(f'flash number of banks and pages per bank too large')
 
-    def populate(self, mem):
-        mem['words_per_page'] = self.words_per_page
-        mem['data_width'] = self.data_width
-        mem['metadata_width'] = self.metadata_width
-        mem['info_types'] = self.info_types
-        mem['infos_per_bank'] = self.infos_per_bank
-        mem['size'] = hex(int(self.calc_size()))
-
-        word_bytes = self.data_width / 8
-        mem['pgm_resolution_bytes'] = int(self.program_resolution * word_bytes)
-
+    def _asdict(self):
+        return {
+            'banks':          self.banks,
+            'pages_per_bank': self.pages_per_bank,
+            'program_resolution': self.pgm_resolution_bytes,
+            'bytes_per_page': self.bytes_per_page,
+            'bytes_per_bank': self.bytes_per_bank,
+            'size': self.size
+        }
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
 # Also check to make sure there are not multiple definitions of ip/xbar.hjson for each
@@ -728,22 +727,13 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
 
 
 def check_flash(top):
-    error = 0
 
     for mem in top['memory']:
         if mem['type'] == "eflash":
-            error = check_keys(mem, eflash_required, eflash_optional,
-                               eflash_added, "Eflash")
 
-    flash = Flash(mem)
-    error += 1 if not flash.check_values() else 0
-
-    if error:
-        log.error("Flash check failed")
-    else:
-        flash.populate(mem)
-
-    return error
+            raise ValueError(f'top level flash memory definition not supported. Please use '
+                             'the flash embedded inside flash_ctrl instead.  If there is a '
+                             'need for top level flash memory, please file an issue.')
 
 
 def check_power_domains(top):
@@ -791,6 +781,26 @@ def check_modules(top, prefix):
                 error += check_keys(value, memory_required,
                                     memory_optional, memory_added,
                                     prefix + " " + modname + " " + intf)
+
+                # if size is not declared, there must be extra config to determine it
+                if 'size' not in value and 'config' not in value:
+                    raise ValueError(f'{m["name"]} memory declaration has neither size '
+                                     'nor extra configuration.  Unable to determine '
+                                     'memory size')
+
+                if 'size' not in value:
+                    mem_type = value['config'].get('type', "")
+
+                    if mem_type == "flash":
+                        check_keys(value['config'], eflash_required, eflash_optional,
+                                   eflash_added, "Eflash")
+                        flash = Flash(value['config'])
+                        value['size'] = flash.size
+                        value['config'] = flash
+                    else:
+                        raise ValueError(f'{m["name"]} memory config declaration does not have '
+                                         'a valid type')
+
                 # make sure the memory regions correspond to the TL-UL interfaces
                 if intf not in m['base_addrs']:
                     log.error("{} {} memory region {} does not "
@@ -828,7 +838,7 @@ def validate_top(top, ipobjs, xbarobjs):
     error += err
 
     # MEMORY check
-    error += check_flash(top)
+    check_flash(top)
 
     # Power domain check
     error += check_power_domains(top)

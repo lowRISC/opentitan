@@ -602,6 +602,24 @@ extern "C" {
 #define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for mem device on flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR 0x20000000u
+
+/**
+ * Peripheral size for mem device on flash_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000u
+
+/**
  * Peripheral base address for regs device on rv_dm in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -909,16 +927,6 @@ extern "C" {
 
 
 /**
- * Memory base address for eflash in top earlgrey.
- */
-#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
-
-/**
- * Memory size for eflash in top earlgrey.
- */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
-
-/**
  * Memory base address for ram_ret_aon in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_RET_AON_BASE_ADDR 0x40600000u
@@ -927,6 +935,16 @@ extern "C" {
  * Memory size for ram_ret_aon in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES 0x1000u
+
+/**
+ * Memory base address for eflash in top earlgrey.
+ */
+#define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u
+
+/**
+ * Memory size for eflash in top earlgrey.
+ */
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
 
 /**
  * Memory base address for ram_main in top earlgrey.

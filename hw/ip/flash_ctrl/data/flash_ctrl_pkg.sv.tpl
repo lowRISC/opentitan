@@ -13,24 +13,24 @@ package flash_ctrl_pkg;
   parameter int unsigned BusPgmResBytes  = flash_ctrl_reg_pkg::RegBusPgmResBytes;
 
   // fixed parameters of flash derived from topgen parameters
-  parameter int DataWidth       = ${cfg['data_width']};
-  parameter int MetaDataWidth   = ${cfg['metadata_width']};
-  parameter int InfoTypes       = ${cfg['info_types']}; // How many types of info per bank
+  parameter int DataWidth       = ${cfg.data_width};
+  parameter int MetaDataWidth   = ${cfg.metadata_width};
+  parameter int InfoTypes       = ${cfg.info_types}; // How many types of info per bank
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-  % for type in range(cfg['info_types']):
-    ${cfg['infos_per_bank'][type]}${"," if not loop.last else ""}
+  % for type in range(cfg.info_types):
+    ${cfg.infos_per_bank[type]}${"," if not loop.last else ""}
   % endfor
   };
   parameter int InfosPerBank    = max_info_pages('{
-  % for type in range(cfg['info_types']):
-    ${cfg['infos_per_bank'][type]}${"," if not loop.last else ""}
+  % for type in range(cfg.info_types):
+    ${cfg.infos_per_bank[type]}${"," if not loop.last else ""}
   % endfor
   });
-  parameter int WordsPerPage    = ${cfg['words_per_page']}; // Number of flash words per page
+  parameter int WordsPerPage    = ${cfg.words_per_page}; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
@@ -66,12 +66,12 @@ package flash_ctrl_pkg;
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PageW'(PagesPerBank - 1);
   //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-  % for type in range((cfg['info_types'])):
-  //  ${cfg['infos_per_bank'][type]-1}${"," if not loop.last else ""}
+  % for type in range((cfg.info_types)):
+  //  ${cfg.infos_per_bank[type]-1}${"," if not loop.last else ""}
   % endfor
   //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-  % for type in range((cfg['info_types'])):
+  % for type in range((cfg.info_types)):
     PageW'(InfoTypeSize[${type}] - 1)${"," if not loop.last else ""}
   % endfor
   };
@@ -313,7 +313,6 @@ package flash_ctrl_pkg;
     logic [KeyWidth-1:0]  data_key;
     logic [KeyWidth-1:0]  rand_addr_key;
     logic [KeyWidth-1:0]  rand_data_key;
-    tlul_pkg::tl_h2d_t    tl_flash_c2p;
     logic                 alert_trig;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
@@ -345,7 +344,6 @@ package flash_ctrl_pkg;
     data_key:      RndCnstDataKeyDefault,
     rand_addr_key: '0,
     rand_data_key: '0,
-    tl_flash_c2p:  '0,
     alert_trig:    1'b0,
     alert_ack:     1'b0,
     jtag_req:      '0,
@@ -362,7 +360,6 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
-    tlul_pkg::tl_d2h_t   tl_flash_p2c;
     logic                flash_err;
     logic                flash_alert_p;
     logic                flash_alert_n;
@@ -382,7 +379,6 @@ package flash_ctrl_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    tl_flash_p2c:       '0,
     flash_err:          1'b0,
     flash_alert_p:      1'b0,
     flash_alert_n:      1'b1,

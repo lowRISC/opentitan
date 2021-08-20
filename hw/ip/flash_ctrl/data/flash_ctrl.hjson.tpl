@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-  page_width = (cfg['pages_per_bank']-1).bit_length()
-  bank_width = (cfg['banks']-1).bit_length()
-  total_pages = cfg['banks']*cfg['pages_per_bank']
-  bytes_per_page = cfg['words_per_page']*cfg['data_width'] / 8
+  page_width = (cfg.pages_per_bank-1).bit_length()
+  bank_width = (cfg.banks-1).bit_length()
+  total_pages = cfg.banks * cfg.pages_per_bank
+  bytes_per_page = cfg.words_per_page * cfg.word_bytes
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
-  info_type_width = (cfg['info_types']-1).bit_length()
+  info_type_width = (cfg.info_types-1).bit_length()
 %>
 
 { name: "FLASH_CTRL",
@@ -19,6 +19,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "prim" }
+    { protocol: "tlul", direction: "device", name: "mem" }
   ],
   available_input_list: [
     { name: "tck", desc: "jtag clock" },
@@ -54,18 +55,57 @@
 
   // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
-    { struct:  "flash",          // flash_req_t, flash_rsp_t
-      type:    "req_rsp",
-      name:    "flash",          // flash_o (req), flash_i (rsp)
-      act:     "req",
-      package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
-    },
-
     { struct: "flash_otp_key",
       type: "req_rsp",
       name: "otp",
       act:  "req",
       package: "otp_ctrl_pkg"
+    },
+
+    { struct: "lc_tx",
+      package: "lc_ctrl_pkg",
+      type: "uni"
+      act: "rcv"
+      name: "lc_nvm_debug_en"
+    },
+
+    { struct: "lc_tx"
+      package: "lc_ctrl_pkg"
+      type: "uni"
+      act: "rcv"
+      name: "flash_bist_enable"
+    },
+
+    { struct: "logic"
+      package: ""
+      type: "uni"
+      act: "rcv"
+      name: "flash_power_down_h"
+    },
+    { struct: "logic"
+      package: ""
+      type: "uni"
+      act: "rcv"
+      name: "flash_power_ready_h"
+    },
+    { struct: "",
+      package: "",
+      width: "2",
+      type: "io"
+      act: "none"
+      name: "flash_test_mode_a"
+    },
+    { struct: "",
+      package: "",
+      type: "io"
+      act: "none"
+      name: "flash_test_voltage_h"
+    },
+    { struct: "ast_dif",
+      package: "ast_pkg",
+      type: "uni"
+      act: "req"
+      name: "flash_alert"
     },
 
     { struct:  "lc_tx"
@@ -147,6 +187,9 @@
 
   ],
 
+  scan: "true",       // Enable `scanmode_i` port
+  scan_en: "true",    // Enable `scan_en_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
     // The reg parameters can be modified directly through top_*.hjson.
     // The template will automatically propagate the appropriate values.
@@ -180,21 +223,21 @@
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
-      default: "${cfg['banks']}",
+      default: "${cfg.banks}",
       local: "true"
     },
 
     { name: "RegPagesPerBank",
       desc: "Number of pages per bank",
       type: "int",
-      default: "${cfg['pages_per_bank']}",
+      default: "${cfg.pages_per_bank}",
       local: "true"
     },
 
     { name: "RegBusPgmResBytes",
       desc: "Number of pages per bank",
       type: "int",
-      default: "${cfg['pgm_resolution_bytes']}",
+      default: "${cfg.pgm_resolution_bytes}",
       local: "true"
     },
 
@@ -221,11 +264,11 @@
 
     // The following parameters are derived from topgen and should not be
     // direclty modified.
-    % for type in range(cfg['info_types']):
+    % for type in range(cfg.info_types):
     { name: "NumInfos${type}",
       desc: "Number of configurable flash info pages for info type ${type}",
       type: "int",
-      default: "${cfg['infos_per_bank'][type]}",
+      default: "${cfg.infos_per_bank[type]}",
       local: "true"
     },
     % endfor
@@ -233,34 +276,30 @@
     { name: "WordsPerPage",
       desc: "Number of words per page",
       type: "int",
-      default: "${cfg['words_per_page']}",
+      default: "${cfg.words_per_page}",
       local: "true"
     },
 
     { name: "BytesPerWord",
       desc: "Number of bytes per word",
       type: "int",
-      default: "${cfg['data_width'] // 8}",
+      default: "${cfg.word_bytes}",
       local: "true"
     },
 
     { name: "BytesPerPage",
       desc: "Number of bytes per page",
       type: "int",
-      default: "${cfg['data_width'] // 8 * cfg['words_per_page']}",
+      default: "${cfg.bytes_per_page}",
       local: "true"
     },
 
     { name: "BytesPerBank",
       desc: "Number of bytes per bank",
       type: "int",
-      default: "${int(cfg['size'],0) // cfg['banks']}",
+      default: "${cfg.bytes_per_bank}",
       local: "true"
     },
-
-
-
-
   ],
 
   regwidth: "32",
@@ -687,8 +726,8 @@
       },
 
       // Info partition memory properties setup
-      % for bank in range(cfg['banks']):
-      %   for idx in range(cfg['info_types']):
+      % for bank in range(cfg.banks):
+      %   for idx in range(cfg.info_types):
       { multireg: {
           cname: "FLASH_CTRL",
           name: "BANK${bank}_INFO${idx}_REGWEN"
@@ -1176,21 +1215,7 @@
       },
     ],
 
-    prim: [
-//      { name: "DUMMY",
-//        desc: "Dummy unused register",
-//        swaccess: "rw",
-//        hwaccess: "hro",
-//        fields: [
-//          { bits: "0",
-//            name: "VAL",
-//            desc: '''
-//              Nothing to see here, move along
-//            '''
-//            resval: "0"
-//          },
-//        ]
-//      }
-    ]
+    prim: []
+    mem: []
   }
 }

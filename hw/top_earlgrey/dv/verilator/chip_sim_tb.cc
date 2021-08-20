@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   MemArea flash(top_scope +
-                    ".u_flash_eflash.u_flash.gen_generic.u_impl_generic."
+                    ".u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic."
                     "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem."
                     "gen_generic.u_impl_generic",
                 0x100000 / 8, 8);

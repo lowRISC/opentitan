@@ -12,6 +12,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "prim" }
+    { protocol: "tlul", direction: "device", name: "mem" }
   ],
   available_input_list: [
     { name: "tck", desc: "jtag clock" },
@@ -47,18 +48,57 @@
 
   // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
-    { struct:  "flash",          // flash_req_t, flash_rsp_t
-      type:    "req_rsp",
-      name:    "flash",          // flash_o (req), flash_i (rsp)
-      act:     "req",
-      package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
-    },
-
     { struct: "flash_otp_key",
       type: "req_rsp",
       name: "otp",
       act:  "req",
       package: "otp_ctrl_pkg"
+    },
+
+    { struct: "lc_tx",
+      package: "lc_ctrl_pkg",
+      type: "uni"
+      act: "rcv"
+      name: "lc_nvm_debug_en"
+    },
+
+    { struct: "lc_tx"
+      package: "lc_ctrl_pkg"
+      type: "uni"
+      act: "rcv"
+      name: "flash_bist_enable"
+    },
+
+    { struct: "logic"
+      package: ""
+      type: "uni"
+      act: "rcv"
+      name: "flash_power_down_h"
+    },
+    { struct: "logic"
+      package: ""
+      type: "uni"
+      act: "rcv"
+      name: "flash_power_ready_h"
+    },
+    { struct: "",
+      package: "",
+      width: "2",
+      type: "io"
+      act: "none"
+      name: "flash_test_mode_a"
+    },
+    { struct: "",
+      package: "",
+      type: "io"
+      act: "none"
+      name: "flash_test_voltage_h"
+    },
+    { struct: "ast_dif",
+      package: "ast_pkg",
+      type: "uni"
+      act: "req"
+      name: "flash_alert"
     },
 
     { struct:  "lc_tx"
@@ -140,6 +180,9 @@
 
   ],
 
+  scan: "true",       // Enable `scanmode_i` port
+  scan_en: "true",    // Enable `scan_en_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
     // The reg parameters can be modified directly through top_*.hjson.
     // The template will automatically propagate the appropriate values.
@@ -187,7 +230,7 @@
     { name: "RegBusPgmResBytes",
       desc: "Number of pages per bank",
       type: "int",
-      default: "64",
+      default: "512",
       local: "true"
     },
 
@@ -260,10 +303,6 @@
       default: "524288",
       local: "true"
     },
-
-
-
-
   ],
 
   regwidth: "32",
@@ -1660,21 +1699,7 @@
       },
     ],
 
-    prim: [
-//      { name: "DUMMY",
-//        desc: "Dummy unused register",
-//        swaccess: "rw",
-//        hwaccess: "hro",
-//        fields: [
-//          { bits: "0",
-//            name: "VAL",
-//            desc: '''
-//              Nothing to see here, move along
-//            '''
-//            resval: "0"
-//          },
-//        ]
-//      }
-    ]
+    prim: []
+    mem: []
   }
 }

@@ -331,6 +331,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for mem device on flash_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
+
+  /**
+   * Peripheral size in bytes for mem device on flash_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
+
+  /**
    * Peripheral base address for regs device on rv_dm in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_DM_REGS_BASE_ADDR = 32'h41200000;
@@ -501,16 +511,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for eflash in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_EFLASH_BASE_ADDR = 32'h20000000;
-
-  /**
-   * Memory size for eflash in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h100000;
-
-  /**
    * Memory base address for ram_ret_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RAM_RET_AON_BASE_ADDR = 32'h40600000;
@@ -519,6 +519,16 @@ package top_earlgrey_pkg;
    * Memory size for ram_ret_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Memory base address for eflash in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EFLASH_BASE_ADDR = 32'h20000000;
+
+  /**
+   * Memory size for eflash in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h100000;
 
   /**
    * Memory base address for ram_main in top earlgrey.

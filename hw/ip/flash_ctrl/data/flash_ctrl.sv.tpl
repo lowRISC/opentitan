@@ -31,16 +31,15 @@ module flash_ctrl
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t core_tl_i,
   output       tlul_pkg::tl_d2h_t core_tl_o,
   input        tlul_pkg::tl_h2d_t prim_tl_i,
   output       tlul_pkg::tl_d2h_t prim_tl_o,
-
-  // Flash Interface
-  input        flash_rsp_t flash_i,
-  output       flash_req_t flash_o,
+  input        tlul_pkg::tl_h2d_t mem_tl_i,
+  output       tlul_pkg::tl_d2h_t mem_tl_o,
 
   // otp/lc/pwrmgr/keymgr Interface
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
@@ -68,9 +67,18 @@ module flash_ctrl
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
+  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o,
 
-
+  // Flash test interface
+  input scan_en_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input scan_rst_ni,
+  input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
+  input flash_power_down_h_i,
+  input flash_power_ready_h_i,
+  inout [1:0] flash_test_mode_a_io,
+  inout flash_test_voltage_h_io,
+  output ast_pkg::ast_dif_t flash_alert_o
 );
 
   import flash_ctrl_reg_pkg::*;
@@ -80,8 +88,6 @@ module flash_ctrl
 
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
-
-  assign prim_tl_o = flash_i.tl_flash_p2c;
 
   // Register module
   logic intg_err;
@@ -209,6 +215,10 @@ module flash_ctrl
   logic [31:0] rand_val;
   logic lfsr_en;
   logic lfsr_seed_en;
+
+  // interface to flash phy
+  flash_rsp_t flash_phy_rsp;
+  flash_req_t flash_phy_req;
 
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
@@ -417,7 +427,7 @@ module flash_ctrl
     .phase_o(hw_phase),
 
     // phy read buffer enable
-    .rd_buf_en_o(flash_o.rd_buf_en),
+    .rd_buf_en_o(flash_phy_req.rd_buf_en),
 
     // connection to otp
     .otp_key_req_o(otp_o),
@@ -486,9 +496,9 @@ module flash_ctrl
 
   // Program handler is consumer of prog_fifo
   logic [1:0] prog_type_en;
-  assign prog_type_en[FlashProgNormal] = flash_i.prog_type_avail[FlashProgNormal] &
+  assign prog_type_en[FlashProgNormal] = flash_phy_rsp.prog_type_avail[FlashProgNormal] &
                                          reg2hw.prog_type_en.normal.q;
-  assign prog_type_en[FlashProgRepair] = flash_i.prog_type_avail[FlashProgRepair] &
+  assign prog_type_en[FlashProgRepair] = flash_phy_rsp.prog_type_avail[FlashProgRepair] &
                                          reg2hw.prog_type_en.repair.q;
   flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
@@ -661,8 +671,8 @@ module flash_ctrl
 
   // transform from reg output to structure
   // Not all types have the maximum number of banks, so those are packed to 0
-  % for bank in range(cfg['banks']):
-  %   for idx in range(cfg['info_types']):
+  % for bank in range(cfg.banks):
+  %   for idx in range(cfg.info_types):
   assign reg2hw_info_page_cfgs[${bank}][${idx}] = InfoBits'(reg2hw.bank${bank}_info${idx}_page_cfg);
   %   endfor
   % endfor
@@ -733,18 +743,18 @@ module flash_ctrl
     .err_addr_o(err_addr),
 
     // flash phy interface
-    .req_o(flash_o.req),
-    .scramble_en_o(flash_o.scramble_en),
-    .ecc_en_o(flash_o.ecc_en),
-    .he_en_o(flash_o.he_en),
-    .rd_o(flash_o.rd),
-    .prog_o(flash_o.prog),
-    .pg_erase_o(flash_o.pg_erase),
-    .bk_erase_o(flash_o.bk_erase),
-    .erase_suspend_o(flash_o.erase_suspend),
-    .rd_done_i(flash_i.rd_done),
-    .prog_done_i(flash_i.prog_done),
-    .erase_done_i(flash_i.erase_done)
+    .req_o(flash_phy_req.req),
+    .scramble_en_o(flash_phy_req.scramble_en),
+    .ecc_en_o(flash_phy_req.ecc_en),
+    .he_en_o(flash_phy_req.he_en),
+    .rd_o(flash_phy_req.rd),
+    .prog_o(flash_phy_req.prog),
+    .pg_erase_o(flash_phy_req.pg_erase),
+    .bk_erase_o(flash_phy_req.bk_erase),
+    .erase_suspend_o(flash_phy_req.erase_suspend),
+    .rd_done_i(flash_phy_rsp.rd_done),
+    .prog_done_i(flash_phy_rsp.prog_done),
+    .erase_done_i(flash_phy_rsp.erase_done)
   );
 
 
@@ -774,44 +784,43 @@ module flash_ctrl
   // phy status
   assign hw2reg.phy_status.init_wip.d  = flash_phy_busy;
   assign hw2reg.phy_status.init_wip.de = 1'b1;
-  assign hw2reg.phy_status.prog_normal_avail.d  = flash_i.prog_type_avail[FlashProgNormal];
+  assign hw2reg.phy_status.prog_normal_avail.d  = flash_phy_rsp.prog_type_avail[FlashProgNormal];
   assign hw2reg.phy_status.prog_normal_avail.de = 1'b1;
-  assign hw2reg.phy_status.prog_repair_avail.d  = flash_i.prog_type_avail[FlashProgRepair];
+  assign hw2reg.phy_status.prog_repair_avail.d  = flash_phy_rsp.prog_type_avail[FlashProgRepair];
   assign hw2reg.phy_status.prog_repair_avail.de = 1'b1;
 
   // Flash Interface
-  assign flash_o.addr = flash_addr;
-  assign flash_o.part = flash_part_sel;
-  assign flash_o.info_sel = flash_info_sel;
-  assign flash_o.prog_type = flash_prog_type;
-  assign flash_o.prog_data = flash_prog_data;
-  assign flash_o.prog_last = flash_prog_last;
-  assign flash_o.region_cfgs = region_cfgs;
-  assign flash_o.addr_key = addr_key;
-  assign flash_o.data_key = data_key;
-  assign flash_o.rand_addr_key = rand_addr_key;
-  assign flash_o.rand_data_key = rand_data_key;
-  assign flash_o.tl_flash_c2p = prim_tl_i;
-  assign flash_o.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
-  assign flash_o.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
-  assign flash_o.jtag_req.tck = cio_tck_i;
-  assign flash_o.jtag_req.tms = cio_tms_i;
-  assign flash_o.jtag_req.tdi = cio_tdi_i;
-  assign flash_o.jtag_req.trst_n = '0;
-  assign flash_o.ecc_multi_err_en = reg2hw.phy_err_cfg.q;
-  assign flash_o.intg_err = intg_err;
-  assign cio_tdo_o = flash_i.jtag_rsp.tdo;
-  assign cio_tdo_en_o = flash_i.jtag_rsp.tdo_oe;
-  assign flash_rd_err = flash_i.rd_err;
-  assign flash_rd_data = flash_i.rd_data;
-  assign flash_phy_busy = flash_i.init_busy;
+  assign flash_phy_req.addr = flash_addr;
+  assign flash_phy_req.part = flash_part_sel;
+  assign flash_phy_req.info_sel = flash_info_sel;
+  assign flash_phy_req.prog_type = flash_prog_type;
+  assign flash_phy_req.prog_data = flash_prog_data;
+  assign flash_phy_req.prog_last = flash_prog_last;
+  assign flash_phy_req.region_cfgs = region_cfgs;
+  assign flash_phy_req.addr_key = addr_key;
+  assign flash_phy_req.data_key = data_key;
+  assign flash_phy_req.rand_addr_key = rand_addr_key;
+  assign flash_phy_req.rand_data_key = rand_data_key;
+  assign flash_phy_req.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
+  assign flash_phy_req.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
+  assign flash_phy_req.jtag_req.tck = cio_tck_i;
+  assign flash_phy_req.jtag_req.tms = cio_tms_i;
+  assign flash_phy_req.jtag_req.tdi = cio_tdi_i;
+  assign flash_phy_req.jtag_req.trst_n = '0;
+  assign flash_phy_req.ecc_multi_err_en = reg2hw.phy_err_cfg.q;
+  assign flash_phy_req.intg_err = intg_err;
+  assign cio_tdo_o = flash_phy_rsp.jtag_rsp.tdo;
+  assign cio_tdo_en_o = flash_phy_rsp.jtag_rsp.tdo_oe;
+  assign flash_rd_err = flash_phy_rsp.rd_err;
+  assign flash_rd_data = flash_phy_rsp.rd_data;
+  assign flash_phy_busy = flash_phy_rsp.init_busy;
 
 
   // Interface to pwrmgr
   // flash is not idle as long as there is a stateful operation ongoing
   logic flash_idle_d;
-  assign flash_idle_d = ~(flash_o.req &
-                          (flash_o.prog | flash_o.pg_erase | flash_o.bk_erase));
+  assign flash_idle_d = ~(flash_phy_req.req &
+                          (flash_phy_req.prog | flash_phy_req.pg_erase | flash_phy_req.bk_erase));
 
   prim_flop #(
     .Width(1),
@@ -831,16 +840,16 @@ module flash_ctrl
   logic [NumAlerts-1:0] alert_tests;
 
   logic recov_err;
-  assign recov_err = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
+  assign recov_err = flash_phy_rsp.flash_alert_p | ~flash_phy_rsp.flash_alert_n;
 
   logic recov_mp_err;
   assign recov_mp_err = flash_mp_error;
 
   logic recov_ecc_err;
-  assign recov_ecc_err = |flash_i.ecc_single_err | |flash_i.ecc_multi_err;
+  assign recov_ecc_err = |flash_phy_rsp.ecc_single_err | |flash_phy_rsp.ecc_multi_err;
 
   logic fatal_intg_err;
-  assign fatal_intg_err = flash_i.intg_err | intg_err;
+  assign fatal_intg_err = flash_phy_rsp.intg_err | intg_err;
 
   assign alert_srcs = { fatal_intg_err,
                         recov_ecc_err,
@@ -887,7 +896,7 @@ module flash_ctrl
     .lc_en_o(lc_escalate_en)
   );
 
-  assign flash_o.flash_disable = flash_disable | lc_escalate_en;
+  assign flash_phy_req.flash_disable = flash_disable | lc_escalate_en;
 
   //////////////////////////////////////
   // Errors and Interrupts
@@ -899,21 +908,24 @@ module flash_ctrl
   assign hw2reg.err_code.flash_err.d = 1'b1;
   assign hw2reg.err_code.flash_alert.d = 1'b1;
   assign hw2reg.err_code.mp_err.de = flash_mp_error;
-  assign hw2reg.err_code.ecc_single_err.de = |flash_i.ecc_single_err;
-  assign hw2reg.err_code.ecc_multi_err.de = |flash_i.ecc_multi_err;
-  assign hw2reg.err_code.flash_err.de = flash_i.flash_err;
-  assign hw2reg.err_code.flash_alert.de = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
+  assign hw2reg.err_code.ecc_single_err.de = |flash_phy_rsp.ecc_single_err;
+  assign hw2reg.err_code.ecc_multi_err.de = |flash_phy_rsp.ecc_multi_err;
+  assign hw2reg.err_code.flash_err.de = flash_phy_rsp.flash_err;
+  assign hw2reg.err_code.flash_alert.de = flash_phy_rsp.flash_alert_p |
+                                          ~flash_phy_rsp.flash_alert_n;
   assign hw2reg.err_addr.d = err_addr;
   assign hw2reg.err_addr.de = flash_mp_error;
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_single_err_cons
-    assign hw2reg.ecc_single_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
-    assign hw2reg.ecc_single_err_addr[bank].de = flash_i.ecc_single_err[bank];
+    assign hw2reg.ecc_single_err_addr[bank].d  = {flash_phy_rsp.ecc_addr[bank],
+      {BusByteWidth{1'b0}}};
+    assign hw2reg.ecc_single_err_addr[bank].de = flash_phy_rsp.ecc_single_err[bank];
   end
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_multi_err_cons
-    assign hw2reg.ecc_multi_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
-    assign hw2reg.ecc_multi_err_addr[bank].de = flash_i.ecc_multi_err[bank];
+    assign hw2reg.ecc_multi_err_addr[bank].d  = {flash_phy_rsp.ecc_addr[bank],
+      {BusByteWidth{1'b0}}};
+    assign hw2reg.ecc_multi_err_addr[bank].de = flash_phy_rsp.ecc_multi_err[bank];
   end
 
   logic [7:0] single_err_cnt_d, multi_err_cnt_d;
@@ -921,11 +933,11 @@ module flash_ctrl
     single_err_cnt_d = reg2hw.ecc_single_err_cnt.q;
     multi_err_cnt_d = reg2hw.ecc_multi_err_cnt.q;
 
-    if (|flash_i.ecc_single_err && single_err_cnt_d < '1) begin
+    if (|flash_phy_rsp.ecc_single_err && single_err_cnt_d < '1) begin
       single_err_cnt_d = single_err_cnt_d + 1'b1;
     end
 
-    if (|flash_i.ecc_multi_err && multi_err_cnt_d < '1) begin
+    if (|flash_phy_rsp.ecc_multi_err && multi_err_cnt_d < '1) begin
       multi_err_cnt_d = multi_err_cnt_d + 1'b1;
     end
   end
@@ -1026,16 +1038,85 @@ module flash_ctrl
   assign unused_higher_addr_bits = muxed_addr[top_pkg::TL_AW-1:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
+  //////////////////////////////////////
+  // flash phy module
+  //////////////////////////////////////
+  logic flash_host_req;
+  tlul_pkg::tl_type_e flash_host_req_type;
+  logic flash_host_req_rdy;
+  logic flash_host_req_done;
+  logic flash_host_rderr;
+  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
+  logic flash_host_intg_err;
+
+  tlul_adapter_sram #(
+    .SramAw(BusAddrW),
+    .SramDw(BusWidth),
+    .Outstanding(2),
+    .ByteAccess(0),
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
+  ) u_tl_adapter_eflash (
+    .clk_i,
+    .rst_ni,
+    .tl_i        (mem_tl_i),
+    .tl_o        (mem_tl_o),
+    // tie this to secure boot, see #7834
+    .en_ifetch_i (tlul_pkg::InstrEn),
+    .req_o       (flash_host_req),
+    .req_type_o  (flash_host_req_type),
+    .gnt_i       (flash_host_req_rdy),
+    .we_o        (),
+    .addr_o      (flash_host_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .intg_error_o(flash_host_intg_err),
+    .rdata_i     (flash_host_rdata),
+    .rvalid_i    (flash_host_req_done),
+    .rerror_i    ({flash_host_rderr,1'b0})
+  );
+
+  flash_phy u_eflash (
+    .clk_i,
+    .rst_ni,
+    .host_req_i        (flash_host_req),
+    .host_intg_err_i   (flash_host_intg_err),
+    .host_req_type_i   (flash_host_req_type),
+    .host_addr_i       (flash_host_addr),
+    .host_req_rdy_o    (flash_host_req_rdy),
+    .host_req_done_o   (flash_host_req_done),
+    .host_rderr_o      (flash_host_rderr),
+    .host_rdata_o      (flash_host_rdata),
+    .flash_ctrl_i      (flash_phy_req),
+    .flash_ctrl_o      (flash_phy_rsp),
+    .tl_i              (prim_tl_i),
+    .tl_o              (prim_tl_o),
+    .lc_nvm_debug_en_i,
+    .flash_bist_enable_i,
+    .flash_power_down_h_i,
+    .flash_power_ready_h_i,
+    .flash_test_mode_a_io,
+    .flash_test_voltage_h_io,
+    .flash_alert_o,
+    .scanmode_i,
+    .scan_en_i,
+    .scan_rst_ni
+  );
 
   // Assertions
   `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
   `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
   `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
-  `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
-                                         flash_o.bk_erase})
-  `ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_o.addr, flash_o.req)
-  `ASSERT_KNOWN_IF(FlashProgKnown_A,    flash_o.prog_data, flash_o.prog & flash_o.req)
+  `ASSERT_KNOWN(FlashKnownO_A,          {flash_phy_req.req, flash_phy_req.rd,
+                                         flash_phy_req.prog, flash_phy_req.pg_erase,
+                                         flash_phy_req.bk_erase})
+  `ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_phy_req.addr, flash_phy_req.req)
+  `ASSERT_KNOWN_IF(FlashProgKnown_A,    flash_phy_req.prog_data,
+    flash_phy_req.prog & flash_phy_req.req)
   `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o)
   `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o  )
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )

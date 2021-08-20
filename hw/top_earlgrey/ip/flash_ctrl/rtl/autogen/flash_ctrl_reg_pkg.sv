@@ -25,6 +25,7 @@ package flash_ctrl_reg_pkg;
   // Address widths within the block
   parameter int CoreAw = 9;
   parameter int PrimAw = 1;
+  parameter int MemAw = 1;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //

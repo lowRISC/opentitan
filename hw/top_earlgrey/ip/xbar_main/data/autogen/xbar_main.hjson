@@ -57,12 +57,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_eflash"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_peri"
       act:    "req"
       package: "tlul_pkg"
@@ -76,6 +70,12 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_flash_ctrl__prim"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_flash_ctrl__mem"
       act:    "req"
       package: "tlul_pkg"
     }

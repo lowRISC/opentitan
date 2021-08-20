@@ -11,8 +11,6 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:flash_ctrl:0.1
-    files:
-      - tb/flash_ctrl_wrapper.sv
     file_type: systemVerilogSource
 
   files_dv:
@@ -37,5 +35,3 @@ targets:
 
   lint:
     <<: *default_target
-
-
