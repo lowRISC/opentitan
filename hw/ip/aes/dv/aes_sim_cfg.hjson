@@ -46,9 +46,6 @@
   uvm_test: aes_base_test
   uvm_test_seq: aes_wake_up_vseq
 
-  // AES specific exclusions
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/aes_cov.vRefine"]
-
   // Update all builds to add options specific to AES C model compilation.
   en_build_modes: ["{tool}_aes_model_build_opts"]
 
@@ -63,8 +60,7 @@
     }
   ]
 
-
-run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+  run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
 
   // List of test specifications.
   tests: [
@@ -124,7 +120,8 @@ run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
     }
     {
       name: stress
-      tests: ["aes_stress","aes_b2b", "aes_clear", "aes_config_error", "aes_smoke", "aes_alert_reset"]
+      tests: ["aes_stress","aes_b2b", "aes_clear", "aes_config_error", "aes_smoke",
+              "aes_alert_reset"]
     }
   ]
 }

@@ -146,7 +146,7 @@
   // Project defaults for Xcelium
   xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
   xcelium_unr_cfg_file:  "{dv_root}/tools/xcelium/unr.cfg"
-  xcelium_common_excl_file: "{dv_root}/tools/xcelium/exclude.tcl"
+  xcelium_cov_excl_script: "{dv_root}/tools/xcelium/common_cov_excl.tcl"
   xcelium_cov_refine_files: []
 
   // Build-specific coverage cfg files for Xcelium.
