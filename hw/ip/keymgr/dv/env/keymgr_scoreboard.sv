@@ -610,7 +610,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function bit [TL_DW-1:0] get_fault_err();
     bit [TL_DW-1:0] err = get_err_code();
-    return err[keymgr_pkg::ErrInvalidOut] || err[keymgr_pkg::ErrInvalidStates];
+    return err[keymgr_pkg::ErrInvalidStates];
   endfunction
 
   virtual function bit [TL_DW-1:0] get_op_err();
@@ -631,8 +631,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On) begin
       err_code[keymgr_pkg::ErrInvalidIn]  = get_hw_invalid_input() | get_sw_invalid_input();
     end
-
-    err_code[keymgr_pkg::ErrInvalidOut] = is_kmac_invalid_data;
 
     `uvm_info(`gfn, $sformatf("op_err = %0d, rsp_err = %0d, kmac_invalid =%0d, hw_invalid = %0d \
               sw_invalid = %0d, kmac_invalid_data = %0d",
@@ -745,7 +743,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (current_state inside {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
                               keymgr_pkg::StOwnerKey}) begin
       return !(err_code[keymgr_pkg::ErrInvalidStates] |
-               err_code[keymgr_pkg::ErrInvalidOut] |
                err_code[keymgr_pkg::ErrInvalidIn]  |
                !cfg.keymgr_vif.get_keymgr_en());
     end else begin

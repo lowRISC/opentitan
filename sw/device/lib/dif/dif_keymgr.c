@@ -108,14 +108,11 @@ static_assert(KEYMGR_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
 static_assert(kDifKeymgrStatusCodeInvalidOperation >> 1 ==
                   1 << KEYMGR_ERR_CODE_INVALID_OP_BIT,
               "Layout of ERR_CODE register changed.");
-static_assert(kDifKeymgrStatusCodeInvalidKmacCommand >> 1 ==
+static_assert(kDifKeymgrStatusCodeInvalidState >> 1 ==
                   1 << KEYMGR_ERR_CODE_INVALID_STATES_BIT,
               "Layout of ERR_CODE register changed.");
 static_assert(kDifKeymgrStatusCodeInvalidKmacInput >> 1 ==
                   1 << KEYMGR_ERR_CODE_INVALID_KMAC_INPUT_BIT,
-              "Layout of ERR_CODE register changed.");
-static_assert(kDifKeymgrStatusCodeInvalidKmacOutput >> 1 ==
-                  1 << KEYMGR_ERR_CODE_INVALID_KMAC_DATA_BIT,
               "Layout of ERR_CODE register changed.");
 
 /**

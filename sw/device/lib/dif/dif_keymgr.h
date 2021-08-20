@@ -395,17 +395,18 @@ typedef enum dif_keymgr_status_code {
    */
   kDifKeymgrStatusCodeInvalidOperation = 1 << 1,
   /**
-   * Key manager issued an invalid command to KMAC interface.
-   */
-  kDifKeymgrStatusCodeInvalidKmacCommand = 1 << 2,
-  /**
    * Key manager issued invalid data to KMAC interface.
    */
-  kDifKeymgrStatusCodeInvalidKmacInput = 1 << 3,
+  kDifKeymgrStatusCodeInvalidKmacInput = 1 << 2,
   /**
-   * KMAC returned an invalid output.
+   * Software performed an invalid shadow update.
    */
-  kDifKeymgrStatusCodeInvalidKmacOutput = 1 << 4,
+  kDifKeymgrStatusCodeInvalidKmacOutput = 1 << 3,
+  /**
+   * Key manager encountered invalid state
+   */
+  kDifKeymgrStatusCodeInvalidState = 1 << 4,
+
 } dif_keymgr_status_code_t;
 
 /**

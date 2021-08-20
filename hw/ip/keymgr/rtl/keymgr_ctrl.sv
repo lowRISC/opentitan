@@ -18,7 +18,8 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
   // faults that can occur outside of operations
   input regfile_intg_err_i,
-  input shadowed_err_i,
+  input shadowed_update_err_i,
+  input shadowed_storage_err_i,
   output logic state_intg_err_o,
 
   // Software interface
@@ -186,7 +187,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
                           (~KmacEnMasking | valid_data_chk(kmac_data_i[1]));
 
   // error definition
-  assign op_fault_err_d = |fault_o | ~kmac_out_valid | op_fault_err_q;
+  assign op_fault_err_d = |fault_o | op_fault_err_q;
   assign op_err = kmac_input_invalid_i | invalid_op;
 
   // key update conditions
@@ -674,15 +675,18 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   assign state_intg_err_o = state_intg_err_q;
 
   assign error_o[ErrInvalidOp]     = op_done_o & invalid_op;
-  assign error_o[ErrInvalidStates] = op_ack & op_fault_err;
   assign error_o[ErrInvalidIn]     = op_ack & kmac_input_invalid_i;
-  assign error_o[ErrInvalidOut]    = op_ack & ~kmac_out_valid;
+  assign error_o[ErrShadowUpdate]  = shadowed_update_err_i;
+  assign error_o[ErrInvalidStates] = op_ack & op_fault_err;
 
   assign fault_o[FaultCmd]         = kmac_cmd_err_i;
   assign fault_o[FaultKmacFsm]     = kmac_fsm_err_i;
   assign fault_o[FaultKmacOp]      = kmac_op_err_i;
+  // Kmac output is only checked on operation complete.  Invalid
+  // values are legal otherwise
+  assign fault_o[FaultKmacOut]     = op_ack & ~kmac_out_valid;
   assign fault_o[FaultRegFileIntg] = regfile_intg_err_i;
-  assign fault_o[FaultShadow]      = shadowed_err_i;
+  assign fault_o[FaultShadow]      = shadowed_storage_err_i;
   assign fault_o[FaultCtrlFsm]     = state_intg_err_o;
   assign fault_o[FaultCtrlCnt]     = cnt_err;
 
