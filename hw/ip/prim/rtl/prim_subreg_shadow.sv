@@ -94,8 +94,9 @@ module prim_subreg_shadow
   // The staged register:
   // - Holds the 1's complement value.
   // - Written in Phase 0.
-  assign staged_we = we & ~phase_q;
-  assign staged_de = de & ~phase_q;
+  // - Once storage error occurs, do not allow any further update until reset
+  assign staged_we = we & ~phase_q & ~err_storage;
+  assign staged_de = de & ~phase_q & ~err_storage;
   prim_subreg #(
     .DW       ( DW               ),
     .SwAccess ( InvertedSwAccess ),
@@ -117,8 +118,9 @@ module prim_subreg_shadow
   // - Written in Phase 1.
   // - Writes are ignored in case of update errors.
   // - Gets the value from the staged register.
-  assign shadow_we = we & phase_q & ~err_update;
-  assign shadow_de = de & phase_q & ~err_update;
+  // - Once storage error occurs, do not allow any further update until reset
+  assign shadow_we = we & phase_q & ~err_update & ~err_storage;
+  assign shadow_de = de & phase_q & ~err_update & ~err_storage;
   prim_subreg #(
     .DW       ( DW               ),
     .SwAccess ( InvertedSwAccess ),
