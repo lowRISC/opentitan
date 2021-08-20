@@ -957,6 +957,11 @@ def main():
         type=int,
         metavar='<seed>',
         help='Custom seed for RNG to compute netlist constants.')
+    # Miscellaneous: only return the list of blocks and exit.
+    parser.add_argument('--get_blocks',
+                        default=False,
+                        action='store_true',
+                        help="Only return the list of blocks and exit.")
 
     args = parser.parse_args()
 
@@ -971,10 +976,10 @@ def main():
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
-    if args.verbose:
-        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
-    else:
-        log.basicConfig(format="%(levelname)s: %(message)s")
+    # Don't print warnings when querying the list of blocks.
+    log_level = (log.ERROR if args.get_blocks else
+                 log.DEBUG if args.verbose else log.NOTSET)
+    log.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
     if not args.outdir:
         outdir = Path(args.topcfg).parent / ".."
@@ -1029,6 +1034,10 @@ def main():
             completecfg, name_to_block = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
 
     topname = topcfg["name"]
+
+    if args.get_blocks:
+        print("\n".join(name_to_block.keys()))
+        sys.exit(0)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
