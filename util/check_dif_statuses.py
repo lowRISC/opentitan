@@ -21,9 +21,11 @@ import json
 import logging
 import os
 import re
+import subprocess
 import sys
 from contextlib import redirect_stdout
 from enum import Enum
+from pathlib import Path
 from typing import List
 
 import enlighten
@@ -32,6 +34,16 @@ import hjson
 import pydriller
 from tabulate import tabulate
 from termcolor import colored
+
+# Maintain a list of IPs that only exist in the top-level area.
+#
+# Note that there are several templated IPs that are auto-generated in the
+# top-level area as well, but since the bulk of the code (including the
+# template) lives in the hw/ip area, we do not need to consider them.
+_TOP_LEVEL_IPS = {"ast", "sensor_ctrl"}
+
+# Indicates that the DIF work has not yet started.
+_NOT_STARTED = colored("NOT STARTED", "red")
 
 
 class _OTComponent(Enum):
@@ -59,11 +71,12 @@ class DIFStatus:
         funcs_unimplemented (Set[str]): Set of unimplemted DIF functions.
 
     """
-    def __init__(self, repo_top, difs_root_path, dif_name):
+    def __init__(self, repo_top, top_level, difs_root_path, dif_name):
         """Mines metadata to populate this DIFStatus object.
 
         Args:
             repo_top: Relative path of local OpenTitan repository.
+            top_level: Name of the top level design.
             difs_root_path: Path to DIF source code from repo_top.
             dif_name: Full name of the DIF including the IP name.
 
@@ -76,24 +89,37 @@ class DIFStatus:
         self.dif_name = dif_name
         self.ip = self.dif_name[4:]
         self.dif_path = os.path.join(difs_root_path, dif_name)
-        self.hw_path = f"hw/ip/{self.ip}"
-        # Determine last date DIF and HW was updated.
-        self.dif_last_modified = self._get_last_commit_date(
-            repo_top, self.dif_path, [".h", ".c"])
-        self.hw_last_modified = self._get_last_commit_date(
-            repo_top, os.path.join(self.hw_path, "rtl"), [""])
-        # Determine the main contributor of the DIF and HW.
-        self.dif_main_contributors = self._get_main_contributor_emails(
-            _OTComponent.DIF)
-        self.hw_main_contributors = self._get_main_contributor_emails(
-            _OTComponent.HW)
-        # Determine lifecycle state
-        self.lifecycle_state = self._get_dif_lifecycle_state()
-        # Determine DIF API completeness.
+        # Check if header file exists - if not then its not even begun.
+        has_started = os.path.isfile(self.dif_path + ".h")
+        self.hw_path = (f"hw/{top_level}/ip/{self.ip}"
+                        if self.ip in _TOP_LEVEL_IPS else f"hw/ip/{self.ip}")
+        # Indicates DIF API completeness.
         self.num_functions_defined = -1
         self.num_functions_implemented = -1
         self.api_complete = False
-        self.funcs_unimplemented = self._get_funcs_unimplemented()
+
+        # Determine last date HW was updated.
+        self.hw_last_modified = self._get_last_commit_date(
+            repo_top, os.path.join(self.hw_path, "rtl"), [""])
+        # Determine the main contributor of the HW.
+        self.hw_main_contributors = self._get_main_contributor_emails(
+            _OTComponent.HW)
+        if has_started:
+            # Determine last date DIF was updated.
+            self.dif_last_modified = self._get_last_commit_date(
+                repo_top, self.dif_path, [".h", ".c"])
+            # Determine the main contributor of the DIF.
+            self.dif_main_contributors = self._get_main_contributor_emails(
+                _OTComponent.DIF)
+            # Determine lifecycle state
+            self.lifecycle_state = self._get_dif_lifecycle_state()
+            # Determine DIF API completeness.
+            self.funcs_unimplemented = self._get_funcs_unimplemented()
+        else:
+            self.dif_last_modified = "-"
+            self.dif_main_contributors = [_NOT_STARTED]
+            self.lifecycle_state = "-"
+            self.funcs_unimplemented = [_NOT_STARTED]
 
     def _get_dif_lifecycle_state(self):
         hjson_filename = os.path.join(self.hw_path, "data",
@@ -171,7 +197,7 @@ class DIFStatus:
                 logging.error(
                     f"(date) file path ({full_file_path}) does not exist.")
                 sys.exit(1)
-        return last_dif_commit_date
+        return last_dif_commit_date.strftime("%Y-%m-%d %H:%M:%S")
 
     def _get_funcs_unimplemented(self):
         defined_funcs = self._get_defined_funcs()
@@ -243,14 +269,13 @@ def print_status_table(dif_statuses: List[DIFStatus],
     ]
     for dif_status in dif_statuses:
         # Color code last modified dates.
+        # Limit the last modified strings to 10 characters to only print the
+        # date (YYYY-MM-DD).
+        hw_last_modified = dif_status.hw_last_modified[:10]
+        dif_last_modified = dif_status.dif_last_modified[:10]
         if dif_status.hw_last_modified > dif_status.dif_last_modified:
-            hw_last_modified = colored(dif_status.hw_last_modified.date(),
-                                       "yellow")
-            dif_last_modified = colored(dif_status.dif_last_modified.date(),
-                                        "yellow")
-        else:
-            hw_last_modified = dif_status.hw_last_modified.date()
-            dif_last_modified = dif_status.dif_last_modified.date()
+            hw_last_modified = colored(hw_last_modified, "yellow")
+            dif_last_modified = colored(dif_last_modified, "yellow")
         # Color code API complete status.
         if dif_status.api_complete:
             num_funcs_defined = colored(dif_status.num_functions_defined,
@@ -283,7 +308,8 @@ def print_status_table(dif_statuses: List[DIFStatus],
         """\t= DIF API, as defined in the current header file, is complete. """
         """Note, the header file may lack necessary API functionality.""")
     print(colored("Red", "red"),
-          "\t= DIF API is incomplete, as defined in the header file.")
+          ("\t= DIF API is incomplete, as defined in the header file or the "
+           "work has not yet begun."))
 
 
 def print_unimplemented_functions(dif_statuses: List[DIFStatus],
@@ -317,6 +343,10 @@ def main(argv):
         help=
         """Relative path to where the OpenTitan repository is checked out.""")
     parser.add_argument(
+        "--top-hjson",
+        help="""Path to the top-level HJson configuration file relative to
+        repo_top.""")
+    parser.add_argument(
         "--show-unimplemented",
         action="store_true",
         help="""Show unimplemented functions for each incomplete DIF.""")
@@ -330,11 +360,31 @@ def main(argv):
     # Define root path of DIFs.
     difs_root_path = os.path.join("sw", "device", "lib", "dif")
 
-    # Get list of all DIF basenames.
-    # TODO: automatically get the list below by cross referencing DIF names
-    # with IP block names. Hardcoded for now.
-    shared_headers = ["dif_warn_unused_result"]
-    difs = get_list_of_difs(difs_root_path, shared_headers)
+    if args.top_hjson:
+        # Get the list of IP blocks by invoking the topgen tool.
+        topgen_tool = os.path.join(args.repo_top, "util", "topgen.py")
+        top_hjson = os.path.join(args.repo_top, args.top_hjson)
+        top_level = Path(top_hjson).stem
+        # yapf: disable
+        topgen_process = subprocess.run([topgen_tool, "-t", top_hjson,
+                                         "--get_blocks", "-o", args.repo_top],
+                                        text=True,
+                                        universal_newlines=True,
+                                        stdout=subprocess.PIPE,
+                                        check=True)
+        # yapf: enable
+        # All DIF names are prefixed with `dif_`.
+        difs = {f"dif_{dif.strip()}" for dif in topgen_process.stdout.split()}
+    else:
+        # Get list of all DIF basenames.
+        # TODO: automatically get the list below by cross referencing DIF names
+        # with IP block names. Hardcoded for now.
+        print("WARNING: It is recommended to pass the --top-hjson switch to "
+              "get a more accurate representation of the DIF progress. The "
+              "list of IPs for which no DIF sources exist is unknown.")
+        shared_headers = ["dif_warn_unused_result"]
+        top_level = "top_earlgrey"
+        difs = get_list_of_difs(difs_root_path, shared_headers)
 
     # Get DIF statuses (while displaying a progress bar).
     dif_statuses = []
@@ -342,7 +392,8 @@ def main(argv):
                                      desc="Analyzing statuses of DIFs ...",
                                      unit="DIFs")
     for dif in difs:
-        dif_statuses.append(DIFStatus(args.repo_top, difs_root_path, dif))
+        dif_statuses.append(
+            DIFStatus(args.repo_top, top_level, difs_root_path, dif))
         progress_bar.update()
 
     # Build table and print it to STDOUT.
