@@ -88,7 +88,13 @@ pre_reg:
 		mkdir -p ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
 	fi
 
+# If the ip has a local generation script, run it
+# This will require all blocks to use a consistent naming
+# This should be hooked into ipgen (see #5636) for completeness.
 $(ips_reg): pre_reg otp-mmap lc-state-enc
+	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/util/$(subst _reg,,$@)_gen.py ]; then \
+		${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/util/$(subst _reg,,$@)_gen.py; \
+	fi
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
 		${PRJ_DIR}/util/regtool.py ${toolflags} -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson && \
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
