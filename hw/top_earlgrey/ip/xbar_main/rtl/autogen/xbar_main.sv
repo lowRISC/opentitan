@@ -15,7 +15,7 @@
 //     -> sm1_27
 //       -> sram_ctrl_main.ram
 //     -> sm1_28
-//       -> eflash
+//       -> flash_ctrl.mem
 // rv_core_ibex.cored
 //   -> s1n_29
 //     -> sm1_25
@@ -28,8 +28,6 @@
 //       -> rv_dm.regs
 //     -> sm1_27
 //       -> sram_ctrl_main.ram
-//     -> sm1_28
-//       -> eflash
 //     -> sm1_33
 //       -> asf_32
 //         -> peri
@@ -37,6 +35,8 @@
 //       -> flash_ctrl.core
 //     -> sm1_35
 //       -> flash_ctrl.prim
+//     -> sm1_28
+//       -> flash_ctrl.mem
 //     -> sm1_36
 //       -> aes
 //     -> sm1_37
@@ -71,8 +71,6 @@
 //       -> rv_dm.regs
 //     -> sm1_27
 //       -> sram_ctrl_main.ram
-//     -> sm1_28
-//       -> eflash
 //     -> sm1_33
 //       -> asf_32
 //         -> peri
@@ -80,6 +78,8 @@
 //       -> flash_ctrl.core
 //     -> sm1_35
 //       -> flash_ctrl.prim
+//     -> sm1_28
+//       -> flash_ctrl.mem
 //     -> sm1_36
 //       -> aes
 //     -> sm1_37
@@ -128,14 +128,14 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_rom_ctrl__rom_i,
   output tlul_pkg::tl_h2d_t tl_rom_ctrl__regs_o,
   input  tlul_pkg::tl_d2h_t tl_rom_ctrl__regs_i,
-  output tlul_pkg::tl_h2d_t tl_eflash_o,
-  input  tlul_pkg::tl_d2h_t tl_eflash_i,
   output tlul_pkg::tl_h2d_t tl_peri_o,
   input  tlul_pkg::tl_d2h_t tl_peri_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__core_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__prim_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__prim_i,
+  output tlul_pkg::tl_h2d_t tl_flash_ctrl__mem_o,
+  input  tlul_pkg::tl_d2h_t tl_flash_ctrl__mem_i,
   output tlul_pkg::tl_h2d_t tl_hmac_o,
   input  tlul_pkg::tl_d2h_t tl_hmac_i,
   output tlul_pkg::tl_h2d_t tl_kmac_o,
@@ -385,17 +385,17 @@ module xbar_main (
   assign tl_sm1_27_us_h2d[1] = tl_s1n_29_ds_h2d[4];
   assign tl_s1n_29_ds_d2h[4] = tl_sm1_27_us_d2h[1];
 
-  assign tl_sm1_28_us_h2d[1] = tl_s1n_29_ds_h2d[5];
-  assign tl_s1n_29_ds_d2h[5] = tl_sm1_28_us_d2h[1];
+  assign tl_sm1_33_us_h2d[0] = tl_s1n_29_ds_h2d[5];
+  assign tl_s1n_29_ds_d2h[5] = tl_sm1_33_us_d2h[0];
 
-  assign tl_sm1_33_us_h2d[0] = tl_s1n_29_ds_h2d[6];
-  assign tl_s1n_29_ds_d2h[6] = tl_sm1_33_us_d2h[0];
+  assign tl_sm1_34_us_h2d[0] = tl_s1n_29_ds_h2d[6];
+  assign tl_s1n_29_ds_d2h[6] = tl_sm1_34_us_d2h[0];
 
-  assign tl_sm1_34_us_h2d[0] = tl_s1n_29_ds_h2d[7];
-  assign tl_s1n_29_ds_d2h[7] = tl_sm1_34_us_d2h[0];
+  assign tl_sm1_35_us_h2d[0] = tl_s1n_29_ds_h2d[7];
+  assign tl_s1n_29_ds_d2h[7] = tl_sm1_35_us_d2h[0];
 
-  assign tl_sm1_35_us_h2d[0] = tl_s1n_29_ds_h2d[8];
-  assign tl_s1n_29_ds_d2h[8] = tl_sm1_35_us_d2h[0];
+  assign tl_sm1_28_us_h2d[1] = tl_s1n_29_ds_h2d[8];
+  assign tl_s1n_29_ds_d2h[8] = tl_sm1_28_us_d2h[1];
 
   assign tl_sm1_36_us_h2d[0] = tl_s1n_29_ds_h2d[9];
   assign tl_s1n_29_ds_d2h[9] = tl_sm1_36_us_d2h[0];
@@ -445,17 +445,17 @@ module xbar_main (
   assign tl_sm1_27_us_h2d[2] = tl_s1n_48_ds_h2d[3];
   assign tl_s1n_48_ds_d2h[3] = tl_sm1_27_us_d2h[2];
 
-  assign tl_sm1_28_us_h2d[2] = tl_s1n_48_ds_h2d[4];
-  assign tl_s1n_48_ds_d2h[4] = tl_sm1_28_us_d2h[2];
+  assign tl_sm1_33_us_h2d[1] = tl_s1n_48_ds_h2d[4];
+  assign tl_s1n_48_ds_d2h[4] = tl_sm1_33_us_d2h[1];
 
-  assign tl_sm1_33_us_h2d[1] = tl_s1n_48_ds_h2d[5];
-  assign tl_s1n_48_ds_d2h[5] = tl_sm1_33_us_d2h[1];
+  assign tl_sm1_34_us_h2d[1] = tl_s1n_48_ds_h2d[5];
+  assign tl_s1n_48_ds_d2h[5] = tl_sm1_34_us_d2h[1];
 
-  assign tl_sm1_34_us_h2d[1] = tl_s1n_48_ds_h2d[6];
-  assign tl_s1n_48_ds_d2h[6] = tl_sm1_34_us_d2h[1];
+  assign tl_sm1_35_us_h2d[1] = tl_s1n_48_ds_h2d[6];
+  assign tl_s1n_48_ds_d2h[6] = tl_sm1_35_us_d2h[1];
 
-  assign tl_sm1_35_us_h2d[1] = tl_s1n_48_ds_h2d[7];
-  assign tl_s1n_48_ds_d2h[7] = tl_sm1_35_us_d2h[1];
+  assign tl_sm1_28_us_h2d[2] = tl_s1n_48_ds_h2d[7];
+  assign tl_s1n_48_ds_d2h[7] = tl_sm1_28_us_d2h[2];
 
   assign tl_sm1_36_us_h2d[1] = tl_s1n_48_ds_h2d[8];
   assign tl_s1n_48_ds_d2h[8] = tl_sm1_36_us_d2h[1];
@@ -505,8 +505,8 @@ module xbar_main (
   assign tl_sram_ctrl_main__ram_o = tl_sm1_27_ds_h2d;
   assign tl_sm1_27_ds_d2h = tl_sram_ctrl_main__ram_i;
 
-  assign tl_eflash_o = tl_sm1_28_ds_h2d;
-  assign tl_sm1_28_ds_d2h = tl_eflash_i;
+  assign tl_flash_ctrl__mem_o = tl_sm1_28_ds_h2d;
+  assign tl_sm1_28_ds_d2h = tl_flash_ctrl__mem_i;
 
   assign tl_s1n_29_us_h2d = tl_rv_core_ibex__cored_i;
   assign tl_rv_core_ibex__cored_o = tl_s1n_29_us_d2h;
@@ -584,7 +584,7 @@ module xbar_main (
       dev_sel_s1n_24 = 3'd2;
 
     end else if ((tl_s1n_24_us_h2d.a_address &
-                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+                  ~(ADDR_MASK_FLASH_CTRL__MEM)) == ADDR_SPACE_FLASH_CTRL__MEM) begin
       dev_sel_s1n_24 = 3'd3;
 end
   end
@@ -613,19 +613,19 @@ end
       dev_sel_s1n_29 = 5'd4;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_29 = 5'd5;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+                  ~(ADDR_MASK_FLASH_CTRL__CORE)) == ADDR_SPACE_FLASH_CTRL__CORE) begin
       dev_sel_s1n_29 = 5'd6;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__CORE)) == ADDR_SPACE_FLASH_CTRL__CORE) begin
+                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
       dev_sel_s1n_29 = 5'd7;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
+                  ~(ADDR_MASK_FLASH_CTRL__MEM)) == ADDR_SPACE_FLASH_CTRL__MEM) begin
       dev_sel_s1n_29 = 5'd8;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
@@ -698,19 +698,19 @@ end
       dev_sel_s1n_48 = 5'd3;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_48 = 5'd4;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+                  ~(ADDR_MASK_FLASH_CTRL__CORE)) == ADDR_SPACE_FLASH_CTRL__CORE) begin
       dev_sel_s1n_48 = 5'd5;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__CORE)) == ADDR_SPACE_FLASH_CTRL__CORE) begin
+                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
       dev_sel_s1n_48 = 5'd6;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
+                  ~(ADDR_MASK_FLASH_CTRL__MEM)) == ADDR_SPACE_FLASH_CTRL__MEM) begin
       dev_sel_s1n_48 = 5'd7;
 
     end else if ((tl_s1n_48_us_h2d.a_address &
@@ -825,8 +825,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
     .HRspDepth (12'h0),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
     .M         (3)
   ) u_sm1_28 (
     .clk_i        (clk_main_i),

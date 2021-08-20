@@ -92,9 +92,6 @@ module top_${top["name"]} #(
   % endfor
 
 % endif
-  // Flash specific voltages
-  inout [1:0] flash_test_mode_a_io,
-  inout flash_test_voltage_h_io,
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -286,90 +283,6 @@ module top_${top["name"]} #(
     .tdo_oe_i (1'b0)
   );
 
-## Memory Instantiation
-% for m in top["memory"]:
-<%
-  resets = m['reset_connections']
-  clocks = m['clock_connections']
-%>\
-  % if m["type"] == "eflash":
-
-  // host to flash communication
-  logic flash_host_req;
-  tlul_pkg::tl_type_e flash_host_req_type;
-  logic flash_host_req_rdy;
-  logic flash_host_req_done;
-  logic flash_host_rderr;
-  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
-  logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
-  logic flash_host_intg_err;
-
-  tlul_adapter_sram #(
-    .SramAw(flash_ctrl_pkg::BusAddrW),
-    .SramDw(flash_ctrl_pkg::BusWidth),
-    .Outstanding(2),
-    .ByteAccess(0),
-    .ErrOnWrite(1),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)
-  ) u_tl_adapter_${m["name"]} (
-    % for key in clocks:
-    .${key}   (${clocks[key]}),
-    % endfor
-    % for port, reset in resets.items():
-    .${port}   (${lib.get_reset_path(top, reset, m['domain'])}),
-    % endfor
-
-    .tl_i        (${m["name"]}_tl_req),
-    .tl_o        (${m["name"]}_tl_rsp),
-    .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
-    .req_o       (flash_host_req),
-    .req_type_o  (flash_host_req_type),
-    .gnt_i       (flash_host_req_rdy),
-    .we_o        (),
-    .addr_o      (flash_host_addr),
-    .wdata_o     (),
-    .wmask_o     (),
-    .intg_error_o(flash_host_intg_err),
-    .rdata_i     (flash_host_rdata),
-    .rvalid_i    (flash_host_req_done),
-    .rerror_i    ({flash_host_rderr,1'b0})
-  );
-
-  flash_phy u_flash_${m["name"]} (
-    % for key in clocks:
-    .${key}   (${clocks[key]}),
-    % endfor
-    % for port, reset in resets.items():
-    .${port}   (${lib.get_reset_path(top, reset, m['domain'])}),
-    % endfor
-    .host_req_i        (flash_host_req),
-    .host_intg_err_i   (flash_host_intg_err),
-    .host_req_type_i   (flash_host_req_type),
-    .host_addr_i       (flash_host_addr),
-    .host_req_rdy_o    (flash_host_req_rdy),
-    .host_req_done_o   (flash_host_req_done),
-    .host_rderr_o      (flash_host_rderr),
-    .host_rdata_o      (flash_host_rdata),
-    .flash_ctrl_i      (${m["inter_signal_list"][0]["top_signame"]}_req),
-    .flash_ctrl_o      (${m["inter_signal_list"][0]["top_signame"]}_rsp),
-    .lc_nvm_debug_en_i (${m["inter_signal_list"][2]["top_signame"]}),
-    .flash_bist_enable_i,
-    .flash_power_down_h_i,
-    .flash_power_ready_h_i,
-    .flash_test_mode_a_io,
-    .flash_test_voltage_h_io,
-    .flash_alert_o,
-    .scanmode_i,
-    .scan_en_i,
-    .scan_rst_ni
-  );
-
-  % else:
-    // flash memory is embedded within controller
-  % endif
-% endfor
 ## Peripheral Instantiation
 
 <% alert_idx = 0 %>

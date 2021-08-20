@@ -130,6 +130,8 @@ module top_earlgrey #(
   input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
+  inout   [1:0] flash_test_mode_a_io,
+  inout         flash_test_voltage_h_io,
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output logic       es_rng_fips_o,
@@ -154,9 +156,6 @@ module top_earlgrey #(
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
 
-  // Flash specific voltages
-  inout [1:0] flash_test_mode_a_io,
-  inout flash_test_voltage_h_io,
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -519,8 +518,6 @@ module top_earlgrey #(
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
   entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
-  flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
-  flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
@@ -607,14 +604,14 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
   tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
   tlul_pkg::tl_d2h_t       rom_ctrl_regs_tl_rsp;
-  tlul_pkg::tl_h2d_t       eflash_tl_req;
-  tlul_pkg::tl_d2h_t       eflash_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
+  tlul_pkg::tl_h2d_t       flash_ctrl_mem_tl_req;
+  tlul_pkg::tl_d2h_t       flash_ctrl_mem_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
   tlul_pkg::tl_d2h_t       hmac_tl_rsp;
   tlul_pkg::tl_h2d_t       kmac_tl_req;
@@ -815,71 +812,6 @@ module top_earlgrey #(
     .tdi_o    (),
     .tdo_i    (1'b0),
     .tdo_oe_i (1'b0)
-  );
-
-
-  // host to flash communication
-  logic flash_host_req;
-  tlul_pkg::tl_type_e flash_host_req_type;
-  logic flash_host_req_rdy;
-  logic flash_host_req_done;
-  logic flash_host_rderr;
-  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
-  logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
-  logic flash_host_intg_err;
-
-  tlul_adapter_sram #(
-    .SramAw(flash_ctrl_pkg::BusAddrW),
-    .SramDw(flash_ctrl_pkg::BusWidth),
-    .Outstanding(2),
-    .ByteAccess(0),
-    .ErrOnWrite(1),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)
-  ) u_tl_adapter_eflash (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-
-    .tl_i        (eflash_tl_req),
-    .tl_o        (eflash_tl_rsp),
-    .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
-    .req_o       (flash_host_req),
-    .req_type_o  (flash_host_req_type),
-    .gnt_i       (flash_host_req_rdy),
-    .we_o        (),
-    .addr_o      (flash_host_addr),
-    .wdata_o     (),
-    .wmask_o     (),
-    .intg_error_o(flash_host_intg_err),
-    .rdata_i     (flash_host_rdata),
-    .rvalid_i    (flash_host_req_done),
-    .rerror_i    ({flash_host_rderr,1'b0})
-  );
-
-  flash_phy u_flash_eflash (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .host_req_i        (flash_host_req),
-    .host_intg_err_i   (flash_host_intg_err),
-    .host_req_type_i   (flash_host_req_type),
-    .host_addr_i       (flash_host_addr),
-    .host_req_rdy_o    (flash_host_req_rdy),
-    .host_req_done_o   (flash_host_req_done),
-    .host_rderr_o      (flash_host_rderr),
-    .host_rdata_o      (flash_host_rdata),
-    .flash_ctrl_i      (flash_ctrl_flash_req),
-    .flash_ctrl_o      (flash_ctrl_flash_rsp),
-    .lc_nvm_debug_en_i (lc_ctrl_lc_nvm_debug_en),
-    .flash_bist_enable_i,
-    .flash_power_down_h_i,
-    .flash_power_ready_h_i,
-    .flash_test_mode_a_io,
-    .flash_test_voltage_h_io,
-    .flash_alert_o,
-    .scanmode_i,
-    .scan_en_i,
-    .scan_rst_ni
   );
 
 
@@ -1950,10 +1882,15 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[45:42] ),
 
       // Inter-module signals
-      .flash_o(flash_ctrl_flash_req),
-      .flash_i(flash_ctrl_flash_rsp),
       .otp_o(flash_ctrl_otp_req),
       .otp_i(flash_ctrl_otp_rsp),
+      .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
+      .flash_bist_enable_i(flash_bist_enable_i),
+      .flash_power_down_h_i(flash_power_down_h_i),
+      .flash_power_ready_h_i(flash_power_ready_h_i),
+      .flash_test_mode_a_io(flash_test_mode_a_io),
+      .flash_test_voltage_h_io(flash_test_voltage_h_io),
+      .flash_alert_o(flash_alert_o),
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
@@ -1969,6 +1906,11 @@ module top_earlgrey #(
       .core_tl_o(flash_ctrl_core_tl_rsp),
       .prim_tl_i(flash_ctrl_prim_tl_req),
       .prim_tl_o(flash_ctrl_prim_tl_rsp),
+      .mem_tl_i(flash_ctrl_mem_tl_req),
+      .mem_tl_o(flash_ctrl_mem_tl_rsp),
+      .scanmode_i,
+      .scan_rst_ni,
+      .scan_en_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -2634,10 +2576,6 @@ module top_earlgrey #(
     .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),
     .tl_rom_ctrl__regs_i(rom_ctrl_regs_tl_rsp),
 
-    // port: tl_eflash
-    .tl_eflash_o(eflash_tl_req),
-    .tl_eflash_i(eflash_tl_rsp),
-
     // port: tl_peri
     .tl_peri_o(main_tl_peri_req),
     .tl_peri_i(main_tl_peri_rsp),
@@ -2649,6 +2587,10 @@ module top_earlgrey #(
     // port: tl_flash_ctrl__prim
     .tl_flash_ctrl__prim_o(flash_ctrl_prim_tl_req),
     .tl_flash_ctrl__prim_i(flash_ctrl_prim_tl_rsp),
+
+    // port: tl_flash_ctrl__mem
+    .tl_flash_ctrl__mem_o(flash_ctrl_mem_tl_req),
+    .tl_flash_ctrl__mem_i(flash_ctrl_mem_tl_rsp),
 
     // port: tl_hmac
     .tl_hmac_o(hmac_tl_req),

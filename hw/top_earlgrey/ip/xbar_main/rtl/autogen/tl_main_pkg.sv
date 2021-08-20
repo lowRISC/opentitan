@@ -10,12 +10,12 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_RV_DM__ROM           = 32'h 00010000;
   localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM        = 32'h 00008000;
   localparam logic [31:0] ADDR_SPACE_ROM_CTRL__REGS       = 32'h 411e0000;
-  localparam logic [31:0] ADDR_SPACE_EFLASH               = 32'h 20000000;
   localparam logic [0:0][31:0] ADDR_SPACE_PERI                 = {
     32'h 40000000
   };
   localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__CORE     = 32'h 41000000;
   localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__PRIM     = 32'h 41008000;
+  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__MEM      = 32'h 20000000;
   localparam logic [31:0] ADDR_SPACE_HMAC                 = 32'h 41110000;
   localparam logic [31:0] ADDR_SPACE_KMAC                 = 32'h 41120000;
   localparam logic [31:0] ADDR_SPACE_AES                  = 32'h 41100000;
@@ -34,12 +34,12 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_RV_DM__ROM           = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM        = 32'h 00003fff;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL__REGS       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_EFLASH               = 32'h 000fffff;
   localparam logic [0:0][31:0] ADDR_MASK_PERI                 = {
     32'h 007fffff
   };
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__CORE     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__PRIM     = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 000fffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 00000fff;
@@ -62,10 +62,10 @@ package tl_main_pkg;
     TlRvDmRom = 1,
     TlRomCtrlRom = 2,
     TlRomCtrlRegs = 3,
-    TlEflash = 4,
-    TlPeri = 5,
-    TlFlashCtrlCore = 6,
-    TlFlashCtrlPrim = 7,
+    TlPeri = 4,
+    TlFlashCtrlCore = 5,
+    TlFlashCtrlPrim = 6,
+    TlFlashCtrlMem = 7,
     TlHmac = 8,
     TlKmac = 9,
     TlAes = 10,

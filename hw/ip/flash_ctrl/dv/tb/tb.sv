@@ -35,26 +35,35 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
+  otp_ctrl_pkg::flash_otp_key_req_t otp_req;
+  otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp;
+
+  always_comb begin
+    otp_rsp = otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT;
+    otp_rsp.data_ack = otp_req.data_req;
+    otp_rsp.addr_ack = otp_req.addr_req;
+  end
+
   // dut
-  flash_ctrl_wrapper dut (
-    .clk_i              (clk      ),
-    .rst_ni             (rst_n    ),
-    .clk_otp_i          (clk      ),
-    .rst_otp_ni         (rst_n    ),
+  flash_ctrl dut (
+    .clk_i      (clk      ),
+    .rst_ni     (rst_n    ),
+    .clk_otp_i  (clk      ),
+    .rst_otp_ni (rst_n    ),
 
-    .flash_ctrl_tl_i    (tl_if.h2d),
-    .flash_ctrl_tl_o    (tl_if.d2h),
+    // various tlul interfaces
+    .core_tl_i (tl_if.h2d),
+    .core_tl_o (tl_if.d2h),
+    .prim_tl_i ('0),
+    .prim_tl_o (),
+    .mem_tl_i  (eflash_tl_if.h2d),
+    .mem_tl_o  (eflash_tl_if.d2h),
 
-    .flash_power_ready_h_i (1'b1  ),
-    .flash_power_down_h_i  (flash_power_down_h  ),
-    .flash_bist_enable_i   (lc_ctrl_pkg::Off),
+    // otp interface
+    .otp_i (otp_rsp),
+    .otp_o (otp_req),
 
-    .eflash_tl_i        (eflash_tl_if.h2d),
-    .eflash_tl_o        (eflash_tl_if.d2h),
-
-    // TODO: create and hook this up to an interface.
-    .otp_i              (otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT),
-    .otp_o              (),
+    // various life cycle decode signals
     .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::Off),
     .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On),
     .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On),
@@ -62,11 +71,29 @@ module tb;
     .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
     .lc_nvm_debug_en_i          (lc_ctrl_pkg::Off),
     .lc_escalate_en_i           (lc_ctrl_pkg::Off),
-    .pwrmgr_o                   (pwrmgr_pkg::PWR_FLASH_DEFAULT),
-    .rma_req_i                  (lc_ctrl_pkg::Off),
-    .rma_seed_i                 ('0),
-    .rma_ack_o                  (),
 
+    // life cycle rma handling
+    .rma_req_i  (lc_ctrl_pkg::Off),
+    .rma_seed_i ('0),
+    .rma_ack_o  (),
+
+    // power manager indication
+    .pwrmgr_o (pwrmgr_pkg::PWR_FLASH_DEFAULT),
+    .keymgr_o (flash_ctrl_keymgr),
+
+    // flash prim signals
+    .flash_power_ready_h_i  (1'b1  ),
+    .flash_power_down_h_i   (flash_power_down_h  ),
+    .flash_bist_enable_i    (lc_ctrl_pkg::Off),
+    .flash_test_mode_a_io   (2'h3),
+    .flash_test_voltage_h_io(1'b1),
+
+    // test
+    .scanmode_i              ('0),
+    .scan_rst_ni             ('0),
+    .scan_en_i               ('0),
+
+    // alerts and interrupts
     .intr_prog_empty_o  (intr_prog_empty),
     .intr_prog_lvl_o    (intr_prog_lvl  ),
     .intr_rd_full_o     (intr_rd_full   ),
@@ -113,20 +140,20 @@ module tb;
   // For eflash of a specific vendor implementation, set the hierarchy to the memory element
   // correctly when creating these instances in the extended testbench.
   `define FLASH_DATA_MEM_HIER(i)                                                        \
-      tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i]. \
+      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
       u_prim_flash_bank.u_mem.gen_generic.u_impl_generic.mem
 
   `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
-      $sformatf({"tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.",           \
+      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
                  "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.gen_generic.",      \
                  "u_impl_generic.mem"}, i)
 
   `define FLASH_INFO_MEM_HIER(i, j)                                                     \
-      tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i]. \
+      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
       u_prim_flash_bank.gen_info_types[j].u_info_mem.gen_generic.u_impl_generic.mem
 
   `define FLASH_INFO_MEM_HIER_STR(i, j)                                                 \
-      $sformatf({"tb.dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.",           \
+      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
                  "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
                  "u_info_mem.gen_generic.u_impl_generic.mem"}, i, j)
 
@@ -183,8 +210,6 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_eflash_tl_agent*", "vif", eflash_tl_if);
-    // Define flash_ctrl path as string to pass to flash_ctrl_env for ral hdl_path.
-    uvm_config_db#(string)::set(null, "*.env", "hdl_path_root", "tb.dut.u_flash_ctrl");
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

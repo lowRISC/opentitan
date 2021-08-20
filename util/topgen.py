@@ -589,12 +589,12 @@ def generate_flash(topcfg, out_path):
             outputs.append(rtl_path / Path(x))
 
     # Parameters needed for generation
-    flash_mems = [mem for mem in topcfg['memory'] if mem['type'] == 'eflash']
+    flash_mems = [module for module in topcfg['module'] if module['type'] == 'flash_ctrl']
     if len(flash_mems) > 1:
         log.error("This design does not currently support multiple flashes")
         return
 
-    cfg = flash_mems[0]
+    cfg = flash_mems[0]['memory']['mem']['config']
 
     # Generate templated files
     for idx, t in enumerate(tpls):

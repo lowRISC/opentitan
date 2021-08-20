@@ -313,7 +313,6 @@ package flash_ctrl_pkg;
     logic [KeyWidth-1:0]  data_key;
     logic [KeyWidth-1:0]  rand_addr_key;
     logic [KeyWidth-1:0]  rand_data_key;
-    tlul_pkg::tl_h2d_t    tl_flash_c2p;
     logic                 alert_trig;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
@@ -345,7 +344,6 @@ package flash_ctrl_pkg;
     data_key:      RndCnstDataKeyDefault,
     rand_addr_key: '0,
     rand_data_key: '0,
-    tl_flash_c2p:  '0,
     alert_trig:    1'b0,
     alert_ack:     1'b0,
     jtag_req:      '0,
@@ -362,7 +360,6 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
-    tlul_pkg::tl_d2h_t   tl_flash_p2c;
     logic                flash_err;
     logic                flash_alert_p;
     logic                flash_alert_n;
@@ -382,7 +379,6 @@ package flash_ctrl_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    tl_flash_p2c:       '0,
     flash_err:          1'b0,
     flash_alert_p:      1'b0,
     flash_alert_n:      1'b1,

@@ -10,7 +10,7 @@
 `define CPU_HIER              `CHIP_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER         `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
-`define EFLASH_HIER           `CHIP_HIER.u_flash_eflash.u_flash
+`define EFLASH_HIER           `CHIP_HIER.u_flash_ctrl.u_eflash.u_flash
 `define GPIO_HIER             `CHIP_HIER.u_gpio
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
 `define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
