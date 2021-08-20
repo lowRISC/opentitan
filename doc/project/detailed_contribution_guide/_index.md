@@ -1,7 +1,7 @@
 ---
 title: "In-depth guide to contributing to OpenTitan"
 ---
- 
+
 The way we work on OpenTitan is very similar to what is done in other collaborative open-source projects.
 For a brief overview see [Contributing to OpenTitan]({{< relref "contributing.md" >}}).
 This document provides a detailed reference on how we collaborate within the OpenTitan project and is organized as follows:
@@ -42,7 +42,7 @@ A shared Google Doc is suitable for initial, broader discussions, for comparing 
 Therefore, such a shared document should always be linked from a GitHub issue and the outcome of this discussion should be summarized in that issue.
 For short proposals, the entire discussion can be had in a GitHub issue, without a linked document.
 
-## How to/why use Google Docs? 
+## How to/why use Google Docs?
 
 Collaborative documents are more useful than GitHub issues for initial, broader discussions, for comparing different design options and for a wider audience commenting on a proposal over a longer period of time, or when interactive editing is required.
 We often make use of a Google Doc to start the discussion of an idea or proposal, before later converting it to Markdown and moving to GitHub (e.g. as a PR adding new documentation).
@@ -118,7 +118,7 @@ The lightweight process is:
    To simplify and speed up code review, we expect larger contributions like new features and major changes to be broken into multiple, smaller PRs wherever possible.
    For more information refer to [Working with PRs](#working-with-pull-requests).
 
-Further information can be found in [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) and in [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
+Further information can be found in [Getting Started with a Design]({{< relref "doc/ug/getting_started" >}}) and in [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
 
 # Writing Code
 
