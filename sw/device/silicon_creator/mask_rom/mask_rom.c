@@ -22,8 +22,8 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/boot_policy.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
-#include "sw/device/silicon_creator/mask_rom/romextimage.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -127,10 +127,9 @@ rom_error_t mask_rom_boot(void) {
     //    break
     //}
 
-    const manifest_t *manifest;
+    const manifest_t *manifest = boot_policy_manifests_get().ordered[0];
     const sigverify_rsa_key_t *key;
-    RETURN_IF_ERROR(romextimage_manifest_get(kFlashSlotA, &manifest));
-    RETURN_IF_ERROR(manifest_check(manifest));
+    RETURN_IF_ERROR(boot_policy_manifest_check(manifest));
     manifest_signed_region_t signed_region =
         manifest_signed_region_get(manifest);
     RETURN_IF_ERROR(sigverify_rsa_key_get(
@@ -196,7 +195,7 @@ rom_error_t mask_rom_boot(void) {
       // Jump to ROM_EXT entry point.
       uintptr_t entry_point = manifest_entry_point_get(manifest);
       base_printf("rom_ext_entry: %p\r\n", entry_point);
-      ((romextimage_entry_point *)entry_point)();
+      ((rom_ext_entry_point *)entry_point)();
       // NOTE: never expecting a return, but if something were to go wrong
       // in the real `jump` implementation, we need to enter a failure case.
 

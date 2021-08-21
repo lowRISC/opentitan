@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_ROMEXTIMAGE_PTRS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_ROMEXTIMAGE_PTRS_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_PTRS_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_PTRS_H_
 
 #include "sw/device/silicon_creator/lib/manifest.h"
 
@@ -23,7 +23,8 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  *
  * @return Pointer to the manifest of the ROM_EXT image in slot A.
  */
-inline const manifest_t *romextimage_slot_a_manifest_ptr_get(void) {
+// TODO(#7893): Should these be volatile?
+inline const manifest_t *boot_policy_manifest_a_get(void) {
   return (const manifest_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
 }
 
@@ -33,7 +34,7 @@ inline const manifest_t *romextimage_slot_a_manifest_ptr_get(void) {
  *
  * @return Pointer to the manifest of the ROM_EXT image in slot B.
  */
-inline const manifest_t *romextimage_slot_b_manifest_ptr_get(void) {
+inline const manifest_t *boot_policy_manifest_b_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
                               (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2));
 }
@@ -41,12 +42,12 @@ inline const manifest_t *romextimage_slot_b_manifest_ptr_get(void) {
 /**
  * Declarations for the functions above that should be defined in tests.
  */
-const manifest_t *romextimage_slot_a_manifest_ptr_get(void);
-const manifest_t *romextimage_slot_b_manifest_ptr_get(void);
+const manifest_t *boot_policy_manifest_a_get(void);
+const manifest_t *boot_policy_manifest_b_get(void);
 #endif
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_ROMEXTIMAGE_PTRS_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_PTRS_H_
