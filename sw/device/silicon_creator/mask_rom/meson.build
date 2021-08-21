@@ -31,11 +31,11 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
 )
 
 # ROM_EXT image.
-sw_silicon_creator_mask_rom_romextimage = declare_dependency(
+sw_silicon_creator_mask_rom_boot_policy = declare_dependency(
   link_with: static_library(
-    'sw_silicon_creator_mask_rom_romextimage',
+    'sw_silicon_creator_mask_rom_boot_policy',
     sources: [
-      'romextimage.c',
+      'boot_policy.c',
     ],
   ),
 )
@@ -180,7 +180,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_shutdown,
       sw_silicon_creator_mask_rom_epmp,
       sw_silicon_creator_mask_rom_sigverify,
-      sw_silicon_creator_mask_rom_romextimage,
+      sw_silicon_creator_mask_rom_boot_policy,
       sw_lib_crt,
       sw_lib_runtime_print,
     ],
@@ -261,11 +261,11 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
-test('sw_silicon_creator_mask_rom_romextimage_unittest', executable(
-    'sw_silicon_creator_mask_rom_romextimage_unittest',
+test('sw_silicon_creator_mask_rom_boot_policy_unittest', executable(
+    'sw_silicon_creator_mask_rom_boot_policy_unittest',
     sources: [
-      'romextimage_unittest.cc',
-      'romextimage.c',
+      'boot_policy_unittest.cc',
+      'boot_policy.c',
     ],
     dependencies: [
       sw_vendor_gtest,

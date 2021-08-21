@@ -150,6 +150,7 @@ typedef struct manifest_signed_region {
 #define MANIFEST_LENGTH_FIELD_MIN MANIFEST_SIZE
 #define MANIFEST_LENGTH_FIELD_MAX 65536
 
+#ifndef OT_OFF_TARGET_TEST
 /**
  * Checks the fields of a manifest.
  *
@@ -229,26 +230,15 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
 inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return (uintptr_t)manifest + manifest->entry_point;
 }
-
-// TODO: Move this definition to a more suitable place. Defined here for now
-// until we implement the boot policy module or the flash driver.
+#else
 /**
- * Flash slots.
- *
- * OpenTitan's flash is split into two slots: A and B. Each stage in the boot
- * chain is responsible for choosing and verifying the slot from which the next
- * stage in the boot chain is executed.
+ * Declarations for the functions above that should be defined in tests.
  */
-typedef enum flash_slot {
-  /**
-   * Flash slot A.
-   */
-  kFlashSlotA,
-  /**
-   * Flash slot B.
-   */
-  kFlashSlotB,
-} flash_slot_t;
+rom_error_t manifest_check(const manifest_t *manifest);
+manifest_signed_region_t manifest_signed_region_get(const manifest_t *manifest);
+epmp_region_t manifest_code_region_get(const manifest_t *manifest);
+uintptr_t manifest_entry_point_get(const manifest_t *manifest);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"
