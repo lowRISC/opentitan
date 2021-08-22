@@ -10,4 +10,17 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_csr_assert_fpv rstmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
+  bind rstmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    // The inputs from pwrmgr.
+    .rst_lc_req(pwr_i.rst_lc_req),
+    .rst_sys_req(pwr_i.rst_sys_req),
+    .ndm_sys_req(ndmreset_req_i),
+    .reset_cause(pwr_i.reset_cause),
+    // The inputs from rstmgr.
+    .rst_lc_src_n(pwr_o.rst_lc_src_n),
+    .rst_sys_src_n(pwr_o.rst_sys_src_n)
+  );
+
 endmodule

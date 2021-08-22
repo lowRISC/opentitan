@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if
+
     files:
       - rstmgr_bind.sv
     file_type: systemVerilogSource

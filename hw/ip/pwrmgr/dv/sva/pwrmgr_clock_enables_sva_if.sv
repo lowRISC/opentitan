@@ -5,7 +5,7 @@
 // This has some assertions that check that the output clock enables correspond
 // to the control CSR when transitioning into or out of the active state. In
 // addition, the usb clock can change anytime when in the active state.
-interface pwrmgr_clock_enables_if (
+interface pwrmgr_clock_enables_sva_if (
   input logic clk_i,
   input logic rst_ni,
   input pwrmgr_pkg::slow_pwr_state_e state,
