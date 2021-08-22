@@ -62,6 +62,9 @@ module csrng_core import csrng_pkg::*; #(
   localparam int BlkEncArbWidth = KeyLen+BlkLen+StateId+Cmd;
   localparam int NUpdateArbReqs = 2;
   localparam int UpdateArbWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
+  localparam int MaxClen = 12;
+  localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
+  localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
 
   // signals
   // interrupt signals
@@ -91,6 +94,9 @@ module csrng_core import csrng_pkg::*; #(
   logic [AppCmdWidth-1:0] acmd_bus;
 
   logic [SeedLen-1:0]     packer_adata;
+  logic [ADataDepthClog-1:0] packer_adata_depth;
+  logic                   packer_adata_pop;
+  logic                   packer_adata_clr;
   logic [SeedLen-1:0]     seed_diversification;
 
   logic                   cmd_entropy_req;
@@ -133,6 +139,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                   generate_req;
   logic                   update_req;
   logic                   uninstant_req;
+  logic                   clr_adata_packer;
   logic [Cmd-1:0]         ctr_drbg_cmd_ccmd;
   logic                   ctr_drbg_cmd_req;
   logic                   ctr_drbg_gen_req;
@@ -330,7 +337,6 @@ module csrng_core import csrng_pkg::*; #(
   logic        cmd_req_dly_q, cmd_req_dly_d;
   logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic           cs_aes_halt_q, cs_aes_halt_d;
-  logic           packer_adata_pop_q, packer_adata_pop_d;
   logic [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
   logic               entropy_src_fips_q, entropy_src_fips_d;
 
@@ -346,7 +352,6 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_dly_q <= '0;
       cmd_req_ccmd_dly_q <= '0;
       cs_aes_halt_q <= '0;
-      packer_adata_pop_q <= '0;
       entropy_src_seed_q <= '0;
       entropy_src_fips_q <= '0;
     end else begin
@@ -360,7 +365,6 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_dly_q <= cmd_req_dly_d;
       cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q <= cs_aes_halt_d;
-      packer_adata_pop_q <= packer_adata_pop_d;
       entropy_src_seed_q <= entropy_src_seed_d;
       entropy_src_fips_q <= entropy_src_fips_d;
     end
@@ -860,6 +864,7 @@ module csrng_core import csrng_pkg::*; #(
     .generate_req_o(generate_req),
     .update_req_o(update_req),
     .uninstant_req_o(uninstant_req),
+    .clr_adata_packer_o(clr_adata_packer),
     .cmd_complete_i(state_db_wr_req),
     .main_sm_err_o(main_sm_err)
   );
@@ -891,22 +896,21 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_adata (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable || packer_adata_pop_q),
+    .clr_i      (!cs_enable || packer_adata_clr),
     .wvalid_i   (acmd_mop),
     .wdata_i    (acmd_bus),
     .wready_o   (),
     .rvalid_o   (),
     .rdata_o    (packer_adata),
-    .rready_i   (packer_adata_pop_q),
-    .depth_o    ()
+    .rready_i   (packer_adata_pop),
+    .depth_o    (packer_adata_depth)
   );
 
-  assign packer_adata_pop_d = cs_enable &&
-         ((instant_req && flag0_q) ||
-          reseed_req ||
-          update_req ||
-          uninstant_req ||
-          (generate_req && flag0_q));
+  assign packer_adata_pop = cs_enable &&
+         clr_adata_packer && (packer_adata_depth == ADataDepthClog'(MaxClen));
+
+  assign packer_adata_clr = cs_enable &&
+         clr_adata_packer && (packer_adata_depth < ADataDepthClog'(MaxClen));
 
   //-------------------------------------
   // csrng_state_db nstantiation
