@@ -11,7 +11,7 @@ module pwrmgr_bind;
   bind pwrmgr pwrmgr_csr_assert_fpv pwrmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   // Clock control assertions.
-  bind pwrmgr pwrmgr_clock_enables_if pwrmgr_clock_enables_if (
+  bind pwrmgr pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_if (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
     .state(i_slow_fsm.state_q),
@@ -29,7 +29,7 @@ module pwrmgr_bind;
     .usb_clk_en(pwr_ast_o.usb_clk_en)
   );
 
-  bind pwrmgr pwrmgr_ast_if pwrmgr_ast_if (
+  bind pwrmgr pwrmgr_ast_sva_if pwrmgr_ast_sva_if (
     .clk_slow_i,
     .rst_slow_ni,
     // The pwrmgr outputs.
@@ -38,12 +38,14 @@ module pwrmgr_bind;
     .pwr_ast_i
   );
 
-  bind pwrmgr pwrmgr_rstmgr_if pwrmgr_rstmgr_if (
+  bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     // The outputs from pwrmgr.
     .rst_lc_req(pwr_rst_o.rst_lc_req),
     .rst_sys_req(pwr_rst_o.rst_sys_req),
+    .ndm_sys_req(1'b0),
+    .reset_cause(pwrmgr_pkg::ResetNone),
     // The inputs from rstmgr.
     .rst_lc_src_n(pwr_rst_i.rst_lc_src_n),
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)

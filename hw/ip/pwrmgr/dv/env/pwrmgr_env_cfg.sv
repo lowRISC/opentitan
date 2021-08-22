@@ -16,9 +16,9 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
   // ext interfaces
   virtual clk_rst_if slow_clk_rst_vif;
   virtual pwrmgr_if pwrmgr_vif;
-  virtual pwrmgr_ast_if pwrmgr_ast_vif;
-  virtual pwrmgr_clock_enables_if pwrmgr_clock_enables_vif;
-  virtual pwrmgr_rstmgr_if pwrmgr_rstmgr_vif;
+  virtual pwrmgr_ast_sva_if pwrmgr_ast_sva_vif;
+  virtual pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_vif;
+  virtual pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_vif;
 
   // The run_phase object, to deal with objections.
   uvm_phase run_phase;

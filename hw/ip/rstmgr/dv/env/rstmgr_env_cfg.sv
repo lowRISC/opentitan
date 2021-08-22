@@ -13,7 +13,8 @@ class rstmgr_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual rstmgr_if  rstmgr_vif;
+  virtual rstmgr_if rstmgr_vif;
+  virtual pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_vif;
   virtual clk_rst_if aon_clk_rst_vif;
   virtual clk_rst_if io_clk_rst_vif;
   virtual clk_rst_if io_div2_clk_rst_vif;

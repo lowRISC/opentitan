@@ -45,6 +45,11 @@ class rstmgr_env extends cip_base_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::get(
+            this, "", "pwrmgr_rstmgr_sva_vif", cfg.pwrmgr_rstmgr_sva_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get pwrmgr_rstmgr_sva_vif from uvm_config_db")
+    end
     if (!uvm_config_db#(virtual rstmgr_if)::get(this, "", "rstmgr_vif", cfg.rstmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get rstmgr_vif from uvm_config_db")
     end
