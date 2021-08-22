@@ -74,6 +74,8 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
+    .por_n_i(rstmgr_if.por_n),
+
     .pwr_i(rstmgr_if.pwr_i),
     .pwr_o(rstmgr_if.pwr_o),
 

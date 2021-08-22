@@ -56,6 +56,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     !(scanmode_other inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off});
   }
 
+  bit reset_once;
+
   pwrmgr_pkg::pwr_rst_req_t pwr_i;
 
   rand logic scan_rst_ni;
@@ -73,8 +75,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
-    cfg.rstmgr_vif.pwr_i.rst_lc_req  = rst_lc_req;
-    cfg.rstmgr_vif.pwr_i.rst_sys_req = rst_sys_req;
+    cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
+    cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
 
   function void set_rstreqs(logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs);
@@ -136,6 +138,13 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   task fork_resets();
     fork
+      // This is the POR, so it should be applied once only.
+      if (!reset_once) begin
+        cfg.rstmgr_vif.por_n = 1'b0;
+        cfg.clk_rst_vif.wait_clks(2);
+        cfg.rstmgr_vif.por_n = 1'b1;
+        reset_once = 1'b1;
+      end
       cfg.aon_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(RESET_CLK_PERIODS));
       cfg.io_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(RESET_CLK_PERIODS));
       cfg.io_div2_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
