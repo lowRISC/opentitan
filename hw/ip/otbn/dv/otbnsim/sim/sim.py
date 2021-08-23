@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 from .isa import OTBNInsn
 from .state import OTBNState
@@ -12,16 +12,27 @@ from .trace import Trace
 _TEST_RND_DATA = \
     0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
 
+# A dictionary that defines a function of the form "address -> from -> to". If
+# PC is the current PC and cnt is the count for the innermost loop then
+# warps[PC][cnt] = new_cnt means that we should warp the current count to
+# new_cnt.
+LoopWarps = Dict[int, Dict[int, int]]
+
 
 class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
         self.program = []  # type: List[OTBNInsn]
+        self.loop_warps = {}  # type: LoopWarps
         self.stats = None  # type: Optional[ExecutionStats]
         self._execute_generator = None  # type: Optional[Iterator[None]]
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
+
+    def add_loop_warp(self, addr: int, from_cnt: int, to_cnt: int) -> None:
+        '''Add a new loop warp to the simulation'''
+        self.loop_warps.setdefault(addr, {})[from_cnt] = to_cnt
 
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
@@ -120,7 +131,7 @@ class OTBNSim:
                 self.stats.record_stall()
         else:
             assert self._execute_generator is None
-            self.state.post_insn()
+            self.state.post_insn(self.loop_warps.get(self.state.pc, {}))
 
             if collect_stats:
                 self.stats.record_insn(insn, self.state)

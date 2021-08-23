@@ -23,6 +23,12 @@ prefixed with "0x" if they are hexadecimal.
     load_elf <path>      Load the ELF file at <path>, replacing current
                          contents of DMEM and IMEM.
 
+    add_loop_warp <addr> <from> <to>
+
+                         Add a loop warp to the simulation. This will trigger
+                         at address <addr> and will jump from iteration <from>
+                         to iteration <to>.
+
     load_d <path>        Replace the current contents of DMEM with <path>
                          (read as an array of 32-bit little-endian words)
 
@@ -125,6 +131,30 @@ def on_load_elf(sim: OTBNSim, args: List[str]) -> None:
     load_elf(sim, path)
 
 
+def on_add_loop_warp(sim: OTBNSim, args: List[str]) -> None:
+    '''Add a loop warp to the simulation'''
+    if len(args) != 3:
+        raise ValueError('add_loop_warp expects exactly 3 arguments. Got {}.'
+                         .format(args))
+
+    try:
+        addr = int(args[0], 0)
+        if addr < 0:
+            raise ValueError('addr is negative')
+        from_cnt = int(args[1], 0)
+        if from_cnt < 0:
+            raise ValueError('from_cnt is negative')
+        to_cnt = int(args[2], 0)
+        if to_cnt < 0:
+            raise ValueError('to_cnt is negative')
+    except ValueError as err:
+        raise ValueError('Bad argument to add_loop_warp: {}'
+                         .format(err)) from None
+
+    print('ADD_LOOP_WARP {:#x} {} {}'.format(addr, from_cnt, to_cnt))
+    sim.add_loop_warp(addr, from_cnt, to_cnt)
+
+
 def on_load_d(sim: OTBNSim, args: List[str]) -> None:
     '''Load contents of data memory from file at path given by only argument'''
     if len(args) != 1:
@@ -207,6 +237,7 @@ _HANDLERS = {
     'step': on_step,
     'run': on_run,
     'load_elf': on_load_elf,
+    'add_loop_warp': on_add_loop_warp,
     'load_d': on_load_d,
     'load_i': on_load_i,
     'dump_d': on_dump_d,
