@@ -68,9 +68,12 @@ module otbn_core
 
   output logic [31:0]             insn_cnt_o,
 
-  // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in an
+  // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in a
   // fatal error.
-  input  logic                    illegal_bus_access_i
+  input  logic                    illegal_bus_access_i,
+
+  // Indicates an incoming escalation from the life cycle manager. Results in a fatal error.
+  input  logic                    lifecycle_escalation_i
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -353,7 +356,8 @@ module otbn_core
 
     .state_reset_i      (state_reset),
     .insn_cnt_o         (insn_cnt),
-    .illegal_bus_access_i
+    .illegal_bus_access_i,
+    .lifecycle_escalation_i
   );
 
   assign insn_cnt_o = insn_cnt;

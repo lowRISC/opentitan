@@ -185,6 +185,7 @@ module otbn_reg_top (
   logic err_bits_fatal_dmem_qs;
   logic err_bits_fatal_reg_qs;
   logic err_bits_fatal_illegal_bus_access_qs;
+  logic err_bits_fatal_lifecycle_escalation_qs;
   logic start_addr_we;
   logic [31:0] start_addr_wd;
   logic fatal_alert_cause_bus_integrity_error_qs;
@@ -192,6 +193,7 @@ module otbn_reg_top (
   logic fatal_alert_cause_dmem_error_qs;
   logic fatal_alert_cause_reg_error_qs;
   logic fatal_alert_cause_illegal_bus_access_qs;
+  logic fatal_alert_cause_lifecycle_escalation_qs;
   logic sec_wipe_we;
   logic sec_wipe_dmem_wd;
   logic sec_wipe_imem_wd;
@@ -569,6 +571,32 @@ module otbn_reg_top (
   );
 
 
+  //   F[fatal_lifecycle_escalation]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_lifecycle_escalation (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_lifecycle_escalation.de),
+    .d      (hw2reg.err_bits.fatal_lifecycle_escalation.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_lifecycle_escalation_qs)
+  );
+
+
   // R[start_addr]: V(False)
 
   prim_subreg #(
@@ -725,6 +753,32 @@ module otbn_reg_top (
 
     // to register interface (read)
     .qs     (fatal_alert_cause_illegal_bus_access_qs)
+  );
+
+
+  //   F[lifecycle_escalation]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_lifecycle_escalation (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.lifecycle_escalation.de),
+    .d      (hw2reg.fatal_alert_cause.lifecycle_escalation.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_lifecycle_escalation_qs)
   );
 
 
@@ -900,6 +954,7 @@ module otbn_reg_top (
         reg_rdata_next[6] = err_bits_fatal_dmem_qs;
         reg_rdata_next[7] = err_bits_fatal_reg_qs;
         reg_rdata_next[8] = err_bits_fatal_illegal_bus_access_qs;
+        reg_rdata_next[9] = err_bits_fatal_lifecycle_escalation_qs;
       end
 
       addr_hit[7]: begin
@@ -912,6 +967,7 @@ module otbn_reg_top (
         reg_rdata_next[2] = fatal_alert_cause_dmem_error_qs;
         reg_rdata_next[3] = fatal_alert_cause_reg_error_qs;
         reg_rdata_next[4] = fatal_alert_cause_illegal_bus_access_qs;
+        reg_rdata_next[5] = fatal_alert_cause_lifecycle_escalation_qs;
       end
 
       addr_hit[9]: begin

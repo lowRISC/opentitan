@@ -125,7 +125,8 @@ module otbn_controller
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
-  input  logic        illegal_bus_access_i
+  input  logic        illegal_bus_access_i,
+  input  logic        lifecycle_escalation_i
 );
   otbn_state_e state_q, state_d, state_raw;
 
@@ -327,15 +328,16 @@ module otbn_controller
     end
   end
 
-  assign err_bits_o.fatal_illegal_bus_access = illegal_bus_access_i;
-  assign err_bits_o.fatal_reg                = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
-  assign err_bits_o.fatal_imem               = insn_fetch_err_i;
-  assign err_bits_o.fatal_dmem               = lsu_rdata_err_i;
-  assign err_bits_o.illegal_insn             = insn_illegal_i | ispr_err | rf_indirect_err;
-  assign err_bits_o.bad_data_addr            = dmem_addr_err;
-  assign err_bits_o.loop                     = loop_err;
-  assign err_bits_o.call_stack               = rf_base_call_stack_err_i;
-  assign err_bits_o.bad_insn_addr            = imem_addr_err;
+  assign err_bits_o.fatal_lifecycle_escalation = lifecycle_escalation_i;
+  assign err_bits_o.fatal_illegal_bus_access   = illegal_bus_access_i;
+  assign err_bits_o.fatal_reg                  = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
+  assign err_bits_o.fatal_imem                 = insn_fetch_err_i;
+  assign err_bits_o.fatal_dmem                 = lsu_rdata_err_i;
+  assign err_bits_o.illegal_insn               = insn_illegal_i | ispr_err | rf_indirect_err;
+  assign err_bits_o.bad_data_addr              = dmem_addr_err;
+  assign err_bits_o.loop                       = loop_err;
+  assign err_bits_o.call_stack                 = rf_base_call_stack_err_i;
+  assign err_bits_o.bad_insn_addr              = imem_addr_err;
 
   assign err = |err_bits_o;
 

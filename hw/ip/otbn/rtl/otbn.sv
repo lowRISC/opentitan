@@ -133,9 +133,9 @@ module otbn
     .lc_en_o(lc_escalate_en)
   );
 
-  // TODO: Connect lifecycle signal.
-  lc_ctrl_pkg::lc_tx_t unused_lc_escalate_en;
-  assign unused_lc_escalate_en = lc_escalate_en;
+  // Reduce the life cycle escalation signal to a single bit to be used within this cycle.
+  logic lifecycle_escalation;
+  assign lifecycle_escalation = lc_escalate_en != lc_ctrl_pkg::Off;
 
   // Interrupts ================================================================
 
@@ -628,6 +628,9 @@ module otbn
   assign hw2reg.err_bits.fatal_illegal_bus_access.de = done;
   assign hw2reg.err_bits.fatal_illegal_bus_access.d = err_bits.fatal_illegal_bus_access;
 
+  assign hw2reg.err_bits.fatal_lifecycle_escalation.de = done;
+  assign hw2reg.err_bits.fatal_lifecycle_escalation.d = err_bits.fatal_lifecycle_escalation;
+
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
   logic [top_pkg::TL_DW-ImemAddrWidth-1:0] unused_start_addr_bits;
@@ -646,6 +649,8 @@ module otbn
   assign hw2reg.fatal_alert_cause.reg_error.d  = 0;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.de = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
+  assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
+  assign hw2reg.fatal_alert_cause.lifecycle_escalation.d  = lifecycle_escalation;
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
@@ -806,42 +811,44 @@ module otbn
       .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni               (rst_n),
+      .rst_ni                 (rst_n),
 
-      .start_i              (start_rtl),
-      .done_o               (done_rtl),
+      .start_i                (start_rtl),
+      .done_o                 (done_rtl),
 
-      .err_bits_o           (err_bits_rtl),
+      .err_bits_o             (err_bits_rtl),
 
-      .start_addr_i         (start_addr),
+      .start_addr_i           (start_addr),
 
-      .imem_req_o           (imem_req_core),
-      .imem_addr_o          (imem_addr_core),
-      .imem_wdata_o         (imem_wdata_core),
-      .imem_rdata_i         (imem_rdata_core),
-      .imem_rvalid_i        (imem_rvalid_core),
-      .imem_rerror_i        (imem_rerror_core),
+      .imem_req_o             (imem_req_core),
+      .imem_addr_o            (imem_addr_core),
+      .imem_wdata_o           (imem_wdata_core),
+      .imem_rdata_i           (imem_rdata_core),
+      .imem_rvalid_i          (imem_rvalid_core),
+      .imem_rerror_i          (imem_rerror_core),
 
-      .dmem_req_o           (dmem_req_core),
-      .dmem_write_o         (dmem_write_core),
-      .dmem_addr_o          (dmem_addr_core),
-      .dmem_wdata_o         (dmem_wdata_core),
-      .dmem_wmask_o         (dmem_wmask_core),
-      .dmem_rmask_o         (dmem_rmask_core_d),
-      .dmem_rdata_i         (dmem_rdata_core),
-      .dmem_rvalid_i        (dmem_rvalid_core),
-      .dmem_rerror_i        (dmem_rerror_core),
+      .dmem_req_o             (dmem_req_core),
+      .dmem_write_o           (dmem_write_core),
+      .dmem_addr_o            (dmem_addr_core),
+      .dmem_wdata_o           (dmem_wdata_core),
+      .dmem_wmask_o           (dmem_wmask_core),
+      .dmem_rmask_o           (dmem_rmask_core_d),
+      .dmem_rdata_i           (dmem_rdata_core),
+      .dmem_rvalid_i          (dmem_rvalid_core),
+      .dmem_rerror_i          (dmem_rerror_core),
 
-      .edn_rnd_req_o        (edn_rnd_req),
-      .edn_rnd_ack_i        (edn_rnd_ack),
-      .edn_rnd_data_i       (edn_rnd_data),
+      .edn_rnd_req_o          (edn_rnd_req),
+      .edn_rnd_ack_i          (edn_rnd_ack),
+      .edn_rnd_data_i         (edn_rnd_data),
 
-      .edn_urnd_req_o       (edn_urnd_req),
-      .edn_urnd_ack_i       (edn_urnd_ack),
-      .edn_urnd_data_i      (edn_urnd_data),
+      .edn_urnd_req_o         (edn_urnd_req),
+      .edn_urnd_ack_i         (edn_urnd_ack),
+      .edn_urnd_data_i        (edn_urnd_data),
 
-      .insn_cnt_o           (insn_cnt_rtl),
-      .illegal_bus_access_i (illegal_bus_access_q)
+      .insn_cnt_o             (insn_cnt_rtl),
+
+      .illegal_bus_access_i   (illegal_bus_access_q),
+      .lifecycle_escalation_i (lifecycle_escalation)
     );
   `else
     otbn_core #(
@@ -852,42 +859,44 @@ module otbn
       .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni               (rst_n),
+      .rst_ni                 (rst_n),
 
-      .start_i              (start_q),
-      .done_o               (done),
+      .start_i                (start_q),
+      .done_o                 (done),
 
-      .err_bits_o           (err_bits),
+      .err_bits_o             (err_bits),
 
-      .start_addr_i         (start_addr),
+      .start_addr_i           (start_addr),
 
-      .imem_req_o           (imem_req_core),
-      .imem_addr_o          (imem_addr_core),
-      .imem_wdata_o         (imem_wdata_core),
-      .imem_rdata_i         (imem_rdata_core),
-      .imem_rvalid_i        (imem_rvalid_core),
-      .imem_rerror_i        (imem_rerror_core),
+      .imem_req_o             (imem_req_core),
+      .imem_addr_o            (imem_addr_core),
+      .imem_wdata_o           (imem_wdata_core),
+      .imem_rdata_i           (imem_rdata_core),
+      .imem_rvalid_i          (imem_rvalid_core),
+      .imem_rerror_i          (imem_rerror_core),
 
-      .dmem_req_o           (dmem_req_core),
-      .dmem_write_o         (dmem_write_core),
-      .dmem_addr_o          (dmem_addr_core),
-      .dmem_wdata_o         (dmem_wdata_core),
-      .dmem_wmask_o         (dmem_wmask_core),
-      .dmem_rmask_o         (dmem_rmask_core_d),
-      .dmem_rdata_i         (dmem_rdata_core),
-      .dmem_rvalid_i        (dmem_rvalid_core),
-      .dmem_rerror_i        (dmem_rerror_core),
+      .dmem_req_o             (dmem_req_core),
+      .dmem_write_o           (dmem_write_core),
+      .dmem_addr_o            (dmem_addr_core),
+      .dmem_wdata_o           (dmem_wdata_core),
+      .dmem_wmask_o           (dmem_wmask_core),
+      .dmem_rmask_o           (dmem_rmask_core_d),
+      .dmem_rdata_i           (dmem_rdata_core),
+      .dmem_rvalid_i          (dmem_rvalid_core),
+      .dmem_rerror_i          (dmem_rerror_core),
 
-      .edn_rnd_req_o        (edn_rnd_req),
-      .edn_rnd_ack_i        (edn_rnd_ack),
-      .edn_rnd_data_i       (edn_rnd_data),
+      .edn_rnd_req_o          (edn_rnd_req),
+      .edn_rnd_ack_i          (edn_rnd_ack),
+      .edn_rnd_data_i         (edn_rnd_data),
 
-      .edn_urnd_req_o       (edn_urnd_req),
-      .edn_urnd_ack_i       (edn_urnd_ack),
-      .edn_urnd_data_i      (edn_urnd_data),
+      .edn_urnd_req_o         (edn_urnd_req),
+      .edn_urnd_ack_i         (edn_urnd_ack),
+      .edn_urnd_data_i        (edn_urnd_data),
 
-      .insn_cnt_o           (insn_cnt),
-      .illegal_bus_access_i (illegal_bus_access_q)
+      .insn_cnt_o             (insn_cnt),
+
+      .illegal_bus_access_i   (illegal_bus_access_q),
+      .lifecycle_escalation_i (lifecycle_escalation)
     );
   `endif
 

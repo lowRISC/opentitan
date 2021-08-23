@@ -587,8 +587,7 @@ A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 ### Reaction to Life Cycle Escalation Requests
 
 OTBN receives and reacts to escalation signals from the [life cycle controller]({{< relref "/hw/ip/lc_ctrl/doc#security-escalation" >}}).
-
-An escalation request signaled through the `lc_escalate_en_i` signal results in the same action as a [fatal error](#design-details-fatal-errors) but does not raise a fatal alert.
+An incoming life cycle escalation is a fatal error of type `lifecycle_escalation` and treated as described in the section [Fatal Errors](#design-details-fatal-errors).
 
 ### Idle
 
