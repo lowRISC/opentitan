@@ -29,6 +29,9 @@ static_assert(kDifOtbnErrBitsFatalDmem == (1 << OTBN_ERR_BITS_FATAL_DMEM_BIT),
               "Layout of error bits changed.");
 static_assert(kDifOtbnErrBitsFatalReg == (1 << OTBN_ERR_BITS_FATAL_REG_BIT),
               "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsFatalIllegalBusAccess ==
+                  (1 << OTBN_ERR_BITS_FATAL_ILLEGAL_BUS_ACCESS_BIT),
+              "Layout of error bits changed.");
 
 /**
  * Data width of big number subset, in bytes.
