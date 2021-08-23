@@ -71,6 +71,8 @@ typedef enum otbn_err_bits {
    * not allowed.
    */
   kOtbnErrBitsFatalIllegalBusAccess = (1 << 8),
+  /** OTBN received a life cycle escalation request from the system */
+  kOtbnErrBitsFatalLifecycleEscalation = (1 << 9),
 } otbn_err_bits_t;
 
 /**

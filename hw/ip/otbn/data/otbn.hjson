@@ -250,6 +250,11 @@
             it was not allowed.
             '''
         }
+        { bits: "9",
+          name: "fatal_lifecycle_escalation"
+          resval: 0,
+          desc: "OTBN received a life cycle escalation request from the system."
+        }
       ]
     } // register : err_bits
     { name: "START_ADDR",
@@ -308,6 +313,11 @@
             A bus-accessible register or memory was read or written while when
             it was not allowed.
             '''
+        }
+        { bits: "5",
+          name: "lifecycle_escalation"
+          resval: 0,
+          desc: "OTBN received a life cycle escalation request from the system."
         }
       ]
     } // register : fatal_alert_cause

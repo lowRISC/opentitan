@@ -95,6 +95,8 @@ typedef enum dif_otbn_err_bits {
    * not allowed.
    */
   kDifOtbnErrBitsFatalIllegalBusAccess = (1 << 8),
+  /** OTBN received a life cycle escalation request from the system */
+  kDifOtbnErrBitsFatalLifecycleEscalation = (1 << 9),
 } dif_otbn_err_bits_t;
 
 /**
