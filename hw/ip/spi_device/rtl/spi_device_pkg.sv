@@ -420,4 +420,12 @@ package spi_device_pkg;
     ScanModeUseLast
   } scan_mode_e;
 
+  // TPM ======================================================================
+  typedef struct packed {
+    logic [7:0] rev;
+    logic       locality;
+    logic [2:0] max_xfer_size;
+  } tpm_cap_t;
+  // TPM ----------------------------------------------------------------------
+
 endpackage : spi_device_pkg
