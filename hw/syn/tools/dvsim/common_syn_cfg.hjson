@@ -33,7 +33,7 @@
   // TODO: switch the tool to dc once the corresponding edalize backend is available
   sv_flist_gen_opts:  ["--cores-root {proj_root}",
                        "run"
-                       "--flag=fileset_{design_level}",
+                       "{sv_flist_gen_flags}",
                        "--target={flow}",
                        "--tool icarus",
                        "--build-root={build_dir}",
@@ -41,6 +41,7 @@
                        "{fusesoc_core}"]
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
+  sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
 
   // Common fail patterns.
   build_fail_patterns: [// FuseSoC build error
