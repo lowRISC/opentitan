@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .constants import ErrBits
 from .trace import Trace
@@ -112,10 +112,12 @@ class LoopStack:
             # instruction.
             self.err_flag = True
 
-    def step(self, pc: int) -> Optional[int]:
+    def step(self, pc: int, warps: Dict[int, int]) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
 
         self._pop_stack_on_commit = False
+
+        self.apply_warps(warps)
 
         if self.is_last_insn_in_loop_body(pc):
             assert self.stack
@@ -156,3 +158,22 @@ class LoopStack:
     def abort(self) -> None:
         self.trace = []
         self.err_flag = False
+
+    def apply_warps(self, warps: Dict[int, int]) -> None:
+        '''Apply any loop warping specified by warps.
+
+        Here, warps maps values for the innermost loop iteration count from
+        what they are currently to what they should be warped to.
+
+        '''
+        if not self.stack:
+            return
+
+        top = self.stack[-1]
+        cur_iter_count = top.loop_count - (1 + top.restarts_left)
+        new_iter_count = warps.get(cur_iter_count)
+        if new_iter_count is None:
+            return
+
+        assert cur_iter_count <= new_iter_count
+        top.restarts_left = top.loop_count - new_iter_count - 1

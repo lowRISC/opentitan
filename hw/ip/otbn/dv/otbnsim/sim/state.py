@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from shared.mem_layout import get_memory_layout
 
@@ -74,8 +74,8 @@ class OTBNState:
     def loop_start(self, iterations: int, bodysize: int) -> None:
         self.loop_stack.start_loop(self.pc + 4, iterations, bodysize)
 
-    def loop_step(self) -> None:
-        back_pc = self.loop_stack.step(self.pc)
+    def loop_step(self, loop_warps: Dict[int, int]) -> None:
+        back_pc = self.loop_stack.step(self.pc, loop_warps)
         if back_pc is not None:
             self.set_next_pc(back_pc)
 
@@ -247,10 +247,10 @@ class OTBNState:
 
         return True
 
-    def post_insn(self) -> None:
+    def post_insn(self, loop_warps: Dict[int, int]) -> None:
         '''Update state after running an instruction but before commit'''
         self.ext_regs.increment_insn_cnt()
-        self.loop_step()
+        self.loop_step(loop_warps)
         self.gprs.post_insn()
 
         self._err_bits |= self.gprs.err_bits() | self.loop_stack.err_bits()
