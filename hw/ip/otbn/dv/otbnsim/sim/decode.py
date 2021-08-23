@@ -8,7 +8,7 @@ import struct
 from typing import List, Optional, Iterator
 
 from .err_bits import ILLEGAL_INSN
-from .isa import INSNS_FILE, DecodeError, OTBNInsn
+from .isa import INSNS_FILE, OTBNInsn
 from .insn import INSN_CLASSES
 from .state import OTBNState
 
@@ -58,14 +58,7 @@ def _decode_word(pc: int, word: int) -> OTBNInsn:
     # shifting, sign interpretation etc.)
     op_vals = cls.insn.enc_vals_to_op_vals(pc, enc_vals)
 
-    # Catch any decode errors raised by the instruction constructor. This lets
-    # us generate errors if an instruction encoding has extra constraints that
-    # can't be captured by the logic in the Encoding class.
-    try:
-        return cls(word, op_vals)
-    except DecodeError as err:
-        return IllegalInsn(pc, word, str(err))
-
+    return cls(word, op_vals)
 
 def decode_bytes(base_addr: int, data: bytes) -> List[OTBNInsn]:
     '''Decode instruction bytes as instructions'''

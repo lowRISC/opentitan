@@ -20,16 +20,6 @@ except RuntimeError as err:
     sys.stderr.write('{}\n'.format(err))
     sys.exit(1)
 
-
-class DecodeError(Exception):
-    '''An error raised when trying to decode malformed instruction bits'''
-    def __init__(self, msg: str):
-        self.msg = msg
-
-    def __str__(self) -> str:
-        return 'DecodeError: {}'.format(self.msg)
-
-
 def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
     '''Look up the named instruction in the loaded YAML data.
 
