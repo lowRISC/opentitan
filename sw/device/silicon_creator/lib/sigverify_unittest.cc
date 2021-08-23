@@ -81,10 +81,8 @@ constexpr sigverify_rsa_buffer_t kEncMsg{
         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff,
     }};
 
-// The contents of `kSignedRegion` and `kSignature` are not significant since we
-// use mocks. `kSignedRegion` is initialized this way only for consistency with
-// `kTestDigest`.
-constexpr std::array<uint8_t, 4> kSignedRegion{'t', 'e', 's', 't'};
+// The value of `kSignature` is not significant since we use mocks for
+// `sigverify_mod_exp_ibex()` and `sigverify_mod_exp_otbn()`.
 constexpr sigverify_rsa_buffer_t kSignature{};
 
 /**
@@ -135,15 +133,6 @@ class SigverifyInLcState
     : public mask_rom_test::MaskRomTest,
       public testing::WithParamInterface<lifecycle_state_t> {
  protected:
-  void ExpectSha256() {
-    EXPECT_CALL(hmac_, sha256_init());
-    EXPECT_CALL(hmac_,
-                sha256_update(kSignedRegion.data(), sizeof(kSignedRegion)))
-        .WillOnce(Return(kErrorOk));
-    EXPECT_CALL(hmac_, sha256_final(NotNull()))
-        .WillOnce(DoAll(SetArgPointee<0>(kTestDigest), Return(kErrorOk)));
-  }
-
   mask_rom_test::MockSigverifyModExpIbex sigverify_mod_exp_ibex_;
   mask_rom_test::MockSigverifyModExpOtbn sigverify_mod_exp_otbn_;
   mask_rom_test::MockHmac hmac_;
@@ -155,39 +144,33 @@ class SigverifyInLcState
 class SigverifyInNonTestStates : public SigverifyInLcState {};
 
 TEST_P(SigverifyInNonTestStates, BadOtpValue) {
-  ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(0xA5A5A5A5));
 
-  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_, GetParam()),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
             kErrorSigverifyBadOtpValue);
 }
 
 TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
-  ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_, GetParam()),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
             kErrorOk);
 }
 
 TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
-  ExpectSha256();
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(kHardenedBoolFalse));
   EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_, GetParam()),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
             kErrorOk);
 }
 
@@ -198,16 +181,15 @@ TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
     auto bad_enc_msg = kEncMsg;
     bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
 
-    ExpectSha256();
     EXPECT_CALL(otp_,
                 read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
         .WillOnce(Return(kHardenedBoolFalse));
     EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
-    EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                   &kSignature, &key_, GetParam()),
-              kErrorSigverifyBadEncodedMessage);
+    EXPECT_EQ(
+        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+        kErrorSigverifyBadEncodedMessage);
   }
 }
 
@@ -217,12 +199,10 @@ INSTANTIATE_TEST_SUITE_P(NonTestOperationalStates, SigverifyInNonTestStates,
 class SigverifyInTestStates : public SigverifyInLcState {};
 
 TEST_P(SigverifyInTestStates, GoodSignatureIbex) {
-  ExpectSha256();
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_, GetParam()),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
             kErrorOk);
 }
 
@@ -233,13 +213,12 @@ TEST_P(SigverifyInTestStates, BadSignatureIbex) {
     auto bad_enc_msg = kEncMsg;
     bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
 
-    ExpectSha256();
     EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
-    EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                   &kSignature, &key_, GetParam()),
-              kErrorSigverifyBadEncodedMessage);
+    EXPECT_EQ(
+        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+        kErrorSigverifyBadEncodedMessage);
   }
 }
 
@@ -249,10 +228,7 @@ INSTANTIATE_TEST_SUITE_P(TestStates, SigverifyInTestStates,
 class SigverifyInInvalidStates : public SigverifyInLcState {};
 
 TEST_P(SigverifyInInvalidStates, BadLcState) {
-  ExpectSha256();
-
-  EXPECT_EQ(sigverify_rsa_verify(kSignedRegion.data(), sizeof(kSignedRegion),
-                                 &kSignature, &key_, GetParam()),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
             kErrorSigverifyBadLcState);
 }
 

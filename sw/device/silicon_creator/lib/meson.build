@@ -56,7 +56,6 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
       hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
-      sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_otp,
     ],
   ),
@@ -218,6 +217,7 @@ sw_silicon_creator_lib_sigverify_functest = declare_dependency(
     ],
     dependencies: [
       sw_silicon_creator_lib_sigverify,
+      sw_silicon_creator_lib_driver_hmac,
     ],
   ),
 )

@@ -24,10 +24,7 @@
 
 namespace sigverify_keys_unittest {
 namespace {
-using ::testing::DoAll;
-using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 
 /**
  * Mock keys used in tests.
@@ -367,7 +364,6 @@ TEST(Keys, UniqueIds) {
  *    xxd -p -c 4 | tac | sed 's|.*|0x&,|'
  * ```
  */
-constexpr std::array<uint8_t, 4> kMessage{'t', 'e', 's', 't'};
 constexpr hmac_digest_t kDigest = {
     .digest =
         {
@@ -474,17 +470,12 @@ class SigverifyRsaVerify
 };
 
 TEST_P(SigverifyRsaVerify, Ibex) {
-  EXPECT_CALL(hmac_, sha256_init());
-  EXPECT_CALL(hmac_, sha256_update(kMessage.data(), kMessage.size()))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(hmac_, sha256_final(NotNull()))
-      .WillOnce(DoAll(SetArgPointee<0>(kDigest), Return(kErrorOk)));
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
 
-  EXPECT_EQ(sigverify_rsa_verify(kMessage.data(), kMessage.size(),
-                                 &GetParam().sig, GetParam().key, kLcStateProd),
+  EXPECT_EQ(sigverify_rsa_verify(&GetParam().sig, GetParam().key, &kDigest,
+                                 kLcStateProd),
             kErrorOk);
 }
 
