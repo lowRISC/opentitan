@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 static const char kMessage[] = "test message";
+
+// Digest of the test message above.
+hmac_digest_t act_digest;
 
 // sec_mmio (used by the OTP driver) requires this symbol to be defined.
 sec_mmio_ctx_t sec_mmio_ctx;
@@ -122,20 +126,27 @@ static const sigverify_rsa_key_t kKeyExp3 = {
     .exponent = 3,
 };
 
+rom_error_t compute_digest(void) {
+  hmac_sha256_init();
+  RETURN_IF_ERROR(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
+  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  return kErrorOk;
+}
+
 rom_error_t sigverify_test_exp_3(void) {
-  return sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1, &kSignatureExp3,
-                              &kKeyExp3, kLcStateRma);
+  return sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest,
+                              kLcStateRma);
 }
 
 rom_error_t sigverify_test_exp_65537(void) {
-  return sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1,
-                              &kSignatureExp65537, &kKeyExp65537, kLcStateRma);
+  return sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
+                              kLcStateRma);
 }
 
 rom_error_t sigverify_test_negative(void) {
   // Signature verification should fail when using the wrong signature.
-  if (sigverify_rsa_verify(&kMessage, sizeof(kMessage) - 1, &kSignatureExp65537,
-                           &kKeyExp3, kLcStateRma) == kErrorOk) {
+  if (sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp3, &act_digest,
+                           kLcStateRma) == kErrorOk) {
     return kErrorUnknown;
   }
   return kErrorOk;
@@ -145,6 +156,9 @@ const test_config_t kTestConfig;
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;
+
+  CHECK(compute_digest() == kErrorOk);
+
   EXECUTE_TEST(result, sigverify_test_exp_3);
   EXECUTE_TEST(result, sigverify_test_exp_65537);
   EXECUTE_TEST(result, sigverify_test_negative);

@@ -94,9 +94,13 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest) {
 
   // TODO(#5956): Manifest usage constraints.
   manifest_signed_region_t signed_region = manifest_signed_region_get(manifest);
-  RETURN_IF_ERROR(sigverify_rsa_verify(signed_region.start,
-                                       signed_region.length,
-                                       &manifest->signature, key, lc_state));
+  hmac_sha256_init();
+  RETURN_IF_ERROR(
+      hmac_sha256_update(signed_region.start, signed_region.length));
+  hmac_digest_t act_digest;
+  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  RETURN_IF_ERROR(
+      sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state));
   return kErrorOk;
 }
 

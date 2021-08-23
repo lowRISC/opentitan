@@ -7,7 +7,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
@@ -112,16 +111,10 @@ static rom_error_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state,
   }
 }
 
-rom_error_t sigverify_rsa_verify(const void *signed_message,
-                                 size_t signed_message_len,
-                                 const sigverify_rsa_buffer_t *signature,
+rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
+                                 const hmac_digest_t *act_digest,
                                  lifecycle_state_t lc_state) {
-  hmac_digest_t act_digest;
-  hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(signed_message, signed_message_len));
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
-
   hardened_bool_t use_sw;
   RETURN_IF_ERROR(sigverify_use_sw_rsa_verify(lc_state, &use_sw));
 
@@ -136,7 +129,7 @@ rom_error_t sigverify_rsa_verify(const void *signed_message,
     default:
       return kErrorSigverifyBadOtpValue;
   }
-  RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, &act_digest));
+  RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, act_digest));
 
   return kErrorOk;
 }
