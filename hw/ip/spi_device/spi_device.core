@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
       - lowrisc:prim:ram_2p_adv
+      - lowrisc:prim:edge_detector
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
       - lowrisc:ip:spi_device_pkg
@@ -31,6 +32,7 @@ filesets:
       - rtl/spid_jedec.sv
       - rtl/spid_fifo2sram_adapter.sv
       - rtl/spid_upload.sv
+      - rtl/spi_tpm.sv
       - rtl/spi_s2p.sv
       - rtl/spi_p2s.sv
       - rtl/spi_device.sv
