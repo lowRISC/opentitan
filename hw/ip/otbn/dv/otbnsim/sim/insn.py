@@ -6,7 +6,7 @@ from typing import Dict, Iterator, Optional
 
 from sim import err_bits
 from .flags import FlagReg
-from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm,
+from .isa import (OTBNInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
                   extract_quarter_word)
 from .state import OTBNState
@@ -913,9 +913,6 @@ class BNLID(OTBNInsn):
         self.grs1 = op_vals['grs1']
         self.grs1_inc = op_vals['grs1_inc']
 
-        if self.grd_inc and self.grs1_inc:
-            raise DecodeError('grd_inc and grs1_inc both set')
-
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         # BN.LID executes over two cycles. On the first cycle, we read the base
         # address, compute the load address and check it for correctness,
@@ -936,6 +933,10 @@ class BNLID(OTBNInsn):
 
         wrd = grd_val & 0x1f
         value = state.dmem.load_u256(addr)
+
+        if self.grs1_inc and self.grd_inc:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            return
 
         if self.grd_inc:
             new_grd_val = grd_val + 1
@@ -962,14 +963,15 @@ class BNSID(OTBNInsn):
         self.grs1 = op_vals['grs1']
         self.grs1_inc = op_vals['grs1_inc']
 
-        if self.grs1_inc and self.grs2_inc:
-            raise DecodeError('grs1_inc and grs2_inc both set')
-
     def execute(self, state: OTBNState) -> None:
         grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
 
         grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
+
+        if self.grs1_inc and self.grs2_inc:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            return
 
         if grs2_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
@@ -1016,12 +1018,13 @@ class BNMOVR(OTBNInsn):
         self.grs = op_vals['grs']
         self.grs_inc = op_vals['grs_inc']
 
-        if self.grd_inc and self.grs_inc:
-            raise DecodeError('grd_inc and grs_inc both set')
-
     def execute(self, state: OTBNState) -> None:
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
         grs_val = state.gprs.get_reg(self.grs).read_unsigned()
+
+        if self.grs_inc and self.grd_inc:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+            return
 
         if grd_val > 31:
             state.stop_at_end_of_cycle(ILLEGAL_INSN)
