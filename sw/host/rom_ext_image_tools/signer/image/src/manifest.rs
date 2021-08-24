@@ -26,8 +26,9 @@ use zerocopy::FromBytes;
 //      sw/device/silicon_creator/lib/manifest.h \
 //      -- -I./ -Isw/device/lib/base/freestanding
 
-pub const MANIFEST_SIZE: u32 = 848;
-pub const MANIFEST_LENGTH_FIELD_MIN: u32 = 848;
+pub const MANIFEST_SIZE: u32 = 896;
+pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xA5A5A5A5;
+pub const MANIFEST_LENGTH_FIELD_MIN: u32 = 896;
 pub const MANIFEST_LENGTH_FIELD_MAX: u32 = 65536;
 
 /// Manifest for boot stage images stored in flash.
@@ -35,6 +36,7 @@ pub const MANIFEST_LENGTH_FIELD_MAX: u32 = 65536;
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct Manifest {
     pub signature: SigverifyRsaBuffer,
+    pub usage_constraints: ManifestUsageConstraints,
     pub modulus: SigverifyRsaBuffer,
     pub exponent: u32,
     pub identifier: u32,
@@ -63,6 +65,29 @@ impl Default for SigverifyRsaBuffer {
     }
 }
 
+/// Manifest usage constraints.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug)]
+pub struct ManifestUsageConstraints {
+    pub selector_bits: u32,
+    pub device_id: [u32; 8usize],
+    pub manuf_state_creator: u32,
+    pub manuf_state_owner: u32,
+    pub life_cycle_state: u32,
+}
+
+impl Default for ManifestUsageConstraints {
+    fn default() -> Self {
+        Self {
+            selector_bits: 0,
+            device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL; 8usize],
+            manuf_state_creator: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
+            manuf_state_owner: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
+            life_cycle_state: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct KeymgrBindingValue {
@@ -76,18 +101,18 @@ pub struct KeymgrBindingValue {
 /// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
 pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, signature), 0);
-    assert_eq!(offset_of!(Manifest, modulus), 384);
-    assert_eq!(offset_of!(Manifest, exponent), 768);
-    assert_eq!(offset_of!(Manifest, identifier), 772);
-    assert_eq!(offset_of!(Manifest, length), 776);
-    assert_eq!(offset_of!(Manifest, version_major), 780);
-    assert_eq!(offset_of!(Manifest, version_minor), 784);
-    assert_eq!(offset_of!(Manifest, security_version), 788);
-    assert_eq!(offset_of!(Manifest, timestamp), 792);
-    assert_eq!(offset_of!(Manifest, binding_value), 800);
-    assert_eq!(offset_of!(Manifest, max_key_version), 832);
-    assert_eq!(offset_of!(Manifest, code_start), 836);
-    assert_eq!(offset_of!(Manifest, code_end), 840);
-    assert_eq!(offset_of!(Manifest, entry_point), 844);
+    assert_eq!(offset_of!(Manifest, modulus), 432);
+    assert_eq!(offset_of!(Manifest, exponent), 816);
+    assert_eq!(offset_of!(Manifest, identifier), 820);
+    assert_eq!(offset_of!(Manifest, length), 824);
+    assert_eq!(offset_of!(Manifest, version_major), 828);
+    assert_eq!(offset_of!(Manifest, version_minor), 832);
+    assert_eq!(offset_of!(Manifest, security_version), 836);
+    assert_eq!(offset_of!(Manifest, timestamp), 840);
+    assert_eq!(offset_of!(Manifest, binding_value), 848);
+    assert_eq!(offset_of!(Manifest, max_key_version), 880);
+    assert_eq!(offset_of!(Manifest, code_start), 884);
+    assert_eq!(offset_of!(Manifest, code_end), 888);
+    assert_eq!(offset_of!(Manifest, entry_point), 892);
     assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
 }
