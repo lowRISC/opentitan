@@ -848,6 +848,11 @@
                       resval: 0,
                       desc: '''Set to 1 if the corresponding detector has detected a wakeup pattern. Write 0 to clear.
                       '''
+                      // Random writes to the wkup detect CSRs may result in the case where the
+                      // wakeup gets enabled and signaled due to a pin being low for a programmed
+                      // time. In CSR tests, the IOs are not touched (i.e. they are internally
+                      // pulled low).
+                      tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
                     }
                   ]
                 }
