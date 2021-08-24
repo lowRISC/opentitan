@@ -741,7 +741,7 @@ module csrng_reg_top (
 
   prim_subreg #(
     .DW      (15),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (15'h0)
   ) u_hw_exc_sts (
     .clk_i   (clk_i),
