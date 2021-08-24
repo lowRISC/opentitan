@@ -10,8 +10,10 @@
 #include <string>
 #include <svdpi.h>
 
+#include "Votbn_top_sim__Syms.h"
 #include "log_trace_listener.h"
 #include "otbn_memutil.h"
+#include "otbn_model.h"
 #include "otbn_trace_checker.h"
 #include "otbn_trace_source.h"
 #include "sv_scoped.h"
@@ -93,15 +95,18 @@ class OtbnTraceUtil : public SimCtrlExtension {
   }
 };
 
-int main(int argc, char **argv) {
-  otbn_top_sim top;
+static std::unique_ptr<otbn_top_sim> verilator_top;
+static OtbnMemUtil otbn_memutil("TOP.otbn_top_sim");
 
-  OtbnMemUtil otbn_memutil("TOP.otbn_top_sim");
+int main(int argc, char **argv) {
   VerilatorMemUtil memutil(&otbn_memutil);
   OtbnTraceUtil traceutil;
 
+  verilator_top.reset(new otbn_top_sim());
+
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
-  simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
+  simctrl.SetTop(verilator_top.get(), &verilator_top->IO_CLK,
+                 &verilator_top->IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
   simctrl.RegisterExtension(&memutil);
   simctrl.RegisterExtension(&traceutil);
@@ -191,6 +196,99 @@ int main(int argc, char **argv) {
                 << exp_stop_pc << ", but simulation actually stopped at 0x"
                 << act_stop_pc << ".\n";
       return 1;
+    }
+  }
+
+  return 0;
+}
+
+// This is executed over DPI on every negedge of the clock and is in charge of
+// updating the top of the loop stack if necessary to match loop warp symbols
+// in the ELF file.
+extern "C" int OtbnTopApplyLoopWarp() {
+  static bool warps_initialised = false;
+  static std::vector<uint32_t> loop_count_stack;
+
+  // Cast to the right base class of otbn_top_sim. Otherwise, you can't access
+  // the "otbn_top_sim" member because you get the derived class's constructor
+  // by accident.
+  Votbn_top_sim &top = *verilator_top;
+
+  if (!warps_initialised) {
+    // Grab the model handle from the otbn_core_model module. This should have
+    // been initialised by now because it gets set up in an initial block and
+    // this code doesn't run until the first clock negedge.
+    auto sv_model_handle = top.otbn_top_sim->u_otbn_core_model->model_handle;
+
+    // sv_model_handle will be some integer type. Check it's nonzero and, if
+    // so, convert it to an OtbnModel*.
+    assert(sv_model_handle != 0);
+
+    OtbnModel *model_handle = (OtbnModel *)sv_model_handle;
+
+    if (model_handle->take_loop_warps(otbn_memutil) != 0) {
+      // Something went wrong when trying to update the model. We've
+      // already written to something to stderr, so should just pass
+      // the non-zero return value up the stack.
+      return -1;
+    }
+
+    warps_initialised = true;
+  }
+
+  auto loop_controller =
+      top.otbn_top_sim->u_otbn_core->u_otbn_controller->u_otbn_loop_controller;
+
+  // Track loop stack state.
+  if (loop_controller->current_loop_finish) {
+    assert(!loop_count_stack.empty());
+    loop_count_stack.pop_back();
+  }
+  if (loop_controller->loop_start_req_i &&
+      loop_controller->loop_start_commit_i) {
+    loop_count_stack.push_back(loop_controller->loop_iterations_i);
+  }
+
+  if (!loop_count_stack.empty()) {
+    // There is a loop that's currently active. Its state for next cycle is
+    // stored in current_loop_q and current_loop_d and is laid out as {start,
+    // end, iters} where start is of size ImemAddrWidth (12), end is one bit
+    // bigger (to allow for addresses that lie outside of the memory) and iters
+    // is 32-bit, giving 57 bits in total. Verilator stores this as a single
+    // "QData" value and we have to unpack the fields manually. Here "iters"
+    // gives the number of iterations remaining.
+    uint32_t total = loop_count_stack.back();
+    uint32_t old_iters_q = loop_controller->current_loop_q & 0xffffffffu;
+    uint32_t old_iters_d = loop_controller->current_loop_d & 0xffffffffu;
+
+    // The RTL's view of "iterations remaining" counts down rather than up and
+    // for the final iteration the count will be 1 (not zero). Convert to the
+    // indexing we use in loop warp symbols (counting up, starting at zero) by
+    // subtracting old_iters_d from total. The result should never be negative
+    // (unless we messed up something somewhere).
+    assert(old_iters_d <= total);
+
+    uint32_t old_cnt = total - old_iters_d;
+    uint32_t insn_addr = loop_controller->insn_addr_i;
+
+    uint32_t new_cnt = otbn_memutil.GetLoopWarp(insn_addr, old_cnt);
+    if (old_cnt != new_cnt) {
+      // Convert from new_cnt back to the "iters" format by subtracting from
+      // the total, but bottom out at 1 (the last iteration).
+      uint32_t new_iters_d = (new_cnt < total) ? (total - new_cnt) : 1;
+
+      // We can't control which process gets run next (d -> q or q -> d), so we
+      // need to update both values. To keep things consistent, ensure that the
+      // difference "q - d" stays the same.
+      uint32_t new_iters_q = new_iters_d + (old_iters_q - old_iters_d);
+
+      // Replace the iters counts, zeroing out the old versions by shifting
+      // down and up again (which avoids us needing to construct a mask of a
+      // particular type).
+      loop_controller->current_loop_q =
+          ((loop_controller->current_loop_q >> 32) << 32) | new_iters_q;
+      loop_controller->current_loop_d =
+          ((loop_controller->current_loop_d >> 32) << 32) | new_iters_d;
     }
   }
 

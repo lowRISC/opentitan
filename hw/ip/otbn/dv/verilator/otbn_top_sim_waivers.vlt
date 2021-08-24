@@ -6,3 +6,19 @@
 
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'stack_wr_ptr_q' generates 4 bits*"
+
+// Mark some signals in the loop controller as public. These are used
+// by the OtbnTopApplyLoopWarp() function in otbn_top_sim.cc
+public -module "otbn_loop_controller" -var "insn_addr_i"
+public -module "otbn_loop_controller" -var "loop_start_req_i"
+public -module "otbn_loop_controller" -var "loop_start_commit_i"
+public -module "otbn_loop_controller" -var "loop_iterations_i"
+public -module "otbn_loop_controller" -var "loop_active_q"
+public -module "otbn_loop_controller" -var "current_loop_q"
+public -module "otbn_loop_controller" -var "current_loop_d"
+public -module "otbn_loop_controller" -var "current_loop_finish"
+
+// Mark the "model_handle" variable in the core model as public. We
+// use this to pass the information from the ELF file to the ISS on
+// the first call to OtbnTopApplyLoopWarp() in otbn_top_sim.cc.
+public -module "otbn_core_model" -var "model_handle"

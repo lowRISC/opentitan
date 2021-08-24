@@ -300,7 +300,7 @@ module otbn_top_sim (
   );
 
   bit done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched;
-  bit model_err_latched;
+  bit model_err_latched, loop_warp_model_err;
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
@@ -328,7 +328,21 @@ module otbn_top_sim (
         end
         cnt_mismatch_latched <= 1'b1;
       end
-      model_err_latched <= model_err_latched | otbn_model_err;
+      model_err_latched <= model_err_latched | otbn_model_err | loop_warp_model_err;
+    end
+  end
+
+  // Defined in otbn_top_sim.cc
+  import "DPI-C" context function int OtbnTopApplyLoopWarp();
+
+  always @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      loop_warp_model_err <= 1'b0;
+    end else begin
+      if (OtbnTopApplyLoopWarp() != 0) begin
+        $display("ERROR: At time %0t, OtbnTopApplyLoopWarp() failed.", $time);
+        loop_warp_model_err <= 1'b1;
+      end
     end
   end
 
