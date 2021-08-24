@@ -19,6 +19,65 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Usage constraints.
+ *
+ * This struct is used to constrain a boot stage image to a set of devices based
+ * on their device IDs, creator and/or owner manufacturing states, and life
+ * cycle states. Bits of `selector_bits` determine which fields (or individual
+ * words of a field as in the case of `device_id`) must be read from the
+ * hardware during verification. Unselected fields must be set to
+ * `MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL` to be able to generate a
+ * consistent value during verification.
+ */
+typedef struct manifest_usage_constraints {
+  /**
+   * Usage constraint selector bits.
+   *
+   * The bits of this field are mapped to the remaining fields as follows:
+   * - Bits 0-7: `device_id[0-7]`
+   * - Bit 8   : `manuf_state_creator`
+   * - Bit 9   : `manuf_state_owner`
+   * - Bit 10  : `life_cycle_state`
+   */
+  uint32_t selector_bits;
+  /**
+   * Device identifier value which is compared against the `DEVICE_ID` value
+   * stored in the `HW_CFG` partition in OTP.
+   *
+   * Mapped to bits 0-7 of `selector_bits`.
+   */
+  uint32_t device_id[8];
+  /**
+   * Device Silicon Creator manufacting status compared against the
+   * `CREATOR_SW_MANUF_STATUS` value stored in the `CREATOR_SW_CFG` partition in
+   * OTP.
+   *
+   * Mapped to bit 8 of `selector_bits`.
+   */
+  uint32_t manuf_state_creator;
+  /**
+   * Device Silicon Owner manufacturing status compared against the
+   * `OWNER_SW_MANUF_STATUS` value stored in the `OWNER_SW_CFG` partition in
+   * OTP.
+   *
+   * Mapped to bit 9 of `selector_bits`.
+   */
+  uint32_t manuf_state_owner;
+  /**
+   * Device life cycle status compared against the status reported by the life
+   * cycle controller.
+   *
+   * Mapped to bit 10 of `selector_bits`.
+   */
+  uint32_t life_cycle_state;
+} manifest_usage_constraints_t;
+
+/**
+ * Value to use for unselected usage constraint words.
+ */
+#define MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL 0xA5A5A5A5
+
+/**
  * Manifest for boot stage images stored in flash.
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
@@ -46,6 +105,10 @@ typedef struct manifest {
    * `manifest_signed_region_get`.
    */
   sigverify_rsa_buffer_t signature;
+  /**
+   * Usage constraints.
+   */
+  manifest_usage_constraints_t usage_constraints;
   /**
    * Modulus of the signer's 3072-bit RSA public key.
    */
@@ -114,19 +177,19 @@ typedef struct manifest {
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 0);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 384);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 768);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 772);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 776);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 780);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 784);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 788);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 792);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 800);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 832);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 836);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 840);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 844);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 816);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 824);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 828);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 848);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 880);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 884);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 888);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 892);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
