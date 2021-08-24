@@ -11,7 +11,7 @@ sw_silicon_creator_lib_driver_lifecycle = declare_dependency(
       'lifecycle.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
       sw_lib_bitfield,
     ],
   ),
