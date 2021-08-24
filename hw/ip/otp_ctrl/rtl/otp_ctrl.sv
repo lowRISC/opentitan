@@ -396,11 +396,7 @@ module otp_ctrl
       fatal_macro_error_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
 
       // Filter for integrity and consistency check failures.
-      fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError} |
-                             chk_timeout       |
-                             lfsr_fsm_err      |
-                             scrmbl_fsm_err    |
-                             key_deriv_fsm_err;
+      fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError};
 
       // If a fatal alert has been observed in any of the partitions/FSMs,
       // we locally trigger escalation within OTP, which moves all FSMs
@@ -412,6 +408,12 @@ module otp_ctrl
         lc_escalate_en_any = 1'b1;
       end
     end
+
+    // Errors from other non-partition FSMs.
+    fatal_check_error_d |= chk_timeout       |
+                           lfsr_fsm_err      |
+                           scrmbl_fsm_err    |
+                           key_deriv_fsm_err;
   end
 
   // Assign these to the status register.
@@ -458,7 +460,7 @@ module otp_ctrl
 
   prim_intr_hw #(
     .Width(1)
-  ) u_intr_esc0 (
+  ) u_intr_operation_done (
     .clk_i,
     .rst_ni,
     .event_intr_i           ( otp_operation_done                      ),
@@ -473,7 +475,7 @@ module otp_ctrl
 
   prim_intr_hw #(
     .Width(1)
-  ) u_intr_esc1 (
+  ) u_intr_error (
     .clk_i,
     .rst_ni,
     .event_intr_i           ( otp_error                      ),

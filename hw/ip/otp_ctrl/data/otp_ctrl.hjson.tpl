@@ -340,6 +340,7 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
+        resval:   0,
         tags: [ // OTP internal HW can modify status register
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
@@ -426,6 +427,7 @@
           hwaccess:  "hwo",
           hwext:     "true",
           cname:     "AGENT",
+          resval:    0,
           tags: [ // OTP internal HW can modify the error code registers
                   "excl:CsrAllTests:CsrExclCheck"],
           fields: [
@@ -534,6 +536,7 @@
         hwaccess: "hro",
         hwqe:     "true",
         hwext:    "true",
+        resval:   0,
         regwen:   "DIRECT_ACCESS_REGWEN",
         tags: [ // Write to DIRECT_ACCESS_CMD randomly might cause OTP_ERRORs and illegal sequences
                 "excl:CsrNonInitTests:CsrExclWrite"],
@@ -568,6 +571,7 @@
         swaccess: "rw",
         hwaccess: "hro",
         hwqe:     "false",
+        resval:   0,
         regwen:   "DIRECT_ACCESS_REGWEN",
         tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
                 // so not able to predict this register value automatically
@@ -597,6 +601,7 @@
           hwqe:     "false",
           regwen:   "DIRECT_ACCESS_REGWEN",
           cname:    "WORD",
+          resval:   0,
           tags: [ // The value of this register is written from "DIRECT_ACCESS_RDATA",
                   // so could not predict this register value automatically
                   "excl:CsrAllTests:CsrExclCheck"],
@@ -617,6 +622,7 @@
           hwaccess: "hwo",
           hwext:    "true",
           cname:    "WORD",
+          resval:   0,
           fields: [
             { bits: "31:0"
             }
@@ -649,6 +655,7 @@
         hwaccess: "hro",
         hwqe:     "true",
         hwext:    "true",
+        resval:   0,
         regwen:   "CHECK_TRIGGER_REGWEN",
         fields: [
           { bits: "0",
@@ -802,6 +809,7 @@
           hwaccess:  "hwo",
           hwext:     "true",
           cname:     "WORD",
+          resval:    0,
           tags: [ // OTP internal HW will update status so can not auto-predict its value.
                   "excl:CsrAllTests:CsrExclCheck"],
           fields: [
@@ -823,6 +831,7 @@
           hwaccess:  "hwo",
           hwext:     "true",
           cname:     "WORD",
+          resval:    0,
           tags: [ // OTP internal HW will update status so can not auto-predict its value.
                   "excl:CsrAllTests:CsrExclCheck"],
           fields: [
