@@ -80,7 +80,7 @@
               `sw_rst_regen` cause the respective resets to become active.
             - Check that the zero bits in `sw_rst_ctrl_n` disabled by
               `sw_rst_regen` have no effect on resets.
-            - Check the `cpu_dump` CSR is not modified.
+            - Check the `reset_info`, `cpu_info`, and `alert_info` CSRs are not modified.
             '''
       milestone: V2
       tests: []

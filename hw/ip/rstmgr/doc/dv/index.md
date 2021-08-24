@@ -86,7 +86,15 @@ The `rstmgr_smoke_vseq` sequence tests the rstmgr through software initiated low
 
 The `rstmgr_reset_stretcher_vseq` sequence tests the `resets_o.rst_por_aon_n[0]` output is asserted after 32 stable cycles of `ast_i.aon_pok`.
 
+The `rstmgr_sw_rst_regen_clear_once_vseq` sequence tests that the `sw_rst_regen` CSR is such that a bit cannot be flipped back to 1.
+
 The `rstmgr_sw_rst_vseq` sequence tests the functionality provided by the `sw_rst_regen` and `sw_rst_ctrl_n`.
+
+The `rstmgr_reset_info_vseq` tests the `reset_info` CSR contents correspond to the different resets.
+
+The `rstmgr_cpu_info_vseq`  tests the `cpu_info` CSR contents capture to the `cpu_dump_i` present at the time of a reset.
+
+The `rstmgr_alert_info_vseq`  tests the `alert_info` CSR contents capture to the `alert_dump_i` present at the time of a reset.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
