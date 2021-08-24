@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
@@ -78,9 +78,8 @@ enum {
 };
 
 lifecycle_state_t lifecycle_state_get(void) {
-  // TODO(lowRISC/opentitan#7026): Convert to use sec_mmio.
   uint32_t value = bitfield_field32_read(
-      abs_mmio_read32(kBase + LC_CTRL_LC_STATE_REG_OFFSET),
+      sec_mmio_read32(kBase + LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
   return (lifecycle_state_t)value;
 }
