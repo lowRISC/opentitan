@@ -20,7 +20,6 @@ filesets:
       - otbn_trace_checker.cc: { file_type: cppSource }
       - otbn_trace_entry.h: { file_type: cppSource, is_include_file: true }
       - otbn_trace_entry.cc: { file_type: cppSource }
-      - sv_utils.h: { file_type: cppSource, is_include_file: true }
       - otbn_core_model.sv
       - otbn_rf_snooper_if.sv
       - otbn_stack_snooper_if.sv
