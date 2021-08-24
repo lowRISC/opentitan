@@ -83,3 +83,14 @@ lifecycle_state_t lifecycle_state_get(void) {
       LC_CTRL_LC_STATE_STATE_FIELD);
   return (lifecycle_state_t)value;
 }
+
+void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
+  static_assert(
+      kLifecycleDeviceIdNumWords == LC_CTRL_PARAM_NUM_DEVICE_ID_WORDS,
+      "length of the device_id array does not match the length in hardware");
+
+  for (size_t i = 0; i < kLifecycleDeviceIdNumWords; ++i) {
+    device_id->device_id[i] = sec_mmio_read32(
+        kBase + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
+  }
+}

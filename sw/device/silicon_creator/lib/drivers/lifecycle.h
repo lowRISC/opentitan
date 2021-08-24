@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_LIFECYCLE_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_LIFECYCLE_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -117,15 +119,39 @@ typedef enum LcState {
   kLcStateNumStates,
 } lifecycle_state_t;
 
+enum {
+  /**
+   * Size of the device identifier in words.
+   */
+  kLifecycleDeviceIdNumWords = 8,
+};
+
+/**
+ * 256-bit device identifier that is stored in the `HW_CFG` partition in OTP.
+ */
+typedef struct lifecycle_device_id {
+  uint32_t device_id[kLifecycleDeviceIdNumWords];
+} lifecycle_device_id_t;
+
 /*
- * An array of human-readable lifecycle state names.
+ * An array of human-readable life cycle state names.
  */
 extern const char *const lifecycle_state_name[];
 
 /**
- * Get the lifecycle state.
+ * Get the life cycle state.
+ *
+ * @return Life cycle state.
  */
 lifecycle_state_t lifecycle_state_get(void);
+
+/**
+ * Get the device identifier.
+ *
+ * @param[out] device_id 256-bit device identifier that is stored in the
+ * `HW_CFG` partition in OTP.
+ */
+void lifecycle_device_id_get(lifecycle_device_id_t *device_id);
 
 #ifdef __cplusplus
 }
