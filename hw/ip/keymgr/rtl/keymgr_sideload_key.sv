@@ -39,8 +39,10 @@ module keymgr_sideload_key import keymgr_pkg::*; #(
     end
   end
 
-  always_ff @(posedge clk_i) begin
-    if (clr_i) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      key_q <= '0;
+    end else if (clr_i) begin
       for (int i = 0; i < Shares; i++) begin
         key_q[i] <= {EntropyCopies{entropy_i[i]}};
       end
