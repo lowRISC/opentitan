@@ -30,6 +30,9 @@ struct ISSWrapper {
   void load_d(const std::string &path);
   void load_i(const std::string &path);
 
+  // Add a loop warp instruction to the simulation
+  void add_loop_warp(uint32_t addr, uint32_t from_cnt, uint32_t to_cnt);
+
   // Dump the contents of DMEM to a file
   void dump_d(const std::string &path) const;
 

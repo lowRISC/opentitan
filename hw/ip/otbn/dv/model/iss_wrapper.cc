@@ -323,6 +323,14 @@ void ISSWrapper::load_i(const std::string &path) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::add_loop_warp(uint32_t addr, uint32_t from_cnt,
+                               uint32_t to_cnt) {
+  std::ostringstream oss;
+  oss << "add_loop_warp 0x" << std::hex << addr << std::dec << " " << from_cnt
+      << " " << to_cnt << "\n";
+  run_command(oss.str(), nullptr);
+}
+
 void ISSWrapper::dump_d(const std::string &path) const {
   std::ostringstream oss;
   oss << "dump_d " << path << "\n";

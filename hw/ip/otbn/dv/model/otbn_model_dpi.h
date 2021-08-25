@@ -64,6 +64,9 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned start_addr,
 
 // Flush any information in the model
 void otbn_model_reset(OtbnModel *model);
+
+// Take loop warps from an OtbnMemUtil
+void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_

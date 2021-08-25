@@ -20,6 +20,11 @@ class OtbnModel {
             unsigned imem_size_words, unsigned dmem_size_words);
   ~OtbnModel();
 
+  // Replace any current loop warps with those from memutil. Returns 0
+  // on success or -1 on failure. In the latter case, a message will
+  // already have been written to stderr.
+  int take_loop_warps(const OtbnMemUtil &memutil);
+
   // True if this model is running in a simulation that has an RTL
   // implementation too (which needs checking).
   bool has_rtl() const { return !design_scope_.empty(); }
