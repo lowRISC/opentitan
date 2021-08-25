@@ -2,17 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_rv_timer.h"
+
 #include <cstring>
 #include <limits>
 #include <ostream>
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_rv_timer.h"
-#include "rv_timer_regs.h"  // Generated.
-
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+
+#include "rv_timer_regs.h"  // Generated.
 
 // We define global namespace == and << to make `dif_i2c_timing_params_t` work
 // nicely with EXPECT_EQ.
@@ -46,7 +47,8 @@ TEST(ApproximateParamsTest, Baseline) {
   // The timer frequency devices the clock speed, so their quotient minus 1 is
   // the prescale.
   dif_rv_timer_tick_params_t params, expected = {
-                                         .prescale = 49, .tick_step = 1,
+                                         .prescale = 49,
+                                         .tick_step = 1,
                                      };
   EXPECT_EQ(
       dif_rv_timer_approximate_tick_params(kClockSpeed, kSlowTimer, &params),
@@ -57,7 +59,8 @@ TEST(ApproximateParamsTest, Baseline) {
 TEST(ApproximateParamsTest, WithStep) {
   // 50 MHz / 5 is 10 MHz; multiplied by 12, we get 120 MHz.
   dif_rv_timer_tick_params_t params, expected = {
-                                         .prescale = 4, .tick_step = 12,
+                                         .prescale = 4,
+                                         .tick_step = 12,
                                      };
   EXPECT_EQ(
       dif_rv_timer_approximate_tick_params(kClockSpeed, kFastTimer, &params),
@@ -94,7 +97,8 @@ class TimerTest : public testing::Test, public MmioTest {
  protected:
   dif_rv_timer_t MakeTimer(dif_rv_timer_config_t config) {
     return {
-        .base_addr = dev().region(), .config = config,
+        .base_addr = dev().region(),
+        .config = config,
     };
   }
 };
@@ -133,7 +137,8 @@ TEST_F(InitTest, OneEach) {
   dif_rv_timer timer;
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 1, .comparator_count = 1,
+                                  .hart_count = 1,
+                                  .comparator_count = 1,
                               },
                               &timer),
             kDifRvTimerOk);
@@ -164,7 +169,8 @@ TEST_F(InitTest, FourCmps) {
   dif_rv_timer timer;
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 1, .comparator_count = 4,
+                                  .hart_count = 1,
+                                  .comparator_count = 4,
                               },
                               &timer),
             kDifRvTimerOk);
@@ -198,7 +204,8 @@ TEST_F(InitTest, FourEach) {
   dif_rv_timer timer;
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 4, .comparator_count = 4,
+                                  .hart_count = 4,
+                                  .comparator_count = 4,
                               },
                               &timer),
             kDifRvTimerOk);
@@ -207,7 +214,8 @@ TEST_F(InitTest, FourEach) {
 TEST_F(InitTest, NullArgs) {
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 1, .comparator_count = 1,
+                                  .hart_count = 1,
+                                  .comparator_count = 1,
                               },
                               nullptr),
             kDifRvTimerBadArg);
@@ -217,13 +225,15 @@ TEST_F(InitTest, NoHartNoTimers) {
   dif_rv_timer_t timer;
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 0, .comparator_count = 1,
+                                  .hart_count = 0,
+                                  .comparator_count = 1,
                               },
                               &timer),
             kDifRvTimerBadArg);
   EXPECT_EQ(dif_rv_timer_init(dev().region(),
                               {
-                                  .hart_count = 1, .comparator_count = 0,
+                                  .hart_count = 1,
+                                  .comparator_count = 0,
                               },
                               &timer),
             kDifRvTimerBadArg);
@@ -405,6 +415,34 @@ TEST_F(CounterReadTest, BadHart) {
   uint64_t value;
   EXPECT_EQ(dif_rv_timer_counter_read(&timer, 4, &value), kDifRvTimerBadArg);
   EXPECT_EQ(dif_rv_timer_counter_read(&timer, 5, &value), kDifRvTimerBadArg);
+}
+
+class CounterWriteTest : public TimerTest {};
+
+TEST_F(CounterWriteTest, Baseline) {
+  EXPECT_READ32(RV_TIMER_CTRL_REG_OFFSET, 0x0000'0001);
+  EXPECT_WRITE32(RV_TIMER_CTRL_REG_OFFSET, 0x0000'0000);
+  EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_LOWER0_REG_OFFSET),
+                 0xDEAD'BEEF);
+  EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET),
+                 0xCAFE'FEED);
+  EXPECT_WRITE32(RV_TIMER_CTRL_REG_OFFSET, 0x0000'0001);
+
+  auto timer = MakeTimer({1, 1});
+  uint64_t count = 0xCAFE'FEED'DEAD'BEEF;
+  EXPECT_EQ(dif_rv_timer_counter_write(&timer, 0, count), kDifRvTimerOk);
+}
+
+TEST_F(CounterWriteTest, NullArgs) {
+  uint64_t count = 0xCAFE'FEED'DEAD'BEEF;
+  EXPECT_EQ(dif_rv_timer_counter_write(nullptr, 0, count), kDifRvTimerBadArg);
+}
+
+TEST_F(CounterWriteTest, BadHart) {
+  auto timer = MakeTimer({1, 1});
+  uint64_t count = 0xCAFE'FEED'DEAD'BEEF;
+  EXPECT_EQ(dif_rv_timer_counter_write(&timer, 1, count), kDifRvTimerBadArg);
+  EXPECT_EQ(dif_rv_timer_counter_write(&timer, 2, count), kDifRvTimerBadArg);
 }
 
 class ArmTest : public TimerTest {};

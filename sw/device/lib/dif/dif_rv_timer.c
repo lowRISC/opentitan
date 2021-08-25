@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
+
 #include "rv_timer_regs.h"  // Generated.
 
 /**
@@ -156,6 +157,36 @@ dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
       return kDifRvTimerOk;
     }
   }
+}
+
+dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
+                                                 uint32_t hart_id,
+                                                 uint64_t count) {
+  if (timer == NULL || hart_id >= timer->config.hart_count) {
+    return kDifRvTimerBadArg;
+  }
+
+  // Disable the counter.
+  uint32_t ctrl_reg =
+      mmio_region_read32(timer->base_addr, RV_TIMER_CTRL_REG_OFFSET);
+  uint32_t ctrl_reg_cleared = bitfield_bit32_write(ctrl_reg, hart_id, false);
+  mmio_region_write32(timer->base_addr, RV_TIMER_CTRL_REG_OFFSET,
+                      ctrl_reg_cleared);
+
+  // Write the new count.
+  uint32_t lower_count = count;
+  uint32_t upper_count = count >> 32;
+  mmio_region_write32(timer->base_addr,
+                      reg_for_hart(hart_id, RV_TIMER_TIMER_V_LOWER0_REG_OFFSET),
+                      lower_count);
+  mmio_region_write32(timer->base_addr,
+                      reg_for_hart(hart_id, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET),
+                      upper_count);
+
+  // Re-enable the counter (if it was previously enabled).
+  mmio_region_write32(timer->base_addr, RV_TIMER_CTRL_REG_OFFSET, ctrl_reg);
+
+  return kDifRvTimerOk;
 }
 
 dif_rv_timer_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer,

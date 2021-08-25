@@ -200,7 +200,7 @@ dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
     dif_rv_timer_enabled_t state);
 
 /**
- * Reads the current value on a particlar hart's timer.
+ * Reads the current value on a particular hart's timer.
  *
  * @param timer A timer device.
  * @param hart_id The hart counter to read.
@@ -210,6 +210,18 @@ dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
 dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
                                                 uint32_t hart_id,
                                                 uint64_t *out);
+
+/**
+ * Writes the given value to a particular hart's timer.
+ *
+ * @param timer A timer device.
+ * @param hart_id The hart counter to write.
+ * @param count The counter value to write.
+ * @return The result of the operation.
+ */
+dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
+                                                 uint32_t hart_id,
+                                                 uint64_t count);
 
 /**
  * Arms the timer to go off once the counter value is greater than
