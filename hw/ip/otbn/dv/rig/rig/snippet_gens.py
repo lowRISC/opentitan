@@ -32,6 +32,7 @@ from .gens.bad_insn import BadInsn
 from .gens.bad_giant_loop import BadGiantLoop
 from .gens.bad_load_store import BadLoadStore
 from .gens.bad_zero_loop import BadZeroLoop
+from .gens.misaligned_load_store import MisalignedLoadStore
 
 
 class SnippetGens:
@@ -56,7 +57,8 @@ class SnippetGens:
         BadInsn,
         BadGiantLoop,
         BadLoadStore,
-        BadZeroLoop
+        BadZeroLoop,
+        MisalignedLoadStore
     ]
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
