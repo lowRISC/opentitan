@@ -521,3 +521,19 @@
   straight-line: false
   literal-pseudo-op:
     - JALR x0, x1, 0
+
+# Implement the de-facto UNIMP RISC-V instruction alias according to
+# https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md
+# OTBN does not support the cycle CSR (0xC00), hence the illegal instruction
+# exception stems from the missing CSR instead of writing to a read-only, but
+# the end result is the same.
+- mnemonic: unimp
+  synopsis: Illegal instruction
+  rv32i: true
+  operands: []
+  doc: |
+    Triggers an illegal instruction error and aborts the program execution.
+    Commonly used in code which is meant to be unreachable.
+  literal-pseudo-op:
+    # 0xC00 is the "cycle" RISC-V CSR.
+    - CSRRW x0, 0xC00, x0
