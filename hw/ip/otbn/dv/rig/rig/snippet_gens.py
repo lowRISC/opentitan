@@ -17,10 +17,11 @@ from .gens.branch import Branch
 from .gens.call_stack_rw import CallStackRW, BadCallStackRW
 from .gens.ecall import ECall
 from .gens.jump import Jump
+from .gens.edge_load_store import EdgeLoadStore
+from .gens.known_wdr import KnownWDR
 from .gens.loop import Loop
 from .gens.loop_dup_end import LoopDupEnd
 from .gens.small_val import SmallVal
-from .gens.known_wdr import KnownWDR
 from .gens.straight_line_insn import StraightLineInsn
 
 from .gens.bad_at_end import BadAtEnd
@@ -38,6 +39,7 @@ class SnippetGens:
     _CLASSES = [
         Branch,
         CallStackRW,
+        EdgeLoadStore,
         Jump,
         Loop,
         LoopDupEnd,
