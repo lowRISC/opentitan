@@ -28,6 +28,7 @@ from .gens.bad_bnmovr import BadBNMovr
 from .gens.bad_deep_loop import BadDeepLoop
 from .gens.bad_insn import BadInsn
 from .gens.bad_giant_loop import BadGiantLoop
+from .gens.bad_load_store import BadLoadStore
 from .gens.bad_zero_loop import BadZeroLoop
 
 
@@ -50,6 +51,7 @@ class SnippetGens:
         BadDeepLoop,
         BadInsn,
         BadGiantLoop,
+        BadLoadStore,
         BadZeroLoop
     ]
 
