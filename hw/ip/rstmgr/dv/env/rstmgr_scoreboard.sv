@@ -76,6 +76,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // do_read_check = 1'b0;
       end
       "alert_info_ctrl": begin
+        // The en bit is cleared by the hardware.
+        do_read_check = 1'b0;
       end
       "alert_info_attr": begin
         // Read only.
@@ -90,6 +92,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // do_read_check = 1'b0;
       end
       "cpu_info_ctrl": begin
+        // The en bit is cleared by the hardware.
+        do_read_check = 1'b0;
       end
       "cpu_info_attr": begin
         // Read only.

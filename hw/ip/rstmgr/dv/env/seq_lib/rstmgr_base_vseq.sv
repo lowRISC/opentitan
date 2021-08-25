@@ -65,6 +65,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   lc_ctrl_pkg::lc_tx_t scanmode;
 
+  rand int ndm_reset_cycles;
+  constraint ndm_reset_cycles_c {ndm_reset_cycles inside {[4 : 16]};}
+
+  rand int non_ndm_reset_cycles;
+  constraint non_ndm_reset_cycles_c {non_ndm_reset_cycles inside {[4 : 16]};}
+
   // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
 
@@ -96,10 +102,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   function void set_cpu_dump_info(ibex_pkg::crash_dump_t cpu_dump);
+    `uvm_info(`gfn, $sformatf("Setting cpu_dump_i to %p", cpu_dump), UVM_MEDIUM)
     cfg.rstmgr_vif.cpu_dump_i = cpu_dump;
   endfunction
 
   task check_cpu_dump_info(ibex_pkg::crash_dump_t cpu_dump);
+    `uvm_info(`gfn, "Checking cpu_info", UVM_MEDIUM)
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(3));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current_pc),
                  .err_msg("checking current_pc"));
@@ -114,8 +122,61 @@ class rstmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("checking exception_addr"));
   endtask
 
+  function void set_alert_dump_info(alert_pkg::alert_crashdump_t alert_dump);
+    `uvm_info(`gfn, $sformatf(
+              "Setting alert_dump_i to 0x%x", linearized_alert_dump_t'({>>{alert_dump}})),
+              UVM_MEDIUM)
+    cfg.rstmgr_vif.alert_dump_i = alert_dump;
+  endfunction
+
+  task check_alert_dump_info(alert_pkg::alert_crashdump_t alert_dump);
+    localparam int DumpWidth = $bits(alert_dump);
+    localparam int WordWidth = 32;
+    logic [DumpWidth-1:0] linear_dump = {>>{alert_dump}};
+    int                   i;
+    `uvm_info(`gfn, "Checking alert_info", UVM_MEDIUM)
+    for (i = 0; i + WordWidth <= DumpWidth; i += WordWidth) begin
+      csr_wr(.ptr(ral.alert_info_ctrl.index), .value(i / WordWidth));
+      csr_rd_check(.ptr(ral.alert_info), .compare_value(linear_dump[i+:WordWidth]),
+                   .err_msg($sformatf("checking alert_info bits %0d:%0d", i + 31, i)));
+    end
+    if (i < DumpWidth) begin
+      logic [(DumpWidth % 32) - 1:0] word = linear_dump >> i;
+      csr_wr(.ptr(ral.alert_info_ctrl.index), .value(i / WordWidth));
+      csr_rd_check(.ptr(ral.alert_info), .compare_value(word),
+                   .err_msg($sformatf("checking alert_info bits %0d:%0d", DumpWidth - 1, i)));
+    end
+  endtask
+
+  task set_alert_and_cpu_info_for_capture(alert_pkg::alert_crashdump_t alert_dump,
+                                          ibex_pkg::crash_dump_t cpu_dump);
+    set_alert_dump_info(alert_dump);
+    `uvm_info(`gfn, "Enabling alert_info capture", UVM_MEDIUM)
+    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(1'b1));
+    set_cpu_dump_info(cpu_dump);
+    `uvm_info(`gfn, "Enabling cpu_info capture", UVM_MEDIUM)
+    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(1'b1));
+  endtask
+
+  // Checks both alert and cpu_info_ctrl.en, and their _info contents.
+  // This is tricky: both ctrl.en fields don't necessarily match the mirrored value since the
+  // hardware may update them on most resets. This can cause the subsequent writes to the .index
+  // field to overwrite the .en field. To make things simpler, after checking .en's expected
+  // value we write it to update the mirrored value.
+  task check_alert_and_cpu_info_after_reset(alert_pkg::alert_crashdump_t alert_dump,
+                                            ibex_pkg::crash_dump_t cpu_dump, logic enable);
+    csr_rd_check(.ptr(ral.alert_info_ctrl.en), .compare_value(enable),
+                 .err_msg($sformatf("Expected alert info capture enable %b", enable)));
+    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
+    check_alert_dump_info(alert_dump);
+    csr_rd_check(.ptr(ral.cpu_info_ctrl.en), .compare_value(enable),
+                 .err_msg($sformatf("Expected cpu info capture enable %b", enable)));
+    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
+    check_cpu_dump_info(cpu_dump);
+  endtask
+
   task check_software_reset_csr_and_pins(logic [NumSwResets-1:0] exp_ctrl_n);
-    csr_rd_check(.ptr(ral.sw_rst_ctrl_n), .compare_value(exp_ctrl_n),
+    csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(exp_ctrl_n),
                  .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1], exp_ctrl_n[0])
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1], exp_ctrl_n[1])
@@ -124,6 +185,30 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1], exp_ctrl_n[4])
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1], exp_ctrl_n[5])
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[6])
+  endtask
+
+  // Sends either a low power exit or hardware request reset, and drops it once it should have
+  // caused the hardware to handle it.
+  task send_reset(pwrmgr_pkg::reset_cause_e reset_cause, logic [NumHwResets-1:0] rstreqs);
+    set_reset_cause(reset_cause);
+    set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
+    set_rstreqs(rstreqs);
+    `uvm_info(`gfn, $sformatf("Sending %0s reset", reset_cause.name()), UVM_LOW)
+    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+    // Cause the reset to drop.
+    `uvm_info(`gfn, $sformatf("Clearing %0s reset", reset_cause.name()), UVM_LOW)
+    set_reset_cause(pwrmgr_pkg::ResetNone);
+    set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
+  endtask
+
+  // Sends an ndm reset, and drops it once it should have
+  // caused the hardware to handle it.
+  task send_ndm_reset();
+    set_ndmreset_req(1'b1);
+    `uvm_info(`gfn, $sformatf("Sending ndm reset"), UVM_LOW)
+    cfg.io_div4_clk_rst_vif.wait_clks(ndm_reset_cycles);
+    set_ndmreset_req(1'b0);
+    `uvm_info(`gfn, $sformatf("Clearing ndm reset"), UVM_LOW)
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -182,7 +267,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  task post_apply_reset(string kind = "HARD");
+  task post_apply_reset(string reset_kind = "HARD");
     wait_for_cpu_out_of_reset();
   endtask
 
