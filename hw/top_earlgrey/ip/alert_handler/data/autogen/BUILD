@@ -3,3 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 package(default_visibility = ["//visibility:public"])
+
+load("//rules:autogen.bzl", "autogen_hjson_header")
+
+autogen_hjson_header(
+    name = "alert_handler_regs",
+    srcs = [
+        "alert_handler.hjson",
+    ],
+)
