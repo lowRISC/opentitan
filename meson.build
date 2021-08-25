@@ -120,6 +120,9 @@ c_cpp_cross_args = [
   '-fno-asynchronous-unwind-tables',
   # Don't use COMMON sections for uninitialized globals
   '-fno-common',
+  # Place each function into its own section (used in conjunction with
+  # --gc-sections to remove unused functions from output files).
+  '-ffunction-sections',
 ]
 
 # Add extra warning flags for cross builds, if they are supported.
@@ -152,6 +155,8 @@ c_cpp_cross_link_args = [
   '-Wl,--orphan-handling=warn',
   # Turn Linker Warnings into Errors
   '-Wl,--fatal-warnings',
+  # Garbage collect unused sections.
+  '-Wl,--gc-sections',
 ]
 add_project_link_arguments(
   c_cpp_cross_link_args,
