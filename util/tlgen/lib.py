@@ -183,3 +183,45 @@ def find_pow2_size(addr, min_size, next_value):
     assert i >= 0x1000
 
     return i
+
+
+def get_toggle_excl_bits(addr_ranges, addr_width=32):
+    """ Input addr_ranges is a list of (start_addr, end_addr)
+    From given addr_ranges, will calculate what address bits can't be toggled as
+    only the address in the ranges can pass through the xbar to the device
+    """
+    excl_bits = []  # list of (start_bit, end_bit)
+
+    # Find all the bits that can be toggled to 1
+    toggle_bits = 0
+    for addr in addr_ranges:
+        # The size of the addres range should be power of 2
+        assert is_power_of_two(addr[1] - addr[0] + 1)
+
+        toggle_bits |= addr[0]
+        toggle_bits |= addr[1] - addr[0]
+
+    # Assume toggle_bits = 010011, generate below as bit 2, 3, 5 are never toggled
+    # excl_bits = [(5,5), (2,3)]
+    start_bit = -1
+    for i in range(addr_width):
+        bit = toggle_bits & 1
+        if not bit and start_bit == -1:
+            start_bit = i
+        elif bit and start_bit != -1:
+            excl_bits.append((start_bit, i - 1))
+            start_bit = -1
+
+        toggle_bits = toggle_bits >> 1
+
+    # Handle tailing zero, which are also never toggled
+    if start_bit != -1:
+        excl_bits.append((start_bit, addr_width - 1))
+
+    return excl_bits
+
+
+def is_power_of_two(x):
+    """Function to check if x is power of 2
+    """
+    return (x and (not (x & (x - 1))))
