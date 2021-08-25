@@ -18,7 +18,7 @@ interface pwrmgr_rstmgr_sva_if (
   input logic                     [pwrmgr_pkg::PowerDomains-1:0] rst_sys_src_n
 );
 
-  localparam int MIN_WAIT_CYCLES = 1;
+  localparam int MIN_WAIT_CYCLES = 0;
   localparam int MAX_WAIT_CYCLES = 24;
 
   bit disable_sva;
