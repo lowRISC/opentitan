@@ -3,3 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 package(default_visibility = ["//visibility:public"])
+
+load("//rules:autogen.bzl", "autogen_hjson_header")
+
+autogen_hjson_header(
+    name = "usbdev_regs",
+    srcs = [
+        "usbdev.hjson",
+    ],
+)
