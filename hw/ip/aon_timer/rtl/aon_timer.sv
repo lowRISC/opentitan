@@ -176,22 +176,6 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Interrupt Handling //
   ////////////////////////
 
-  // capture these signals as the origin sets are pulsed and it may
-  // happen when the bus clocks are not available.
-  logic [1:0] aon_intr_event_q;
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      aon_intr_event_q <= '0;
-    end else begin
-      if (aon_wdog_intr_set) begin
-        aon_intr_event_q[AON_WDOG] <= ~aon_intr_event_q[AON_WDOG];
-      end
-      if (aon_wkup_intr_set) begin
-        aon_intr_event_q[AON_WKUP] <= ~aon_intr_event_q[AON_WKUP];
-      end
-    end
-  end
-
   logic [1:0] aon_intr_set, intr_set;
   assign aon_intr_set[AON_WDOG] = aon_wdog_intr_set;
   assign aon_intr_set[AON_WKUP] = aon_wkup_intr_set;
