@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/epmp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
@@ -46,7 +47,7 @@ typedef struct manifest_usage_constraints {
    *
    * Mapped to bits 0-7 of `selector_bits`.
    */
-  uint32_t device_id[8];
+  lifecycle_device_id_t device_id;
   /**
    * Device Silicon Creator manufacting status compared against the
    * `CREATOR_SW_MANUF_STATUS` value stored in the `CREATOR_SW_CFG` partition in
@@ -76,6 +77,30 @@ typedef struct manifest_usage_constraints {
  * Value to use for unselected usage constraint words.
  */
 #define MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL 0xA5A5A5A5
+
+/**
+ * `selector_bits` bit indices for usage constraints fields.
+ */
+enum {
+  /**
+   * Bits mapped to the `device_id` field.
+   */
+  kManifestSelectorBitDeviceIdFirst = 0,
+  kManifestSelectorBitDeviceIdLast = 7,
+
+  /**
+   * Bit mapped to the `manuf_state_creator` field.
+   */
+  kManifestSelectorBitManufStateCreator = 8,
+  /**
+   * Bit mapped to the `manuf_state_owner` field.
+   */
+  kManifestSelectorBitManufStateOwner = 9,
+  /**
+   * Bit mapped to the `life_cycle_state` field.
+   */
+  kManifestSelectorBitLifeCycleState = 10,
+};
 
 /**
  * Manifest for boot stage images stored in flash.
@@ -177,6 +202,7 @@ typedef struct manifest {
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);

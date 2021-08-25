@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/testing/mask_rom_test.h"
-#include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
@@ -465,7 +465,6 @@ class SigverifyRsaVerify
     : public mask_rom_test::MaskRomTest,
       public testing::WithParamInterface<RsaVerifyTestCase> {
  protected:
-  mask_rom_test::MockHmac hmac_;
   mask_rom_test::MockOtp otp_;
 };
 

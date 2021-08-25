@@ -57,6 +57,8 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
     ],
     dependencies: [
       sw_silicon_creator_lib_driver_otp,
+      sw_silicon_creator_lib_driver_lifecycle,
+      sw_lib_bitfield,
     ],
   ),
 )
@@ -185,6 +187,7 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_bitfield,
     ],
     native: true,
   ),

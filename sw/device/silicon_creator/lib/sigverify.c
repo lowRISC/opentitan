@@ -4,9 +4,9 @@
 
 #include "sw/device/silicon_creator/lib/sigverify.h"
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 
@@ -132,6 +132,44 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
   RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, act_digest));
 
   return kErrorOk;
+}
+
+void sigverify_usage_constraints_get(
+    uint32_t selector_bits, manifest_usage_constraints_t *usage_constraints) {
+  usage_constraints->selector_bits = selector_bits;
+  lifecycle_device_id_get(&usage_constraints->device_id);
+  // TODO(#7948): Define OTP entries for manufacturing states. Left unselected
+  // for now.
+  usage_constraints->manuf_state_creator =
+      MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+  usage_constraints->manuf_state_owner =
+      MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+  usage_constraints->life_cycle_state = lifecycle_state_get();
+
+  static_assert(
+      kManifestSelectorBitDeviceIdFirst == 0 &&
+          kManifestSelectorBitDeviceIdLast == kLifecycleDeviceIdNumWords - 1,
+      "mapping from selector_bits to device_id changed, loop must be updated");
+  for (size_t i = 0; i < kLifecycleDeviceIdNumWords; ++i) {
+    if (!bitfield_bit32_read(selector_bits, i)) {
+      usage_constraints->device_id.device_id[i] =
+          MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+    }
+  }
+  if (!bitfield_bit32_read(selector_bits,
+                           kManifestSelectorBitManufStateCreator)) {
+    usage_constraints->manuf_state_creator =
+        MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+  }
+  if (!bitfield_bit32_read(selector_bits,
+                           kManifestSelectorBitManufStateOwner)) {
+    usage_constraints->manuf_state_owner =
+        MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+  }
+  if (!bitfield_bit32_read(selector_bits, kManifestSelectorBitLifeCycleState)) {
+    usage_constraints->life_cycle_state =
+        MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+  }
 }
 
 // `extern` declarations for `inline` functions in the header.

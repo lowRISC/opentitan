@@ -65,12 +65,19 @@ impl Default for SigverifyRsaBuffer {
     }
 }
 
+/// A type that holds the 256-bit device identifier.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct LifecycleDeviceId {
+    pub device_id: [u32; 8usize],
+}
+
 /// Manifest usage constraints.
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug)]
 pub struct ManifestUsageConstraints {
     pub selector_bits: u32,
-    pub device_id: [u32; 8usize],
+    pub device_id: LifecycleDeviceId,
     pub manuf_state_creator: u32,
     pub manuf_state_owner: u32,
     pub life_cycle_state: u32,
@@ -80,7 +87,9 @@ impl Default for ManifestUsageConstraints {
     fn default() -> Self {
         Self {
             selector_bits: 0,
-            device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL; 8usize],
+            device_id: LifecycleDeviceId {
+                device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL; 8usize],
+            },
             manuf_state_creator: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
             manuf_state_owner: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
             life_cycle_state: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
@@ -101,6 +110,7 @@ pub struct KeymgrBindingValue {
 /// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
 pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, signature), 0);
+    assert_eq!(offset_of!(Manifest, usage_constraints), 384);
     assert_eq!(offset_of!(Manifest, modulus), 432);
     assert_eq!(offset_of!(Manifest, exponent), 816);
     assert_eq!(offset_of!(Manifest, identifier), 820);
