@@ -343,7 +343,7 @@ module sram_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1)
-  ) u_tl_adapter_ram_main (
+  ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
     .tl_i        (ram_tl_i),
