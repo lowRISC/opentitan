@@ -218,33 +218,56 @@ module prim_diff_decode #(
   `ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o)
 
   if (AsyncOn) begin : gen_async_assert
+`ifdef INC_ASSERT
     // assertions for asynchronous case
-    // correctly detect sigint issue (only one transition cycle of permissible due to skew)
-    `ASSERT(SigintCheck0_A, diff_pi == diff_ni [*2] |-> ##[1:2] sigint_o)
-    // the synchronizer adds 2 cycles of latency
-    `ASSERT(SigintCheck1_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $rose(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $fell(diff_ni) |->
-        ##2 rise_o)
-    `ASSERT(SigintCheck2_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $fell(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $rose(diff_ni) |->
-        ##2 fall_o)
-    `ASSERT(SigintCheck3_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $rose(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $fell(diff_pi) |->
-        ##2 fall_o)
-    `ASSERT(SigintCheck4_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $fell(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $rose(diff_pi) |->
-        ##2 rise_o)
-    // correctly detect edges
-    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)     && (diff_pi ^ diff_ni) |->
-        ##[2:3] rise_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)     && (diff_pi ^ diff_ni) |->
-        ##[2:3] fall_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(EventCheck_A, ##1 $changed(diff_pi)  && (diff_pi ^ diff_ni) |->
-        ##[2:3] event_o, clk_i, !rst_ni || sigint_o)
-    // correctly detect level
-    `ASSERT(LevelCheck0_A, !sigint_o && (diff_pi ^ diff_ni) [*3] |=> $past(diff_pi, 2) == level_o,
-        clk_i, !rst_ni || sigint_o)
+    // in this case we need to sample the input signals onto the local clock to avoid race
+    // conditions between the RTL and assertion sampling in simulation.
+    logic hlp_diff_pq, hlp_diff_nq;
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_edge_reg
+      if (!rst_ni) begin
+        hlp_diff_pq  <= 1'b0;
+        hlp_diff_nq  <= 1'b1;
+      end else begin
+        hlp_diff_pq  <= diff_pi;
+        hlp_diff_nq  <= diff_ni;
+      end
+    end
 
+    // correctly detect sigint issue (only one transition cycle of permissible due to skew)
+    `ASSERT(SigintCheck0_A, hlp_diff_pq == hlp_diff_nq [*2] |-> ##[0:1] sigint_o)
+    // the synchronizer adds 2 cycles of latency with respect to input signals.
+    `ASSERT(SigintCheck1_A,
+        ##1 (hlp_diff_pq ^ hlp_diff_nq) && $stable(hlp_diff_pq) && $stable(hlp_diff_nq) ##1
+        $rose(hlp_diff_pq) && $stable(hlp_diff_nq) ##1 $stable(hlp_diff_pq) && $fell(hlp_diff_nq)
+        |->
+        ##1 rise_o)
+    `ASSERT(SigintCheck2_A,
+        ##1 (hlp_diff_pq ^ hlp_diff_nq) && $stable(hlp_diff_pq) && $stable(hlp_diff_nq) ##1
+        $fell(hlp_diff_pq) && $stable(hlp_diff_nq) ##1 $stable(hlp_diff_pq) && $rose(hlp_diff_nq)
+        |->
+        ##1 fall_o)
+    `ASSERT(SigintCheck3_A,
+        ##1 (hlp_diff_pq ^ hlp_diff_nq) && $stable(hlp_diff_pq) && $stable(hlp_diff_nq) ##1
+        $rose(hlp_diff_nq) && $stable(hlp_diff_pq) ##1 $stable(hlp_diff_nq) && $fell(hlp_diff_pq)
+        |->
+        ##1 fall_o)
+    `ASSERT(SigintCheck4_A,
+        ##1 (hlp_diff_pq ^ hlp_diff_nq) && $stable(hlp_diff_pq) && $stable(hlp_diff_nq) ##1
+        $fell(hlp_diff_nq) && $stable(hlp_diff_pq) ##1 $stable(hlp_diff_nq) && $rose(hlp_diff_pq)
+        |->
+        ##1 rise_o)
+    // correctly detect edges
+    `ASSERT(RiseCheck_A,  ##1 $rose(hlp_diff_pq)     && (hlp_diff_pq ^ hlp_diff_nq) |->
+        ##[1:2] rise_o,  clk_i, !rst_ni || sigint_o)
+    `ASSERT(FallCheck_A,  ##1 $fell(hlp_diff_pq)     && (hlp_diff_pq ^ hlp_diff_nq) |->
+        ##[1:2] fall_o,  clk_i, !rst_ni || sigint_o)
+    `ASSERT(EventCheck_A, ##1 $changed(hlp_diff_pq)  && (hlp_diff_pq ^ hlp_diff_nq) |->
+        ##[1:2] event_o, clk_i, !rst_ni || sigint_o)
+    // correctly detect level
+    `ASSERT(LevelCheck0_A, !sigint_o && (hlp_diff_pq ^ hlp_diff_nq) [*3] |=>
+        $past(hlp_diff_pq, 1) == level_o,
+        clk_i, !rst_ni || sigint_o)
+`endif
   end else begin : gen_sync_assert
     // assertions for synchronous case
     // correctly detect sigint issue
