@@ -92,11 +92,18 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest) {
   RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
 
-  // TODO(#5956): Manifest usage constraints.
-  manifest_signed_region_t signed_region = manifest_signed_region_get(manifest);
   hmac_sha256_init();
+  // Hash usage constraints.
+  manifest_usage_constraints_t usage_constraints_from_hw;
+  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
+                                  &usage_constraints_from_hw);
+  RETURN_IF_ERROR(hmac_sha256_update(&usage_constraints_from_hw,
+                                     sizeof(usage_constraints_from_hw)));
+  // Hash the remaining part of the image.
+  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
   RETURN_IF_ERROR(
-      hmac_sha256_update(signed_region.start, signed_region.length));
+      hmac_sha256_update(digest_region.start, digest_region.length));
+  // Verify signature
   hmac_digest_t act_digest;
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
   RETURN_IF_ERROR(

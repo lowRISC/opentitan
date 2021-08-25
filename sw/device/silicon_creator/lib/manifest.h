@@ -125,9 +125,19 @@ typedef struct manifest {
    *
    * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
    * private key and the SHA-256 hash function. The signed region of an image
-   * starts immediately after this field and ends at the end of the image. The
-   * start and the length of the signed region can be obtained using
-   * `manifest_signed_region_get`.
+   * starts immediately after this field and ends at the end of the image.
+   *
+   * On-target verification should also integrate usage constraints comparison
+   * to signature verification to harden it against potential attacks. During
+   * verification, the digest of an image should be computed by first reading
+   * the usage constraints from the hardware and then concatenating the rest of
+   * the image:
+   *
+   *   digest = SHA256(usage_constraints_from_hw || rest_of_the_image)
+   *
+   * The start and the length of the region that should be concatenated to the
+   * usage constraints read from the hardware can be obtained using
+   * `manifest_digest_region_get()`.
    */
   sigverify_rsa_buffer_t signature;
   /**
@@ -219,18 +229,18 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 892);
 OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
 
 /**
- * Signed region of an image.
+ * Region of an image that should be included in the digest computation.
  */
-typedef struct manifest_signed_region {
+typedef struct manifest_digest_region {
   /**
-   * Start of the signed region of an image.
+   * Start of the region.
    */
   const void *start;
   /**
-   * Length of the signed region of an image in bytes.
+   * Length of the region in bytes.
    */
   size_t length;
-} manifest_signed_region_t;
+} manifest_digest_region_t;
 
 /**
  * Allowed bounds for the `length` field.
@@ -279,16 +289,25 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
 }
 
 /**
- * Gets the signed region of an image.
+ * Gets the region of the image that should be included in the digest
+ * computation.
  *
- * @param manifest A manifest
- * return signed_region Signed region of an image.
+ * Digest region of an image starts immediately after the `usage_constraints`
+ * field of its manifest and ends at the end of the image.
+ *
+ * @param manifest A manifest.
+ * return digest_region Region of the image that should be included in the
+ * digest computation.
  */
-inline manifest_signed_region_t manifest_signed_region_get(
+inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
-  return (manifest_signed_region_t){
-      .start = (const char *)manifest + sizeof(manifest->signature),
-      .length = manifest->length - sizeof(manifest->signature),
+  enum {
+    kDigestRegionOffset =
+        sizeof(manifest->signature) + sizeof(manifest->usage_constraints),
+  };
+  return (manifest_digest_region_t){
+      .start = (const char *)manifest + kDigestRegionOffset,
+      .length = manifest->length - kDigestRegionOffset,
   };
 }
 
@@ -324,7 +343,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
  * Declarations for the functions above that should be defined in tests.
  */
 rom_error_t manifest_check(const manifest_t *manifest);
-manifest_signed_region_t manifest_signed_region_get(const manifest_t *manifest);
+manifest_digest_region_t manifest_digest_region_get(const manifest_t *manifest);
 epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 uintptr_t manifest_entry_point_get(const manifest_t *manifest);
 #endif
