@@ -190,6 +190,28 @@ OtbnModel::OtbnModel(const std::string &mem_scope,
 
 OtbnModel::~OtbnModel() {}
 
+int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  for (auto &pr : memutil.GetLoopWarps()) {
+    auto &key = pr.first;
+    uint32_t addr = key.first;
+    uint32_t from_cnt = key.second;
+    uint32_t to_cnt = pr.second;
+
+    try {
+      iss->add_loop_warp(addr, from_cnt, to_cnt);
+    } catch (const std::runtime_error &err) {
+      std::cerr << "Error when adding loop warp: " << err.what() << "\n";
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 int OtbnModel::start(unsigned start_addr) {
   const MemArea &imem = mem_util_.GetMemArea(true);
   assert(start_addr % 4 == 0);
@@ -600,4 +622,9 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned start_addr,
 void otbn_model_reset(OtbnModel *model) {
   assert(model);
   model->reset();
+}
+
+void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil) {
+  assert(model && memutil);
+  model->take_loop_warps(*memutil);
 }

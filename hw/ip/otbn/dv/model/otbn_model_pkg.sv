@@ -30,5 +30,7 @@ package otbn_model_pkg;
 
   import "DPI-C" function void otbn_model_reset(chandle model);
 
+  import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil);
+
 endpackage
 `endif // SYNTHESIS
