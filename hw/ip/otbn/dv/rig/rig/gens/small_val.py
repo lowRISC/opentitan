@@ -61,8 +61,15 @@ class SmallVal(SnippetGen):
         assert grd_val is not None
 
         # Pick a target value. For now, we take arbitrary values in the range
-        # [-5, 5].
-        tgt_val = random.randint(-5, 5)
+        # [-64, 64]. Ideally ten percent of the time we want to have a random
+        # value that is actually divisible by 32. That way we would have valid
+        # registers that have values to point as WDR addresses for BN.XID
+        # Other values are for helping with the misaligned address calculations
+        temp_val = random.randint(-64, 64)
+        gen_for_bn = random.randint(0, 9)
+
+        shifts = {0: 5, 1: 1, 2: 2}
+        tgt_val = temp_val << shifts.get(gen_for_bn, 0)
 
         # We'll use x0 as the register source. Since the register source has
         # value zero, we need -tgt_val as our immediate. The small range of
