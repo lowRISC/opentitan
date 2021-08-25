@@ -387,14 +387,28 @@ module otp_ctrl
     lc_escalate_en = lc_escalate_en_synced;
     // Need a single wire for gating assertions in arbitration and CDC primitives.
     lc_escalate_en_any = 1'b0;
-    // Aggregate all the errors from the partitions and the DAI/LCI
+
+    // Aggregate all the macro alerts from the partitions
+    for (int k = 0; k < NumPart; k++) begin
+      // Filter for critical error codes that should not occur in the field.
+      fatal_macro_error_d |= part_error[k] == MacroError;
+      // While uncorrectable ECC errors are always reported, they do not trigger a fatal alert
+      // event in some partitions like the VENDOR_TEST partition.
+      if (PartInfo[k].ecc_fatal) begin
+        fatal_macro_error_d |= part_error[k] == MacroEccUncorrError;
+      end
+    end
+    // Aggregate all the macro alerts from the DAI/LCI
+    for (int k = NumPart; k < NumPart+2; k++) begin
+      // Filter for critical error codes that should not occur in the field.
+      fatal_macro_error_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
+    end
+
+    // Aggregate all the remaining errors / alerts from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
       // Need to reverse the order here since the field enumeration in hw2reg.status is reversed.
       part_errors_reduced[NumPart+1-k] = |part_error[k];
-      // Filter for critical error codes that should not occur in the field.
-      fatal_macro_error_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
-
       // Filter for integrity and consistency check failures.
       fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError};
 

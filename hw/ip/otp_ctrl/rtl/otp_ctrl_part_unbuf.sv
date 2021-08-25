@@ -178,17 +178,18 @@ module otp_ctrl_part_unbuf
       InitWaitSt: begin
         if (otp_rvalid_i) begin
           digest_reg_en = 1'b1;
-          // The only error we tolerate is an ECC soft error. However,
-          // we still signal that error via the error state output.
-          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
-            state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
-          end else begin
+          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
+          // as fatal.
+          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
+              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
             state_d = IdleSt;
-            // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+            // Signal ECC errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) != NoError) begin
               error_d = otp_err_e'(otp_err_i);
             end
+          end else begin
+            state_d = ErrorSt;
+            error_d = otp_err_e'(otp_err_i);
           end
         end
       end
@@ -234,18 +235,20 @@ module otp_ctrl_part_unbuf
         init_done_o = 1'b1;
         if (otp_rvalid_i) begin
           tlul_rvalid_o = 1'b1;
-          // Check OTP return code.
-          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
+          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
+          // as fatal.
+          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
+              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+            state_d = IdleSt;
+            // Signal ECC errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) != NoError) begin
+              error_d = otp_err_e'(otp_err_i);
+            end
+          end else begin
             state_d = ErrorSt;
             error_d = otp_err_e'(otp_err_i);
             // This causes the TL-UL adapter to return a bus error.
             tlul_rerror_o = 2'b11;
-          end else begin
-            state_d = IdleSt;
-            // Latch soft ECC errors, but do not go into terminal error state.
-            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
-              error_d = otp_err_e'(otp_err_i);
-            end
           end
         end
       end
@@ -457,7 +460,8 @@ module otp_ctrl_part_unbuf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, ReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError} ||
+        otp_err_e'(otp_err_i) == MacroEccUncorrError && !Info.ecc_fatal) && !ecc_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 

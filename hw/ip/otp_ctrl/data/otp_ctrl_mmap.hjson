@@ -77,13 +77,14 @@
             name:       "VENDOR_TEST",
             variant:    "Unbuffered",
             size:       "64", // in bytes
-            secret:     "False",
-            sw_digest:  "True",
-            hw_digest:  "False",
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            bkout_type: "False", // Do not generate a breakout type for this partition.
+            ecc_fatal:  false, // Do not send out a fatal alert upon detection of uncorrectable ECC errors.
+            bkout_type: false, // Do not generate a breakout type for this partition.
             items: [
                 {
                     name: "SCRATCH",
@@ -92,7 +93,8 @@
             ],
             desc: '''Vendor test partition for OTP smoke checks
             during manufacturing. The OTP macro control logic is allowed
-            to read/write to this region and ECC checks may be ignored.
+            to read/write to this region and ECC uncorrectable errors
+            do not lead to fatal alert conditions.
             '''
         }
         {
@@ -106,6 +108,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            ecc_fatal:  true, // Uncorrectable ECC errors trigger a fatal alert.
             bkout_type: false, // Do not generate a breakout type for this partition.
             items: [
                 {
@@ -141,6 +144,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            ecc_fatal:  true,
             bkout_type: false,
             items: [
                 {
@@ -199,6 +203,7 @@
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
+            ecc_fatal:  true,
             bkout_type: true,
             items: [
                 {
@@ -254,6 +259,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret0Key",
+            ecc_fatal:  true,
             bkout_type: false,
             items: [
                 {
@@ -282,6 +288,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret1Key",
+            ecc_fatal:  true,
             bkout_type: false,
             items: [
                 {
@@ -313,6 +320,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret2Key",
+            ecc_fatal:  true,
             bkout_type: false,
             items: [
                 {
@@ -343,6 +351,7 @@
             write_lock: "None",
             read_lock:  "None",
             key_sel:    "NoKey",
+            ecc_fatal:  true,
             bkout_type: false,
             items: [
                 // The life cycle transition count is specified
