@@ -6,6 +6,7 @@ gen-weights:
   # Generators that can continue the program
   Branch: 0.1
   CallStackRW: 0.1
+  EdgeLoadStore: 0.1
   Jump: 0.1
   Loop: 0.1
   LoopDupEnd: 0.01
