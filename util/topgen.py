@@ -1173,7 +1173,7 @@ def main():
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-            "tb__alert_handler_connect.sv"
+            "tb__alert_handler_connect.sv", "xbar_tgl_excl.cfg"
         ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)

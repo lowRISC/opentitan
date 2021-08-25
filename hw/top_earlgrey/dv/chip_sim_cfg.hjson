@@ -59,7 +59,7 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg"
+      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
