@@ -562,13 +562,16 @@ module otbn_decoder
             end
 
             if (insn[7]) begin
-              d_inc_bignum      = 1;
+              d_inc_bignum      = 1'b1;
               rf_we_base        = 1'b1;
               rf_wdata_sel_base = RfWdSelIncr;
             end
 
             if (insn[8] & insn[7]) begin
-              illegal_insn = 1'b1;
+              // Avoid violating unique constraint for inc selection mux on an illegal instruction
+              a_wlen_word_inc_bignum = 1'b0;
+              d_inc_bignum           = 1'b0;
+              illegal_insn           = 1'b1;
             end
           end
           3'b101: begin // BN.SID
@@ -591,7 +594,10 @@ module otbn_decoder
             end
 
             if (insn[8] & insn[7]) begin
-              illegal_insn = 1'b1;
+              // Avoid violating unique constraint for inc selection mux on an illegal instruction
+              a_wlen_word_inc_bignum = 1'b0;
+              b_inc_bignum           = 1'b0;
+              illegal_insn           = 1'b1;
             end
           end
           3'b110: begin // BN.MOV/BN.MOVR
@@ -619,6 +625,9 @@ module otbn_decoder
               end
 
               if (insn[9] & insn[7]) begin
+                // Avoid violating unique constraint for inc selection mux on an illegal instruction
+                a_inc_bignum = 1'b0;
+                d_inc_bignum = 1'b0;
                 illegal_insn = 1'b1;
               end
             end
@@ -947,9 +956,11 @@ module otbn_decoder
   `ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |->
       !$isunknown(insn[14:12]))
 
-  // Can only do a single inc
+  // Can only do a single inc. Selection mux in controller doesn't factor in instruction valid (to
+  // ease timing), so these must always be one-hot to 0 to avoid violating unique constraint for mux
+  // case statement.
   `ASSERT(BignumRegIncOnehot,
-    insn_valid_o |-> $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
+    $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
   // RfWdSelIncr requires active selection
   `ASSERT(BignumRegIncReq,
