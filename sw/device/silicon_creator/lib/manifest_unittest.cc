@@ -22,15 +22,17 @@ class ManifestTest : public mask_rom_test::MaskRomTest {
   manifest_t manifest_{};
 };
 
-TEST_F(ManifestTest, SignedRegionGet) {
-  manifest_signed_region_t signed_region =
-      manifest_signed_region_get(&manifest_);
+TEST_F(ManifestTest, DigestRegionGet) {
+  manifest_digest_region_t digest_region =
+      manifest_digest_region_get(&manifest_);
 
-  // Signed region starts after `signature` and ends at the end of the image.
-  EXPECT_EQ(signed_region.start, reinterpret_cast<const char *>(&manifest_) +
-                                     sizeof(manifest_t::signature));
-  EXPECT_EQ(signed_region.length,
-            manifest_.length - sizeof(manifest_t::signature));
+  // Digest region starts immediately after `usage_constraints` and ends at the
+  // end of the image.
+  size_t digest_region_offset =
+      sizeof(manifest_t::signature) + sizeof(manifest_t::usage_constraints);
+  EXPECT_EQ(digest_region.start,
+            reinterpret_cast<const char *>(&manifest_) + digest_region_offset);
+  EXPECT_EQ(digest_region.length, manifest_.length - digest_region_offset);
 }
 
 TEST_F(ManifestTest, CodeRegionGet) {

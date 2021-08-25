@@ -17,7 +17,7 @@ namespace internal {
 class MockManifest : public GlobalMock<MockManifest> {
  public:
   MOCK_METHOD(rom_error_t, Check, (const manifest_t *));
-  MOCK_METHOD(manifest_signed_region_t, SignedRegion, (const manifest_t *));
+  MOCK_METHOD(manifest_digest_region_t, DigestRegion, (const manifest_t *));
   MOCK_METHOD(epmp_region_t, CodeRegion, (const manifest_t *));
   MOCK_METHOD(uintptr_t, EntryPoint, (const manifest_t *));
 };
@@ -32,9 +32,9 @@ rom_error_t manifest_check(const manifest_t *manifest) {
   return MockManifest::Instance().Check(manifest);
 }
 
-manifest_signed_region_t manifest_signed_region_get(
+manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
-  return MockManifest::Instance().SignedRegion(manifest);
+  return MockManifest::Instance().DigestRegion(manifest);
 }
 
 epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
