@@ -505,7 +505,12 @@ All memory accesses through the register interface must be word-aligned 32b word
 OTBN is connected to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/edn/doc" >}}) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
 
 `RND` provides bits taken directly from the EDN connected via `edn_rnd`.
-As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request.
+The EDN interface provides 32b of entropy per transaction and comes from a different clock domain to the OTBN core.
+A FIFO is used to synchronize the incoming package to the OTBN clock domain.
+Synchronized packages are then stacked up to a single `WLEN` value of 256b.
+In order to service a single EDN request, a total of 8 transactions are required from EDN interface.
+
+As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request in OTBN core level.
 A read from `RND` empties this cache.
 A prefetch into the cache, which can be used to hide the EDN latency, is triggered on any write to the `RND_PREFETCH` CSR.
 Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or when the cache is already full.
