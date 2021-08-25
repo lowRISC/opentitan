@@ -95,6 +95,7 @@ package otp_ctrl_part_pkg;
     logic hw_digest;  // Whether the partition has a hardware digest
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
+    logic ecc_fatal;  // Whether the an ECC uncorrectable error leads to a fatal alert
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -105,7 +106,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b0,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b0
   };
 
   ////////////////////////
@@ -122,7 +124,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b1,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b0
     },
     // CREATOR_SW_CFG
     '{
@@ -133,7 +136,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b1,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b1
     },
     // OWNER_SW_CFG
     '{
@@ -144,7 +148,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b1,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b1
     },
     // HW_CFG
     '{
@@ -155,7 +160,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b1,
       write_lock: 1'b1,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b1
     },
     // SECRET0
     '{
@@ -166,7 +172,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b1,
       hw_digest:  1'b1,
       write_lock: 1'b1,
-      read_lock:  1'b1
+      read_lock:  1'b1,
+      ecc_fatal:  1'b1
     },
     // SECRET1
     '{
@@ -177,7 +184,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b1,
       hw_digest:  1'b1,
       write_lock: 1'b1,
-      read_lock:  1'b1
+      read_lock:  1'b1,
+      ecc_fatal:  1'b1
     },
     // SECRET2
     '{
@@ -188,7 +196,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b1,
       hw_digest:  1'b1,
       write_lock: 1'b1,
-      read_lock:  1'b1
+      read_lock:  1'b1,
+      ecc_fatal:  1'b1
     },
     // LIFE_CYCLE
     '{
@@ -199,7 +208,8 @@ package otp_ctrl_part_pkg;
       secret:     1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b0,
-      read_lock:  1'b0
+      read_lock:  1'b0,
+      ecc_fatal:  1'b1
     }
   };
 

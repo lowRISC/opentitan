@@ -232,12 +232,10 @@ module otp_ctrl_part_buf
       InitWaitSt: begin
         if (otp_rvalid_i) begin
           buffer_reg_en = 1'b1;
-          // The pnly error we tolerate is an ECC soft error. However,
-          // we still signal that error via the error state output.
-          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
-            state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
-          end else begin
+          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
+          // as fatal.
+          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
+              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
             // Once we've read and descrambled the whole partition, we can go to integrity
             // verification. Note that the last block is the digest value, which does not
             // have to be descrambled.
@@ -251,10 +249,13 @@ module otp_ctrl_part_buf
               state_d = InitSt;
               cnt_en = 1'b1;
             end
-            // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+            // Signal ECC errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) != NoError) begin
               error_d = otp_err_e'(otp_err_i);
             end
+          end else begin
+            state_d = ErrorSt;
+            error_d = otp_err_e'(otp_err_i);
           end
         end
       end
@@ -326,14 +327,10 @@ module otp_ctrl_part_buf
       // and jump to a terminal error state.
       CnstyReadWaitSt: begin
         if (otp_rvalid_i) begin
-          // The only error we tolerate is an ECC soft error. However,
-          // we still signal that error via the error state output.
-          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
-            state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
-            // The check has finished and found an error.
-            cnsty_chk_ack_o = 1'b1;
-          end else begin
+          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
+          // as fatal.
+          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
+              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
             // Check whether we need to compare the digest or the full partition
             // contents here.
             if (Info.hw_digest) begin
@@ -369,10 +366,15 @@ module otp_ctrl_part_buf
                 cnsty_chk_ack_o = 1'b1;
               end
             end
-            // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+            // Signal ECC errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) != NoError) begin
               error_d = otp_err_e'(otp_err_i);
             end
+          end else begin
+            state_d = ErrorSt;
+            error_d = otp_err_e'(otp_err_i);
+            // The check has finished and found an error.
+            cnsty_chk_ack_o = 1'b1;
           end
         end
       end
@@ -738,7 +740,8 @@ module otp_ctrl_part_buf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError} ||
+        otp_err_e'(otp_err_i) == MacroEccUncorrError && !Info.ecc_fatal) && !ecc_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 

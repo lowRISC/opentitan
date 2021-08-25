@@ -123,6 +123,7 @@ def _validate_part(part, key_names):
     part["sw_digest"] = check_bool(part["sw_digest"])
     part["hw_digest"] = check_bool(part["hw_digest"])
     part["bkout_type"] = check_bool(part["bkout_type"])
+    part["ecc_fatal"] = check_bool(part["ecc_fatal"])
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
@@ -360,7 +361,7 @@ class OtpMemMap():
     def create_partitions_table(self):
         header = [
             "Partition", "Secret", "Buffered", "WR Lockable", "RD Lockable",
-            "Description"
+            "ECC Fatal Alert", "Description"
         ]
         table = [header]
         colalign = ("center", ) * len(header)
@@ -376,11 +377,14 @@ class OtpMemMap():
             rd_lockable = "no"
             if part["read_lock"].lower() in ["csr", "digest"]:
                 rd_lockable = "yes (" + part["read_lock"] + ")"
+            ecc_fatal = "no"
+            if part["ecc_fatal"]:
+                ecc_fatal = "yes"
             # remove newlines
             desc = ' '.join(part["desc"].split())
             row = [
                 part["name"], is_secret, is_buffered, wr_lockable, rd_lockable,
-                desc
+                ecc_fatal, desc
             ]
             table.append(row)
 
