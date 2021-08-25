@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
@@ -47,6 +48,25 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
                                  lifecycle_state_t lc_state);
+
+/**
+ * Gets the usage constraints struct that is used for verifying a ROM_EXT.
+ *
+ * This function reads
+ * - The device identifier from the life cycle controller,
+ * - Creator and owner manufacturing states from the OTP,
+ * - The life cycle state from life cycle controller, and
+ * masks the fields of `usage_constraints` according to the given
+ * `selector_bits`.
+ *
+ * See also: `manifest_usage_constraints_t`.
+ *
+ * @param selector_bits Selector bits of the manifest of the ROM_EXT to be
+ * verified.
+ * @param[out] usage_constraints Usage constraints.
+ */
+void sigverify_usage_constraints_get(
+    uint32_t selector_bits, manifest_usage_constraints_t *usage_constraints);
 
 #ifdef __cplusplus
 }  // extern "C"
