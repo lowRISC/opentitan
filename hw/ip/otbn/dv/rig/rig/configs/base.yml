@@ -20,6 +20,7 @@ gen-weights:
   BadBranch: 1
   BadCallStackRW: 1
   BadDeepLoop: 1
+  BadLoadStore: 1
   BadInsn: 1
   BadGiantLoop: 1
   BadZeroLoop: 1
