@@ -124,6 +124,33 @@ package keymgr_reg_pkg;
   } keymgr_reg2hw_err_code_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } cmd;
+    struct packed {
+      logic        q;
+    } kmac_fsm;
+    struct packed {
+      logic        q;
+    } kmac_op;
+    struct packed {
+      logic        q;
+    } kmac_out;
+    struct packed {
+      logic        q;
+    } regfile_intg;
+    struct packed {
+      logic        q;
+    } shadow;
+    struct packed {
+      logic        q;
+    } ctrl_fsm_intg;
+    struct packed {
+      logic        q;
+    } ctrl_fsm_cnt;
+  } keymgr_reg2hw_fault_status_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } keymgr_hw2reg_intr_state_reg_t;
@@ -219,22 +246,23 @@ package keymgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [936:936]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [935:935]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [934:933]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [932:929]
-    keymgr_reg2hw_control_reg_t control; // [928:921]
-    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [920:918]
-    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [917:902]
-    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [901:900]
-    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [899:644]
-    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [643:388]
-    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [387:132]
-    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [131:100]
-    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [99:68]
-    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [67:36]
-    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [35:4]
-    keymgr_reg2hw_err_code_reg_t err_code; // [3:0]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [944:944]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [943:943]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [942:941]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [940:937]
+    keymgr_reg2hw_control_reg_t control; // [936:929]
+    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [928:926]
+    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [925:910]
+    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [909:908]
+    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [907:652]
+    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [651:396]
+    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [395:140]
+    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [139:108]
+    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [107:76]
+    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [75:44]
+    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [43:12]
+    keymgr_reg2hw_err_code_reg_t err_code; // [11:8]
+    keymgr_reg2hw_fault_status_reg_t fault_status; // [7:0]
   } keymgr_reg2hw_t;
 
   // HW -> register type

@@ -202,7 +202,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
 
-            void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_READ)));
+            void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_DIRECT)));
             `uvm_info(`gfn, $sformatf("Predict %0s = 0x%0h", csr_name, sw_share_output[i][j]),
                       UVM_MEDIUM)
           end
@@ -983,17 +983,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     end
     fork
       begin
-        // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
-        cfg.clk_rst_vif.wait_n_clks(3);
         if (current_op_status == keymgr_pkg::OpWip) begin
+          // if operation is ongoing, then we must wait for response to be received
+          // before transitioning
+          wait(cfg.keymgr_vif.kmac_data_rsp.done);
           current_state = keymgr_pkg::StInvalid;
           `uvm_info(`gfn, "operation WIP but Keymgr_en is Off, update err_code and move to Invalid",
                     UVM_LOW)
           process_error_n_alert();
           current_op_status = keymgr_pkg::OpDoneFail;
         end else begin
+          // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
           // corner case, keymgr_en is changed while OP is almost done. OP will finish successfully
           // delay update_state in 1 cycle
+          cfg.clk_rst_vif.wait_n_clks(3);
           update_state(keymgr_pkg::StInvalid);
           `uvm_info(`gfn, "operation WIP but Keymgr_en is Off, move to Invalid", UVM_LOW)
         end

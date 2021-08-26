@@ -2089,7 +2089,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.cmd.q),
 
     // to register interface (read)
     .qs     (fault_status_cmd_qs)
@@ -2115,7 +2115,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.kmac_fsm.q),
 
     // to register interface (read)
     .qs     (fault_status_kmac_fsm_qs)
@@ -2141,7 +2141,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.kmac_op.q),
 
     // to register interface (read)
     .qs     (fault_status_kmac_op_qs)
@@ -2167,7 +2167,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.kmac_out.q),
 
     // to register interface (read)
     .qs     (fault_status_kmac_out_qs)
@@ -2193,7 +2193,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.regfile_intg.q),
 
     // to register interface (read)
     .qs     (fault_status_regfile_intg_qs)
@@ -2219,7 +2219,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.shadow.q),
 
     // to register interface (read)
     .qs     (fault_status_shadow_qs)
@@ -2245,7 +2245,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.ctrl_fsm_intg.q),
 
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_intg_qs)
@@ -2271,7 +2271,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.fault_status.ctrl_fsm_cnt.q),
 
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_cnt_qs)

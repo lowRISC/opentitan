@@ -351,4 +351,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // request entropy to churn whenever a transaction is accepted
   assign prng_en_o = kmac_data_o.valid & kmac_data_i.ready;
 
+  // as long as we are transmitting, the strobe should never be 0.
+  `ASSERT(LastStrb_A, valid |-> strb != '0)
+
+
 endmodule // keymgr_kmac_if

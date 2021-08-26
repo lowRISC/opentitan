@@ -126,11 +126,34 @@ Upon `Disabled` entry, the working state is updated with KMAC computed random va
 This allows the software to keep the last valid sideload keys while preventing the system from further advancing the valid key.
 
 When advance and generate calls are invoked from this state, the outputs and keys are indiscriminately updated with randomly computed values.
+Key manager enters disabled state based on direct invocation by software:
+* Advance from `OwnerRootKey`
+* Disable operation
 
 ### Invalid
-`Invalid` state is entered whenever key manager is disabled through the [life cycle connection](#life-cycle-connection).
+`Invalid` state is entered whenever key manager is disabled through the [life cycle connection](#life-cycle-connection) or when an operation encounters a [fault](#faults-and-operational-faults) .
 Upon `Invalid` entry, both the working state and the sideload keys are wiped with entropy directly.
-Note, this is different from `Disabled` state entry, which updates with KMAC outputs.
+Note, this is different from `Disabled` state entry, which updates internal key with KMAC outputs but leaves sideload and software keys intact.
+
+#### Invalid Entry Wiping
+Since the life cycle controller can disable the key manager at any time, the key manager attempts to gracefully handle the wiping process.
+When the disable is seen, the key manager immediately begins wiping all keys (internal key, hardware sideload key, software key) with entropy.
+However, if an operation was already ongoing, the key manager waits for the transaction to complete gracefully before transitioning to invalid state.
+
+While waiting for the transaction to complete, the key manager continuously wipes all keys with entropy.
+
+### Invalid and Disabled State
+
+Note that `Invalid` and `Disabled` states are functionally equivalent.
+The main difference between the two is "how" the state was reached.
+
+`Disabled` state is reached through intentional software commands.
+While `Invalid` state is reached through life cycle disable or operational faults.
+
+This also means that only `Invalid` is a terminal state.
+If after entering `Disabled` life cycle is disabled or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
+
+If ever multiple conditions collide (a fault is detected at the same time software issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Life Cycle Connection
 The function of the key manager is directly tied to the life cycle controller.
@@ -193,11 +216,32 @@ There are two categories of errors
 
 Two separate alerts are generated, one corresponding to each category above.
 
-In addition to the error code register, there is a separate {{< regref FAULT_STATUS >}} that captures the sources that caused `Invalid states` to assert.
-*  Command error - A non-one-hot command was issued from the key manager controller to the KMAC data interface. This is not possible by software and indicates a hardware fault.  This error can also happen if the KMCA data fsm gets into an invalid state.
-*  Kmac fsm error - The kmac fsm has transitioned into an error state.
-*  Kmac operation error - The kmac module has returned an error, this should never happen.
-*  Register file integrity error - The register file has encountered an integrity error.
+### Faults and Operational Faults
+
+The {{< regref FAULT_STATUS >}} register captures all faults that can occur within the key manager.
+Some of these faults can occur only when there is a key manager operation ongoing, other faults can happen at any time (for example register integrity faults or shadow storage faults).
+{{< regref FAULT_STATUS >}} captures all faults regardless of when they happen.
+
+The {{< regref ERR_CODE.INVALID_STATES >}} field represents the presence of **any** fault during a key manager operation.
+This means if a fault happens before or during an operation, it will be recognized as an operational fault and result in keymgr's transition to `Invalid` state.
+
+#### Example 1: Fault During Operation
+The key manager is running a generate operation and a non-onehot command was observed by the kmac interface.
+Since the non-onehot condition is a fault, it will be reflected in {{< regref FAULT_STATUS >}}.
+Since an operation was ongoing when this fault was seen, it will also be reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
+This is considered an operational fault and begin transition to the `Invalid` [state](#invalid-entry-wiping).
+
+#### Example 2: Fault During Idle
+The key manager is NOT running an operation and is idle.
+During this time, a fault was observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
+The faults will be reflected in {{< regref FAULT_STATUS >}}.
+However, since there was no ongoing key manager operation, the error is **not** reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
+This is **not** considered an operational fault and the key manager will remain in its current state.
+
+#### Example 3: Operation after Fault Detection
+Continuing from the example above, assume now the key manager begins an operation.
+Since the key manager has previous encountered a fault, any operation now is considered an operational fault and will be reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
+This is considered an operational fault and begin transition to the `Invalid` [state](#invalid-entry-wiping).
 
 
 ### Invalid Output
@@ -254,6 +298,7 @@ See the tables below for an enumeration.
 *  During `Initialized`, `CreatorRootKey`, `OwnerIntermediateKey` and `OwnerRootKey` states, a fault error causes the relevant key / outputs to be updated; however an operational error does not.
 *  During `Invalid` and `Disabled` states, the relevant key / outputs are updated regardless of the error.
 *  Only the relevant collateral is updated -> ie, advance / disable command leads to working key update, and generate command leads to software or sideload key update.
+*  During `Disabled` state, if life cycle is disabled or an operational fault is encountered, the key manager transitions to `Invalid` state, see [here](#invalid-and-disabled-state)
 
 ## DICE Support
 
