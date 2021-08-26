@@ -289,6 +289,8 @@ interface keymgr_if(input clk, input rst_n);
   endfunction
 
   function automatic void wipe_sideload_keys();
+    is_kmac_key_good <= 0;
+
     aes_key_exp.valid  <= 0;
     kmac_key_exp.valid <= 0;
     otbn_key_exp.valid <= 0;
