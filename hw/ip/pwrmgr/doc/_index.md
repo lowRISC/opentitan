@@ -77,7 +77,7 @@ The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
 This state is released by `por_rst_n`, which is supplied from the reset controller.
 The `por_rst_n` signal is released when the reset controller detects the root power domains (`vcaon_pok` from AST) of the system are ready.
-Please see the [AST interface]() for more details.
+Please see the [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) for more details.
 
 The slow FSM requests the AST to power up the main domain and high speed clocks.
 Once those steps are done, it requests the fast FSM to begin operation.
@@ -110,9 +110,28 @@ Specifically, this means if software issues only WFI, the power manager does not
 The notion of WFI is exported from the processor.
 For Ibex, this is currently in the form of `core_sleeping_o`.
 
-In response to the low power entry request, the fast FSM disables all second level clock gating and asserts appropriate resets if required.  The
-fast FSM then requests the slow FSM to take over.
-Once the request is acknowledged, the fast FSM transitions to low power and waits for the next power up request.
+In response to the low power entry request, the fast FSM disables all second level clock gating.
+Before proceeding, the fast FSM explicitly separates the handling between a normal low power entry and a [reset request](#reset-request-handlig).
+
+For low power entry, there are two cases, [fall through handling](#fall-through-handling) and [abort handling](#abort-handling).
+If none of these exception cases are matched for low power entry, the fast FSM then asserts appropriate resets as necessary and requests the slow FSM to take over.
+
+For reset requests, fall through and aborts are not checked and the system simply resets directly.
+Note in this scenario the slow FSM is not requested to take over.
+
+### Fall Through Handling
+A low power entry fall through occurs when some condition occurs that immediately de-assert the entry conditions right after the software requests it.
+
+In this version of the power manager design, it can happen if right after software asserts WFI, an interrupt is shown to the processor, thus breaking it out of its currently stopped state.
+Whether this type of fall through happens is highly dependent on how the system handles interrupts during low power entry - some systems may choose to completely any interrupt not related to wakeup, others may choose to leave them all enabled.
+The fall through handle is specifically catered to the latter category.
+
+For a normal low power entry, the fast FSM first checks that the low power entry conditions are still true.
+If the entry conditions are no longer true, the fast FSM "falls through" the entry handling and returns the system to active state, thus terminating the entry process.
+
+### Abort Handling
+If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl`.
+If any of the modules is active, the fast FSM "aborts" entry handling and returns the system to active state, thus terminating the entry process.
 
 
 ## Reset Request Handling

@@ -153,6 +153,34 @@ Resets throughout the design are asynchronous active low as per the Comportabili
 Other resets may be generated internally via the alert responder, watchdog timer, etc., and other resets for subunits may be disseminated.
 These will be detailed in this section over time.
 
+### System Reset Handling and Flash
+
+Since `top_earlgrey` contains flash, it is important to examine the memory's relationship with resets.
+
+For flash, resets that occur during a stateful operation (program or erase) must be carefully handled to ensure the flash memory is not damaged.
+There are three reset scenarios:
+
+* Reset due to external supply lowering.
+* Reset due to internal peripheral request.
+* Reset due to lower power entry and exit.
+
+#### Reset due to External Supply
+
+Device resets due to supply dropping below a specific threshold are commonly known as "brown-out".
+When this occurs, the flash memory must go through specialized sequencing to ensure the cells are not damaged.
+This process is handled exclusively between [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) and the flash.
+Please see the [relevant section]({{< relref "hw/top_earlgrey/ip/ast/doc/#main-vcc-power-detection-and-flash-protection" >}}) for more details.
+
+#### Reset due to Internal Request
+
+When the device receives an internal request to reset (for example [aon_timer]({{< relref "hw/ip/aon_timer/doc/#aon-watchdog-timer" >}})), device power is kept on and the flash is directly reset.
+It is assumed that the flash device, when powered, will be able to correctly handle such a sequence and properly protect itself.
+
+#### Reset due to Low Power Entry
+
+When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr]({{< relref "hw/ip/pwrmgr/doc/#abort-handling" >}})) is responsible for ensuring the entry request is aborted.
+
+
 ### Main processor (`core_ibex`)
 
 The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
