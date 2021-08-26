@@ -49,10 +49,10 @@ jobs:
   # Verible format is experimental so only run on default config for now,
   # will eventually become part of the per-config CI
   - bash: |
-      fusesoc --cores-root . run --no-export --target=format --tool=veribleformat lowrisc:ibex:ibex_core_tracing
+      fusesoc --cores-root . run --no-export --target=format --tool=veribleformat lowrisc:ibex:ibex_top_tracing
       if [ $? != 0 ]; then
         echo -n "##vso[task.logissue type=error]"
-        echo "Verilog format with Verible failed. Run 'fusesoc --cores-root . run --no-export --target=format --tool=veribleformat lowrisc:ibex:ibex_core_tracing' to check and fix all errors."
+        echo "Verilog format with Verible failed. Run 'fusesoc --cores-root . run --no-export --target=format --tool=veribleformat lowrisc:ibex:ibex_top_tracing' to check and fix all errors."
         echo "This flow is currently experimental and failures can be ignored."
       fi
       # Show diff of what verilog_format would have changed, and then revert.
@@ -97,7 +97,7 @@ jobs:
         - small
         - experimental-maxperf-pmp
         - experimental-maxperf-pmp-bmfull
-        - experimental-maxperf-pmp-bmfull-icache
+        - opentitan
         - experimental-branch-predictor
 
   # Run lint on simple system

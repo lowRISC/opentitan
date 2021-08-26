@@ -148,3 +148,7 @@ targets:
       veribleformat:
         verible_format_args:
           - "--inplace"
+          - "--formal_parameters_indentation=indent"
+          - "--named_parameter_indentation=indent"
+          - "--named_port_indentation=indent"
+          - "--port_declarations_indentation=indent"

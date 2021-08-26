@@ -68,7 +68,7 @@ module ibex_load_store_unit
 
   logic [31:0]  data_addr;
   logic [31:0]  data_addr_w_aligned;
-  logic [31:0]  addr_last_q;
+  logic [31:0]  addr_last_q, addr_last_d;
 
   logic         addr_update;
   logic         ctrl_update;
@@ -206,13 +206,17 @@ module ibex_load_store_unit
     end
   end
 
-  // Store last address for mtval + AGU for misaligned transactions.
-  // Do not update in case of errors, mtval needs the (first) failing address
+  // Store last address for mtval + AGU for misaligned transactions.  Do not update in case of
+  // errors, mtval needs the (first) failing address.  Where an aligned access or the first half of
+  // a misaligned access sees an error provide the calculated access address. For the second half of
+  // a misaligned access provide the word aligned address of the second half.
+  assign addr_last_d = addr_incr_req_o ? data_addr_w_aligned : data_addr;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_last_q <= '0;
     end else if (addr_update) begin
-      addr_last_q <= data_addr;
+      addr_last_q <= addr_last_d;
     end
   end
 

@@ -31,6 +31,9 @@ module ibex_core import ibex_pkg::*; #(
     parameter bit          BranchPredictor   = 1'b0,
     parameter bit          DbgTriggerEn      = 1'b0,
     parameter int unsigned DbgHwBreakNum     = 1,
+    parameter bit          ResetAll          = 1'b0,
+    parameter lfsr_seed_t  RndCnstLfsrSeed   = RndCnstLfsrSeedDefault,
+    parameter lfsr_perm_t  RndCnstLfsrPerm   = RndCnstLfsrPermDefault,
     parameter bit          SecureIbex        = 1'b0,
     parameter bit          DummyInstructions = 1'b0,
     parameter bit          RegFileECC        = 1'b0,
@@ -128,6 +131,7 @@ module ibex_core import ibex_pkg::*; #(
 `endif
 
     // CPU Control Signals
+    input  logic                         fetch_enable_i,
     output logic                         alert_minor_o,
     output logic                         alert_major_o,
     output logic                         core_busy_o
@@ -272,6 +276,7 @@ module ibex_core import ibex_pkg::*; #(
 
   // Signals between instruction core interface and pipe (if and id stages)
   logic        instr_req_int;          // Id stage asserts a req to instruction core interface
+  logic        instr_req_gated;
 
   // Writeback stage
   logic           en_wb;
@@ -394,13 +399,16 @@ module ibex_core import ibex_pkg::*; #(
       .TagSizeECC        ( TagSizeECC        ),
       .LineSizeECC       ( LineSizeECC       ),
       .PCIncrCheck       ( PCIncrCheck       ),
+      .ResetAll          ( ResetAll          ),
+      .RndCnstLfsrSeed   ( RndCnstLfsrSeed   ),
+      .RndCnstLfsrPerm   ( RndCnstLfsrPerm   ),
       .BranchPredictor   ( BranchPredictor   )
   ) if_stage_i (
       .clk_i                    ( clk_i                  ),
       .rst_ni                   ( rst_ni                 ),
 
       .boot_addr_i              ( boot_addr_i            ),
-      .req_i                    ( instr_req_int          ), // instruction request control
+      .req_i                    ( instr_req_gated        ), // instruction request control
 
       // instruction cache interface
       .instr_req_o              ( instr_req_out          ),
@@ -474,6 +482,9 @@ module ibex_core import ibex_pkg::*; #(
 
   // Qualify the instruction request with PMP error
   assign instr_req_o = instr_req_out & ~pmp_req_err[PMP_I];
+
+  // fetch_enable_i can be used to stop the core fetching new instructions
+  assign instr_req_gated = instr_req_int & fetch_enable_i;
 
   //////////////
   // ID stage //
@@ -737,6 +748,7 @@ module ibex_core import ibex_pkg::*; #(
   );
 
   ibex_wb_stage #(
+    .ResetAll       ( ResetAll       ),
     .WritebackStage ( WritebackStage )
   ) wb_stage_i (
     .clk_i                          ( clk_i                        ),
@@ -833,7 +845,6 @@ module ibex_core import ibex_pkg::*; #(
     assign rf_rdata_b              = rf_rdata_b_ecc_i;
     assign rf_ecc_err_comb         = 1'b0;
   end
-
 
   ///////////////////////
   // Crash dump output //

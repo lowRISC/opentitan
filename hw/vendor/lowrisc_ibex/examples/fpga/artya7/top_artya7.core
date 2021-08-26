@@ -18,6 +18,11 @@ filesets:
       - data/pins_artya7.xdc
     file_type: xdc
 
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl : { file_type: tclSource }
+      - util/vivado_hook_write_bitstream_pre.tcl : { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
+
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
@@ -36,6 +41,11 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+ 
+  FPGAPowerAnalysis:
+    datatype: int
+    paramtype: vlogparam
+    description: Enables custom power analysis scripts for Vivado.
 
 targets:
   synth:
@@ -43,10 +53,12 @@ targets:
     filesets:
       - files_rtl_artya7
       - files_constraints
+      - files_tcl
     toplevel: top_artya7
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - FPGAPowerAnalysis
     tools:
       vivado:
         part: "xc7a100tcsg324-1"  # Default to Arty A7-100

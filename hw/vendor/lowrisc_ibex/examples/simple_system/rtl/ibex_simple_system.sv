@@ -195,6 +195,7 @@ module ibex_simple_system (
       .instr_rvalid_i        (instr_rvalid),
       .instr_addr_o          (instr_addr),
       .instr_rdata_i         (instr_rdata),
+      .instr_rdata_intg_i    ('0),
       .instr_err_i           (instr_err),
 
       .data_req_o            (host_req[CoreD]),
@@ -204,7 +205,9 @@ module ibex_simple_system (
       .data_be_o             (host_be[CoreD]),
       .data_addr_o           (host_addr[CoreD]),
       .data_wdata_o          (host_wdata[CoreD]),
+      .data_wdata_intg_o     (),
       .data_rdata_i          (host_rdata[CoreD]),
+      .data_rdata_intg_i     ('0),
       .data_err_i            (host_err[CoreD]),
 
       .irq_software_i        (1'b0),

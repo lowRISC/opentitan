@@ -8,7 +8,10 @@
  * Provides pseudo-randomly inserted fake instructions for secure code obfuscation
  */
 
-module ibex_dummy_instr (
+module ibex_dummy_instr import ibex_pkg::*; #(
+    parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+    parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
+) (
     // Clock and reset
     input  logic        clk_i,
     input  logic        rst_ni,
@@ -70,8 +73,11 @@ module ibex_dummy_instr (
   end
 
   prim_lfsr #(
-      .LfsrDw      ( 32         ),
-      .StateOutDw  ( LFSR_OUT_W )
+      .LfsrDw      ( LfsrWidth       ),
+      .StateOutDw  ( LFSR_OUT_W      ),
+      .DefaultSeed ( RndCnstLfsrSeed ),
+      .StatePermEn ( 1'b1            ),
+      .StatePerm   ( RndCnstLfsrPerm )
   ) lfsr_i (
       .clk_i     ( clk_i                 ),
       .rst_ni    ( rst_ni                ),

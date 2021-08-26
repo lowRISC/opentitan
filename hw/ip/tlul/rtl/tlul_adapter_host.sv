@@ -32,11 +32,13 @@ module tlul_adapter_host import tlul_pkg::*; #(
   input  logic [top_pkg::TL_AW-1:0]  addr_i,
   input  logic                       we_i,
   input  logic [top_pkg::TL_DW-1:0]  wdata_i,
+  input  logic [DataIntgWidth-1:0]   wdata_intg_i,
   input  logic [top_pkg::TL_DBW-1:0] be_i,
   input  tl_type_e                   type_i,
 
   output logic                       valid_o,
   output logic [top_pkg::TL_DW-1:0]  rdata_o,
+  output logic [DataIntgWidth-1:0]   rdata_intg_o,
   output logic                       err_o,
   output logic                       intg_err_o,
 
@@ -96,19 +98,21 @@ module tlul_adapter_host import tlul_pkg::*; #(
     a_source:  tl_source,
     a_address: {addr_i[31:WordSize], {WordSize{1'b0}}},
     a_data:    wdata_i,
-    a_user:    '{default: '0, tl_type: type_i},
+    a_user:    '{default: '0, data_intg: wdata_intg_i, tl_type: type_i},
     d_ready:   1'b1
   };
 
-  tlul_cmd_intg_gen u_cmd_intg_gen (
+  // TODO #7966 disable data intgrity overwrite once dv support available
+  tlul_cmd_intg_gen #(.EnableDataIntgGen (1'b1)) u_cmd_intg_gen (
     .tl_i(tl_out),
     .tl_o(tl_o)
   );
 
-  assign gnt_o   = tl_i.a_ready;
+  assign gnt_o        = tl_i.a_ready;
 
-  assign valid_o = tl_i.d_valid;
-  assign rdata_o = tl_i.d_data;
+  assign valid_o      = tl_i.d_valid;
+  assign rdata_o      = tl_i.d_data;
+  assign rdata_intg_o = tl_i.d_user.data_intg;
 
   logic intg_err;
   tlul_rsp_intg_chk u_rsp_chk (

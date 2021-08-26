@@ -8,7 +8,7 @@ The following tools are known to work with the RTL code of Ibex.
 Please `file an issue <https://github.com/lowRISC/ibex/issues>`_ if you experience problems with any of the listed tools, or if you have successfully used a tool with Ibex which is not listed here.
 
 - Synopsys Design Compiler
-- Xilinx Vivado
+- Xilinx Vivado, version |tool_requirements.vivado| and up.
 - Verilator, version |tool_requirements.verilator| and up.
 - Synopsys VCS, version at least |tool_requirements.vcs|.
 - Cadence Incisive/Xcelium
@@ -17,6 +17,10 @@ Please `file an issue <https://github.com/lowRISC/ibex/issues>`_ if you experien
 
 To run the UVM testbench a RTL simulator which supports SystemVerilog and UVM 1.2 is required.
 The `documentation of riscv-dv <https://github.com/google/riscv-dv#prerequisites>`_ contains a list of supported simulators.
+
+To compile code that runs on Ibex, you'll need a RISC-V toolchain.
+This isn't part of the core as such, but is necessary for verification.
+See the :doc:`Verification <../03_reference/verification>` section of the Reference Guide for more details about which toolchains the project currently uses for testing.
 
 Tools with known issues
 -----------------------

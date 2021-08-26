@@ -14,38 +14,55 @@ Data-Side Memory Interface
 
 Signals that are used by the LSU:
 
-+-------------------------+-----------+-----------------------------------------------+
-| Signal                  | Direction | Description                                   |
-+=========================+===========+===============================================+
-| ``data_req_o``          | output    | Request valid, must stay high until           |
-|                         |           | ``data_gnt_i`` is high for one cycle          |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_addr_o[31:0]``   | output    | Address, word aligned                         |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_we_o``           | output    | Write Enable, high for writes, low for        |
-|                         |           | reads. Sent together with ``data_req_o``      |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_be_o[3:0]``      | output    | Byte Enable. Is set for the bytes to          |
-|                         |           | write/read, sent together with ``data_req_o`` |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_wdata_o[31:0]``  | output    | Data to be written to memory, sent together   |
-|                         |           | with ``data_req_o``                           |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_gnt_i``          | input     | The other side accepted the request.          |
-|                         |           | Outputs may change in the next cycle.         |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_rvalid_i``       | input     | ``data_err_i`` and ``data_rdata_i`` hold      |
-|                         |           | valid data when ``data_rvalid_i`` is high.    |
-|                         |           | This signal will be high for exactly one      |
-|                         |           | cycle per request.                            |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_err_i``          | input     | Error response from the bus or the memory:    |
-|                         |           | request cannot be handled. High in case of an |
-|                         |           | error.                                        |
-+-------------------------+-----------+-----------------------------------------------+
-| ``data_rdata_i[31:0]``  | input     | Data read from memory                         |
-+-------------------------+-----------+-----------------------------------------------+
++----------------------------+-----------+-----------------------------------------------+
+| Signal                     | Direction | Description                                   |
++============================+===========+===============================================+
+| ``data_req_o``             | output    | Request valid, must stay high until           |
+|                            |           | ``data_gnt_i`` is high for one cycle          |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_addr_o[31:0]``      | output    | Address, word aligned                         |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_we_o``              | output    | Write Enable, high for writes, low for        |
+|                            |           | reads. Sent together with ``data_req_o``      |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_be_o[3:0]``         | output    | Byte Enable. Is set for the bytes to          |
+|                            |           | write/read, sent together with ``data_req_o`` |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_wdata_o[31:0]``     | output    | Data to be written to memory, sent together   |
+|                            |           | with ``data_req_o``                           |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_wdata_intg_o[6:0]`` | output    | Integrity bits to be written to memory, sent  |
+|                            |           | together with ``data_req_o`` (not used unless |
+|                            |           | the SecureIbex parameter is set)              |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_gnt_i``             | input     | The other side accepted the request.          |
+|                            |           | Outputs may change in the next cycle.         |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_rvalid_i``          | input     | ``data_err_i`` and ``data_rdata_i`` hold      |
+|                            |           | valid data when ``data_rvalid_i`` is high.    |
+|                            |           | This signal will be high for exactly one      |
+|                            |           | cycle per request.                            |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_err_i``             | input     | Error response from the bus or the memory:    |
+|                            |           | request cannot be handled. High in case of an |
+|                            |           | error.                                        |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_rdata_i[31:0]``     | input     | Data read from memory                         |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_rdata_intg_i[6:0]`` | input     | Integrity bits read from memory (ignored      |
+|                            |           | unless the SecureIbex parameter is set)       |
++----------------------------+-----------+-----------------------------------------------+
 
+
+Bus Integrity Checking
+----------------------
+
+The core can optionally generate and verify check bits sent alongside the data for memory accesses.
+Checkbits are generated and checked using a 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_39_32_enc.sv`).
+When this feature is used, any mismatch in checkbits will generate a major alert.
+
+This feature is only used if the core is configured with the SecureIbex parameter set.
+For all other configurations, the integrity signals can be ignored.
 
 Misaligned Accesses
 -------------------
