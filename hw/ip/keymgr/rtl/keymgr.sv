@@ -221,8 +221,6 @@ module keymgr
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
   end
 
-  logic ctrl_state_intg_err;
-
   keymgr_ctrl #(
     .KmacEnMasking(KmacEnMasking)
   ) u_ctrl (
@@ -232,7 +230,6 @@ module keymgr
     .regfile_intg_err_i(regfile_intg_err),
     .shadowed_update_err_i(shadowed_update_err),
     .shadowed_storage_err_i(shadowed_storage_err),
-    .state_intg_err_o(ctrl_state_intg_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
@@ -245,6 +242,7 @@ module keymgr
     .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .fault_o(fault_code),
+    .fault_i(|reg2hw.fault_status),
     .error_o(err_code),
     .data_en_o(data_en),
     .data_valid_o(data_valid),
@@ -558,12 +556,9 @@ module keymgr
   logic op_errs, op_err_req_q, op_err_req_d, op_err_ack;
 
   // Error code fatal faults occur only when keymgr operation is actually invoked.
-  // The regfile, state integrity and shadow errors are more persistent / structural issues,
-  // thus they cause both the operational faults to occur and are also sent directly.
-  assign fault_errs = err_code[ErrInvalidStates] |
-                      regfile_intg_err           |
-                      ctrl_state_intg_err        |
-                      shadowed_storage_err;
+  // Fault status can happen independently of any operation
+  assign fault_errs = |reg2hw.fault_status |
+                      err_code[ErrInvalidStates];
 
   assign fault_err_req_d = fault_errs    ? 1'b1 :
                            fault_err_ack ? 1'b0 : fault_err_req_q;

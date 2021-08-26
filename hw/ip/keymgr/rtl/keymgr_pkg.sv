@@ -168,7 +168,6 @@ package keymgr_pkg;
     KeyUpdateRandom,
     KeyUpdateRoot,
     KeyUpdateKmac,
-    KeyUpdateInvalid,
     KeyUpdateWipe
   } keymgr_key_update_e;
 
