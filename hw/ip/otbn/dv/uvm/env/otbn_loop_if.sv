@@ -24,7 +24,9 @@ interface otbn_loop_if (
 
   input logic [31:0] current_loop_start,
   input logic [31:0] current_loop_end,
-  input logic [31:0] next_loop_end
+  input logic [31:0] next_loop_end,
+
+  input logic [31:0] current_loop_d_iterations
 );
 
   function automatic otbn_env_pkg::stack_fullness_e get_fullness();
@@ -97,5 +99,41 @@ interface otbn_loop_if (
          (!loop_start_req_i && loop_active_q &&
           !((current_loop_start <= insn_addr_i) && (insn_addr_i <= current_loop_end))) ##1
          (insn_addr_i == current_loop_end))
+
+  // Loop length tracking. If we want to convert between the current "iteration count" as stored by
+  // the RTL (which counts down from the initial count to 1) and the iteration count as used in the
+  // ISS or spec, we need to know the total number of iterations for this loop. Of course, the RTL
+  // doesn't store that (since it doesn't need it), so we have to reconstruct it here.
+  logic [31:0] lengths[$];
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lengths.delete();
+    end else begin
+      if (current_loop_finish && lengths.size()) begin
+        lengths.pop_front();
+      end
+      if (loop_start_req_i && loop_start_commit_i) begin
+        lengths.push_front(loop_iterations_i);
+      end
+    end
+  end
+
+  // Convert from the RTL-level view of the iteration counter (starting at the number of iterations
+  // and counting down to 1) to the ISA-level view (starting at zero and counting up). If iters is
+  // greater than or equal to the surrounding loop count, returns 0: the index of the first
+  // iteration.
+  function logic [31:0] loop_iters_to_count(logic [31:0] iters);
+    if (!lengths.size()) return 0;
+    return (iters < lengths[0]) ? lengths[0] - iters : 32'd0;
+  endfunction
+
+  // Convert from the ISA-level view (starting at zero and counting up) of the iteration counter to
+  // the RTL-level view (starting at the number of iterations and counting down to 1). If count is
+  // greater than or equal to the surrounding loop count, returns 1: the index of the last
+  // iteration.
+  function logic [31:0] loop_count_to_iters(logic [31:0] count);
+    if (!lengths.size()) return 0;
+    return (count < lengths[0]) ? lengths[0] - count : 32'd1;
+  endfunction
 
 endinterface

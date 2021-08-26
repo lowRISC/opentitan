@@ -10,6 +10,7 @@ package otbn_env_pkg;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
+  import otbn_model_pkg::*;
   import otbn_model_agent_pkg::*;
   import otbn_memutil_pkg::*;
 

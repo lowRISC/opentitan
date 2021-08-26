@@ -19,13 +19,15 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected bit running_ = 1'b0;
 
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
-  // is true) or with TL transactions.
+  // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
     if (backdoor) begin
       load_elf_backdoor(path);
     end else begin
       load_elf_over_bus(path);
     end
+    // Pass loop warp rules that we've just loaded into otbn_memutil into the model.
+    otbn_take_loop_warps(cfg.model_agent_cfg.vif.handle, cfg.mem_util);
   endtask
 
   // Load the contents of an ELF file into the DUT's memories by a DPI backdoor
@@ -107,7 +109,6 @@ class otbn_base_vseq extends cip_base_vseq #(
   // If the block gets reset, this task will exit early.
   protected task run_otbn();
     int exp_end_addr;
-    uvm_reg_data_t cmd_val;
 
     // Check that we haven't been called re-entrantly. This could happen if there's a bug in the
     // reset sequence, which relies on run_otbn() to exit properly when it sees a device reset.
@@ -116,15 +117,15 @@ class otbn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_FATAL(!running_)
     running_ = 1'b1;
 
-    // Start OTBN by writing EXECUTE to the CMD register.
-    `uvm_info(`gfn, $sformatf("\n\t ----| Starting OTBN"), UVM_MEDIUM)
-    csr_utils_pkg::csr_wr(ral.cmd, otbn_pkg::CmdExecute);
-
-    // Now wait until OTBN has finished
-    `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
-    csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(otbn_pkg::StatusIdle));
-
-    `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
+    fork : isolation_fork
+      begin
+        fork
+          _run_otbn();
+          _run_loop_warps();
+        join_any
+        disable fork;
+      end
+    join
 
     // Post-run checks
     //
@@ -142,6 +143,62 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     running_ = 1'b0;
    endtask
+
+  // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
+  // register until completion. On reset, this returns immediately.
+  protected task _run_otbn();
+    // Start OTBN by writing EXECUTE to the CMD register.
+    `uvm_info(`gfn, $sformatf("\n\t ----| Starting OTBN"), UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, otbn_pkg::CmdExecute);
+
+    // Now wait until OTBN has finished
+    `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
+    csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(otbn_pkg::StatusIdle));
+
+    `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
+
+  endtask
+
+  // Monitor the bound-in loop controller interface to take action on loop warp events. Runs
+  // forever, but is spawned by run_otbn(), which will kill it when the OTBN run completes or the
+  // block is reset.
+  protected task _run_loop_warps();
+    logic [31:0] addr, old_iters, old_count;
+    bit [31:0]   new_count, new_iters;
+
+    forever begin
+      // Run on the negative edge of the clock: we want to force a "_d" value, so should make sure
+      // we get in after the DUT's logic that runs on posedge.
+      @(negedge cfg.clk_rst_vif.clk);
+
+      // If the loop stack is empty (so we don't have a current loop), there's nothing to do here.
+      if (cfg.loop_vif.get_fullness() == StackEmpty)
+        continue;
+
+      // Get the current address and iteration counter.
+      addr = cfg.loop_vif.insn_addr_i;
+      old_iters = cfg.loop_vif.current_loop_d_iterations;
+
+      // Convert from the "RTL view" of the iteration count (counting down to 1) to the "ISA view"
+      // (counting up from zero).
+      old_count = cfg.loop_vif.loop_iters_to_count(old_iters);
+
+      // Do a DPI call to otbn_memutil to look up whether there is a loop warp that we should be
+      // taking. This returns 1'b1 and fills in new_count if there is a warp that does something.
+      if (!OtbnMemUtilGetLoopWarp(cfg.mem_util, addr, old_count, new_count))
+        continue;
+
+      // Convert this back to the "RTL view"
+      new_iters = cfg.loop_vif.loop_count_to_iters(new_count);
+
+      // Override the _d signal
+      if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                           "u_otbn_loop_controller.current_loop_d.loop_iterations"},
+                          new_iters) != 1) begin
+        `dv_fatal("Failed to override loop_iterations for loop warp.")
+      end
+    end
+  endtask
 
   virtual protected function string pick_elf_path();
     chandle helper;
