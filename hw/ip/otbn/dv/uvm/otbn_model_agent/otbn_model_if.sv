@@ -20,6 +20,7 @@ interface otbn_model_if #(
   bit                       done;         // Operation done
   bit                       err;          // Something went wrong
   bit [31:0]                stop_pc;      // PC at end of operation
+  chandle                   handle;       // Handle for DPI calls to C model
 
   // Wait until done goes high. Stops early on reset
   task automatic wait_done();

@@ -136,12 +136,16 @@ module tb;
       .loop_start_commit_i,
       .loop_iterations_i,
       .otbn_stall_i,
+
       // These addresses are start/end addresses for entries in the loop stack. As with insn_addr_i,
       // we expand them to 32 bits. Also the loop stack entries have a type that's not exposed
       // outside of the loop controller module so we need to extract the fields here.
       .current_loop_start (32'(current_loop_q.loop_start)),
       .current_loop_end   (32'(current_loop_q.loop_end)),
-      .next_loop_end      (32'(next_loop.loop_end))
+      .next_loop_end      (32'(next_loop.loop_end)),
+
+      // This count is used by the loop warping code.
+      .current_loop_d_iterations (current_loop_d.loop_iterations)
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
@@ -191,8 +195,14 @@ module tb;
     .err_o        (model_if.err)
   );
 
-  // Pull the final PC out of the DUT
+  // Pull the final PC and the OtbnModel handle out of the SV model wrapper.
   assign model_if.stop_pc = u_model.stop_pc_q;
+  // The always_ff is because the spec doesn't allow continuous assignments for chandles. The value
+  // is populated in an init block and we'll only read this when the start signal is asserted, which
+  // will be much more than 1 cycle later, so we shouldn't need to worry about a stale value.
+  always_ff @(posedge model_if.clk_i) begin
+    model_if.handle <= u_model.model_handle;
+  end
 
   otbn_insn_cnt_if insn_cnt_if (
    .clk_i            (clk),
