@@ -15,6 +15,7 @@
 `include "dv_fcov_macros.svh"
 
 module ibex_wb_stage #(
+  parameter bit ResetAll       = 1'b0,
   parameter bit WritebackStage = 1'b0
 ) (
   input  logic                     clk_i,
@@ -92,15 +93,37 @@ module ibex_wb_stage #(
       end
     end
 
-    always_ff @(posedge clk_i) begin
-      if(en_wb_i) begin
-        rf_we_wb_q      <= rf_we_id_i;
-        rf_waddr_wb_q   <= rf_waddr_id_i;
-        rf_wdata_wb_q   <= rf_wdata_id_i;
-        wb_instr_type_q <= instr_type_wb_i;
-        wb_pc_q         <= pc_id_i;
-        wb_compressed_q <= instr_is_compressed_id_i;
-        wb_count_q      <= instr_perf_count_id_i;
+    if (ResetAll) begin : g_wb_regs_ra
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          rf_we_wb_q      <= '0;
+          rf_waddr_wb_q   <= '0;
+          rf_wdata_wb_q   <= '0;
+          wb_instr_type_q <= wb_instr_type_e'(0);
+          wb_pc_q         <= '0;
+          wb_compressed_q <= '0;
+          wb_count_q      <= '0;
+        end else if (en_wb_i) begin
+          rf_we_wb_q      <= rf_we_id_i;
+          rf_waddr_wb_q   <= rf_waddr_id_i;
+          rf_wdata_wb_q   <= rf_wdata_id_i;
+          wb_instr_type_q <= instr_type_wb_i;
+          wb_pc_q         <= pc_id_i;
+          wb_compressed_q <= instr_is_compressed_id_i;
+          wb_count_q      <= instr_perf_count_id_i;
+        end
+      end
+    end else begin : g_wb_regs_nr
+      always_ff @(posedge clk_i) begin
+        if (en_wb_i) begin
+          rf_we_wb_q      <= rf_we_id_i;
+          rf_waddr_wb_q   <= rf_waddr_id_i;
+          rf_wdata_wb_q   <= rf_wdata_id_i;
+          wb_instr_type_q <= instr_type_wb_i;
+          wb_pc_q         <= pc_id_i;
+          wb_compressed_q <= instr_is_compressed_id_i;
+          wb_count_q      <= instr_perf_count_id_i;
+        end
       end
     end
 
@@ -170,7 +193,8 @@ module ibex_wb_stage #(
 
   // RF write data can come from ID results (all RF writes that aren't because of loads will come
   // from here) or the LSU (RF writes for load data)
-  assign rf_wdata_wb_o = rf_wdata_wb_mux_we[0] ? rf_wdata_wb_mux[0] : rf_wdata_wb_mux[1];
+  assign rf_wdata_wb_o = ({32{rf_wdata_wb_mux_we[0]}} & rf_wdata_wb_mux[0]) |
+                         ({32{rf_wdata_wb_mux_we[1]}} & rf_wdata_wb_mux[1]);
   assign rf_we_wb_o    = |rf_wdata_wb_mux_we;
 
   `DV_FCOV_SIGNAL_GEN_IF(logic, wb_valid, g_writeback_stage.wb_valid_q, WritebackStage)

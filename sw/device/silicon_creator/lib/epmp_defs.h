@@ -23,7 +23,7 @@
  *
  * For use with CSR operations such as read, write, set and clear.
  */
-#define EPMP_MSECCFG 0x390
+#define EPMP_MSECCFG 0x747
 
 /**
  * Machine Security Configuration bits.

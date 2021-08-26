@@ -393,9 +393,6 @@ typedef enum logic[11:0] {
   CSR_MTVAL     = 12'h343,
   CSR_MIP       = 12'h344,
 
-  CSR_MSECCFG   = 12'h390,
-  CSR_MSECCFGH  = 12'h391,
-
   // Physical memory protection
   CSR_PMPCFG0   = 12'h3A0,
   CSR_PMPCFG1   = 12'h3A1,
@@ -417,6 +414,10 @@ typedef enum logic[11:0] {
   CSR_PMPADDR13 = 12'h3BD,
   CSR_PMPADDR14 = 12'h3BE,
   CSR_PMPADDR15 = 12'h3BF,
+
+  // ePMP control
+  CSR_MSECCFG   = 12'h747,
+  CSR_MSECCFGH  = 12'h757,
 
   // Debug trigger
   CSR_TSELECT   = 12'h7A0,
@@ -557,5 +558,15 @@ parameter int unsigned CSR_MFIX_BIT_HIGH = 30;
 parameter int unsigned CSR_MSECCFG_MML_BIT  = 0;
 parameter int unsigned CSR_MSECCFG_MMWP_BIT = 1;
 parameter int unsigned CSR_MSECCFG_RLB_BIT  = 2;
+
+// These LFSR parameters have been generated with
+// $ opentitan/util/design/gen-lfsr-seed.py --width 32 --seed 2480124384 --prefix ""
+parameter int LfsrWidth = 32;
+typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+parameter lfsr_seed_t RndCnstLfsrSeedDefault = 32'hac533bf4;
+parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+  160'h1e35ecba467fd1b12e958152c04fa43878a8daed
+};
 
 endpackage

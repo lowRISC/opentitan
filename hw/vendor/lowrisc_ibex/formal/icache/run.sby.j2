@@ -19,11 +19,6 @@ smtbmc boolector
 [script]
 {{"-sv"|gen_reads}}
 
-# Our formal properties are currently just about control logic, which
-# isn't affected by the exact behaviour of the memories in the design.
-# Blackbox them.
-blackbox $abstract\prim_generic_ram_1p
-
 prep -top {{top_level}}
 
 [files]

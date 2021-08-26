@@ -45,26 +45,28 @@ The main difference is that the instruction interface does not allow for write t
 
 .. tabularcolumns:: |p{4cm}|l|p{9cm}|
 
-+-------------------------+-----------+-----------------------------------------------+
-| Signal                  | Direction | Description                                   |
-+=========================+===========+===============================================+
-| ``instr_req_o``         | output    | Request valid, must stay high until           |
-|                         |           | ``instr_gnt_i`` is high for one cycle         |
-+-------------------------+-----------+-----------------------------------------------+
-| ``instr_addr_o[31:0]``  | output    | Address, word aligned                         |
-+-------------------------+-----------+-----------------------------------------------+
-| ``instr_gnt_i``         | input     | The other side accepted the request.          |
-|                         |           | ``instr_req_o`` may be deasserted in the next |
-|                         |           | cycle.                                        |
-+-------------------------+-----------+-----------------------------------------------+
-| ``instr_rvalid_i``      | input     | ``instr_rdata_i`` holds valid data when       |
-|                         |           | ``instr_rvalid_i`` is high. This signal will  |
-|                         |           | be high for exactly one cycle per request.    |
-+-------------------------+-----------+-----------------------------------------------+
-| ``instr_rdata_i[31:0]`` | input     | Data read from memory                         |
-+-------------------------+-----------+-----------------------------------------------+
-| ``instr_err_i``         | input     | Memory access error                           |
-+-------------------------+-----------+-----------------------------------------------+
++-----------------------------+-----------+-----------------------------------------------+
+| Signal                      | Direction | Description                                   |
++=============================+===========+===============================================+
+| ``instr_req_o``             | output    | Request valid, must stay high until           |
+|                             |           | ``instr_gnt_i`` is high for one cycle         |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_addr_o[31:0]``      | output    | Address, word aligned                         |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_gnt_i``             | input     | The other side accepted the request.          |
+|                             |           | ``instr_req_o`` may be deasserted in the next |
+|                             |           | cycle.                                        |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_rvalid_i``          | input     | ``instr_rdata_i`` holds valid data when       |
+|                             |           | ``instr_rvalid_i`` is high. This signal will  |
+|                             |           | be high for exactly one cycle per request.    |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_rdata_i[31:0]``     | input     | Data read from memory                         |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_rdata_intg_i[6:0]`` | input     | Data integrity bits from memory               |
++-----------------------------+-----------+-----------------------------------------------+
+| ``instr_err_i``             | input     | Memory access error                           |
++-----------------------------+-----------+-----------------------------------------------+
 
 
 Misaligned Accesses

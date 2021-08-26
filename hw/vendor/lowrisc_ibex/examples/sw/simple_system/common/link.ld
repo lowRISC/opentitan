@@ -6,9 +6,12 @@ OUTPUT_ARCH(riscv)
 
 MEMORY
 {
-    /* 992 kB should be enough for anybody... */
-    ram         : ORIGIN = 0x00100000, LENGTH = 0xF8000 /* 992 kB */
-    stack       : ORIGIN = 0x001F8000, LENGTH = 0x8000  /* 32 kB */
+/* Change this if you'd like different sizes. Arty A7-100(35) has a maximum of 607.5KB(225KB)
+   BRAM space. Configuration below is for maximum BRAM capacity with Artya A7-35 while letting
+   CoreMark run (.vmem of 152.8KB).
+*/
+    ram         : ORIGIN = 0x00100000, LENGTH = 0x30000 /* 192 kB */
+    stack       : ORIGIN = 0x00130000, LENGTH = 0x8000  /* 32 kB */
 }
 
 /* Stack information variables */

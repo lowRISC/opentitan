@@ -50,11 +50,19 @@ The frequency of injected instructions can be tuned via the **dummy_instr_mask**
 Other values of **dummy_instr_mask** are legal, but will have a less predictable impact.
 
 The interval between instruction insertion is randomized in the core using an LFSR.
+The initial seed and output permutation for this LFSR can be set using parameters from the top-level of Ibex.
 Sofware can periodically re-seed this LFSR with true random numbers (if available) via the **secureseed** CSR.
 This will make the insertion interval of dummy instructions much harder for an attacker to predict.
 
 Note that the dummy instruction feature inserts multiply and divide instructions.
 The core must be configured with a multiplier (`RV32M != ibex_pkg::RV32MNone`) or errors will occur using this feature.
+
+Bus integrity checking
+----------------------
+
+Extra signals are available alongside the instruction and data side memory channels to support bus integrity checking.
+When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits, and a major alert signalled if there is a mismatch.
+Write data can be checked against the supplied checkbits at its destination to confirm integrity.
 
 Register file ECC
 -----------------
@@ -77,6 +85,7 @@ Shadow CSRs
 Certain critical CSRs (`mstatus`, `mtvec`, `cpuctrl`, `pmpcfg` and `pmpaddr`) have extra glitch detection enabled.
 This creates a second copy of the register which stores a complemented version of the main CSR data.
 A constant check is made that the two copies are consistent, and a major alert is signalled if not.
+Note that this feature is not currently used when the SecureIbex parameter is set due to overlap with dual core lockstep.
 
 Dual core lockstep
 ------------------

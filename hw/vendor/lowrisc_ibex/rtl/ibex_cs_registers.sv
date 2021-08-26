@@ -322,7 +322,6 @@ module ibex_cs_registers #(
       // mcounteren: machine counter enable
       CSR_MCOUNTEREN: begin
         csr_rdata_int = '0;
-        illegal_csr   = ~DbgTriggerEn;
       end
 
       CSR_MSCRATCH: csr_rdata_int = mscratch_q;

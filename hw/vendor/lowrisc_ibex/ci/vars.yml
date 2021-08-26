@@ -6,10 +6,10 @@
 # Quote values to ensure they are parsed as string (version numbers might
 # end up as float otherwise).
 variables:
-  VERILATOR_VERSION: "4.040"
-  RISCV_TOOLCHAIN_TAR_VERSION: "20200904-1"
+  VERILATOR_VERSION: "4.104"
+  RISCV_TOOLCHAIN_TAR_VERSION: "20210412-1"
   RISCV_TOOLCHAIN_TAR_VARIANT: "lowrisc-toolchain-gcc-rv32imcb"
   RISCV_COMPLIANCE_GIT_VERSION: "844c6660ef3f0d9b96957991109dfd80cc4938e2"
-  VERIBLE_VERSION: "v0.0-705-g75249d0"
+  VERIBLE_VERSION: "v0.0-1213-g9e5c085"
   # lowRISC-internal version numbers of Ibex-specific Spike builds.
   SPIKE_IBEX_VERSION: "20201023-git-255bf1cacc599b1413438c269100f3ecd0eb3352"

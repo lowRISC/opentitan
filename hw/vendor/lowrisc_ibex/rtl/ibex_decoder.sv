@@ -748,7 +748,7 @@ module ibex_decoder #(
           // First evaluate the branch condition
           alu_op_a_mux_sel_o  = OP_A_REG_A;
           alu_op_b_mux_sel_o  = OP_B_REG_B;
-        end else begin
+        end else if (!BranchTargetALU) begin
           // Then calculate jump target
           alu_op_a_mux_sel_o  = OP_A_CURRPC;
           alu_op_b_mux_sel_o  = OP_B_IMM;

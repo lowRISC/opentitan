@@ -112,6 +112,7 @@ module rv_core_ibex
   logic        instr_rvalid;
   logic [31:0] instr_addr;
   logic [31:0] instr_rdata;
+  logic [6:0]  instr_rdata_intg;
   logic        instr_err;
 
   // Data interface (internal)
@@ -122,7 +123,9 @@ module rv_core_ibex
   logic [3:0]  data_be;
   logic [31:0] data_addr;
   logic [31:0] data_wdata;
+  logic [6:0]  data_wdata_intg;
   logic [31:0] data_rdata;
+  logic [6:0]  data_rdata_intg;
   logic        data_err;
 
   // Pipeline interfaces
@@ -272,22 +275,25 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
-    .instr_req_o    ( instr_req    ),
-    .instr_gnt_i    ( instr_gnt    ),
-    .instr_rvalid_i ( instr_rvalid ),
-    .instr_addr_o   ( instr_addr   ),
-    .instr_rdata_i  ( instr_rdata  ),
-    .instr_err_i    ( instr_err    ),
+    .instr_req_o        ( instr_req        ),
+    .instr_gnt_i        ( instr_gnt        ),
+    .instr_rvalid_i     ( instr_rvalid     ),
+    .instr_addr_o       ( instr_addr       ),
+    .instr_rdata_i      ( instr_rdata      ),
+    .instr_rdata_intg_i ( instr_rdata_intg ),
+    .instr_err_i        ( instr_err        ),
 
-    .data_req_o     ( data_req     ),
-    .data_gnt_i     ( data_gnt     ),
-    .data_rvalid_i  ( data_rvalid  ),
-    .data_we_o      ( data_we      ),
-    .data_be_o      ( data_be      ),
-    .data_addr_o    ( data_addr    ),
-    .data_wdata_o   ( data_wdata   ),
-    .data_rdata_i   ( data_rdata   ),
-    .data_err_i     ( data_err     ),
+    .data_req_o         ( data_req         ),
+    .data_gnt_i         ( data_gnt         ),
+    .data_rvalid_i      ( data_rvalid      ),
+    .data_we_o          ( data_we          ),
+    .data_be_o          ( data_be          ),
+    .data_addr_o        ( data_addr        ),
+    .data_wdata_o       ( data_wdata       ),
+    .data_wdata_intg_o  ( data_wdata_intg  ),
+    .data_rdata_i       ( data_rdata       ),
+    .data_rdata_intg_i  ( data_rdata_intg  ),
+    .data_err_i         ( data_err         ),
 
     .irq_software_i,
     .irq_timer_i,
@@ -350,19 +356,21 @@ module rv_core_ibex
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
-    .req_i      (instr_req),
-    .type_i     (tlul_pkg::InstrType),
-    .gnt_o      (instr_gnt),
-    .addr_i     (instr_addr_trans),
-    .we_i       (1'b0),
-    .wdata_i    (32'b0),
-    .be_i       (4'hF),
-    .valid_o    (instr_rvalid),
-    .rdata_o    (instr_rdata),
-    .err_o      (instr_err),
-    .intg_err_o (ibus_intg_err),
-    .tl_o       (tl_i_ibex2fifo),
-    .tl_i       (tl_i_fifo2ibex)
+    .req_i        (instr_req),
+    .type_i       (tlul_pkg::InstrType),
+    .gnt_o        (instr_gnt),
+    .addr_i       (instr_addr_trans),
+    .we_i         (1'b0),
+    .wdata_i      (32'b0),
+    .wdata_intg_i ('0),
+    .be_i         (4'hF),
+    .valid_o      (instr_rvalid),
+    .rdata_o      (instr_rdata),
+    .rdata_intg_o (instr_rdata_intg),
+    .err_o        (instr_err),
+    .intg_err_o   (ibus_intg_err),
+    .tl_o         (tl_i_ibex2fifo),
+    .tl_i         (tl_i_fifo2ibex)
   );
 
   tlul_fifo_sync #(
@@ -399,19 +407,21 @@ module rv_core_ibex
   ) tl_adapter_host_d_ibex (
     .clk_i,
     .rst_ni,
-    .req_i      (data_req),
-    .type_i     (tlul_pkg::DataType),
-    .gnt_o      (data_gnt),
-    .addr_i     (data_addr_trans),
-    .we_i       (data_we),
-    .wdata_i    (data_wdata),
-    .be_i       (data_be),
-    .valid_o    (data_rvalid),
-    .rdata_o    (data_rdata),
-    .err_o      (data_err),
-    .intg_err_o (dbus_intg_err),
-    .tl_o       (tl_d_ibex2fifo),
-    .tl_i       (tl_d_fifo2ibex)
+    .req_i        (data_req),
+    .type_i       (tlul_pkg::DataType),
+    .gnt_o        (data_gnt),
+    .addr_i       (data_addr_trans),
+    .we_i         (data_we),
+    .wdata_i      (data_wdata),
+    .wdata_intg_i (data_wdata_intg),
+    .be_i         (data_be),
+    .valid_o      (data_rvalid),
+    .rdata_o      (data_rdata),
+    .rdata_intg_o (data_rdata_intg),
+    .err_o        (data_err),
+    .intg_err_o   (dbus_intg_err),
+    .tl_o         (tl_d_ibex2fifo),
+    .tl_i         (tl_d_fifo2ibex)
   );
 
   tlul_fifo_sync #(

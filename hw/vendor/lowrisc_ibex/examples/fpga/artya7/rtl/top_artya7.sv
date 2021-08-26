@@ -8,7 +8,7 @@ module top_artya7 (
     output [3:0]        LED
 );
 
-  parameter int          MEM_SIZE     = 64 * 1024; // 64 kB
+  parameter int          MEM_SIZE     = 256 * 1024; // 256 kB
   parameter logic [31:0] MEM_START    = 32'h00000000;
   parameter logic [31:0] MEM_MASK     = MEM_SIZE-1;
   parameter              SRAMInitFile = "";
@@ -32,16 +32,6 @@ module top_artya7 (
   logic [31:0] data_wdata;
   logic [31:0] data_rdata;
 
-  // SRAM arbiter
-  logic [31:0] mem_addr;
-  logic        mem_req;
-  logic        mem_write;
-  logic  [3:0] mem_be;
-  logic [31:0] mem_wdata;
-  logic        mem_rvalid;
-  logic [31:0] mem_rdata;
-
-
   ibex_top #(
      .RegFile(ibex_pkg::RegFileFPGA),
      .DmHaltAddr(32'h00000000),
@@ -63,6 +53,7 @@ module top_artya7 (
      .instr_rvalid_i        (instr_rvalid),
      .instr_addr_o          (instr_addr),
      .instr_rdata_i         (instr_rdata),
+     .instr_rdata_intg_i    ('0),
      .instr_err_i           ('b0),
 
      .data_req_o            (data_req),
@@ -72,7 +63,9 @@ module top_artya7 (
      .data_be_o             (data_be),
      .data_addr_o           (data_addr),
      .data_wdata_o          (data_wdata),
+     .data_wdata_intg_o     (),
      .data_rdata_i          (data_rdata),
+     .data_rdata_intg_i     ('0),
      .data_err_i            ('b0),
 
      .irq_software_i        (1'b0),
@@ -90,54 +83,40 @@ module top_artya7 (
      .core_sleep_o          ()
   );
 
-  // Connect Ibex to SRAM
-  always_comb begin
-    mem_req        = 1'b0;
-    mem_addr       = 32'b0;
-    mem_write      = 1'b0;
-    mem_be         = 4'b0;
-    mem_wdata      = 32'b0;
-    if (instr_req) begin
-      mem_req        = (instr_addr & ~MEM_MASK) == MEM_START;
-      mem_addr       = instr_addr;
-    end else if (data_req) begin
-      mem_req        = (data_addr & ~MEM_MASK) == MEM_START;
-      mem_write      = data_we;
-      mem_be         = data_be;
-      mem_addr       = data_addr;
-      mem_wdata      = data_wdata;
-    end
-  end
-
   // SRAM block for instruction and data storage
-  ram_1p #(
+  ram_2p #(
     .Depth(MEM_SIZE / 4),
     .MemInitFile(SRAMInitFile)
   ) u_ram (
-    .clk_i     ( clk_sys        ),
-    .rst_ni    ( rst_sys_n      ),
-    .req_i     ( mem_req        ),
-    .we_i      ( mem_write      ),
-    .be_i      ( mem_be         ),
-    .addr_i    ( mem_addr       ),
-    .wdata_i   ( mem_wdata      ),
-    .rvalid_o  ( mem_rvalid     ),
-    .rdata_o   ( mem_rdata      )
+    .clk_i (clk_sys),
+    .rst_ni(rst_sys_n),
+
+    .a_req_i   (data_req),
+    .a_we_i    (data_we),
+    .a_be_i    (data_be),
+    .a_addr_i  (data_addr),
+    .a_wdata_i (data_wdata),
+    .a_rvalid_o(data_rvalid),
+    .a_rdata_o (data_rdata),
+
+    .b_req_i   (instr_req),
+    .b_we_i    (1'b0),
+    .b_be_i    (4'b0),
+    .b_addr_i  (instr_addr),
+    .b_wdata_i (32'b0),
+    .b_rvalid_o(instr_rvalid),
+    .b_rdata_o (instr_rdata)
   );
 
+
   // SRAM to Ibex
-  assign instr_rdata    = mem_rdata;
-  assign data_rdata     = mem_rdata;
-  assign instr_rvalid   = mem_rvalid;
   always_ff @(posedge clk_sys or negedge rst_sys_n) begin
     if (!rst_sys_n) begin
-      instr_gnt    <= 'b0;
-      data_gnt     <= 'b0;
-      data_rvalid  <= 'b0;
+      instr_gnt    <= '0;
+      data_gnt     <= '0;
     end else begin
-      instr_gnt    <= instr_req && mem_req;
-      data_gnt     <= ~instr_req && data_req && mem_req;
-      data_rvalid  <= ~instr_req && data_req && mem_req;
+      instr_gnt    <= instr_req ;
+      data_gnt     <=  data_req ;
     end
   end
 
@@ -148,7 +127,7 @@ module top_artya7 (
     if (!rst_sys_n) begin
       leds <= 4'b0;
     end else begin
-      if (mem_req && data_req && data_we) begin
+      if (data_req && data_we) begin
         for (int i = 0; i < 4; i = i + 1) begin
           if (data_be[i] == 1'b1) begin
             leds <= data_wdata[i*8 +: 4];

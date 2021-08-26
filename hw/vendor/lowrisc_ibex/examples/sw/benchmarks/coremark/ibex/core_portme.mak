@@ -6,7 +6,7 @@
 
 RV_ISA = rv32im
 
-OUTFILES = $(OPATH)coremark.dis $(OPATH)coremark.map
+OUTFILES = $(OPATH)coremark.dis $(OPATH)coremark.map $(OPATH)coremark.vmem
 
 NAME                 = coremark
 PORT_CLEAN          := $(OUTFILES)
@@ -86,6 +86,9 @@ $(OPATH)$(PORT_DIR)/%$(OEXT) : %.s
 
 port_postbuild:
 	riscv32-unknown-elf-objdump -SD $(OPATH)coremark.elf > $(OPATH)coremark.dis
+	riscv32-unknown-elf-objcopy -O binary $(OPATH)coremark.elf $(OPATH)coremark.bin
+	srec_cat $(OPATH)coremark.bin -binary -offset 0x0000 -byte-swap 4 -o  $(OPATH)coremark.vmem -vmem
+
 
 # FLAG : OPATH
 # Path to the output folder. Default - current folder.
