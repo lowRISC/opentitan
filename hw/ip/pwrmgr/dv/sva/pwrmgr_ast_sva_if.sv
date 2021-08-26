@@ -21,7 +21,7 @@ interface pwrmgr_ast_sva_if (
   // the slow clock; deassertion of main_pok takes one cycle, and assertion
   // not more than 2 cycles.
   localparam int MIN_CLK_WAIT_CYCLES = 0;
-  localparam int MIN_PDN_WAIT_CYCLES = 1;
+  localparam int MIN_PDN_WAIT_CYCLES = 0;
   localparam int MAX_WAIT_CYCLES = 10;
 
   bit disable_sva;
