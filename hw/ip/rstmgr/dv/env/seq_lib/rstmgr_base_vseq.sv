@@ -178,13 +178,16 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   task check_software_reset_csr_and_pins(logic [NumSwResets-1:0] exp_ctrl_n);
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(exp_ctrl_n),
                  .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1], exp_ctrl_n[0])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1], exp_ctrl_n[1])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_n[1], exp_ctrl_n[2])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usb_n[1], exp_ctrl_n[3])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1], exp_ctrl_n[4])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1], exp_ctrl_n[5])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[6])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1],     exp_ctrl_n[0])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1],      exp_ctrl_n[1])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_core_n[1], exp_ctrl_n[2])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_n[1],      exp_ctrl_n[3])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_core_n[1], exp_ctrl_n[4])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usb_n[1],            exp_ctrl_n[5])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usbif_n[1],          exp_ctrl_n[6])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1],           exp_ctrl_n[7])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1],           exp_ctrl_n[8])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1],           exp_ctrl_n[9])
   endtask
 
   // Sends either a low power exit or hardware request reset, and drops it once it should have
