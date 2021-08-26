@@ -1095,7 +1095,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.cfg.clk_div.qe),
     .q      (reg2hw.cfg.clk_div.q),
 
     // to register interface (read)
@@ -1121,7 +1121,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.cfg.dc_resn.qe),
     .q      (reg2hw.cfg.dc_resn.q),
 
     // to register interface (read)
@@ -1147,7 +1147,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.cfg.cntr_en.qe),
     .q      (reg2hw.cfg.cntr_en.q),
 
     // to register interface (read)
@@ -1177,7 +1177,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[0].qe),
     .q      (reg2hw.pwm_en[0].q),
 
     // to register interface (read)
@@ -1203,7 +1203,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[1].qe),
     .q      (reg2hw.pwm_en[1].q),
 
     // to register interface (read)
@@ -1229,7 +1229,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[2].qe),
     .q      (reg2hw.pwm_en[2].q),
 
     // to register interface (read)
@@ -1255,7 +1255,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[3].qe),
     .q      (reg2hw.pwm_en[3].q),
 
     // to register interface (read)
@@ -1281,7 +1281,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[4].qe),
     .q      (reg2hw.pwm_en[4].q),
 
     // to register interface (read)
@@ -1307,7 +1307,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_en[5].qe),
     .q      (reg2hw.pwm_en[5].q),
 
     // to register interface (read)
@@ -1338,7 +1338,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[0].qe),
     .q      (reg2hw.invert[0].q),
 
     // to register interface (read)
@@ -1364,7 +1364,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[1].qe),
     .q      (reg2hw.invert[1].q),
 
     // to register interface (read)
@@ -1390,7 +1390,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[2].qe),
     .q      (reg2hw.invert[2].q),
 
     // to register interface (read)
@@ -1416,7 +1416,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[3].qe),
     .q      (reg2hw.invert[3].q),
 
     // to register interface (read)
@@ -1442,7 +1442,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[4].qe),
     .q      (reg2hw.invert[4].q),
 
     // to register interface (read)
@@ -1468,7 +1468,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.invert[5].qe),
     .q      (reg2hw.invert[5].q),
 
     // to register interface (read)
@@ -1499,7 +1499,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[0].phase_delay.qe),
     .q      (reg2hw.pwm_param[0].phase_delay.q),
 
     // to register interface (read)
@@ -1525,7 +1525,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[0].htbt_en.qe),
     .q      (reg2hw.pwm_param[0].htbt_en.q),
 
     // to register interface (read)
@@ -1551,7 +1551,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[0].blink_en.qe),
     .q      (reg2hw.pwm_param[0].blink_en.q),
 
     // to register interface (read)
@@ -1580,7 +1580,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[1].phase_delay.qe),
     .q      (reg2hw.pwm_param[1].phase_delay.q),
 
     // to register interface (read)
@@ -1606,7 +1606,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[1].htbt_en.qe),
     .q      (reg2hw.pwm_param[1].htbt_en.q),
 
     // to register interface (read)
@@ -1632,7 +1632,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[1].blink_en.qe),
     .q      (reg2hw.pwm_param[1].blink_en.q),
 
     // to register interface (read)
@@ -1661,7 +1661,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[2].phase_delay.qe),
     .q      (reg2hw.pwm_param[2].phase_delay.q),
 
     // to register interface (read)
@@ -1687,7 +1687,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[2].htbt_en.qe),
     .q      (reg2hw.pwm_param[2].htbt_en.q),
 
     // to register interface (read)
@@ -1713,7 +1713,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[2].blink_en.qe),
     .q      (reg2hw.pwm_param[2].blink_en.q),
 
     // to register interface (read)
@@ -1742,7 +1742,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[3].phase_delay.qe),
     .q      (reg2hw.pwm_param[3].phase_delay.q),
 
     // to register interface (read)
@@ -1768,7 +1768,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[3].htbt_en.qe),
     .q      (reg2hw.pwm_param[3].htbt_en.q),
 
     // to register interface (read)
@@ -1794,7 +1794,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[3].blink_en.qe),
     .q      (reg2hw.pwm_param[3].blink_en.q),
 
     // to register interface (read)
@@ -1823,7 +1823,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[4].phase_delay.qe),
     .q      (reg2hw.pwm_param[4].phase_delay.q),
 
     // to register interface (read)
@@ -1849,7 +1849,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[4].htbt_en.qe),
     .q      (reg2hw.pwm_param[4].htbt_en.q),
 
     // to register interface (read)
@@ -1875,7 +1875,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[4].blink_en.qe),
     .q      (reg2hw.pwm_param[4].blink_en.q),
 
     // to register interface (read)
@@ -1904,7 +1904,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[5].phase_delay.qe),
     .q      (reg2hw.pwm_param[5].phase_delay.q),
 
     // to register interface (read)
@@ -1930,7 +1930,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[5].htbt_en.qe),
     .q      (reg2hw.pwm_param[5].htbt_en.q),
 
     // to register interface (read)
@@ -1956,7 +1956,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.pwm_param[5].blink_en.qe),
     .q      (reg2hw.pwm_param[5].blink_en.q),
 
     // to register interface (read)
@@ -1987,7 +1987,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[0].a.qe),
     .q      (reg2hw.duty_cycle[0].a.q),
 
     // to register interface (read)
@@ -2013,7 +2013,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[0].b.qe),
     .q      (reg2hw.duty_cycle[0].b.q),
 
     // to register interface (read)
@@ -2042,7 +2042,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[1].a.qe),
     .q      (reg2hw.duty_cycle[1].a.q),
 
     // to register interface (read)
@@ -2068,7 +2068,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[1].b.qe),
     .q      (reg2hw.duty_cycle[1].b.q),
 
     // to register interface (read)
@@ -2097,7 +2097,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[2].a.qe),
     .q      (reg2hw.duty_cycle[2].a.q),
 
     // to register interface (read)
@@ -2123,7 +2123,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[2].b.qe),
     .q      (reg2hw.duty_cycle[2].b.q),
 
     // to register interface (read)
@@ -2152,7 +2152,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[3].a.qe),
     .q      (reg2hw.duty_cycle[3].a.q),
 
     // to register interface (read)
@@ -2178,7 +2178,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[3].b.qe),
     .q      (reg2hw.duty_cycle[3].b.q),
 
     // to register interface (read)
@@ -2207,7 +2207,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[4].a.qe),
     .q      (reg2hw.duty_cycle[4].a.q),
 
     // to register interface (read)
@@ -2233,7 +2233,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[4].b.qe),
     .q      (reg2hw.duty_cycle[4].b.q),
 
     // to register interface (read)
@@ -2262,7 +2262,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[5].a.qe),
     .q      (reg2hw.duty_cycle[5].a.q),
 
     // to register interface (read)
@@ -2288,7 +2288,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.duty_cycle[5].b.qe),
     .q      (reg2hw.duty_cycle[5].b.q),
 
     // to register interface (read)
@@ -2319,7 +2319,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[0].x.qe),
     .q      (reg2hw.blink_param[0].x.q),
 
     // to register interface (read)
@@ -2345,7 +2345,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[0].y.qe),
     .q      (reg2hw.blink_param[0].y.q),
 
     // to register interface (read)
@@ -2374,7 +2374,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[1].x.qe),
     .q      (reg2hw.blink_param[1].x.q),
 
     // to register interface (read)
@@ -2400,7 +2400,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[1].y.qe),
     .q      (reg2hw.blink_param[1].y.q),
 
     // to register interface (read)
@@ -2429,7 +2429,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[2].x.qe),
     .q      (reg2hw.blink_param[2].x.q),
 
     // to register interface (read)
@@ -2455,7 +2455,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[2].y.qe),
     .q      (reg2hw.blink_param[2].y.q),
 
     // to register interface (read)
@@ -2484,7 +2484,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[3].x.qe),
     .q      (reg2hw.blink_param[3].x.q),
 
     // to register interface (read)
@@ -2510,7 +2510,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[3].y.qe),
     .q      (reg2hw.blink_param[3].y.q),
 
     // to register interface (read)
@@ -2539,7 +2539,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[4].x.qe),
     .q      (reg2hw.blink_param[4].x.q),
 
     // to register interface (read)
@@ -2565,7 +2565,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[4].y.qe),
     .q      (reg2hw.blink_param[4].y.q),
 
     // to register interface (read)
@@ -2594,7 +2594,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[5].x.qe),
     .q      (reg2hw.blink_param[5].x.q),
 
     // to register interface (read)
@@ -2620,7 +2620,7 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.blink_param[5].y.qe),
     .q      (reg2hw.blink_param[5].y.q),
 
     // to register interface (read)

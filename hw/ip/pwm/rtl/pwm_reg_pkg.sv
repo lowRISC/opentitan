@@ -29,63 +29,75 @@ package pwm_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [26:0] q;
+      logic        qe;
     } clk_div;
     struct packed {
       logic [3:0]  q;
+      logic        qe;
     } dc_resn;
     struct packed {
       logic        q;
+      logic        qe;
     } cntr_en;
   } pwm_reg2hw_cfg_reg_t;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } pwm_reg2hw_pwm_en_mreg_t;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } pwm_reg2hw_invert_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
+      logic        qe;
     } phase_delay;
     struct packed {
       logic        q;
+      logic        qe;
     } htbt_en;
     struct packed {
       logic        q;
+      logic        qe;
     } blink_en;
   } pwm_reg2hw_pwm_param_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
+      logic        qe;
     } a;
     struct packed {
       logic [15:0] q;
+      logic        qe;
     } b;
   } pwm_reg2hw_duty_cycle_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
+      logic        qe;
     } x;
     struct packed {
       logic [15:0] q;
+      logic        qe;
     } y;
   } pwm_reg2hw_blink_param_mreg_t;
 
   // Register -> HW type
   typedef struct packed {
-    pwm_reg2hw_alert_test_reg_t alert_test; // [538:537]
-    pwm_reg2hw_regen_reg_t regen; // [536:536]
-    pwm_reg2hw_cfg_reg_t cfg; // [535:504]
-    pwm_reg2hw_pwm_en_mreg_t [5:0] pwm_en; // [503:498]
-    pwm_reg2hw_invert_mreg_t [5:0] invert; // [497:492]
-    pwm_reg2hw_pwm_param_mreg_t [5:0] pwm_param; // [491:384]
-    pwm_reg2hw_duty_cycle_mreg_t [5:0] duty_cycle; // [383:192]
-    pwm_reg2hw_blink_param_mreg_t [5:0] blink_param; // [191:0]
+    pwm_reg2hw_alert_test_reg_t alert_test; // [595:594]
+    pwm_reg2hw_regen_reg_t regen; // [593:593]
+    pwm_reg2hw_cfg_reg_t cfg; // [592:558]
+    pwm_reg2hw_pwm_en_mreg_t [5:0] pwm_en; // [557:546]
+    pwm_reg2hw_invert_mreg_t [5:0] invert; // [545:534]
+    pwm_reg2hw_pwm_param_mreg_t [5:0] pwm_param; // [533:408]
+    pwm_reg2hw_duty_cycle_mreg_t [5:0] duty_cycle; // [407:204]
+    pwm_reg2hw_blink_param_mreg_t [5:0] blink_param; // [203:0]
   } pwm_reg2hw_t;
 
   // Register offsets

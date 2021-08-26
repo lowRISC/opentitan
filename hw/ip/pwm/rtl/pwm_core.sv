@@ -15,55 +15,26 @@ module pwm_core #(
   output logic [NOutputs-1:0]     pwm_o
 );
 
-  logic [31:0] common_param_d;
-  assign common_param_d = {reg2hw.cfg.clk_div.q,
-                           reg2hw.cfg.dc_resn.q,
-                           reg2hw.cfg.cntr_en.q};
-
-  logic [31:0] common_param_q;
-
-  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
-    if (!rst_core_ni) begin
-      common_param_q <= 32'h0;
-    end else begin
-      common_param_q <= common_param_d;
-    end
-  end
-
   // Reset internal counters whenever parameters change.
 
   logic                clr_phase_cntr;
   logic [NOutputs-1:0] clr_blink_cntr;
 
-  assign clr_phase_cntr = (common_param_q != common_param_d);
+  assign clr_phase_cntr = reg2hw.cfg.clk_div.qe | reg2hw.cfg.dc_resn.qe | reg2hw.cfg.cntr_en.qe;
 
   for (genvar ii = 0; ii < NOutputs; ii++) begin : gen_chan_clr
-
-    logic [83:0] chan_param_d;
-    assign chan_param_d  = {reg2hw.pwm_en[ii].q,
-                            reg2hw.invert[ii].q,
-                            reg2hw.pwm_param[ii].phase_delay.q,
-                            reg2hw.pwm_param[ii].htbt_en.q,
-                            reg2hw.pwm_param[ii].blink_en.q,
-                            reg2hw.duty_cycle[ii].a.q,
-                            reg2hw.duty_cycle[ii].b.q,
-                            reg2hw.blink_param[ii].x.q,
-                            reg2hw.blink_param[ii].y.q};
-
-    logic [83:0] chan_param_q;
-
-    always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
-      if (!rst_core_ni) begin
-        chan_param_q <= 84'h0;
-      end else begin
-        chan_param_q <= chan_param_d;
-      end
-    end
 
     // Though it may be a bit overkill, we reset the internal blink counters whenever any channel
     // specific parameters change.
 
-    assign clr_blink_cntr[ii] = (chan_param_q != chan_param_d);
+    assign clr_blink_cntr[ii] = reg2hw.pwm_en[ii].qe | reg2hw.invert[ii].qe |
+                                reg2hw.pwm_param[ii].phase_delay.qe |
+                                reg2hw.pwm_param[ii].htbt_en.qe |
+                                reg2hw.pwm_param[ii].blink_en.qe |
+                                reg2hw.duty_cycle[ii].a.qe |
+                                reg2hw.duty_cycle[ii].b.qe |
+                                reg2hw.blink_param[ii].x.qe |
+                                reg2hw.blink_param[ii].y.qe;
 
   end : gen_chan_clr
 
