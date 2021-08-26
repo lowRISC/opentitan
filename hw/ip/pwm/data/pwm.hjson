@@ -51,6 +51,7 @@
       desc: "Configuration register",
       swaccess: "rw",
       async: "clk_core_i",
+      hwqe: "true",
       fields: [
         { bits: "31",
           name: "CNTR_EN",
@@ -86,6 +87,7 @@
         cname: "pwm_en",
         compact: "1",
         async: "clk_core_i",
+        hwqe: "true",
         fields: [
           { bits: "0",
             name: "EN",
@@ -103,6 +105,7 @@
         cname: "pwm_invert",
         compact: "1",
         async: "clk_core_i",
+        hwqe: "true",
         fields: [
           { bits: "0",
             name: "INVERT",
@@ -119,6 +122,7 @@
         swaccess: "rw",
         cname: "pwm_params",
         async: "clk_core_i",
+        hwqe: "true",
         fields: [
           { bits: "31",
             name: "BLINK_EN",
@@ -156,6 +160,7 @@
         swaccess: "rw",
         cname: "duty_cycle",
         async: "clk_core_i",
+        hwqe: "true",
         fields: [
           { bits: "31:16",
             name: "B",
@@ -186,6 +191,7 @@
         swaccess: "rw",
         cname: "blink_param",
         async: "clk_core_i",
+        hwqe: "true",
         fields: [
           { bits: "15:0",
             name: "X",
