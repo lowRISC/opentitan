@@ -18,6 +18,8 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
@@ -64,6 +66,22 @@ static void mask_rom_init(void) {
   shutdown_init(lc_state);
   // Initiaize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp);
+
+  // Initialize the retention SRAM at power-on.
+  //
+  // The reset reason is treated as power-on if the POR bit is asserted
+  // regardless of whether or not any other reset reason bits are set. This is
+  // because we cannot guarantee that the retention SRAM was fully initialized
+  // if the device was reset before the POR bit was cleared.
+  //
+  // TODO(lowRISC/opentitan#7887): once the retention SRAM is initialized the
+  // reset reason should probably be saved into either main SRAM or the
+  // retention SRAM and the reset reason register cleared.
+  uint32_t reset_reasons = rstmgr_reason_get();
+  if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
+    retention_sram_clear();
+  }
+
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
   // Configure UART0 as stdout.
@@ -72,7 +90,7 @@ static void mask_rom_init(void) {
       .data = NULL,
       .sink = uart_sink,
   });
-  // TODO: Clean device state based on reset reason (chip-specific startup).
+
   // TODO: Bootstrap.
 }
 
