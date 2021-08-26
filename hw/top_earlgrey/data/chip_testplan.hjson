@@ -775,7 +775,7 @@
             '''
       milestone: V2
       tests: ["chip_dif_pwrmgr_smoketest",
-              "chip_sw_pwrmgr_usbdev_smoketest"]
+              "chip_sw_pwrmgr_usbdev_wakeup"]
     }
     {
       name: chip_pwrmgr_deep_sleep_all_reset_reqs
@@ -2371,16 +2371,6 @@
              '''
       milestone: V2
       tests: []
-    }
-    {
-      name: chip_prod_os
-      desc: '''Run the OpenTitan TockOS that will be deployed in production.
-
-             Run the TockOS image in DV. The advantage of doing so is running Tock with the full
-             suite of design assertions and other checks in place in the DV environment.
-             '''
-      milestone: V2
-      tests: ["chip_sw_opentitan_tock"]
     }
     {
       name: chip_lc_walkthrough
