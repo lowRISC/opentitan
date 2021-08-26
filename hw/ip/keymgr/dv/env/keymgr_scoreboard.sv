@@ -56,7 +56,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
-  bit                                is_fault_err;
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
@@ -136,6 +135,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       keymgr_pkg::OpAdvance: begin
         bit is_err = get_hw_invalid_input() || get_fault_err();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
+
         case (current_state)
           keymgr_pkg::StInit: begin
             compare_adv_creator_data(.cdi_type(current_cdi),
@@ -180,8 +180,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     update_result_e update_result;
     bit process_update;
 
-    is_kmac_rsp_err = item.rsp_error;
-    is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
+    // fault error is preserved until reset
+    if (!is_kmac_rsp_err) is_kmac_rsp_err = item.rsp_error;
+    if (!is_kmac_invalid_data) is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
     update_result = process_update_after_op_done();
 
     case (update_result)
@@ -299,7 +300,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               adv_cnt++;
             end else begin
               adv_cnt = 0;
-              update_state(get_next_state(current_state));
+              if (!get_op_err()) update_state(get_next_state(current_state));
               // set sw_binding_regwen after advance OP
               void'(ral.sw_binding_regwen.predict(.value(1)));
               ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
@@ -646,11 +647,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void process_error_n_alert();
     bit [TL_DW-1:0] err = get_err_code();
 
-    // A detected fault will cause us to transition to invalid where
-    // operations are always error'd
-    if (get_fault_err()) begin
-      err[keymgr_pkg::ErrInvalidOp] = 1;
-    end
     void'(ral.err_code.predict(err));
 
     if (get_fault_err() || !cfg.keymgr_vif.get_keymgr_en()) begin
@@ -669,11 +665,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit [TL_DW-1:0] get_fault_err();
-
-    // faults are sticky, and will remain until reset
-    is_fault_err |= is_kmac_rsp_err | is_kmac_invalid_data;
-    return is_fault_err;
-
+    return is_kmac_rsp_err | is_kmac_invalid_data;
   endfunction
 
   virtual function bit [TL_DW-1:0] get_op_err();
@@ -689,17 +681,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function bit [TL_DW-1:0] get_err_code();
     bit [TL_DW-1:0] err_code;
 
+    // A detected fault will cause us to transition to invalid where
+    // operations are always error'd
     err_code[keymgr_pkg::ErrInvalidOp] = get_op_error() | get_fault_err();
+
     err_code[keymgr_pkg::ErrInvalidIn] = get_hw_invalid_input() | get_sw_invalid_input();
 
     `uvm_info(`gfn, $sformatf({"op_err = %0d, rsp_err = %0d, hw_invalid = %0d, sw_invalid = %0d, ",
               "kmac_invalid_data = %0d"},
-              get_op_error(), is_kmac_rsp_err, get_hw_invalid_input(), get_sw_invalid_input(),
+              get_invalid_op(), is_kmac_rsp_err, get_hw_invalid_input(), get_sw_invalid_input(),
               is_kmac_invalid_data), UVM_MEDIUM)
     return err_code;
   endfunction
 
-  virtual function bit get_op_error();
+  virtual function bit get_invalid_op();
     `uvm_info(`gfn, $sformatf("current_state: %s", current_state), UVM_MEDIUM)
     case (current_state)
       keymgr_pkg::StReset: begin
@@ -1072,7 +1067,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
-    is_fault_err          = 0;
     is_sw_share_corrupted = 0;
     req_fifo.flush();
     rsp_fifo.flush();
