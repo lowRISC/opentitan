@@ -288,6 +288,16 @@ interface keymgr_if(input clk, input rst_n);
     return keymgr_en_sync2 === lc_ctrl_pkg::On;
   endfunction
 
+  function automatic void wipe_sideload_keys();
+    aes_key_exp.valid  <= 0;
+    kmac_key_exp.valid <= 0;
+    otbn_key_exp.valid <= 0;
+
+    aes_sideload_status  <= SideLoadClear;
+    kmac_sideload_status <= SideLoadClear;
+    otbn_sideload_status <= SideLoadClear;
+  endfunction
+
   task automatic force_cmd_err();
     @(posedge clk);
     randcase
@@ -341,6 +351,7 @@ interface keymgr_if(input clk, input rst_n);
           is_kmac_key_good <= 1;
         end else begin
           kmac_key_exp.valid <= 0;
+          is_kmac_key_good   <= 0;
         end
       end // kmac_data_rsp.done
     end // forever

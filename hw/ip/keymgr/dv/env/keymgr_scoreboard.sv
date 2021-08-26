@@ -54,6 +54,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
+  bit                                invalid_status_err;
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
@@ -120,12 +121,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_pkg::keymgr_ops_e op = get_operation();
 
-    // there must be a OP which causes the KMAC data req
-    `DV_CHECK_EQ(current_op_status, keymgr_pkg::OpWip)
 
     if (!cfg.keymgr_vif.get_keymgr_en()) begin
       compare_invalid_data(item.byte_data_q);
       return;
+    end else begin
+      // there must be a OP which causes the KMAC data req
+      `DV_CHECK_EQ(current_op_status, keymgr_pkg::OpWip)
     end
 
     case (op)
@@ -191,18 +193,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
              current_internal_key[current_cdi], current_state.name, current_cdi.name), UVM_MEDIUM)
       end
       UpdateSwOut: begin
-        bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+        if (!get_fault_err) begin
+          bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+          // digest is 384 bits wide while SW output is only 256, need to truncate it
+          sw_share_output = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
+                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+          foreach (sw_share_output[i, j]) begin
+            string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
+            uvm_reg csr = ral.get_reg_by_name(csr_name);
 
-        // digest is 384 bits wide while SW output is only 256, need to truncate it
-        sw_share_output = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                           item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
-        foreach (sw_share_output[i, j]) begin
-          string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
-          uvm_reg csr = ral.get_reg_by_name(csr_name);
-
-          void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_DIRECT)));
-          `uvm_info(`gfn, $sformatf("Predict %0s = 0x%0h", csr_name, sw_share_output[i][j]),
-                    UVM_MEDIUM)
+            void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_READ)));
+            `uvm_info(`gfn, $sformatf("Predict %0s = 0x%0h", csr_name, sw_share_output[i][j]),
+                      UVM_MEDIUM)
+          end
         end
       end
       UpdateHwOut: begin
@@ -210,7 +213,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control.dest_sel));
 
-        if (dest != keymgr_pkg::None) begin
+        if (dest != keymgr_pkg::None && !get_fault_err()) begin
           cfg.keymgr_vif.update_sideload_key(key_shares, current_state, current_cdi, dest);
           `uvm_info(`gfn, $sformatf("Update sideload key 0x%0h for %s", key_shares, dest.name),
                     UVM_MEDIUM)
@@ -218,8 +221,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       default: `uvm_info(`gfn, "KMAC result isn't updated to any output", UVM_MEDIUM)
     endcase
-
-    if (!cfg.keymgr_vif.get_keymgr_en()) current_state = keymgr_pkg::StInvalid;
 
     if (!(current_state inside {keymgr_pkg::StReset, keymgr_pkg::StInvalid}) &&
         get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
@@ -257,7 +258,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
     join_none
 
-    if (is_final_kdf) process_error_n_alert();
+    if (is_final_kdf && cfg.keymgr_vif.get_keymgr_en()) process_error_n_alert();
     // IntrOpDone occurs after every KDF
     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
 
@@ -267,25 +268,22 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         case (op)
           keymgr_pkg::OpAdvance: begin
-            if (get_fault_err()) begin
-              current_state = keymgr_pkg::StDisabled;
-              update_result = NotUpdate;
-            end else if (get_op_err()) begin
+            // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
+            if (current_state == keymgr_pkg::StOwnerKey || get_fault_err()) begin
+              if (get_fault_err()) current_state = keymgr_pkg::StDisabled;
               update_result = NotUpdate;
             end else begin
-              // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
-              if (current_state == keymgr_pkg::StOwnerKey) update_result = NotUpdate;
-              else                                         update_result = UpdateInternalKey;
+              update_result = UpdateInternalKey;
+            end
 
-              if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-                adv_cnt++;
-              end else begin
-                adv_cnt = 0;
-                update_state(get_next_state(current_state));
-                // set sw_binding_regwen after advance OP
-                void'(ral.sw_binding_regwen.predict(.value(1)));
-                ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
-              end
+            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+              adv_cnt++;
+            end else begin
+              adv_cnt = 0;
+              update_state(get_next_state(current_state));
+              // set sw_binding_regwen after advance OP
+              void'(ral.sw_binding_regwen.predict(.value(1)));
+              ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
             end
           end
           keymgr_pkg::OpDisable: begin
@@ -467,7 +465,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   current_op_status = keymgr_pkg::OpDoneFail;
                   // No KDF issued, done interrupt/alert is triggered in next cycle
                   void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
-                  fork
+                  if (cfg.keymgr_vif.get_keymgr_en()) fork
                     begin
                       cfg.clk_rst_vif.wait_clks(1);
                       process_error_n_alert();
@@ -601,7 +599,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] err = get_err_code();
     void'(ral.err_code.predict(err));
 
-    if (get_fault_err()) set_exp_alert("fatal_fault_err", .is_fatal(1));
+    if (get_fault_err()) begin
+      set_exp_alert("fatal_fault_err", .is_fatal(1));
+      is_sw_share_corrupted = 1;
+      cfg.keymgr_vif.wipe_sideload_keys();
+    end
     if (get_op_err()) set_exp_alert("recov_operation_err");
 
     `uvm_info(`gfn, $sformatf("at %s, %s is issued and error code is 'b%0b",
@@ -621,25 +623,29 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function bit [TL_DW-1:0] get_err_code();
     bit [TL_DW-1:0] err_code;
 
+    // TODO, clean up later
     // if keymgr_en is off during an OP, suppress op err
-    if (cfg.keymgr_vif.get_keymgr_en() || current_state == keymgr_pkg::StInvalid) begin
+    //if (cfg.keymgr_vif.get_keymgr_en() && current_state != keymgr_pkg::StInvalid) begin
       err_code[keymgr_pkg::ErrInvalidOp]  = get_op_error();
-    end
+    //end
 
-    err_code[keymgr_pkg::ErrInvalidStates] = is_kmac_rsp_err | is_kmac_invalid_data;
+    // this fault error is sticky, should preserve the value until reset
+    if (!invalid_status_err) invalid_status_err = is_kmac_rsp_err | is_kmac_invalid_data;
+    err_code[keymgr_pkg::ErrInvalidStates] = invalid_status_err;
 
     if (cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On) begin
       err_code[keymgr_pkg::ErrInvalidIn]  = get_hw_invalid_input() | get_sw_invalid_input();
     end
 
-    `uvm_info(`gfn, $sformatf("op_err = %0d, rsp_err = %0d, kmac_invalid =%0d, hw_invalid = %0d \
-              sw_invalid = %0d, kmac_invalid_data = %0d",
-              get_op_error(), is_kmac_rsp_err, is_kmac_invalid_data, get_hw_invalid_input(),
-              get_sw_invalid_input(), is_kmac_invalid_data), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"op_err = %0d, rsp_err = %0d, hw_invalid = %0d, sw_invalid = %0d, ",
+              "kmac_invalid_data = %0d"},
+              get_op_error(), is_kmac_rsp_err, get_hw_invalid_input(), get_sw_invalid_input(),
+              is_kmac_invalid_data), UVM_MEDIUM)
     return err_code;
   endfunction
 
   virtual function bit get_op_error();
+    `uvm_info(`gfn, $sformatf("current_state: %s", current_state), UVM_MEDIUM)
     case (current_state)
       keymgr_pkg::StReset: begin
         if (get_operation() != keymgr_pkg::OpAdvance) begin
@@ -973,13 +979,26 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       // design takes 2 cycle to update state
       update_state(keymgr_pkg::StInvalid, .cyc_dly(2));
       `uvm_info(`gfn, "Keymgr_en is Off, wipe secret and move state to Invalid", UVM_LOW)
+      cfg.keymgr_vif.wipe_sideload_keys();
     end
     fork
       begin
         // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
         cfg.clk_rst_vif.wait_n_clks(3);
-        update_state(keymgr_pkg::StInvalid);
+        if (current_op_status == keymgr_pkg::OpWip) begin
+          current_state = keymgr_pkg::StInvalid;
+          `uvm_info(`gfn, "operation WIP but Keymgr_en is Off, update err_code and move to Invalid",
+                    UVM_LOW)
+          process_error_n_alert();
+          current_op_status = keymgr_pkg::OpDoneFail;
+        end else begin
+          // corner case, keymgr_en is changed while OP is almost done. OP will finish successfully
+          // delay update_state in 1 cycle
+          update_state(keymgr_pkg::StInvalid);
+          `uvm_info(`gfn, "operation WIP but Keymgr_en is Off, move to Invalid", UVM_LOW)
+        end
         is_sw_share_corrupted = 1;
+        cfg.keymgr_vif.wipe_sideload_keys();
       end
     join_none
   endfunction
@@ -991,6 +1010,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
+    invalid_status_err    = 0;
     is_sw_share_corrupted = 0;
     req_fifo.flush();
     rsp_fifo.flush();
