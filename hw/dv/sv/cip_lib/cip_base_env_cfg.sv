@@ -49,7 +49,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   constraint edn_clk_freq_mhz_c {
     solve tlul_and_edn_clk_freq_diff before edn_clk_freq_mhz;
 
-    if (tlul_and_edn_clk_freq_diff == HostReqNone) {
+    if (tlul_and_edn_clk_freq_diff == ClkFreqDiffNone) {
       edn_clk_freq_mhz == clk_freq_mhz;
     } else if (tlul_and_edn_clk_freq_diff == ClkFreqDiffSmall) {
       edn_clk_freq_mhz != clk_freq_mhz;
