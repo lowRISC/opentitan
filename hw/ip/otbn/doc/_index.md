@@ -521,6 +521,13 @@ The LFSR state is advanced every cycle when OTBN is running.
 
 ### Operational States {#design-details-operational-states}
 
+<!--
+Source: https://docs.google.com/drawings/d/1C0D4UriRk5pKGFoFtAXYLcJ1oBG1BCDd2omCLPYHtr0/edit
+
+Download the SVG from Google Draw, open it in Inkscape once and save it without changes to add width/height information to the image.
+-->
+![OTBN operational states](otbn_operational_states.svg)
+
 OTBN can be in different operational states.
 OTBN is *busy* for as long it is performing an operation.
 OTBN is *locked* if a fatal error was observed.
