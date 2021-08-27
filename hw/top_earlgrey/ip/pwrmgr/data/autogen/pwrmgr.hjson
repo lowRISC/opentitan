@@ -93,7 +93,7 @@
     },
 
     { struct:  "logic",
-      width:   5,
+      width:   6,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -141,7 +141,7 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "5",
+      default: "6",
       local: "true"
     },
 
@@ -177,6 +177,13 @@
       desc: "Vector index for aon_timer_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "4",
+      local: "true"
+    },
+
+    { name: "WKUP_REQ_IDX",
+      desc: "Vector index for wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+      type: "int",
+      default: "5",
       local: "true"
     },
 
@@ -555,11 +562,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "4:0",
+        { bits: "5:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "5",
+        { bits: "6",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -568,7 +575,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "6",
+        { bits: "7",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power

@@ -28,7 +28,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL__CORE          = 32'h 40130000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 40132000;
   localparam logic [31:0] ADDR_SPACE_LC_CTRL                 = 32'h 40140000;
-  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL_AON         = 32'h 40490000;
+  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL             = 32'h 40490000;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 40150000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__REGS = 32'h 40500000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 40600000;
@@ -59,7 +59,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL__CORE          = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL__PRIM          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_LC_CTRL                 = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_SENSOR_CTRL_AON         = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_SENSOR_CTRL             = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER           = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON__REGS = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON__RAM  = 32'h 00000fff;
@@ -94,7 +94,7 @@ package tl_peri_pkg;
     TlOtpCtrlCore = 19,
     TlOtpCtrlPrim = 20,
     TlLcCtrl = 21,
-    TlSensorCtrlAon = 22,
+    TlSensorCtrl = 22,
     TlAlertHandler = 23,
     TlSramCtrlRetAonRegs = 24,
     TlSramCtrlRetAonRam = 25,

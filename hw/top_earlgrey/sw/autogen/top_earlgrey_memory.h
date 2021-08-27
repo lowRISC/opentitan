@@ -253,12 +253,12 @@
  */
 #define TOP_EARLGREY_AST_BASE_ADDR 0x40480000
 /**
- * Peripheral base address for sensor_ctrl_aon in top earlgrey.
+ * Peripheral base address for sensor_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR 0x40490000
+#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40490000
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
  *

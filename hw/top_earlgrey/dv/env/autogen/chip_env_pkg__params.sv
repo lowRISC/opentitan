@@ -33,19 +33,8 @@ parameter string LIST_OF_ALERTS[] = {
   "pwm_aon_fatal_fault",
   "pinmux_aon_fatal_fault",
   "aon_timer_aon_fatal_fault",
-  "sensor_ctrl_aon_recov_as",
-  "sensor_ctrl_aon_recov_cg",
-  "sensor_ctrl_aon_recov_gd",
-  "sensor_ctrl_aon_recov_ts_hi",
-  "sensor_ctrl_aon_recov_ts_lo",
-  "sensor_ctrl_aon_recov_fla",
-  "sensor_ctrl_aon_recov_otp",
-  "sensor_ctrl_aon_recov_ot0",
-  "sensor_ctrl_aon_recov_ot1",
-  "sensor_ctrl_aon_recov_ot2",
-  "sensor_ctrl_aon_recov_ot3",
-  "sensor_ctrl_aon_recov_ot4",
-  "sensor_ctrl_aon_recov_ot5",
+  "sensor_ctrl_recov_alert",
+  "sensor_ctrl_fatal_alert",
   "sram_ctrl_ret_aon_fatal_error",
   "flash_ctrl_recov_err",
   "flash_ctrl_recov_mp_err",
@@ -77,4 +66,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 70;
+parameter uint NUM_ALERTS = 59;

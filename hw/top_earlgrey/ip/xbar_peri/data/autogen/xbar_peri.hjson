@@ -153,7 +153,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sensor_ctrl_aon"
+      name:   "tl_sensor_ctrl"
       act:    "req"
       package: "tlul_pkg"
     }
