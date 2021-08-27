@@ -58,19 +58,24 @@ endif
 
 dir_hjson = data
 
-dynips_reg = $(addsuffix _reg, $(IPS))
+hjson_for_ip = ${PRJ_DIR}/hw/ip/$(1)/$(dir_hjson)/$(1).hjson
 
-ips_reg = $(addsuffix _reg, $(IPS))
+# IPs that have a directory in hw/ip
+local_ips := \
+  $(foreach i,$(IPS),$(if $(wildcard $(call hjson_for_ip,$(i))),$(i)))
 
-ips_reg_header = $(addsuffix _reg_header, $(IPS))
+# Per-IP targets (all phonies)
+ips_reg        = $(addsuffix _reg, $(local_ips))
+ips_reg_header = $(addsuffix _reg_header, $(local_ips))
+ips_reg_rust   = $(addsuffix _reg_constants, $(local_ips))
 
-ips_reg_rust = $(addsuffix _reg_constants, $(IPS))
-
+# Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
-
 tops_reg = $(addsuffix _reg,$(TOPS))
 
-all: $(dynips_reg) $(tops_gen) $(tops_reg) banner
+.PHONY: $(ips_reg) $(ips_reg_header) $(ips_reg_rust) $(tops_gen) $(tops_reg)
+
+all: $(ips_reg) $(tops_gen) $(tops_reg) banner
 
 banner:
 	@echo "############################################"
@@ -78,7 +83,7 @@ banner:
 	@echo "${REG_OUTPUT_DIR}"
 	@echo "############################################"
 
-regs: $(dynips_reg) $(tops_reg) banner
+regs: $(ips_reg) $(tops_reg) banner
 
 pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
@@ -88,18 +93,16 @@ pre_reg:
 		mkdir -p ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
 	fi
 
-# If the ip has a local generation script, run it
-# This will require all blocks to use a consistent naming
-# This should be hooked into ipgen (see #5636) for completeness.
-$(ips_reg): pre_reg otp-mmap lc-state-enc
-	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/util/$(subst _reg,,$@)_gen.py ]; then \
-		${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/util/$(subst _reg,,$@)_gen.py; \
-	fi
-	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py ${toolflags} -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson && \
-		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
-		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
-	fi
+blk-gen-script = $(PRJ_DIR)/hw/ip/$*/util/$*_gen.py
+blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
+
+# If the ip has a local generation script, run it first. This will
+# require all blocks to use a consistent naming. This should be hooked
+# into ipgen (see #5636) for completeness.
+$(ips_reg): %_reg: pre_reg otp-mmap lc-state-enc
+	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
+	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
+	${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} $(blk-hjson)
 
 otp-mmap:
 	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py
@@ -109,21 +112,15 @@ lc-state-enc:
 
 regs-header: $(ips_reg_header) banner
 
-$(ips_reg_header): pre_reg
-	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$(subst _reg_header,_reg_headers,$@).h\
-		${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson; \
-	fi
+$(ips_reg_header): %_reg_header: pre_reg
+	${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$*_reg_headers.h $(blk-hjson)
 
 regs-rust: $(ips_reg_rust) banner
 
-$(ips_reg_rust): pre_reg
-	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_constants,,$@)/$(dir_hjson)/$(subst _reg_constants,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -R -o ${REG_OUTPUT_SW_DIR}/$@.rs\
-		${PRJ_DIR}/hw/ip/$(subst _reg_constants,,$@)/$(dir_hjson)/$(subst _reg_constants,,$@).hjson; \
-		if ! [ -z "$(TOCK_ROOT)" ]; then \
-			cp ${REG_OUTPUT_SW_DIR}/$@.rs ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
-		fi \
+$(ips_reg_rust): %_reg_constants: pre_reg
+	${PRJ_DIR}/util/regtool.py -R -o ${REG_OUTPUT_SW_DIR}/$@.rs $(blk-hjson); \
+	if ! [ -z "$(TOCK_ROOT)" ]; then \
+	  cp ${REG_OUTPUT_SW_DIR}/$@.rs ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
 	fi
 
 clean-regs-header:
@@ -142,4 +139,4 @@ $(tops_reg): pre_reg
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
 
-.PHONY: all banner otp-mmap lc-state-enc $(ips_reg) $(tops_gen) $(ips_reg_header)
+.PHONY: all banner otp-mmap lc-state-enc
