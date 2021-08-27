@@ -19,14 +19,15 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   localparam int MAIN_FREQ_MHZ = 100;
   localparam int USB_FREQ_MHZ = 48;
 
-  localparam int RESET_CLK_PERIODS = 5;
-  // This needs to be longer than RESET_CLK_PERIODS times the slowest clock,
-  // which is the AON's.
-  localparam int DELAY_FOR_RESETS_CONCURRENTLY_PS = 5_000_000;
+  // POR needs to be stable not less than 32 clock cycles, plus some extra, before it
+  // propagates to the rest of the logic.
+  localparam int POR_CLK_CYCLES = 40;
 
-  // This should exceed the clock cycles needed by the reset stretcher, which is normally 32
-  // AON cycles, but can be extended for tests that introduce reset glitches.
-  localparam int RESET_STRETCHER_TIMEOUT_NS = 4_000_000;
+  // This is only used for the various clocks to start ticking, so can be any small number.
+  localparam int BOGUS_RESET_CLK_CYCLES = 2;
+
+  // Some extra cycles from reset going inactive before the CPU's reset goes inactive.
+  localparam int CPU_RESET_CLK_CYCLES = 10;
 
   typedef enum {
     LcTxTSelOn,
@@ -75,10 +76,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   bit do_rstmgr_init = 1'b1;
 
   `uvm_object_new
-
-  local function real freq_mhz_to_period_in_ps(real freq);
-    return 1e12 / (freq * 1_000_000.0);
-  endfunction
 
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
@@ -178,16 +175,16 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   task check_software_reset_csr_and_pins(logic [NumSwResets-1:0] exp_ctrl_n);
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(exp_ctrl_n),
                  .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1],     exp_ctrl_n[0])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1],      exp_ctrl_n[1])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_device_n[1], exp_ctrl_n[0])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_n[1], exp_ctrl_n[1])
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host0_core_n[1], exp_ctrl_n[2])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_n[1],      exp_ctrl_n[3])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_n[1], exp_ctrl_n[3])
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_spi_host1_core_n[1], exp_ctrl_n[4])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usb_n[1],            exp_ctrl_n[5])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usbif_n[1],          exp_ctrl_n[6])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1],           exp_ctrl_n[7])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1],           exp_ctrl_n[8])
-    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1],           exp_ctrl_n[9])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usb_n[1], exp_ctrl_n[5])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_usbif_n[1], exp_ctrl_n[6])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c0_n[1], exp_ctrl_n[7])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c1_n[1], exp_ctrl_n[8])
+    `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[9])
   endtask
 
   // Sends either a low power exit or hardware request reset, and drops it once it should have
@@ -224,49 +221,42 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  task fork_resets();
+  task por_reset();
+    cfg.rstmgr_vif.por_n = 1'b0;
+    cfg.aon_clk_rst_vif.wait_clks(POR_CLK_CYCLES);
+    cfg.rstmgr_vif.por_n = 1'b1;
+    @(posedge cfg.rstmgr_vif.resets_o.rst_por_io_div4_n[0]);
+  endtask
+
+  task start_clocks();
     fork
-      // This is the POR, so it should be applied once only.
-      if (!reset_once) begin
-        cfg.rstmgr_vif.por_n = 1'b0;
-        cfg.clk_rst_vif.wait_clks(2);
-        cfg.rstmgr_vif.por_n = 1'b1;
-        reset_once = 1'b1;
-      end
-      cfg.aon_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(RESET_CLK_PERIODS));
-      cfg.io_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(RESET_CLK_PERIODS));
+      cfg.aon_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
+                                      .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.io_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
+                                     .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_div2_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                          .reset_width_clks(RESET_CLK_PERIODS));
+                                          .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_div4_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                          .reset_width_clks(RESET_CLK_PERIODS));
+                                          .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.main_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                       .reset_width_clks(RESET_CLK_PERIODS));
-      cfg.usb_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(RESET_CLK_PERIODS));
+                                       .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.usb_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
+                                      .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
     join
   endtask
 
   // This waits till the outgoing POR reset for the CPU goes inactive.
   local task wait_for_cpu_out_of_reset();
-    `DV_SPINWAIT(wait (cfg.rstmgr_vif.resets_o.rst_sys_n[1] == 1'b1);,
-                 "timeout waiting for POR reset to cpu output", RESET_STRETCHER_TIMEOUT_NS)
+    `DV_SPINWAIT_EXIT(wait (cfg.rstmgr_vif.resets_o.rst_sys_n[1] == 1'b1);,
+                      cfg.clk_rst_vif.wait_clks(CPU_RESET_CLK_CYCLES);,
+                      "timeout waiting for cpu reset inactive")
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    `DV_CHECK_LT(freq_mhz_to_period_in_ps(AON_FREQ_MHZ) * RESET_CLK_PERIODS,
-                 DELAY_FOR_RESETS_CONCURRENTLY_PS, $sformatf(
-                 "apply_resets_concurrently delay (%0d) must exceed slowest reset (%0d)",
-                 DELAY_FOR_RESETS_CONCURRENTLY_PS,
-                 freq_mhz_to_period_in_ps(
-                     AON_FREQ_MHZ
-                 ) * RESET_CLK_PERIODS
-                 ))
     fork
+      por_reset();
+      start_clocks();
       super.apply_reset(kind);
-      if (kind == "HARD") begin
-        // Apply reset to all clk_rst_if instances so the clocks start, even if
-        // the rst_n output is not connected.
-        fork_resets();
-      end
     join
   endtask
 
@@ -275,19 +265,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    cfg.aon_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_div4_clk_rst_vif.drive_rst_pin(0);
-    cfg.main_clk_rst_vif.drive_rst_pin(0);
-    cfg.usb_clk_rst_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently(DELAY_FOR_RESETS_CONCURRENTLY_PS);
-    cfg.aon_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_div4_clk_rst_vif.drive_rst_pin(1);
-    cfg.main_clk_rst_vif.drive_rst_pin(1);
-    cfg.usb_clk_rst_vif.drive_rst_pin(1);
+    fork
+      por_reset();
+      start_clocks();
+      super.apply_resets_concurrently(reset_duration_ps);
+    join
   endtask
 
   // setup basic rstmgr features

@@ -23,4 +23,21 @@ module rstmgr_bind;
     .rst_sys_src_n(pwr_o.rst_sys_src_n)
   );
 
+  bind rstmgr rstmgr_cascading_sva_if rstmgr_cascading_sva_if (
+    .clk_i,
+    .clk_aon_i,
+    .clk_io_div4_i,
+    .clk_io_div2_i,
+    .clk_io_i,
+    .clk_main_i,
+    .clk_usb_i,
+    .por_n_i,
+    .resets_o,
+    .rst_lc_src_n(pwr_o.rst_lc_src_n),
+    .rst_sys_src_n(pwr_o.rst_sys_src_n),
+    .scan_rst_ni,
+    .scanmode_i
+  );
+
+
 endmodule
