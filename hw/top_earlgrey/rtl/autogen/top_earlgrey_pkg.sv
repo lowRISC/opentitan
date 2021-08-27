@@ -281,14 +281,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_AST_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for sensor_ctrl_aon in top earlgrey.
+   * Peripheral base address for sensor_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40490000;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR = 32'h40490000;
 
   /**
-   * Peripheral size in bytes for sensor_ctrl_aon in top earlgrey.
+   * Peripheral size in bytes for sensor_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
@@ -675,15 +675,15 @@ package top_earlgrey_pkg;
     MioOutSpiHost1Sck = 50,
     MioOutSpiHost1Csb = 51,
     MioOutFlashCtrlTdo = 52,
-    MioOutSensorCtrlAonAstDebugOut0 = 53,
-    MioOutSensorCtrlAonAstDebugOut1 = 54,
-    MioOutSensorCtrlAonAstDebugOut2 = 55,
-    MioOutSensorCtrlAonAstDebugOut3 = 56,
-    MioOutSensorCtrlAonAstDebugOut4 = 57,
-    MioOutSensorCtrlAonAstDebugOut5 = 58,
-    MioOutSensorCtrlAonAstDebugOut6 = 59,
-    MioOutSensorCtrlAonAstDebugOut7 = 60,
-    MioOutSensorCtrlAonAstDebugOut8 = 61,
+    MioOutSensorCtrlAstDebugOut0 = 53,
+    MioOutSensorCtrlAstDebugOut1 = 54,
+    MioOutSensorCtrlAstDebugOut2 = 55,
+    MioOutSensorCtrlAstDebugOut3 = 56,
+    MioOutSensorCtrlAstDebugOut4 = 57,
+    MioOutSensorCtrlAstDebugOut5 = 58,
+    MioOutSensorCtrlAstDebugOut6 = 59,
+    MioOutSensorCtrlAstDebugOut7 = 60,
+    MioOutSensorCtrlAstDebugOut8 = 61,
     MioOutPwmAonPwm0 = 62,
     MioOutPwmAonPwm1 = 63,
     MioOutPwmAonPwm2 = 64,
