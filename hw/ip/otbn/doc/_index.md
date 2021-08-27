@@ -607,8 +607,8 @@ The following actions are taken when OTBN detects a fatal error:
    - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
    - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
    - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}}.
-   - The {{< regref "STATUS" >}} register is set to `LOCKED`.
-3. A [fatal alert]({{< relref "#alerts" >}}) is raised.
+3. The {{< regref "STATUS" >}} register is set to `LOCKED`.
+4. A [fatal alert]({{< relref "#alerts" >}}) is raised.
 
 Note that OTBN can detect some errors even when it isn't running.
 One example of this is an error caused by an integrity error when reading or writing OTBN's memories over the bus.
