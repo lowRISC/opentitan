@@ -5,12 +5,12 @@
 
 package sensor_ctrl_pkg;
 
-  // Ack mode enumerations
-  typedef enum logic [1:0] {
-    ImmAck,
-    SwAck,
-    NoAck,
-    InvalidAck // not a valid selection
-  } ast_ack_mode_e;
+  // alert position
+  parameter int RecovAlert = 0;
+  parameter int FatalAlert = 1;
+
+  // Total events
+  parameter int TotalEvents = sensor_ctrl_reg_pkg::NumAlertEvents +
+                sensor_ctrl_reg_pkg::NumLocalEvents;
 
 endpackage // sensor_ctrl_pkg

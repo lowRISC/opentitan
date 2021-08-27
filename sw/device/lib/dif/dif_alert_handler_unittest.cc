@@ -59,7 +59,7 @@ TEST_P(InitTest, NullArgs) {
 }
 
 INSTANTIATE_TEST_SUITE_P(InitTestSignalCounts, InitTest,
-                         testing::Values(1, 2, 12, 16, 24, 32, 64,
+                         testing::Values(1, 2, 12, 16, 24, 32, 48,
                                          ALERT_HANDLER_PARAM_N_ALERTS));
 
 class ConfigTest : public AlertTest {
