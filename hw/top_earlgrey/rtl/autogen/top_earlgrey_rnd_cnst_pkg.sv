@@ -285,4 +285,17 @@ package top_earlgrey_rnd_cnst_pkg;
     128'h838E24FAFE4257BCD0D4AF885661E47D
   };
 
+  ////////////////////////////////////////////
+  // rv_core_ibex
+  ////////////////////////////////////////////
+  // Default seed of the PRNG used for random instructions.
+  parameter ibex_pkg::lfsr_seed_t RndCnstRvCoreIbexLfsrSeed = {
+    32'h7D8490DC
+  };
+
+  // Permutation applied to the LFSR of the PRNG used for random instructions.
+  parameter ibex_pkg::lfsr_perm_t RndCnstRvCoreIbexLfsrPerm = {
+    160'hE3C46469CDEE68CBACFF8CCB555B019101B1C13E
+  };
+
 endpackage : top_earlgrey_rnd_cnst_pkg

@@ -138,6 +138,23 @@
 
   ],
   param_list: [
+    # Random netlist constants
+    { name:    "RndCnstLfsrSeed",
+      type:    "ibex_pkg::lfsr_seed_t",
+      desc:    '''
+        Default seed of the PRNG used for random instructions.
+      '''
+      randcount: "32",
+      randtype:  "data"
+    },
+    { name:    "RndCnstLfsrPerm",
+      type:    "ibex_pkg::lfsr_perm_t",
+      desc:    '''
+        Permutation applied to the LFSR of the PRNG used for random instructions.
+      '''
+      randcount: "32",
+      randtype:  "perm"
+    },
     { name:    "PMPEnable"
       type:    "bit"
       default: "1'b0"
