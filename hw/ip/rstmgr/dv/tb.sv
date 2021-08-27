@@ -59,9 +59,11 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
+  // IMPORTANT: Notice the rst_ni input is connected to one of dut's outputs.
+  // This is consistent with rstmgr being the only source of resets.
   rstmgr dut (
     .clk_i        (clk),
-    .rst_ni       (rst_n),
+    .rst_ni       (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
     .clk_aon_i    (clk_aon),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
