@@ -149,7 +149,7 @@ static uint64_t gf2_mat_mult16_1(const uint64_t in, const uint64_t mat[16]) {
 /**
  * Build Prince's 16 bit matrices M0 and M1.
  */
-static void prince_m16_matrices(uint64_t m16[2][16]) {
+static inline void prince_m16_matrices(uint64_t m16[2][16]) {
   // 4 bits matrices m0 to m3 are stored in array m4
   const uint64_t m4[4][4] = {// m0
                              {0x0, 0x2, 0x4, 0x8},
@@ -320,9 +320,10 @@ static void prince_enc_dec(const uint8_t in_bytes[8],
  * key_bytes 0 to 7 must contain K0.
  * key_bytes 8 to 15 must contain K1.
  */
-static void prince_encrypt(const uint8_t in_bytes[8],
-                           const uint8_t key_bytes[16], uint8_t out_bytes[8],
-                           int num_half_rounds, int old_key_schedule) {
+static inline void prince_encrypt(const uint8_t in_bytes[8],
+                                  const uint8_t key_bytes[16],
+                                  uint8_t out_bytes[8], int num_half_rounds,
+                                  int old_key_schedule) {
   prince_enc_dec(in_bytes, key_bytes, out_bytes, 0, num_half_rounds,
                  old_key_schedule);
 }
@@ -333,9 +334,10 @@ static void prince_encrypt(const uint8_t in_bytes[8],
  * key_bytes 0 to 7 must contain K0.
  * key_bytes 8 to 15 must contain K1.
  */
-static void prince_decrypt(const uint8_t in_bytes[8],
-                           const uint8_t key_bytes[16], uint8_t out_bytes[8],
-                           int num_half_rounds, int old_key_schedule) {
+static inline void prince_decrypt(const uint8_t in_bytes[8],
+                                  const uint8_t key_bytes[16],
+                                  uint8_t out_bytes[8], int num_half_rounds,
+                                  int old_key_schedule) {
   prince_enc_dec(in_bytes, key_bytes, out_bytes, 1, num_half_rounds,
                  old_key_schedule);
   uint64_t m16[2][16];
