@@ -978,7 +978,8 @@ def main():
 
     # Don't print warnings when querying the list of blocks.
     log_level = (log.ERROR if args.get_blocks else
-                 log.DEBUG if args.verbose else log.NOTSET)
+                 log.DEBUG if args.verbose else None)
+
     log.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
     if not args.outdir:
