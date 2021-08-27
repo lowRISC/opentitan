@@ -6404,6 +6404,26 @@
       param_list:
       [
         {
+          name: RndCnstLfsrSeed
+          desc: Default seed of the PRNG used for random instructions.
+          type: ibex_pkg::lfsr_seed_t
+          randcount: 32
+          randtype: data
+          name_top: RndCnstRvCoreIbexLfsrSeed
+          default: 0x7d8490dc
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Permutation applied to the LFSR of the PRNG used for random instructions.
+          type: ibex_pkg::lfsr_perm_t
+          randcount: 32
+          randtype: perm
+          name_top: RndCnstRvCoreIbexLfsrPerm
+          default: 0xe3c46469cdee68cbacff8ccb555b019101b1c13e
+          randwidth: 160
+        }
+        {
           name: PMPEnable
           desc: Enable PMP
           type: bit

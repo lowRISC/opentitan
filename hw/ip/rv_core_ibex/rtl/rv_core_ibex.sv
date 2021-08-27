@@ -12,26 +12,28 @@ module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
-  parameter bit                 PMPEnable         = 1'b0,
-  parameter int unsigned        PMPGranularity    = 0,
-  parameter int unsigned        PMPNumRegions     = 4,
-  parameter int unsigned        MHPMCounterNum    = 10,
-  parameter int unsigned        MHPMCounterWidth  = 32,
-  parameter bit                 RV32E             = 0,
-  parameter ibex_pkg::rv32m_e   RV32M             = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e   RV32B             = ibex_pkg::RV32BNone,
-  parameter ibex_pkg::regfile_e RegFile           = ibex_pkg::RegFileFF,
-  parameter bit                 BranchTargetALU   = 1'b1,
-  parameter bit                 WritebackStage    = 1'b1,
-  parameter bit                 ICache            = 1'b0,
-  parameter bit                 ICacheECC         = 1'b0,
-  parameter bit                 BranchPredictor   = 1'b0,
-  parameter bit                 DbgTriggerEn      = 1'b1,
-  parameter bit                 SecureIbex        = 1'b0,
-  parameter int unsigned        DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned        DmExceptionAddr   = 32'h1A110808,
-  parameter bit                 PipeLine          = 1'b0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
+  parameter bit                   PMPEnable        = 1'b0,
+  parameter int unsigned          PMPGranularity   = 0,
+  parameter int unsigned          PMPNumRegions    = 4,
+  parameter int unsigned          MHPMCounterNum   = 10,
+  parameter int unsigned          MHPMCounterWidth = 32,
+  parameter bit                   RV32E            = 0,
+  parameter ibex_pkg::rv32m_e     RV32M            = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e     RV32B            = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::regfile_e   RegFile          = ibex_pkg::RegFileFF,
+  parameter bit                   BranchTargetALU  = 1'b1,
+  parameter bit                   WritebackStage   = 1'b1,
+  parameter bit                   ICache           = 1'b0,
+  parameter bit                   ICacheECC        = 1'b0,
+  parameter bit                   BranchPredictor  = 1'b0,
+  parameter bit                   DbgTriggerEn     = 1'b1,
+  parameter bit                   SecureIbex       = 1'b0,
+  parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
+  parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned          DmHaltAddr       = 32'h1A110800,
+  parameter int unsigned          DmExceptionAddr  = 32'h1A110808,
+  parameter bit                   PipeLine         = 1'b0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -260,6 +262,8 @@ module rv_core_ibex
     .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
     .SecureIbex               ( SecureIbex               ),
+    .RndCnstLfsrSeed          ( RndCnstLfsrSeed          ),
+    .RndCnstLfsrPerm          ( RndCnstLfsrPerm          ),
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
