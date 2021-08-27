@@ -133,15 +133,23 @@ Then run the following command to install the required package dependencies on R
 {{< pkgmgr_cmd "yum" >}}
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
+We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
+
+```console
+python3 -m pip install --user -U pip setuptools
+```
+
+The `pip` installation instructions use the `--user` flag to install without root permissions.
+Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`, which should show `~/.local/bin/pip3`.
+If it doesn't, add `~/.local/bin` to your `PATH`, e.g. by modifying your `~/.bashrc` file.
+
+Now install additional Python dependencies:
 
 ```console
 $ cd $REPO_TOP
 $ pip3 install --user -r python-requirements.txt
 ```
 
-The `pip` installation instructions use the `--user` flag to install without root permissions.
-Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `fusesoc --version`.
-If the `fusesoc` binary is not found, add `~/.local/bin` to your `PATH`, e.g. by modifying your `~/.bashrc` file.
 
 ## Software development
 
