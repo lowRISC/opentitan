@@ -70,9 +70,16 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 
-# Copy repository into tmp directory to execute additional install steps.
+ENV PATH "/root/.local/bin:${PATH}"
+# Explicitly updating pip and setuptools is required to have these tools
+# properly parse Python-version metadata, which some packages uses to
+# specify that an older version of a package must be used for a certain
+# Python version. If that information is not read, pip installs the latest
+# version, which then fails to run.
+RUN python3 -m pip install --user -U pip setuptools
+
 COPY python-requirements.txt /tmp/python-requirements.txt
-RUN pip3 install -r /tmp/python-requirements.txt
+RUN pip3 install --user -r /tmp/python-requirements.txt
 
 COPY util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION}

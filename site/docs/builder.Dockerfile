@@ -13,4 +13,11 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 COPY python-requirements.txt ./
-RUN pip3 install -r python-requirements.txt
+ENV PATH "/root/.local/bin:${PATH}"
+# Explicitly updating pip and setuptools is required to have these tools
+# properly parse Python-version metadata, which some packages uses to
+# specify that an older version of a package must be used for a certain
+# Python version. If that information is not read, pip installs the latest
+# version, which then fails to run.
+RUN python3 -m pip install --user -U pip setuptools
+RUN pip3 install --user -r python-requirements.txt
