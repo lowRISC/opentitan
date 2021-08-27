@@ -16,6 +16,7 @@ Long term, this is a module that can be absorbed directly into the `analog senso
 - Alert forwarding to `alert handler`
 - Status readback for `analog sensor top`
 - Pad debug hook up for `analog sensor top`
+- Wakeup based on alert events
 
 # Theory of Operations
 
@@ -23,7 +24,7 @@ Long term, this is a module that can be absorbed directly into the `analog senso
 
 The diagram below shows how `sensor control` helps `analog sensor top` integration into the overall design.
 
-## Alert Handshake
+## Recoverable and Fatal Alerts
 
 The `analog sensor top` sends alert requests in independent, differential form to the `sensor control`.
 Each alert request consists of a pair of signals, one active high and one active low.
@@ -34,13 +35,21 @@ Each signal in the differential pair is thus a separate dedicated alert indicato
 Once an alert request is detected as active, the `sensor control` then formulates a proper alert event through the `prim_alert_sender` and sends a notification to the `alert handler`.
 
 The `sensor control` can optionally generate alert acknowledgements back to the `analog sensor top`.
-When an alert request is detected as active, the `sensor control` has 3 options after sending out the alert:
 
-- Do not acknowledge: Allow alerts to be continually triggered.
-- Software acknowledge: Let software decide whether an alert should stop triggering.
-- Hardware acknowledge. Let hardware immediately acknowledge the alert.
+For each incoming alert, it can be programmed as fatal or recoverable through {{< regref "FATAL_ALERT_EN" >}}.
+If set to recoverable, an alert will be registered in {{< regref "RECOV_ALERT" >}} and the original `analog sensor top` event acknowledged.
+The acknowledgement prevents alerts from constantly being sent.
 
-Once the `analog sensor top` receives the acknowledgment, it then drops the corresponding alert request.
+If set to fatal, an alert will be registered in {{< regref "FATAL_ALERT" >}} but the original `analog sensor top` event will not be acknowledged.
+This causes the alert to constantly send until the system escalates in some form.
+
+## Wakeup Requests
+
+In addition to forwarding events to the `alert handler`, incoming events can also be aggregated into a wakeup request to the system.
+The `sensor_ctrl` does not make assumptions about its power domains and thus it is up to the integrating system to decide which power modes allow alert event wakeups.
+
+As an example, if the `sensor_ctrl` is not placed in an always on domain, then it cannot send alert based wakeups if the system is in a deep low power state.
+It will only be able to send wakeups when the system is powered and the `clk_aon_i` input is available.
 
 ## Hardware Interfaces
 

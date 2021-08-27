@@ -15,6 +15,8 @@ module sensor_ctrl
   // Primary module clocks
   input clk_i,
   input rst_ni,
+  input clk_aon_i,
+  input rst_aon_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -33,18 +35,53 @@ module sensor_ctrl
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  // wakeup to power manager
+  output logic wkup_req_o
 );
 
   // The reg_pkg number of alerts and ast alerts must always match
-  `ASSERT_INIT(NumAlertsMatch_A, ast_pkg::NumAlerts == NumAlerts)
+  `ASSERT_INIT(NumAlertsMatch_A, ast_pkg::NumAlerts == NumAlertEvents)
+
+  ///////////////////////////
+  // Incoming event synchronization - alerts can assert asynchronously
+  ///////////////////////////
+  logic [NumAlertEvents-1:0] async_alert_event_p, alert_event_p;
+  logic [NumAlertEvents-1:0] async_alert_event_n, alert_event_n;
+
+  for (genvar i = 0; i < NumAlertEvents; i++) begin : gen_alert_sync_assign
+    assign async_alert_event_p[i] = ast_alert_i.alerts[i].p;
+    assign async_alert_event_n[i] = ast_alert_i.alerts[i].n;
+  end
+
+  prim_flop_2sync #(
+    .Width(NumAlertEvents),
+    .ResetValue('0)
+  ) u_alert_p_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(async_alert_event_p),
+    .q_o(alert_event_p)
+  );
+
+  prim_flop_2sync #(
+    .Width(NumAlertEvents),
+    .ResetValue({NumAlertEvents{1'b1}})
+  ) u_alert_n_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(async_alert_event_n),
+    .q_o(alert_event_n)
+  );
+
 
   ///////////////////////////
   // Register interface
   ///////////////////////////
   sensor_ctrl_reg2hw_t reg2hw;
   sensor_ctrl_hw2reg_t hw2reg;
+  logic intg_err;
 
   sensor_ctrl_reg_top u_reg (
     .clk_i,
@@ -53,7 +90,7 @@ module sensor_ctrl
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(intg_err),
     .devmode_i(1'b1)
   );
 
@@ -64,116 +101,156 @@ module sensor_ctrl
 
 
   ///////////////////////////
-  // Alert handling
+  // Alert Event Handling
   ///////////////////////////
 
-  logic [NumAlerts-1:0] alert_test;
-  logic [NumAlerts-1:0] alerts_vld, alerts_clr;
-  logic [NumAlerts-1:0] sw_ack_mode;
-  logic [NumAlerts-1:0] no_ack_mode;
+  logic [NumAlertEvents-1:0] event_vld, event_clr;
 
   // While the alerts are differential, they are not perfectly aligned.
   // Instead, each alert is treated independently.
   always_comb begin
-    for (int i = 0; i < NumAlerts; i++) begin
-      alerts_vld[i] = ast_alert_i.alerts[i].p | ~ast_alert_i.alerts[i].n;
+    for (int i = 0; i < NumAlertEvents; i++) begin
+      event_vld[i] = alert_event_p[i] | ~alert_event_n[i];
     end
   end
 
-  // alert test connection
-  assign alert_test[ast_pkg::AsSel]   = reg2hw.alert_test.recov_as.qe    &
-                                        reg2hw.alert_test.recov_as.q;
-  assign alert_test[ast_pkg::CgSel]   = reg2hw.alert_test.recov_cg.qe    &
-                                        reg2hw.alert_test.recov_cg.q;
-  assign alert_test[ast_pkg::GdSel]   = reg2hw.alert_test.recov_gd.qe    &
-                                        reg2hw.alert_test.recov_gd.q;
-  assign alert_test[ast_pkg::TsHiSel] = reg2hw.alert_test.recov_ts_hi.qe &
-                                        reg2hw.alert_test.recov_ts_hi.q;
-  assign alert_test[ast_pkg::TsLoSel] = reg2hw.alert_test.recov_ts_lo.qe &
-                                        reg2hw.alert_test.recov_ts_lo.q;
-  assign alert_test[ast_pkg::FlaSel]  = reg2hw.alert_test.recov_fla.qe   &
-                                        reg2hw.alert_test.recov_fla.q;
-  assign alert_test[ast_pkg::OtpSel]  = reg2hw.alert_test.recov_otp.qe   &
-                                        reg2hw.alert_test.recov_otp.q;
-  assign alert_test[ast_pkg::Ot0Sel]  = reg2hw.alert_test.recov_ot0.qe   &
-                                        reg2hw.alert_test.recov_ot0.q;
-  assign alert_test[ast_pkg::Ot1Sel]  = reg2hw.alert_test.recov_ot1.qe   &
-                                        reg2hw.alert_test.recov_ot1.q;
-  assign alert_test[ast_pkg::Ot2Sel]  = reg2hw.alert_test.recov_ot2.qe   &
-                                        reg2hw.alert_test.recov_ot2.q;
-  assign alert_test[ast_pkg::Ot3Sel]  = reg2hw.alert_test.recov_ot3.qe   &
-                                        reg2hw.alert_test.recov_ot3.q;
-  assign alert_test[ast_pkg::Ot4Sel]  = reg2hw.alert_test.recov_ot4.qe   &
-                                        reg2hw.alert_test.recov_ot4.q;
-  assign alert_test[ast_pkg::Ot5Sel]  = reg2hw.alert_test.recov_ot5.qe   &
-                                        reg2hw.alert_test.recov_ot5.q;
-
-
-  // fire an alert whenever indicated
-  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
+  // Only recoverable alerts are ack'd.  Fatal alerts are captured and continuously
+  // triggered, there is thus not a need to ever acknowledge the source.
+  // For recoverable alerts, the ack is only sent once the alert is captured into software readable
+  // registers
+  logic [NumAlertEvents-1:0] recov_event;
+  logic [NumAlertEvents-1:0] fatal_event;
+  for (genvar i = 0; i < NumAlertEvents; i++) begin : gen_ast_alert_events
 
     // when there is a valid alert, set the alert state
-    logic valid_alert;
+    assign recov_event[i] = event_vld[i] & ~reg2hw.fatal_alert_en[i];
+    assign fatal_event[i] = event_vld[i] & reg2hw.fatal_alert_en[i];
 
-    assign sw_ack_mode[i] = ast_ack_mode_e'(reg2hw.ack_mode[i].q) == SwAck;
-    assign no_ack_mode[i] = ast_ack_mode_e'(reg2hw.ack_mode[i].q) == NoAck |
-                            ast_ack_mode_e'(reg2hw.ack_mode[i].q) == InvalidAck;
+    assign hw2reg.recov_alert[i].d  = 1'b1;
+    assign hw2reg.recov_alert[i].de = recov_event[i];
 
-    // if differential checks fail, generate alert
-    assign valid_alert = alerts_vld[i];
-    assign hw2reg.alert_state[i].d  = sw_ack_mode[i];
-    assign hw2reg.alert_state[i].de = valid_alert;
+    assign hw2reg.fatal_alert[i].d  = 1'b1;
+    assign hw2reg.fatal_alert[i].de = fatal_event[i];
 
-    logic alert_req;
-    logic alert_ack;
-    assign alert_req = sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert;
+    // only recoverable alerts ack
+    assign event_clr[i] = recov_event[i] & reg2hw.recov_alert[i].q;
 
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(0)
-    ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_test_i(alert_test[i]),
-      .alert_req_i(alert_req),
-      .alert_ack_o(alert_ack),
-      .alert_state_o(),
-      .alert_rx_i(alert_rx_i[i]),
-      .alert_tx_o(alert_tx_o[i])
-    );
-
-    assign alerts_clr[i] = no_ack_mode[i] ? '0 :
-                           sw_ack_mode[i] ? reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
-                                            alert_req & alert_ack;
   end
 
-  // When in immediate ack mode, ack alerts as they are received by the sender
-  // When in software ack mode, only ack when software issues the command to clear alert_state
-  //
+  // handle internal alert events, currently only have fatals
+  for (genvar i = NumAlertEvents; i < TotalEvents; i++) begin : gen_local_alert_events
+    assign hw2reg.fatal_alert[i].d  = 1'b1;
+    assign hw2reg.fatal_alert[i].de = intg_err;
+  end
+
   // Note, even though the incoming alerts are differential, they are NOT expected to be
   // consistent all the time.  It is more appropriate for sensor_ctrl to treat them as
   // independent lines.
-  // As a result, the alerts_clr is only applied if an incoming alert is set to the active polarity.
+  // As a result, the alert_ack is only applied if an incoming alert is set to the active polarity.
   //
-  // Note, due to the converging nature of sensor ctrl (non-synced inputs being forwarded to 1
-  // alert), it is possible that when one alert arrives, it is ack'd right when the differential
-  // version comes.  As a result, the first alert will be ack'd, and the second will also
-  // immediately be ack'd, resulting in one alert being sent.
-  // This is OK because the intent is to send the alert anyways, and the ack would not have happened
-  // if the alert was not sent out.  If the incoming alert stays high, then alerts will continue to
-  // fire.
+
   always_comb begin
-    for (int i = 0; i < NumAlerts; i++) begin
-      ast_alert_o.alerts_ack[i].p = ast_alert_i.alerts[i].p & alerts_clr[i];
-      ast_alert_o.alerts_ack[i].n = ~(~ast_alert_i.alerts[i].n & alerts_clr[i]);
+    for (int i = 0; i < NumAlertEvents; i++) begin
+      ast_alert_o.alerts_ack[i].p = alert_event_p[i] & event_clr[i];
+      ast_alert_o.alerts_ack[i].n = ~(~alert_event_n[i] & event_clr[i]);
     end
   end
 
   // alert trigger for test
   always_comb begin
-    for (int i = 0; i < NumAlerts; i++) begin
+    for (int i = 0; i < NumAlertEvents; i++) begin
       ast_alert_o.alerts_trig[i].p = reg2hw.alert_trig[i];
       ast_alert_o.alerts_trig[i].n = ~reg2hw.alert_trig[i];
+    end
+  end
+
+
+  // alert test connection
+  logic [NumAlerts-1:0] alert_test;
+  assign alert_test[RecovAlert] = reg2hw.alert_test.recov_alert.qe &
+                                  reg2hw.alert_test.recov_alert.q;
+  assign alert_test[FatalAlert] = reg2hw.alert_test.fatal_alert.qe &
+                                  reg2hw.alert_test.fatal_alert.q;
+
+  prim_alert_sender #(
+    .AsyncOn(AlertAsyncOn[RecovAlert]),
+    .IsFatal(0)
+  ) u_prim_recov_alert_sender (
+    .clk_i,
+    .rst_ni,
+    .alert_test_i(alert_test[RecovAlert]),
+    .alert_req_i(|recov_event),
+    .alert_ack_o(),
+    .alert_state_o(),
+    .alert_rx_i(alert_rx_i[RecovAlert]),
+    .alert_tx_o(alert_tx_o[RecovAlert])
+  );
+
+  prim_alert_sender #(
+    .AsyncOn(AlertAsyncOn[FatalAlert]),
+    .IsFatal(1)
+  ) u_prim_fatal_alert_sender (
+    .clk_i,
+    .rst_ni,
+    .alert_test_i(alert_test[FatalAlert]),
+    .alert_req_i(|reg2hw.fatal_alert),
+    .alert_ack_o(),
+    .alert_state_o(),
+    .alert_rx_i(alert_rx_i[FatalAlert]),
+    .alert_tx_o(alert_tx_o[FatalAlert])
+  );
+
+  ///////////////////////////
+  // wakeup generation
+  ///////////////////////////
+
+  // wakeups are synchronized separately from the normal event handling.
+  // The alert handling is not synchronized through these below because
+  // the ack latency would be very long for no apparent gain.
+
+  logic async_wake;
+  logic unstable_wake_req;
+
+  // async wake combines ast inputs as well as recoverable alerts.
+  // This is because it is possible for alert events to arrive "right"
+  // on the boundary of low power. In the event this happens, the
+  // original event is immediately 'acked', making it possible for the
+  // sync flops below to miss the event. By mixing in recov_alert,
+  // we guarantee that if the event is caught by the regfile, it can also
+  // be used to trigger wake from low power.
+  // Fatal alerts are not used here because they do not ever ack, meaning
+  // the originating event can never disappear.
+  assign async_wake = |async_alert_event_p  |
+                      ~&async_alert_event_n |
+                      |reg2hw.recov_alert;
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_wake_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(async_wake),
+    .q_o(unstable_wake_req)
+  );
+
+  logic [2:0] wake_req_filter;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      wake_req_filter <= '0;
+    end else begin
+      wake_req_filter <= {wake_req_filter[1:0], unstable_wake_req};
+    end
+  end
+
+  // The filter is needed since the input is purely combinational
+  // among async events.  The filter is thus used to ensure the
+  // wake indication is real and not a glitch.
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      wkup_req_o <= '0;
+    end else begin
+      wkup_req_o <= |wake_req_filter;
     end
   end
 
