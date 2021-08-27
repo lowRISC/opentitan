@@ -1,0 +1,135 @@
+diff --git a/list.c b/list.c
+index 2dc598ce3..e30856c39 100644
+--- a/list.c
++++ b/list.c
+@@ -27,8 +27,6 @@
+  */
+ 
+ 
+-#include <stdlib.h>
+-
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+  * task.h is included from an application file. */
+diff --git a/portable/GCC/RISC-V/portmacro.h b/portable/GCC/RISC-V/portmacro.h
+index fe93dc28c..93ea91320 100644
+--- a/portable/GCC/RISC-V/portmacro.h
++++ b/portable/GCC/RISC-V/portmacro.h
+@@ -157,28 +157,6 @@ not necessary for to use this port.  They are defined so the common demo files
+ /*-----------------------------------------------------------*/
+ 
+ 
+-/* configCLINT_BASE_ADDRESS is a legacy definition that was replaced by the
+-configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS definitions.  For
+-backward compatibility derive the newer definitions from the old if the old
+-definition is found. */
+-#if defined( configCLINT_BASE_ADDRESS ) && !defined( configMTIME_BASE_ADDRESS ) && ( configCLINT_BASE_ADDRESS == 0 )
+-	/* Legacy case where configCLINT_BASE_ADDRESS was defined as 0 to indicate
+-	there was no CLINT.  Equivalent now is to set the MTIME and MTIMECMP
+-	addresses to 0. */
+-	#define configMTIME_BASE_ADDRESS 	( 0 )
+-	#define configMTIMECMP_BASE_ADDRESS ( 0 )
+-#elif defined( configCLINT_BASE_ADDRESS ) && !defined( configMTIME_BASE_ADDRESS )
+-	/* Legacy case where configCLINT_BASE_ADDRESS was set to the base address of
+-	the CLINT.  Equivalent now is to derive the MTIME and MTIMECMP addresses
+-	from the CLINT address. */
+-	#define configMTIME_BASE_ADDRESS 	( ( configCLINT_BASE_ADDRESS ) + 0xBFF8UL )
+-	#define configMTIMECMP_BASE_ADDRESS ( ( configCLINT_BASE_ADDRESS ) + 0x4000UL )
+-#elif !defined( configMTIME_BASE_ADDRESS ) || !defined( configMTIMECMP_BASE_ADDRESS )
+-	#error configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS must be defined in FreeRTOSConfig.h.  Set them to zero if there is no MTIME (machine time) clock.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
+-#endif
+-
+-
+-
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/portable/MemMang/heap_1.c b/portable/MemMang/heap_1.c
+index 68c4c5f77..96ec6eb1b 100644
+--- a/portable/MemMang/heap_1.c
++++ b/portable/MemMang/heap_1.c
+@@ -34,7 +34,6 @@
+  * See heap_2.c, heap_3.c and heap_4.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_2.c b/portable/MemMang/heap_2.c
+index b16b24564..a3b11bfce 100644
+--- a/portable/MemMang/heap_2.c
++++ b/portable/MemMang/heap_2.c
+@@ -35,7 +35,6 @@
+  * See heap_1.c, heap_3.c and heap_4.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_3.c b/portable/MemMang/heap_3.c
+index f8ce855f3..5c59253ce 100644
+--- a/portable/MemMang/heap_3.c
++++ b/portable/MemMang/heap_3.c
+@@ -38,8 +38,6 @@
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+ 
+-#include <stdlib.h>
+-
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+  * task.h is included from an application file. */
+diff --git a/portable/MemMang/heap_4.c b/portable/MemMang/heap_4.c
+index 2cd9065b8..b2605e7ee 100644
+--- a/portable/MemMang/heap_4.c
++++ b/portable/MemMang/heap_4.c
+@@ -34,7 +34,6 @@
+  * See heap_1.c, heap_2.c and heap_3.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_5.c b/portable/MemMang/heap_5.c
+index 62c3641f5..f75b721d8 100644
+--- a/portable/MemMang/heap_5.c
++++ b/portable/MemMang/heap_5.c
+@@ -68,7 +68,6 @@
+  * Note 0x80000000 is the lower address so appears in the array first.
+  *
+  */
+-#include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/queue.c b/queue.c
+index 08d3799da..c9e8def8a 100644
+--- a/queue.c
++++ b/queue.c
+@@ -26,8 +26,7 @@
+  *
+  */
+ 
+-#include <stdlib.h>
+-#include <string.h>
++#include "sw/device/lib/base/memory.h"
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/tasks.c b/tasks.c
+index 91af83382..efe7cfb90 100644
+--- a/tasks.c
++++ b/tasks.c
+@@ -27,8 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
+-#include <string.h>
++#include "sw/device/lib/base/memory.h"
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when

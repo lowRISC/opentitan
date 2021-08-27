@@ -11,6 +11,8 @@
     rev: "main",
   },
 
+  patch_dir: "patches/freertos_freertos_kernel",
+
   exclude_from_upstream: [
     "portable/ARMClang",
     "portable/ARMv8M",
