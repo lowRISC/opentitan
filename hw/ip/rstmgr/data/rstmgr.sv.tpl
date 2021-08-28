@@ -390,7 +390,7 @@ module rstmgr
 % for intf, eps in export_rsts.items():
   % for ep, rsts in eps.items():
     % for rst in rsts:
-  assign resets_${intf}_o.rst_${intf}_${ep}_${rst}_n = resets_o.rst_${rst}_n;
+  assign resets_${intf}_o.rst_${intf}_${ep}_${rst['name']}_n = resets_o.rst_${rst['name']}_n;
     % endfor
   % endfor
 % endfor

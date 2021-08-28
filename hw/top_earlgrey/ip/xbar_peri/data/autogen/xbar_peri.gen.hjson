@@ -16,13 +16,20 @@
   reset: rst_peri_ni
   reset_connections:
   {
-    rst_peri_ni: sys_io_div4
+    rst_peri_ni:
+    {
+      name: sys_io_div4
+      domain: "0"
+    }
   }
   clock_connections:
   {
     clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
-  domain: "0"
+  domain:
+  [
+    "0"
+  ]
   connections:
   {
     main:

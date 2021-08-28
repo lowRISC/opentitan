@@ -187,7 +187,7 @@ module_required = {
 }
 
 module_optional = {
-    'domain': ['s', 'power domain, defaults to Domain0'],
+    'domain': ['l', 'optional list of power domains, defaults to Domain0'],
     'clock_reset_export': ['l', 'optional list with prefixes for exported '
                                 'clocks and resets at the chip level'],
     'attr': ['s', 'optional attribute indicating whether the IP is '
@@ -219,6 +219,14 @@ memory_optional = {
 
 memory_added = {
 }
+
+reset_connection_required = {
+    'name': ['s', 'name of the connecting reset'],
+    'domain': ['s', 'connected domain'],
+}
+
+reset_connection_optional = {}
+reset_connection_added = {}
 
 
 # Supported PAD types.
@@ -300,21 +308,22 @@ class Flash:
                        (self.pages_per_bank <= Flash.max_pages_per_bank))
 
         if not pow2_check:
-            raise ValueError(f'flash power of 2 check failed. A supplied parameter '
+            raise ValueError('flash power of 2 check failed. A supplied parameter '
                              'is not power of 2')
 
         if not limit_check:
-            raise ValueError(f'flash number of banks and pages per bank too large')
+            raise ValueError('flash number of banks and pages per bank too large')
 
     def _asdict(self):
         return {
-            'banks':          self.banks,
+            'banks': self.banks,
             'pages_per_bank': self.pages_per_bank,
             'program_resolution': self.pgm_resolution_bytes,
             'bytes_per_page': self.bytes_per_page,
             'bytes_per_bank': self.bytes_per_bank,
             'size': self.size
         }
+
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
 # Also check to make sure there are not multiple definitions of ip/xbar.hjson for each
@@ -653,6 +662,37 @@ def validate_reset(top, inst, reset_nets, prefix=""):
     log.info("%s %s resets are %s" %
              (prefix, name, reset_signals))
 
+    # Check if reset connections are properly formatted
+    # There are two options
+    # The reset connection for a particular port must be a str
+    # The reset connection for a paritcular port must be a dict
+    # If value is a string, the module can only have ONE domain
+    # If value is a dict, it must have the keys name / domain, and the
+    # value of domain must match that defined for the module.
+    for port, reset in top["reset_connections"].items():
+        if isinstance(reset, str):
+            top["reset_connections"][port] = {}
+            top["reset_connections"][port]['name'] = reset
+
+            if len(top["domain"]) > 1:
+                raise ValueError(f"{top['name']} reset connection {reset} "
+                                 "has no assigned domain")
+            else:
+                top["reset_connections"][port]['domain'] = top["domain"][0]
+
+        if isinstance(reset, dict):
+            error += check_keys(reset,
+                                reset_connection_required,
+                                reset_connection_optional,
+                                reset_connection_added,
+                                'dict structure for reset connections')
+
+            if reset['domain'] not in top["domain"]:
+                error += 1
+                log.error(f"domain {reset['domain']} defined for reset {reset['name']} "
+                          f"is not a domain of {top['name']}")
+
+    # Check if the reset connections are fully populated
     if len(top['reset_connections']) != len(reset_signals):
         error += 1
         log.error("%s %s mismatched number of reset ports and nets" %
@@ -670,8 +710,8 @@ def validate_reset(top, inst, reset_nets, prefix=""):
         [log.error("%s" % port) for port in missing_port]
 
     missing_net = [
-        net for port, net in top['reset_connections'].items()
-        if net not in reset_nets
+        net['name'] for net in top['reset_connections'].values()
+        if net['name'] not in reset_nets
     ]
 
     if missing_net:
@@ -735,35 +775,28 @@ def check_flash(top):
     for mem in top['memory']:
         if mem['type'] == "eflash":
 
-            raise ValueError(f'top level flash memory definition not supported. Please use '
+            raise ValueError('top level flash memory definition not supported. Please use '
                              'the flash embedded inside flash_ctrl instead.  If there is a '
                              'need for top level flash memory, please file an issue.')
 
 
 def check_power_domains(top):
-    error = 0
 
     # check that the default domain is valid
     if top['power']['default'] not in top['power']['domains']:
-        error += 1
-        return error
+        raise ValueError(f"Default power domain {top['power']['default']} is "
+                         "not a valid domain")
 
     # Check that each module, xbar, memory has a power domain defined.
     # If not, give it a default.
     # If there is one defined, check that it is a valid definition
     for end_point in top['module'] + top['memory'] + top['xbar']:
         if 'domain' not in end_point:
-            end_point['domain'] = top['power']['default']
+            end_point['domain'] = [top['power']['default']]
 
-        if end_point['domain'] not in top['power']['domains']:
-            log.error("{} defined invalid domain {}"
-                      .format(end_point['name'],
-                              end_point['domain']))
-            error += 1
-            return error
-
-    # arrived without incident, return
-    return error
+        for d in end_point['domain']:
+            if d not in top['power']['domains']:
+                raise ValueError(f"{end_point['name']} defined invalid domain {d}")
 
 
 def check_modules(top, prefix):
@@ -845,7 +878,7 @@ def validate_top(top, ipobjs, xbarobjs):
     check_flash(top)
 
     # Power domain check
-    error += check_power_domains(top)
+    check_power_domains(top)
 
     # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)

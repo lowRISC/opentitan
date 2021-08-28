@@ -712,14 +712,14 @@ def amend_resets(top, name_to_block):
 
         # shadowed determination
         if block.has_shadowed_reg():
-            top_resets.mark_reset_shadowed(primary_reset)
+            top_resets.mark_reset_shadowed(primary_reset['name'])
 
         # domain determination
-        if module['domain']:
+        for d in module["domain"]:
             for r in block.clocking.items:
                 if r.reset:
                     reset = module['reset_connections'][r.reset]
-                    top_resets.add_reset_domain(reset, module['domain'])
+                    top_resets.add_reset_domain(reset['name'], d)
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work
