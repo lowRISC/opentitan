@@ -308,7 +308,6 @@
       type: "usbdev",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
-      clock_reset_export: ["ast"],
       reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usbif"},
       base_addr: "0x40110000",
     },
@@ -377,7 +376,6 @@
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
-      clock_reset_export: ["ast"],
       domain: ["Aon"],
       base_addr: "0x40440000"
     },
@@ -409,10 +407,23 @@
     },
     { name: "ast",
       type: "ast",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {
+        clk_ast_tlul_i: "io_div4",
+        clk_ast_adc_i: "aon",
+        clk_ast_alert_i: "io_div4",
+        clk_ast_es_i: "main",
+        clk_ast_rng_i: "main",
+        clk_ast_usb_i: "usb"
+      },
       clock_group: "secure",
-      clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {
+        rst_ast_tlul_ni: "lc_io_div4",
+        rst_ast_adc_ni: "sys_aon",
+        rst_ast_alert_ni: "lc_io_div4",
+        rst_ast_es_ni: "sys",
+        rst_ast_rng_ni: "sys",
+        rst_ast_usb_ni: "usbif"
+      },
       base_addr: "0x40480000",
       attr: "reggen_only",
     },
@@ -420,7 +431,6 @@
       type: "sensor_ctrl",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
-      clock_reset_export: ["ast"],
       reset_connections: {rst_ni: "lc_io_div4"},
       domain: ["Aon"],
       base_addr: "0x40490000",
@@ -534,7 +544,6 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      clock_reset_export: ["ast"],
       base_addr: "0x41160000",
     },
     { name: "edn0",
@@ -542,7 +551,6 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      clock_reset_export: ["ast"],
       base_addr: "0x41170000",
     },
     { name: "edn1",
@@ -839,8 +847,11 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        // reset and clock connections
-        'rstmgr_aon.resets', 'clkmgr_aon.clocks',
+        // top level net for clocks
+        'clkmgr_aon.clocks',
+
+        // top levle net for reset
+        'rstmgr_aon.resets',
 
         // dedicated timer interrupt
         'rv_core_ibex.irq_timer',
@@ -902,6 +913,7 @@
         'sensor_ctrl_aon.ast_status'      : 'sensor_ctrl_ast_status',
         'sensor_ctrl_aon.ast2pinmux'      : 'ast2pinmux',
         'sensor_ctrl_aon.ast_init_done'   : 'ast_init_done',
+        'spi_device.sck_monitor'          : 'sck_monitor',
         'usbdev.usb_ref_val'              : '',
         'usbdev.usb_ref_pulse'            : '',
     },

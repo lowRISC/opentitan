@@ -45,6 +45,9 @@ module spi_device
   // Memory configuration
   input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
 
+  // External clock sensor
+  output logic sck_monitor_o,
+
   // DFT related controls
   input mbist_en_i,
   input scan_clk_i,
@@ -483,6 +486,7 @@ module spi_device
     .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
   );
 
+  assign sck_monitor_o = cio_sck_i;
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 

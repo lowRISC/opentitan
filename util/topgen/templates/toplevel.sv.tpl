@@ -93,6 +93,10 @@ module top_${top["name"]} #(
 
 % endif
 
+  // All clocks forwarded to ast
+  output clkmgr_pkg::clkmgr_out_t clks_ast_o,
+  output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
+
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
   input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
@@ -250,13 +254,11 @@ module top_${top["name"]} #(
   % endif
 % endfor
 
-  // certain resets are unused
-% for k in unused_resets.keys():
-  logic ${k};
-% endfor
-% for k, v in unused_resets.items():
-  assign ${k} = ${v};
-% endfor
+  // See #7978 This below is a hack.
+  // This is because ast is a comportable-like module that sits outside
+  // of top_earlgrey's boundary.
+  assign clks_ast_o = ${top['clocks'].hier_paths['top'][:-1]};
+  assign rsts_ast_o = ${top['resets'].hier_paths['top'][:-1]};
 
   // ibex specific assignments
   // TODO: This should be further automated in the future.

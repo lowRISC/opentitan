@@ -7,7 +7,12 @@
 //#############################################################################
 { name: "ast",
   clocking: [
-    { clock: "clk_i", reset: "rst_ni" }
+    { clock: "clk_ast_tlul_i",  reset: "rst_ast_tlul_ni", primary: true },
+    { clock: "clk_ast_adc_i",   reset: "rst_ast_adc_ni"},
+    { clock: "clk_ast_alert_i", reset: "rst_ast_alert_ni"},
+    { clock: "clk_ast_es_i",    reset: "rst_ast_es_ni"},
+    { clock: "clk_ast_rng_i",   reset: "rst_ast_rng_ni"},
+    { clock: "clk_ast_usb_i",   reset: "rst_ast_usb_ni"},
   ],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -55,8 +60,8 @@
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-          { bits: "31:0", 
-            name: "reg32", 
+          { bits: "31:0",
+            name: "reg32",
 	    desc: "32-bit Register",
             resval: "0",
           },
@@ -73,8 +78,8 @@
         swaccess: "rw",
         hwaccess: "hrw",
         fields: [
-          { bits: "31:0", 
-            name: "reg32", 
+          { bits: "31:0",
+            name: "reg32",
 	    desc: "32-bit Register",
             resval: "0",
           },
