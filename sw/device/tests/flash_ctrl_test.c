@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_main.h"
+#include "sw/device/lib/testing/test_framework/test_main.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
   do {                               \

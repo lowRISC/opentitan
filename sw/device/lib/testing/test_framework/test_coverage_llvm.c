@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/test_coverage.h"
 #include <stdint.h>
+
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/test_coverage.h"
 #include "sw/device/lib/uart.h"
 #include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
 

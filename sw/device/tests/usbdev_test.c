@@ -22,7 +22,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_main.h"
+#include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 
@@ -33,9 +33,12 @@ static uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2),
-    VEND_INTERFACE_DSCR(0, 2, 0x50, 1), USB_BULK_EP_DSCR(0, 1, 32, 0),
-    USB_BULK_EP_DSCR(1, 1, 32, 4), VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2, 32, 0), USB_BULK_EP_DSCR(1, 2, 32, 4),
+    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 1, 32, 0),
+    USB_BULK_EP_DSCR(1, 1, 32, 4),
+    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 2, 32, 0),
+    USB_BULK_EP_DSCR(1, 2, 32, 4),
 };
 
 /**
