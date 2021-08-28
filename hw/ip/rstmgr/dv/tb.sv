@@ -91,7 +91,6 @@ module tb;
     .scan_rst_ni(rstmgr_if.scan_rst_ni),
     .scanmode_i (rstmgr_if.scanmode_i),
 
-    .resets_ast_o(rstmgr_if.resets_ast_o),
     .resets_o    (rstmgr_if.resets_o)
   );
 
