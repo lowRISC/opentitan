@@ -39,7 +39,6 @@ interface clkmgr_if (
   lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
 
   logic jitter_en_o;
-  clkmgr_pkg::clkmgr_ast_out_t clocks_ast_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
   // Types for CSR values.

@@ -16,6 +16,11 @@ module ast #(
   parameter int Ast2PadOutWidth = 9,
   parameter int Pad2AstInWidth  = 6
 ) (
+  // clocks and resets supplied for detection
+  input clkmgr_pkg::clkmgr_out_t gd_clks_i,
+  input rstmgr_pkg::rstmgr_out_t gd_rsts_i,
+  input gd_ext_clk_i,
+
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
@@ -791,5 +796,10 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         reg2hw.regb,  // [0:9]
                         reg2hw.revid.q
                       };
+
+logic unused_clks;
+logic unused_rsts;
+assign unused_clks = ^gd_clks_i ^ gd_ext_clk_i;
+assign unused_rsts = ^gd_rsts_i;
 
 endmodule : ast

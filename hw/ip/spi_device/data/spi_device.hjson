@@ -73,6 +73,12 @@
       name:    "mbist_en"
       act:     "rcv"
     }
+    { struct:  "logic"
+      package: ""
+      type:    "uni"
+      name:    "sck_monitor"
+      act:     "req"
+    }
   ],
   regwidth: "32",
   registers: [

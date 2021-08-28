@@ -106,7 +106,6 @@ module tb;
     .lc_clk_byp_ack_o (clkmgr_if.lc_clk_byp_ack),
 
     .jitter_en_o (clkmgr_if.jitter_en_o),
-    .clocks_ast_o(clkmgr_if.clocks_ast_o),
     .clocks_o    (clkmgr_if.clocks_o)
   );
 

@@ -32,7 +32,6 @@ interface rstmgr_if (
   lc_ctrl_pkg::lc_tx_t         scanmode_i;
 
   // reset outputs
-  rstmgr_pkg::rstmgr_ast_out_t resets_ast_o;
   rstmgr_pkg::rstmgr_out_t     resets_o;
 
 endinterface
