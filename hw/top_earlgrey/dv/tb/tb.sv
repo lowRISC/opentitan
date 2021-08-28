@@ -113,13 +113,15 @@ module tb;
     .IOB5(gpio_pins[14]),  // MIO 14
     .IOB6(gpio_pins[15]),  // MIO 15
     .IOB7(tie_off[0]),     // MIO 16
-    .IOB8(tie_off[1]),     // MIO 17
-    .IOB9(tie_off[2]),     // MIO 18
-    .IOB10(tie_off[3]),    // MIO 19
-    .IOB11(tie_off[4]),    // MIO 20
-    .IOB12(tie_off[5]),    // MIO 21
+    // TODO, we probably need to change this when we have the final pinout configuration
+    // Connect this to IOB8 to align with SW bootstrap.c
+    .IOB8(sw_straps[0]),   // MIO 17
+    .IOB9(tie_off[1]),     // MIO 18
+    .IOB10(tie_off[2]),    // MIO 19
+    .IOB11(tie_off[3]),    // MIO 20
+    .IOB12(tie_off[4]),    // MIO 21
     // Bank C (VCC domain)
-    .IOC0(sw_straps[0]),   // MIO 22
+    .IOC0(tie_off[5]),     // MIO 22
     .IOC1(sw_straps[1]),   // MIO 23
     .IOC2(sw_straps[2]),   // MIO 24
     .IOC3(dft_straps[0]),  // MIO 25
