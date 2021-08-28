@@ -8,8 +8,8 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/pmp.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_main.h"
-#include "sw/device/lib/testing/test_status.h"
+#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/test_status.h"
 
 /**
  * PMP regions that are used for load/store and execution permission violation

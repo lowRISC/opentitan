@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_MAIN_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_MAIN_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_MAIN_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_MAIN_H_
 
 #include <stdbool.h>
 
@@ -58,4 +58,4 @@ extern const test_config_t kTestConfig;
  */
 extern bool test_main(void);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_MAIN_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_MAIN_H_

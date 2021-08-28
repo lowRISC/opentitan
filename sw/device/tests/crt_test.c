@@ -12,9 +12,9 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_status.h"
+#include "sw/device/lib/testing/test_framework/test_status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Symbols defined in sw/device/exts/common/flash_link.ld, which we use to
 // check that the CRT did what it was supposed to.

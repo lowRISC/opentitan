@@ -11,10 +11,10 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_status.h"
+#include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
