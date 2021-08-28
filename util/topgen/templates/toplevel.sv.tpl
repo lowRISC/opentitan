@@ -407,9 +407,9 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endfor
     % for port, reset in m["reset_connections"].items():
       % if lib.is_shadowed_port(block, port):
-      .${lib.shadow_name(port)} (${lib.get_reset_path(top, reset, m['domain'], True)}),
+      .${lib.shadow_name(port)} (${lib.get_reset_path(top, reset, True)}),
       % endif:
-      .${port} (${lib.get_reset_path(top, reset, m['domain'])})${"," if not loop.last else ""}
+      .${port} (${lib.get_reset_path(top, reset)})${"," if not loop.last else ""}
     % endfor
   );
 
@@ -434,7 +434,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${v}),
   % endfor
   % for port, reset in xbar["reset_connections"].items():
-    .${port} (${lib.get_reset_path(top, reset, xbar["domain"])}),
+    .${port} (${lib.get_reset_path(top, reset)}),
   % endfor
 
   ## Inter-module signal

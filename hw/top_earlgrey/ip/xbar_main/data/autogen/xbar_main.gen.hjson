@@ -17,15 +17,26 @@
   reset: rst_main_ni
   reset_connections:
   {
-    rst_main_ni: sys
-    rst_fixed_ni: sys_io_div4
+    rst_main_ni:
+    {
+      name: sys
+      domain: "0"
+    }
+    rst_fixed_ni:
+    {
+      name: sys_io_div4
+      domain: "0"
+    }
   }
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
-  domain: "0"
+  domain:
+  [
+    "0"
+  ]
   connections:
   {
     rv_core_ibex.corei:

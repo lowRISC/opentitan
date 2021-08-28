@@ -44,7 +44,7 @@ package rstmgr_pkg;
   typedef struct packed {
   % for ep, rsts in eps.items():
     % for rst in rsts:
-    logic [PowerDomains-1:0] rst_${intf}_${ep}_${rst}_n;
+    logic [PowerDomains-1:0] rst_${intf}_${ep}_${rst['name']}_n;
     % endfor
   % endfor
   } rstmgr_${intf}_out_t;

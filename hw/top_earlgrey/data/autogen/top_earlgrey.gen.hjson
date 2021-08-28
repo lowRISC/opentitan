@@ -515,13 +515,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -555,13 +562,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -595,13 +609,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -635,13 +656,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -675,13 +703,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -716,14 +751,21 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: spi_device
+        rst_ni:
+        {
+          name: spi_device
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -792,15 +834,26 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: spi_host0
-        rst_core_ni: spi_host0_core
+        rst_ni:
+        {
+          name: spi_host0
+          domain: "0"
+        }
+        rst_core_ni:
+        {
+          name: spi_host0_core
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_core_i: clkmgr_aon_clocks.clk_io_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -847,15 +900,26 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: spi_host1
-        rst_core_ni: spi_host1_core
+        rst_ni:
+        {
+          name: spi_host1
+          domain: "0"
+        }
+        rst_core_ni:
+        {
+          name: spi_host1_core
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -899,13 +963,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: i2c0
+        rst_ni:
+        {
+          name: i2c0
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -939,13 +1010,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: i2c1
+        rst_ni:
+        {
+          name: i2c1
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -979,13 +1057,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: i2c2
+        rst_ni:
+        {
+          name: i2c2
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -1019,13 +1104,20 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -1059,13 +1151,20 @@
       clock_group: timers
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -1105,9 +1204,21 @@
       ]
       reset_connections:
       {
-        rst_ni: usb
-        rst_aon_ni: sys_aon
-        rst_usb_48mhz_ni: usbif
+        rst_ni:
+        {
+          name: usb
+          domain: "0"
+        }
+        rst_aon_ni:
+        {
+          name: sys_aon
+          domain: "0"
+        }
+        rst_usb_48mhz_ni:
+        {
+          name: usbif
+          domain: "0"
+        }
       }
       clock_connections:
       {
@@ -1115,7 +1226,10 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
         clk_usb_48mhz_i: clkmgr_aon_clocks.clk_usb_peri
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -1256,8 +1370,16 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: lc_io_div4
-        rst_edn_ni: sys
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       base_addrs:
       {
@@ -1269,7 +1391,10 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -1583,15 +1708,26 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: lc_io_div4
-        rst_kmac_ni: sys
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+        rst_kmac_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_kmac_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -2051,8 +2187,16 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: lc_io_div4
-        rst_edn_ni: sys
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       attr: templated
       clock_connections:
@@ -2060,7 +2204,10 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -2172,10 +2319,21 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_io_div4
-        rst_slow_ni: por_aon
+        rst_ni:
+        {
+          name: por_io_div4
+          domain: Aon
+        }
+        rst_slow_ni:
+        {
+          name: por_aon
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: templated
       clock_connections:
       {
@@ -2418,9 +2576,16 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_io_div4
+        rst_ni:
+        {
+          name: por_io_div4
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: templated
       clock_connections:
       {
@@ -2563,14 +2728,41 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_io_div4
-        rst_main_ni: por
-        rst_io_ni: por_io
-        rst_usb_ni: por_usb
-        rst_io_div2_ni: por_io_div2
-        rst_io_div4_ni: por_io_div4
+        rst_ni:
+        {
+          name: por_io_div4
+          domain: Aon
+        }
+        rst_main_ni:
+        {
+          name: por
+          domain: Aon
+        }
+        rst_io_ni:
+        {
+          name: por_io
+          domain: Aon
+        }
+        rst_usb_ni:
+        {
+          name: por_usb
+          domain: Aon
+        }
+        rst_io_div2_ni:
+        {
+          name: por_io_div2
+          domain: Aon
+        }
+        rst_io_div4_ni:
+        {
+          name: por_io_div4
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: templated
       clock_connections:
       {
@@ -2788,10 +2980,21 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_aon_ni: sys_aon
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        rst_aon_ni:
+        {
+          name: sys_aon
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_infra
@@ -2855,14 +3058,25 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_aon_ni: sys_aon
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        rst_aon_ni:
+        {
+          name: sys_aon
+          domain: Aon
+        }
       }
       clock_reset_export:
       [
         ast
       ]
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -2927,10 +3141,21 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_core_ni: sys_aon
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        rst_core_ni:
+        {
+          name: sys_aon
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -2970,10 +3195,21 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_aon_ni: sys_aon
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        rst_aon_ni:
+        {
+          name: sys_aon
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: templated
       clock_connections:
       {
@@ -3223,10 +3459,21 @@
       clock_group: timers
       reset_connections:
       {
-        rst_ni: lc_io_div4
-        rst_aon_ni: lc_aon
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: Aon
+        }
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: templated
       clock_connections:
       {
@@ -3332,14 +3579,21 @@
       ]
       reset_connections:
       {
-        rst_ni: lc_io_div4
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       attr: reggen_only
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -3374,9 +3628,16 @@
       ]
       reset_connections:
       {
-        rst_ni: lc_io_div4
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       attr: reggen_top
       clock_connections:
       {
@@ -3468,10 +3729,21 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_otp_ni: lc_io_div4
+        rst_ni:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: Aon
+        }
       }
-      domain: Aon
+      domain:
+      [
+        Aon
+      ]
       param_decl:
       {
         InstrExec: "0"
@@ -3655,8 +3927,16 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: lc
-        rst_otp_ni: lc_io_div4
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       base_addrs:
       {
@@ -3690,7 +3970,10 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list:
       [
@@ -4031,7 +4314,11 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: lc
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
       }
       base_addrs:
       {
@@ -4042,7 +4329,10 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -4179,14 +4469,21 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -4258,8 +4555,16 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
-        rst_edn_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       param_decl:
       {
@@ -4271,7 +4576,10 @@
         clk_i: clkmgr_aon_clocks.clk_main_aes
         clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       memory: {}
       param_list:
       [
@@ -4459,13 +4767,20 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -4517,15 +4832,26 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
-        rst_edn_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_kmac
         clk_edn_i: clkmgr_aon_clocks.clk_main_kmac
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       memory: {}
       param_list:
       [
@@ -4665,15 +4991,26 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
-        rst_edn_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -4990,13 +5327,20 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -5125,7 +5469,11 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_reset_export:
       [
@@ -5135,7 +5483,10 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -5264,7 +5615,11 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_reset_export:
       [
@@ -5274,7 +5629,10 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -5343,13 +5701,20 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -5419,8 +5784,16 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys
-        rst_otp_ni: lc_io_div4
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       param_decl:
       {
@@ -5447,7 +5820,10 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_list:
       [
         {
@@ -5608,9 +5984,21 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
-        rst_edn_ni: sys
-        rst_otp_ni: lc_io_div4
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
@@ -5618,7 +6006,10 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -5795,7 +6186,11 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
       }
       base_addrs:
       {
@@ -5821,7 +6216,10 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       param_list:
       [
         {
@@ -5982,15 +6380,26 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys
-        rst_esc_ni: lc_io_div4
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_esc_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       memory: {}
       param_list:
       [
@@ -7052,15 +7461,26 @@
       reset: rst_main_ni
       reset_connections:
       {
-        rst_main_ni: sys
-        rst_fixed_ni: sys_io_div4
+        rst_main_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_fixed_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       connections:
       {
         rv_core_ibex.corei:
@@ -7839,13 +8259,20 @@
       reset: rst_peri_ni
       reset_connections:
       {
-        rst_peri_ni: sys_io_div4
+        rst_peri_ni:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain: "0"
+      domain:
+      [
+        "0"
+      ]
       connections:
       {
         main:
@@ -13061,30 +13488,57 @@
     {
       usbdev:
       [
-        usb
-        sys_aon
-        usbif
+        {
+          name: usb
+          domain: "0"
+        }
+        {
+          name: sys_aon
+          domain: "0"
+        }
+        {
+          name: usbif
+          domain: "0"
+        }
       ]
       adc_ctrl_aon:
       [
-        sys_io_div4
-        sys_aon
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+        {
+          name: sys_aon
+          domain: Aon
+        }
       ]
       ast:
       [
-        lc_io_div4
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       ]
       sensor_ctrl_aon:
       [
-        lc_io_div4
+        {
+          name: lc_io_div4
+          domain: Aon
+        }
       ]
       entropy_src:
       [
-        sys
+        {
+          name: sys
+          domain: "0"
+        }
       ]
       edn0:
       [
-        sys
+        {
+          name: sys
+          domain: "0"
+        }
       ]
     }
   }
