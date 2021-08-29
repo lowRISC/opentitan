@@ -53,10 +53,13 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       edn_clk_freq_mhz == clk_freq_mhz;
     } else if (tlul_and_edn_clk_freq_diff == ClkFreqDiffSmall) {
       edn_clk_freq_mhz != clk_freq_mhz;
-      absolute(edn_clk_freq_mhz - clk_freq_mhz) <= 2;
+      // This could have used a function, but per the LRM that could cause circular
+      // constraints against the "solve ... before" above. Same thing below for the
+      // "big" setting.
+      (edn_clk_freq_mhz - clk_freq_mhz) inside {[-2 : 2]};
     } else if (tlul_and_edn_clk_freq_diff == ClkFreqDiffBig) {
       // max diff is 100-24=76
-      absolute(edn_clk_freq_mhz - clk_freq_mhz) > 70;
+      !((edn_clk_freq_mhz - clk_freq_mhz) inside {[-70 : 70]});
     }
 
     `DV_COMMON_CLK_CONSTRAINT(edn_clk_freq_mhz)
