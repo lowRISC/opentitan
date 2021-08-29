@@ -20,32 +20,36 @@
             - Send a peripheral reset request.
             - Send a debug reset.
             - Configure a software request for peripheral reset.
+            - Set alert and cpu dump inputs to random values.
 
             **Checks**:
             - Checks the reset_info matches expected values.
-            - Checks the cpu_info CSR correctly captures the input info.
+            - Checks the `alert_info` CSR correctly captures the input info.
+            - Checks the `cpu_info` CSR correctly captures the input info.
             - Checks the output reset pins corresponding to sw resettable
               units match `sw_rst_ctrl_n` CSR.
             '''
       milestone: V1
-      tests: ["rstmgr_smoke"]
+      tests: []
     }
     {
       name: reset_stretcher
-      desc: '''Test the reset signal is stretched when stable.
+      desc: '''Test the POR reset signal must be stable for multiple cycles.
 
-            The reset signal is stretched by 32 cycles when reset is stable.
+            The POR reset signal must remain active for at least 32 consecutive
+            cycles before going inactive for the rest of the reset tree to go
+            inactive.
 
             **Stimulus**:
-            - Send a reset active signal, and de-activate it at a random width
-              less than 32 cycles between de-activations for N de-activations.
+            - Activate POR, and de-activate it at a random width less than 32
+              cycles between de-activations for N de-activations.
 
             **Checks**:
-            - The output reset is only set if the input reset has had at least
-              32 cycles of steady input reset active.
+            - With SVA check the output reset is only set if the input reset
+              has had at least 32 cycles of steady input reset active.
             '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_smoke"]
     }
     {
       name: sw_rst_regen_clear_once
