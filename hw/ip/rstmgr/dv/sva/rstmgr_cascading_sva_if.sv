@@ -37,11 +37,11 @@ interface rstmgr_cascading_sva_if (
 
   // This is used to check por_n_i active high leads to a rising edge of rst_por_aon_n[0].
   // The number of cycles with por_n_i stable is 32 plus synchronizers and some filter stages.
-  localparam edge_bounds_t PorCycles = '{fall: '{min: 0, max: 4}, rise: {min: 32, max: 40}};
+  localparam edge_bounds_t PorCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 32, max: 40}};
 
   // This is used to check for regular synchronizing delay. Reset falls asynchronously so the
   // fall min cycles is zero.
-  localparam edge_bounds_t SyncCycles = '{fall: '{min: 0, max: 3}, rise: {min: 1, max: 3}};
+  localparam edge_bounds_t SyncCycles = '{fall: '{min: 0, max: 3}, rise: '{min: 1, max: 3}};
 
   // Cycles are counted from the output rst_por_aon_n or scan reset edges. The rise times can be
   // higher since in the chip the aon reset goes through the pwrmgr slow fsm where it causes an
