@@ -113,7 +113,7 @@ Review        | Signoff date            | Not Started |
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [RSTMGR DV document]({{< relref "dv/index.md" >}})
 Documentation | [TESTPLAN_COMPLETED][]                | Done        | [RSTMGR Testplan]({{< relref "dv/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
@@ -127,11 +127,11 @@ Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception: power, performance
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
