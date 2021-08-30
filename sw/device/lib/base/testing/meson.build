@@ -41,31 +41,3 @@ test('mock_mmio_test', executable(
   native: true,
   cpp_args: ['-DMOCK_MMIO'],
 ))
-
-sw_lib_base_testing_mock_csr = declare_dependency(
-  link_with: static_library(
-    'mock_csr',
-    sources: [
-      'mock_csr.cc',
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-    ],
-    native: true,
-    c_args: ['-DMOCK_CSR'],
-    cpp_args: ['-DMOCK_CSR'],
-  )
-)
-
-# Example test using mock_csr.h, which also serves to
-# test that mock_csr.h works correctly.
-test('mock_csr_test', executable(
-  'mock_csr_test',
-  sources: ['mock_csr_test.cc'],
-  dependencies: [
-    sw_vendor_gtest,
-    sw_lib_base_testing_mock_csr,
-  ],
-  native: true,
-  cpp_args: ['-DMOCK_CSR'],
-))

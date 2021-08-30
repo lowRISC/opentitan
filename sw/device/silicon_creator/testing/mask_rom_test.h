@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_MASK_ROM_TEST_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_MASK_ROM_TEST_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_TESTING_MASK_ROM_TEST_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_TESTING_MASK_ROM_TEST_H_
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -98,4 +98,4 @@ class Unordered : public T {
 };
 
 }  // namespace mask_rom_test
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_MASK_ROM_TEST_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_TESTING_MASK_ROM_TEST_H_
