@@ -458,7 +458,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
@@ -487,7 +487,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
     .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
@@ -516,7 +516,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
     .en_i(clk_io_peri_sw_en & clk_io_en),
@@ -545,7 +545,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
     .en_i(clk_usb_peri_sw_en & clk_usb_en),
@@ -594,7 +594,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_aes_en & clk_main_en),
@@ -625,7 +625,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_hmac_en & clk_main_en),
@@ -656,7 +656,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_en & clk_main_en),
@@ -687,7 +687,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_otbn_en & clk_main_en),
@@ -718,7 +718,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_otbn_en & clk_io_div4_en),
