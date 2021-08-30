@@ -1,10 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// TODO: This module is only a draft implementation that covers most of the clkmgr
-// functionality but is incomplete
-
-
 
 # CLKMGR register template
 #
@@ -21,6 +17,11 @@
     { protocol: "tlul", direction: "device" }
   ],
   alert_list: [
+    { name: "recov_fault",
+      desc: '''
+      This recoverable alert is triggered when there are measurement errors.
+      '''
+    }
     { name: "fatal_fault",
       desc: '''
       This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
@@ -258,6 +259,100 @@
           '''
         }
 % endfor
+      ]
+    },
+
+    { name: "MEASURE_CTRL_REGWEN",
+      desc: "Measurement control write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of the measurement control can be set.  When 0, writes have no
+            effect.
+          '''
+        },
+      ]
+    },
+
+<% aon_freq = clocks.all_srcs['aon'].freq %>\
+% for src in typed_clocks.rg_srcs:
+  <%
+    freq = clocks.all_srcs[src].freq
+    ratio = int(freq / aon_freq)
+    # Add extra bit to width for margin
+    width = ratio.bit_length() + 1
+    max_msb = 4 + width - 1
+    min_msb = (max_msb + 1) + width - 1
+  %>\
+    { name: "${src.upper()}_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for ${src} measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for ${src}",
+          resval: "0"
+        },
+
+        {
+          bits: "${max_msb}:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for ${src} measurement",
+          resval: "${ratio + 10}"
+        },
+
+        {
+          bits: "${min_msb}:${max_msb+1}",
+          name: "MIN_THRESH",
+          desc: "Min threshold for ${src} measurement",
+          resval: "1"
+        },
+      ]
+    },
+% endfor
+
+    { name: "RECOV_ERR_CODE",
+      desc: "Recoverable Error code ",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      fields: [
+% for src in typed_clocks.rg_srcs:
+        {
+          bits: "${loop.index}",
+          name: "${src.upper()}_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            ${src} has encountered a measurement error.
+          '''
+        }
+% endfor
+      ]
+    },
+
+    { name: "FATAL_ERR_CODE",
+      desc: "Error code ",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "REG_INTG",
+          resval: 0
+          desc: '''
+            Register file has experienced a fatal integrity error.
+          '''
+        },
       ]
     },
   ]

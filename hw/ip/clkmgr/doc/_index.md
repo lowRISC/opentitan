@@ -11,6 +11,7 @@ This document specifies the functionality of the OpenTitan clock manager.
 - Attribute based controls of OpenTitan clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.
 - External clock switch support
+- Clock frequency measurement
 
 # Theory of Operation
 
@@ -33,7 +34,7 @@ The table shows the group name, the modules that belong to each group, and wheth
 | Group           | Frequencies                    | Modules                                                        | Software       | Wait for Interrupt |
 | -------------   | ------------------------------ | -------------------------------------------------------------- | -------------- | ------------------ |
 | Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager, Pinmux            | No             | No                 |
-| Transactional   | ~100MHz                        | Aes, Hmac, Key Manager, Otbn                                   | Yes (1)        | Yes (2)            |
+| Transactional   | ~100MHz                        | Aes, Kmac, Hmac, Key Manager, Otbn                             | Yes (1)        | Yes (2)            |
 | Infrastructural | 24MHz, ~100MHz                 | Fabric, Fabric gaskets (iopmp), Memories                       | No             | Yes (3)            |
 | Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Plic, Sensors              | No             | No                 |
 | Peripheral      | 24MHz, 48MHz, 96MHz            | I2c, Spi, Uart, Usb, others                                    | Yes            | Yes                |
@@ -200,6 +201,26 @@ In both cases, when the clock switch is complete, the internal dividers of the `
 A divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
 The step down function will be made more flexible in the future as it is highly dependent on the ratio of internal to external clock ratios.
 However, given currently known requirements, a blanket 2x step down is sufficient.
+
+### Clock Frequency Measurements
+
+Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
+This feature can be enabled through the various measurement control registers such as {{< regref "IO_MEASURE_CTRL" >}}.
+
+The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
+Software sets both an expected maximum and minimum for each measured clock.
+
+Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
+If the resulting count differs from the programmed thresholds, a recoverable error is registered.
+
+There are two types of errors:
+* Clock too fast error
+* Clock too slow error
+
+Clock too fast is registered when the clock cycle count is greater than the software programmed max threshold.
+Clock too slow is registered when the clock cycle count is less than the software programmed min threshold.
+
+As these are all software supplied values, the entire measurement control can be locked from further programming through {{< regref "MEASURE_CTRL_REGWEN" >}}.
 
 # Programmers Guide
 

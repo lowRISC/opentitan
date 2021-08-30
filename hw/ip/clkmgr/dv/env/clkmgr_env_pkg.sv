@@ -30,8 +30,8 @@ package clkmgr_env_pkg;
   localparam int NUM_TRANS = 5;
 
   // alerts
-  parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[] = {"recov_fault", "fatal_fault"};
 
   // types
   // The enum values for these match the bit order in the CSRs.

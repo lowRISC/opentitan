@@ -82,7 +82,7 @@ module tb;
     .clk_usb_i  (clk_usb),
     .rst_usb_ni (rst_usb_n),
     .clk_aon_i  (clk_aon),
-
+    .rst_aon_ni (rst_aon_n),
     .rst_io_div2_ni(rst_io_n),
     // Setting as above...
     .rst_io_div4_ni(rst_io_n),

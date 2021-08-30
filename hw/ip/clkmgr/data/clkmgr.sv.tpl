@@ -6,8 +6,6 @@
 
 `include "prim_assert.sv"
 
-
-
   module clkmgr
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
@@ -24,9 +22,7 @@
   // These are the source clocks for the system
 % for src in clocks.srcs.values():
   input clk_${src.name}_i,
-  % if not src.aon:
   input rst_${src.name}_ni,
-  % endif
 % endfor
 
   // Resets for derived clocks
@@ -88,28 +84,37 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(alerts[0]),
+    .intg_err_o(hw2reg.fatal_err_code.de),
     .devmode_i(1'b1)
   );
+  assign hw2reg.fatal_err_code.d = 1'b1;
+
 
   ////////////////////////////////////////////////////
   // Alerts
   ////////////////////////////////////////////////////
 
   assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
+    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
   };
+
+  assign alerts = {
+    |reg2hw.fatal_err_code,
+    |reg2hw.recov_err_code
+  };
+
+  localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(1'b1)
+      .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -284,6 +289,42 @@
   end
 
   assign pwr_o.clk_status = clk_status;
+
+  ////////////////////////////////////////////////////
+  // Clock Measurement for the roots
+  ////////////////////////////////////////////////////
+
+<% aon_freq = clocks.all_srcs['aon'].freq %>\
+% for src in typed_clocks.rg_srcs:
+  logic ${src}_meas_valid;
+  logic ${src}_fast_err;
+  logic ${src}_slow_err;
+  <%
+   freq = clocks.all_srcs[src].freq
+   cnt = int(freq*2 / aon_freq)
+  %>\
+  prim_clock_meas #(
+    .Cnt(${cnt}),
+    .RefCnt(1)
+  ) u_${src}_meas (
+    .clk_i(clk_${src}_i),
+    .rst_ni(rst_${src}_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_${src}_en & reg2hw.${src}_measure_ctrl.en.q),
+    .max_cnt(reg2hw.${src}_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.${src}_measure_ctrl.min_thresh.q),
+    .valid_o(${src}_meas_valid),
+    .fast_o(${src}_fast_err),
+    .slow_o(${src}_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.${src}_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.${src}_measure_err.de =
+    ${src}_meas_valid &
+    (${src}_fast_err | ${src}_slow_err);
+
+% endfor
 
   ////////////////////////////////////////////////////
   // Clocks with only root gate

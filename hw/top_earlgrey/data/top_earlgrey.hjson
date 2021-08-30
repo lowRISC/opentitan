@@ -43,11 +43,12 @@
     // aon:  Whether the clock is free running all the time.
     //       If it is, the clock is not hanlded by clkmgr.
     // freq: Absolute frequency of clk in Hz
+    // ref: indicates the clock is used as a reference for measurement.
     srcs: [
       { name: "main", aon: "no",  freq: "100000000" }
       { name: "io",   aon: "no",  freq: "96000000" }
       { name: "usb",  aon: "no",  freq: "48000000" }
-      { name: "aon",  aon: "yes", freq: "200000" }
+      { name: "aon",  aon: "yes", freq: "200000", ref: true}
     ],
 
     // Derived clock source attributes
@@ -370,8 +371,14 @@
       type: "clkmgr",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
-                          rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
+      reset_connections: {rst_ni: "por_io_div4",
+                          rst_main_ni: "por",
+                          rst_io_ni: "por_io",
+                          rst_usb_ni: "por_usb",
+                          rst_io_div2_ni: "por_io_div2",
+                          rst_io_div4_ni: "por_io_div4",
+                          rst_aon_ni: "por_aon"
+                         },
       domain: ["Aon"],
       base_addr: "0x40420000",
       attr: "templated",
