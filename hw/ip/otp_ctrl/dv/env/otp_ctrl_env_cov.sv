@@ -279,7 +279,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       end
       OtpHwCfgErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
       OtpLifeCycleErrIdx: begin
-        buf_err_code_cg_wrap[field_idx - 2].buf_err_code_cg.sample(val);
+        buf_err_code_cg_wrap[field_idx - NUM_UNBUFF_PARTS].buf_err_code_cg.sample(val);
       end
       OtpDaiErrIdx: begin
         dai_err_code_cg.sample(val, part_idx);
