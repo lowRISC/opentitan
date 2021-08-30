@@ -12,8 +12,6 @@
 
 `include "prim_assert.sv"
 
-
-
   module clkmgr
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
@@ -35,6 +33,7 @@
   input clk_usb_i,
   input rst_usb_ni,
   input clk_aon_i,
+  input rst_aon_ni,
 
   // Resets for derived clocks
   // clocks are derived locally
@@ -91,28 +90,37 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(alerts[0]),
+    .intg_err_o(hw2reg.fatal_err_code.de),
     .devmode_i(1'b1)
   );
+  assign hw2reg.fatal_err_code.d = 1'b1;
+
 
   ////////////////////////////////////////////////////
   // Alerts
   ////////////////////////////////////////////////////
 
   assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
+    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
   };
+
+  assign alerts = {
+    |reg2hw.fatal_err_code,
+    |reg2hw.recov_err_code
+  };
+
+  localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(1'b1)
+      .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -420,6 +428,131 @@
   end
 
   assign pwr_o.clk_status = clk_status;
+
+  ////////////////////////////////////////////////////
+  // Clock Measurement for the roots
+  ////////////////////////////////////////////////////
+
+  logic io_meas_valid;
+  logic io_fast_err;
+  logic io_slow_err;
+    prim_clock_meas #(
+    .Cnt(960),
+    .RefCnt(1)
+  ) u_io_meas (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_io_en & reg2hw.io_measure_ctrl.en.q),
+    .max_cnt(reg2hw.io_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.io_measure_ctrl.min_thresh.q),
+    .valid_o(io_meas_valid),
+    .fast_o(io_fast_err),
+    .slow_o(io_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_measure_err.de =
+    io_meas_valid &
+    (io_fast_err | io_slow_err);
+
+  logic io_div2_meas_valid;
+  logic io_div2_fast_err;
+  logic io_div2_slow_err;
+    prim_clock_meas #(
+    .Cnt(480),
+    .RefCnt(1)
+  ) u_io_div2_meas (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_io_div2_en & reg2hw.io_div2_measure_ctrl.en.q),
+    .max_cnt(reg2hw.io_div2_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.io_div2_measure_ctrl.min_thresh.q),
+    .valid_o(io_div2_meas_valid),
+    .fast_o(io_div2_fast_err),
+    .slow_o(io_div2_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div2_measure_err.de =
+    io_div2_meas_valid &
+    (io_div2_fast_err | io_div2_slow_err);
+
+  logic io_div4_meas_valid;
+  logic io_div4_fast_err;
+  logic io_div4_slow_err;
+    prim_clock_meas #(
+    .Cnt(240),
+    .RefCnt(1)
+  ) u_io_div4_meas (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_io_div4_en & reg2hw.io_div4_measure_ctrl.en.q),
+    .max_cnt(reg2hw.io_div4_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.io_div4_measure_ctrl.min_thresh.q),
+    .valid_o(io_div4_meas_valid),
+    .fast_o(io_div4_fast_err),
+    .slow_o(io_div4_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div4_measure_err.de =
+    io_div4_meas_valid &
+    (io_div4_fast_err | io_div4_slow_err);
+
+  logic main_meas_valid;
+  logic main_fast_err;
+  logic main_slow_err;
+    prim_clock_meas #(
+    .Cnt(1000),
+    .RefCnt(1)
+  ) u_main_meas (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_main_en & reg2hw.main_measure_ctrl.en.q),
+    .max_cnt(reg2hw.main_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.main_measure_ctrl.min_thresh.q),
+    .valid_o(main_meas_valid),
+    .fast_o(main_fast_err),
+    .slow_o(main_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.main_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.main_measure_err.de =
+    main_meas_valid &
+    (main_fast_err | main_slow_err);
+
+  logic usb_meas_valid;
+  logic usb_fast_err;
+  logic usb_slow_err;
+    prim_clock_meas #(
+    .Cnt(480),
+    .RefCnt(1)
+  ) u_usb_meas (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    .en_i(clk_usb_en & reg2hw.usb_measure_ctrl.en.q),
+    .max_cnt(reg2hw.usb_measure_ctrl.max_thresh.q),
+    .min_cnt(reg2hw.usb_measure_ctrl.min_thresh.q),
+    .valid_o(usb_meas_valid),
+    .fast_o(usb_fast_err),
+    .slow_o(usb_slow_err)
+  );
+
+  assign hw2reg.recov_err_code.usb_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.usb_measure_err.de =
+    usb_meas_valid &
+    (usb_fast_err | usb_slow_err);
+
 
   ////////////////////////////////////////////////////
   // Clocks with only root gate

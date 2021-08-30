@@ -7,10 +7,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// TODO: This module is only a draft implementation that covers most of the clkmgr
-// functionality but is incomplete
-
-
 
 # CLKMGR register template
 #
@@ -22,6 +18,7 @@
     {reset: "rst_main_ni"},
     {reset: "rst_io_ni"},
     {reset: "rst_usb_ni"},
+    {reset: "rst_aon_ni"},
     {reset: "rst_io_div2_ni"},
     {reset: "rst_io_div4_ni"},
   ]
@@ -29,6 +26,11 @@
     { protocol: "tlul", direction: "device" }
   ],
   alert_list: [
+    { name: "recov_fault",
+      desc: '''
+      This recoverable alert is triggered when there are measurement errors.
+      '''
+    }
     { name: "fatal_fault",
       desc: '''
       This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
@@ -367,6 +369,251 @@
             1 CLK_MAIN_OTBN is enabled.
           '''
         }
+      ]
+    },
+
+    { name: "MEASURE_CTRL_REGWEN",
+      desc: "Measurement control write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of the measurement control can be set.  When 0, writes have no
+            effect.
+          '''
+        },
+      ]
+    },
+
+      { name: "IO_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for io measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for io",
+          resval: "0"
+        },
+
+        {
+          bits: "13:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for io measurement",
+          resval: "490"
+        },
+
+        {
+          bits: "23:14",
+          name: "MIN_THRESH",
+          desc: "Min threshold for io measurement",
+          resval: "1"
+        },
+      ]
+    },
+      { name: "IO_DIV2_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for io_div2 measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for io_div2",
+          resval: "0"
+        },
+
+        {
+          bits: "12:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for io_div2 measurement",
+          resval: "250"
+        },
+
+        {
+          bits: "21:13",
+          name: "MIN_THRESH",
+          desc: "Min threshold for io_div2 measurement",
+          resval: "1"
+        },
+      ]
+    },
+      { name: "IO_DIV4_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for io_div4 measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for io_div4",
+          resval: "0"
+        },
+
+        {
+          bits: "11:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for io_div4 measurement",
+          resval: "130"
+        },
+
+        {
+          bits: "19:12",
+          name: "MIN_THRESH",
+          desc: "Min threshold for io_div4 measurement",
+          resval: "1"
+        },
+      ]
+    },
+      { name: "MAIN_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for main measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for main",
+          resval: "0"
+        },
+
+        {
+          bits: "13:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for main measurement",
+          resval: "510"
+        },
+
+        {
+          bits: "23:14",
+          name: "MIN_THRESH",
+          desc: "Min threshold for main measurement",
+          resval: "1"
+        },
+      ]
+    },
+      { name: "USB_MEASURE_CTRL",
+      desc: '''
+        Configuration controls for usb measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "EN",
+          desc: "Enable measurement for usb",
+          resval: "0"
+        },
+
+        {
+          bits: "12:4",
+          name: "MAX_THRESH",
+          desc: "Max threshold for usb measurement",
+          resval: "250"
+        },
+
+        {
+          bits: "21:13",
+          name: "MIN_THRESH",
+          desc: "Min threshold for usb measurement",
+          resval: "1"
+        },
+      ]
+    },
+
+    { name: "RECOV_ERR_CODE",
+      desc: "Recoverable Error code ",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "0",
+          name: "IO_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            io has encountered a measurement error.
+          '''
+        }
+        {
+          bits: "1",
+          name: "IO_DIV2_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            io_div2 has encountered a measurement error.
+          '''
+        }
+        {
+          bits: "2",
+          name: "IO_DIV4_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            io_div4 has encountered a measurement error.
+          '''
+        }
+        {
+          bits: "3",
+          name: "MAIN_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            main has encountered a measurement error.
+          '''
+        }
+        {
+          bits: "4",
+          name: "USB_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            usb has encountered a measurement error.
+          '''
+        }
+      ]
+    },
+
+    { name: "FATAL_ERR_CODE",
+      desc: "Error code ",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "REG_INTG",
+          resval: 0
+          desc: '''
+            Register file has experienced a fatal integrity error.
+          '''
+        },
       ]
     },
   ]
