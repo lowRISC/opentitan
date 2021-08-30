@@ -325,8 +325,10 @@ module alert_handler_reg_top (
   logic classa_clr_regwen_we;
   logic classa_clr_regwen_qs;
   logic classa_clr_regwen_wd;
-  logic classa_clr_we;
-  logic classa_clr_wd;
+  logic classa_clr_shadowed_re;
+  logic classa_clr_shadowed_we;
+  logic classa_clr_shadowed_qs;
+  logic classa_clr_shadowed_wd;
   logic classa_accum_cnt_re;
   logic [15:0] classa_accum_cnt_qs;
   logic classa_accum_thresh_shadowed_re;
@@ -389,8 +391,10 @@ module alert_handler_reg_top (
   logic classb_clr_regwen_we;
   logic classb_clr_regwen_qs;
   logic classb_clr_regwen_wd;
-  logic classb_clr_we;
-  logic classb_clr_wd;
+  logic classb_clr_shadowed_re;
+  logic classb_clr_shadowed_we;
+  logic classb_clr_shadowed_qs;
+  logic classb_clr_shadowed_wd;
   logic classb_accum_cnt_re;
   logic [15:0] classb_accum_cnt_qs;
   logic classb_accum_thresh_shadowed_re;
@@ -453,8 +457,10 @@ module alert_handler_reg_top (
   logic classc_clr_regwen_we;
   logic classc_clr_regwen_qs;
   logic classc_clr_regwen_wd;
-  logic classc_clr_we;
-  logic classc_clr_wd;
+  logic classc_clr_shadowed_re;
+  logic classc_clr_shadowed_we;
+  logic classc_clr_shadowed_qs;
+  logic classc_clr_shadowed_wd;
   logic classc_accum_cnt_re;
   logic [15:0] classc_accum_cnt_qs;
   logic classc_accum_thresh_shadowed_re;
@@ -517,8 +523,10 @@ module alert_handler_reg_top (
   logic classd_clr_regwen_we;
   logic classd_clr_regwen_qs;
   logic classd_clr_regwen_wd;
-  logic classd_clr_we;
-  logic classd_clr_wd;
+  logic classd_clr_shadowed_re;
+  logic classd_clr_shadowed_we;
+  logic classd_clr_shadowed_qs;
+  logic classd_clr_shadowed_wd;
   logic classd_accum_cnt_re;
   logic [15:0] classd_accum_cnt_qs;
   logic classd_accum_thresh_shadowed_re;
@@ -2634,30 +2642,36 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classa_clr]: V(False)
+  // R[classa_clr_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_classa_clr (
+  ) u_classa_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (classa_clr_we & classa_clr_regwen_qs),
-    .wd     (classa_clr_wd),
+    .re     (classa_clr_shadowed_re),
+    .we     (classa_clr_shadowed_we & classa_clr_regwen_qs),
+    .wd     (classa_clr_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classa_clr.qe),
-    .q      (reg2hw.classa_clr.q),
+    .qe     (reg2hw.classa_clr_shadowed.qe),
+    .q      (reg2hw.classa_clr_shadowed.q),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (classa_clr_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classa_clr_shadowed.err_update),
+    .err_storage (reg2hw.classa_clr_shadowed.err_storage)
   );
 
 
@@ -3316,30 +3330,36 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classb_clr]: V(False)
+  // R[classb_clr_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_classb_clr (
+  ) u_classb_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (classb_clr_we & classb_clr_regwen_qs),
-    .wd     (classb_clr_wd),
+    .re     (classb_clr_shadowed_re),
+    .we     (classb_clr_shadowed_we & classb_clr_regwen_qs),
+    .wd     (classb_clr_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classb_clr.qe),
-    .q      (reg2hw.classb_clr.q),
+    .qe     (reg2hw.classb_clr_shadowed.qe),
+    .q      (reg2hw.classb_clr_shadowed.q),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (classb_clr_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classb_clr_shadowed.err_update),
+    .err_storage (reg2hw.classb_clr_shadowed.err_storage)
   );
 
 
@@ -3998,30 +4018,36 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classc_clr]: V(False)
+  // R[classc_clr_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_classc_clr (
+  ) u_classc_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (classc_clr_we & classc_clr_regwen_qs),
-    .wd     (classc_clr_wd),
+    .re     (classc_clr_shadowed_re),
+    .we     (classc_clr_shadowed_we & classc_clr_regwen_qs),
+    .wd     (classc_clr_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classc_clr.qe),
-    .q      (reg2hw.classc_clr.q),
+    .qe     (reg2hw.classc_clr_shadowed.qe),
+    .q      (reg2hw.classc_clr_shadowed.q),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (classc_clr_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classc_clr_shadowed.err_update),
+    .err_storage (reg2hw.classc_clr_shadowed.err_storage)
   );
 
 
@@ -4680,30 +4706,36 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classd_clr]: V(False)
+  // R[classd_clr_shadowed]: V(False)
 
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_classd_clr (
+  ) u_classd_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (classd_clr_we & classd_clr_regwen_qs),
-    .wd     (classd_clr_wd),
+    .re     (classd_clr_shadowed_re),
+    .we     (classd_clr_shadowed_we & classd_clr_regwen_qs),
+    .wd     (classd_clr_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classd_clr.qe),
-    .q      (reg2hw.classd_clr.q),
+    .qe     (reg2hw.classd_clr_shadowed.qe),
+    .q      (reg2hw.classd_clr_shadowed.q),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (classd_clr_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classd_clr_shadowed.err_update),
+    .err_storage (reg2hw.classd_clr_shadowed.err_storage)
   );
 
 
@@ -5044,7 +5076,7 @@ module alert_handler_reg_top (
     addr_hit[ 50] = (reg_addr == ALERT_HANDLER_CLASSA_REGWEN_OFFSET);
     addr_hit[ 51] = (reg_addr == ALERT_HANDLER_CLASSA_CTRL_SHADOWED_OFFSET);
     addr_hit[ 52] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_REGWEN_OFFSET);
-    addr_hit[ 53] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_OFFSET);
+    addr_hit[ 53] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_SHADOWED_OFFSET);
     addr_hit[ 54] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET);
     addr_hit[ 55] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_OFFSET);
     addr_hit[ 56] = (reg_addr == ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_OFFSET);
@@ -5058,7 +5090,7 @@ module alert_handler_reg_top (
     addr_hit[ 64] = (reg_addr == ALERT_HANDLER_CLASSB_REGWEN_OFFSET);
     addr_hit[ 65] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET);
     addr_hit[ 66] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET);
-    addr_hit[ 67] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
+    addr_hit[ 67] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_SHADOWED_OFFSET);
     addr_hit[ 68] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
     addr_hit[ 69] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET);
     addr_hit[ 70] = (reg_addr == ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET);
@@ -5072,7 +5104,7 @@ module alert_handler_reg_top (
     addr_hit[ 78] = (reg_addr == ALERT_HANDLER_CLASSC_REGWEN_OFFSET);
     addr_hit[ 79] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET);
     addr_hit[ 80] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET);
-    addr_hit[ 81] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
+    addr_hit[ 81] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_SHADOWED_OFFSET);
     addr_hit[ 82] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
     addr_hit[ 83] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET);
     addr_hit[ 84] = (reg_addr == ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET);
@@ -5086,7 +5118,7 @@ module alert_handler_reg_top (
     addr_hit[ 92] = (reg_addr == ALERT_HANDLER_CLASSD_REGWEN_OFFSET);
     addr_hit[ 93] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET);
     addr_hit[ 94] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET);
-    addr_hit[ 95] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
+    addr_hit[ 95] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_SHADOWED_OFFSET);
     addr_hit[ 96] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
     addr_hit[ 97] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET);
     addr_hit[ 98] = (reg_addr == ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET);
@@ -5431,9 +5463,10 @@ module alert_handler_reg_top (
   assign classa_clr_regwen_we = addr_hit[52] & reg_we & !reg_error;
 
   assign classa_clr_regwen_wd = reg_wdata[0];
-  assign classa_clr_we = addr_hit[53] & reg_we & !reg_error;
+  assign classa_clr_shadowed_re = addr_hit[53] & reg_re & !reg_error;
+  assign classa_clr_shadowed_we = addr_hit[53] & reg_we & !reg_error;
 
-  assign classa_clr_wd = reg_wdata[0];
+  assign classa_clr_shadowed_wd = reg_wdata[0];
   assign classa_accum_cnt_re = addr_hit[54] & reg_re & !reg_error;
   assign classa_accum_thresh_shadowed_re = addr_hit[55] & reg_re & !reg_error;
   assign classa_accum_thresh_shadowed_we = addr_hit[55] & reg_we & !reg_error;
@@ -5493,9 +5526,10 @@ module alert_handler_reg_top (
   assign classb_clr_regwen_we = addr_hit[66] & reg_we & !reg_error;
 
   assign classb_clr_regwen_wd = reg_wdata[0];
-  assign classb_clr_we = addr_hit[67] & reg_we & !reg_error;
+  assign classb_clr_shadowed_re = addr_hit[67] & reg_re & !reg_error;
+  assign classb_clr_shadowed_we = addr_hit[67] & reg_we & !reg_error;
 
-  assign classb_clr_wd = reg_wdata[0];
+  assign classb_clr_shadowed_wd = reg_wdata[0];
   assign classb_accum_cnt_re = addr_hit[68] & reg_re & !reg_error;
   assign classb_accum_thresh_shadowed_re = addr_hit[69] & reg_re & !reg_error;
   assign classb_accum_thresh_shadowed_we = addr_hit[69] & reg_we & !reg_error;
@@ -5555,9 +5589,10 @@ module alert_handler_reg_top (
   assign classc_clr_regwen_we = addr_hit[80] & reg_we & !reg_error;
 
   assign classc_clr_regwen_wd = reg_wdata[0];
-  assign classc_clr_we = addr_hit[81] & reg_we & !reg_error;
+  assign classc_clr_shadowed_re = addr_hit[81] & reg_re & !reg_error;
+  assign classc_clr_shadowed_we = addr_hit[81] & reg_we & !reg_error;
 
-  assign classc_clr_wd = reg_wdata[0];
+  assign classc_clr_shadowed_wd = reg_wdata[0];
   assign classc_accum_cnt_re = addr_hit[82] & reg_re & !reg_error;
   assign classc_accum_thresh_shadowed_re = addr_hit[83] & reg_re & !reg_error;
   assign classc_accum_thresh_shadowed_we = addr_hit[83] & reg_we & !reg_error;
@@ -5617,9 +5652,10 @@ module alert_handler_reg_top (
   assign classd_clr_regwen_we = addr_hit[94] & reg_we & !reg_error;
 
   assign classd_clr_regwen_wd = reg_wdata[0];
-  assign classd_clr_we = addr_hit[95] & reg_we & !reg_error;
+  assign classd_clr_shadowed_re = addr_hit[95] & reg_re & !reg_error;
+  assign classd_clr_shadowed_we = addr_hit[95] & reg_we & !reg_error;
 
-  assign classd_clr_wd = reg_wdata[0];
+  assign classd_clr_shadowed_wd = reg_wdata[0];
   assign classd_accum_cnt_re = addr_hit[96] & reg_re & !reg_error;
   assign classd_accum_thresh_shadowed_re = addr_hit[97] & reg_re & !reg_error;
   assign classd_accum_thresh_shadowed_we = addr_hit[97] & reg_we & !reg_error;
@@ -5887,7 +5923,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = classa_clr_shadowed_qs;
       end
 
       addr_hit[54]: begin
@@ -5952,7 +5988,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[67]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = classb_clr_shadowed_qs;
       end
 
       addr_hit[68]: begin
@@ -6017,7 +6053,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[81]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = classc_clr_shadowed_qs;
       end
 
       addr_hit[82]: begin
@@ -6082,7 +6118,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[95]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = classd_clr_shadowed_qs;
       end
 
       addr_hit[96]: begin

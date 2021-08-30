@@ -902,24 +902,24 @@ dif_alert_handler_result_t dif_alert_handler_escalation_clear(
   ptrdiff_t reg_offset;
   switch (alert_class) {
     case kDifAlertHandlerClassA:
-      reg_offset = ALERT_HANDLER_CLASSA_CLR_REG_OFFSET;
+      reg_offset = ALERT_HANDLER_CLASSA_CLR_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassB:
-      reg_offset = ALERT_HANDLER_CLASSB_CLR_REG_OFFSET;
+      reg_offset = ALERT_HANDLER_CLASSB_CLR_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassC:
-      reg_offset = ALERT_HANDLER_CLASSC_CLR_REG_OFFSET;
+      reg_offset = ALERT_HANDLER_CLASSC_CLR_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassD:
-      reg_offset = ALERT_HANDLER_CLASSD_CLR_REG_OFFSET;
+      reg_offset = ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET;
       break;
     default:
       return kDifAlertHandlerBadArg;
   }
 
-  uint32_t reg =
-      bitfield_bit32_write(0, ALERT_HANDLER_CLASSA_CLR_CLASSA_CLR_BIT, true);
-  mmio_region_write32(handler->params.base_addr, reg_offset, reg);
+  uint32_t reg = bitfield_bit32_write(
+      0, ALERT_HANDLER_CLASSA_CLR_SHADOWED_CLASSA_CLR_SHADOWED_BIT, true);
+  mmio_region_write32_shadowed(handler->params.base_addr, reg_offset, reg);
 
   return kDifAlertHandlerOk;
 }

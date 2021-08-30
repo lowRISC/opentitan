@@ -883,7 +883,7 @@ TEST_F(EscalationTest, Disable) {
 }
 
 TEST_F(EscalationTest, Clear) {
-  EXPECT_WRITE32(ALERT_HANDLER_CLASSD_CLR_REG_OFFSET, true);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET, true);
   EXPECT_EQ(
       dif_alert_handler_escalation_clear(&handler_, kDifAlertHandlerClassD),
       kDifAlertHandlerOk);

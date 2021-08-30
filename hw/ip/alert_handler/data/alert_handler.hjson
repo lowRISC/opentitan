@@ -136,10 +136,22 @@
       default: "4",
       local: "true"
     },
+    { name: "LOCAL_ALERT_ID_SHADOW_REG_UPDATE_ERROR",
+      desc: "Local alert ID for shadow register update error.",
+      type: "int",
+      default: "5",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_SHADOW_REG_STORAGE_ERROR",
+      desc: "Local alert ID for shadow register storage error.",
+      type: "int",
+      default: "6",
+      local: "true"
+    },
     { name: "LOCAL_ALERT_ID_LAST",
       desc: "Last local alert ID.",
       type: "int",
-      default: "4",
+      default: "6",
       local: "true"
     },
   ],
@@ -566,13 +578,14 @@
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSA_CLR",
+    { name:     "CLASSA_CLR_SHADOWED",
       desc:     '''
                 Clear for escalation protocol of Class A.
                 '''
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
       hwqe:     "true",
+      shadowed: "true",
       regwen:   "CLASSA_CLR_REGWEN",
       fields: [
         { bits: "0",
@@ -869,13 +882,14 @@
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSB_CLR",
+    { name:     "CLASSB_CLR_SHADOWED",
       desc:     '''
                 Clear for escalation protocol of Class B.
                 '''
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
       hwqe:     "true",
+      shadowed: "true",
       regwen:   "CLASSB_CLR_REGWEN",
       fields: [
         { bits: "0",
@@ -1172,13 +1186,14 @@
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSC_CLR",
+    { name:     "CLASSC_CLR_SHADOWED",
       desc:     '''
                 Clear for escalation protocol of Class C.
                 '''
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
       hwqe:     "true",
+      shadowed: "true",
       regwen:   "CLASSC_CLR_REGWEN",
       fields: [
         { bits: "0",
@@ -1475,13 +1490,14 @@
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASSD_CLR",
+    { name:     "CLASSD_CLR_SHADOWED",
       desc:     '''
                 Clear for escalation protocol of Class D.
                 '''
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
       hwqe:     "true",
+      shadowed: "true",
       regwen:   "CLASSD_CLR_REGWEN",
       fields: [
         { bits: "0",

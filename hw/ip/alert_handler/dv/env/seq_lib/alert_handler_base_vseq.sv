@@ -140,10 +140,10 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task clear_esc();
-    csr_wr(.ptr(ral.classa_clr), .value(1));
-    csr_wr(.ptr(ral.classb_clr), .value(1));
-    csr_wr(.ptr(ral.classc_clr), .value(1));
-    csr_wr(.ptr(ral.classd_clr), .value(1));
+    csr_wr(.ptr(ral.classa_clr_shadowed), .value(1));
+    csr_wr(.ptr(ral.classb_clr_shadowed), .value(1));
+    csr_wr(.ptr(ral.classc_clr_shadowed), .value(1));
+    csr_wr(.ptr(ral.classd_clr_shadowed), .value(1));
   endtask
 
   // checking for csr_rd is done in scb
