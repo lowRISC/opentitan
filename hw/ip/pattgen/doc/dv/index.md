@@ -5,9 +5,10 @@ title: "PATTGEN DV document"
 ## Goals
 * **DV**
   * Verify all PATTGEN IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and func  tional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
+  * Build comprehensive coverage framework to measure coverage provided by existing tests
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
@@ -15,12 +16,15 @@ title: "PATTGEN DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/pattgen/dv/latest/results.html)
 
 ## Design features
+* Two independent programmable channels generating serial data
+* Channels are configured by register model output values
+* The core of each channel is a state machine built on three independent counters
 For detailed information on PATTGEN design features, please see the
 [PATTGEN design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
-PATTGEN testbench has been constructed based on the
-[CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+PATTGEN testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+* The coverage framework is bound to RTL for coverage collection
 
 ### Block diagram
 ![Block diagram](tb.svg)
@@ -40,16 +44,14 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
 ### Global types & methods
-All common types and methods defined at the package level can be found in
-`pattgen_env_pkg`. Some of them in use are:
+All common types and methods defined at the package level can be found in `pattgen_env_pkg`. Some of them in use are:
 ```systemverilog
 parameter uint NUM_PATTGEN_CHANNELS = 2;
 ```
 
 ### TL_agent
 PATTGEN instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-which provides the ability to drive and independently monitor random traffic via
-TL host interface into PATTGEN device.
+which provides the ability to drive and independently monitor random traffic via TL host interface into PATTGEN device.
 
 ### PATTGEN agent
 PATTGEN agent is configured to work device mode. 
@@ -58,24 +60,21 @@ Since the DUT does not require any response thus agent driver is fairly simple.
 
 ### UVM RAL Model
 The PATTGEN RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
-
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
-### Stimulus strategy
 #### Test sequences
 All test sequences reside in `hw/ip/pattgen/dv/env/seq_lib`.
 The `pattgen_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `pattgen_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* setup_pattgen_channel: test writing configuration values to CSR registers
+* start_pattgen_channels: randomly activate data transfer in channels
+* stop_pattgen_channels: terminate data transfer in channels and check for randomly injected errors
+* control_channels: wait for bus availability and program CSR configuration values into channels
 
 #### Functional coverage
-To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* Covergroups are captured at the end of the testplan
 
 ### Self-checking strategy
 #### Scoreboard
