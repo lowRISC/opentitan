@@ -7,7 +7,7 @@ otbn_rsa_test_lib = declare_dependency(
     'otbn_rsa_test_lib',
     sources: ['otbn_rsa_test.c'],
     dependencies: [
-      sw_lib_testing_entropy_testutils_lib,
+      sw_lib_testing_entropy_testutils,
       sw_lib_runtime_otbn,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,
@@ -27,7 +27,7 @@ otbn_ecdsa_p256_test_lib = declare_dependency(
     'otbn_ecdsa_p256_test_lib',
     sources: ['otbn_ecdsa_p256_test.c'],
     dependencies: [
-      sw_lib_testing_entropy_testutils_lib,
+      sw_lib_testing_entropy_testutils,
       sw_lib_runtime_otbn,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,
@@ -47,7 +47,7 @@ otbn_randomness_test_lib = declare_dependency(
     'otbn_randomness_test_lib',
     sources: ['otbn_randomness_test.c'],
     dependencies: [
-      sw_lib_testing_entropy_testutils_lib,
+      sw_lib_testing_entropy_testutils,
       sw_lib_runtime_otbn,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,
