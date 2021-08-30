@@ -20,6 +20,15 @@ module kmac
   // This parameter only affects when `EnMasking` is set.
   parameter bit ReuseShare = 0,
 
+  // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
+  // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
+  // two commands subsquently and then go to sleep. The second command is buffered internally and
+  // will be presented to the hardware SecCmdDelay number of cycles after the first one.
+  parameter int SecCmdDelay = 0,
+
+  // Accept SW message when idle and before receiving a START command. Useful for SCA only.
+  parameter bit SecIdleAcceptSwMsg = 1'b0,
+
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -225,7 +234,8 @@ module kmac
   // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
   // if KeyMgr drives the data, kmac_cmd is controled in the state machine
   // in KeyMgr interface logic.
-  kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd;
+  kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd, cmd_q;
+  logic      cmd_update;
 
   // Entropy configurations
   logic [9:0]  wait_timer_prescaler;
@@ -268,8 +278,83 @@ module kmac
     end
   end
 
+  if (SecCmdDelay > 0) begin : gen_cmd_delay_buf
+    // Delay and buffer commands for SCA measurements.
+    localparam int unsigned WidthCounter = $clog2(SecCmdDelay+1);
+    logic [WidthCounter-1:0] count_d, count_q;
+    logic                    counting_d, counting_q;
+    logic                    cmd_buf_empty;
+    kmac_cmd_e               cmd_buf_q;
+
+    assign cmd_buf_empty = (cmd_buf_q == CmdNone);
+
+    // When seeing a write to the cmd register, we start counting. We stop counting once the
+    // counter has expired and the command buffer is empty.
+    assign counting_d = reg2hw.cmd.cmd.qe          ? 1'b1 :
+                        cmd_update & cmd_buf_empty ? 1'b0 : counting_q;
+
+    // Clear counter upon writes to the cmd register or if the specified delay is reached.
+    assign count_d = reg2hw.cmd.cmd.qe ? '0             :
+                     cmd_update        ? '0             :
+                     counting_q        ? count_q + 1'b1 : count_q;
+
+    // The manual run command cannot be delayed. Software expects this to be triggered immediately
+    // and will poll the status register to wait for the SHA3 engine to return back to the squeeze
+    // state.
+    assign cmd_update = (cmd_q == CmdManualRun)                    ? 1'b1 :
+                        (count_q == SecCmdDelay[WidthCounter-1:0]) ? 1'b1 : 1'b0;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        count_q    <= '0;
+        counting_q <= 1'b0;
+      end else begin
+        count_q    <= count_d;
+        counting_q <= counting_d;
+      end
+    end
+
+    // cmd.q is valid while cmd.qe is high, meaning it needs to be registered. We buffer one
+    // additional command such that software can write START followed by PROCESS and then go to
+    // sleep.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        cmd_q     <= CmdNone;
+        cmd_buf_q <= CmdNone;
+      end else begin
+        if (reg2hw.cmd.cmd.qe && cmd_update) begin
+          // New write & counter expired.
+          cmd_q     <= cmd_buf_q;
+          cmd_buf_q <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+
+        end else if (reg2hw.cmd.cmd.qe) begin
+          // New write.
+          if (counting_q == 1'b0) begin
+            cmd_q     <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+          end else begin
+            cmd_buf_q <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+          end
+
+        end else if (cmd_update) begin
+          // Counter expired.
+          cmd_q     <= cmd_buf_q;
+          cmd_buf_q <= CmdNone;
+        end
+      end
+    end
+
+    // Create a lint error to reduce the risk of accidentally enabling this feature.
+    logic sec_cmd_delay_dummy;
+    assign sec_cmd_delay_dummy = cmd_update;
+
+  end else begin : gen_no_cmd_delay_buf
+    // Directly forward signals from register IF.
+    assign cmd_update = reg2hw.cmd.cmd.qe;
+    assign cmd_q      = kmac_cmd_e'(reg2hw.cmd.cmd.q);
+  end
+
   // Command signals
-  assign sw_cmd = (reg2hw.cmd.cmd.qe) ? kmac_cmd_e'(reg2hw.cmd.cmd.q) : CmdNone;
+  assign sw_cmd = (cmd_update) ? cmd_q : CmdNone;
   `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
     sha3_start = 1'b 0;
@@ -728,7 +813,8 @@ module kmac
 
   // Application interface Mux/Demux
   kmac_app #(
-    .EnMasking(EnMasking)
+    .EnMasking(EnMasking),
+    .SecIdleAcceptSwMsg(SecIdleAcceptSwMsg)
   ) u_app_intf (
     .clk_i,
     .rst_ni,

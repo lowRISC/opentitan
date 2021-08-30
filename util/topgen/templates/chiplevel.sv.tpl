@@ -1053,6 +1053,8 @@ module chip_${top["name"]}_${target["name"]} (
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
     .KmacEnMasking(0),
+    .SecKmacCmdDelay(40),
+    .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),

@@ -57,6 +57,8 @@ module top_earlgrey #(
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
   parameter int KmacReuseShare = 0,
+  parameter int SecKmacCmdDelay = 0,
+  parameter bit SecKmacIdleAcceptSwMsg = 0,
   // parameters for keymgr
   parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
@@ -2005,6 +2007,8 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40]),
     .EnMasking(KmacEnMasking),
     .ReuseShare(KmacReuseShare),
+    .SecCmdDelay(SecKmacCmdDelay),
+    .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
     .RndCnstLfsrPerm(RndCnstKmacLfsrPerm)
   ) u_kmac (
 
