@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module pwm_chan (
+module pwm_chan #(
+  parameter int CntDw = 16
+) (
   input        clk_i,
   input        rst_ni,
 
@@ -31,23 +33,23 @@ module pwm_chan (
   logic        pwm_int;
 
   // Standard blink mode
-  logic [15:0] blink_ctr_q;
-  logic [15:0] blink_ctr_d;
-  logic [15:0] duty_cycle_blink;
+  logic [CntDw-1:0] blink_ctr_q;
+  logic [CntDw-1:0] blink_ctr_d;
+  logic [CntDw-1:0] duty_cycle_blink;
 
   logic unused_sum;
-  logic [15:0] blink_sum;
-  assign {unused_sum, blink_sum} = blink_param_x_i + blink_param_y_i + 16'h1;
-  assign blink_ctr_d = (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) ? 16'h0 :
-                       ((blink_ctr_q == blink_sum[15:0]) && cycle_end_i)
-                       ? 16'h0 : (cycle_end_i) ? blink_ctr_q + 16'h1 : blink_ctr_q;
+  logic [CntDw-1:0] blink_sum;
+  assign {unused_sum, blink_sum} = blink_param_x_i + blink_param_y_i + 1'b1;
+  assign blink_ctr_d = (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) ? '0 :
+                       ((blink_ctr_q == blink_sum[CntDw-1:0]) && cycle_end_i)
+                       ? '0 : (cycle_end_i) ? blink_ctr_q + 1'b1 : blink_ctr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      blink_ctr_q <= 16'h0;
+      blink_ctr_q <= '0;
     end else begin
       if (clr_blink_cntr_i) begin
-        blink_ctr_q <= 16'h0;
+        blink_ctr_q <= '0;
       end else begin
         blink_ctr_q <= (blink_en_i && !htbt_en_i) ? blink_ctr_d : blink_ctr_q;
       end
@@ -58,23 +60,23 @@ module pwm_chan (
                             duty_cycle_b_i : duty_cycle_a_i;
 
   // Heartbeat mode
-  logic [15:0] htbt_ctr_q;
-  logic [15:0] htbt_ctr_d;
-  logic [15:0] duty_cycle_htbt;
-  logic [15:0] dc_htbt_d;
-  logic [15:0] dc_htbt_q;
+  logic [CntDw-1:0] htbt_ctr_q;
+  logic [CntDw-1:0] htbt_ctr_d;
+  logic [CntDw-1:0] duty_cycle_htbt;
+  logic [CntDw-1:0] dc_htbt_d;
+  logic [CntDw-1:0] dc_htbt_q;
   logic dc_htbt_end;
 
-  assign htbt_ctr_d = (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) ? 16'h0 :
-                      ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? 16'h0 :
-                      (cycle_end_i) ? htbt_ctr_q + 16'h1 : htbt_ctr_q;
+  assign htbt_ctr_d = (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) ? '0 :
+                      ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? '0 :
+                      (cycle_end_i) ? (htbt_ctr_q + 1'b1) : htbt_ctr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      htbt_ctr_q <= 16'h0;
+      htbt_ctr_q <= '0;
     end else begin
       if (clr_blink_cntr_i) begin
-        htbt_ctr_q <= 16'h0;
+        htbt_ctr_q <= '0;
       end else begin
         htbt_ctr_q <= (blink_en_i && htbt_en_i) ? htbt_ctr_d : htbt_ctr_q;
       end
@@ -107,11 +109,12 @@ module pwm_chan (
   logic pattern_repeat;
   assign pattern_repeat = (pos_htbt & htbt_direction) | (neg_htbt & ~htbt_direction) |
                           (~pos_htbt & ~neg_htbt);
-  assign {dc_wrap, dc_htbt_d} = !(htbt_ctr_q == blink_param_x_i) ? {1'b0, dc_htbt_q} :
+  localparam int CntExtDw = CntDw + 1;
+  assign {dc_wrap, dc_htbt_d} = !(htbt_ctr_q == blink_param_x_i) ? (CntExtDw)'(dc_htbt_q) :
                                 ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) ?
-                                {1'b0, duty_cycle_a_i} : (htbt_direction) ?
-                                {1'b0, dc_htbt_q} - {1'b0, blink_param_y_i} - 1'b1 :
-                                {1'b0, dc_htbt_q} + {1'b0, blink_param_y_i} + 1'b1;
+                                (CntExtDw)'(duty_cycle_a_i) : (htbt_direction) ?
+                                (CntExtDw)'(dc_htbt_q) - (CntExtDw)'(blink_param_y_i) - 1'b1 :
+                                (CntExtDw)'(dc_htbt_q) + (CntExtDw)'(blink_param_y_i) + 1'b1;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dc_htbt_q <= '0;

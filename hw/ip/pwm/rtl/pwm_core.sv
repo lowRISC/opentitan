@@ -5,7 +5,9 @@
 // Description: PWM Core Module
 
 module pwm_core #(
-  parameter int NOutputs = 6
+  parameter int NOutputs = 6,
+  parameter int PhaseCntDw = 16,
+  parameter int BeatCntDw = 27
 ) (
   input                           clk_core_i,
   input                           rst_core_ni,
@@ -42,24 +44,24 @@ module pwm_core #(
   // Beat and phase counters (in core clock domain)
   //
 
-  logic        cntr_en;
-  logic [26:0] clk_div;
-  logic [3:0]  dc_resn;
+  logic                  cntr_en;
+  logic [BeatCntDw-1:0]  clk_div;
+  logic [3:0]            dc_resn;
 
-  logic [26:0] beat_ctr_q;
-  logic [26:0] beat_ctr_d;
-  logic        beat_ctr_en;
-  logic        beat_end;
+  logic [BeatCntDw-1:0]  beat_ctr_q;
+  logic [BeatCntDw-1:0]  beat_ctr_d;
+  logic                  beat_ctr_en;
+  logic                  beat_end;
 
-  logic [15:0] phase_ctr_q;
-  logic [15:0] phase_ctr_d;
-  logic [15:0] phase_ctr_incr;
-  logic [15:0] phase_ctr_next;
-  logic        phase_ctr_overflow;
-  logic        phase_ctr_en;
-  logic        cycle_end;
+  logic [PhaseCntDw-1:0] phase_ctr_q;
+  logic [PhaseCntDw-1:0] phase_ctr_d;
+  logic [PhaseCntDw-1:0] phase_ctr_incr;
+  logic [PhaseCntDw-1:0] phase_ctr_next;
+  logic                  phase_ctr_overflow;
+  logic                  phase_ctr_en;
+  logic                  cycle_end;
 
-  logic        unused_regen;
+  logic                  unused_regen;
 
   // TODO: implement register locking
   assign unused_regen = reg2hw.regen.q;
@@ -68,14 +70,14 @@ module pwm_core #(
   assign dc_resn = reg2hw.cfg.dc_resn.q;
   assign clk_div = reg2hw.cfg.clk_div.q;
 
-  assign beat_ctr_d = (clr_phase_cntr) ? 27'h0 :
-                      (beat_ctr_q == clk_div) ? 27'h0 : (beat_ctr_q + 27'h1);
+  assign beat_ctr_d = (clr_phase_cntr) ? '0 :
+                      (beat_ctr_q == clk_div) ? '0 : (beat_ctr_q + 1'b1);
   assign beat_ctr_en = clr_phase_cntr | cntr_en;
   assign beat_end = (beat_ctr_q == clk_div);
 
   always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
     if (!rst_core_ni) begin
-      beat_ctr_q <= 27'h0;
+      beat_ctr_q <= '0;
     end else begin
       beat_ctr_q <= beat_ctr_en ? beat_ctr_d : beat_ctr_q;
     end
@@ -84,14 +86,14 @@ module pwm_core #(
   // Only update phase_ctr at the end of each beat
   // Exception: allow reset to zero whenever not enabled
   assign phase_ctr_en = beat_end & (clr_phase_cntr | cntr_en);
-  assign phase_ctr_incr =  16'h1 << (15 -dc_resn);
+  assign phase_ctr_incr =  (PhaseCntDw)'('h1) << (4'd15 - dc_resn);
   assign {phase_ctr_overflow, phase_ctr_next} = phase_ctr_q + phase_ctr_incr;
-  assign phase_ctr_d = clr_phase_cntr ? 16'h0 : phase_ctr_next;
+  assign phase_ctr_d = clr_phase_cntr ? '0 : phase_ctr_next;
   assign cycle_end = beat_end & phase_ctr_overflow;
 
   always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
     if (!rst_core_ni) begin
-      phase_ctr_q <= 16'h0;
+      phase_ctr_q <= '0;
     end else begin
       phase_ctr_q <= phase_ctr_en ? phase_ctr_d : phase_ctr_q;
     end
@@ -103,7 +105,7 @@ module pwm_core #(
     // PWM Channel Instantiation
     //
 
-    pwm_chan u_chan (
+    pwm_chan #(.CntDw(PhaseCntDw)) u_chan (
       .clk_i            (clk_core_i),
       .rst_ni           (rst_core_ni),
       .pwm_en_i         (reg2hw.pwm_en[ii].q),
