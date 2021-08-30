@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/random.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 
 /**
  * The polynomial co-efficients used in the 32-bit LFSR implementation.
@@ -16,7 +15,7 @@
  */
 const uint32_t kLfsrCoefficients = 0x80000057;
 
-uint32_t random_gen32(void) {
+uint32_t rand_testutils_gen32(void) {
   static uint32_t lfsr = 1;
   bool lsb = lfsr & 0x1u;
   lfsr >>= 1;
@@ -26,11 +25,11 @@ uint32_t random_gen32(void) {
   return lfsr;
 }
 
-uint32_t random_gen32_range(uint32_t min, uint32_t max) {
+uint32_t rand_testutils_gen32_range(uint32_t min, uint32_t max) {
   CHECK(max >= min);
   uint32_t range = max - min;
   if (range == 0) {
     return min;
   }
-  return min + (random_gen32() % (range + 1));
+  return min + (rand_testutils_gen32() % (range + 1));
 }

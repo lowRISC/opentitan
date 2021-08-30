@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RANDOM_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_RANDOM_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
  * a known seed.
  * @return A pseudo-random 32-bit value.
  */
-uint32_t random_gen32(void);
+uint32_t rand_testutils_gen32(void);
 
 /**
  * Generate a random unsigned integer within a given range.
@@ -27,6 +27,6 @@ uint32_t random_gen32(void);
  * @param max The upper limit of the range.
  * @return The computed random value within the supplied range.
  */
-uint32_t random_gen32_range(uint32_t min, uint32_t max);
+uint32_t rand_testutils_gen32_range(uint32_t min, uint32_t max);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RANDOM_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
