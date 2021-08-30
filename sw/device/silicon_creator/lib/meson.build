@@ -202,7 +202,7 @@ test('sw_silicon_creator_lib_epmp_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_lib_base_testing_mock_csr,
+      sw_silicon_creator_lib_base_mock_csr,
       sw_lib_testing_bitfield,
     ],
     native: true,

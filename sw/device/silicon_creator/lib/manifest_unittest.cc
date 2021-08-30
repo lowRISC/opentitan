@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 namespace manifest_unittest {
 namespace {

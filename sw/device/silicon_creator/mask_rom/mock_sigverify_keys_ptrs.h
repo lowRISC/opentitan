@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_KEYS_PTRS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_KEYS_PTRS_H_
 
-#include "sw/device/lib/testing/mask_rom_test.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 namespace mask_rom_test {
 namespace internal {

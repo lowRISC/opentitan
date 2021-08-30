@@ -6,12 +6,12 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/testing/mask_rom_test.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

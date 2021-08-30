@@ -2,6 +2,34 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+sw_silicon_creator_lib_base_mock_csr = declare_dependency(
+  link_with: static_library(
+    'mock_csr',
+    sources: [
+      'mock_csr.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+    c_args: ['-DMOCK_CSR'],
+    cpp_args: ['-DMOCK_CSR'],
+  )
+)
+
+# Example test using mock_csr.h, which also serves to
+# test that mock_csr.h works correctly.
+test('mock_csr_test', executable(
+  'mock_csr_test',
+  sources: ['mock_csr_test.cc'],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_silicon_creator_lib_base_mock_csr,
+  ],
+  native: true,
+  cpp_args: ['-DMOCK_CSR'],
+))
+
 sw_silicon_creator_lib_base_abs_mmio = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_base_abs_mmio',

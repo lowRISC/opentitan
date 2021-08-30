@@ -10,7 +10,6 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/testing/mask_rom_test.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -19,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 #include "sw/device/silicon_creator/mask_rom/mock_sigverify_keys_ptrs.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "otp_ctrl_regs.h"
 

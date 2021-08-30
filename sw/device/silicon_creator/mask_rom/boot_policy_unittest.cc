@@ -5,9 +5,9 @@
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/testing/mask_rom_test.h"
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
 #include "sw/device/silicon_creator/mask_rom/mock_boot_policy_ptrs.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 namespace manifest_unittest {
 namespace {

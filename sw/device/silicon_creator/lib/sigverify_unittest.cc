@@ -9,11 +9,11 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/testing/mask_rom_test.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_ibex.h"
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
