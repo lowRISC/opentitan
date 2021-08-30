@@ -11,7 +11,8 @@ module kmac_app
 #(
   // App specific configs are defined in kmac_pkg
   parameter  bit EnMasking = 1'b0,
-  localparam int Share = (EnMasking) ? 2 : 1 // derived parameter
+  localparam int Share = (EnMasking) ? 2 : 1, // derived parameter
+  parameter  bit SecIdleAcceptSwMsg = 1'b0
 ) (
   input clk_i,
   input rst_ni,
@@ -356,7 +357,7 @@ module kmac_app
   always_comb begin
     st_d = StIdle;
 
-    mux_sel = SelNone;
+    mux_sel = SecIdleAcceptSwMsg ? SelSw : SelNone;
 
     // app_id control
     set_appid = 1'b 0;
@@ -497,6 +498,12 @@ module kmac_app
         st_d = StIdle;
       end
     endcase
+  end
+
+  if (SecIdleAcceptSwMsg != 1'b0) begin : gen_lint_err
+    // Create a lint error to reduce the risk of accidentally enabling this feature.
+    logic sec_idle_accept_sw_msg_dummy;
+    assign sec_idle_accept_sw_msg_dummy = (st == StIdle);
   end
 
   //////////////

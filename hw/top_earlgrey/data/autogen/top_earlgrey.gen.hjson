@@ -4932,6 +4932,33 @@
           name_top: KmacReuseShare
         }
         {
+          name: SecCmdDelay
+          desc:
+            '''
+            Command delay, useful for SCA measurements only.
+            A value of e.g. 40 allows the processor to go into sleep before KMAC starts operation.
+            If a value greater than 0 is chosen, software can pass two commands in series.
+            The second command is buffered internally and will be presented to the hardware SecCmdDelay number of cycles after the first one.
+            '''
+          type: int
+          default: "0"
+          expose: "true"
+          name_top: SecKmacCmdDelay
+        }
+        {
+          name: SecIdleAcceptSwMsg
+          desc:
+            '''
+            If enabled (1), software writes to the message FIFO before having received a START command are not ignored.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SecKmacIdleAcceptSwMsg
+        }
+        {
           name: RndCnstLfsrPerm
           desc: Compile-time random permutation for LFSR output
           type: kmac_pkg::lfsr_perm_t
