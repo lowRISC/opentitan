@@ -30,6 +30,7 @@
     { name: "rxerr",       desc: "SDI in FwMode has error" },
     { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
     { name: "txunderflow", desc: "TX Async FIFO underflow" },
+    { name: "tpm_cmdaddr_notempty", desc: "TPM Command/Address buffer available" }
   ],
   alert_list: [
     { name: "fatal_fault",
@@ -53,6 +54,12 @@
       default: "24"
       local:   "true"
     }
+    { name:    "NumLocality"
+      desc:    "The number of locality TPM module supports."
+      type:    "int unsigned"
+      default: "5"
+      local:   "true"
+    } // p: NumLocality
   ],
   inter_signal_list: [
     { struct:  "ram_2p_cfg",
@@ -669,6 +676,291 @@
         ]
       }
     }
+    //===============================================================
+    // TPM registers
+    { skipto: "0x800"}
+    { name: "TPM_CAP"
+      desc: '''TPM HWIP Capability register.
+
+        This register shows the features the current TPM HWIP supports.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "rev"
+          desc: "Revision of the TPM submodule"
+        } // f: rev
+        { bits: "8"
+          name: "locality"
+          desc: '''If 1, the TPM submodule supports 5 Locality.
+            If 0, only one Locality is provided
+            '''
+        } // f: locality
+        { bits: "18:16"
+          name: "max_xfer_size"
+          desc: '''The maximum transfer size in bytes the TPM submodule supports.
+            The value is the exponent of the 2.
+
+            - 3'b 010: Support up to 4B
+            - 3'b 011: Support up to 8B
+            - 3'b 101: Support up to 32B
+            - 3'b 110: Support up to 64B
+
+            All other values are reserved.
+
+            The SW may advertises as supporting more than `max_xfer_size` to the South Brige.
+            If the SW reports the transfer size more than the value described in this field,
+            the SW must read the data from the write FIFO before the FIFO becomes full in order not to make FIFO overflow.
+            '''
+        } // f: max_xfer_size
+      ]
+      tags: [
+        // Remove Read check (reset value)
+        "excl:CsrAllTests:CsrExclCheck"]
+    } // R: TPM_CAP
+    { name: "TPM_CFG"
+      desc: '''TPM Configuration register.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          name: "en"
+          desc: "If 1, TPM submodule accepts the transactions over SPI"
+        } // f: en
+        { bits: "1"
+          name: "tpm_mode"
+          desc: '''Configure the TPM mode. 1 for CRB, 0 for FIFO.
+
+            If the SW set this field to 1, the HW logic always pushes the
+            command/addr and write data to buffers. The logic does not compare
+            the incoming address to the list of managed-by-HW register
+            addresses.
+
+            The invalid locality check still runs based on the invalid_locality
+            configuration.
+            '''
+        } // f: tpm_mode
+        { bits: "2"
+          name: "hw_reg_dis"
+          desc: '''If 0, TPM submodule directly returns the return-by-HW registers for the read requests.
+
+            If 1, TPM submodule uploads the TPM command regardless of the address, and the SW may return the value through the read FIFO.
+            '''
+        } // f: hw_reg_dis
+        { bits: "3"
+          name: "tpm_reg_chk_dis"
+          desc: '''If 1, the logic does not compare the upper 8 bit of the
+            received address with the TpmAddr constant, D4h.
+
+            If this field is 0, the HW uploads the command, address, and write
+            payload to the buffers in case of address that is not 0xD4_XXXX.
+            '''
+        } // f: tpm_reg_chk_dis
+        { bits: "4"
+          name: "invalid_locality"
+          desc: '''If 1, TPM submodule returns the invalid data (0xFF) for the
+            out of the max Locality request.
+            If it is a write request, it discards the request.
+
+            If 0, TPM submodule uploads the TPM command and address. The SW may
+            write 0xFF to the read FIFO.
+
+            Note: The TPM submodule uploads the TPM commands that do not fall
+            into the FIFO registers (0xD4_XXXX) regardless of
+            `invalid_locality` bit.
+            '''
+        } // f: invalid_locality
+      ]
+      tags: [
+        // Remove Write check (reset value)
+        "excl:CsrAllTests:CsrExclAll"]
+    } // R: TPM_CFG
+    { name: "TPM_STATUS"
+      desc: '''TPM submodule state register.
+
+        The TPM_STATUS CSR provides the current TPM status, mostly the buffer and FIFO status.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          name: "cmdaddr_notempty"
+          desc: "If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also."
+        } // f: cmdaddr_notempty
+        { bits: "1"
+          name: "rdfifo_notempty"
+          desc: "If 1, the TPM_READ_FIFO still has pending data."
+        } // f: rdfifo_notempty
+        { bits: "6:4"
+          name: "rdfifo_depth"
+          desc: "This field represents the current read FIFO depth"
+        } // f: rdfifo_depth
+        { bits: "10:8"
+          name: "wrfifo_depth"
+          desc: "This field represents the current write FIFO depth."
+        } // f: wrfifo_depth
+      ]
+    } // R: TPM_STATUS
+    { multireg: {
+      cname: "TPM"
+      name: "TPM_ACCESS"
+      desc: '''TPM_ACCESS_x register.
+        '''
+      count: "NumLocality"
+      compact: true
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "access"
+          desc: "TPM_ACCESS"
+        }
+      ]
+    }} // mr: TPM_ACCESS
+    { name: "TPM_STS"
+      desc: '''TPM_STS_x register.
+
+        The register is mirrored to all Localities.
+        The value is returned to the host system only when the activeLocality
+        in the TPM_ACCESS_x is matched to the current received Locality.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "sts"
+          desc: "TPM_STS_x"
+        }
+      ]
+    } // R: TPM_STS
+    { name: "TPM_INTF_CAPABILITY"
+      desc: "TPM_INTF_CAPABILITY"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "intf_capability"
+          desc: "TPM_INTF_CAPABILITY"
+        }
+      ]
+    } // R: TPM_INTF_CAPABILITY
+    { name: "TPM_INT_ENABLE"
+      desc: "TPM_INT_ENABLE"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "int_enable"
+          desc: "TPM_INT_ENABLE"
+        }
+      ]
+    } // R: TPM_INT_ENABLE
+    { name: "TPM_INT_VECTOR"
+      desc: "TPM_INT_VECTOR"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "int_vector"
+          desc: "TPM_INT_VECTOR"
+        }
+      ]
+    } // R: TPM_INT_VECTOR
+    { name: "TPM_INT_STATUS"
+      desc: "TPM_INT_STATUS"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "int_status"
+          desc: "TPM_INT_STATUS"
+        }
+      ]
+    } // R: TPM_INT_STATUS
+    { name: "TPM_DID_VID"
+      desc: "TPM_DID/ TPM_VID register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "vid"
+          desc: "TPM_VID"
+        } // f: vid
+        { bits: "31:16"
+          name: "did"
+          desc: "TPM_DID"
+        } // f: did
+      ]
+    } // R: TPM_DID_VID
+    { name: "TPM_RID"
+      desc: "TPM_RID"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "rid"
+          desc: "TPM_RID"
+        }
+      ]
+    } // R: TPM_RID
+    { name: "TPM_CMD_ADDR"
+      desc: '''TPM Command and Address buffer
+
+        The SW may get the received TPM command and address by readin gthis CSR.
+        '''
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwre:  "true"
+      hwqe:  "true"
+      fields: [
+        { bits: "23:0"
+          name: "addr"
+          desc: "received address"
+        } // f: addr
+        { bits: "31:24"
+          name: "cmd"
+          desc: "received command"
+        } // f: cmd
+      ]
+    } // R: TPM_CMD_ADDR
+    { name: "TPM_READ_FIFO"
+      desc: '''TPM Read command return data FIFO.
+
+        The write port of the read command FIFO.
+        '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwqe: "true"
+      hwext: "true"
+      fields: [
+        { bits: "7:0"
+          name: "value"
+          desc: "write port of the read FIFO"
+        }
+      ]
+      tags: [// Updating FIFO randomly can result in tpm_status value change
+             "excl:CsrNonInitTests:CsrExclWrite"]
+    } // R: TPM_READ_FIFO
+    { name: "TPM_WRITE_FIFO"
+      desc: '''TPM Write command received data FIFO.
+        '''
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwqe: "true"
+      hwre: "true"
+      fields: [
+        { bits: "7:0"
+          name: "value"
+          desc: "Read only port of the write FIFO"
+        }
+      ]
+      tags: ["excl:CsrNonInitTests:CsrExclAll"]
+    } // R: TPM_WRITE_FIFO
+    //---------------------------------------------------------------
     { skipto: "0x1000" }
     { window: {
         name: "buffer",
