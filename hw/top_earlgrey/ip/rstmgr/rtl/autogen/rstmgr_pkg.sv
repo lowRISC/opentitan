@@ -70,17 +70,6 @@ package rstmgr_pkg;
   } rstmgr_cpu_t;
 
   // exported resets
-  typedef struct packed {
-    logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
-    logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
-    logic [PowerDomains-1:0] rst_ast_usbdev_usbif_n;
-    logic [PowerDomains-1:0] rst_ast_adc_ctrl_aon_sys_io_div4_n;
-    logic [PowerDomains-1:0] rst_ast_adc_ctrl_aon_sys_aon_n;
-    logic [PowerDomains-1:0] rst_ast_ast_lc_io_div4_n;
-    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_aon_lc_io_div4_n;
-    logic [PowerDomains-1:0] rst_ast_entropy_src_sys_n;
-    logic [PowerDomains-1:0] rst_ast_edn0_sys_n;
-  } rstmgr_ast_out_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{

@@ -122,6 +122,8 @@
         {
           clk_io_div4_secure: io_div4
           clk_main_secure: main
+          clk_aon_secure: aon
+          clk_usb_secure: usb
         }
       }
       {
@@ -805,6 +807,19 @@
           index: -1
         }
         {
+          name: sck_monitor
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          default: ""
+          package: ""
+          external: true
+          top_signame: sck_monitor
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1198,10 +1213,6 @@
         clk_usb_48mhz_i: usb
       }
       clock_group: peri
-      clock_reset_export:
-      [
-        ast
-      ]
       reset_connections:
       {
         rst_ni:
@@ -2687,19 +2698,6 @@
           index: -1
         }
         {
-          name: resets_ast
-          struct: rstmgr_ast_out
-          package: rstmgr_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: rstmgr_aon
-          default: ""
-          external: true
-          top_signame: rsts_ast
-          index: -1
-        }
-        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2912,19 +2910,6 @@
           index: -1
         }
         {
-          name: clocks_ast
-          struct: clkmgr_ast_out
-          package: clkmgr_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          external: true
-          top_signame: clks_ast
-          index: -1
-        }
-        {
           name: pwr
           struct: pwr_clk
           type: req_rsp
@@ -3069,10 +3054,6 @@
           domain: Aon
         }
       }
-      clock_reset_export:
-      [
-        ast
-      ]
       domain:
       [
         Aon
@@ -3570,25 +3551,56 @@
       type: ast
       clock_srcs:
       {
-        clk_i: io_div4
+        clk_ast_tlul_i: io_div4
+        clk_ast_adc_i: aon
+        clk_ast_alert_i: io_div4
+        clk_ast_es_i: main
+        clk_ast_rng_i: main
+        clk_ast_usb_i: usb
       }
       clock_group: secure
-      clock_reset_export:
-      [
-        ast
-      ]
       reset_connections:
       {
-        rst_ni:
+        rst_ast_tlul_ni:
         {
           name: lc_io_div4
+          domain: "0"
+        }
+        rst_ast_adc_ni:
+        {
+          name: sys_aon
+          domain: "0"
+        }
+        rst_ast_alert_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+        rst_ast_es_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_ast_rng_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_ast_usb_ni:
+        {
+          name: usbif
           domain: "0"
         }
       }
       attr: reggen_only
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_ast_tlul_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_ast_adc_i: clkmgr_aon_clocks.clk_aon_secure
+        clk_ast_alert_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_ast_es_i: clkmgr_aon_clocks.clk_main_secure
+        clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
+        clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_secure
       }
       domain:
       [
@@ -3622,10 +3634,6 @@
         clk_i: io_div4
       }
       clock_group: secure
-      clock_reset_export:
-      [
-        ast
-      ]
       reset_connections:
       {
         rst_ni:
@@ -5491,10 +5499,6 @@
           domain: "0"
         }
       }
-      clock_reset_export:
-      [
-        ast
-      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -5637,10 +5641,6 @@
           domain: "0"
         }
       }
-      clock_reset_export:
-      [
-        ast
-      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -7431,8 +7431,8 @@
     }
     top:
     [
-      rstmgr_aon.resets
       clkmgr_aon.clocks
+      rstmgr_aon.resets
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
@@ -7482,10 +7482,9 @@
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
       sensor_ctrl_aon.ast2pinmux: ast2pinmux
       sensor_ctrl_aon.ast_init_done: ast_init_done
+      spi_device.sck_monitor: sck_monitor
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
-      clkmgr_aon.clocks_ast: clks_ast
-      rstmgr_aon.resets_ast: rsts_ast
     }
   }
   xbar:
@@ -11995,39 +11994,7 @@
       }
     }
   ]
-  exported_clks:
-  {
-    ast:
-    {
-      usbdev:
-      [
-        io_div4_peri
-        aon_peri
-        usb_peri
-      ]
-      adc_ctrl_aon:
-      [
-        io_div4_peri
-        aon_peri
-      ]
-      ast:
-      [
-        io_div4_secure
-      ]
-      sensor_ctrl_aon:
-      [
-        io_div4_secure
-      ]
-      entropy_src:
-      [
-        main_secure
-      ]
-      edn0:
-      [
-        main_secure
-      ]
-    }
-  }
+  exported_clks: {}
   wakeups:
   [
     {
@@ -13529,66 +13496,7 @@
       module_name: rv_core_ibex
     }
   ]
-  exported_rsts:
-  {
-    ast:
-    {
-      usbdev:
-      [
-        {
-          name: usb
-          domain: "0"
-        }
-        {
-          name: sys_aon
-          domain: "0"
-        }
-        {
-          name: usbif
-          domain: "0"
-        }
-      ]
-      adc_ctrl_aon:
-      [
-        {
-          name: sys_io_div4
-          domain: Aon
-        }
-        {
-          name: sys_aon
-          domain: Aon
-        }
-      ]
-      ast:
-      [
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      ]
-      sensor_ctrl_aon:
-      [
-        {
-          name: lc_io_div4
-          domain: Aon
-        }
-      ]
-      entropy_src:
-      [
-        {
-          name: sys
-          domain: "0"
-        }
-      ]
-      edn0:
-      [
-        {
-          name: sys
-          domain: "0"
-        }
-      ]
-    }
-  }
+  exported_rsts: {}
   inter_signal:
   {
     signals:
@@ -13690,6 +13598,19 @@
         act: rcv
         width: 1
         inst_name: spi_device
+        index: -1
+      }
+      {
+        name: sck_monitor
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        default: ""
+        package: ""
+        external: true
+        top_signame: sck_monitor
         index: -1
       }
       {
@@ -14970,19 +14891,6 @@
         index: -1
       }
       {
-        name: resets_ast
-        struct: rstmgr_ast_out
-        package: rstmgr_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: rstmgr_aon
-        default: ""
-        external: true
-        top_signame: rsts_ast
-        index: -1
-      }
-      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15132,19 +15040,6 @@
         package: ""
         external: true
         top_signame: clk_aon
-        index: -1
-      }
-      {
-        name: clocks_ast
-        struct: clkmgr_ast_out
-        package: clkmgr_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        external: true
-        top_signame: clks_ast
         index: -1
       }
       {
@@ -18459,6 +18354,18 @@
       {
         package: ""
         struct: logic
+        signame: sck_monitor_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sck_monitor
+      }
+      {
+        package: ""
+        struct: logic
         signame: usbdev_usb_ref_val_o
         width: 1
         type: uni
@@ -18479,30 +18386,6 @@
         conn_type: false
         index: -1
         netname: usbdev_usb_ref_pulse
-      }
-      {
-        package: clkmgr_pkg
-        struct: clkmgr_ast_out
-        signame: clks_ast_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: clks_ast
-      }
-      {
-        package: rstmgr_pkg
-        struct: rstmgr_ast_out
-        signame: rsts_ast_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: rsts_ast
       }
     ]
     definitions:
@@ -20642,18 +20525,18 @@
         default: ""
       }
       {
-        package: rstmgr_pkg
-        struct: rstmgr_out
-        signame: rstmgr_aon_resets
+        package: clkmgr_pkg
+        struct: clkmgr_out
+        signame: clkmgr_aon_clocks
         width: 1
         type: uni
         end_idx: -1
         default: ""
       }
       {
-        package: clkmgr_pkg
-        struct: clkmgr_out
-        signame: clkmgr_aon_clocks
+        package: rstmgr_pkg
+        struct: rstmgr_out
+        signame: rstmgr_aon_resets
         width: 1
         type: uni
         end_idx: -1

@@ -151,11 +151,14 @@ module top_earlgrey #(
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
   input  logic [8:0] ast2pinmux_i,
   input  logic       ast_init_done_i,
+  output logic       sck_monitor_o,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
-  output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
-  output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
 
+
+  // All clocks forwarded to ast
+  output clkmgr_pkg::clkmgr_out_t clks_ast_o,
+  output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -699,8 +702,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       sysrst_ctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       adc_ctrl_aon_tl_req;
   tlul_pkg::tl_d2h_t       adc_ctrl_aon_tl_rsp;
-  rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
+  rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
@@ -764,47 +767,11 @@ module top_earlgrey #(
     otp_ctrl_otp_hw_cfg.data.unallocated
   };
 
-  // certain resets are unused
-  logic unused_d0_rst_por_aon;
-  logic unused_d0_rst_por;
-  logic unused_d0_rst_por_io;
-  logic unused_d0_rst_por_io_div2;
-  logic unused_d0_rst_por_io_div4;
-  logic unused_d0_rst_por_usb;
-  logic unused_daon_rst_lc;
-  logic unused_d0_rst_lc_aon;
-  logic unused_daon_rst_sys;
-  logic unused_daon_rst_sys_shadowed;
-  logic unused_daon_rst_spi_device;
-  logic unused_daon_rst_spi_host0;
-  logic unused_daon_rst_spi_host0_core;
-  logic unused_daon_rst_spi_host1;
-  logic unused_daon_rst_spi_host1_core;
-  logic unused_daon_rst_usb;
-  logic unused_daon_rst_usbif;
-  logic unused_daon_rst_i2c0;
-  logic unused_daon_rst_i2c1;
-  logic unused_daon_rst_i2c2;
-  assign unused_d0_rst_por_aon = rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por = rstmgr_aon_resets.rst_por_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por_io = rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por_io_div2 = rstmgr_aon_resets.rst_por_io_div2_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por_io_div4 = rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por_usb = rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel];
-  assign unused_daon_rst_lc = rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
-  assign unused_d0_rst_lc_aon = rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::Domain0Sel];
-  assign unused_daon_rst_sys = rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_sys_shadowed = rstmgr_aon_resets.rst_sys_shadowed_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_spi_device = rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_spi_host0 = rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_spi_host0_core = rstmgr_aon_resets.rst_spi_host0_core_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_spi_host1 = rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_spi_host1_core = rstmgr_aon_resets.rst_spi_host1_core_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_usb = rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_usbif = rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_i2c0 = rstmgr_aon_resets.rst_i2c0_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_i2c1 = rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::DomainAonSel];
-  assign unused_daon_rst_i2c2 = rstmgr_aon_resets.rst_i2c2_n[rstmgr_pkg::DomainAonSel];
+  // See #7978 This below is a hack.
+  // This is because ast is a comportable-like module that sits outside
+  // of top_earlgrey's boundary.
+  assign clks_ast_o = clkmgr_aon_clocks;
+  assign rsts_ast_o = rstmgr_aon_resets;
 
   // ibex specific assignments
   // TODO: This should be further automated in the future.
@@ -1014,6 +981,7 @@ module top_earlgrey #(
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),
+      .sck_monitor_o(sck_monitor_o),
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,
@@ -1561,7 +1529,6 @@ module top_earlgrey #(
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .alert_dump_i(alert_handler_crashdump),
       .cpu_dump_i(rv_core_ibex_crash_dump),
-      .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),
       .scanmode_i,
@@ -1597,7 +1564,6 @@ module top_earlgrey #(
       .clk_io_i(clk_io_i),
       .clk_usb_i(clk_usb_i),
       .clk_aon_i(clk_aon_i),
-      .clocks_ast_o(clks_ast_o),
       .pwr_i(pwrmgr_aon_pwr_clk_req),
       .pwr_o(pwrmgr_aon_pwr_clk_rsp),
       .idle_i(clkmgr_aon_idle),
