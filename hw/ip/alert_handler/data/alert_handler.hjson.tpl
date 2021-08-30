@@ -140,10 +140,22 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       default: "4",
       local: "true"
     },
+    { name: "LOCAL_ALERT_ID_SHADOW_REG_UPDATE_ERROR",
+      desc: "Local alert ID for shadow register update error.",
+      type: "int",
+      default: "5",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_SHADOW_REG_STORAGE_ERROR",
+      desc: "Local alert ID for shadow register storage error.",
+      type: "int",
+      default: "6",
+      local: "true"
+    },
     { name: "LOCAL_ALERT_ID_LAST",
       desc: "Last local alert ID.",
       type: "int",
-      default: "4",
+      default: "6",
       local: "true"
     },
   ],
@@ -561,13 +573,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
-    { name:     "CLASS${chars[i]}_CLR",
+    { name:     "CLASS${chars[i]}_CLR_SHADOWED",
       desc:     '''
                 Clear for escalation protocol of Class ${chars[i]}.
                 '''
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
       hwqe:     "true",
+      shadowed: "true",
       regwen:   "CLASS${chars[i]}_CLR_REGWEN",
       fields: [
         { bits: "0",

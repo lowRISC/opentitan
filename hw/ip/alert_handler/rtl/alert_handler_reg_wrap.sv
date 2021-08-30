@@ -269,10 +269,11 @@ module alert_handler_reg_wrap import alert_pkg::*; (
 
   // writing 1b1 to a class clr register clears the accumulator and
   // escalation state if autolock is not asserted
-  assign reg2hw_wrap.class_clr = { reg2hw.classd_clr.q & reg2hw.classd_clr.qe,
-                                   reg2hw.classc_clr.q & reg2hw.classc_clr.qe,
-                                   reg2hw.classb_clr.q & reg2hw.classb_clr.qe,
-                                   reg2hw.classa_clr.q & reg2hw.classa_clr.qe };
+  assign reg2hw_wrap.class_clr = { reg2hw.classd_clr_shadowed.q & reg2hw.classd_clr_shadowed.qe,
+                                   reg2hw.classc_clr_shadowed.q & reg2hw.classc_clr_shadowed.qe,
+                                   reg2hw.classb_clr_shadowed.q & reg2hw.classb_clr_shadowed.qe,
+                                   reg2hw.classa_clr_shadowed.q & reg2hw.classa_clr_shadowed.qe };
+
 
   // accumulator thresholds
   assign reg2hw_wrap.class_accum_thresh = { reg2hw.classd_accum_thresh_shadowed.q,
