@@ -13,12 +13,11 @@ module keymgr_bind;
     .d2h  (tl_o)
   );
 
- // TODO: fix shadow reg assertion errors and enable this check.
- // bind keymgr keymgr_csr_assert_fpv keymgr_csr_assert (
- //   .clk_i,
- //   .rst_ni,
- //   .h2d    (tl_i),
- //   .d2h    (tl_o)
- // );
+  bind keymgr keymgr_csr_assert_fpv keymgr_csr_assert (
+    .clk_i,
+    .rst_ni,
+    .h2d    (tl_i),
+    .d2h    (tl_o)
+ );
 
 endmodule

@@ -38,7 +38,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 <%
   addr_width = rb.get_addr_width()
   addr_msb  = addr_width - 1
-  hro_regs_list = [r for r in rb.flat_regs if not r.is_hw_writable()]
+  hro_regs_list = [r for r in rb.flat_regs if (not r.is_hw_writable() and not r.shadowed)]
   num_hro_regs = len(hro_regs_list)
   hro_map = {r.offset: (idx, r) for idx, r in enumerate(hro_regs_list)}
 %>\
