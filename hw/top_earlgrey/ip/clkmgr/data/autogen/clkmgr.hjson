@@ -122,12 +122,6 @@
     },
 
   // Exported clocks
-    { struct:  "clkmgr_ast_out",
-      type:    "uni",
-      name:    "clocks_ast",
-      act:     "req",
-      package: "clkmgr_pkg",
-    },
 
     { struct:  "pwr_clk",
       type:    "req_rsp",

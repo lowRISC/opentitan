@@ -115,12 +115,6 @@
     },
 
     // Exported resets
-    { struct:  "rstmgr_ast_out",
-      type:    "uni",
-      name:    "resets_ast",
-      act:     "req",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
-    }
   ],
 
   registers: [

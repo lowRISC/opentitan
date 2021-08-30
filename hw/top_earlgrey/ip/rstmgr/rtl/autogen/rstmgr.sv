@@ -59,7 +59,6 @@ module rstmgr
   input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // reset outputs
-  output rstmgr_ast_out_t resets_ast_o,
   output rstmgr_out_t resets_o
 
 );
@@ -1006,15 +1005,6 @@ module rstmgr
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////
-  assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
-  assign resets_ast_o.rst_ast_usbdev_sys_aon_n = resets_o.rst_sys_aon_n;
-  assign resets_ast_o.rst_ast_usbdev_usbif_n = resets_o.rst_usbif_n;
-  assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
-  assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_aon_n = resets_o.rst_sys_aon_n;
-  assign resets_ast_o.rst_ast_ast_lc_io_div4_n = resets_o.rst_lc_io_div4_n;
-  assign resets_ast_o.rst_ast_sensor_ctrl_aon_lc_io_div4_n = resets_o.rst_lc_io_div4_n;
-  assign resets_ast_o.rst_ast_entropy_src_sys_n = resets_o.rst_sys_n;
-  assign resets_ast_o.rst_ast_edn0_sys_n = resets_o.rst_sys_n;
 
 
 
@@ -1031,6 +1021,5 @@ module rstmgr
   `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
   `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
   `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
-  `ASSERT_KNOWN(AstResetsKnownO_A, resets_ast_o )
 
 endmodule // rstmgr

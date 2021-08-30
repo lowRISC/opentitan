@@ -740,6 +740,10 @@ module chip_earlgrey_asic (
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
 
+  // assorted ast status
+  ast_pkg::ast_pwst_t ast_pwst;
+  ast_pkg::ast_pwst_t ast_pwst_h;
+
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
@@ -801,15 +805,14 @@ module chip_earlgrey_asic (
   tlul_pkg::tl_h2d_t base_ast_bus;
   tlul_pkg::tl_d2h_t ast_base_bus;
 
-  // assorted ast status
-  ast_pkg::ast_pwst_t ast_pwst;
-  ast_pkg::ast_pwst_t ast_pwst_h;
-
   assign ast_base_pwr.main_pok = ast_pwst.main_pok;
 
   // synchronization clocks / rests
-  clkmgr_pkg::clkmgr_ast_out_t clks_ast;
-  rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
+  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+
+  // monitored clock
+  logic sck_monitor;
 
   // otp power sequence
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
@@ -926,32 +929,7 @@ module chip_earlgrey_asic (
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
-  logic unused_usb_clk_aon;
-  logic unused_usb_clk_io_div4;
-  logic unused_adc_clk_aon;
   assign unused_slow_clk_en = base_ast_pwr.slow_clk_en;
-  assign unused_usb_clk_aon = clks_ast.clk_ast_usbdev_aon_peri;
-  assign unused_usb_clk_io_div4 = clks_ast.clk_ast_usbdev_io_div4_peri;
-  assign unused_adc_clk_aon = clks_ast.clk_ast_adc_ctrl_aon_aon_peri;
-
-  logic [PowerDomains-1:0] unused_usb_rst;
-  logic [PowerDomains-1:0] unused_usb_usbif_rst;
-  logic [PowerDomains-1:0] unused_usb_sys_aon_rst;
-  logic [PowerDomains-1:0] unused_adc_ctrl_sys_aon_rst;
-  logic [PowerDomains-1:0] unused_ast_rst;
-  logic [PowerDomains-1:0] unused_sensor_ctrl_rst;
-  logic [PowerDomains-1:0] unused_adc_ctrl_rst;
-  logic [PowerDomains-1:0] unused_entropy_sys_rst;
-  logic [PowerDomains-1:0] unused_edn_sys_rst;
-  assign unused_usb_rst = rsts_ast.rst_ast_usbdev_usb_n;
-  assign unused_usb_sys_aon_rst = rsts_ast.rst_ast_usbdev_sys_aon_n;
-  assign unused_usb_usbif_rst = rsts_ast.rst_ast_usbdev_usbif_n;
-  assign unused_adc_ctrl_sys_aon_rst = rsts_ast.rst_ast_adc_ctrl_aon_sys_aon_n;
-  assign unused_ast_rst = rsts_ast.rst_ast_ast_lc_io_div4_n;
-  assign unused_sensor_ctrl_rst = rsts_ast.rst_ast_sensor_ctrl_aon_lc_io_div4_n;
-  assign unused_adc_ctrl_rst = rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n;
-  assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n;
-  assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n;
 
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
@@ -959,6 +937,7 @@ module chip_earlgrey_asic (
   ast_pkg::ast_dif_t flash_alert;
   ast_pkg::ast_dif_t otp_alert;
   logic ast_init_done;
+
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
@@ -968,25 +947,28 @@ module chip_earlgrey_asic (
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
+    // clocks and resets supplied for detection
+    .sns_clks_i      ( clkmgr_aon_clocks    ),
+    .sns_rsts_i      ( rstmgr_aon_resets    ),
+    .sns_ext_clk_i   ( sck_monitor          ),
     // tlul
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    // Reset domain connection is manual at the moment
-    .clk_ast_adc_i         ( clks_ast.clk_ast_adc_ctrl_aon_io_div4_peri ),
-    .rst_ast_adc_ni        ( rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
-    .clk_ast_alert_i       ( clks_ast.clk_ast_sensor_ctrl_aon_io_div4_secure ),
-    .rst_ast_alert_ni      ( rsts_ast.rst_ast_sensor_ctrl_aon_lc_io_div4_n[DomainAonSel] ),
-    .clk_ast_es_i          ( clks_ast.clk_ast_edn0_main_secure ),
-    .rst_ast_es_ni         ( rsts_ast.rst_ast_edn0_sys_n[Domain0Sel] ),
-    .clk_ast_rng_i         ( clks_ast.clk_ast_entropy_src_main_secure ),
-    .rst_ast_rng_ni        ( rsts_ast.rst_ast_entropy_src_sys_n[Domain0Sel] ),
-    .clk_ast_tlul_i        ( clks_ast.clk_ast_ast_io_div4_secure ),
-    .rst_ast_tlul_ni       ( rsts_ast.rst_ast_ast_lc_io_div4_n[DomainAonSel] ),
-    .clk_ast_usb_i         ( clks_ast.clk_ast_usbdev_usb_peri ),
-    .rst_ast_usb_ni        ( rsts_ast.rst_ast_usbdev_usbif_n[Domain0Sel] ),
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),
+    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
+    .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
+    .clk_ast_usb_i (clkmgr_aon_clocks.clk_usb_secure),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_adc_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
     .por_ni                ( manual_in_por_n ),
     // clocks' oschillator bypass for FPGA
@@ -1088,9 +1070,10 @@ module chip_earlgrey_asic (
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
     .clk_aon_i                    ( ast_base_clks.clk_aon      ),
-    .clks_ast_o                   ( clks_ast                   ),
+    .clks_ast_o                   ( clkmgr_aon_clocks          ),
     .clk_main_jitter_en_o         ( jen                        ),
-    .rsts_ast_o                   ( rsts_ast                   ),
+    .rsts_ast_o                   ( rstmgr_aon_resets          ),
+    .sck_monitor_o                ( sck_monitor                ),
     .pwrmgr_ast_req_o             ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr               ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
