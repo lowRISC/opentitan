@@ -28,6 +28,7 @@ package clkmgr_pkg;
     logic clk_usb_powerup;
     logic clk_io_div2_powerup;
     logic clk_aon_infra;
+    logic clk_aon_secure;
     logic clk_aon_peri;
     logic clk_aon_timers;
     logic clk_main_aes;
@@ -39,6 +40,7 @@ package clkmgr_pkg;
     logic clk_main_infra;
     logic clk_io_div4_secure;
     logic clk_main_secure;
+    logic clk_usb_secure;
     logic clk_io_div4_timers;
     logic clk_proc_main;
     logic clk_io_div4_peri;
@@ -48,17 +50,6 @@ package clkmgr_pkg;
 
   } clkmgr_out_t;
 
-  typedef struct packed {
-    logic clk_ast_usbdev_io_div4_peri;
-    logic clk_ast_usbdev_aon_peri;
-    logic clk_ast_usbdev_usb_peri;
-    logic clk_ast_adc_ctrl_aon_io_div4_peri;
-    logic clk_ast_adc_ctrl_aon_aon_peri;
-    logic clk_ast_ast_io_div4_secure;
-    logic clk_ast_sensor_ctrl_aon_io_div4_secure;
-    logic clk_ast_entropy_src_main_secure;
-    logic clk_ast_edn0_main_secure;
-  } clkmgr_ast_out_t;
 
   typedef struct packed {
     logic [5-1:0] idle;
