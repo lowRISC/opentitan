@@ -9,4 +9,3 @@ set_property LOC RAMB36_X0Y10 [get_cells -hierarchical -filter { NAME =~ "*u_rom
 set_property LOC RAMB36_X0Y11 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_1" && PRIMITIVE_TYPE =~ BMEM.*.* }]
 set_property LOC RAMB36_X0Y12 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_2" && PRIMITIVE_TYPE =~ BMEM.*.* }]
 set_property LOC RAMB36_X0Y13 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_3" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-set_property LOC RAMB36_X0Y14 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_4" && PRIMITIVE_TYPE =~ BMEM.*.* }]

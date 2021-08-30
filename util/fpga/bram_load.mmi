@@ -3,22 +3,22 @@
   <Processor Endianness="Little" InstPath="dummy">
   <AddressSpace Name="brom" Begin="0" End="16383">
       <BusBlock>
-        <BitLane MemType="RAMB32" Placement="X4Y18">
+        <BitLane MemType="RAMB32" Placement="X0Y10">
           <DataWidth MSB="7" LSB="0"/>
           <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
         </BitLane>
-        <BitLane MemType="RAMB32" Placement="X4Y19">
+        <BitLane MemType="RAMB32" Placement="X0Y11">
           <DataWidth MSB="15" LSB="8"/>
           <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
         </BitLane>
-        <BitLane MemType="RAMB32" Placement="X3Y14">
+        <BitLane MemType="RAMB32" Placement="X0Y12">
           <DataWidth MSB="23" LSB="16"/>
           <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
         </BitLane>
-        <BitLane MemType="RAMB32" Placement="X3Y15">
+        <BitLane MemType="RAMB32" Placement="X0Y13">
           <DataWidth MSB="31" LSB="24"/>
           <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
