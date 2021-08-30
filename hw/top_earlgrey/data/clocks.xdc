@@ -29,3 +29,6 @@ create_clock -add -name clk_spi_out -period 100.00 -waveform {0 5} [get_pin top_
 
 set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group lc_jtag_tck -group rv_jtag_tck -group clk_spi_in -group clk_spi_out -group sys_clk_pin -asynchronous
 
+## Limit delay between target IPs (10/2.5 MHz) and capture clock (100 MHz) for SCA.
+set_max_delay 8 -from ${clks_10_unbuf} -to sys_clk_pin
+set_max_delay 8 -from clk_io_div4 -to sys_clk_pin
