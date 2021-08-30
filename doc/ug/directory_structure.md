@@ -49,6 +49,9 @@ hw
    │  │
    │  ├──model    => Reference 'model' implementation in C (if applicable)
    │  │
+   │  ├──pre_dv   => This is a work area for experimental DV work that is worthy of
+   │  │              maintaining, but not intended to apply towards code coverage.
+   │  │
    │  ├──rtl      => RTL design sources
    │  │
    │  ├──util     => IP-specfic automation scripts (if applicable)
