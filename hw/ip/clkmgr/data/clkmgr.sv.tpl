@@ -322,7 +322,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
     .en_i(${k}_sw_en & clk_${v.src.name}_en),
@@ -367,7 +367,7 @@
   );
 
   prim_clock_gating #(
-    .NoFpgaGate(1'b1)
+    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_en & clk_${sig.src.name}_en),
