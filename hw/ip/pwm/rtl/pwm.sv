@@ -7,7 +7,9 @@
 module pwm
   import pwm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter int PhaseCntDw = 16,
+  parameter int BeatCntDw = 27
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -67,7 +69,11 @@ module pwm
 
   assign cio_pwm_en_o = {NOutputs{1'b1}};
 
-  pwm_core #(.NOutputs(NOutputs)) u_pwm_core (
+  pwm_core #(
+    .NOutputs(NOutputs),
+    .PhaseCntDw(PhaseCntDw),
+    .BeatCntDw(BeatCntDw)
+  ) u_pwm_core (
     .clk_core_i,
     .rst_core_ni,
     .reg2hw,
