@@ -2,17 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:clkmgr_components:0.1"
-description: "Clock Manager components"
 
+name: "lowrisc:prim:measure"
+description: "Clock measurement"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:systems:clkmgr_pkg
-      - lowrisc:prim:measure
+      - lowrisc:prim:all
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:assert
     files:
-      - rtl/clkmgr_byp.sv
+      - rtl/prim_clock_meas.sv
     file_type: systemVerilogSource
 
 targets:

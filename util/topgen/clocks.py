@@ -39,12 +39,14 @@ class SourceClock:
         self.name = str(raw['name'])
         self.aon = _yn_to_bool(raw['aon'])
         self.freq = _to_int(raw['freq'])
+        self.ref = raw.get('ref', False)
 
     def _asdict(self) -> Dict[str, object]:
         return {
             'name': self.name,
             'aon': _bool_to_yn(self.aon),
-            'freq': str(self.freq)
+            'freq': str(self.freq),
+            'ref': self.ref
         }
 
 
@@ -262,8 +264,7 @@ class Clocks:
         '''
         ret = []
         for src in self.srcs.values():
-            if not src.aon:
-                ret.append(f'rst_{src.name}_ni')
+            ret.append(f'rst_{src.name}_ni')
         for src in self.derived_srcs.values():
             ret.append(f'rst_{src.name}_ni')
         return ret
