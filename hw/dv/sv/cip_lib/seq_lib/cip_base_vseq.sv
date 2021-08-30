@@ -650,10 +650,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           // do write, exclude CsrExclWrite
           if ($urandom_range(0, 1) &&
               !csr_excl.is_excl(all_csrs[i], CsrExclWrite, csr_test_type)) begin
+            // Shadowed register requires two writes and thus call predict function twice.
+            int num_write = all_csrs[i].get_is_shadowed() ? 2 : 1;
+
             `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
             wr_data &= wr_mask;
-            tl_access(.addr(all_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
-            void'(all_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+            repeat(num_write) begin
+              tl_access(.addr(all_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
+              void'(all_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+            end
             exp_data = all_csrs[i].get_mirrored_value();
           end
         end
