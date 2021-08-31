@@ -4,7 +4,6 @@
 
 CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
-export PRJ_DIR
 
 REG_OUTPUT_DIR    ?= ${PRJ_DIR}/build/regs-generated
 REG_OUTPUT_DV_DIR ?= ${REG_OUTPUT_DIR}/dv
