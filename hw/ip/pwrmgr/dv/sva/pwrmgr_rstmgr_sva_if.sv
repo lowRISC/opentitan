@@ -7,7 +7,7 @@
 // these assertions will also be useful at full chip level.
 interface pwrmgr_rstmgr_sva_if (
   input logic                                                    clk_i,
-  input logic                                                    rst_ni,
+  input logic                     [pwrmgr_pkg::PowerDomains-1:0] rst_ni,
   // The inputs from pwrmgr.
   input logic                     [pwrmgr_pkg::PowerDomains-1:0] rst_lc_req,
   input logic                     [pwrmgr_pkg::PowerDomains-1:0] rst_sys_req,
@@ -22,9 +22,12 @@ interface pwrmgr_rstmgr_sva_if (
   localparam int MAX_WAIT_CYCLES = 24;
 
   bit disable_sva;
-  bit reset_or_disable;
+  bit [pwrmgr_pkg::PowerDomains-1:0] reset_or_disable;
 
-  always_comb reset_or_disable = !rst_ni || disable_sva;
+  for (genvar pd = 0; pd < pwrmgr_pkg::PowerDomains; ++pd) begin : gen_rst_dis
+    assign reset_or_disable[pd] = !rst_ni[pd] || disable_sva;
+  end
+
 
   function automatic bit sysOrNdmRstReq(int pd);
     return rst_sys_req[pd] || (ndm_sys_req && reset_cause == pwrmgr_pkg::ResetNone);
@@ -34,15 +37,15 @@ interface pwrmgr_rstmgr_sva_if (
   for (genvar pd = 0; pd < pwrmgr_pkg::PowerDomains; ++pd) begin : gen_assertions_per_power_domains
     `ASSERT(LcHandshakeOn_A,
             rst_lc_req[pd] |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] !rst_lc_src_n[pd], clk_i,
-            reset_or_disable)
+            reset_or_disable[pd])
     `ASSERT(LcHandshakeOff_A,
             !rst_lc_req[pd] |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] rst_lc_src_n[pd], clk_i,
-            reset_or_disable)
+            reset_or_disable[pd])
     `ASSERT(SysHandshakeOn_A,
             sysOrNdmRstReq(pd) |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] !rst_sys_src_n[pd], clk_i,
-            reset_or_disable)
+            reset_or_disable[pd])
     `ASSERT(SysHandshakeOff_A,
             !sysOrNdmRstReq(pd) |-> ##[MIN_WAIT_CYCLES:MAX_WAIT_CYCLES] rst_sys_src_n[pd], clk_i,
-            reset_or_disable)
+            reset_or_disable[pd])
   end
 endinterface

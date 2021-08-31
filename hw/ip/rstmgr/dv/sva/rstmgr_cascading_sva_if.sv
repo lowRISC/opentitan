@@ -15,7 +15,7 @@ interface rstmgr_cascading_sva_if (
   input logic clk_io_i,
   input logic clk_main_i,
   input logic clk_usb_i,
-  input logic por_n_i,
+  input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,
   input [rstmgr_pkg::PowerDomains-1:0] rst_lc_src_n,
   input [rstmgr_pkg::PowerDomains-1:0] rst_sys_src_n,
@@ -35,7 +35,7 @@ interface rstmgr_cascading_sva_if (
     bounds_t rise;
   } edge_bounds_t;
 
-  // This is used to check por_n_i active high leads to a rising edge of rst_por_aon_n[0].
+  // This is used to check por_n_i active high leads to a rising edge of rst_por_n[0].
   // The number of cycles with por_n_i stable is 32 plus synchronizers and some filter stages.
   localparam edge_bounds_t PorCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 32, max: 40}};
 
@@ -43,10 +43,10 @@ interface rstmgr_cascading_sva_if (
   // fall min cycles is zero.
   localparam edge_bounds_t SyncCycles = '{fall: '{min: 0, max: 3}, rise: '{min: 1, max: 3}};
 
-  // Cycles are counted from the output rst_por_aon_n or scan reset edges. The rise times can be
+  // Cycles are counted from the output rst_por_n or scan reset edges. The rise times can be
   // higher since in the chip the aon reset goes through the pwrmgr slow fsm where it causes an
   // lc rise request and there may be multiple synchronizers in the path.
-  localparam edge_bounds_t LcCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 2, max: 10}};
+  localparam edge_bounds_t LcCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 1, max: 10}};
 
   // In the real system the rise of rst_lc_src_n is triggered by the pwr_i.rst_lc_req input,
   // which can take a few cycles since it comes from the pwrmgr after it gets reset,
@@ -75,20 +75,20 @@ interface rstmgr_cascading_sva_if (
       `FALL_ASSERT(name, from, to, cycles, clk) \
       `RISE_ASSERT(name, from, to, cycles, clk)
 
-  // A fall in por_n_i leads to a fall in rst_por_aon_n[0].
-  `FALL_ASSERT(CascadePorToAon, por_n_i, resets_o.rst_por_aon_n[0], PorCycles, clk_aon_i)
+  // A fall in por_n_i leads to a fall in rst_por_n[0].
+  `FALL_ASSERT(CascadePorToAon, por_n_i[0], resets_o.rst_por_n[0], PorCycles, clk_aon_i)
 
   // A number of consecutive cycles with por_n_i inactive (high) should cause the aon resets to
   // become inactive. This checks POR stretching.
 
   // The antecedent: por_n_i rising and being stably high for a minimum number of cycles.
   sequence PorStable_S;
-    $rose(por_n_i) ##1 por_n_i [* PorCycles.rise.min];
+    $rose(por_n_i[0]) ##1 por_n_i[0] [* PorCycles.rise.min];
   endsequence
 
   // The consequence: reset will rise after some cycles.
   sequence EventualAonRstRise_S;
-    ##[0:PorCycles.rise.max - PorCycles.rise.min] $rose(resets_o.rst_por_aon_n[0]);
+    ##[0:PorCycles.rise.max - PorCycles.rise.min] $rose(resets_o.rst_por_n[0]);
   endsequence
 
   // The reset stretching assertion.
@@ -98,16 +98,16 @@ interface rstmgr_cascading_sva_if (
   always_comb scan_reset_n = scan_rst_ni || (scanmode_i != lc_ctrl_pkg::On);
 
   logic [rstmgr_pkg::PowerDomains-1:0] effective_aon_rst;
-  always_comb effective_aon_rst = resets_o.rst_por_aon_n & {rstmgr_pkg::PowerDomains{scan_reset_n}};
+  always_comb effective_aon_rst = resets_o.rst_por_n & {rstmgr_pkg::PowerDomains{scan_reset_n}};
 
   // The internal reset is triggered by one of the generated reset outputs.
   logic [rstmgr_pkg::PowerDomains-1:0] local_rst_n;
   always_comb local_rst_n = resets_o.rst_por_io_div4_n;
 
-  for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : power_domains
+  for (genvar pd = 0; pd < rstmgr_pkg::DomainAonSel; ++pd) begin : power_domains
     // The AON reset triggers the various por reset for the different clock domains through
     // syncronizers.
-    `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst[pd],resets_o.rst_por_n[pd],
+    `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst[pd],resets_o.rst_por_main_n[pd],
                       SyncCycles, clk_main_i)
     `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst[pd], resets_o.rst_por_io_n[pd],
                       SyncCycles, clk_io_i)
@@ -117,7 +117,9 @@ interface rstmgr_cascading_sva_if (
                       SyncCycles, clk_io_div4_i)
     `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst[pd], resets_o.rst_por_usb_n[pd],
                       SyncCycles, clk_usb_i)
+  end
 
+  for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : lc_sys_power_domains
     // The root lc reset is triggered either by the internal reset, or by the pwr_i.rst_lc_req
     // input. The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLocalRstToLc, local_rst_n[pd], rst_lc_src_n[pd], LcCycles, clk_i)

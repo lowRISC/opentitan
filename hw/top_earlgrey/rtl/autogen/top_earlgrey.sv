@@ -145,7 +145,7 @@ module top_earlgrey #(
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
   inout         otp_ext_voltage_h_io,
   output ast_pkg::ast_dif_t       otp_alert_o,
-  input  logic       por_n_i,
+  input  logic [1:0] por_n_i,
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
@@ -764,11 +764,10 @@ module top_earlgrey #(
   };
 
   // certain resets are unused
-  logic unused_d0_rst_por_aon;
   logic unused_d0_rst_por;
+  logic unused_d0_rst_por_main;
   logic unused_d0_rst_por_io;
   logic unused_d0_rst_por_io_div2;
-  logic unused_d0_rst_por_io_div4;
   logic unused_d0_rst_por_usb;
   logic unused_daon_rst_lc;
   logic unused_d0_rst_lc_aon;
@@ -784,11 +783,10 @@ module top_earlgrey #(
   logic unused_daon_rst_i2c0;
   logic unused_daon_rst_i2c1;
   logic unused_daon_rst_i2c2;
-  assign unused_d0_rst_por_aon = rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por = rstmgr_aon_resets.rst_por_n[rstmgr_pkg::Domain0Sel];
+  assign unused_d0_rst_por_main = rstmgr_aon_resets.rst_por_main_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por_io = rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por_io_div2 = rstmgr_aon_resets.rst_por_io_div2_n[rstmgr_pkg::Domain0Sel];
-  assign unused_d0_rst_por_io_div4 = rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por_usb = rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel];
   assign unused_daon_rst_lc = rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
   assign unused_d0_rst_lc_aon = rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::Domain0Sel];
@@ -1541,7 +1539,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_slow_i (clkmgr_aon_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-      .rst_slow_ni (rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel])
+      .rst_slow_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel])
   );
 
   rstmgr #(
@@ -1574,7 +1572,8 @@ module top_earlgrey #(
       .clk_usb_i (clkmgr_aon_clocks.clk_usb_powerup),
       .clk_io_div2_i (clkmgr_aon_clocks.clk_io_div2_powerup),
       .clk_io_div4_i (clkmgr_aon_clocks.clk_io_div4_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
+      .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .rst_domain0_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   clkmgr #(
@@ -1607,7 +1606,7 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-      .rst_main_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel]),
+      .rst_main_ni (rstmgr_aon_resets.rst_por_main_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_ni (rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]),
       .rst_usb_ni (rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_div2_ni (rstmgr_aon_resets.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel]),

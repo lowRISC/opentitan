@@ -10,6 +10,7 @@
   name: "RSTMGR",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_domain0_ni"},
     {clock: "clk_aon_i"}
     {clock: "clk_io_div4_i"}
     {clock: "clk_main_i"}

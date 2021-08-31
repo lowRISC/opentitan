@@ -140,14 +140,14 @@
     // likely external or generated from a voltage comparator
     //
     nodes: [
-      { name: "por_aon",        gen: false, type: "top",                    clk: "aon"     }
+      { name: "por",            gen: false, type: "top",                    clk: "aon"     }
       { name: "lc_src",         gen: false, type: "int",                    clk: "io_div4" }
       { name: "sys_src",        gen: false, type: "int",                    clk: "io_div4" }
-      { name: "por",            gen: true,  type: "top", parent: "por_aon", clk: "main"    }
-      { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clk: "io"      }
-      { name: "por_io_div2",    gen: true,  type: "top", parent: "por_aon", clk: "io_div2" }
-      { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clk: "io_div4" }
-      { name: "por_usb",        gen: true,  type: "top", parent: "por_aon", clk: "usb"     }
+      { name: "por_main",       gen: true,  type: "top", parent: "por",     clk: "main"    }
+      { name: "por_io",         gen: true,  type: "top", parent: "por",     clk: "io"      }
+      { name: "por_io_div2",    gen: true,  type: "top", parent: "por",     clk: "io_div2" }
+      { name: "por_io_div4",    gen: true , type: "top", parent: "por",     clk: "io_div4" }
+      { name: "por_usb",        gen: true,  type: "top", parent: "por",     clk: "usb"     }
       { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clk: "main"    }
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
       { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clk: "aon"     }
@@ -338,7 +338,7 @@
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4", rst_slow_ni: "por_aon"},
+      reset_connections: {rst_ni: "por_io_div4", rst_slow_ni: "por"},
       domain: ["Aon"],
       base_addr: "0x40400000",
       attr: "templated",
@@ -349,8 +349,17 @@
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4"},
-      domain: ["Aon"],
+      reset_connections: {
+        rst_ni: {
+          name: "por_io_div4",
+          domain: "Aon"
+        },
+        rst_domain0_ni: {
+          name: "por_io_div4",
+          domain: "0"
+        },
+      }
+      domain: ["Aon", "0"],
       base_addr: "0x40410000",
       attr: "templated",
     },
@@ -358,7 +367,7 @@
       type: "clkmgr",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
+      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por_main", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
                           rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
       domain: ["Aon"],
       base_addr: "0x40420000",

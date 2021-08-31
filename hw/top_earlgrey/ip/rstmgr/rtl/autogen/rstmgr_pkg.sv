@@ -37,8 +37,8 @@ package rstmgr_pkg;
   // resets generated and broadcast
   // This should be templatized and generated
   typedef struct packed {
-    logic [PowerDomains-1:0] rst_por_aon_n;
     logic [PowerDomains-1:0] rst_por_n;
+    logic [PowerDomains-1:0] rst_por_main_n;
     logic [PowerDomains-1:0] rst_por_io_n;
     logic [PowerDomains-1:0] rst_por_io_div2_n;
     logic [PowerDomains-1:0] rst_por_io_div4_n;

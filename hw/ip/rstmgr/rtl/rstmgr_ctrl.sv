@@ -12,7 +12,7 @@ module rstmgr_ctrl
   import rstmgr_reg_pkg::*;
 (
   input clk_i,
-  input rst_ni,
+  input [PowerDomains-1:0] rst_ni,
   input [PowerDomains-1:0] rst_req_i,
   input [PowerDomains-1:0] rst_parent_ni, // parent reset
   output logic [PowerDomains-1:0] rst_no,
@@ -34,7 +34,7 @@ module rstmgr_ctrl
     .ResetValue('0)
   ) u_lc (
     .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .rst_ni(rst_ni[DomainAonSel]),
     .d_i(rst_parent_ni),
     .q_o(rst_parent_synced)
   );
@@ -42,7 +42,7 @@ module rstmgr_ctrl
   // always on handling
   prim_flop u_aon_rst (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni[DomainAonSel]),
     .d_i(~rst_req_i[DomainAonSel] & rst_parent_synced[DomainAonSel]),
     .q_o(rst_aon_n_premux)
   );
@@ -67,7 +67,7 @@ module rstmgr_ctrl
   for(genvar i = 0; i < OffDomains; i++) begin : gen_rst_pd_n
     prim_flop u_pd_rst (
       .clk_i,
-      .rst_ni(rst_aon_n),
+      .rst_ni(rst_aon_n & rst_ni[DomainPdStartIdx + i]),
       .d_i(rst_pd_nd[i]),
       .q_o(rst_pd_nq[i])
     );

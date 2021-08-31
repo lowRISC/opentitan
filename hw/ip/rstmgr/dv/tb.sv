@@ -64,6 +64,7 @@ module tb;
   rstmgr dut (
     .clk_i        (clk),
     .rst_ni       (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_domain0_ni (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .clk_aon_i    (clk_aon),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
@@ -76,7 +77,7 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .por_n_i(rstmgr_if.por_n),
+    .por_n_i({rstmgr_if.por_n, rstmgr_if.por_n}),
 
     .pwr_i(rstmgr_if.pwr_i),
     .pwr_o(rstmgr_if.pwr_o),

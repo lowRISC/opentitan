@@ -12,7 +12,7 @@ module rstmgr_bind;
 
   bind rstmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .rst_ni(resets_o.rst_por_io_div4_n),
     // The inputs from pwrmgr.
     .rst_lc_req(pwr_i.rst_lc_req),
     .rst_sys_req(pwr_i.rst_sys_req),

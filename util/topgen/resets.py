@@ -151,7 +151,8 @@ class Resets:
         else:
             path = reset.path
 
-        if domain:
+        # All is a special value that returns multi-bit resets
+        if domain and domain != 'all':
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
 
         return path

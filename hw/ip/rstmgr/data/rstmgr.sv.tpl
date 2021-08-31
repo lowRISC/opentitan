@@ -19,9 +19,14 @@ module rstmgr
 % for clk in reset_obj.get_clocks():
   input clk_${clk}_i,
 % endfor
+% for domain in power_domains:
+  % if domain != "Aon":
+  input rst_domain${domain.lower()}_ni,
+  % endif
+% endfor
 
   // POR input
-  input por_n_i,
+  input [PowerDomains-1:0] por_n_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -62,35 +67,51 @@ module rstmgr
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
-  logic [PowerDomains-1:0] rst_por_aon_n;
+  logic [PowerDomains-1:0] rst_por_n;
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
-    if (i == DomainAonSel) begin : gen_rst_por_aon_normal
+    lc_ctrl_pkg::lc_tx_t por_scanmode;
+    prim_lc_sync #(
+      .NumCopies(1),
+      .AsyncOn(0)
+    ) u_por_scanmode_sync (
+      .clk_i(1'b0),  // unused clock
+      .rst_ni(1'b1), // unused reset
+      .lc_en_i(scanmode_i),
+      .lc_en_o(por_scanmode)
+    );
 
-      lc_ctrl_pkg::lc_tx_t por_aon_scanmode;
-      prim_lc_sync #(
-        .NumCopies(1),
-        .AsyncOn(0)
-      ) u_por_scanmode_sync (
-        .clk_i(1'b0),  // unused clock
-        .rst_ni(1'b1), // unused reset
-        .lc_en_i(scanmode_i),
-        .lc_en_o(por_aon_scanmode)
-      );
-
-      rstmgr_por u_rst_por_aon (
+    if (i == DomainAonSel) begin : gen_aon_por
+      rstmgr_por u_rst_por (
         .clk_i(clk_aon_i),
-        .rst_ni(por_n_i),
+        .rst_ni(por_n_i[i]),
         .scan_rst_ni,
-        .scanmode_i(por_aon_scanmode == lc_ctrl_pkg::On),
-        .rst_no(rst_por_aon_n[i])
+        .scanmode_i(por_scanmode == lc_ctrl_pkg::On),
+        .rst_no(rst_por_n[i])
       );
-    end else begin : gen_rst_por_aon_tieoff
-      assign rst_por_aon_n[i] = 1'b0;
-    end
+    end else begin : gen_nom_por
+      logic rst_premux;
+      prim_flop_2sync #(
+        .Width(1),
+        .ResetValue('0)
+      ) u_sync (
+        .clk_i(clk_aon_i),
+        .rst_ni(por_n_i[i] & rst_por_n[DomainAonSel]),
+        .d_i(1'b1),
+        .q_o(rst_premux)
+      );
 
-    assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_por_mux (
+        .clk0_i(rst_premux),
+        .clk1_i(scan_rst_ni),
+        .sel_i(por_scanmode == lc_ctrl_pkg::On),
+        .clk_o(rst_por_n[i])
+      );
+    end
   end
+  assign resets_o.rst_por_n = rst_por_n;
 
 
   ////////////////////////////////////////////////////
@@ -103,7 +124,7 @@ module rstmgr
 
   rstmgr_reg_top u_reg (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -127,7 +148,7 @@ module rstmgr
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
-      .rst_ni,
+      .rst_ni        (rst_ni),
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[0]     ),
       .alert_ack_o   (               ),
@@ -147,9 +168,9 @@ module rstmgr
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sync (
+  ) u_ndm_sync (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni),
     .d_i(ndmreset_req_i),
     .q_o(ndmreset_req_q)
   );
@@ -166,8 +187,16 @@ module rstmgr
   // the second.  This ensures that if upstream resets for any reason, the associated downstream
   // reset will also reset.
 
+  logic [PowerDomains-1:0] rst_root_n;
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
+% for i, domain in enumerate(power_domains):
+  % if domain == "Aon":
+  assign rst_root_n[Domain${domain}Sel] = rst_ni;
+  % else:
+  assign rst_root_n[Domain${domain}Sel] = rst_domain${domain.lower()}_ni;
+  % endif
+% endfor
 
   lc_ctrl_pkg::lc_tx_t rst_ctrl_scanmode;
   prim_lc_sync #(
@@ -185,7 +214,7 @@ module rstmgr
     .clk_i,
     .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
     .scan_rst_ni,
-    .rst_ni,
+    .rst_ni(rst_root_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -196,7 +225,7 @@ module rstmgr
     .clk_i,
     .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
     .scan_rst_ni,
-    .rst_ni,
+    .rst_ni(rst_root_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -218,7 +247,7 @@ module rstmgr
       .RESVAL(1)
     ) u_rst_sw_ctrl_reg (
       .clk_i,
-      .rst_ni,
+      .rst_ni(rst_ni),
       .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
       .wd(reg2hw.sw_rst_ctrl_n[i].q),
       .de('0),
@@ -320,7 +349,7 @@ module rstmgr
     .ResetValue('0)
   ) u_cpu_reset_synced (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni),
     .d_i(rst_cpu_n_i),
     .q_o(rst_cpu_nq)
   );
@@ -357,7 +386,7 @@ module rstmgr
     .CrashDumpWidth($bits(alert_pkg::alert_crashdump_t))
   ) u_alert_info (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni),
     .dump_i(alert_dump_i),
     .dump_capture_i(dump_capture & reg2hw.alert_info_ctrl.en.q),
     .slot_sel_i(reg2hw.alert_info_ctrl.index.q),
@@ -369,7 +398,7 @@ module rstmgr
     .CrashDumpWidth($bits(ibex_pkg::crash_dump_t))
   ) u_cpu_info (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_ni),
     .dump_i(cpu_dump_i),
     .dump_capture_i(dump_capture & reg2hw.cpu_info_ctrl.en.q),
     .slot_sel_i(reg2hw.cpu_info_ctrl.index.q),

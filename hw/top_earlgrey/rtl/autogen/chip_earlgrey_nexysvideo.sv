@@ -748,7 +748,7 @@ module chip_earlgrey_nexysvideo #(
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    .por_n_i                      ( rst_n            ),
+    .por_n_i                      ( {rst_n, rst_n}   ),
     .clk_main_i                   ( clk_main         ),
     .clk_io_i                     ( clk_main         ),
     .clk_usb_i                    ( clk_usb_48mhz    ),

@@ -12,6 +12,11 @@
   name: "RSTMGR",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+% for domain in power_domains:
+  % if domain != "Aon":
+  {reset: "rst_domain${domain.lower()}_ni"},
+  % endif
+% endfor
 % for clk in reset_obj.get_clocks():
     {clock: "clk_${clk}_i"}
 % endfor
@@ -67,6 +72,7 @@
       type:    "uni",
       name:    "por_n",
       act:     "rcv",
+      width:   "${len(power_domains)}"
     },
 
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
