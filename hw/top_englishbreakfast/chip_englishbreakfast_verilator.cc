@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   simctrl.RegisterExtension(&memutil);
 
   // see chip_earlgrey_verilator.cc for justification and explanation
-  simctrl.SetInitialResetDelay(500);
+  simctrl.SetInitialResetDelay(1000);
   simctrl.SetResetDuration(10);
 
   std::cout << "Simulation of OpenTitan English Breakfast" << std::endl

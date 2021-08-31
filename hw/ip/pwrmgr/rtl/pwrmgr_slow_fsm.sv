@@ -10,6 +10,7 @@
 module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   input clk_i,
   input rst_ni,
+  input rst_main_ni,
 
   // sync'ed requests from peripherals
   input wakeup_i,
@@ -22,6 +23,9 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   input ack_pwrup_i,
   input req_pwrdn_i,
   output logic ack_pwrdn_o,
+  output logic rst_req_o,
+  output logic fsm_invalid_o,
+  input clr_req_i,
 
   // low power entry configuration
   input main_pd_ni,
@@ -50,9 +54,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic core_clk_en_q, core_clk_en_d;
   logic io_clk_en_q, io_clk_en_d;
   logic usb_clk_en_q, usb_clk_en_d;
+  logic fsm_invalid_q, fsm_invalid_d;
 
   logic all_clks_valid;
   logic all_clks_invalid;
+
+  // when to monitor pok for instability
+  // These are monitored only in active and low power states
+  logic ast_main_pok;
+  logic mon_main_pok;
+  logic set_main_pok;
 
   // all clocks sources are valid
   // if clocks (usb) not configured to be active, then just bypass check
@@ -68,7 +79,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q        <= SlowPwrStateReset;
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
       // pwrmgr resets assuming main power domain is already ready
@@ -80,8 +90,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       usb_clk_en_q   <= 1'b0;
       req_pwrup_q    <= 1'b0;
       ack_pwrdn_q    <= 1'b0;
+      fsm_invalid_q  <= 1'b0;
     end else begin
-      state_q        <= state_d;
       cause_q        <= cause_d;
       cause_toggle_q <= cause_toggle_d;
       pd_nq          <= pd_nd;
@@ -92,8 +102,21 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       usb_clk_en_q   <= usb_clk_en_d;
       req_pwrup_q    <= req_pwrup_d;
       ack_pwrdn_q    <= ack_pwrdn_d;
+      fsm_invalid_q  <= fsm_invalid_d;
     end
   end
+
+  logic [SlowPwrStateWidth-1:0] state_raw_q;
+  assign state_q = slow_pwr_state_e'(state_raw_q);
+  prim_flop #(
+    .Width(SlowPwrStateWidth),
+    .ResetValue(SlowPwrStateWidth'(SlowPwrStateReset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
+  );
 
   always_comb begin
     state_d        = state_q;
@@ -108,6 +131,10 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
     req_pwrup_d    = req_pwrup_q;
     ack_pwrdn_d    = ack_pwrdn_q;
+    fsm_invalid_d  = fsm_invalid_q;
+
+    mon_main_pok   = '0;
+    set_main_pok   = '0;
 
     unique case(state_q)
 
@@ -117,6 +144,9 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateLowPower: begin
+        // if main power was not turned off, monitor power for stability
+        mon_main_pok = main_pd_ni;
+
         // reset request behaves identically to a wakeup, other than the power-up cause being
         // different
         if (wakeup_i || reset_req_i) begin
@@ -129,7 +159,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateMainPowerOn: begin
         pd_nd = 1'b1;
 
-        if (ast_i.main_pok) begin
+        if (ast_main_pok) begin
+          set_main_pok = 1'b1;
           pwr_clamp_env_d = 1'b0;
           state_d = SlowPwrStatePwrClampOff;
         end
@@ -164,6 +195,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateIdle: begin
         // ack_pwrup_i should be 0 here to indicate
         // the ack from the previous round has definitively completed
+        mon_main_pok = 1'b1;
         usb_clk_en_d = usb_clk_en_active_i;
 
         if (req_pwrdn_i && !ack_pwrup_i) begin
@@ -202,29 +234,70 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         pd_nd = main_pd_ni;
 
         // if power is never turned off, proceed directly to low power state
-        if (!ast_i.main_pok | main_pd_ni) begin
+        if (!ast_main_pok | main_pd_ni) begin
           state_d = SlowPwrStateLowPower;
         end
       end
 
       // Very terminal state, kill everything
+      // Signal the fast FSM if it somehow is still running.
+      // Both FSMs are now permanently out of sync and the device
+      // must be rebooted.
       default: begin
+        fsm_invalid_d = 1'b1;
         pd_nd         = 1'b0;
         pwr_clamp_d   = 1'b1;
         core_clk_en_d = 1'b0;
         io_clk_en_d   = 1'b0;
         usb_clk_en_d  = 1'b0;
       end
-
-
     endcase // unique case (state_q)
   end // always_comb
 
+  always_ff @(posedge clk_i or negedge rst_main_ni) begin
+    if (!rst_main_ni) begin
+      ast_main_pok <= '0;
+    end else begin
+      ast_main_pok <= ast_i.main_pok;
+    end
+  end
+
+  // If the main_pok ever drops, capture that glitch
+  // and hold onto it for reset escalation
+  logic main_pok_st;
+  always_ff @(posedge clk_i or negedge rst_main_ni) begin
+    if (!rst_main_ni) begin
+      main_pok_st <= '0;
+    end else if (!main_pok_st && set_main_pok) begin
+      // as part of normal power up, reset the state
+      main_pok_st <= 1'b1;
+    end else if (!main_pok_st && clr_req_i) begin
+      // when requested by fast FSM as it is about to reset
+      main_pok_st <= 1'b1;
+    end
+  end
+
+  // power stability reset request
+  // If the main power becomes unstable for whatever reason,
+  // request reset
+  logic pwr_rst_req;
+  assign pwr_rst_req = mon_main_pok & ~main_pok_st;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_req_o <= '0;
+    end else if (clr_req_i) begin
+      rst_req_o <= '0;
+    end else begin
+      rst_req_o <= rst_req_o | pwr_rst_req;
+    end
+  end
 
   assign pwrup_cause_o = cause_q;
   assign pwrup_cause_toggle_o = cause_toggle_q;
   assign req_pwrup_o = req_pwrup_q;
   assign ack_pwrdn_o = ack_pwrdn_q;
+  assign fsm_invalid_o = fsm_invalid_q;
 
   assign ast_o.core_clk_en = core_clk_en_q;
   assign ast_o.io_clk_en = io_clk_en_q;
@@ -243,5 +316,11 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic unused_slow_clk_val;
   assign unused_slow_clk_val = ast_i.slow_clk_val;
 
+  ////////////////////////////
+  ///  Assertion
+  ////////////////////////////
+  // Under normal circumstances, this should NEVER fire
+  // May need to add a signal to disable this check for simulation
+  `ASSERT(IntRstReq_A, pwr_rst_req == '0)
 
 endmodule

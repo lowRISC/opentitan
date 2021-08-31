@@ -21,7 +21,7 @@ module rstmgr
 % endfor
 
   // POR input
-  input por_n_i,
+  input [PowerDomains-1:0] por_n_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -65,9 +65,8 @@ module rstmgr
   logic [PowerDomains-1:0] rst_por_aon_n;
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
-    if (i == DomainAonSel) begin : gen_rst_por_aon_normal
 
-      lc_ctrl_pkg::lc_tx_t por_aon_scanmode;
+      lc_ctrl_pkg::lc_tx_t por_scanmode;
       prim_lc_sync #(
         .NumCopies(1),
         .AsyncOn(0)
@@ -75,23 +74,41 @@ module rstmgr
         .clk_i(1'b0),  // unused clock
         .rst_ni(1'b1), // unused reset
         .lc_en_i(scanmode_i),
-        .lc_en_o(por_aon_scanmode)
+        .lc_en_o(por_scanmode)
       );
 
+    if (i == DomainAonSel) begin : gen_rst_por_aon_normal
       rstmgr_por u_rst_por_aon (
         .clk_i(clk_aon_i),
-        .rst_ni(por_n_i),
+        .rst_ni(por_n_i[i]),
         .scan_rst_ni,
-        .scanmode_i(por_aon_scanmode == lc_ctrl_pkg::On),
+        .scanmode_i(por_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
-    end else begin : gen_rst_por_aon_tieoff
-      assign rst_por_aon_n[i] = 1'b0;
+    end else begin : gen_rst_por_domain
+      logic rst_por_aon_premux;
+      prim_flop_2sync #(
+        .Width(1),
+        .ResetValue('0)
+      ) u_por_domain_sync (
+        .clk_i(clk_aon_i),
+        // do not release from reset if aon has not
+        .rst_ni(rst_por_aon_n[DomainAonSel] & por_n_i[i]),
+        .d_i(1'b1),
+        .q_o(rst_por_aon_premux)
+      );
+
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_por_domain_mux (
+        .clk0_i(rst_por_aon_premux),
+        .clk1_i(scan_rst_ni),
+        .sel_i(por_scanmode == lc_ctrl_pkg::On),
+        .clk_o(rst_por_aon_n[i])
+      );
     end
-
-    assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
   end
-
+  assign resets_o.rst_por_aon_n = rst_por_aon_n;
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -147,7 +164,7 @@ module rstmgr
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sync (
+  ) u_ndm_sync (
     .clk_i,
     .rst_ni,
     .d_i(ndmreset_req_i),
@@ -401,6 +418,8 @@ module rstmgr
   ////////////////////////////////////////////////////
   // Assertions                                     //
   ////////////////////////////////////////////////////
+
+  `ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::TotalResetWidth)
 
   // when upstream resets, downstream must also reset
 

@@ -16,11 +16,16 @@ package pwrmgr_pkg;
   // variables referenced only by pwrmgr
   localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
-  //// The following structs should eventually be relocated to other modules.
-  //typedef enum logic [1:0] {
-  //  DiffValid = 2'b10,
-  //  DiffInvalid = 2'b01
-  //} pwrmgr_diff_e;
+  typedef enum logic [1:0] {
+    IntReqMainPwr,
+    IntReqEsc,
+    IntReqLastIdx
+  } pwr_int_rst_req_e;
+
+  // position of escalation request
+  parameter int TotalResetWidth = pwrmgr_reg_pkg::NumRstReqs + IntReqLastIdx;
+  parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqMainPwr;
+  parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqEsc;
 
   // pwrmgr to ast
   typedef struct packed {
@@ -70,7 +75,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] rst_lc_req;
     logic [PowerDomains-1:0] rst_sys_req;
-    logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs;
+    logic [TotalResetWidth-1:0] rstreqs;
     reset_cause_e reset_cause;
   } pwr_rst_req_t;
 
@@ -156,7 +161,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
     // reset requests include external requests + escalation reset
-    logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs;
+    logic [TotalResetWidth-1:0] rstreqs;
   } pwr_peri_t;
 
   // power-up causes
@@ -173,38 +178,89 @@ package pwrmgr_pkg;
   } low_power_hint_e;
 
   // fast fsm state enum
-  typedef enum logic [4:0] {
-    FastPwrStateLowPower,
-    FastPwrStateEnableClocks,
-    FastPwrStateReleaseLcRst,
-    FastPwrStateOtpInit,
-    FastPwrStateLcInit,
-    FastPwrStateStrap,
-    FastPwrStateAckPwrUp,
-    FastPwrStateRomCheck,
-    FastPwrStateActive,
-    FastPwrStateDisClks,
-    FastPwrStateFallThrough,
-    FastPwrStateNvmIdleChk,
-    FastPwrStateLowPowerPrep,
-    FastPwrStateNvmShutDown,
-    FastPwrStateResetPrep,
-    FastPwrStateReqPwrDn
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 17 -n 12 \
+  //      -s 4233784300 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: ||||||||||||||||| (30.15%)
+  //  6: |||||||||||||||||||| (35.29%)
+  //  7: |||||||||| (19.12%)
+  //  8: ||||| (9.56%)
+  //  9: | (2.21%)
+  // 10: | (2.21%)
+  // 11:  (1.47%)
+  // 12: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 11
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 9
+  //
+  localparam int FastPwrStateWidth = 12;
+  typedef enum logic [FastPwrStateWidth-1:0] {
+    FastPwrStateLowPower     = 12'b111010101011,
+    FastPwrStateEnableClocks = 12'b000011000010,
+    FastPwrStateReleaseLcRst = 12'b111011010110,
+    FastPwrStateOtpInit      = 12'b100101011010,
+    FastPwrStateLcInit       = 12'b010001111100,
+    FastPwrStateStrap        = 12'b010110111010,
+    FastPwrStateAckPwrUp     = 12'b010100100101,
+    FastPwrStateRomCheck     = 12'b101100000011,
+    FastPwrStateActive       = 12'b100001010101,
+    FastPwrStateDisClks      = 12'b010000010011,
+    FastPwrStateFallThrough  = 12'b111111011001,
+    FastPwrStateNvmIdleChk   = 12'b001111110011,
+    FastPwrStateLowPowerPrep = 12'b011101001111,
+    FastPwrStateNvmShutDown  = 12'b001010011111,
+    FastPwrStateResetPrep    = 12'b101000110000,
+    FastPwrStateReqPwrDn     = 12'b101101101100,
+    FastPwrStateInvalid      = 12'b100010001100
   } fast_pwr_state_e;
 
-  // slow fsm state enum
-  typedef enum logic [3:0] {
-    SlowPwrStateReset,
-    SlowPwrStateLowPower,
-    SlowPwrStateMainPowerOn,
-    SlowPwrStatePwrClampOff,
-    SlowPwrStateClocksOn,
-    SlowPwrStateReqPwrUp,
-    SlowPwrStateIdle,
-    SlowPwrStateAckPwrDn,
-    SlowPwrStateClocksOff,
-    SlowPwrStatePwrClampOn,
-    SlowPwrStateMainPowerOff
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 12 -n 10 \
+  //      -s 1726685338 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (54.55%)
+  //  6: |||||||||||||||| (45.45%)
+  //  7: --
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 8
+  //
+  localparam int SlowPwrStateWidth = 10;
+  typedef enum logic [SlowPwrStateWidth-1:0] {
+    SlowPwrStateReset = 10'b0000100010,
+    SlowPwrStateLowPower = 10'b1011000111,
+    SlowPwrStateMainPowerOn = 10'b0110101111,
+    SlowPwrStatePwrClampOff = 10'b0110010001,
+    SlowPwrStateClocksOn = 10'b1010111100,
+    SlowPwrStateReqPwrUp = 10'b0011011010,
+    SlowPwrStateIdle = 10'b1111100000,
+    SlowPwrStateAckPwrDn = 10'b0001110101,
+    SlowPwrStateClocksOff = 10'b1101111011,
+    SlowPwrStatePwrClampOn = 10'b0101001100,
+    SlowPwrStateMainPowerOff = 10'b1000001001,
+    SlowPwrStateInvalid = 10'b1100010110
   } slow_pwr_state_e;
 
 endpackage // pwrmgr_pkg

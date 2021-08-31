@@ -337,8 +337,21 @@
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4", rst_slow_ni: "por_aon"},
-      domain: ["Aon"],
+      reset_connections: {
+        rst_ni: {
+          name: "por_io_div4",
+          domain: "Aon"
+        },
+        rst_main_ni: {
+          name: "por_aon",
+          domain: "0"
+        }
+        rst_slow_ni: {
+          name: "por_aon",
+          domain: "Aon",
+        },
+      }
+      domain: ["Aon", "0"],
       base_addr: "0x40400000",
       attr: "templated",
 

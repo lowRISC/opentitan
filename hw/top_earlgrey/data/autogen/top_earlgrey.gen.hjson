@@ -179,6 +179,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         shadowed: false
         sw: false
@@ -254,6 +255,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         shadowed: false
         sw: false
@@ -2335,6 +2337,11 @@
           name: por_io_div4
           domain: Aon
         }
+        rst_main_ni:
+        {
+          name: por_aon
+          domain: "0"
+        }
         rst_slow_ni:
         {
           name: por_aon
@@ -2344,6 +2351,7 @@
       domain:
       [
         Aon
+        "0"
       ]
       attr: templated
       clock_connections:
@@ -2617,7 +2625,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 1
+          width: 2
           inst_name: rstmgr_aon
           default: ""
           package: ""
@@ -14810,7 +14818,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 1
+        width: 2
         inst_name: rstmgr_aon
         default: ""
         package: ""
@@ -18283,7 +18291,7 @@
         package: ""
         struct: logic
         signame: por_n_i
-        width: 1
+        width: 2
         type: uni
         default: ""
         direction: in

@@ -15,7 +15,7 @@ interface rstmgr_cascading_sva_if (
   input logic clk_io_i,
   input logic clk_main_i,
   input logic clk_usb_i,
-  input logic por_n_i,
+  input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,
   input [rstmgr_pkg::PowerDomains-1:0] rst_lc_src_n,
   input [rstmgr_pkg::PowerDomains-1:0] rst_sys_src_n,
@@ -76,14 +76,14 @@ interface rstmgr_cascading_sva_if (
       `RISE_ASSERT(name, from, to, cycles, clk)
 
   // A fall in por_n_i leads to a fall in rst_por_aon_n[0].
-  `FALL_ASSERT(CascadePorToAon, por_n_i, resets_o.rst_por_aon_n[0], PorCycles, clk_aon_i)
+  `FALL_ASSERT(CascadePorToAon, por_n_i[rstmgr_pkg::DomainAonSel], resets_o.rst_por_aon_n[0], PorCycles, clk_aon_i)
 
   // A number of consecutive cycles with por_n_i inactive (high) should cause the aon resets to
   // become inactive. This checks POR stretching.
 
   // The antecedent: por_n_i rising and being stably high for a minimum number of cycles.
   sequence PorStable_S;
-    $rose(por_n_i) ##1 por_n_i [* PorCycles.rise.min];
+    $rose(por_n_i[rstmgr_pkg::DomainAonSel]) ##1 por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.min];
   endsequence
 
   // The consequence: reset will rise after some cycles.

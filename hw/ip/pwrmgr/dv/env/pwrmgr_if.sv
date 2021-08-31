@@ -59,7 +59,7 @@ interface pwrmgr_if (
 
   // Slow fsm state.
   pwrmgr_pkg::slow_pwr_state_e                                   slow_state;
-  always_comb slow_state = tb.dut.i_slow_fsm.state_q;
+  always_comb slow_state = tb.dut.u_slow_fsm.state_q;
 
   // Fast fsm state.
   pwrmgr_pkg::fast_pwr_state_e fast_state;

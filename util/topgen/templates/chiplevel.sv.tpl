@@ -908,11 +908,13 @@ module chip_${top["name"]}_${target["name"]} (
   // Top-level design //
   //////////////////////
 
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
   top_${top["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
     // ast connections
-    .por_n_i                      ( ast_pwst.aon_pok           ),
+    .por_n_i                      ( por_n                      ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
@@ -1087,7 +1089,7 @@ module chip_${top["name"]}_${target["name"]} (
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
-    .por_n_i                      ( rst_n            ),
+    .por_n_i                      ( {rst_n, rst_n}   ),
     .clk_main_i                   ( clk_main         ),
     .clk_io_i                     ( clk_main         ),
     .clk_usb_i                    ( clk_usb_48mhz    ),

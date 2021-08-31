@@ -1061,11 +1061,13 @@ module chip_earlgrey_asic (
   // Top-level design //
   //////////////////////
 
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // ast connections
-    .por_n_i                      ( ast_pwst.aon_pok           ),
+    .por_n_i                      ( por_n                      ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),

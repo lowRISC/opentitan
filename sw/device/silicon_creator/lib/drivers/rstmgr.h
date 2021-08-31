@@ -54,12 +54,13 @@ typedef enum rstmgr_reason {
    */
   kRstmgrReasonSysrstCtrl = 3,
   kRstmgrReasonWatchdog = 4,
-  kRstmgrReasonEscalation = 5,
+  kRstmgrReasonPowerUnstable = 5,
+  kRstmgrReasonEscalation = 6,
 
   /**
    * Last used bit index (inclusive).
    */
-  kRstmgrReasonLast = 5,
+  kRstmgrReasonLast = 6,
 } rstmgr_reason_t;
 
 /**

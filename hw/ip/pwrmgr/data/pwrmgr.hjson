@@ -10,6 +10,7 @@
 { name: "PWRMGR",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_main_ni"},
     {clock: "clk_slow_i", reset: "rst_slow_ni"}
   ]
   bus_interfaces: [
