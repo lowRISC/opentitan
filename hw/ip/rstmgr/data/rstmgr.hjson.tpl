@@ -4,6 +4,7 @@
 
 <%
   crash_dump_srcs = ['alert', 'cpu']
+  total_hw_resets = num_rstreqs+2
 %>
 
 # RSTMGR register template
@@ -45,9 +46,9 @@
     },
 
     { name: "NumHwResets",
-      desc: "Number of hardware reset requests, inclusive of escalation",
+      desc: "Number of hardware reset requests, inclusive of pwrmgr's 2 internal resets",
       type: "int",
-      default: "${num_rstreqs+1}",
+      default: "${total_hw_resets}",
       local: "true"
     },
 
@@ -67,6 +68,7 @@
       type:    "uni",
       name:    "por_n",
       act:     "rcv",
+      width:   "${len(power_domains)}"
     },
 
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
@@ -153,7 +155,7 @@
         },
 
         // reset requests include escalation reset + peripheral requests
-        { bits: "${3 + num_rstreqs}:3",
+        { bits: "${3 + total_hw_resets - 1}:3",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''

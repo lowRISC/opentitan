@@ -53,7 +53,7 @@ uint32_t rstmgr_reason_get(void) {
   // peripheral.
   REASON_ASSERT(kRstmgrReasonEscalation,
                 RSTMGR_RESET_INFO_HW_REQ_OFFSET +
-                    kTopEarlgreyPowerManagerResetRequestsLast + 1)
+                    kTopEarlgreyPowerManagerResetRequestsLast + 2)
 
   // Check that the last index corresponds to the last bit in HW_REQ.
   static_assert(

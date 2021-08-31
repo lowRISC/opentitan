@@ -117,8 +117,8 @@ module rstmgr_reg_top (
   logic reset_info_low_power_exit_wd;
   logic reset_info_ndm_reset_qs;
   logic reset_info_ndm_reset_wd;
-  logic [2:0] reset_info_hw_req_qs;
-  logic [2:0] reset_info_hw_req_wd;
+  logic [3:0] reset_info_hw_req_qs;
+  logic [3:0] reset_info_hw_req_wd;
   logic alert_regwen_we;
   logic alert_regwen_qs;
   logic alert_regwen_wd;
@@ -279,11 +279,11 @@ module rstmgr_reg_top (
     .qs     (reset_info_ndm_reset_qs)
   );
 
-  //   F[hw_req]: 5:3
+  //   F[hw_req]: 6:3
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_reset_info_hw_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -964,7 +964,7 @@ module rstmgr_reg_top (
 
   assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_wd = reg_wdata[5:3];
+  assign reset_info_hw_req_wd = reg_wdata[6:3];
   assign alert_regwen_we = addr_hit[2] & reg_we & !reg_error;
 
   assign alert_regwen_wd = reg_wdata[0];
@@ -1041,7 +1041,7 @@ module rstmgr_reg_top (
         reg_rdata_next[0] = reset_info_por_qs;
         reg_rdata_next[1] = reset_info_low_power_exit_qs;
         reg_rdata_next[2] = reset_info_ndm_reset_qs;
-        reg_rdata_next[5:3] = reset_info_hw_req_qs;
+        reg_rdata_next[6:3] = reset_info_hw_req_qs;
       end
 
       addr_hit[2]: begin

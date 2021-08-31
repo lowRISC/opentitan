@@ -21,7 +21,10 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input ack_pwrdn_i,
   input low_power_entry_i,
   input main_pd_ni,
-  input [NumRstReqs:0] reset_reqs_i,
+  input [TotalResetWidth-1:0] reset_reqs_i,
+  input fsm_invalid_i,
+  output logic clr_slow_req_o,
+  input clr_slow_ack_i,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -82,6 +85,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   reset_cause_e reset_cause_q, reset_cause_d;
 
   // reset request
+  logic direct_rst_req;
   logic reset_req;
 
   // strap sample should only happen on cold boot or when the
@@ -109,6 +113,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
                              pwr_rst_i.rst_sys_src_n == '0;
 
   assign reset_req = |reset_reqs_i;
+  assign direct_rst_req = reset_reqs_i[ResetEscIdx] |
+                          reset_reqs_i[ResetMainPwrIdx];
 
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
@@ -118,7 +124,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= FastPwrStateLowPower;
       ack_pwrup_q <= 1'b0;
       req_pwrdn_q <= 1'b0;
       reset_ongoing_q <= 1'b0;
@@ -128,7 +133,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       reset_cause_q <= ResetUndefined;
       low_power_q <= 1'b1;
     end else begin
-      state_q <= state_d;
       ack_pwrup_q <= ack_pwrup_d;
       req_pwrdn_q <= req_pwrdn_d;
       reset_ongoing_q <= reset_ongoing_d;
@@ -139,6 +143,18 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       low_power_q <= low_power_d;
     end
   end
+
+  logic [FastPwrStateWidth-1:0] state_raw_q;
+  assign state_q = fast_pwr_state_e'(state_raw_q);
+  prim_flop #(
+    .Width(FastPwrStateWidth),
+    .ResetValue(FastPwrStateWidth'(FastPwrStateLowPower))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -191,6 +207,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     clr_hint_o = 1'b0;
     clr_cfg_lock_o = 1'b0;
     strap_o = 1'b0;
+    clr_slow_req_o = 1'b0;
 
     state_d = state_q;
     ack_pwrup_d = ack_pwrup_q;
@@ -292,6 +309,10 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         if (!clk_en_status_i) begin
           state_d = reset_req ? FastPwrStateNvmShutDown : FastPwrStateFallThrough;
           low_power_d = ~reset_req;
+        end else begin
+          // escalation was received, skip all handshaking and directly reset
+          state_d = direct_rst_req ? FastPwrStateNvmShutDown : state_q;
+          low_power_d = ~reset_req;
         end
       end
 
@@ -349,7 +370,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       end
 
       // Reset Path
-      // This state is TODO, the details are still under discussion
       FastPwrStateNvmShutDown: begin
         clr_hint_o = 1'b1;
         reset_ongoing_d = 1'b1;
@@ -360,8 +380,11 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         reset_cause_d = HwReq;
         rst_lc_req_d = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{1'b1}};
-
-        if (reset_valid) begin
+        clr_slow_req_o = 1'b1;
+        // okay to be pending here, since reset is already asserted
+        // if the handshake were attacked in any way, the device
+        // would simply be dead.
+        if (reset_valid && (clr_slow_req_o && clr_slow_ack_i)) begin
           state_d = FastPwrStateLowPower;
         end
       end
@@ -372,8 +395,14 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         rst_sys_req_d = {PowerDomains{1'b1}};
         ip_clk_en_d = 1'b0;
       end
-
     endcase // unique case (state_q)
+
+    if (fsm_invalid_i) begin
+      // the slow fsm is completely out of sync, transition to terminal state
+      state_d = FastPwrStateInvalid;
+    end
+
+
   end // always_comb
 
   assign ack_pwrup_o = ack_pwrup_q;

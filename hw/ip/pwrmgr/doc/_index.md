@@ -136,10 +136,10 @@ If any of the modules is active, the fast FSM "aborts" entry handling and return
 
 ## Reset Request Handling
 
-There are 3 reset requests in the system - peripheral requested reset such as watchdog, alert escalation reset and non-debug module reset.
+There are 3 reset requests in the system - peripheral requested reset such as watchdog, power manager's internal reset request and non-debug module reset.
 Flash brownout is handled separately and described in [flash handling section](#flash-handling) below.
 
-Watchdog and alert escalation resets are handled directly by the power manager, while the non-debug module reset is handled by the reset controller.
+Peripheral requested resets such as watchdog are handled directly by the power manager, while the non-debug module reset is handled by the reset controller.
 This separation is because the non-debug reset does not affect the life cycle controller, non-volatile storage controllers and alert states.
 There is thus no need to sequence its operation like the others.
 
@@ -149,6 +149,27 @@ When a reset request is received during slow FSM `Low Power` state, the system b
 When a reset request is received during fast FSM `Active` state, the fast FSM asserts resets and transitions back to its `Low Power` state.
 The normal power-up process described [above](#fast-clock-domain-fsm) is then followed to release the resets.
 Note in this case, the slow FSM is "not activated" and remains in its `Idle` state.
+
+### Power Manager Internal Reset Requests
+
+In additional to external requests, the power manager maintains 2 internal reset requests:
+* Escalation reset request
+* Main power domain unstable reset request
+
+#### Escalation Reset Request
+Alert escalation resets in general behave similarly to peripehral requested resets.
+However, peripheral resets are always handled gracefully and follow the normal FSM transition.
+
+Alert escalations can happen at any time and do not always obey normal rules.
+As a result, upon alert escalation, the power manager makes a best case effort to transition directly into reset handling.
+
+This may not always be possible if the escalation happens while in low power (for example the FSM is in an invalid state).
+In this scenario, the pwrmgr keeps everything powered off and silenced and requests escalation handling if the system ever wakes up.
+
+#### Main Power Unstable Reset Requests
+If the main power ever becomes unstable (the power okay indication is low even though it is powered on), the power manager requests an internal reset.
+
+This reset behaves similarly to the escalation reset and transitions directly into reset handling.
 
 
 ### Reset Requests Received During Other States

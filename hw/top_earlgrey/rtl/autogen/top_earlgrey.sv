@@ -145,7 +145,7 @@ module top_earlgrey #(
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
   inout         otp_ext_voltage_h_io,
   output ast_pkg::ast_dif_t       otp_alert_o,
-  input  logic       por_n_i,
+  input  logic [1:0] por_n_i,
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
@@ -1510,6 +1510,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_slow_i (clkmgr_aon_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .rst_main_ni (rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::Domain0Sel]),
       .rst_slow_ni (rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel])
   );
 

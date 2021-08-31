@@ -14,7 +14,7 @@ module pwrmgr_bind;
   bind pwrmgr pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_if (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .state(i_slow_fsm.state_q),
+    .state(u_slow_fsm.state_q),
     // The synchronized control CSR bits.
     .main_pd_ni(slow_main_pd_n),
     .core_clk_en_i(slow_core_clk_en),

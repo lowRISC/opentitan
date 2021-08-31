@@ -18,6 +18,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // slow domain signals,
   input slow_req_pwrup_i,
   input slow_ack_pwrdn_i,
+  input slow_fsm_invalid_i,
   input slow_pwrup_cause_toggle_i,
   input pwrup_cause_e slow_pwrup_cause_i,
   output logic [NumWkups-1:0] slow_wakeup_en_o,
@@ -32,6 +33,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_ast_rsp_t slow_ast_o,
   output pwr_peri_t slow_peri_reqs_o,
   input pwr_peri_t slow_peri_reqs_masked_i,
+  output logic slow_clr_req_o,
 
   // fast domain signals
   input req_pwrdn_i,
@@ -45,10 +47,13 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input usb_clk_en_lp_i,
   input usb_clk_en_active_i,
   output logic ack_pwrdn_o,
+  output logic fsm_invalid_o,
   output logic req_pwrup_o,
   output pwrup_cause_e pwrup_cause_o,
   output pwr_peri_t peri_reqs_o,
   output logic cdc_sync_done_o,
+  input clr_slow_req_i,
+  output logic clr_slow_ack_o,
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
@@ -77,7 +82,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_req_pwrdn_sync (
+  ) u_req_pwrdn_sync (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
     .d_i(req_pwrdn_i),
@@ -86,14 +91,14 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_ack_pwrup_sync (
+  ) u_ack_pwrup_sync (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
     .d_i(ack_pwrup_i),
     .q_o(slow_ack_pwrup_o)
   );
 
-  prim_pulse_sync i_slow_cdc_sync (
+  prim_pulse_sync u_slow_cdc_sync (
     .clk_src_i(clk_i),
     .rst_src_ni(rst_ni),
     .src_pulse_i(cfg_cdc_sync_i),
@@ -107,7 +112,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // no intent to use them in a related manner.
   prim_flop_2sync # (
     .Width($bits(pwr_peri_t))
-  ) i_slow_ext_req_sync (
+  ) u_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
     .d_i    (peri_i),
@@ -120,7 +125,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   prim_flop_2sync # (
     .Width($bits(pwr_ast_rsp_t)),
     .ResetValue(PWR_AST_RSP_SYNC_DEFAULT)
-  ) i_ast_sync (
+  ) u_ast_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
     .d_i    (ast_i),
@@ -178,7 +183,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_req_pwrup_sync (
+  ) u_req_pwrup_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_req_pwrup_i),
@@ -187,7 +192,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_ack_pwrdn_sync (
+  ) u_ack_pwrdn_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_ack_pwrdn_i),
@@ -196,14 +201,23 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync # (
     .Width(1)
-  ) i_pwrup_chg_sync (
+  ) u_int_fsm_invalid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(slow_fsm_invalid_i),
+    .q_o(fsm_invalid_o)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_pwrup_chg_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_pwrup_cause_toggle_i),
     .q_o(pwrup_cause_toggle_q)
   );
 
-  prim_pulse_sync i_scdc_sync (
+  prim_pulse_sync u_scdc_sync (
     .clk_src_i(clk_slow_i),
     .rst_src_ni(rst_slow_ni),
     .src_pulse_i(slow_cdc_sync),
@@ -232,7 +246,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync #(
     .Width($bits(pwr_peri_t))
-  ) i_ext_req_sync (
+  ) u_ext_req_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_peri_reqs_masked_i),
@@ -269,6 +283,21 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(rom_ctrl_done_o)
   );
 
+  ////////////////////////////////
+  // Handshake
+  ////////////////////////////////
+  prim_sync_reqack u_clr_reqack(
+    .clk_src_i(clk_i),
+    .rst_src_ni(rst_ni),
+    .clk_dst_i(clk_slow_i),
+    .rst_dst_ni(rst_slow_ni),
+    .req_chk_i(1'b1),
+    .src_req_i(clr_slow_req_i),
+    .src_ack_o(clr_slow_ack_o),
+    .dst_req_o(slow_clr_req_o),
+    .dst_ack_i(slow_clr_req_o) //immediate ack
+  );
+
 endmodule
 
 
@@ -284,14 +313,14 @@ endmodule
   // pwrup is synced directly as it acts as a start signal to the pulse module
   prim_flop_2sync # (
     .Width(1)
-  ) i_pwrup_sync (
+  ) u_pwrup_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_req_pwrup),
     .q_o(req_pwrup)
   );
 
-  pwrmgr_cdc_pulse i_cdc_pulse (
+  pwrmgr_cdc_pulse u_cdc_pulse (
     .clk_slow_i,
     .clk_i,
     .rst_ni,
@@ -338,7 +367,7 @@ endmodule
   // Need to vote on the differential signals to ensure they are stable
   prim_flop_2sync # (
     .Width($bits(pwr_ast_rsp_t))
-  ) i_pok_sync (
+  ) u_pok_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
     .d_i    (pwr_ast_i),

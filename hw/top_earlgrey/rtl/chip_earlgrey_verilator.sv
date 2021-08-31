@@ -176,7 +176,7 @@ module chip_earlgrey_verilator (
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    .por_n_i                      (rst_ni            ),
+    .por_n_i                      ( {rst_ni, rst_ni} ),
     .clk_main_i                   (clk_i             ),
     .clk_io_i                     (clk_i             ),
     .clk_usb_i                    (clk_i             ),
