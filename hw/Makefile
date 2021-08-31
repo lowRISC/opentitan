@@ -97,7 +97,7 @@ blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
 # If the ip has a local generation script, run it first. This will
 # require all blocks to use a consistent naming. This should be hooked
 # into ipgen (see #5636) for completeness.
-$(ips_reg): %_reg: lc-state-enc | $(REG_OUTPUT_DV_DIR)
+$(ips_reg): %_reg: | $(REG_OUTPUT_DV_DIR)
 	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py -s -t $(REG_OUTPUT_DV_DIR) $(blk-hjson)
@@ -108,6 +108,9 @@ $(filter otp_ctrl_reg,$(ips_reg)): otp-mmap
 otp-mmap:
 	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py
 
+# Register generation for lc_ctrl also depends on running gen-lc-state-enc.py
+.PHONY: lc-state-enc
+$(filter lc_ctrl_reg,$(ips_reg)): lc-state-enc
 lc-state-enc:
 	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py
 
@@ -140,4 +143,4 @@ $(tops_reg):
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
 
-.PHONY: all lc-state-enc
+.PHONY: all
