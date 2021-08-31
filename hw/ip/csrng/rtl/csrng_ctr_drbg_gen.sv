@@ -179,6 +179,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   // flops
   logic [CtrLen-1:0]           v_ctr_q, v_ctr_d;
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
+  logic [SeedLen-1:0]          update_adata_q, update_adata_d;
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
@@ -229,9 +230,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     if (!rst_ni) begin
       v_ctr_q            <= '0;
       interate_ctr_q     <= '0;
+      update_adata_q     <= '0;
     end else begin
       v_ctr_q            <= v_ctr_d;
       interate_ctr_q     <= interate_ctr_d;
+      update_adata_q     <= update_adata_d;
     end
 
 
@@ -400,6 +403,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           (sfifo_adstage_full && !sfifo_adstage_not_empty)};
 
 
+  // store adata for use on the final genbit command
+  assign update_adata_d =
+         (sfifo_genbits_push && adstage_glast) ? SeedLen'(0) :
+         (update_adata_q != SeedLen'(0)) ? update_adata_q :
+         (sfifo_adstage_pop && !adstage_glast) ? adstage_adata :
+         update_adata_q;
 
   //--------------------------------------------
   // block_encrypt response fifo from block encrypt
@@ -449,7 +458,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   assign gen_upd_req_o = sfifo_bencack_not_empty && adstage_glast;
   assign gen_upd_ccmd_o = sfifo_bencack_ccmd;
   assign gen_upd_inst_id_o = sfifo_bencack_inst_id;
-  assign gen_upd_pdata_o = adstage_adata;
+  assign gen_upd_pdata_o = update_adata_q;
   assign gen_upd_key_o = adstage_key;
   assign gen_upd_v_o = adstage_v;
 
