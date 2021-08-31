@@ -67,11 +67,20 @@ local_ips := \
 # Per-IP targets (all phonies)
 ips_reg        = $(addsuffix _reg, $(local_ips))
 ips_reg_header = $(addsuffix _reg_header, $(local_ips))
-ips_reg_rust   = $(addsuffix _reg_constants, $(local_ips))
+ips_reg_rust   = $(foreach ip,$(local_ips),$(REG_OUTPUT_SW_DIR)/$(ip)_reg_constants.rs)
 
 # Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
 tops_reg = $(addsuffix _reg,$(TOPS))
+
+# Targets for installing files into TOCK_ROOT (empty if TOCK_ROOT is not defined)
+ifneq ($(TOCK_ROOT),)
+tock_rust_destdir    := $(TOCK_ROOT)/chips/lowrisc/src/reg_constants
+ips_reg_rust_install := $(addprefix $(tock_rust_destdir)/,$(notdir $(ips_reg_rust)))
+
+$(tock_rust_destdir):
+	mkdir -p $@
+endif
 
 .PHONY: $(ips_reg) $(ips_reg_header) $(ips_reg_rust) $(tops_gen) $(tops_reg)
 
@@ -89,9 +98,6 @@ pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
 	mkdir -p ${REG_OUTPUT_DV_DIR}
 	mkdir -p ${REG_OUTPUT_SW_DIR}
-	if ! [ -z "$(TOCK_ROOT)" ]; then \
-		mkdir -p ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
-	fi
 
 blk-gen-script = $(PRJ_DIR)/hw/ip/$*/util/$*_gen.py
 blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
@@ -115,13 +121,13 @@ regs-header: $(ips_reg_header) banner
 $(ips_reg_header): %_reg_header: pre_reg
 	${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$*_reg_headers.h $(blk-hjson)
 
-regs-rust: $(ips_reg_rust) banner
+regs-rust: $(ips_reg_rust_install) $(ips_reg_rust) banner
 
-$(ips_reg_rust): %_reg_constants: pre_reg
-	${PRJ_DIR}/util/regtool.py -R -o ${REG_OUTPUT_SW_DIR}/$@.rs $(blk-hjson); \
-	if ! [ -z "$(TOCK_ROOT)" ]; then \
-	  cp ${REG_OUTPUT_SW_DIR}/$@.rs ${TOCK_ROOT}/chips/lowrisc/src/reg_constants; \
-	fi
+$(ips_reg_rust): $(REG_OUTPUT_SW_DIR)/%_reg_constants.rs: pre_reg
+	${PRJ_DIR}/util/regtool.py -R -o $@ $(blk-hjson)
+
+$(ips_reg_rust_install): $(tock_rust_destdir)/%: $(REG_OUTPUT_SW_DIR)/% | $(tock_rust_destdir)
+	cp $< $@
 
 clean-regs-header:
 	rm -r -f ${REG_OUTPUT_SW_DIR}
