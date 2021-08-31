@@ -335,6 +335,17 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_tap_strap_sampling
+      desc: '''Verify tap accesses in different LC states.
+
+            Verify pinmux can select the life_cycle, RISC-V, and DFT taps after reset.
+            Verify that in TEST_UNLOCKED* and RMA states, pinmux can switch between the three TAPs
+            without issuing reset.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // PADCTRL tests:
     {
