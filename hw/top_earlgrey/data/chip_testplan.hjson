@@ -482,59 +482,74 @@
     {
       name: chip_sw_jtag_csr_rw
       desc: '''
-            Verify accessibility of CSRs as indicated in the RAL specification.
+            Verify accessibility of all the CSRs in the chip through jtag and also test RV_DM SBA
+            functionality
 
             - Shuffle the list of CSRs first to remove the effect of ordering.
             - Write all CSRs via JTAG interface with a random value.
             - Shuffle the list of CSRs yet again.
             - Read all CSRs back and check their values for correctness while adhering to the CSR's
               access policies.
+            - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_rv_dm_cpu_debug_mem
-      desc: '''Verify access to the debug mem from the CPU.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sw_rv_dm_jtag_debug_mem
-      desc: '''Verify access to the debug mem from the external JTAG interface.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sw_rv_dm_cpu_debug_req
-      desc: '''Verify debug request to Ibex while it is actively executing.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_sw_rv_dm_ndm_reset_req
-      desc: '''Verify non-debug reset req initiated from RV_DM when the chip is awake.
+      name: chip_rv_dm_cpu_debug_mem_not_accessable
+      desc: '''Verify that the debug mem can't be accessed from the CPU while not in the debug mode.
 
-            Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
-            values. Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            TODO, add stimulus and checks
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_sleep_rv_dm_ndm_reset_req
-      desc: '''Verify non-debug reset req initiated from RV_DM when the chip is in deep sleep.
+      name: chip_rv_dm_perform_debug
+      desc: '''Verify that Ibex enters debug mode when triggered through JTAG
 
-            Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
-            values. Read CSRs / mem in the debug domain to ensure that the values survive the reset.
-            There are also other modules such as clk, pwr, rstmgr which survive this reset. Verify
-            those as well.
+            - While Ibex is executing, trigger a debug request by programming `dmcontrol.haltreq`
+              via JTAG.
+            - Ibex steps into interactive debug to store a value in SRAM.
+            - Program the program buffer through JTAG with code to store a value in SRAM and return
+              back to normal program execution using dret.
+            - After Ibex jumps back to the program execution, check the stored value in the SRAM.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_ndm_reset_req
+      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
 
-            TODO: `rv_dm` currently is not on the AON domain, so this feature does not exist ATM.
-            Need discussion with SW/Nuvoton.
+            - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
+            - Configure RV_DM to send NDM reset request to reset sytem reset tree.
+            - Read the programmed CSRs / mem to ensure that everything under system reset tree is
+              reset to the original values, while values under life cycle reset will be preserved.
+            - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            '''
+      milestone: V2
+      tests: []
+    }
+    // TODO, this could be a block-level test. Put it here since we don't have block-level testplan.
+    {
+      name: chip_rv_dm_ndm_reset_req_when_ibex_halted
+      desc: '''Verify non-debug reset request initiated from RV_DM when ibex is in halted state.
+
+            - Configure ibex in halted state (dmstatus.anyhalted/dmstatus.allhalted is asserted).
+            - Configure RV_DM to send NDM reset request.
+            - Check that halted state is clear (dmstatus.anyhalted/dmstatus.allhalted should be
+              de-asserted).
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_access_after_wakeup
+      desc: '''Verify RV_DM works after wakes up from sleep.
+
+            - Put the chip into sleep mode and then wake up.
+            - Access some RV_DM CSRs to ensure that RV_DM doesn't need a full reset to work.
             '''
       milestone: V2
       tests: []
@@ -543,7 +558,10 @@
       name: chip_sw_rv_dm_jtag_tap_sel
       desc: '''Verify ability to select all available TAPs.
 
-            Details TBD.
+            - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
+              RV_DM and DFT.
+            - Verify the TAP is selected correctly.
+            - TODO, X-ref'ed with the LC tests.
             '''
       milestone: V2
       tests: []
@@ -552,8 +570,11 @@
       name: chip_sw_rv_dm_lc_disabled
       desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
 
-            Verify that the debug mem is inaccessible from the CPU as well as external JTAG.
-            Details TBD. X-ref'ed with the LC tests.
+            - Put life cycle on states other than Test, RMA and DEV.
+            - Verify that the rv_dm bus device is inaccessible from the CPU as well as external
+              JTAG.
+            - Verify that the JTAG TAP is unavailable.
+            - X-ref'ed with `chip_tap_strap_sampling`
             '''
       milestone: V2
       tests: []
