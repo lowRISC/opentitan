@@ -94,10 +94,8 @@ banner:
 
 regs: $(ips_reg) $(tops_reg) banner
 
-pre_reg:
-	mkdir -p ${REG_OUTPUT_DIR}
-	mkdir -p ${REG_OUTPUT_DV_DIR}
-	mkdir -p ${REG_OUTPUT_SW_DIR}
+$(REG_OUTPUT_DV_DIR) $(REG_OUTPUT_SW_DIR): %:
+	mkdir -p $@
 
 blk-gen-script = $(PRJ_DIR)/hw/ip/$*/util/$*_gen.py
 blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
@@ -105,10 +103,10 @@ blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
 # If the ip has a local generation script, run it first. This will
 # require all blocks to use a consistent naming. This should be hooked
 # into ipgen (see #5636) for completeness.
-$(ips_reg): %_reg: pre_reg otp-mmap lc-state-enc
+$(ips_reg): %_reg: otp-mmap lc-state-enc | $(REG_OUTPUT_DV_DIR)
 	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
-	${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} $(blk-hjson)
+	${PRJ_DIR}/util/regtool.py -s -t $(REG_OUTPUT_DV_DIR) $(blk-hjson)
 
 otp-mmap:
 	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py
@@ -118,12 +116,12 @@ lc-state-enc:
 
 regs-header: $(ips_reg_header) banner
 
-$(ips_reg_header): %_reg_header: pre_reg
-	${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$*_reg_headers.h $(blk-hjson)
+$(ips_reg_header): %_reg_header: | $(REG_OUTPUT_SW_DIR)
+	${PRJ_DIR}/util/regtool.py -D -o $(REG_OUTPUT_SW_DIR)/$*_reg_headers.h $(blk-hjson)
 
 regs-rust: $(ips_reg_rust_install) $(ips_reg_rust) banner
 
-$(ips_reg_rust): $(REG_OUTPUT_SW_DIR)/%_reg_constants.rs: pre_reg
+$(ips_reg_rust): $(REG_OUTPUT_SW_DIR)/%_reg_constants.rs: | $(REG_OUTPUT_SW_DIR)
 	${PRJ_DIR}/util/regtool.py -R -o $@ $(blk-hjson)
 
 $(ips_reg_rust_install): $(tock_rust_destdir)/%: $(REG_OUTPUT_SW_DIR)/% | $(tock_rust_destdir)
@@ -138,7 +136,7 @@ $(tops_gen):
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
 		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
 
-$(tops_reg): pre_reg
+$(tops_reg):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$($@_TOP)
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
