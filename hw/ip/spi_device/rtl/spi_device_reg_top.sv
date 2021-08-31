@@ -169,6 +169,8 @@ module spi_device_reg_top (
   logic intr_state_rxoverflow_wd;
   logic intr_state_txunderflow_qs;
   logic intr_state_txunderflow_wd;
+  logic intr_state_tpm_cmdaddr_notempty_qs;
+  logic intr_state_tpm_cmdaddr_notempty_wd;
   logic intr_enable_we;
   logic intr_enable_rxf_qs;
   logic intr_enable_rxf_wd;
@@ -182,6 +184,8 @@ module spi_device_reg_top (
   logic intr_enable_rxoverflow_wd;
   logic intr_enable_txunderflow_qs;
   logic intr_enable_txunderflow_wd;
+  logic intr_enable_tpm_cmdaddr_notempty_qs;
+  logic intr_enable_tpm_cmdaddr_notempty_wd;
   logic intr_test_we;
   logic intr_test_rxf_wd;
   logic intr_test_rxlvl_wd;
@@ -189,6 +193,7 @@ module spi_device_reg_top (
   logic intr_test_rxerr_wd;
   logic intr_test_rxoverflow_wd;
   logic intr_test_txunderflow_wd;
+  logic intr_test_tpm_cmdaddr_notempty_wd;
   logic alert_test_we;
   logic alert_test_wd;
   logic control_we;
@@ -1351,6 +1356,66 @@ module spi_device_reg_top (
   logic cmd_info_23_upload_23_wd;
   logic cmd_info_23_busy_23_qs;
   logic cmd_info_23_busy_23_wd;
+  logic [7:0] tpm_cap_rev_qs;
+  logic tpm_cap_locality_qs;
+  logic [2:0] tpm_cap_max_xfer_size_qs;
+  logic tpm_cfg_we;
+  logic tpm_cfg_en_qs;
+  logic tpm_cfg_en_wd;
+  logic tpm_cfg_tpm_mode_qs;
+  logic tpm_cfg_tpm_mode_wd;
+  logic tpm_cfg_hw_reg_dis_qs;
+  logic tpm_cfg_hw_reg_dis_wd;
+  logic tpm_cfg_tpm_reg_chk_dis_qs;
+  logic tpm_cfg_tpm_reg_chk_dis_wd;
+  logic tpm_cfg_invalid_locality_qs;
+  logic tpm_cfg_invalid_locality_wd;
+  logic tpm_status_cmdaddr_notempty_qs;
+  logic tpm_status_rdfifo_notempty_qs;
+  logic [2:0] tpm_status_rdfifo_depth_qs;
+  logic [2:0] tpm_status_wrfifo_depth_qs;
+  logic tpm_access_0_we;
+  logic [7:0] tpm_access_0_access_0_qs;
+  logic [7:0] tpm_access_0_access_0_wd;
+  logic [7:0] tpm_access_0_access_1_qs;
+  logic [7:0] tpm_access_0_access_1_wd;
+  logic [7:0] tpm_access_0_access_2_qs;
+  logic [7:0] tpm_access_0_access_2_wd;
+  logic [7:0] tpm_access_0_access_3_qs;
+  logic [7:0] tpm_access_0_access_3_wd;
+  logic tpm_access_1_we;
+  logic [7:0] tpm_access_1_qs;
+  logic [7:0] tpm_access_1_wd;
+  logic tpm_sts_we;
+  logic [31:0] tpm_sts_qs;
+  logic [31:0] tpm_sts_wd;
+  logic tpm_intf_capability_we;
+  logic [31:0] tpm_intf_capability_qs;
+  logic [31:0] tpm_intf_capability_wd;
+  logic tpm_int_enable_we;
+  logic [31:0] tpm_int_enable_qs;
+  logic [31:0] tpm_int_enable_wd;
+  logic tpm_int_vector_we;
+  logic [7:0] tpm_int_vector_qs;
+  logic [7:0] tpm_int_vector_wd;
+  logic tpm_int_status_we;
+  logic [31:0] tpm_int_status_qs;
+  logic [31:0] tpm_int_status_wd;
+  logic tpm_did_vid_we;
+  logic [15:0] tpm_did_vid_vid_qs;
+  logic [15:0] tpm_did_vid_vid_wd;
+  logic [15:0] tpm_did_vid_did_qs;
+  logic [15:0] tpm_did_vid_did_wd;
+  logic tpm_rid_we;
+  logic [7:0] tpm_rid_qs;
+  logic [7:0] tpm_rid_wd;
+  logic tpm_cmd_addr_re;
+  logic [23:0] tpm_cmd_addr_addr_qs;
+  logic [7:0] tpm_cmd_addr_cmd_qs;
+  logic tpm_read_fifo_we;
+  logic [7:0] tpm_read_fifo_wd;
+  logic tpm_write_fifo_re;
+  logic [7:0] tpm_write_fifo_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1502,6 +1567,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (intr_state_txunderflow_qs)
+  );
+
+  //   F[tpm_cmdaddr_notempty]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_tpm_cmdaddr_notempty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_tpm_cmdaddr_notempty_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.tpm_cmdaddr_notempty.de),
+    .d      (hw2reg.intr_state.tpm_cmdaddr_notempty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.tpm_cmdaddr_notempty.q),
+
+    // to register interface (read)
+    .qs     (intr_state_tpm_cmdaddr_notempty_qs)
   );
 
 
@@ -1656,6 +1746,31 @@ module spi_device_reg_top (
     .qs     (intr_enable_txunderflow_qs)
   );
 
+  //   F[tpm_cmdaddr_notempty]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_tpm_cmdaddr_notempty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_tpm_cmdaddr_notempty_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.tpm_cmdaddr_notempty.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_tpm_cmdaddr_notempty_qs)
+  );
+
 
   // R[intr_test]: V(True)
   //   F[rxf]: 0:0
@@ -1739,6 +1854,20 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.txunderflow.qe),
     .q      (reg2hw.intr_test.txunderflow.q),
+    .qs     ()
+  );
+
+  //   F[tpm_cmdaddr_notempty]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_tpm_cmdaddr_notempty (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_tpm_cmdaddr_notempty_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.tpm_cmdaddr_notempty.qe),
+    .q      (reg2hw.intr_test.tpm_cmdaddr_notempty.q),
     .qs     ()
   );
 
@@ -15841,8 +15970,712 @@ module spi_device_reg_top (
   );
 
 
+  // R[tpm_cap]: V(False)
+  //   F[rev]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (8'h0)
+  ) u_tpm_cap_rev (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [53:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_cap.rev.de),
+    .d      (hw2reg.tpm_cap.rev.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_cap_rev_qs)
+  );
+
+  //   F[locality]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_tpm_cap_locality (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_cap.locality.de),
+    .d      (hw2reg.tpm_cap.locality.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_cap_locality_qs)
+  );
+
+  //   F[max_xfer_size]: 18:16
+  prim_subreg #(
+    .DW      (3),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (3'h0)
+  ) u_tpm_cap_max_xfer_size (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_cap.max_xfer_size.de),
+    .d      (hw2reg.tpm_cap.max_xfer_size.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_cap_max_xfer_size_qs)
+  );
+
+
+  // R[tpm_cfg]: V(False)
+  //   F[en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_tpm_cfg_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_cfg_we),
+    .wd     (tpm_cfg_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_cfg.en.q),
+
+    // to register interface (read)
+    .qs     (tpm_cfg_en_qs)
+  );
+
+  //   F[tpm_mode]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_tpm_cfg_tpm_mode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_cfg_we),
+    .wd     (tpm_cfg_tpm_mode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_cfg.tpm_mode.q),
+
+    // to register interface (read)
+    .qs     (tpm_cfg_tpm_mode_qs)
+  );
+
+  //   F[hw_reg_dis]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_tpm_cfg_hw_reg_dis (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_cfg_we),
+    .wd     (tpm_cfg_hw_reg_dis_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_cfg.hw_reg_dis.q),
+
+    // to register interface (read)
+    .qs     (tpm_cfg_hw_reg_dis_qs)
+  );
+
+  //   F[tpm_reg_chk_dis]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_tpm_cfg_tpm_reg_chk_dis (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_cfg_we),
+    .wd     (tpm_cfg_tpm_reg_chk_dis_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_cfg.tpm_reg_chk_dis.q),
+
+    // to register interface (read)
+    .qs     (tpm_cfg_tpm_reg_chk_dis_qs)
+  );
+
+  //   F[invalid_locality]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_tpm_cfg_invalid_locality (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_cfg_we),
+    .wd     (tpm_cfg_invalid_locality_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_cfg.invalid_locality.q),
+
+    // to register interface (read)
+    .qs     (tpm_cfg_invalid_locality_qs)
+  );
+
+
+  // R[tpm_status]: V(False)
+  //   F[cmdaddr_notempty]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_tpm_status_cmdaddr_notempty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_status.cmdaddr_notempty.de),
+    .d      (hw2reg.tpm_status.cmdaddr_notempty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_status_cmdaddr_notempty_qs)
+  );
+
+  //   F[rdfifo_notempty]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_tpm_status_rdfifo_notempty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_status.rdfifo_notempty.de),
+    .d      (hw2reg.tpm_status.rdfifo_notempty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_status_rdfifo_notempty_qs)
+  );
+
+  //   F[rdfifo_depth]: 6:4
+  prim_subreg #(
+    .DW      (3),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (3'h0)
+  ) u_tpm_status_rdfifo_depth (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_status.rdfifo_depth.de),
+    .d      (hw2reg.tpm_status.rdfifo_depth.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_status_rdfifo_depth_qs)
+  );
+
+  //   F[wrfifo_depth]: 10:8
+  prim_subreg #(
+    .DW      (3),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (3'h0)
+  ) u_tpm_status_wrfifo_depth (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_status.wrfifo_depth.de),
+    .d      (hw2reg.tpm_status.wrfifo_depth.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tpm_status_wrfifo_depth_qs)
+  );
+
+
+  // Subregister 0 of Multireg tpm_access
+  // R[tpm_access_0]: V(False)
+  //   F[access_0]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_access_0_access_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_access_0_we),
+    .wd     (tpm_access_0_access_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_access[0].q),
+
+    // to register interface (read)
+    .qs     (tpm_access_0_access_0_qs)
+  );
+
+  //   F[access_1]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_access_0_access_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_access_0_we),
+    .wd     (tpm_access_0_access_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_access[1].q),
+
+    // to register interface (read)
+    .qs     (tpm_access_0_access_1_qs)
+  );
+
+  //   F[access_2]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_access_0_access_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_access_0_we),
+    .wd     (tpm_access_0_access_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_access[2].q),
+
+    // to register interface (read)
+    .qs     (tpm_access_0_access_2_qs)
+  );
+
+  //   F[access_3]: 31:24
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_access_0_access_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_access_0_we),
+    .wd     (tpm_access_0_access_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_access[3].q),
+
+    // to register interface (read)
+    .qs     (tpm_access_0_access_3_qs)
+  );
+
+
+  // Subregister 1 of Multireg tpm_access
+  // R[tpm_access_1]: V(False)
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_access_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_access_1_we),
+    .wd     (tpm_access_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_access[4].q),
+
+    // to register interface (read)
+    .qs     (tpm_access_1_qs)
+  );
+
+
+  // R[tpm_sts]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_tpm_sts (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_sts_we),
+    .wd     (tpm_sts_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_sts.q),
+
+    // to register interface (read)
+    .qs     (tpm_sts_qs)
+  );
+
+
+  // R[tpm_intf_capability]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_tpm_intf_capability (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_intf_capability_we),
+    .wd     (tpm_intf_capability_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_intf_capability.q),
+
+    // to register interface (read)
+    .qs     (tpm_intf_capability_qs)
+  );
+
+
+  // R[tpm_int_enable]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_tpm_int_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_int_enable_we),
+    .wd     (tpm_int_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_int_enable.q),
+
+    // to register interface (read)
+    .qs     (tpm_int_enable_qs)
+  );
+
+
+  // R[tpm_int_vector]: V(False)
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_int_vector (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_int_vector_we),
+    .wd     (tpm_int_vector_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_int_vector.q),
+
+    // to register interface (read)
+    .qs     (tpm_int_vector_qs)
+  );
+
+
+  // R[tpm_int_status]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_tpm_int_status (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_int_status_we),
+    .wd     (tpm_int_status_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_int_status.q),
+
+    // to register interface (read)
+    .qs     (tpm_int_status_qs)
+  );
+
+
+  // R[tpm_did_vid]: V(False)
+  //   F[vid]: 15:0
+  prim_subreg #(
+    .DW      (16),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (16'h0)
+  ) u_tpm_did_vid_vid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_did_vid_we),
+    .wd     (tpm_did_vid_vid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_did_vid.vid.q),
+
+    // to register interface (read)
+    .qs     (tpm_did_vid_vid_qs)
+  );
+
+  //   F[did]: 31:16
+  prim_subreg #(
+    .DW      (16),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (16'h0)
+  ) u_tpm_did_vid_did (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_did_vid_we),
+    .wd     (tpm_did_vid_did_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_did_vid.did.q),
+
+    // to register interface (read)
+    .qs     (tpm_did_vid_did_qs)
+  );
+
+
+  // R[tpm_rid]: V(False)
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_tpm_rid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (tpm_rid_we),
+    .wd     (tpm_rid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tpm_rid.q),
+
+    // to register interface (read)
+    .qs     (tpm_rid_qs)
+  );
+
+
+  // R[tpm_cmd_addr]: V(True)
+  //   F[addr]: 23:0
+  prim_subreg_ext #(
+    .DW    (24)
+  ) u_tpm_cmd_addr_addr (
+    .re     (tpm_cmd_addr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.tpm_cmd_addr.addr.d),
+    .qre    (reg2hw.tpm_cmd_addr.addr.re),
+    .qe     (reg2hw.tpm_cmd_addr.addr.qe),
+    .q      (reg2hw.tpm_cmd_addr.addr.q),
+    .qs     (tpm_cmd_addr_addr_qs)
+  );
+
+  //   F[cmd]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_tpm_cmd_addr_cmd (
+    .re     (tpm_cmd_addr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.tpm_cmd_addr.cmd.d),
+    .qre    (reg2hw.tpm_cmd_addr.cmd.re),
+    .qe     (reg2hw.tpm_cmd_addr.cmd.qe),
+    .q      (reg2hw.tpm_cmd_addr.cmd.q),
+    .qs     (tpm_cmd_addr_cmd_qs)
+  );
+
+
+  // R[tpm_read_fifo]: V(True)
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_tpm_read_fifo (
+    .re     (1'b0),
+    .we     (tpm_read_fifo_we),
+    .wd     (tpm_read_fifo_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.tpm_read_fifo.qe),
+    .q      (reg2hw.tpm_read_fifo.q),
+    .qs     ()
+  );
+
+
+  // R[tpm_write_fifo]: V(True)
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_tpm_write_fifo (
+    .re     (tpm_write_fifo_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.tpm_write_fifo.d),
+    .qre    (reg2hw.tpm_write_fifo.re),
+    .qe     (reg2hw.tpm_write_fifo.qe),
+    .q      (reg2hw.tpm_write_fifo.q),
+    .qs     (tpm_write_fifo_qs)
+  );
+
+
+
+  logic [68:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -15899,6 +16732,21 @@ module spi_device_reg_top (
     addr_hit[51] = (reg_addr == SPI_DEVICE_CMD_INFO_21_OFFSET);
     addr_hit[52] = (reg_addr == SPI_DEVICE_CMD_INFO_22_OFFSET);
     addr_hit[53] = (reg_addr == SPI_DEVICE_CMD_INFO_23_OFFSET);
+    addr_hit[54] = (reg_addr == SPI_DEVICE_TPM_CAP_OFFSET);
+    addr_hit[55] = (reg_addr == SPI_DEVICE_TPM_CFG_OFFSET);
+    addr_hit[56] = (reg_addr == SPI_DEVICE_TPM_STATUS_OFFSET);
+    addr_hit[57] = (reg_addr == SPI_DEVICE_TPM_ACCESS_0_OFFSET);
+    addr_hit[58] = (reg_addr == SPI_DEVICE_TPM_ACCESS_1_OFFSET);
+    addr_hit[59] = (reg_addr == SPI_DEVICE_TPM_STS_OFFSET);
+    addr_hit[60] = (reg_addr == SPI_DEVICE_TPM_INTF_CAPABILITY_OFFSET);
+    addr_hit[61] = (reg_addr == SPI_DEVICE_TPM_INT_ENABLE_OFFSET);
+    addr_hit[62] = (reg_addr == SPI_DEVICE_TPM_INT_VECTOR_OFFSET);
+    addr_hit[63] = (reg_addr == SPI_DEVICE_TPM_INT_STATUS_OFFSET);
+    addr_hit[64] = (reg_addr == SPI_DEVICE_TPM_DID_VID_OFFSET);
+    addr_hit[65] = (reg_addr == SPI_DEVICE_TPM_RID_OFFSET);
+    addr_hit[66] = (reg_addr == SPI_DEVICE_TPM_CMD_ADDR_OFFSET);
+    addr_hit[67] = (reg_addr == SPI_DEVICE_TPM_READ_FIFO_OFFSET);
+    addr_hit[68] = (reg_addr == SPI_DEVICE_TPM_WRITE_FIFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -15959,7 +16807,22 @@ module spi_device_reg_top (
                (addr_hit[50] & (|(SPI_DEVICE_PERMIT[50] & ~reg_be))) |
                (addr_hit[51] & (|(SPI_DEVICE_PERMIT[51] & ~reg_be))) |
                (addr_hit[52] & (|(SPI_DEVICE_PERMIT[52] & ~reg_be))) |
-               (addr_hit[53] & (|(SPI_DEVICE_PERMIT[53] & ~reg_be)))));
+               (addr_hit[53] & (|(SPI_DEVICE_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(SPI_DEVICE_PERMIT[54] & ~reg_be))) |
+               (addr_hit[55] & (|(SPI_DEVICE_PERMIT[55] & ~reg_be))) |
+               (addr_hit[56] & (|(SPI_DEVICE_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(SPI_DEVICE_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(SPI_DEVICE_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(SPI_DEVICE_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(SPI_DEVICE_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(SPI_DEVICE_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(SPI_DEVICE_PERMIT[62] & ~reg_be))) |
+               (addr_hit[63] & (|(SPI_DEVICE_PERMIT[63] & ~reg_be))) |
+               (addr_hit[64] & (|(SPI_DEVICE_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(SPI_DEVICE_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(SPI_DEVICE_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(SPI_DEVICE_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(SPI_DEVICE_PERMIT[68] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -15974,6 +16837,8 @@ module spi_device_reg_top (
   assign intr_state_rxoverflow_wd = reg_wdata[4];
 
   assign intr_state_txunderflow_wd = reg_wdata[5];
+
+  assign intr_state_tpm_cmdaddr_notempty_wd = reg_wdata[6];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_rxf_wd = reg_wdata[0];
@@ -15987,6 +16852,8 @@ module spi_device_reg_top (
   assign intr_enable_rxoverflow_wd = reg_wdata[4];
 
   assign intr_enable_txunderflow_wd = reg_wdata[5];
+
+  assign intr_enable_tpm_cmdaddr_notempty_wd = reg_wdata[6];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_rxf_wd = reg_wdata[0];
@@ -16000,6 +16867,8 @@ module spi_device_reg_top (
   assign intr_test_rxoverflow_wd = reg_wdata[4];
 
   assign intr_test_txunderflow_wd = reg_wdata[5];
+
+  assign intr_test_tpm_cmdaddr_notempty_wd = reg_wdata[6];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -17145,6 +18014,57 @@ module spi_device_reg_top (
   assign cmd_info_23_upload_23_wd = reg_wdata[24];
 
   assign cmd_info_23_busy_23_wd = reg_wdata[25];
+  assign tpm_cfg_we = addr_hit[55] & reg_we & !reg_error;
+
+  assign tpm_cfg_en_wd = reg_wdata[0];
+
+  assign tpm_cfg_tpm_mode_wd = reg_wdata[1];
+
+  assign tpm_cfg_hw_reg_dis_wd = reg_wdata[2];
+
+  assign tpm_cfg_tpm_reg_chk_dis_wd = reg_wdata[3];
+
+  assign tpm_cfg_invalid_locality_wd = reg_wdata[4];
+  assign tpm_access_0_we = addr_hit[57] & reg_we & !reg_error;
+
+  assign tpm_access_0_access_0_wd = reg_wdata[7:0];
+
+  assign tpm_access_0_access_1_wd = reg_wdata[15:8];
+
+  assign tpm_access_0_access_2_wd = reg_wdata[23:16];
+
+  assign tpm_access_0_access_3_wd = reg_wdata[31:24];
+  assign tpm_access_1_we = addr_hit[58] & reg_we & !reg_error;
+
+  assign tpm_access_1_wd = reg_wdata[7:0];
+  assign tpm_sts_we = addr_hit[59] & reg_we & !reg_error;
+
+  assign tpm_sts_wd = reg_wdata[31:0];
+  assign tpm_intf_capability_we = addr_hit[60] & reg_we & !reg_error;
+
+  assign tpm_intf_capability_wd = reg_wdata[31:0];
+  assign tpm_int_enable_we = addr_hit[61] & reg_we & !reg_error;
+
+  assign tpm_int_enable_wd = reg_wdata[31:0];
+  assign tpm_int_vector_we = addr_hit[62] & reg_we & !reg_error;
+
+  assign tpm_int_vector_wd = reg_wdata[7:0];
+  assign tpm_int_status_we = addr_hit[63] & reg_we & !reg_error;
+
+  assign tpm_int_status_wd = reg_wdata[31:0];
+  assign tpm_did_vid_we = addr_hit[64] & reg_we & !reg_error;
+
+  assign tpm_did_vid_vid_wd = reg_wdata[15:0];
+
+  assign tpm_did_vid_did_wd = reg_wdata[31:16];
+  assign tpm_rid_we = addr_hit[65] & reg_we & !reg_error;
+
+  assign tpm_rid_wd = reg_wdata[7:0];
+  assign tpm_cmd_addr_re = addr_hit[66] & reg_re & !reg_error;
+  assign tpm_read_fifo_we = addr_hit[67] & reg_we & !reg_error;
+
+  assign tpm_read_fifo_wd = reg_wdata[7:0];
+  assign tpm_write_fifo_re = addr_hit[68] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -17157,6 +18077,7 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_state_rxerr_qs;
         reg_rdata_next[4] = intr_state_rxoverflow_qs;
         reg_rdata_next[5] = intr_state_txunderflow_qs;
+        reg_rdata_next[6] = intr_state_tpm_cmdaddr_notempty_qs;
       end
 
       addr_hit[1]: begin
@@ -17166,6 +18087,7 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_enable_rxerr_qs;
         reg_rdata_next[4] = intr_enable_rxoverflow_qs;
         reg_rdata_next[5] = intr_enable_txunderflow_qs;
+        reg_rdata_next[6] = intr_enable_tpm_cmdaddr_notempty_qs;
       end
 
       addr_hit[2]: begin
@@ -17175,6 +18097,7 @@ module spi_device_reg_top (
         reg_rdata_next[3] = '0;
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
+        reg_rdata_next[6] = '0;
       end
 
       addr_hit[3]: begin
@@ -17893,6 +18816,80 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_23_payload_dir_23_qs;
         reg_rdata_next[24] = cmd_info_23_upload_23_qs;
         reg_rdata_next[25] = cmd_info_23_busy_23_qs;
+      end
+
+      addr_hit[54]: begin
+        reg_rdata_next[7:0] = tpm_cap_rev_qs;
+        reg_rdata_next[8] = tpm_cap_locality_qs;
+        reg_rdata_next[18:16] = tpm_cap_max_xfer_size_qs;
+      end
+
+      addr_hit[55]: begin
+        reg_rdata_next[0] = tpm_cfg_en_qs;
+        reg_rdata_next[1] = tpm_cfg_tpm_mode_qs;
+        reg_rdata_next[2] = tpm_cfg_hw_reg_dis_qs;
+        reg_rdata_next[3] = tpm_cfg_tpm_reg_chk_dis_qs;
+        reg_rdata_next[4] = tpm_cfg_invalid_locality_qs;
+      end
+
+      addr_hit[56]: begin
+        reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
+        reg_rdata_next[1] = tpm_status_rdfifo_notempty_qs;
+        reg_rdata_next[6:4] = tpm_status_rdfifo_depth_qs;
+        reg_rdata_next[10:8] = tpm_status_wrfifo_depth_qs;
+      end
+
+      addr_hit[57]: begin
+        reg_rdata_next[7:0] = tpm_access_0_access_0_qs;
+        reg_rdata_next[15:8] = tpm_access_0_access_1_qs;
+        reg_rdata_next[23:16] = tpm_access_0_access_2_qs;
+        reg_rdata_next[31:24] = tpm_access_0_access_3_qs;
+      end
+
+      addr_hit[58]: begin
+        reg_rdata_next[7:0] = tpm_access_1_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[31:0] = tpm_sts_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[31:0] = tpm_intf_capability_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = tpm_int_enable_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[7:0] = tpm_int_vector_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[31:0] = tpm_int_status_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[15:0] = tpm_did_vid_vid_qs;
+        reg_rdata_next[31:16] = tpm_did_vid_did_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[7:0] = tpm_rid_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[23:0] = tpm_cmd_addr_addr_qs;
+        reg_rdata_next[31:24] = tpm_cmd_addr_cmd_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[7:0] = '0;
+      end
+
+      addr_hit[68]: begin
+        reg_rdata_next[7:0] = tpm_write_fifo_qs;
       end
 
       default: begin
