@@ -19,6 +19,8 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   input [N_ESC_SEV-1:0] esc_en_i,
   input [N_ESC_SEV-1:0][PHASE_DW-1:0] esc_map_i,
   input [N_PHASES-1:0][EscCntDw-1:0] phase_cyc_i,
+  input [PHASE_DW-1:0] crashdump_phase_i,
+  input logic latch_crashdump_o,
   input logic esc_trig_o,
   input logic[EscCntDw-1:0] esc_cnt_o,
   input logic[N_ESC_SEV-1:0] esc_sig_req_o,
@@ -51,6 +53,8 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   `ASSUME(PhaseCycles_M, phase_cyc_i < MAX_PHASE_CYCLES)
   `ASSUME(PhaseCyclesConst_M, ##1 $stable(phase_cyc_i))
+
+  `ASSUME(CrashdumpPhaseConst_M, ##1 $stable(crashdump_phase_i))
 
   `ASSUME(EscSelConst_M, ##1 $stable(esc_sel))
   `ASSUME(PhaseSelConst_M, ##1 $stable(phase_sel))
@@ -102,6 +106,13 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // check terminal state is reached eventually if triggered and not cleared
   `ASSERT(TerminalState_A, esc_trig_o |-> strong(##[1:$] esc_state_o == Terminal),
       clk_i, !rst_ni || clr_i || accu_fail_i)
+
+  // check that the crashdump capture trigger is asserted correctly
+  `ASSERT(CrashdumpTrigger_A,
+      ##1 $changed(esc_state_o) &&
+      esc_state_o == cstate_e'(4 + crashdump_phase_i)
+      <->
+      $past(latch_crashdump_o), esc_state_o == FsmError)
 
   /////////////////////////
   // Backward Assertions //

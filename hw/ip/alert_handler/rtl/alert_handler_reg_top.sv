@@ -337,6 +337,10 @@ module alert_handler_reg_top (
   logic classa_timeout_cyc_shadowed_we;
   logic [31:0] classa_timeout_cyc_shadowed_qs;
   logic [31:0] classa_timeout_cyc_shadowed_wd;
+  logic classa_crashdump_trigger_shadowed_re;
+  logic classa_crashdump_trigger_shadowed_we;
+  logic [1:0] classa_crashdump_trigger_shadowed_qs;
+  logic [1:0] classa_crashdump_trigger_shadowed_wd;
   logic classa_phase0_cyc_shadowed_re;
   logic classa_phase0_cyc_shadowed_we;
   logic [31:0] classa_phase0_cyc_shadowed_qs;
@@ -397,6 +401,10 @@ module alert_handler_reg_top (
   logic classb_timeout_cyc_shadowed_we;
   logic [31:0] classb_timeout_cyc_shadowed_qs;
   logic [31:0] classb_timeout_cyc_shadowed_wd;
+  logic classb_crashdump_trigger_shadowed_re;
+  logic classb_crashdump_trigger_shadowed_we;
+  logic [1:0] classb_crashdump_trigger_shadowed_qs;
+  logic [1:0] classb_crashdump_trigger_shadowed_wd;
   logic classb_phase0_cyc_shadowed_re;
   logic classb_phase0_cyc_shadowed_we;
   logic [31:0] classb_phase0_cyc_shadowed_qs;
@@ -457,6 +465,10 @@ module alert_handler_reg_top (
   logic classc_timeout_cyc_shadowed_we;
   logic [31:0] classc_timeout_cyc_shadowed_qs;
   logic [31:0] classc_timeout_cyc_shadowed_wd;
+  logic classc_crashdump_trigger_shadowed_re;
+  logic classc_crashdump_trigger_shadowed_we;
+  logic [1:0] classc_crashdump_trigger_shadowed_qs;
+  logic [1:0] classc_crashdump_trigger_shadowed_wd;
   logic classc_phase0_cyc_shadowed_re;
   logic classc_phase0_cyc_shadowed_we;
   logic [31:0] classc_phase0_cyc_shadowed_qs;
@@ -517,6 +529,10 @@ module alert_handler_reg_top (
   logic classd_timeout_cyc_shadowed_we;
   logic [31:0] classd_timeout_cyc_shadowed_qs;
   logic [31:0] classd_timeout_cyc_shadowed_wd;
+  logic classd_crashdump_trigger_shadowed_re;
+  logic classd_crashdump_trigger_shadowed_we;
+  logic [1:0] classd_crashdump_trigger_shadowed_qs;
+  logic [1:0] classd_crashdump_trigger_shadowed_wd;
   logic classd_phase0_cyc_shadowed_re;
   logic classd_phase0_cyc_shadowed_we;
   logic [31:0] classd_phase0_cyc_shadowed_qs;
@@ -2727,6 +2743,39 @@ module alert_handler_reg_top (
   );
 
 
+  // R[classa_crashdump_trigger_shadowed]: V(False)
+
+  prim_subreg_shadow #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0)
+  ) u_classa_crashdump_trigger_shadowed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (classa_crashdump_trigger_shadowed_re),
+    .we     (classa_crashdump_trigger_shadowed_we & classa_regwen_qs),
+    .wd     (classa_crashdump_trigger_shadowed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.classa_crashdump_trigger_shadowed.q),
+
+    // to register interface (read)
+    .qs     (classa_crashdump_trigger_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classa_crashdump_trigger_shadowed.err_update),
+    .err_storage (reg2hw.classa_crashdump_trigger_shadowed.err_storage)
+  );
+
+
   // R[classa_phase0_cyc_shadowed]: V(False)
 
   prim_subreg_shadow #(
@@ -3373,6 +3422,39 @@ module alert_handler_reg_top (
     // Shadow register error conditions
     .err_update  (reg2hw.classb_timeout_cyc_shadowed.err_update),
     .err_storage (reg2hw.classb_timeout_cyc_shadowed.err_storage)
+  );
+
+
+  // R[classb_crashdump_trigger_shadowed]: V(False)
+
+  prim_subreg_shadow #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0)
+  ) u_classb_crashdump_trigger_shadowed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (classb_crashdump_trigger_shadowed_re),
+    .we     (classb_crashdump_trigger_shadowed_we & classb_regwen_qs),
+    .wd     (classb_crashdump_trigger_shadowed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.classb_crashdump_trigger_shadowed.q),
+
+    // to register interface (read)
+    .qs     (classb_crashdump_trigger_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classb_crashdump_trigger_shadowed.err_update),
+    .err_storage (reg2hw.classb_crashdump_trigger_shadowed.err_storage)
   );
 
 
@@ -4025,6 +4107,39 @@ module alert_handler_reg_top (
   );
 
 
+  // R[classc_crashdump_trigger_shadowed]: V(False)
+
+  prim_subreg_shadow #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0)
+  ) u_classc_crashdump_trigger_shadowed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (classc_crashdump_trigger_shadowed_re),
+    .we     (classc_crashdump_trigger_shadowed_we & classc_regwen_qs),
+    .wd     (classc_crashdump_trigger_shadowed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.classc_crashdump_trigger_shadowed.q),
+
+    // to register interface (read)
+    .qs     (classc_crashdump_trigger_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classc_crashdump_trigger_shadowed.err_update),
+    .err_storage (reg2hw.classc_crashdump_trigger_shadowed.err_storage)
+  );
+
+
   // R[classc_phase0_cyc_shadowed]: V(False)
 
   prim_subreg_shadow #(
@@ -4674,6 +4789,39 @@ module alert_handler_reg_top (
   );
 
 
+  // R[classd_crashdump_trigger_shadowed]: V(False)
+
+  prim_subreg_shadow #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0)
+  ) u_classd_crashdump_trigger_shadowed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (classd_crashdump_trigger_shadowed_re),
+    .we     (classd_crashdump_trigger_shadowed_we & classd_regwen_qs),
+    .wd     (classd_crashdump_trigger_shadowed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.classd_crashdump_trigger_shadowed.q),
+
+    // to register interface (read)
+    .qs     (classd_crashdump_trigger_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.classd_crashdump_trigger_shadowed.err_update),
+    .err_storage (reg2hw.classd_crashdump_trigger_shadowed.err_storage)
+  );
+
+
   // R[classd_phase0_cyc_shadowed]: V(False)
 
   prim_subreg_shadow #(
@@ -4840,7 +4988,7 @@ module alert_handler_reg_top (
 
 
 
-  logic [101:0] addr_hit;
+  logic [105:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[  0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
@@ -4900,51 +5048,55 @@ module alert_handler_reg_top (
     addr_hit[ 54] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET);
     addr_hit[ 55] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_OFFSET);
     addr_hit[ 56] = (reg_addr == ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_OFFSET);
-    addr_hit[ 57] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET);
-    addr_hit[ 58] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET);
-    addr_hit[ 59] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET);
-    addr_hit[ 60] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET);
-    addr_hit[ 61] = (reg_addr == ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET);
-    addr_hit[ 62] = (reg_addr == ALERT_HANDLER_CLASSA_STATE_OFFSET);
-    addr_hit[ 63] = (reg_addr == ALERT_HANDLER_CLASSB_REGWEN_OFFSET);
-    addr_hit[ 64] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET);
-    addr_hit[ 65] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET);
-    addr_hit[ 66] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
-    addr_hit[ 67] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
-    addr_hit[ 68] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET);
-    addr_hit[ 69] = (reg_addr == ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET);
-    addr_hit[ 70] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET);
-    addr_hit[ 71] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET);
-    addr_hit[ 72] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET);
-    addr_hit[ 73] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET);
-    addr_hit[ 74] = (reg_addr == ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET);
-    addr_hit[ 75] = (reg_addr == ALERT_HANDLER_CLASSB_STATE_OFFSET);
-    addr_hit[ 76] = (reg_addr == ALERT_HANDLER_CLASSC_REGWEN_OFFSET);
-    addr_hit[ 77] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET);
-    addr_hit[ 78] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET);
-    addr_hit[ 79] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
-    addr_hit[ 80] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
-    addr_hit[ 81] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET);
-    addr_hit[ 82] = (reg_addr == ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET);
-    addr_hit[ 83] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET);
-    addr_hit[ 84] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET);
-    addr_hit[ 85] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET);
-    addr_hit[ 86] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET);
-    addr_hit[ 87] = (reg_addr == ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET);
-    addr_hit[ 88] = (reg_addr == ALERT_HANDLER_CLASSC_STATE_OFFSET);
-    addr_hit[ 89] = (reg_addr == ALERT_HANDLER_CLASSD_REGWEN_OFFSET);
-    addr_hit[ 90] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET);
-    addr_hit[ 91] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET);
-    addr_hit[ 92] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
-    addr_hit[ 93] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
-    addr_hit[ 94] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET);
-    addr_hit[ 95] = (reg_addr == ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET);
-    addr_hit[ 96] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET);
-    addr_hit[ 97] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET);
-    addr_hit[ 98] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET);
-    addr_hit[ 99] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET);
-    addr_hit[100] = (reg_addr == ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET);
-    addr_hit[101] = (reg_addr == ALERT_HANDLER_CLASSD_STATE_OFFSET);
+    addr_hit[ 57] = (reg_addr == ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_OFFSET);
+    addr_hit[ 58] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET);
+    addr_hit[ 59] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET);
+    addr_hit[ 60] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET);
+    addr_hit[ 61] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET);
+    addr_hit[ 62] = (reg_addr == ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET);
+    addr_hit[ 63] = (reg_addr == ALERT_HANDLER_CLASSA_STATE_OFFSET);
+    addr_hit[ 64] = (reg_addr == ALERT_HANDLER_CLASSB_REGWEN_OFFSET);
+    addr_hit[ 65] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET);
+    addr_hit[ 66] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET);
+    addr_hit[ 67] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
+    addr_hit[ 68] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
+    addr_hit[ 69] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET);
+    addr_hit[ 70] = (reg_addr == ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET);
+    addr_hit[ 71] = (reg_addr == ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_OFFSET);
+    addr_hit[ 72] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET);
+    addr_hit[ 73] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET);
+    addr_hit[ 74] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET);
+    addr_hit[ 75] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET);
+    addr_hit[ 76] = (reg_addr == ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET);
+    addr_hit[ 77] = (reg_addr == ALERT_HANDLER_CLASSB_STATE_OFFSET);
+    addr_hit[ 78] = (reg_addr == ALERT_HANDLER_CLASSC_REGWEN_OFFSET);
+    addr_hit[ 79] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET);
+    addr_hit[ 80] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET);
+    addr_hit[ 81] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
+    addr_hit[ 82] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
+    addr_hit[ 83] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET);
+    addr_hit[ 84] = (reg_addr == ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET);
+    addr_hit[ 85] = (reg_addr == ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_OFFSET);
+    addr_hit[ 86] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET);
+    addr_hit[ 87] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET);
+    addr_hit[ 88] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET);
+    addr_hit[ 89] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET);
+    addr_hit[ 90] = (reg_addr == ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET);
+    addr_hit[ 91] = (reg_addr == ALERT_HANDLER_CLASSC_STATE_OFFSET);
+    addr_hit[ 92] = (reg_addr == ALERT_HANDLER_CLASSD_REGWEN_OFFSET);
+    addr_hit[ 93] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET);
+    addr_hit[ 94] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET);
+    addr_hit[ 95] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
+    addr_hit[ 96] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
+    addr_hit[ 97] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET);
+    addr_hit[ 98] = (reg_addr == ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET);
+    addr_hit[ 99] = (reg_addr == ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_OFFSET);
+    addr_hit[100] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET);
+    addr_hit[101] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET);
+    addr_hit[102] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET);
+    addr_hit[103] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET);
+    addr_hit[104] = (reg_addr == ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET);
+    addr_hit[105] = (reg_addr == ALERT_HANDLER_CLASSD_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5053,7 +5205,11 @@ module alert_handler_reg_top (
                (addr_hit[ 98] & (|(ALERT_HANDLER_PERMIT[ 98] & ~reg_be))) |
                (addr_hit[ 99] & (|(ALERT_HANDLER_PERMIT[ 99] & ~reg_be))) |
                (addr_hit[100] & (|(ALERT_HANDLER_PERMIT[100] & ~reg_be))) |
-               (addr_hit[101] & (|(ALERT_HANDLER_PERMIT[101] & ~reg_be)))));
+               (addr_hit[101] & (|(ALERT_HANDLER_PERMIT[101] & ~reg_be))) |
+               (addr_hit[102] & (|(ALERT_HANDLER_PERMIT[102] & ~reg_be))) |
+               (addr_hit[103] & (|(ALERT_HANDLER_PERMIT[103] & ~reg_be))) |
+               (addr_hit[104] & (|(ALERT_HANDLER_PERMIT[104] & ~reg_be))) |
+               (addr_hit[105] & (|(ALERT_HANDLER_PERMIT[105] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -5287,29 +5443,33 @@ module alert_handler_reg_top (
   assign classa_timeout_cyc_shadowed_we = addr_hit[56] & reg_we & !reg_error;
 
   assign classa_timeout_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classa_phase0_cyc_shadowed_re = addr_hit[57] & reg_re & !reg_error;
-  assign classa_phase0_cyc_shadowed_we = addr_hit[57] & reg_we & !reg_error;
+  assign classa_crashdump_trigger_shadowed_re = addr_hit[57] & reg_re & !reg_error;
+  assign classa_crashdump_trigger_shadowed_we = addr_hit[57] & reg_we & !reg_error;
+
+  assign classa_crashdump_trigger_shadowed_wd = reg_wdata[1:0];
+  assign classa_phase0_cyc_shadowed_re = addr_hit[58] & reg_re & !reg_error;
+  assign classa_phase0_cyc_shadowed_we = addr_hit[58] & reg_we & !reg_error;
 
   assign classa_phase0_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classa_phase1_cyc_shadowed_re = addr_hit[58] & reg_re & !reg_error;
-  assign classa_phase1_cyc_shadowed_we = addr_hit[58] & reg_we & !reg_error;
+  assign classa_phase1_cyc_shadowed_re = addr_hit[59] & reg_re & !reg_error;
+  assign classa_phase1_cyc_shadowed_we = addr_hit[59] & reg_we & !reg_error;
 
   assign classa_phase1_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classa_phase2_cyc_shadowed_re = addr_hit[59] & reg_re & !reg_error;
-  assign classa_phase2_cyc_shadowed_we = addr_hit[59] & reg_we & !reg_error;
+  assign classa_phase2_cyc_shadowed_re = addr_hit[60] & reg_re & !reg_error;
+  assign classa_phase2_cyc_shadowed_we = addr_hit[60] & reg_we & !reg_error;
 
   assign classa_phase2_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classa_phase3_cyc_shadowed_re = addr_hit[60] & reg_re & !reg_error;
-  assign classa_phase3_cyc_shadowed_we = addr_hit[60] & reg_we & !reg_error;
+  assign classa_phase3_cyc_shadowed_re = addr_hit[61] & reg_re & !reg_error;
+  assign classa_phase3_cyc_shadowed_we = addr_hit[61] & reg_we & !reg_error;
 
   assign classa_phase3_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classa_esc_cnt_re = addr_hit[61] & reg_re & !reg_error;
-  assign classa_state_re = addr_hit[62] & reg_re & !reg_error;
-  assign classb_regwen_we = addr_hit[63] & reg_we & !reg_error;
+  assign classa_esc_cnt_re = addr_hit[62] & reg_re & !reg_error;
+  assign classa_state_re = addr_hit[63] & reg_re & !reg_error;
+  assign classb_regwen_we = addr_hit[64] & reg_we & !reg_error;
 
   assign classb_regwen_wd = reg_wdata[0];
-  assign classb_ctrl_shadowed_re = addr_hit[64] & reg_re & !reg_error;
-  assign classb_ctrl_shadowed_we = addr_hit[64] & reg_we & !reg_error;
+  assign classb_ctrl_shadowed_re = addr_hit[65] & reg_re & !reg_error;
+  assign classb_ctrl_shadowed_we = addr_hit[65] & reg_we & !reg_error;
 
   assign classb_ctrl_shadowed_en_wd = reg_wdata[0];
 
@@ -5330,44 +5490,48 @@ module alert_handler_reg_top (
   assign classb_ctrl_shadowed_map_e2_wd = reg_wdata[11:10];
 
   assign classb_ctrl_shadowed_map_e3_wd = reg_wdata[13:12];
-  assign classb_clr_regwen_we = addr_hit[65] & reg_we & !reg_error;
+  assign classb_clr_regwen_we = addr_hit[66] & reg_we & !reg_error;
 
   assign classb_clr_regwen_wd = reg_wdata[0];
-  assign classb_clr_we = addr_hit[66] & reg_we & !reg_error;
+  assign classb_clr_we = addr_hit[67] & reg_we & !reg_error;
 
   assign classb_clr_wd = reg_wdata[0];
-  assign classb_accum_cnt_re = addr_hit[67] & reg_re & !reg_error;
-  assign classb_accum_thresh_shadowed_re = addr_hit[68] & reg_re & !reg_error;
-  assign classb_accum_thresh_shadowed_we = addr_hit[68] & reg_we & !reg_error;
+  assign classb_accum_cnt_re = addr_hit[68] & reg_re & !reg_error;
+  assign classb_accum_thresh_shadowed_re = addr_hit[69] & reg_re & !reg_error;
+  assign classb_accum_thresh_shadowed_we = addr_hit[69] & reg_we & !reg_error;
 
   assign classb_accum_thresh_shadowed_wd = reg_wdata[15:0];
-  assign classb_timeout_cyc_shadowed_re = addr_hit[69] & reg_re & !reg_error;
-  assign classb_timeout_cyc_shadowed_we = addr_hit[69] & reg_we & !reg_error;
+  assign classb_timeout_cyc_shadowed_re = addr_hit[70] & reg_re & !reg_error;
+  assign classb_timeout_cyc_shadowed_we = addr_hit[70] & reg_we & !reg_error;
 
   assign classb_timeout_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classb_phase0_cyc_shadowed_re = addr_hit[70] & reg_re & !reg_error;
-  assign classb_phase0_cyc_shadowed_we = addr_hit[70] & reg_we & !reg_error;
+  assign classb_crashdump_trigger_shadowed_re = addr_hit[71] & reg_re & !reg_error;
+  assign classb_crashdump_trigger_shadowed_we = addr_hit[71] & reg_we & !reg_error;
+
+  assign classb_crashdump_trigger_shadowed_wd = reg_wdata[1:0];
+  assign classb_phase0_cyc_shadowed_re = addr_hit[72] & reg_re & !reg_error;
+  assign classb_phase0_cyc_shadowed_we = addr_hit[72] & reg_we & !reg_error;
 
   assign classb_phase0_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classb_phase1_cyc_shadowed_re = addr_hit[71] & reg_re & !reg_error;
-  assign classb_phase1_cyc_shadowed_we = addr_hit[71] & reg_we & !reg_error;
+  assign classb_phase1_cyc_shadowed_re = addr_hit[73] & reg_re & !reg_error;
+  assign classb_phase1_cyc_shadowed_we = addr_hit[73] & reg_we & !reg_error;
 
   assign classb_phase1_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classb_phase2_cyc_shadowed_re = addr_hit[72] & reg_re & !reg_error;
-  assign classb_phase2_cyc_shadowed_we = addr_hit[72] & reg_we & !reg_error;
+  assign classb_phase2_cyc_shadowed_re = addr_hit[74] & reg_re & !reg_error;
+  assign classb_phase2_cyc_shadowed_we = addr_hit[74] & reg_we & !reg_error;
 
   assign classb_phase2_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classb_phase3_cyc_shadowed_re = addr_hit[73] & reg_re & !reg_error;
-  assign classb_phase3_cyc_shadowed_we = addr_hit[73] & reg_we & !reg_error;
+  assign classb_phase3_cyc_shadowed_re = addr_hit[75] & reg_re & !reg_error;
+  assign classb_phase3_cyc_shadowed_we = addr_hit[75] & reg_we & !reg_error;
 
   assign classb_phase3_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classb_esc_cnt_re = addr_hit[74] & reg_re & !reg_error;
-  assign classb_state_re = addr_hit[75] & reg_re & !reg_error;
-  assign classc_regwen_we = addr_hit[76] & reg_we & !reg_error;
+  assign classb_esc_cnt_re = addr_hit[76] & reg_re & !reg_error;
+  assign classb_state_re = addr_hit[77] & reg_re & !reg_error;
+  assign classc_regwen_we = addr_hit[78] & reg_we & !reg_error;
 
   assign classc_regwen_wd = reg_wdata[0];
-  assign classc_ctrl_shadowed_re = addr_hit[77] & reg_re & !reg_error;
-  assign classc_ctrl_shadowed_we = addr_hit[77] & reg_we & !reg_error;
+  assign classc_ctrl_shadowed_re = addr_hit[79] & reg_re & !reg_error;
+  assign classc_ctrl_shadowed_we = addr_hit[79] & reg_we & !reg_error;
 
   assign classc_ctrl_shadowed_en_wd = reg_wdata[0];
 
@@ -5388,44 +5552,48 @@ module alert_handler_reg_top (
   assign classc_ctrl_shadowed_map_e2_wd = reg_wdata[11:10];
 
   assign classc_ctrl_shadowed_map_e3_wd = reg_wdata[13:12];
-  assign classc_clr_regwen_we = addr_hit[78] & reg_we & !reg_error;
+  assign classc_clr_regwen_we = addr_hit[80] & reg_we & !reg_error;
 
   assign classc_clr_regwen_wd = reg_wdata[0];
-  assign classc_clr_we = addr_hit[79] & reg_we & !reg_error;
+  assign classc_clr_we = addr_hit[81] & reg_we & !reg_error;
 
   assign classc_clr_wd = reg_wdata[0];
-  assign classc_accum_cnt_re = addr_hit[80] & reg_re & !reg_error;
-  assign classc_accum_thresh_shadowed_re = addr_hit[81] & reg_re & !reg_error;
-  assign classc_accum_thresh_shadowed_we = addr_hit[81] & reg_we & !reg_error;
+  assign classc_accum_cnt_re = addr_hit[82] & reg_re & !reg_error;
+  assign classc_accum_thresh_shadowed_re = addr_hit[83] & reg_re & !reg_error;
+  assign classc_accum_thresh_shadowed_we = addr_hit[83] & reg_we & !reg_error;
 
   assign classc_accum_thresh_shadowed_wd = reg_wdata[15:0];
-  assign classc_timeout_cyc_shadowed_re = addr_hit[82] & reg_re & !reg_error;
-  assign classc_timeout_cyc_shadowed_we = addr_hit[82] & reg_we & !reg_error;
+  assign classc_timeout_cyc_shadowed_re = addr_hit[84] & reg_re & !reg_error;
+  assign classc_timeout_cyc_shadowed_we = addr_hit[84] & reg_we & !reg_error;
 
   assign classc_timeout_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classc_phase0_cyc_shadowed_re = addr_hit[83] & reg_re & !reg_error;
-  assign classc_phase0_cyc_shadowed_we = addr_hit[83] & reg_we & !reg_error;
+  assign classc_crashdump_trigger_shadowed_re = addr_hit[85] & reg_re & !reg_error;
+  assign classc_crashdump_trigger_shadowed_we = addr_hit[85] & reg_we & !reg_error;
+
+  assign classc_crashdump_trigger_shadowed_wd = reg_wdata[1:0];
+  assign classc_phase0_cyc_shadowed_re = addr_hit[86] & reg_re & !reg_error;
+  assign classc_phase0_cyc_shadowed_we = addr_hit[86] & reg_we & !reg_error;
 
   assign classc_phase0_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classc_phase1_cyc_shadowed_re = addr_hit[84] & reg_re & !reg_error;
-  assign classc_phase1_cyc_shadowed_we = addr_hit[84] & reg_we & !reg_error;
+  assign classc_phase1_cyc_shadowed_re = addr_hit[87] & reg_re & !reg_error;
+  assign classc_phase1_cyc_shadowed_we = addr_hit[87] & reg_we & !reg_error;
 
   assign classc_phase1_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classc_phase2_cyc_shadowed_re = addr_hit[85] & reg_re & !reg_error;
-  assign classc_phase2_cyc_shadowed_we = addr_hit[85] & reg_we & !reg_error;
+  assign classc_phase2_cyc_shadowed_re = addr_hit[88] & reg_re & !reg_error;
+  assign classc_phase2_cyc_shadowed_we = addr_hit[88] & reg_we & !reg_error;
 
   assign classc_phase2_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classc_phase3_cyc_shadowed_re = addr_hit[86] & reg_re & !reg_error;
-  assign classc_phase3_cyc_shadowed_we = addr_hit[86] & reg_we & !reg_error;
+  assign classc_phase3_cyc_shadowed_re = addr_hit[89] & reg_re & !reg_error;
+  assign classc_phase3_cyc_shadowed_we = addr_hit[89] & reg_we & !reg_error;
 
   assign classc_phase3_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classc_esc_cnt_re = addr_hit[87] & reg_re & !reg_error;
-  assign classc_state_re = addr_hit[88] & reg_re & !reg_error;
-  assign classd_regwen_we = addr_hit[89] & reg_we & !reg_error;
+  assign classc_esc_cnt_re = addr_hit[90] & reg_re & !reg_error;
+  assign classc_state_re = addr_hit[91] & reg_re & !reg_error;
+  assign classd_regwen_we = addr_hit[92] & reg_we & !reg_error;
 
   assign classd_regwen_wd = reg_wdata[0];
-  assign classd_ctrl_shadowed_re = addr_hit[90] & reg_re & !reg_error;
-  assign classd_ctrl_shadowed_we = addr_hit[90] & reg_we & !reg_error;
+  assign classd_ctrl_shadowed_re = addr_hit[93] & reg_re & !reg_error;
+  assign classd_ctrl_shadowed_we = addr_hit[93] & reg_we & !reg_error;
 
   assign classd_ctrl_shadowed_en_wd = reg_wdata[0];
 
@@ -5446,39 +5614,43 @@ module alert_handler_reg_top (
   assign classd_ctrl_shadowed_map_e2_wd = reg_wdata[11:10];
 
   assign classd_ctrl_shadowed_map_e3_wd = reg_wdata[13:12];
-  assign classd_clr_regwen_we = addr_hit[91] & reg_we & !reg_error;
+  assign classd_clr_regwen_we = addr_hit[94] & reg_we & !reg_error;
 
   assign classd_clr_regwen_wd = reg_wdata[0];
-  assign classd_clr_we = addr_hit[92] & reg_we & !reg_error;
+  assign classd_clr_we = addr_hit[95] & reg_we & !reg_error;
 
   assign classd_clr_wd = reg_wdata[0];
-  assign classd_accum_cnt_re = addr_hit[93] & reg_re & !reg_error;
-  assign classd_accum_thresh_shadowed_re = addr_hit[94] & reg_re & !reg_error;
-  assign classd_accum_thresh_shadowed_we = addr_hit[94] & reg_we & !reg_error;
+  assign classd_accum_cnt_re = addr_hit[96] & reg_re & !reg_error;
+  assign classd_accum_thresh_shadowed_re = addr_hit[97] & reg_re & !reg_error;
+  assign classd_accum_thresh_shadowed_we = addr_hit[97] & reg_we & !reg_error;
 
   assign classd_accum_thresh_shadowed_wd = reg_wdata[15:0];
-  assign classd_timeout_cyc_shadowed_re = addr_hit[95] & reg_re & !reg_error;
-  assign classd_timeout_cyc_shadowed_we = addr_hit[95] & reg_we & !reg_error;
+  assign classd_timeout_cyc_shadowed_re = addr_hit[98] & reg_re & !reg_error;
+  assign classd_timeout_cyc_shadowed_we = addr_hit[98] & reg_we & !reg_error;
 
   assign classd_timeout_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classd_phase0_cyc_shadowed_re = addr_hit[96] & reg_re & !reg_error;
-  assign classd_phase0_cyc_shadowed_we = addr_hit[96] & reg_we & !reg_error;
+  assign classd_crashdump_trigger_shadowed_re = addr_hit[99] & reg_re & !reg_error;
+  assign classd_crashdump_trigger_shadowed_we = addr_hit[99] & reg_we & !reg_error;
+
+  assign classd_crashdump_trigger_shadowed_wd = reg_wdata[1:0];
+  assign classd_phase0_cyc_shadowed_re = addr_hit[100] & reg_re & !reg_error;
+  assign classd_phase0_cyc_shadowed_we = addr_hit[100] & reg_we & !reg_error;
 
   assign classd_phase0_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classd_phase1_cyc_shadowed_re = addr_hit[97] & reg_re & !reg_error;
-  assign classd_phase1_cyc_shadowed_we = addr_hit[97] & reg_we & !reg_error;
+  assign classd_phase1_cyc_shadowed_re = addr_hit[101] & reg_re & !reg_error;
+  assign classd_phase1_cyc_shadowed_we = addr_hit[101] & reg_we & !reg_error;
 
   assign classd_phase1_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classd_phase2_cyc_shadowed_re = addr_hit[98] & reg_re & !reg_error;
-  assign classd_phase2_cyc_shadowed_we = addr_hit[98] & reg_we & !reg_error;
+  assign classd_phase2_cyc_shadowed_re = addr_hit[102] & reg_re & !reg_error;
+  assign classd_phase2_cyc_shadowed_we = addr_hit[102] & reg_we & !reg_error;
 
   assign classd_phase2_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classd_phase3_cyc_shadowed_re = addr_hit[99] & reg_re & !reg_error;
-  assign classd_phase3_cyc_shadowed_we = addr_hit[99] & reg_we & !reg_error;
+  assign classd_phase3_cyc_shadowed_re = addr_hit[103] & reg_re & !reg_error;
+  assign classd_phase3_cyc_shadowed_we = addr_hit[103] & reg_we & !reg_error;
 
   assign classd_phase3_cyc_shadowed_wd = reg_wdata[31:0];
-  assign classd_esc_cnt_re = addr_hit[100] & reg_re & !reg_error;
-  assign classd_state_re = addr_hit[101] & reg_re & !reg_error;
+  assign classd_esc_cnt_re = addr_hit[104] & reg_re & !reg_error;
+  assign classd_state_re = addr_hit[105] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -5731,34 +5903,38 @@ module alert_handler_reg_top (
       end
 
       addr_hit[57]: begin
-        reg_rdata_next[31:0] = classa_phase0_cyc_shadowed_qs;
+        reg_rdata_next[1:0] = classa_crashdump_trigger_shadowed_qs;
       end
 
       addr_hit[58]: begin
-        reg_rdata_next[31:0] = classa_phase1_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classa_phase0_cyc_shadowed_qs;
       end
 
       addr_hit[59]: begin
-        reg_rdata_next[31:0] = classa_phase2_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classa_phase1_cyc_shadowed_qs;
       end
 
       addr_hit[60]: begin
-        reg_rdata_next[31:0] = classa_phase3_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classa_phase2_cyc_shadowed_qs;
       end
 
       addr_hit[61]: begin
-        reg_rdata_next[31:0] = classa_esc_cnt_qs;
+        reg_rdata_next[31:0] = classa_phase3_cyc_shadowed_qs;
       end
 
       addr_hit[62]: begin
-        reg_rdata_next[2:0] = classa_state_qs;
+        reg_rdata_next[31:0] = classa_esc_cnt_qs;
       end
 
       addr_hit[63]: begin
-        reg_rdata_next[0] = classb_regwen_qs;
+        reg_rdata_next[2:0] = classa_state_qs;
       end
 
       addr_hit[64]: begin
+        reg_rdata_next[0] = classb_regwen_qs;
+      end
+
+      addr_hit[65]: begin
         reg_rdata_next[0] = classb_ctrl_shadowed_en_qs;
         reg_rdata_next[1] = classb_ctrl_shadowed_lock_qs;
         reg_rdata_next[2] = classb_ctrl_shadowed_en_e0_qs;
@@ -5771,55 +5947,59 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classb_ctrl_shadowed_map_e3_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[66]: begin
         reg_rdata_next[0] = classb_clr_regwen_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[67]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[67]: begin
+      addr_hit[68]: begin
         reg_rdata_next[15:0] = classb_accum_cnt_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[69]: begin
         reg_rdata_next[15:0] = classb_accum_thresh_shadowed_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[70]: begin
         reg_rdata_next[31:0] = classb_timeout_cyc_shadowed_qs;
       end
 
-      addr_hit[70]: begin
-        reg_rdata_next[31:0] = classb_phase0_cyc_shadowed_qs;
-      end
-
       addr_hit[71]: begin
-        reg_rdata_next[31:0] = classb_phase1_cyc_shadowed_qs;
+        reg_rdata_next[1:0] = classb_crashdump_trigger_shadowed_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[31:0] = classb_phase2_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classb_phase0_cyc_shadowed_qs;
       end
 
       addr_hit[73]: begin
-        reg_rdata_next[31:0] = classb_phase3_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classb_phase1_cyc_shadowed_qs;
       end
 
       addr_hit[74]: begin
-        reg_rdata_next[31:0] = classb_esc_cnt_qs;
+        reg_rdata_next[31:0] = classb_phase2_cyc_shadowed_qs;
       end
 
       addr_hit[75]: begin
-        reg_rdata_next[2:0] = classb_state_qs;
+        reg_rdata_next[31:0] = classb_phase3_cyc_shadowed_qs;
       end
 
       addr_hit[76]: begin
-        reg_rdata_next[0] = classc_regwen_qs;
+        reg_rdata_next[31:0] = classb_esc_cnt_qs;
       end
 
       addr_hit[77]: begin
+        reg_rdata_next[2:0] = classb_state_qs;
+      end
+
+      addr_hit[78]: begin
+        reg_rdata_next[0] = classc_regwen_qs;
+      end
+
+      addr_hit[79]: begin
         reg_rdata_next[0] = classc_ctrl_shadowed_en_qs;
         reg_rdata_next[1] = classc_ctrl_shadowed_lock_qs;
         reg_rdata_next[2] = classc_ctrl_shadowed_en_e0_qs;
@@ -5832,55 +6012,59 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classc_ctrl_shadowed_map_e3_qs;
       end
 
-      addr_hit[78]: begin
+      addr_hit[80]: begin
         reg_rdata_next[0] = classc_clr_regwen_qs;
       end
 
-      addr_hit[79]: begin
+      addr_hit[81]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[80]: begin
+      addr_hit[82]: begin
         reg_rdata_next[15:0] = classc_accum_cnt_qs;
       end
 
-      addr_hit[81]: begin
+      addr_hit[83]: begin
         reg_rdata_next[15:0] = classc_accum_thresh_shadowed_qs;
       end
 
-      addr_hit[82]: begin
+      addr_hit[84]: begin
         reg_rdata_next[31:0] = classc_timeout_cyc_shadowed_qs;
       end
 
-      addr_hit[83]: begin
-        reg_rdata_next[31:0] = classc_phase0_cyc_shadowed_qs;
-      end
-
-      addr_hit[84]: begin
-        reg_rdata_next[31:0] = classc_phase1_cyc_shadowed_qs;
-      end
-
       addr_hit[85]: begin
-        reg_rdata_next[31:0] = classc_phase2_cyc_shadowed_qs;
+        reg_rdata_next[1:0] = classc_crashdump_trigger_shadowed_qs;
       end
 
       addr_hit[86]: begin
-        reg_rdata_next[31:0] = classc_phase3_cyc_shadowed_qs;
+        reg_rdata_next[31:0] = classc_phase0_cyc_shadowed_qs;
       end
 
       addr_hit[87]: begin
-        reg_rdata_next[31:0] = classc_esc_cnt_qs;
+        reg_rdata_next[31:0] = classc_phase1_cyc_shadowed_qs;
       end
 
       addr_hit[88]: begin
-        reg_rdata_next[2:0] = classc_state_qs;
+        reg_rdata_next[31:0] = classc_phase2_cyc_shadowed_qs;
       end
 
       addr_hit[89]: begin
-        reg_rdata_next[0] = classd_regwen_qs;
+        reg_rdata_next[31:0] = classc_phase3_cyc_shadowed_qs;
       end
 
       addr_hit[90]: begin
+        reg_rdata_next[31:0] = classc_esc_cnt_qs;
+      end
+
+      addr_hit[91]: begin
+        reg_rdata_next[2:0] = classc_state_qs;
+      end
+
+      addr_hit[92]: begin
+        reg_rdata_next[0] = classd_regwen_qs;
+      end
+
+      addr_hit[93]: begin
         reg_rdata_next[0] = classd_ctrl_shadowed_en_qs;
         reg_rdata_next[1] = classd_ctrl_shadowed_lock_qs;
         reg_rdata_next[2] = classd_ctrl_shadowed_en_e0_qs;
@@ -5893,47 +6077,51 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classd_ctrl_shadowed_map_e3_qs;
       end
 
-      addr_hit[91]: begin
+      addr_hit[94]: begin
         reg_rdata_next[0] = classd_clr_regwen_qs;
       end
 
-      addr_hit[92]: begin
+      addr_hit[95]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[93]: begin
+      addr_hit[96]: begin
         reg_rdata_next[15:0] = classd_accum_cnt_qs;
       end
 
-      addr_hit[94]: begin
+      addr_hit[97]: begin
         reg_rdata_next[15:0] = classd_accum_thresh_shadowed_qs;
       end
 
-      addr_hit[95]: begin
+      addr_hit[98]: begin
         reg_rdata_next[31:0] = classd_timeout_cyc_shadowed_qs;
       end
 
-      addr_hit[96]: begin
-        reg_rdata_next[31:0] = classd_phase0_cyc_shadowed_qs;
-      end
-
-      addr_hit[97]: begin
-        reg_rdata_next[31:0] = classd_phase1_cyc_shadowed_qs;
-      end
-
-      addr_hit[98]: begin
-        reg_rdata_next[31:0] = classd_phase2_cyc_shadowed_qs;
-      end
-
       addr_hit[99]: begin
-        reg_rdata_next[31:0] = classd_phase3_cyc_shadowed_qs;
+        reg_rdata_next[1:0] = classd_crashdump_trigger_shadowed_qs;
       end
 
       addr_hit[100]: begin
-        reg_rdata_next[31:0] = classd_esc_cnt_qs;
+        reg_rdata_next[31:0] = classd_phase0_cyc_shadowed_qs;
       end
 
       addr_hit[101]: begin
+        reg_rdata_next[31:0] = classd_phase1_cyc_shadowed_qs;
+      end
+
+      addr_hit[102]: begin
+        reg_rdata_next[31:0] = classd_phase2_cyc_shadowed_qs;
+      end
+
+      addr_hit[103]: begin
+        reg_rdata_next[31:0] = classd_phase3_cyc_shadowed_qs;
+      end
+
+      addr_hit[104]: begin
+        reg_rdata_next[31:0] = classd_esc_cnt_qs;
+      end
+
+      addr_hit[105]: begin
         reg_rdata_next[2:0] = classd_state_qs;
       end
 

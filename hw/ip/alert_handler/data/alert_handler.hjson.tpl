@@ -628,6 +628,27 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     },
+    { name:     "CLASS${chars[i]}_CRASHDUMP_TRIGGER_SHADOWED",
+      desc:     '''
+                Crashdump trigger configuration for Class ${chars[i]}.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CLASS${chars[i]}_REGWEN",
+      resval:   "0",
+      fields: [
+        { bits: "PHASE_DW-1:0",
+          desc: '''
+          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+          to prevent spurious alert events from masking the original alert causes.
+          Note that this register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
+          '''
+        }
+      ]
+    },
 % for k in range(4):
     { name:     "CLASS${chars[i]}_PHASE${k}_CYC_SHADOWED",
       desc:     '''

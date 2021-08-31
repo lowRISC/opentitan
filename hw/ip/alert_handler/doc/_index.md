@@ -174,7 +174,7 @@ that all alert senders are always active and have not been the target of an
 attack. Note that low power states are not considered at this time, but could
 affect the signaling and testing of alerts.
 
-The `crashdump_o` struct outputs a collection of CSRs and alert handler state bits that can be latched by hardware debugging circuitry:
+The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits that can be read by hardware debugging circuitry:
 
 ```systemverilog
   typedef struct packed {
@@ -191,6 +191,9 @@ The `crashdump_o` struct outputs a collection of CSRs and alert handler state bi
 This can be useful for extracting more information about possible failures or bugs without having to use the tile-link bus interface (which may become unresponsive under certain circumstances).
 It is recommended for the top level to store this information in an always-on location.
 
+Note that the crashdump state is latched exactly once when the trigger condition is true for the first time (see {{< regref CLASSA_CRASHDUMP_TRIGGER_SHADOWED >}}).
+After that, the alert_handler has to be reset in order to re-arm the crashdump latching mechanism.
+This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
 
 ## Design Details
 

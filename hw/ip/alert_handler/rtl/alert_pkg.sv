@@ -91,6 +91,8 @@ package alert_pkg;
     logic [N_CLASSES-1:0][N_PHASES-1:0][EscCntDw-1:0]  class_phase_cyc;    // length of phases 0..3
     logic [N_CLASSES-1:0][N_ESC_SEV-1:0]               class_esc_en;       // esc signal enables
     logic [N_CLASSES-1:0][N_ESC_SEV-1:0][PHASE_DW-1:0] class_esc_map;      // esc signal/phase map
+    // determines when to latch the crashdump output.
+    logic [N_CLASSES-1:0][PHASE_DW-1:0]                class_crashdump_phase;
   } reg2hw_wrap_t;
 
 endpackage : alert_pkg

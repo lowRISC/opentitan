@@ -14,6 +14,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // interrupt
   output logic [N_CLASSES-1:0] irq_o,
   // State information for HW crashdump
+  input                        latch_crashdump_i,
   output alert_crashdump_t     crashdump_o,
   // hw2reg
   input  hw2reg_wrap_t         hw2reg_wrap,
@@ -260,6 +261,12 @@ module alert_handler_reg_wrap import alert_pkg::*; (
                                        reg2hw.classa_ctrl_shadowed.map_e1.q,
                                        reg2hw.classa_ctrl_shadowed.map_e0.q };
 
+  // Determines in which phase to latch the crashdump.
+  assign reg2hw_wrap.class_crashdump_phase = { reg2hw.classd_crashdump_trigger_shadowed.q,
+                                               reg2hw.classc_crashdump_trigger_shadowed.q,
+                                               reg2hw.classb_crashdump_trigger_shadowed.q,
+                                               reg2hw.classa_crashdump_trigger_shadowed.q };
+
   // writing 1b1 to a class clr register clears the accumulator and
   // escalation state if autolock is not asserted
   assign reg2hw_wrap.class_clr = { reg2hw.classd_clr.q & reg2hw.classd_clr.qe,
@@ -303,19 +310,42 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // crashdump output //
   //////////////////////
 
+  logic crashump_latched_q;
+  alert_crashdump_t crashdump_d, crashdump_q;
+
   // alert cause output
   for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_cause_dump
-    assign crashdump_o.alert_cause[k]  = reg2hw.alert_cause[k].q;
+    assign crashdump_d.alert_cause[k]  = reg2hw.alert_cause[k].q;
   end
 
   // local alert cause register output
   for (genvar k = 0; k < N_LOC_ALERT; k++) begin : gen_loc_alert_cause_dump
-    assign crashdump_o.loc_alert_cause[k]  = reg2hw.loc_alert_cause[k].q;
+    assign crashdump_d.loc_alert_cause[k]  = reg2hw.loc_alert_cause[k].q;
   end
 
-  assign crashdump_o.class_accum_cnt = hw2reg_wrap.class_accum_cnt;
-  assign crashdump_o.class_esc_cnt   = hw2reg_wrap.class_esc_cnt;
-  assign crashdump_o.class_esc_state = hw2reg_wrap.class_esc_state;
+  assign crashdump_d.class_accum_cnt = hw2reg_wrap.class_accum_cnt;
+  assign crashdump_d.class_esc_cnt   = hw2reg_wrap.class_esc_cnt;
+  assign crashdump_d.class_esc_state = hw2reg_wrap.class_esc_state;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_crashdump
+    if (!rst_ni) begin
+      crashump_latched_q <= 1'b0;
+      crashdump_q <= '0;
+    end else begin
+      // We latch the crashdump upon triggering any of the escalation protocols. The reason for this
+      // is that during escalation, certain alert senders may start to trigger due to FSMs being
+      // moved into escalation mode - thereby masking the actual alert reasons exposed in the cause
+      // registers. Note that the alert handler only captures the crashdump once upon first
+      // assertion of this signal, and needs to be reset to re-arm the crashdump latching
+      // mechanism.
+      if (latch_crashdump_i && !crashump_latched_q) begin
+        crashump_latched_q <= 1'b1;
+        crashdump_q <= crashdump_d;
+      end
+    end
+  end
+
+  assign crashdump_o = crashdump_q;
 
   /////////////////////////////
   // aggregate shadow errors //
