@@ -49,6 +49,7 @@ module alert_handler
   // Regfile Breakout and Mapping //
   //////////////////////////////////
 
+  logic [N_CLASSES-1:0] latch_crashdump;
   logic [N_LOC_ALERT-1:0] loc_alert_trig;
   logic [N_CLASSES-1:0] irq;
   hw2reg_wrap_t hw2reg_wrap;
@@ -66,6 +67,7 @@ module alert_handler
     .tl_i,
     .tl_o,
     .irq_o ( irq ),
+    .latch_crashdump_i ( |latch_crashdump ),
     .crashdump_o,
     .hw2reg_wrap,
     .reg2hw_wrap,
@@ -192,21 +194,23 @@ module alert_handler
     alert_handler_esc_timer u_esc_timer (
       .clk_i,
       .rst_ni,
-      .en_i              ( reg2hw_wrap.class_en[k]          ),
+      .en_i              ( reg2hw_wrap.class_en[k]              ),
       // this clear does not apply to interrupts
-      .clr_i             ( reg2hw_wrap.class_clr[k]         ),
+      .clr_i             ( reg2hw_wrap.class_clr[k]             ),
       // an interrupt enables the timeout
-      .timeout_en_i      ( irq[k]                           ),
-      .accu_trig_i       ( class_accu_trig                  ),
-      .accu_fail_i       ( class_accu_fail                  ),
-      .timeout_cyc_i     ( reg2hw_wrap.class_timeout_cyc[k] ),
-      .esc_en_i          ( reg2hw_wrap.class_esc_en[k]      ),
-      .esc_map_i         ( reg2hw_wrap.class_esc_map[k]     ),
-      .phase_cyc_i       ( reg2hw_wrap.class_phase_cyc[k]   ),
-      .esc_trig_o        ( hw2reg_wrap.class_esc_trig[k]    ),
-      .esc_cnt_o         ( hw2reg_wrap.class_esc_cnt[k]     ),
-      .esc_state_o       ( hw2reg_wrap.class_esc_state[k]   ),
-      .esc_sig_req_o     ( class_esc_sig_req[k]             )
+      .timeout_en_i      ( irq[k]                               ),
+      .accu_trig_i       ( class_accu_trig                      ),
+      .accu_fail_i       ( class_accu_fail                      ),
+      .timeout_cyc_i     ( reg2hw_wrap.class_timeout_cyc[k]     ),
+      .esc_en_i          ( reg2hw_wrap.class_esc_en[k]          ),
+      .esc_map_i         ( reg2hw_wrap.class_esc_map[k]         ),
+      .phase_cyc_i       ( reg2hw_wrap.class_phase_cyc[k]       ),
+      .crashdump_phase_i ( reg2hw_wrap.class_crashdump_phase[k] ),
+      .latch_crashdump_o ( latch_crashdump[k]                   ),
+      .esc_trig_o        ( hw2reg_wrap.class_esc_trig[k]        ),
+      .esc_cnt_o         ( hw2reg_wrap.class_esc_cnt[k]         ),
+      .esc_state_o       ( hw2reg_wrap.class_esc_state[k]       ),
+      .esc_sig_req_o     ( class_esc_sig_req[k]                 )
     );
   end
 

@@ -107,31 +107,37 @@
       local: "true"
     },
     { name: "LOCAL_ALERT_ID_ALERT_PINGFAIL",
-      desc: "Local alert ID",
+      desc: "Local alert ID for alert ping failure.",
       type: "int",
       default: "0",
       local: "true"
     },
     { name: "LOCAL_ALERT_ID_ESC_PINGFAIL",
-      desc: "Local alert ID",
+      desc: "Local alert ID for escalation ping failure.",
       type: "int",
       default: "1",
       local: "true"
     },
     { name: "LOCAL_ALERT_ID_ALERT_INTEGFAIL",
-      desc: "Local alert ID",
+      desc: "Local alert ID for alert integrity failure.",
       type: "int",
       default: "2",
       local: "true"
     },
     { name: "LOCAL_ALERT_ID_ESC_INTEGFAIL",
-      desc: "Local alert ID",
+      desc: "Local alert ID for escalation integrity failure.",
       type: "int",
       default: "3",
       local: "true"
     },
     { name: "LOCAL_ALERT_ID_BUS_INTEGFAIL",
-      desc: "Local alert ID",
+      desc: "Local alert ID for bus integrity failure.",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "LOCAL_ALERT_ID_LAST",
+      desc: "Last local alert ID.",
       type: "int",
       default: "4",
       local: "true"
@@ -627,6 +633,27 @@
         }
       ]
     },
+    { name:     "CLASSA_CRASHDUMP_TRIGGER_SHADOWED",
+      desc:     '''
+                Crashdump trigger configuration for Class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CLASSA_REGWEN",
+      resval:   "0",
+      fields: [
+        { bits: "PHASE_DW-1:0",
+          desc: '''
+          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+          to prevent spurious alert events from masking the original alert causes.
+          Note that this register can not be modified if !!CLASSA_REGWEN is false.
+          '''
+        }
+      ]
+    },
     { name:     "CLASSA_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class A.
@@ -905,6 +932,27 @@
           Set to a positive value to enable the interrupt timeout for Class B. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
           !!CLASSB_REGWEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSB_CRASHDUMP_TRIGGER_SHADOWED",
+      desc:     '''
+                Crashdump trigger configuration for Class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CLASSB_REGWEN",
+      resval:   "0",
+      fields: [
+        { bits: "PHASE_DW-1:0",
+          desc: '''
+          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+          to prevent spurious alert events from masking the original alert causes.
+          Note that this register can not be modified if !!CLASSB_REGWEN is false.
           '''
         }
       ]
@@ -1191,6 +1239,27 @@
         }
       ]
     },
+    { name:     "CLASSC_CRASHDUMP_TRIGGER_SHADOWED",
+      desc:     '''
+                Crashdump trigger configuration for Class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CLASSC_REGWEN",
+      resval:   "0",
+      fields: [
+        { bits: "PHASE_DW-1:0",
+          desc: '''
+          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+          to prevent spurious alert events from masking the original alert causes.
+          Note that this register can not be modified if !!CLASSC_REGWEN is false.
+          '''
+        }
+      ]
+    },
     { name:     "CLASSC_PHASE0_CYC_SHADOWED",
       desc:     '''
                 Duration of escalation phase 0 for Class C.
@@ -1469,6 +1538,27 @@
           Set to a positive value to enable the interrupt timeout for Class D. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
           !!CLASSD_REGWEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSD_CRASHDUMP_TRIGGER_SHADOWED",
+      desc:     '''
+                Crashdump trigger configuration for Class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CLASSD_REGWEN",
+      resval:   "0",
+      fields: [
+        { bits: "PHASE_DW-1:0",
+          desc: '''
+          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+          to prevent spurious alert events from masking the original alert causes.
+          Note that this register can not be modified if !!CLASSD_REGWEN is false.
           '''
         }
       ]

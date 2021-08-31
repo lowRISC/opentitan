@@ -200,6 +200,12 @@ package alert_handler_reg_pkg;
   } alert_handler_reg2hw_classa_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
+    logic [1:0]  q;
+    logic        err_update;
+    logic        err_storage;
+  } alert_handler_reg2hw_classa_crashdump_trigger_shadowed_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
     logic        err_update;
     logic        err_storage;
@@ -292,6 +298,12 @@ package alert_handler_reg_pkg;
     logic        err_update;
     logic        err_storage;
   } alert_handler_reg2hw_classb_timeout_cyc_shadowed_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+    logic        err_update;
+    logic        err_storage;
+  } alert_handler_reg2hw_classb_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -388,6 +400,12 @@ package alert_handler_reg_pkg;
   } alert_handler_reg2hw_classc_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
+    logic [1:0]  q;
+    logic        err_update;
+    logic        err_storage;
+  } alert_handler_reg2hw_classc_crashdump_trigger_shadowed_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
     logic        err_update;
     logic        err_storage;
@@ -480,6 +498,12 @@ package alert_handler_reg_pkg;
     logic        err_update;
     logic        err_storage;
   } alert_handler_reg2hw_classd_timeout_cyc_shadowed_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+    logic        err_update;
+    logic        err_storage;
+  } alert_handler_reg2hw_classd_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -604,51 +628,59 @@ package alert_handler_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [1178:1175]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [1174:1171]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [1170:1163]
-    alert_handler_reg2hw_ping_timeout_cyc_shadowed_reg_t ping_timeout_cyc_shadowed; // [1162:1147]
-    alert_handler_reg2hw_ping_timer_en_shadowed_reg_t ping_timer_en_shadowed; // [1146:1146]
-    alert_handler_reg2hw_alert_regwen_mreg_t [69:0] alert_regwen; // [1145:1076]
-    alert_handler_reg2hw_alert_en_shadowed_mreg_t [69:0] alert_en_shadowed; // [1075:1006]
-    alert_handler_reg2hw_alert_class_shadowed_mreg_t [69:0] alert_class_shadowed; // [1005:866]
-    alert_handler_reg2hw_alert_cause_mreg_t [69:0] alert_cause; // [865:796]
-    alert_handler_reg2hw_loc_alert_en_shadowed_mreg_t [6:0] loc_alert_en_shadowed; // [795:789]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [1186:1183]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [1182:1179]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [1178:1171]
+    alert_handler_reg2hw_ping_timeout_cyc_shadowed_reg_t ping_timeout_cyc_shadowed; // [1170:1155]
+    alert_handler_reg2hw_ping_timer_en_shadowed_reg_t ping_timer_en_shadowed; // [1154:1154]
+    alert_handler_reg2hw_alert_regwen_mreg_t [69:0] alert_regwen; // [1153:1084]
+    alert_handler_reg2hw_alert_en_shadowed_mreg_t [69:0] alert_en_shadowed; // [1083:1014]
+    alert_handler_reg2hw_alert_class_shadowed_mreg_t [69:0] alert_class_shadowed; // [1013:874]
+    alert_handler_reg2hw_alert_cause_mreg_t [69:0] alert_cause; // [873:804]
+    alert_handler_reg2hw_loc_alert_en_shadowed_mreg_t [6:0] loc_alert_en_shadowed; // [803:797]
     alert_handler_reg2hw_loc_alert_class_shadowed_mreg_t [6:0]
-        loc_alert_class_shadowed; // [788:775]
-    alert_handler_reg2hw_loc_alert_cause_mreg_t [6:0] loc_alert_cause; // [774:768]
-    alert_handler_reg2hw_classa_ctrl_shadowed_reg_t classa_ctrl_shadowed; // [767:754]
-    alert_handler_reg2hw_classa_clr_reg_t classa_clr; // [753:752]
+        loc_alert_class_shadowed; // [796:783]
+    alert_handler_reg2hw_loc_alert_cause_mreg_t [6:0] loc_alert_cause; // [782:776]
+    alert_handler_reg2hw_classa_ctrl_shadowed_reg_t classa_ctrl_shadowed; // [775:762]
+    alert_handler_reg2hw_classa_clr_reg_t classa_clr; // [761:760]
     alert_handler_reg2hw_classa_accum_thresh_shadowed_reg_t
-        classa_accum_thresh_shadowed; // [751:736]
-    alert_handler_reg2hw_classa_timeout_cyc_shadowed_reg_t classa_timeout_cyc_shadowed; // [735:704]
-    alert_handler_reg2hw_classa_phase0_cyc_shadowed_reg_t classa_phase0_cyc_shadowed; // [703:672]
-    alert_handler_reg2hw_classa_phase1_cyc_shadowed_reg_t classa_phase1_cyc_shadowed; // [671:640]
-    alert_handler_reg2hw_classa_phase2_cyc_shadowed_reg_t classa_phase2_cyc_shadowed; // [639:608]
-    alert_handler_reg2hw_classa_phase3_cyc_shadowed_reg_t classa_phase3_cyc_shadowed; // [607:576]
-    alert_handler_reg2hw_classb_ctrl_shadowed_reg_t classb_ctrl_shadowed; // [575:562]
-    alert_handler_reg2hw_classb_clr_reg_t classb_clr; // [561:560]
+        classa_accum_thresh_shadowed; // [759:744]
+    alert_handler_reg2hw_classa_timeout_cyc_shadowed_reg_t classa_timeout_cyc_shadowed; // [743:712]
+    alert_handler_reg2hw_classa_crashdump_trigger_shadowed_reg_t
+        classa_crashdump_trigger_shadowed; // [711:710]
+    alert_handler_reg2hw_classa_phase0_cyc_shadowed_reg_t classa_phase0_cyc_shadowed; // [709:678]
+    alert_handler_reg2hw_classa_phase1_cyc_shadowed_reg_t classa_phase1_cyc_shadowed; // [677:646]
+    alert_handler_reg2hw_classa_phase2_cyc_shadowed_reg_t classa_phase2_cyc_shadowed; // [645:614]
+    alert_handler_reg2hw_classa_phase3_cyc_shadowed_reg_t classa_phase3_cyc_shadowed; // [613:582]
+    alert_handler_reg2hw_classb_ctrl_shadowed_reg_t classb_ctrl_shadowed; // [581:568]
+    alert_handler_reg2hw_classb_clr_reg_t classb_clr; // [567:566]
     alert_handler_reg2hw_classb_accum_thresh_shadowed_reg_t
-        classb_accum_thresh_shadowed; // [559:544]
-    alert_handler_reg2hw_classb_timeout_cyc_shadowed_reg_t classb_timeout_cyc_shadowed; // [543:512]
-    alert_handler_reg2hw_classb_phase0_cyc_shadowed_reg_t classb_phase0_cyc_shadowed; // [511:480]
-    alert_handler_reg2hw_classb_phase1_cyc_shadowed_reg_t classb_phase1_cyc_shadowed; // [479:448]
-    alert_handler_reg2hw_classb_phase2_cyc_shadowed_reg_t classb_phase2_cyc_shadowed; // [447:416]
-    alert_handler_reg2hw_classb_phase3_cyc_shadowed_reg_t classb_phase3_cyc_shadowed; // [415:384]
-    alert_handler_reg2hw_classc_ctrl_shadowed_reg_t classc_ctrl_shadowed; // [383:370]
-    alert_handler_reg2hw_classc_clr_reg_t classc_clr; // [369:368]
+        classb_accum_thresh_shadowed; // [565:550]
+    alert_handler_reg2hw_classb_timeout_cyc_shadowed_reg_t classb_timeout_cyc_shadowed; // [549:518]
+    alert_handler_reg2hw_classb_crashdump_trigger_shadowed_reg_t
+        classb_crashdump_trigger_shadowed; // [517:516]
+    alert_handler_reg2hw_classb_phase0_cyc_shadowed_reg_t classb_phase0_cyc_shadowed; // [515:484]
+    alert_handler_reg2hw_classb_phase1_cyc_shadowed_reg_t classb_phase1_cyc_shadowed; // [483:452]
+    alert_handler_reg2hw_classb_phase2_cyc_shadowed_reg_t classb_phase2_cyc_shadowed; // [451:420]
+    alert_handler_reg2hw_classb_phase3_cyc_shadowed_reg_t classb_phase3_cyc_shadowed; // [419:388]
+    alert_handler_reg2hw_classc_ctrl_shadowed_reg_t classc_ctrl_shadowed; // [387:374]
+    alert_handler_reg2hw_classc_clr_reg_t classc_clr; // [373:372]
     alert_handler_reg2hw_classc_accum_thresh_shadowed_reg_t
-        classc_accum_thresh_shadowed; // [367:352]
-    alert_handler_reg2hw_classc_timeout_cyc_shadowed_reg_t classc_timeout_cyc_shadowed; // [351:320]
-    alert_handler_reg2hw_classc_phase0_cyc_shadowed_reg_t classc_phase0_cyc_shadowed; // [319:288]
-    alert_handler_reg2hw_classc_phase1_cyc_shadowed_reg_t classc_phase1_cyc_shadowed; // [287:256]
-    alert_handler_reg2hw_classc_phase2_cyc_shadowed_reg_t classc_phase2_cyc_shadowed; // [255:224]
-    alert_handler_reg2hw_classc_phase3_cyc_shadowed_reg_t classc_phase3_cyc_shadowed; // [223:192]
-    alert_handler_reg2hw_classd_ctrl_shadowed_reg_t classd_ctrl_shadowed; // [191:178]
-    alert_handler_reg2hw_classd_clr_reg_t classd_clr; // [177:176]
+        classc_accum_thresh_shadowed; // [371:356]
+    alert_handler_reg2hw_classc_timeout_cyc_shadowed_reg_t classc_timeout_cyc_shadowed; // [355:324]
+    alert_handler_reg2hw_classc_crashdump_trigger_shadowed_reg_t
+        classc_crashdump_trigger_shadowed; // [323:322]
+    alert_handler_reg2hw_classc_phase0_cyc_shadowed_reg_t classc_phase0_cyc_shadowed; // [321:290]
+    alert_handler_reg2hw_classc_phase1_cyc_shadowed_reg_t classc_phase1_cyc_shadowed; // [289:258]
+    alert_handler_reg2hw_classc_phase2_cyc_shadowed_reg_t classc_phase2_cyc_shadowed; // [257:226]
+    alert_handler_reg2hw_classc_phase3_cyc_shadowed_reg_t classc_phase3_cyc_shadowed; // [225:194]
+    alert_handler_reg2hw_classd_ctrl_shadowed_reg_t classd_ctrl_shadowed; // [193:180]
+    alert_handler_reg2hw_classd_clr_reg_t classd_clr; // [179:178]
     alert_handler_reg2hw_classd_accum_thresh_shadowed_reg_t
-        classd_accum_thresh_shadowed; // [175:160]
-    alert_handler_reg2hw_classd_timeout_cyc_shadowed_reg_t classd_timeout_cyc_shadowed; // [159:128]
+        classd_accum_thresh_shadowed; // [177:162]
+    alert_handler_reg2hw_classd_timeout_cyc_shadowed_reg_t classd_timeout_cyc_shadowed; // [161:130]
+    alert_handler_reg2hw_classd_crashdump_trigger_shadowed_reg_t
+        classd_crashdump_trigger_shadowed; // [129:128]
     alert_handler_reg2hw_classd_phase0_cyc_shadowed_reg_t classd_phase0_cyc_shadowed; // [127:96]
     alert_handler_reg2hw_classd_phase1_cyc_shadowed_reg_t classd_phase1_cyc_shadowed; // [95:64]
     alert_handler_reg2hw_classd_phase2_cyc_shadowed_reg_t classd_phase2_cyc_shadowed; // [63:32]
@@ -1000,51 +1032,55 @@ package alert_handler_reg_pkg;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 11'h 4f8;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 4fc;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 500;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET = 11'h 504;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET = 11'h 508;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET = 11'h 50c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET = 11'h 510;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 11'h 514;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 11'h 518;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_REGWEN_OFFSET = 11'h 51c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET = 11'h 520;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET = 11'h 524;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_OFFSET = 11'h 528;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 11'h 52c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 530;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 534;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET = 11'h 538;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET = 11'h 53c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET = 11'h 540;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET = 11'h 544;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 11'h 548;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 11'h 54c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_REGWEN_OFFSET = 11'h 550;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET = 11'h 554;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET = 11'h 558;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_OFFSET = 11'h 55c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 11'h 560;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 564;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 568;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET = 11'h 56c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET = 11'h 570;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET = 11'h 574;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET = 11'h 578;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 11'h 57c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 11'h 580;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_REGWEN_OFFSET = 11'h 584;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET = 11'h 588;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET = 11'h 58c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_OFFSET = 11'h 590;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 11'h 594;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 598;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 59c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET = 11'h 5a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET = 11'h 5a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET = 11'h 5a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET = 11'h 5ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 11'h 5b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 11'h 5b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 504;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET = 11'h 508;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET = 11'h 50c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET = 11'h 510;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET = 11'h 514;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 11'h 518;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 11'h 51c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_REGWEN_OFFSET = 11'h 520;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET = 11'h 524;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET = 11'h 528;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_OFFSET = 11'h 52c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 11'h 530;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 534;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 538;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 53c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET = 11'h 540;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET = 11'h 544;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET = 11'h 548;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET = 11'h 54c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 11'h 550;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 11'h 554;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_REGWEN_OFFSET = 11'h 558;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET = 11'h 55c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET = 11'h 560;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_OFFSET = 11'h 564;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 11'h 568;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 56c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 570;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 574;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET = 11'h 578;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET = 11'h 57c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET = 11'h 580;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET = 11'h 584;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 11'h 588;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 11'h 58c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_REGWEN_OFFSET = 11'h 590;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET = 11'h 594;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET = 11'h 598;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_OFFSET = 11'h 59c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 11'h 5a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 5a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 5a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 5ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET = 11'h 5b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET = 11'h 5b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET = 11'h 5b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET = 11'h 5bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 11'h 5c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 11'h 5c4;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] ALERT_HANDLER_INTR_TEST_RESVAL = 4'h 0;
@@ -1388,6 +1424,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSA_ACCUM_CNT,
     ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED,
     ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED,
+    ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED,
     ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED,
     ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED,
     ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED,
@@ -1401,6 +1438,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSB_ACCUM_CNT,
     ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED,
     ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED,
+    ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED,
     ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED,
     ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED,
     ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED,
@@ -1414,6 +1452,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSC_ACCUM_CNT,
     ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED,
     ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED,
+    ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED,
     ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED,
     ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED,
     ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED,
@@ -1427,6 +1466,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSD_ACCUM_CNT,
     ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED,
     ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED,
+    ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED,
     ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED,
     ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED,
     ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED,
@@ -1436,7 +1476,7 @@ package alert_handler_reg_pkg;
   } alert_handler_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ALERT_HANDLER_PERMIT [366] = '{
+  parameter logic [3:0] ALERT_HANDLER_PERMIT [370] = '{
     4'b 0001, // index[  0] ALERT_HANDLER_INTR_STATE
     4'b 0001, // index[  1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[  2] ALERT_HANDLER_INTR_TEST
@@ -1758,51 +1798,55 @@ package alert_handler_reg_pkg;
     4'b 0011, // index[318] ALERT_HANDLER_CLASSA_ACCUM_CNT
     4'b 0011, // index[319] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED
     4'b 1111, // index[320] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED
-    4'b 1111, // index[321] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[322] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[323] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[324] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[325] ALERT_HANDLER_CLASSA_ESC_CNT
-    4'b 0001, // index[326] ALERT_HANDLER_CLASSA_STATE
-    4'b 0001, // index[327] ALERT_HANDLER_CLASSB_REGWEN
-    4'b 0011, // index[328] ALERT_HANDLER_CLASSB_CTRL_SHADOWED
-    4'b 0001, // index[329] ALERT_HANDLER_CLASSB_CLR_REGWEN
-    4'b 0001, // index[330] ALERT_HANDLER_CLASSB_CLR
-    4'b 0011, // index[331] ALERT_HANDLER_CLASSB_ACCUM_CNT
-    4'b 0011, // index[332] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[333] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED
-    4'b 1111, // index[334] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[335] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[336] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[337] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[338] ALERT_HANDLER_CLASSB_ESC_CNT
-    4'b 0001, // index[339] ALERT_HANDLER_CLASSB_STATE
-    4'b 0001, // index[340] ALERT_HANDLER_CLASSC_REGWEN
-    4'b 0011, // index[341] ALERT_HANDLER_CLASSC_CTRL_SHADOWED
-    4'b 0001, // index[342] ALERT_HANDLER_CLASSC_CLR_REGWEN
-    4'b 0001, // index[343] ALERT_HANDLER_CLASSC_CLR
-    4'b 0011, // index[344] ALERT_HANDLER_CLASSC_ACCUM_CNT
-    4'b 0011, // index[345] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[346] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED
-    4'b 1111, // index[347] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[348] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[349] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[350] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[351] ALERT_HANDLER_CLASSC_ESC_CNT
-    4'b 0001, // index[352] ALERT_HANDLER_CLASSC_STATE
-    4'b 0001, // index[353] ALERT_HANDLER_CLASSD_REGWEN
-    4'b 0011, // index[354] ALERT_HANDLER_CLASSD_CTRL_SHADOWED
-    4'b 0001, // index[355] ALERT_HANDLER_CLASSD_CLR_REGWEN
-    4'b 0001, // index[356] ALERT_HANDLER_CLASSD_CLR
-    4'b 0011, // index[357] ALERT_HANDLER_CLASSD_ACCUM_CNT
-    4'b 0011, // index[358] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[359] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED
-    4'b 1111, // index[360] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[361] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[362] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[363] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[364] ALERT_HANDLER_CLASSD_ESC_CNT
-    4'b 0001  // index[365] ALERT_HANDLER_CLASSD_STATE
+    4'b 0001, // index[321] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[322] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[323] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[324] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[325] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[326] ALERT_HANDLER_CLASSA_ESC_CNT
+    4'b 0001, // index[327] ALERT_HANDLER_CLASSA_STATE
+    4'b 0001, // index[328] ALERT_HANDLER_CLASSB_REGWEN
+    4'b 0011, // index[329] ALERT_HANDLER_CLASSB_CTRL_SHADOWED
+    4'b 0001, // index[330] ALERT_HANDLER_CLASSB_CLR_REGWEN
+    4'b 0001, // index[331] ALERT_HANDLER_CLASSB_CLR
+    4'b 0011, // index[332] ALERT_HANDLER_CLASSB_ACCUM_CNT
+    4'b 0011, // index[333] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[334] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[335] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[336] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[337] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[338] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[339] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[340] ALERT_HANDLER_CLASSB_ESC_CNT
+    4'b 0001, // index[341] ALERT_HANDLER_CLASSB_STATE
+    4'b 0001, // index[342] ALERT_HANDLER_CLASSC_REGWEN
+    4'b 0011, // index[343] ALERT_HANDLER_CLASSC_CTRL_SHADOWED
+    4'b 0001, // index[344] ALERT_HANDLER_CLASSC_CLR_REGWEN
+    4'b 0001, // index[345] ALERT_HANDLER_CLASSC_CLR
+    4'b 0011, // index[346] ALERT_HANDLER_CLASSC_ACCUM_CNT
+    4'b 0011, // index[347] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[348] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[349] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[350] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[351] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[352] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[353] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[354] ALERT_HANDLER_CLASSC_ESC_CNT
+    4'b 0001, // index[355] ALERT_HANDLER_CLASSC_STATE
+    4'b 0001, // index[356] ALERT_HANDLER_CLASSD_REGWEN
+    4'b 0011, // index[357] ALERT_HANDLER_CLASSD_CTRL_SHADOWED
+    4'b 0001, // index[358] ALERT_HANDLER_CLASSD_CLR_REGWEN
+    4'b 0001, // index[359] ALERT_HANDLER_CLASSD_CLR
+    4'b 0011, // index[360] ALERT_HANDLER_CLASSD_ACCUM_CNT
+    4'b 0011, // index[361] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[362] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[363] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[364] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[365] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[366] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[367] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[368] ALERT_HANDLER_CLASSD_ESC_CNT
+    4'b 0001  // index[369] ALERT_HANDLER_CLASSD_STATE
   };
 
 endpackage

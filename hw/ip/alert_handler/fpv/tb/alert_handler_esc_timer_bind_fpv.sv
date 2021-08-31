@@ -19,6 +19,8 @@ module alert_handler_esc_timer_bind_fpv;
     .esc_en_i,
     .esc_map_i,
     .phase_cyc_i,
+    .crashdump_phase_i,
+    .latch_crashdump_o,
     .esc_trig_o,
     .esc_cnt_o,
     .esc_sig_req_o,

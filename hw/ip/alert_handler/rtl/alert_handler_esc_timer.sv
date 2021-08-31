@@ -21,20 +21,22 @@
 module alert_handler_esc_timer import alert_pkg::*; (
   input                        clk_i,
   input                        rst_ni,
-  input                        en_i,           // enables timeout/escalation
-  input                        clr_i,          // aborts escalation
-  input                        accu_trig_i,    // this will trigger escalation
-  input                        accu_fail_i,    // this will move the FSM into a terminal error state
-  input                        timeout_en_i,   // enables timeout
-  input        [EscCntDw-1:0]  timeout_cyc_i,  // interrupt timeout. 0 = disabled
-  input        [N_ESC_SEV-1:0] esc_en_i,       // escalation signal enables
+  input                        en_i,              // enables timeout/escalation
+  input                        clr_i,             // aborts escalation
+  input                        accu_trig_i,       // this triggers escalation
+  input                        accu_fail_i,       // this moves the FSM into a terminal error state
+  input                        timeout_en_i,      // enables timeout
+  input        [EscCntDw-1:0]  timeout_cyc_i,     // interrupt timeout. 0 = disabled
+  input        [N_ESC_SEV-1:0] esc_en_i,          // escalation signal enables
   input        [N_ESC_SEV-1:0]
-               [PHASE_DW-1:0]  esc_map_i,      // escalation signal / phase map
+               [PHASE_DW-1:0]  esc_map_i,         // escalation signal / phase map
   input        [N_PHASES-1:0]
-               [EscCntDw-1:0]  phase_cyc_i,    // cycle counts of individual phases
-  output logic                 esc_trig_o,     // asserted if escalation triggers
-  output logic [EscCntDw-1:0]  esc_cnt_o,      // current timeout / escalation count
-  output logic [N_ESC_SEV-1:0] esc_sig_req_o,  // escalation signal outputs
+               [EscCntDw-1:0]  phase_cyc_i,       // cycle counts of individual phases
+  input        [PHASE_DW-1:0]  crashdump_phase_i, // determines when to assert latch_crashdump_o
+  output logic                 latch_crashdump_o, // asserted when entering escalation
+  output logic                 esc_trig_o,        // asserted if escalation triggers
+  output logic [EscCntDw-1:0]  esc_cnt_o,         // current timeout / escalation count
+  output logic [N_ESC_SEV-1:0] esc_sig_req_o,     // escalation signal outputs
   // current state output
   // 000: idle, 001: irq timeout counting 100: phase0, 101: phase1, 110: phase2, 111: phase3
   output cstate_e              esc_state_o
@@ -149,6 +151,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
     phase_oh    = '0;
     thresh      = timeout_cyc_i;
     fsm_error   = 1'b0;
+    latch_crashdump_o = 1'b0;
 
     unique case (state_q)
       // wait for an escalation trigger or an alert trigger
@@ -159,6 +162,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
         if (accu_trig_i && en_i && !clr_i) begin
           state_d    = Phase0St;
+          latch_crashdump_o = (crashdump_phase_i == 2'b00);
           cnt_en     = 1'b1;
           esc_trig_o = 1'b1;
         // the counter is zero in this state. so if the
@@ -179,6 +183,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
         if ((accu_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
           state_d    = Phase0St;
+          latch_crashdump_o = (crashdump_phase_i == 2'b00);
           cnt_en     = 1'b1;
           cnt_clr    = 1'b1;
           esc_trig_o = 1'b1;
@@ -204,6 +209,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase1St;
+          latch_crashdump_o = (crashdump_phase_i == 2'b01);
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
         end
@@ -220,6 +226,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase2St;
+          latch_crashdump_o = (crashdump_phase_i == 2'b10);
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
         end
@@ -236,6 +243,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase3St;
+          latch_crashdump_o = (crashdump_phase_i == 2'b11);
           cnt_clr = 1'b1;
         end
       end
