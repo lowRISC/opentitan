@@ -36,7 +36,7 @@ TEMPLATES = [
 
 
 def main():
-    log.basicConfig(level=log.INFO,
+    log.basicConfig(level=log.WARNING,
                     format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
