@@ -84,15 +84,9 @@ endif
 
 .PHONY: $(ips_reg) $(ips_reg_header) $(ips_reg_rust) $(tops_gen) $(tops_reg)
 
-all: $(ips_reg) $(tops_gen) $(tops_reg) banner
+all: $(ips_reg) $(tops_gen) $(tops_reg)
 
-banner:
-	@echo "############################################"
-	@echo "Note: Regs for DV & SW are now generated at:"
-	@echo "${REG_OUTPUT_DIR}"
-	@echo "############################################"
-
-regs: $(ips_reg) $(tops_reg) banner
+regs: $(ips_reg) $(tops_reg)
 
 $(REG_OUTPUT_DV_DIR) $(REG_OUTPUT_SW_DIR): %:
 	mkdir -p $@
@@ -114,12 +108,12 @@ otp-mmap:
 lc-state-enc:
 	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py
 
-regs-header: $(ips_reg_header) banner
+regs-header: $(ips_reg_header)
 
 $(ips_reg_header): %_reg_header: | $(REG_OUTPUT_SW_DIR)
 	${PRJ_DIR}/util/regtool.py -D -o $(REG_OUTPUT_SW_DIR)/$*_reg_headers.h $(blk-hjson)
 
-regs-rust: $(ips_reg_rust_install) $(ips_reg_rust) banner
+regs-rust: $(ips_reg_rust_install) $(ips_reg_rust)
 
 $(ips_reg_rust): $(REG_OUTPUT_SW_DIR)/%_reg_constants.rs: | $(REG_OUTPUT_SW_DIR)
 	${PRJ_DIR}/util/regtool.py -R -o $@ $(blk-hjson)
@@ -143,4 +137,4 @@ $(tops_reg):
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
 
-.PHONY: all banner otp-mmap lc-state-enc
+.PHONY: all otp-mmap lc-state-enc
