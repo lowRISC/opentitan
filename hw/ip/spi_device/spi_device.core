@@ -54,6 +54,7 @@ filesets:
       - lowrisc:lint:comportable
     files:
       - lint/spi_device.waiver
+      - lint/spi_tpm.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
