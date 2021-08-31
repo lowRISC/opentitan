@@ -30,17 +30,20 @@ module spi_device
   output logic [3:0] cio_sd_en_o,
   input        [3:0] cio_sd_i,
 
+  input              cio_tpm_csb_i,
+
   // Passthrough interface
   output spi_device_pkg::passthrough_req_t passthrough_o,
   input  spi_device_pkg::passthrough_rsp_t passthrough_i,
 
   // Interrupts
-  output logic intr_rxf_o,         // RX FIFO Full
-  output logic intr_rxlvl_o,       // RX FIFO above level
-  output logic intr_txlvl_o,       // TX FIFO below level
-  output logic intr_rxerr_o,       // RX Frame error
-  output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
-  output logic intr_txunderflow_o, // TX Async FIFO Underflow
+  output logic intr_rxf_o,                  // RX FIFO Full
+  output logic intr_rxlvl_o,                // RX FIFO above level
+  output logic intr_txlvl_o,                // TX FIFO below level
+  output logic intr_rxerr_o,                // RX Frame error
+  output logic intr_rxoverflow_o,           // RX Async FIFO Overflow
+  output logic intr_txunderflow_o,          // TX Async FIFO Underflow
+  output logic intr_tpm_cmdaddr_notempty_o, // TPM Command/Address buffer
 
   // Memory configuration
   input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
@@ -243,6 +246,48 @@ module spi_device
   // Jedec ID
   logic [23:0] jedec_id;
 
+  // TPM ===============================================================
+  localparam int unsigned TpmCmdAddrDepth = 2;
+  localparam int unsigned TpmFifoDepth    = 4; // 4B
+  localparam int unsigned TpmFifoPtrW     = $clog2(TpmFifoDepth+1);
+
+  // pulse signal to set once from tpm_status_cmdaddr_notempty
+  logic intr_tpm_cmdaddr_notempty;
+
+  // Interface
+  logic tpm_mosi, tpm_miso, tpm_miso_en;
+  assign tpm_mosi = cio_sd_i[0];
+
+  // Return-by-HW registers
+  logic [8*spi_device_reg_pkg::NumLocality-1:0] tpm_access;
+  logic [31:0]                                  tpm_int_enable;
+  logic [7:0]                                   tpm_int_vector;
+  logic [31:0]                                  tpm_int_status;
+  logic [31:0]                                  tpm_intf_capability;
+  logic [31:0]                                  tpm_status;
+  logic [31:0]                                  tpm_did_vid;
+  logic [7:0]                                   tpm_rid;
+
+  // Buffer and FIFO signals
+  logic        tpm_cmdaddr_rvalid, tpm_cmdaddr_rready;
+  logic [31:0] tpm_cmdaddr_rdata;
+  logic        tpm_wrfifo_rvalid, tpm_wrfifo_rready;
+  logic [7:0]  tpm_wrfifo_rdata;
+  logic        tpm_rdfifo_wvalid, tpm_rdfifo_wready;
+  logic [7:0]  tpm_rdfifo_wdata;
+
+  tpm_cap_t tpm_cap;
+
+  // TPM CFG
+  logic cfg_tpm_en, cfg_tpm_hw_reg_dis, cfg_tpm_invalid_ool;
+
+  // TPM_STATUS
+  logic tpm_status_cmdaddr_notempty, tpm_status_rdfifo_notempty;
+  logic [TpmFifoPtrW-1:0] tpm_status_rdfifo_depth;
+  logic [TpmFifoPtrW-1:0] tpm_status_wrfifo_depth;
+
+  // TPM ---------------------------------------------------------------
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -390,6 +435,8 @@ module spi_device
   assign intr_rxerr_o       = reg2hw.intr_enable.rxerr.q       & reg2hw.intr_state.rxerr.q;
   assign intr_rxoverflow_o  = reg2hw.intr_enable.rxoverflow.q  & reg2hw.intr_state.rxoverflow.q;
   assign intr_txunderflow_o = reg2hw.intr_enable.txunderflow.q & reg2hw.intr_state.txunderflow.q;
+  assign intr_tpm_cmdaddr_notempty_o = reg2hw.intr_enable.tpm_cmdaddr_notempty.q
+                                     & reg2hw.intr_state.tpm_cmdaddr_notempty.q;
 
   assign hw2reg.intr_state.rxf.d    = 1'b1;
   assign hw2reg.intr_state.rxf.de   = intr_sram_rxf_full |
@@ -409,6 +456,11 @@ module spi_device
   assign hw2reg.intr_state.txunderflow.d  = 1'b1;
   assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
       (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
+
+  assign hw2reg.intr_state.tpm_cmdaddr_notempty.d  = 1'b 1;
+  assign hw2reg.intr_state.tpm_cmdaddr_notempty.de = intr_tpm_cmdaddr_notempty
+   | ( reg2hw.intr_test.tpm_cmdaddr_notempty.qe
+     & reg2hw.intr_test.tpm_cmdaddr_notempty.q);
 
   // SPI Flash commands registers
   // TODO: Add 2FF sync? or just waive?
@@ -765,27 +817,34 @@ module spi_device
     cio_sd_o    = internal_sd;
     cio_sd_en_o = internal_sd_en;
 
-    unique case (spi_mode)
-      FwMode, FlashMode: begin
-        cio_sd_o    = internal_sd;
-        cio_sd_en_o = internal_sd_en;
-      end
-
-      PassThrough: begin
-        if (passthrough_assumed_by_internal) begin
+    if (cfg_tpm_en && !cio_tpm_csb_i) begin : miso_tpm
+      // TPM transaction is on-going. MOSI, MISO is being used by TPM
+      cio_sd_o[0]    = tpm_miso;
+      cio_sd_en_o[0] = tpm_miso_en;
+    end else begin : spi_out_flash_passthrough
+      // SPI Generic, Flash, Passthrough modes
+      unique case (spi_mode)
+        FwMode, FlashMode: begin
           cio_sd_o    = internal_sd;
           cio_sd_en_o = internal_sd_en;
-        end else begin
-          cio_sd_o    = passthrough_sd;
-          cio_sd_en_o = passthrough_sd_en;
         end
-      end
 
-      default: begin
-        cio_sd_o    = internal_sd;
-        cio_sd_en_o = internal_sd_en;
-      end
-    endcase
+        PassThrough: begin
+          if (passthrough_assumed_by_internal) begin
+            cio_sd_o    = internal_sd;
+            cio_sd_en_o = internal_sd_en;
+          end else begin
+            cio_sd_o    = passthrough_sd;
+            cio_sd_en_o = passthrough_sd_en;
+          end
+        end
+
+        default: begin
+          cio_sd_o    = internal_sd;
+          cio_sd_en_o = internal_sd_en;
+        end
+      endcase
+    end
   end
   assign passthrough_assumed_by_internal = mailbox_assumed
     // TOGO: Uncomment below when those submodules are implemented.
@@ -1184,6 +1243,115 @@ module spi_device
 
     .event_cmd_filtered_o ()
   );
+
+  //////////////////
+  // TPM over SPI //
+  //////////////////
+  // Interrupt: Creating a pulse signal
+  prim_edge_detector #(
+    .Width (1),
+    .EnSync (1'b 0)
+  ) u_cmdaddr_notempty_edge (
+    .clk_i,
+    .rst_ni,
+    .d_i               (tpm_status_cmdaddr_notempty),
+    .q_sync_o          (),
+    .q_posedge_pulse_o (intr_tpm_cmdaddr_notempty),
+    .q_negedge_pulse_o ()
+  );
+
+  // Instance of spi_tpm
+  spi_tpm #(
+    // CmdAddrFifoDepth
+    .WrFifoDepth (TpmFifoDepth),
+    .RdFifoDepth (TpmFifoDepth),
+    .EnLocality  (1)
+  ) u_spi_tpm (
+    .clk_in_i  (clk_spi_in_buf ),
+    .clk_out_i (clk_spi_out_buf),
+
+    .sys_clk_i  (clk_i),
+    .sys_rst_ni (rst_ni),
+
+    .scan_rst_ni,
+    .scanmode_i  (scanmode[TpmRstSel]),
+
+    .csb_i     (cio_tpm_csb_i),
+    .mosi_i    (tpm_mosi     ),
+    .miso_o    (tpm_miso     ),
+    .miso_en_o (tpm_miso_en  ),
+
+    .tpm_cap_o (tpm_cap),
+
+    .cfg_tpm_en_i          (cfg_tpm_en         ),
+    .cfg_tpm_hw_reg_dis_i  (cfg_tpm_hw_reg_dis ),
+    .cfg_tpm_invalid_ool_i (cfg_tpm_invalid_ool),
+
+    .sys_access_reg_i          (tpm_access         ),
+    .sys_int_enable_reg_i      (tpm_int_enable     ),
+    .sys_int_vector_reg_i      (tpm_int_vector     ),
+    .sys_int_status_reg_i      (tpm_int_status     ),
+    .sys_intf_capability_reg_i (tpm_intf_capability),
+    .sys_status_reg_i          (tpm_status         ),
+    .sys_id_reg_i              (tpm_did_vid        ),
+    .sys_rid_reg_i             (tpm_rid            ),
+
+    .sys_cmdaddr_rvalid_o (tpm_cmdaddr_rvalid),
+    .sys_cmdaddr_rdata_o  (tpm_cmdaddr_rdata ),
+    .sys_cmdaddr_rready_i (tpm_cmdaddr_rready),
+
+    .sys_wrfifo_rvalid_o (tpm_wrfifo_rvalid),
+    .sys_wrfifo_rdata_o  (tpm_wrfifo_rdata ),
+    .sys_wrfifo_rready_i (tpm_wrfifo_rready),
+
+    .sys_rdfifo_wvalid_i (tpm_rdfifo_wvalid),
+    .sys_rdfifo_wdata_i  (tpm_rdfifo_wdata ),
+    .sys_rdfifo_wready_o (tpm_rdfifo_wready),
+
+    .sys_cmdaddr_notempty_o (tpm_status_cmdaddr_notempty),
+    .sys_rdfifo_notempty_o  (tpm_status_rdfifo_notempty ),
+    .sys_rdfifo_depth_o     (tpm_status_rdfifo_depth    ),
+    .sys_wrfifo_depth_o     (tpm_status_wrfifo_depth    )
+  );
+
+  // Register connection
+  //  TPM_CAP:
+  assign hw2reg.tpm_cap = '{
+    rev:           '{ de: 1'b 1, d: tpm_cap.rev           },
+    locality:      '{ de: 1'b 1, d: tpm_cap.locality      },
+    max_xfer_size: '{ de: 1'b 1, d: tpm_cap.max_xfer_size }
+  };
+
+  //  CFG:
+  assign cfg_tpm_en          = reg2hw.tpm_cfg.en.q;
+  assign cfg_tpm_hw_reg_dis  = reg2hw.tpm_cfg.hw_reg_dis.q;
+  assign cfg_tpm_invalid_ool = reg2hw.tpm_cfg.invalid_ool.q;
+
+  //  STATUS:
+  assign hw2reg.tpm_status = '{
+    cmdaddr_notempty: '{ de: 1'b 1, d: tpm_status_cmdaddr_notempty },
+    rdfifo_notempty:  '{ de: 1'b 1, d: tpm_status_rdfifo_notempty  },
+    rdfifo_depth:     '{ de: 1'b 1, d: tpm_status_rdfifo_depth     },
+    wrfifo_depth:     '{ de: 1'b 1, d: tpm_status_wrfifo_depth     }
+  };
+
+  //  Return-by-HW registers:
+  //    TPM_ACCESS_x, TPM_STS_x, TPM_INT_ENABLE, TPM_INT_VECTOR,
+  //    TPM_INT_STATUS, TPM_INTF_CAPABILITY, TPM_DID_VID, TPM_RID
+  for (genvar i = 0 ; i < NumLocality ; i++) begin : g_tpm_access
+    assign tpm_access[8*i+:8] = reg2hw.tpm_access[i].q;
+  end : g_tpm_access
+
+  assign tpm_int_enable      = reg2hw.tpm_int_enable.q;
+  assign tpm_int_vector      = reg2hw.tpm_int_vector.q;
+  assign tpm_int_status      = reg2hw.tpm_int_status.q;
+  assign tpm_intf_capability = reg2hw.tpm_intf_capability.q;
+  assign tpm_status          = reg2hw.tpm_sts.q;
+  assign tpm_did_vid         = { reg2hw.tpm_did_vid.did.q ,
+                                 reg2hw.tpm_did_vid.vid.q };
+  assign tpm_rid             = reg2hw.tpm_rid.q;
+
+  // END: TPM over SPI --------------------------------------------------------
 
   ////////////////////
   // Common modules //

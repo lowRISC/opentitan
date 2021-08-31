@@ -409,7 +409,7 @@ package spi_device_pkg;
   parameter int unsigned BitCntW   = $clog2(BitLength + 1);
 
   // spi device scanmode usage
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     ClkInvSel,
     CsbRstMuxSel,
     TxRstMuxSel,
@@ -417,6 +417,7 @@ package spi_device_pkg;
     ClkMuxSel,
     ClkSramSel,
     RstSramSel,
+    TpmRstSel,
     ScanModeUseLast
   } scan_mode_e;
 

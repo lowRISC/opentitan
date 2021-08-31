@@ -12,8 +12,9 @@
     { protocol: "tlul", direction: "device" }
   ],
   available_input_list: [
-    { name: "sck", desc: "SPI Clock" },
-    { name: "csb", desc: "Chip Enable#" },
+    { name: "sck",     desc: "SPI Clock" },
+    { name: "csb",     desc: "Chip Select#" },
+    { name: "tpm_csb", desc: "TPM Chip Select#"}
   ],
   available_output_list: [
   ],
