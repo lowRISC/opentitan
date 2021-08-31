@@ -130,17 +130,15 @@ $(ips_reg_rust_install): $(tock_rust_destdir)/%: $(REG_OUTPUT_SW_DIR)/% | $(tock
 clean-regs-header:
 	rm -r -f ${REG_OUTPUT_SW_DIR}
 
-top: $(tops_gen) $(tops_reg)
-$(tops_gen):
-	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
-	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
-		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
+top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
 
-$(tops_reg):
-	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
-	mkdir -p ${REG_OUTPUT_DV_DIR}/$($@_TOP)
-	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
-		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
+top: $(tops_gen) $(tops_reg)
+$(tops_gen): %_gen:
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+
+$(tops_reg): %_reg:
+	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
 
 
 .PHONY: all
