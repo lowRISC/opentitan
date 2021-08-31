@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TPM over SPI submodule
+# Created a separate file to distinguish between the SPI_DEVICE HWIP and TPM
+# over SPI
+
+waive -rules {RESET_DRIVER RESET_MUX} -location {spi_tpm.sv} \
+      -regexp {'rst_n' is driven} \
+      -comment "Async reset generated from TPM_CS#"
+
+waive -rules TERMINAL_STATE -location {spi_tpm.sv} \
+    -regexp {'(StEnd|StInvalid)'} \
+    -comment "Wait TPM CS# de-assertion here. Intentionally TERMINAL_STATE"
+
+waive -rules NOT_READ -location {spi_tpm.sv} \
+    -regexp {'addr\[1:0\]' is not read from} \
+    -comment "lower 2 bits are not used. cmdaddr_wdata_q[1:0] is rather used"
+
+waive -rules NOT_READ -location {spi_tpm.sv} \
+    -regexp {'wrdata_q\[7\]' is not read } \
+    -comment "Make wrdata_q 8bits to match the spi_byte_t, but MSB not used"
+
+waive -rules PARAM_NOT_USED -location {spi_tpm.sv} \
+    -regexp {'TpmRegisterSize' not used} \
+    -comment "The parameter is used in the assertion"
+
+waive -rules INTEGER -location {spi_tpm.sv} \
+    -regexp {'i' of type int used as a non-constant} \
+    -comment "i is compared to locality value."

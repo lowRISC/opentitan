@@ -1137,6 +1137,7 @@
       { instance: "i2c1",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c2",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "pattgen",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},

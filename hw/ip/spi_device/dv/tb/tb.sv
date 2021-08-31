@@ -57,6 +57,8 @@ module tb;
     .cio_sd_en_o    (sd_out_en ),
     .cio_sd_i       (sd_in     ),
 
+    .cio_tpm_csb_i  (1'b 1     ), // TODO: Add TPM agent
+
     .intr_rxf_o     (intr_rxf  ),
     .intr_rxlvl_o   (intr_rxlvl),
     .intr_txlvl_o   (intr_txlvl),
