@@ -117,22 +117,18 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       monitor_ast_clk_byp();
-      begin : post_reset
+      monitor_div4_peri_clock();
+      monitor_div2_peri_clock();
+      monitor_io_peri_clock();
+      monitor_usb_peri_clock();
+      for (int i = 0; i < NUM_TRANS; ++i) begin
         fork
-          monitor_div4_peri_clock();
-          monitor_div2_peri_clock();
-          monitor_io_peri_clock();
-          monitor_usb_peri_clock();
-          for (int i = 0; i < NUM_TRANS; ++i) begin
-            fork
-              automatic int trans_index = i;
-              monitor_trans_clock(trans_index);
-            join_none
-          end
-          monitor_clk_dividers();
-          monitor_jitter_en();
+          automatic int trans_index = i;
+          monitor_trans_clock(trans_index);
         join_none
       end
+      monitor_clk_dividers();
+      monitor_jitter_en();
     join_none
   endtask
 

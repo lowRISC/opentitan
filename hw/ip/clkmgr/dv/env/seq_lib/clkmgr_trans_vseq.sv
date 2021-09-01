@@ -19,6 +19,9 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
 
   rand bit [NUM_TRANS-1:0] initial_hints;
 
+  // The clk_hints CSR cannot be manipulated in low power mode.
+  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+
   task body();
     update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
@@ -26,8 +29,8 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       logic [NUM_TRANS-1:0] value;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
-
+      cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
+      control_ip_clocks();
       cfg.clk_rst_vif.wait_clks(10);
       `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", initial_hints), UVM_MEDIUM)
       csr_wr(.ptr(ral.clk_hints), .value(initial_hints));

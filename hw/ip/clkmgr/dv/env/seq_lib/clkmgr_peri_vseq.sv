@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// peri test vseq
+// Tests the control of the peripheral clocks using clk_enables CSR.
 //
 // This is more general than the corresponding smoke test since it randomizes the initial
 // value of clk_enables CSR and the ip_clk_en input.
@@ -13,13 +13,16 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
 
   rand logic [NUM_PERI-1:0] initial_enables;
 
+  // The clk_enables CSR cannot be manipulated in low power mode.
+  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+
   task body();
     update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
       logic [NUM_PERI-1:0] flipped_enables;
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));
-
+      cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
+      control_ip_clocks();
       csr_wr(.ptr(ral.clk_enables), .value(initial_enables));
 
       // Flip all bits of clk_enables.

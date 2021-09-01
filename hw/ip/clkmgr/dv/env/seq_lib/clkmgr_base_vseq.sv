@@ -33,7 +33,17 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
-  rand bit                 ip_clk_en;
+  rand bit ip_clk_en;
+  rand bit usb_clk_en_active;
+
+  // This is used to detect a transition. Initialized to 1 since it only matters when
+  // it drops.
+  bit      prev_usb_clk_en_active = 1'b1;
+
+  // This constraint is a workaround for https://github.com/lowRISC/opentitan/issues/6504.
+  // TODO(maturana) Remove this constraint when the issue above is fixed.
+  constraint usb_clk_en_active_c {usb_clk_en_active == 1'b1;}
+
   rand bit [NUM_TRANS-1:0] idle;
 
   // scanmode is set according to sel_scanmode, which is randomized with weights.
@@ -77,16 +87,21 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     scanmode_on_weight = 2;
   endfunction
 
+  task initialize_on_start();
+    idle = '1;
+    scanmode = Off;
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(Off));
+    ip_clk_en = 1'b1;
+    usb_clk_en_active = 1'b1;
+    control_ip_clocks();
+  endtask
+
   task pre_start();
-    // These are independent: do them in parallel since pre_start consumes time.
-    fork
-      begin
-        cfg.clkmgr_vif.init(.idle('1), .ip_clk_en(1'b0), .scanmode(scanmode), .lc_dft_en(Off));
-        update_csrs_with_reset_values();
-      end
-      clkmgr_init();
-      super.pre_start();
-    join
+    update_csrs_with_reset_values();
+    cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_dft_en(Off));
+    cfg.clkmgr_vif.update_ip_clk_en(1'b0);
+    clkmgr_init();
+    super.pre_start();
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -105,6 +120,38 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
   endtask
 
+  // This turns on or off the actual input clocks, as the pwrmgr would.
+  // It pessimistically turning all clocks off on falling transitions,
+  // and can be configured to keep the usb clk off on rising transitions.
+  task control_ip_clocks();
+    // Do nothing if nothing interesting changed.
+    if (cfg.clkmgr_vif.pwr_i.ip_clk_en == ip_clk_en &&
+        (!ip_clk_en || (usb_clk_en_active == prev_usb_clk_en_active)))
+      return;
+    `uvm_info(`gfn, $sformatf(
+              "controlling clocks with ip_clk_en=%b usb_clk_en_active=%b",
+              ip_clk_en,
+              usb_clk_en_active
+              ), UVM_LOW)
+    if (!ip_clk_en) begin
+      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
+      @(negedge cfg.clkmgr_vif.pwr_o.clk_status);
+      cfg.io_clk_rst_vif.stop_clk();
+      cfg.main_clk_rst_vif.stop_clk();
+      cfg.usb_clk_rst_vif.stop_clk();
+      `uvm_info(`gfn, "stopped clocks", UVM_MEDIUM)
+    end else begin
+      cfg.io_clk_rst_vif.start_clk();
+      cfg.main_clk_rst_vif.start_clk();
+      if (usb_clk_en_active) cfg.usb_clk_rst_vif.start_clk();
+      prev_usb_clk_en_active = usb_clk_en_active;
+      `uvm_info(`gfn, "started clocks", UVM_MEDIUM)
+      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
+      @(posedge cfg.clkmgr_vif.pwr_o.clk_status);
+    end
+    `uvm_info(`gfn, "controlling clocks done", UVM_LOW)
+  endtask
+
   virtual task apply_reset(string kind = "HARD");
     fork
       super.apply_reset(kind);
@@ -118,6 +165,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
           start_aon_clk();
         join
     join
+    initialize_on_start();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);

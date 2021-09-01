@@ -40,6 +40,9 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     !(lc_clk_byp_req_other inside {On, Off});
   }
 
+  // The extclk cannot be manipulated in low power mode.
+  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+
   // This randomizes the time when the extclk_sel CSR write and the lc_clk_byp_req
   // input is asserted for good measure. Of course, there is a good chance only a single
   // one of these trigger a request, so they are also independently tested.
@@ -96,8 +99,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Init needs to be synchronous.
       @cfg.clk_rst_vif.cb begin
-        cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode),
-                            .lc_dft_en(lc_dft_en));
+        cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(lc_dft_en));
+        control_ip_clocks();
       end
       fork
         begin
@@ -117,7 +120,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
                 scanmode
                 ), UVM_MEDIUM)
       csr_rd_check(.ptr(ral.extclk_sel), .compare_value(extclk_sel));
-      cfg.io_clk_rst_vif.wait_clks(cycles_before_next_trans);
+      cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
     disable fork;
   endtask
