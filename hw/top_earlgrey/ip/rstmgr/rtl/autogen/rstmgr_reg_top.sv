@@ -189,7 +189,6 @@ module rstmgr_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -205,7 +204,6 @@ module rstmgr_reg_top (
 
 
   // R[reset_info]: V(False)
-
   //   F[por]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -230,7 +228,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (reset_info_por_qs)
   );
-
 
   //   F[low_power_exit]: 1:1
   prim_subreg #(
@@ -257,7 +254,6 @@ module rstmgr_reg_top (
     .qs     (reset_info_low_power_exit_qs)
   );
 
-
   //   F[ndm_reset]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -282,7 +278,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (reset_info_ndm_reset_qs)
   );
-
 
   //   F[hw_req]: 5:3
   prim_subreg #(
@@ -311,7 +306,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -338,7 +332,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_ctrl]: V(False)
-
   //   F[en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -363,7 +356,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
   );
-
 
   //   F[index]: 7:4
   prim_subreg #(
@@ -392,7 +384,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_attr]: V(True)
-
   prim_subreg_ext #(
     .DW    (4)
   ) u_alert_info_attr (
@@ -408,7 +399,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_alert_info (
@@ -424,7 +414,6 @@ module rstmgr_reg_top (
 
 
   // R[cpu_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -451,7 +440,6 @@ module rstmgr_reg_top (
 
 
   // R[cpu_info_ctrl]: V(False)
-
   //   F[en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -476,7 +464,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (cpu_info_ctrl_en_qs)
   );
-
 
   //   F[index]: 7:4
   prim_subreg #(
@@ -505,7 +492,6 @@ module rstmgr_reg_top (
 
 
   // R[cpu_info_attr]: V(True)
-
   prim_subreg_ext #(
     .DW    (4)
   ) u_cpu_info_attr (
@@ -521,7 +507,6 @@ module rstmgr_reg_top (
 
 
   // R[cpu_info]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_cpu_info (
@@ -536,11 +521,9 @@ module rstmgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg sw_rst_regen
   // R[sw_rst_regen]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -565,8 +548,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_0_qs)
   );
 
-
-  // F[en_1]: 1:1
+  //   F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -591,8 +573,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_1_qs)
   );
 
-
-  // F[en_2]: 2:2
+  //   F[en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -617,8 +598,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_2_qs)
   );
 
-
-  // F[en_3]: 3:3
+  //   F[en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -643,8 +623,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_3_qs)
   );
 
-
-  // F[en_4]: 4:4
+  //   F[en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -669,8 +648,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_4_qs)
   );
 
-
-  // F[en_5]: 5:5
+  //   F[en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -695,8 +673,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_5_qs)
   );
 
-
-  // F[en_6]: 6:6
+  //   F[en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -721,8 +698,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_6_qs)
   );
 
-
-  // F[en_7]: 7:7
+  //   F[en_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -747,8 +723,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_7_qs)
   );
 
-
-  // F[en_8]: 8:8
+  //   F[en_8]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -773,8 +748,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_8_qs)
   );
 
-
-  // F[en_9]: 9:9
+  //   F[en_9]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -800,12 +774,9 @@ module rstmgr_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg sw_rst_ctrl_n
   // R[sw_rst_ctrl_n]: V(True)
-
-  // F[val_0]: 0:0
+  //   F[val_0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_0 (
@@ -819,8 +790,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_0_qs)
   );
 
-
-  // F[val_1]: 1:1
+  //   F[val_1]: 1:1
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_1 (
@@ -834,8 +804,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_1_qs)
   );
 
-
-  // F[val_2]: 2:2
+  //   F[val_2]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_2 (
@@ -849,8 +818,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_2_qs)
   );
 
-
-  // F[val_3]: 3:3
+  //   F[val_3]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_3 (
@@ -864,8 +832,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_3_qs)
   );
 
-
-  // F[val_4]: 4:4
+  //   F[val_4]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_4 (
@@ -879,8 +846,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_4_qs)
   );
 
-
-  // F[val_5]: 5:5
+  //   F[val_5]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_5 (
@@ -894,8 +860,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_5_qs)
   );
 
-
-  // F[val_6]: 6:6
+  //   F[val_6]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_6 (
@@ -909,8 +874,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_6_qs)
   );
 
-
-  // F[val_7]: 7:7
+  //   F[val_7]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_7 (
@@ -924,8 +888,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_7_qs)
   );
 
-
-  // F[val_8]: 8:8
+  //   F[val_8]: 8:8
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_8 (
@@ -939,8 +902,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_8_qs)
   );
 
-
-  // F[val_9]: 9:9
+  //   F[val_9]: 9:9
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_9 (
@@ -953,8 +915,6 @@ module rstmgr_reg_top (
     .q      (reg2hw.sw_rst_ctrl_n[9].q),
     .qs     (sw_rst_ctrl_n_val_9_qs)
   );
-
-
 
 
 

@@ -205,7 +205,6 @@ module csrng_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -230,7 +229,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (intr_state_cs_cmd_req_done_qs)
   );
-
 
   //   F[cs_entropy_req]: 1:1
   prim_subreg #(
@@ -257,7 +255,6 @@ module csrng_reg_top (
     .qs     (intr_state_cs_entropy_req_qs)
   );
 
-
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -282,7 +279,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (intr_state_cs_hw_inst_exc_qs)
   );
-
 
   //   F[cs_fatal_err]: 3:3
   prim_subreg #(
@@ -311,7 +307,6 @@ module csrng_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -336,7 +331,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (intr_enable_cs_cmd_req_done_qs)
   );
-
 
   //   F[cs_entropy_req]: 1:1
   prim_subreg #(
@@ -363,7 +357,6 @@ module csrng_reg_top (
     .qs     (intr_enable_cs_entropy_req_qs)
   );
 
-
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -388,7 +381,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (intr_enable_cs_hw_inst_exc_qs)
   );
-
 
   //   F[cs_fatal_err]: 3:3
   prim_subreg #(
@@ -417,7 +409,6 @@ module csrng_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -431,7 +422,6 @@ module csrng_reg_top (
     .q      (reg2hw.intr_test.cs_cmd_req_done.q),
     .qs     ()
   );
-
 
   //   F[cs_entropy_req]: 1:1
   prim_subreg_ext #(
@@ -447,7 +437,6 @@ module csrng_reg_top (
     .qs     ()
   );
 
-
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -461,7 +450,6 @@ module csrng_reg_top (
     .q      (reg2hw.intr_test.cs_hw_inst_exc.q),
     .qs     ()
   );
-
 
   //   F[cs_fatal_err]: 3:3
   prim_subreg_ext #(
@@ -479,7 +467,6 @@ module csrng_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -493,7 +480,6 @@ module csrng_reg_top (
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
-
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -511,7 +497,6 @@ module csrng_reg_top (
 
 
   // R[regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -538,7 +523,6 @@ module csrng_reg_top (
 
 
   // R[ctrl]: V(False)
-
   //   F[enable]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -564,7 +548,6 @@ module csrng_reg_top (
     .qs     (ctrl_enable_qs)
   );
 
-
   //   F[sw_app_enable]: 7:4
   prim_subreg #(
     .DW      (4),
@@ -589,7 +572,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (ctrl_sw_app_enable_qs)
   );
-
 
   //   F[read_int_state]: 11:8
   prim_subreg #(
@@ -618,7 +600,6 @@ module csrng_reg_top (
 
 
   // R[cmd_req]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -645,7 +626,6 @@ module csrng_reg_top (
 
 
   // R[sw_cmd_sts]: V(False)
-
   //   F[cmd_rdy]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -670,7 +650,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_rdy_qs)
   );
-
 
   //   F[cmd_sts]: 1:1
   prim_subreg #(
@@ -699,7 +678,6 @@ module csrng_reg_top (
 
 
   // R[genbits_vld]: V(True)
-
   //   F[genbits_vld]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -713,7 +691,6 @@ module csrng_reg_top (
     .q      (),
     .qs     (genbits_vld_genbits_vld_qs)
   );
-
 
   //   F[genbits_fips]: 1:1
   prim_subreg_ext #(
@@ -731,7 +708,6 @@ module csrng_reg_top (
 
 
   // R[genbits]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_genbits (
@@ -747,7 +723,6 @@ module csrng_reg_top (
 
 
   // R[int_state_num]: V(False)
-
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -774,7 +749,6 @@ module csrng_reg_top (
 
 
   // R[int_state_val]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_int_state_val (
@@ -790,7 +764,6 @@ module csrng_reg_top (
 
 
   // R[hw_exc_sts]: V(False)
-
   prim_subreg #(
     .DW      (15),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -817,7 +790,6 @@ module csrng_reg_top (
 
 
   // R[recov_alert_sts]: V(False)
-
   //   F[enable_field_alert]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -843,7 +815,6 @@ module csrng_reg_top (
     .qs     (recov_alert_sts_enable_field_alert_qs)
   );
 
-
   //   F[sw_app_enable_field_alert]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -868,7 +839,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (recov_alert_sts_sw_app_enable_field_alert_qs)
   );
-
 
   //   F[read_int_state_field_alert]: 2:2
   prim_subreg #(
@@ -897,7 +867,6 @@ module csrng_reg_top (
 
 
   // R[err_code]: V(False)
-
   //   F[sfifo_cmd_err]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -922,7 +891,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_cmd_err_qs)
   );
-
 
   //   F[sfifo_genbits_err]: 1:1
   prim_subreg #(
@@ -949,7 +917,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_genbits_err_qs)
   );
 
-
   //   F[sfifo_cmdreq_err]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -974,7 +941,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_cmdreq_err_qs)
   );
-
 
   //   F[sfifo_rcstage_err]: 3:3
   prim_subreg #(
@@ -1001,7 +967,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_rcstage_err_qs)
   );
 
-
   //   F[sfifo_keyvrc_err]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -1026,7 +991,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_keyvrc_err_qs)
   );
-
 
   //   F[sfifo_updreq_err]: 5:5
   prim_subreg #(
@@ -1053,7 +1017,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_updreq_err_qs)
   );
 
-
   //   F[sfifo_bencreq_err]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -1078,7 +1041,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_bencreq_err_qs)
   );
-
 
   //   F[sfifo_bencack_err]: 7:7
   prim_subreg #(
@@ -1105,7 +1067,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_bencack_err_qs)
   );
 
-
   //   F[sfifo_pdata_err]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -1130,7 +1091,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_pdata_err_qs)
   );
-
 
   //   F[sfifo_final_err]: 9:9
   prim_subreg #(
@@ -1157,7 +1117,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_final_err_qs)
   );
 
-
   //   F[sfifo_gbencack_err]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -1182,7 +1141,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_gbencack_err_qs)
   );
-
 
   //   F[sfifo_grcstage_err]: 11:11
   prim_subreg #(
@@ -1209,7 +1167,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_grcstage_err_qs)
   );
 
-
   //   F[sfifo_ggenreq_err]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -1234,7 +1191,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_ggenreq_err_qs)
   );
-
 
   //   F[sfifo_gadstage_err]: 13:13
   prim_subreg #(
@@ -1261,7 +1217,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_gadstage_err_qs)
   );
 
-
   //   F[sfifo_ggenbits_err]: 14:14
   prim_subreg #(
     .DW      (1),
@@ -1286,7 +1241,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_ggenbits_err_qs)
   );
-
 
   //   F[sfifo_blkenc_err]: 15:15
   prim_subreg #(
@@ -1313,7 +1267,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_blkenc_err_qs)
   );
 
-
   //   F[cmd_stage_sm_err]: 20:20
   prim_subreg #(
     .DW      (1),
@@ -1338,7 +1291,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_cmd_stage_sm_err_qs)
   );
-
 
   //   F[main_sm_err]: 21:21
   prim_subreg #(
@@ -1365,7 +1317,6 @@ module csrng_reg_top (
     .qs     (err_code_main_sm_err_qs)
   );
 
-
   //   F[drbg_gen_sm_err]: 22:22
   prim_subreg #(
     .DW      (1),
@@ -1390,7 +1341,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_drbg_gen_sm_err_qs)
   );
-
 
   //   F[drbg_updbe_sm_err]: 23:23
   prim_subreg #(
@@ -1417,7 +1367,6 @@ module csrng_reg_top (
     .qs     (err_code_drbg_updbe_sm_err_qs)
   );
 
-
   //   F[drbg_updob_sm_err]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -1442,7 +1391,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_drbg_updob_sm_err_qs)
   );
-
 
   //   F[aes_cipher_sm_err]: 25:25
   prim_subreg #(
@@ -1469,7 +1417,6 @@ module csrng_reg_top (
     .qs     (err_code_aes_cipher_sm_err_qs)
   );
 
-
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
@@ -1495,7 +1442,6 @@ module csrng_reg_top (
     .qs     (err_code_fifo_write_err_qs)
   );
 
-
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
@@ -1520,7 +1466,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
   );
-
 
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
@@ -1549,7 +1494,6 @@ module csrng_reg_top (
 
 
   // R[err_code_test]: V(False)
-
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1576,7 +1520,6 @@ module csrng_reg_top (
 
 
   // R[sel_tracking_sm]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -1603,7 +1546,6 @@ module csrng_reg_top (
 
 
   // R[tracking_sm_obs]: V(False)
-
   //   F[tracking_sm_obs0]: 7:0
   prim_subreg #(
     .DW      (8),
@@ -1628,7 +1570,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (tracking_sm_obs_tracking_sm_obs0_qs)
   );
-
 
   //   F[tracking_sm_obs1]: 15:8
   prim_subreg #(
@@ -1655,7 +1596,6 @@ module csrng_reg_top (
     .qs     (tracking_sm_obs_tracking_sm_obs1_qs)
   );
 
-
   //   F[tracking_sm_obs2]: 23:16
   prim_subreg #(
     .DW      (8),
@@ -1681,7 +1621,6 @@ module csrng_reg_top (
     .qs     (tracking_sm_obs_tracking_sm_obs2_qs)
   );
 
-
   //   F[tracking_sm_obs3]: 31:24
   prim_subreg #(
     .DW      (8),
@@ -1706,7 +1645,6 @@ module csrng_reg_top (
     // to register interface (read)
     .qs     (tracking_sm_obs_tracking_sm_obs3_qs)
   );
-
 
 
 

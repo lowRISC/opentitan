@@ -131,7 +131,6 @@ module sram_ctrl_regs_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -147,7 +146,6 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[status]: V(False)
-
   //   F[bus_integ_error]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -172,7 +170,6 @@ module sram_ctrl_regs_reg_top (
     // to register interface (read)
     .qs     (status_bus_integ_error_qs)
   );
-
 
   //   F[init_error]: 1:1
   prim_subreg #(
@@ -199,7 +196,6 @@ module sram_ctrl_regs_reg_top (
     .qs     (status_init_error_qs)
   );
 
-
   //   F[escalated]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -224,7 +220,6 @@ module sram_ctrl_regs_reg_top (
     // to register interface (read)
     .qs     (status_escalated_qs)
   );
-
 
   //   F[scr_key_valid]: 3:3
   prim_subreg #(
@@ -251,7 +246,6 @@ module sram_ctrl_regs_reg_top (
     .qs     (status_scr_key_valid_qs)
   );
 
-
   //   F[scr_key_seed_valid]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -276,7 +270,6 @@ module sram_ctrl_regs_reg_top (
     // to register interface (read)
     .qs     (status_scr_key_seed_valid_qs)
   );
-
 
   //   F[init_done]: 5:5
   prim_subreg #(
@@ -305,7 +298,6 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[exec_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -332,7 +324,6 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[exec]: V(False)
-
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -359,7 +350,6 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[ctrl_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -386,7 +376,6 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[ctrl]: V(False)
-
   //   F[renew_scr_key]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -412,7 +401,6 @@ module sram_ctrl_regs_reg_top (
     .qs     ()
   );
 
-
   //   F[init]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -437,7 +425,6 @@ module sram_ctrl_regs_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
 
 

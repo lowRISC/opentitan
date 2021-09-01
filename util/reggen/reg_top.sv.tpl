@@ -409,67 +409,60 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 
   // Register instances
   % for r in rb.all_regs:
-  ######################## multiregister ###########################
-    % if isinstance(r, MultiRegister):
 <%
-      k = 0
-%>
-      % for sr in r.regs:
-  // Subregister ${k} of Multireg ${r.reg.name.lower()}
-  // R[${sr.name.lower()}]: V(${str(sr.hwext)})
-        % if len(sr.fields) == 1:
+      if isinstance(r, MultiRegister):
+        r0 = r.reg
+        srs = r.regs
+      else:
+        r0 = r
+        srs = [r]
+
+      reg_name = r0.name.lower()
+      fld_count = 0
+%>\
+    % for sr_idx, sr in enumerate(srs):
 <%
-          f = sr.fields[0]
-          finst_name = sr.name.lower()
-          fsig_name = r.reg.name.lower() + "[%d]" % k
-          k = k + 1
-%>
-${finst_gen(sr, f, finst_name, fsig_name)}
-        % else:
-          % for f in sr.fields:
+        sr_name = sr.name.lower()
+
+        if isinstance(r, MultiRegister):
+          reg_hdr = (f'  // Subregister {sr_idx} of Multireg {reg_name}\n' +
+                     f'  // R[{sr_name}]: V({sr.hwext})')
+        else:
+          reg_hdr = (f'  // R[{sr_name}]: V({sr.hwext})')
+%>\
+${reg_hdr}
+      % for field in sr.fields:
 <%
-            finst_name = sr.name.lower() + "_" + f.name.lower()
-            if r.is_homogeneous():
-              fsig_name = r.reg.name.lower() + "[%d]" % k
-              k = k + 1
+          if isinstance(r, MultiRegister):
+            sig_idx = fld_count if r.is_homogeneous() else sr_idx
+            fsig_pfx = '{}[{}]'.format(reg_name, sig_idx)
+          else:
+            fsig_pfx = reg_name
+
+          fld_count += 1
+
+          fld_name = field.name.lower()
+          if len(sr.fields) == 1:
+            finst_name = sr_name
+            fsig_name = fsig_pfx
+          else:
+            finst_name = sr_name + '_' + fld_name
+            if isinstance(r, MultiRegister):
+              if r.is_homogeneous():
+                fsig_name = fsig_pfx
+              else:
+                fsig_name = '{}.{}'.format(fsig_pfx, get_basename(fld_name))
             else:
-              fsig_name = r.reg.name.lower() + "[%d]" % k + "." + get_basename(f.name.lower())
-%>
-  // F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(sr, f, finst_name, fsig_name)}
-          % endfor
-<%
-          if not r.is_homogeneous():
-            k += 1
-%>
+              fsig_name = '{}.{}'.format(fsig_pfx, fld_name)
+%>\
+        % if len(sr.fields) > 1:
+  //   F[${fld_name}]: ${field.bits.msb}:${field.bits.lsb}
         % endif
-        ## for: mreg_flat
+${finst_gen(sr, field, finst_name, fsig_name)}
       % endfor
-######################## register with single field ###########################
-    % elif len(r.fields) == 1:
-  // R[${r.name.lower()}]: V(${str(r.hwext)})
-<%
-        f = r.fields[0]
-        finst_name = r.name.lower()
-        fsig_name = r.name.lower()
-%>
-${finst_gen(r, f, finst_name, fsig_name)}
-######################## register with multiple fields ###########################
-    % else:
-  // R[${r.name.lower()}]: V(${str(r.hwext)})
-      % for f in r.fields:
-<%
-        finst_name = r.name.lower() + "_" + f.name.lower()
-        fsig_name = r.name.lower() + "." + f.name.lower()
-%>
-  //   F[${f.name.lower()}]: ${f.bits.msb}:${f.bits.lsb}
-${finst_gen(r, f, finst_name, fsig_name)}
-      % endfor
-    % endif
 
-  ## for: rb.all_regs
+    % endfor
   % endfor
-
 
   logic [${len(regs_flat)-1}:0] addr_hit;
   always_comb begin

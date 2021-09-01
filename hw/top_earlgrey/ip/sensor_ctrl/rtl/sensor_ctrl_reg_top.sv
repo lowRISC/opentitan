@@ -211,7 +211,6 @@ module sensor_ctrl_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   //   F[recov_as]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -225,7 +224,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_as.q),
     .qs     ()
   );
-
 
   //   F[recov_cg]: 1:1
   prim_subreg_ext #(
@@ -241,7 +239,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_gd]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -255,7 +252,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_gd.q),
     .qs     ()
   );
-
 
   //   F[recov_ts_hi]: 3:3
   prim_subreg_ext #(
@@ -271,7 +267,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_ts_lo]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -285,7 +280,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_ts_lo.q),
     .qs     ()
   );
-
 
   //   F[recov_fla]: 5:5
   prim_subreg_ext #(
@@ -301,7 +295,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_otp]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -315,7 +308,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_otp.q),
     .qs     ()
   );
-
 
   //   F[recov_ot0]: 7:7
   prim_subreg_ext #(
@@ -331,7 +323,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_ot1]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -345,7 +336,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_ot1.q),
     .qs     ()
   );
-
 
   //   F[recov_ot2]: 9:9
   prim_subreg_ext #(
@@ -361,7 +351,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_ot3]: 10:10
   prim_subreg_ext #(
     .DW    (1)
@@ -376,7 +365,6 @@ module sensor_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_ot4]: 11:11
   prim_subreg_ext #(
     .DW    (1)
@@ -390,7 +378,6 @@ module sensor_ctrl_reg_top (
     .q      (reg2hw.alert_test.recov_ot4.q),
     .qs     ()
   );
-
 
   //   F[recov_ot5]: 12:12
   prim_subreg_ext #(
@@ -408,7 +395,6 @@ module sensor_ctrl_reg_top (
 
 
   // R[cfg_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -434,11 +420,9 @@ module sensor_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg ack_mode
   // R[ack_mode]: V(False)
-
-  // F[val_0]: 1:0
+  //   F[val_0]: 1:0
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -463,8 +447,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_0_qs)
   );
 
-
-  // F[val_1]: 3:2
+  //   F[val_1]: 3:2
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -489,8 +472,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_1_qs)
   );
 
-
-  // F[val_2]: 5:4
+  //   F[val_2]: 5:4
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -515,8 +497,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_2_qs)
   );
 
-
-  // F[val_3]: 7:6
+  //   F[val_3]: 7:6
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -541,8 +522,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_3_qs)
   );
 
-
-  // F[val_4]: 9:8
+  //   F[val_4]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -567,8 +547,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_4_qs)
   );
 
-
-  // F[val_5]: 11:10
+  //   F[val_5]: 11:10
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -593,8 +572,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_5_qs)
   );
 
-
-  // F[val_6]: 13:12
+  //   F[val_6]: 13:12
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -619,8 +597,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_6_qs)
   );
 
-
-  // F[val_7]: 15:14
+  //   F[val_7]: 15:14
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -645,8 +622,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_7_qs)
   );
 
-
-  // F[val_8]: 17:16
+  //   F[val_8]: 17:16
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -671,8 +647,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_8_qs)
   );
 
-
-  // F[val_9]: 19:18
+  //   F[val_9]: 19:18
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -697,8 +672,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_9_qs)
   );
 
-
-  // F[val_10]: 21:20
+  //   F[val_10]: 21:20
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -723,8 +697,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_10_qs)
   );
 
-
-  // F[val_11]: 23:22
+  //   F[val_11]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -749,8 +722,7 @@ module sensor_ctrl_reg_top (
     .qs     (ack_mode_val_11_qs)
   );
 
-
-  // F[val_12]: 25:24
+  //   F[val_12]: 25:24
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -776,12 +748,9 @@ module sensor_ctrl_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg alert_trig
   // R[alert_trig]: V(False)
-
-  // F[val_0]: 0:0
+  //   F[val_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -806,8 +775,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_0_qs)
   );
 
-
-  // F[val_1]: 1:1
+  //   F[val_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -832,8 +800,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_1_qs)
   );
 
-
-  // F[val_2]: 2:2
+  //   F[val_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -858,8 +825,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_2_qs)
   );
 
-
-  // F[val_3]: 3:3
+  //   F[val_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -884,8 +850,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_3_qs)
   );
 
-
-  // F[val_4]: 4:4
+  //   F[val_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -910,8 +875,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_4_qs)
   );
 
-
-  // F[val_5]: 5:5
+  //   F[val_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -936,8 +900,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_5_qs)
   );
 
-
-  // F[val_6]: 6:6
+  //   F[val_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -962,8 +925,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_6_qs)
   );
 
-
-  // F[val_7]: 7:7
+  //   F[val_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -988,8 +950,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_7_qs)
   );
 
-
-  // F[val_8]: 8:8
+  //   F[val_8]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1014,8 +975,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_8_qs)
   );
 
-
-  // F[val_9]: 9:9
+  //   F[val_9]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1040,8 +1000,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_9_qs)
   );
 
-
-  // F[val_10]: 10:10
+  //   F[val_10]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1066,8 +1025,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_10_qs)
   );
 
-
-  // F[val_11]: 11:11
+  //   F[val_11]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1092,8 +1050,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_11_qs)
   );
 
-
-  // F[val_12]: 12:12
+  //   F[val_12]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1119,12 +1076,9 @@ module sensor_ctrl_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg alert_state
   // R[alert_state]: V(False)
-
-  // F[val_0]: 0:0
+  //   F[val_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1149,8 +1103,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_0_qs)
   );
 
-
-  // F[val_1]: 1:1
+  //   F[val_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1175,8 +1128,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_1_qs)
   );
 
-
-  // F[val_2]: 2:2
+  //   F[val_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1201,8 +1153,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_2_qs)
   );
 
-
-  // F[val_3]: 3:3
+  //   F[val_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1227,8 +1178,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_3_qs)
   );
 
-
-  // F[val_4]: 4:4
+  //   F[val_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1253,8 +1203,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_4_qs)
   );
 
-
-  // F[val_5]: 5:5
+  //   F[val_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1279,8 +1228,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_5_qs)
   );
 
-
-  // F[val_6]: 6:6
+  //   F[val_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1305,8 +1253,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_6_qs)
   );
 
-
-  // F[val_7]: 7:7
+  //   F[val_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1331,8 +1278,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_7_qs)
   );
 
-
-  // F[val_8]: 8:8
+  //   F[val_8]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1357,8 +1303,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_8_qs)
   );
 
-
-  // F[val_9]: 9:9
+  //   F[val_9]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1383,8 +1328,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_9_qs)
   );
 
-
-  // F[val_10]: 10:10
+  //   F[val_10]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1409,8 +1353,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_10_qs)
   );
 
-
-  // F[val_11]: 11:11
+  //   F[val_11]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1435,8 +1378,7 @@ module sensor_ctrl_reg_top (
     .qs     (alert_state_val_11_qs)
   );
 
-
-  // F[val_12]: 12:12
+  //   F[val_12]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1462,9 +1404,7 @@ module sensor_ctrl_reg_top (
   );
 
 
-
   // R[status]: V(False)
-
   //   F[ast_init_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1490,7 +1430,6 @@ module sensor_ctrl_reg_top (
     .qs     (status_ast_init_done_qs)
   );
 
-
   //   F[io_pok]: 2:1
   prim_subreg #(
     .DW      (2),
@@ -1515,7 +1454,6 @@ module sensor_ctrl_reg_top (
     // to register interface (read)
     .qs     (status_io_pok_qs)
   );
-
 
 
 

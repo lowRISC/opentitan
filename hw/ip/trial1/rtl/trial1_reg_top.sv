@@ -190,7 +190,6 @@ module trial1_reg_top (
 
   // Register instances
   // R[rwtype0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -217,7 +216,6 @@ module trial1_reg_top (
 
 
   // R[rwtype1]: V(False)
-
   //   F[field0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -242,7 +240,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (rwtype1_field0_qs)
   );
-
 
   //   F[field1]: 1:1
   prim_subreg #(
@@ -269,7 +266,6 @@ module trial1_reg_top (
     .qs     (rwtype1_field1_qs)
   );
 
-
   //   F[field4]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -294,7 +290,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (rwtype1_field4_qs)
   );
-
 
   //   F[field15_8]: 15:8
   prim_subreg #(
@@ -323,7 +318,6 @@ module trial1_reg_top (
 
 
   // R[rwtype2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -350,7 +344,6 @@ module trial1_reg_top (
 
 
   // R[rwtype3]: V(False)
-
   //   F[field0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -375,7 +368,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (rwtype3_field0_qs)
   );
-
 
   //   F[field1]: 31:16
   prim_subreg #(
@@ -404,7 +396,6 @@ module trial1_reg_top (
 
 
   // R[rwtype4]: V(False)
-
   //   F[field0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -429,7 +420,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (rwtype4_field0_qs)
   );
-
 
   //   F[field1]: 31:16
   prim_subreg #(
@@ -458,7 +448,6 @@ module trial1_reg_top (
 
 
   // R[rotype0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -485,7 +474,6 @@ module trial1_reg_top (
 
 
   // R[w1ctype0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -512,7 +500,6 @@ module trial1_reg_top (
 
 
   // R[w1ctype1]: V(False)
-
   //   F[field0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -537,7 +524,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (w1ctype1_field0_qs)
   );
-
 
   //   F[field1]: 31:16
   prim_subreg #(
@@ -566,7 +552,6 @@ module trial1_reg_top (
 
 
   // R[w1ctype2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -593,7 +578,6 @@ module trial1_reg_top (
 
 
   // R[w1stype2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
@@ -620,7 +604,6 @@ module trial1_reg_top (
 
 
   // R[w0ctype2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -647,7 +630,6 @@ module trial1_reg_top (
 
 
   // R[r0w1ctype2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -674,7 +656,6 @@ module trial1_reg_top (
 
 
   // R[rctype0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -701,7 +682,6 @@ module trial1_reg_top (
 
 
   // R[wotype0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -728,7 +708,6 @@ module trial1_reg_top (
 
 
   // R[mixtype0]: V(False)
-
   //   F[field0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -753,7 +732,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (mixtype0_field0_qs)
   );
-
 
   //   F[field1]: 7:4
   prim_subreg #(
@@ -780,7 +758,6 @@ module trial1_reg_top (
     .qs     (mixtype0_field1_qs)
   );
 
-
   //   F[field2]: 11:8
   prim_subreg #(
     .DW      (4),
@@ -805,7 +782,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (mixtype0_field2_qs)
   );
-
 
   //   F[field3]: 15:12
   prim_subreg #(
@@ -832,7 +808,6 @@ module trial1_reg_top (
     .qs     (mixtype0_field3_qs)
   );
 
-
   //   F[field4]: 19:16
   prim_subreg #(
     .DW      (4),
@@ -857,7 +832,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (mixtype0_field4_qs)
   );
-
 
   //   F[field5]: 23:20
   prim_subreg #(
@@ -884,7 +858,6 @@ module trial1_reg_top (
     .qs     (mixtype0_field5_qs)
   );
 
-
   //   F[field6]: 27:24
   prim_subreg #(
     .DW      (4),
@@ -909,7 +882,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (mixtype0_field6_qs)
   );
-
 
   //   F[field7]: 31:28
   prim_subreg #(
@@ -938,7 +910,6 @@ module trial1_reg_top (
 
 
   // R[rwtype5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -965,7 +936,6 @@ module trial1_reg_top (
 
 
   // R[rwtype6]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_rwtype6 (
@@ -981,7 +951,6 @@ module trial1_reg_top (
 
 
   // R[rotype1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_rotype1 (
@@ -997,16 +966,13 @@ module trial1_reg_top (
 
 
   // R[rotype2]: V(False)
-
   //   F[field0]: 7:0
   // constant-only read
   assign rotype2_field0_qs = 8'h79;
 
-
   //   F[field1]: 15:8
   // constant-only read
   assign rotype2_field1_qs = 8'h8a;
-
 
   //   F[field2]: 31:20
   // constant-only read
@@ -1014,7 +980,6 @@ module trial1_reg_top (
 
 
   // R[rwtype7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1038,7 +1003,6 @@ module trial1_reg_top (
     // to register interface (read)
     .qs     (rwtype7_qs)
   );
-
 
 
 

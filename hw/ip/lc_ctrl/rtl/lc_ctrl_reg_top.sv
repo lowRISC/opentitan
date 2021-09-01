@@ -202,7 +202,6 @@ module lc_ctrl_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   //   F[fatal_prog_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -217,7 +216,6 @@ module lc_ctrl_reg_top (
     .qs     ()
   );
 
-
   //   F[fatal_state_error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
@@ -231,7 +229,6 @@ module lc_ctrl_reg_top (
     .q      (reg2hw.alert_test.fatal_state_error.q),
     .qs     ()
   );
-
 
   //   F[fatal_bus_integ_error]: 2:2
   prim_subreg_ext #(
@@ -249,7 +246,6 @@ module lc_ctrl_reg_top (
 
 
   // R[status]: V(True)
-
   //   F[ready]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -263,7 +259,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (status_ready_qs)
   );
-
 
   //   F[transition_successful]: 1:1
   prim_subreg_ext #(
@@ -279,7 +274,6 @@ module lc_ctrl_reg_top (
     .qs     (status_transition_successful_qs)
   );
 
-
   //   F[transition_count_error]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -293,7 +287,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (status_transition_count_error_qs)
   );
-
 
   //   F[transition_error]: 3:3
   prim_subreg_ext #(
@@ -309,7 +302,6 @@ module lc_ctrl_reg_top (
     .qs     (status_transition_error_qs)
   );
 
-
   //   F[token_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -323,7 +315,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (status_token_error_qs)
   );
-
 
   //   F[flash_rma_error]: 5:5
   prim_subreg_ext #(
@@ -339,7 +330,6 @@ module lc_ctrl_reg_top (
     .qs     (status_flash_rma_error_qs)
   );
 
-
   //   F[otp_error]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -353,7 +343,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (status_otp_error_qs)
   );
-
 
   //   F[state_error]: 7:7
   prim_subreg_ext #(
@@ -369,7 +358,6 @@ module lc_ctrl_reg_top (
     .qs     (status_state_error_qs)
   );
 
-
   //   F[bus_integ_error]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -383,7 +371,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (status_bus_integ_error_qs)
   );
-
 
   //   F[otp_partition_error]: 9:9
   prim_subreg_ext #(
@@ -401,7 +388,6 @@ module lc_ctrl_reg_top (
 
 
   // R[claim_transition_if]: V(True)
-
   prim_subreg_ext #(
     .DW    (8)
   ) u_claim_transition_if (
@@ -417,7 +403,6 @@ module lc_ctrl_reg_top (
 
 
   // R[transition_regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_regwen (
@@ -433,7 +418,6 @@ module lc_ctrl_reg_top (
 
 
   // R[transition_cmd]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_cmd (
@@ -449,7 +433,6 @@ module lc_ctrl_reg_top (
 
 
   // R[transition_ctrl]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_ctrl (
@@ -464,10 +447,8 @@ module lc_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg transition_token
   // R[transition_token_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_0 (
@@ -481,9 +462,9 @@ module lc_ctrl_reg_top (
     .qs     (transition_token_0_qs)
   );
 
+
   // Subregister 1 of Multireg transition_token
   // R[transition_token_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_1 (
@@ -497,9 +478,9 @@ module lc_ctrl_reg_top (
     .qs     (transition_token_1_qs)
   );
 
+
   // Subregister 2 of Multireg transition_token
   // R[transition_token_2]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_2 (
@@ -513,9 +494,9 @@ module lc_ctrl_reg_top (
     .qs     (transition_token_2_qs)
   );
 
+
   // Subregister 3 of Multireg transition_token
   // R[transition_token_3]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_3 (
@@ -531,7 +512,6 @@ module lc_ctrl_reg_top (
 
 
   // R[transition_target]: V(True)
-
   prim_subreg_ext #(
     .DW    (5)
   ) u_transition_target (
@@ -547,7 +527,6 @@ module lc_ctrl_reg_top (
 
 
   // R[otp_vendor_test_ctrl]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_otp_vendor_test_ctrl (
@@ -563,7 +542,6 @@ module lc_ctrl_reg_top (
 
 
   // R[otp_vendor_test_status]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_otp_vendor_test_status (
@@ -579,7 +557,6 @@ module lc_ctrl_reg_top (
 
 
   // R[lc_state]: V(True)
-
   prim_subreg_ext #(
     .DW    (5)
   ) u_lc_state (
@@ -595,7 +572,6 @@ module lc_ctrl_reg_top (
 
 
   // R[lc_transition_cnt]: V(True)
-
   prim_subreg_ext #(
     .DW    (5)
   ) u_lc_transition_cnt (
@@ -611,7 +587,6 @@ module lc_ctrl_reg_top (
 
 
   // R[lc_id_state]: V(True)
-
   prim_subreg_ext #(
     .DW    (2)
   ) u_lc_id_state (
@@ -626,10 +601,8 @@ module lc_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg device_id
   // R[device_id_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_0 (
@@ -643,9 +616,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_0_qs)
   );
 
+
   // Subregister 1 of Multireg device_id
   // R[device_id_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_1 (
@@ -659,9 +632,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_1_qs)
   );
 
+
   // Subregister 2 of Multireg device_id
   // R[device_id_2]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_2 (
@@ -675,9 +648,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_2_qs)
   );
 
+
   // Subregister 3 of Multireg device_id
   // R[device_id_3]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_3 (
@@ -691,9 +664,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_3_qs)
   );
 
+
   // Subregister 4 of Multireg device_id
   // R[device_id_4]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_4 (
@@ -707,9 +680,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_4_qs)
   );
 
+
   // Subregister 5 of Multireg device_id
   // R[device_id_5]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_5 (
@@ -723,9 +696,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_5_qs)
   );
 
+
   // Subregister 6 of Multireg device_id
   // R[device_id_6]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_6 (
@@ -739,9 +712,9 @@ module lc_ctrl_reg_top (
     .qs     (device_id_6_qs)
   );
 
+
   // Subregister 7 of Multireg device_id
   // R[device_id_7]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_device_id_7 (
@@ -756,10 +729,8 @@ module lc_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg manuf_state
   // R[manuf_state_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_0 (
@@ -773,9 +744,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_0_qs)
   );
 
+
   // Subregister 1 of Multireg manuf_state
   // R[manuf_state_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_1 (
@@ -789,9 +760,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_1_qs)
   );
 
+
   // Subregister 2 of Multireg manuf_state
   // R[manuf_state_2]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_2 (
@@ -805,9 +776,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_2_qs)
   );
 
+
   // Subregister 3 of Multireg manuf_state
   // R[manuf_state_3]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_3 (
@@ -821,9 +792,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_3_qs)
   );
 
+
   // Subregister 4 of Multireg manuf_state
   // R[manuf_state_4]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_4 (
@@ -837,9 +808,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_4_qs)
   );
 
+
   // Subregister 5 of Multireg manuf_state
   // R[manuf_state_5]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_5 (
@@ -853,9 +824,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_5_qs)
   );
 
+
   // Subregister 6 of Multireg manuf_state
   // R[manuf_state_6]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_6 (
@@ -869,9 +840,9 @@ module lc_ctrl_reg_top (
     .qs     (manuf_state_6_qs)
   );
 
+
   // Subregister 7 of Multireg manuf_state
   // R[manuf_state_7]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_manuf_state_7 (
@@ -884,7 +855,6 @@ module lc_ctrl_reg_top (
     .q      (),
     .qs     (manuf_state_7_qs)
   );
-
 
 
 
