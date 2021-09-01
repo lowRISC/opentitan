@@ -31,9 +31,6 @@ enum {
   kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
-// sec_mmio (used by the alert driver) requires this symbol to be defined.
-sec_mmio_ctx_t sec_mmio_ctx;
-
 rom_error_t alert_no_escalate_test(void) {
   // Configure class B alerts for phase 0 only and disable NMI signalling.
   alert_class_config_t config = {

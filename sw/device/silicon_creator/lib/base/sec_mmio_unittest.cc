@@ -13,8 +13,8 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 extern "C" {
-// This is an extern in the sec_mmio module.
-sec_mmio_ctx_t sec_mmio_ctx;
+// Declared in the sec_mmio module.
+extern sec_mmio_ctx_t sec_mmio_ctx;
 }
 
 namespace sec_mmio_unittest {

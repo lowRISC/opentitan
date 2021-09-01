@@ -9,9 +9,17 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+
+// Secure MMIO context.
+//
+// This is placed at a fixed location in memory within the .static_critical
+// section. It will be populated by the mask ROM before the jump to ROM_EXT.
+__attribute__((section(".static_critical.sec_mmio_ctx")))  //
+volatile sec_mmio_ctx_t sec_mmio_ctx;
 
 static dif_uart_t uart;
 

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -47,9 +48,6 @@ extern "C" {
  *
  * Opens:
  *
- * - sec_mmio_ctx is currently defined as an extern to simplify testing. For the
- *   actual target, we need to define a memory region to share the data with the
- *   ROM_EXT.
  * - Currently fault detection escalations are performed by calling a handler
  *   that is registered at `sec_mmio_init()` call time. Need to determine if we
  *   want to move to a mock_shutdown implementation, or if we want to refactor
@@ -104,6 +102,19 @@ typedef struct sec_mmio_ctx {
    */
   uint32_t check_count;
 } sec_mmio_ctx_t;
+
+/**
+ * The `sec_mmio_ctx_t` structure is accessible by both the mask ROM and ROM
+ * extension. It's layout is therefore fixed and any changes must be applied
+ * to both boot stages.
+ */
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, values, 0);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 400);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 800);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 804);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 808);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 812);
+OT_ASSERT_SIZE(sec_mmio_ctx_t, 816);  // Checked by linker script.
 
 /**
  * Shutdown module callback handler.
