@@ -290,7 +290,7 @@
           bits: "27:24",
           name: "field6",
           desc: "field description"
-          swaccess: "rc",
+          swaccess: "rw",
           hwaccess: "hrw",
           resval: "0x7",
         }

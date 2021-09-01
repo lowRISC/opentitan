@@ -158,7 +158,6 @@ module trial1_reg_top (
   logic [31:0] rctype0_wd;
   logic wotype0_we;
   logic [31:0] wotype0_wd;
-  logic mixtype0_re;
   logic mixtype0_we;
   logic [3:0] mixtype0_field0_qs;
   logic [3:0] mixtype0_field0_wd;
@@ -889,14 +888,14 @@ module trial1_reg_top (
   //   F[field6]: 27:24
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h7)
   ) u_mixtype0_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mixtype0_re),
+    .we     (mixtype0_we),
     .wd     (mixtype0_field6_wd),
 
     // from internal hardware
@@ -1145,7 +1144,6 @@ module trial1_reg_top (
   assign wotype0_we = addr_hit[13] & reg_we & !reg_error;
 
   assign wotype0_wd = reg_wdata[31:0];
-  assign mixtype0_re = addr_hit[14] & reg_re & !reg_error;
   assign mixtype0_we = addr_hit[14] & reg_we & !reg_error;
 
   assign mixtype0_field0_wd = reg_wdata[3:0];
@@ -1156,7 +1154,7 @@ module trial1_reg_top (
 
   assign mixtype0_field5_wd = reg_wdata[23:20];
 
-  assign mixtype0_field6_wd = '1;
+  assign mixtype0_field6_wd = reg_wdata[27:24];
 
   assign mixtype0_field7_wd = reg_wdata[31:28];
   assign rwtype5_we = addr_hit[15] & reg_we & !reg_error;

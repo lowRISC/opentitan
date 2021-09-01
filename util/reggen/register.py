@@ -148,7 +148,7 @@ class Register(RegBase):
                     raise ValueError('The {} register has hwext set, but '
                                      'field {} has hro hwaccess and the '
                                      'field value is readable by software '
-                                     'mode ({}).'
+                                     '(mode {}).'
                                      .format(self.name,
                                              field.name,
                                              field.swaccess.key))
@@ -159,6 +159,26 @@ class Register(RegBase):
                                      .format(self.name,
                                              field.name,
                                              field.swaccess.key))
+
+        # Check that fields will be updated together. This generally comes "for
+        # free", but there's a slight wrinkle with RC fields: these use the
+        # register's read-enable input as their write-enable. We want to ensure
+        # either that every field that is updated as a result of bus accesses
+        # is RC or that none of them are.
+        rc_fields = []
+        we_fields = []
+        for field in self.fields:
+            if field.swaccess.key == 'rc':
+                rc_fields.append(field.name)
+            elif field.swaccess.allows_write:
+                we_fields.append(field.name)
+        if rc_fields and we_fields:
+            raise ValueError("Register {} has both software writable fields "
+                             "({}) and read-clear fields ({}), meaning it "
+                             "doesn't have a single write-enable signal."
+                             .format(self.name,
+                                     ', '.join(rc_fields),
+                                     ', '.join(we_fields)))
 
         # Check that field bits are disjoint
         bits_used = 0
