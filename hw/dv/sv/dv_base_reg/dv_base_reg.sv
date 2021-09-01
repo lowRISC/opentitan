@@ -26,6 +26,7 @@ class dv_base_reg extends uvm_reg;
                int          has_coverage);
     super.new(name, n_bits, has_coverage);
     atomic_en_shadow_wr = new(1);
+    shadowed_val = ~committed_val;
   endfunction : new
 
   function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
@@ -159,11 +160,11 @@ class dv_base_reg extends uvm_reg;
   endfunction
 
   function bit get_shadow_storage_err();
-    uvm_reg_data_t mask = (1'b1 << (get_msb_pos() + 1)) - 1;
+    uvm_reg_data_t mask = get_reg_mask();
     uvm_reg_data_t shadowed_val_temp = (~shadowed_val) & mask;
     uvm_reg_data_t committed_val_temp = committed_val & mask;
-    `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
-                              committed_val_temp), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val & mask,
+                              committed_val_temp), UVM_HIGH)
     return shadowed_val_temp != committed_val_temp;
   endfunction
 
@@ -182,19 +183,20 @@ class dv_base_reg extends uvm_reg;
 
     // no need to update shadow value or access type if access is not OK, as access is aborted
     // no need to update if not write
-    if (rw.status != UVM_IS_OK || kind != UVM_PREDICT_WRITE) return;
+    // no need to update staged value if it triggers a storage error
+    if (rw.status != UVM_IS_OK || kind != UVM_PREDICT_WRITE || get_shadow_storage_err()) return;
 
     if (is_shadowed && !shadow_fatal_lock) begin
       // first write
       if (!shadow_wr_staged) begin
         shadow_wr_staged = 1;
         // rw.value is a dynamic array
-        staged_shadow_val = rw.value[0];
+        staged_shadow_val = rw.value[0] & get_reg_mask();
         return;
       end begin
         // second write
         shadow_wr_staged = 0;
-        if (staged_shadow_val != rw.value[0]) begin
+        if (staged_shadow_val != (rw.value[0] & get_reg_mask())) begin
           dv_base_reg_field dv_fields[$];
           get_dv_base_reg_fields(dv_fields);
 
@@ -212,7 +214,7 @@ class dv_base_reg extends uvm_reg;
           // If there is no shadow_update error, update the entire committed value.
           committed_val = staged_shadow_val;
         end
-        shadowed_val  = ~committed_val;
+        shadowed_val = ~committed_val;
       end
       lock_lockable_flds(committed_val);
     end else begin
