@@ -21,7 +21,6 @@ class csrng_item extends uvm_sequence_item;
 
   constraint c_cmd_data {
     solve clen before cmd_data_q;
-
     cmd_data_q.size() == clen;
   };
 
@@ -29,13 +28,10 @@ class csrng_item extends uvm_sequence_item;
     flags inside {[0:1]};
   };
 
-// TODO: add/fix glen constraint
-//  constraint c_glen {
-//    solve acmd before glen;
-//
-//    if (acmd != csrng_pkg::GEN)
-//      glen == 'h0;
-//  };
+  // TODO: Try glen > 32
+  constraint c_glen {
+    glen inside {[1:32]};
+  };
 
    //--------------------------------------------------------------------
    // do_copy
@@ -55,17 +51,17 @@ class csrng_item extends uvm_sequence_item;
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |*********** csrng_item ************| \t")                   };
-    str = {str,  $sformatf("\n\t |* acmd           :  %4s          *| \t", acmd.name())       };
-    str = {str,  $sformatf("\n\t |* clen           :   0x%0h          *| \t", clen)           };
-    str = {str,  $sformatf("\n\t |* flags          :   0x%0h          *| \t", flags)          };
-    str = {str,  $sformatf("\n\t |* glen           :   0x%5h      *| \t", glen)               };
+    str = {str,  $sformatf("\n\t |********* csrng_item **********| \t")                   };
+    str = {str,  $sformatf("\n\t |* acmd           :      %5s *| \t", acmd.name())       };
+    str = {str,  $sformatf("\n\t |* clen           :      %5d *| \t", clen)           };
+    str = {str,  $sformatf("\n\t |* flags          :     0b%4b *| \t", flags)          };
+    str = {str,  $sformatf("\n\t |* glen           :      %5d *| \t", glen)               };
     if (cmd_data_q.size()) begin
       for (int i = 0; i < cmd_data_q.size(); i++) begin
-        str = {str,  $sformatf("\n\t |* cmd_data_q[%2d] :   0x%8h   *| \t", i, cmd_data_q[i]) };
+        str = {str,  $sformatf("\n\t |* cmd_data_q[%2d] : 0x%8h *| \t", i, cmd_data_q[i]) };
       end
     end
-    str = {str,  $sformatf("\n\t |***********************************| \t")                   };
+    str = {str,  $sformatf("\n\t |*******************************| \t")                   };
     str = {str, "\n"};
     return str;
   endfunction

@@ -26,28 +26,51 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     end
 
     // Generate queues of csrng commands
+    // TODO: Create function for random generation of sequence of commands
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::INS;
-                                     cs_item.flags == 4'h1;
-                                     cs_item.clen  inside {[0:12]};)
+                                     cs_item.acmd == csrng_pkg::INS;
+                                    )
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
+
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd == csrng_pkg::GEN;
+                                    )
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
+
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::RES;
+                                    )
       `downcast(cs_item_clone, cs_item.clone());
       cs_item_q[i].push_back(cs_item_clone);
 
       `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                      cs_item.acmd  == csrng_pkg::GEN;
-                                     cs_item.flags == 4'h0;
-                                     cs_item.clen  == 4'h0;
-                                     cs_item.glen inside {[1:32]};)
+				    )
       `downcast(cs_item_clone, cs_item.clone());
       cs_item_q[i].push_back(cs_item_clone);
 
-      // Randomize whether to add an uninstantiate command
-      // so it checks internal state without uninstantiate sometimes
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::UPD;
+				    )
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
+
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::GEN;
+                                    )
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[i].push_back(cs_item_clone);
+
+      // Randomize whether to add an uninstantiate command so internal state is non-zero
       `DV_CHECK_STD_RANDOMIZE_FATAL(uninstantiate)
+
       if (uninstantiate) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                       cs_item.acmd  == csrng_pkg::UNI;)
+                                       cs_item.acmd  == csrng_pkg::UNI;
+                                      )
         `downcast(cs_item_clone, cs_item.clone());
         cs_item_q[i].push_back(cs_item_clone);
       end
@@ -65,13 +88,14 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     fork
       begin
         // TODO: randomize entropy/fips
-        cfg.m_entropy_src_agent_cfg.add_d_user_data(384'hdeadbeef);
-        cfg.m_entropy_src_agent_cfg.add_d_user_data(384'hbeefdead);
+        for (int i = 0; i < 32; i++) begin
+          cfg.m_entropy_src_agent_cfg.add_d_user_data('h0);
+        end
         m_entropy_src_pull_seq.start(p_sequencer.entropy_src_sequencer_h);
       end
     join_none
 
-    // Send commands, wait for acks
+    // Send commands
     fork
       for (int i = 0; i < NUM_HW_APPS; i++) begin
         automatic int j = i;

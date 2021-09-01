@@ -70,7 +70,7 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.cmd_data_q.push_back(item.h_data);
         end
       end
-      `uvm_info(`gfn, $sformatf("Captured item: %s", cs_item.convert2string()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Captured cs_item: %s", cs_item.convert2string()), UVM_HIGH)
       analysis_port.write(cs_item);
     end
   endtask
