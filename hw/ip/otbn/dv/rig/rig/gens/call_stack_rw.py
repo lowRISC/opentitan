@@ -196,7 +196,6 @@ class BadCallStackRW(CallStackRW):
 
         mode_ret = self._pick_mode(model)
         if mode_ret is None:
-            print('boo (unknown)')
             return None
 
         is_overflow, steps = mode_ret
@@ -204,7 +203,6 @@ class BadCallStackRW(CallStackRW):
         # We will generate steps instructions in a straight line: make sure
         # we've got space.
         if program.get_insn_space_at(model.pc) < steps:
-            print('boo (squashed)')
             return None
 
         assert steps > 0
@@ -233,7 +231,5 @@ class BadCallStackRW(CallStackRW):
         # exception, the result doesn't matter). But move PC to the final
         # instruction.
         model.pc += 4 * (len(prog_insns) - 1)
-
-        print('success!')
 
         return (snippet, True, model)
