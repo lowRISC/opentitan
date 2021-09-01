@@ -448,7 +448,6 @@ module aon_timer_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -464,7 +463,6 @@ module aon_timer_reg_top (
 
 
   // R[wkup_ctrl]: V(False)
-
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -489,7 +487,6 @@ module aon_timer_reg_top (
     // to register interface (read)
     .qs     (aon_wkup_ctrl_enable_qs_int)
   );
-
 
   //   F[prescaler]: 12:1
   prim_subreg #(
@@ -518,7 +515,6 @@ module aon_timer_reg_top (
 
 
   // R[wkup_thold]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -545,7 +541,6 @@ module aon_timer_reg_top (
 
 
   // R[wkup_count]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -572,7 +567,6 @@ module aon_timer_reg_top (
 
 
   // R[wdog_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -599,7 +593,6 @@ module aon_timer_reg_top (
 
 
   // R[wdog_ctrl]: V(False)
-
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -624,7 +617,6 @@ module aon_timer_reg_top (
     // to register interface (read)
     .qs     (aon_wdog_ctrl_enable_qs_int)
   );
-
 
   //   F[pause_in_sleep]: 1:1
   prim_subreg #(
@@ -653,7 +645,6 @@ module aon_timer_reg_top (
 
 
   // R[wdog_bark_thold]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -680,7 +671,6 @@ module aon_timer_reg_top (
 
 
   // R[wdog_bite_thold]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -707,7 +697,6 @@ module aon_timer_reg_top (
 
 
   // R[wdog_count]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -734,7 +723,6 @@ module aon_timer_reg_top (
 
 
   // R[intr_state]: V(False)
-
   //   F[wkup_timer_expired]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -759,7 +747,6 @@ module aon_timer_reg_top (
     // to register interface (read)
     .qs     (intr_state_wkup_timer_expired_qs)
   );
-
 
   //   F[wdog_timer_expired]: 1:1
   prim_subreg #(
@@ -788,7 +775,6 @@ module aon_timer_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[wkup_timer_expired]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -802,7 +788,6 @@ module aon_timer_reg_top (
     .q      (reg2hw.intr_test.wkup_timer_expired.q),
     .qs     ()
   );
-
 
   //   F[wdog_timer_expired]: 1:1
   prim_subreg_ext #(
@@ -820,7 +805,6 @@ module aon_timer_reg_top (
 
 
   // R[wkup_cause]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -844,7 +828,6 @@ module aon_timer_reg_top (
     // to register interface (read)
     .qs     (aon_wkup_cause_qs_int)
   );
-
 
 
 

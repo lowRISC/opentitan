@@ -2450,7 +2450,6 @@ module pinmux_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -2465,10 +2464,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2493,9 +2490,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2520,9 +2517,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2547,9 +2544,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2574,9 +2571,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2601,9 +2598,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2628,9 +2625,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2655,9 +2652,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2682,9 +2679,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2709,9 +2706,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2736,9 +2733,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2763,9 +2760,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2790,9 +2787,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2817,9 +2814,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2844,9 +2841,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2871,9 +2868,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2898,9 +2895,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_16]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2925,9 +2922,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_17]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2952,9 +2949,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_18]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2979,9 +2976,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_19]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3006,9 +3003,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_20]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3033,9 +3030,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_21]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3060,9 +3057,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_22]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3087,9 +3084,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_23]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3114,9 +3111,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_24]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3141,9 +3138,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_25]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3168,9 +3165,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_26]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3195,9 +3192,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_27]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3222,9 +3219,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_28]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3249,9 +3246,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_29]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3276,9 +3273,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_30]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3303,9 +3300,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_31]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3330,9 +3327,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_regwen_31_qs)
   );
 
+
   // Subregister 32 of Multireg mio_periph_insel_regwen
   // R[mio_periph_insel_regwen_32]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -3358,10 +3355,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_periph_insel
   // R[mio_periph_insel_0]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3386,9 +3381,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_periph_insel
   // R[mio_periph_insel_1]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3413,9 +3408,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_periph_insel
   // R[mio_periph_insel_2]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3440,9 +3435,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_periph_insel
   // R[mio_periph_insel_3]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3467,9 +3462,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_periph_insel
   // R[mio_periph_insel_4]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3494,9 +3489,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_periph_insel
   // R[mio_periph_insel_5]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3521,9 +3516,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_periph_insel
   // R[mio_periph_insel_6]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3548,9 +3543,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_periph_insel
   // R[mio_periph_insel_7]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3575,9 +3570,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_periph_insel
   // R[mio_periph_insel_8]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3602,9 +3597,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_periph_insel
   // R[mio_periph_insel_9]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3629,9 +3624,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_periph_insel
   // R[mio_periph_insel_10]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3656,9 +3651,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_periph_insel
   // R[mio_periph_insel_11]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3683,9 +3678,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_periph_insel
   // R[mio_periph_insel_12]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3710,9 +3705,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_periph_insel
   // R[mio_periph_insel_13]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3737,9 +3732,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_periph_insel
   // R[mio_periph_insel_14]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3764,9 +3759,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_periph_insel
   // R[mio_periph_insel_15]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3791,9 +3786,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_periph_insel
   // R[mio_periph_insel_16]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3818,9 +3813,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_periph_insel
   // R[mio_periph_insel_17]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3845,9 +3840,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_periph_insel
   // R[mio_periph_insel_18]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3872,9 +3867,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_periph_insel
   // R[mio_periph_insel_19]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3899,9 +3894,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_periph_insel
   // R[mio_periph_insel_20]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3926,9 +3921,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_periph_insel
   // R[mio_periph_insel_21]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3953,9 +3948,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_periph_insel
   // R[mio_periph_insel_22]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3980,9 +3975,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_periph_insel
   // R[mio_periph_insel_23]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4007,9 +4002,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_periph_insel
   // R[mio_periph_insel_24]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4034,9 +4029,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_periph_insel
   // R[mio_periph_insel_25]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4061,9 +4056,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_periph_insel
   // R[mio_periph_insel_26]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4088,9 +4083,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_periph_insel
   // R[mio_periph_insel_27]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4115,9 +4110,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_periph_insel
   // R[mio_periph_insel_28]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4142,9 +4137,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_periph_insel
   // R[mio_periph_insel_29]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4169,9 +4164,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_periph_insel
   // R[mio_periph_insel_30]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4196,9 +4191,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_periph_insel
   // R[mio_periph_insel_31]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4223,9 +4218,9 @@ module pinmux_reg_top (
     .qs     (mio_periph_insel_31_qs)
   );
 
+
   // Subregister 32 of Multireg mio_periph_insel
   // R[mio_periph_insel_32]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4251,10 +4246,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4279,9 +4272,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4306,9 +4299,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4333,9 +4326,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4360,9 +4353,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4387,9 +4380,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4414,9 +4407,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4441,9 +4434,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4468,9 +4461,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4495,9 +4488,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4522,9 +4515,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4549,9 +4542,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4576,9 +4569,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4603,9 +4596,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4630,9 +4623,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4657,9 +4650,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4684,9 +4677,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_16]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4711,9 +4704,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_17]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4738,9 +4731,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_18]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4765,9 +4758,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_19]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4792,9 +4785,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_20]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4819,9 +4812,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_21]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4846,9 +4839,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_22]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4873,9 +4866,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_23]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4900,9 +4893,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_24]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4927,9 +4920,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_25]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4954,9 +4947,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_26]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4981,9 +4974,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_27]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -5008,9 +5001,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_28]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -5035,9 +5028,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_29]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -5062,9 +5055,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_30]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -5089,9 +5082,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_regwen_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_outsel_regwen
   // R[mio_outsel_regwen_31]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -5117,10 +5110,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_outsel
   // R[mio_outsel_0]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5145,9 +5136,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_outsel
   // R[mio_outsel_1]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5172,9 +5163,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_outsel
   // R[mio_outsel_2]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5199,9 +5190,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_outsel
   // R[mio_outsel_3]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5226,9 +5217,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_outsel
   // R[mio_outsel_4]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5253,9 +5244,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_outsel
   // R[mio_outsel_5]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5280,9 +5271,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_outsel
   // R[mio_outsel_6]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5307,9 +5298,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_outsel
   // R[mio_outsel_7]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5334,9 +5325,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_outsel
   // R[mio_outsel_8]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5361,9 +5352,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_outsel
   // R[mio_outsel_9]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5388,9 +5379,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_outsel
   // R[mio_outsel_10]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5415,9 +5406,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_outsel
   // R[mio_outsel_11]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5442,9 +5433,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_outsel
   // R[mio_outsel_12]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5469,9 +5460,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_outsel
   // R[mio_outsel_13]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5496,9 +5487,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_outsel
   // R[mio_outsel_14]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5523,9 +5514,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_outsel
   // R[mio_outsel_15]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5550,9 +5541,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_outsel
   // R[mio_outsel_16]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5577,9 +5568,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_outsel
   // R[mio_outsel_17]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5604,9 +5595,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_outsel
   // R[mio_outsel_18]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5631,9 +5622,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_outsel
   // R[mio_outsel_19]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5658,9 +5649,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_outsel
   // R[mio_outsel_20]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5685,9 +5676,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_outsel
   // R[mio_outsel_21]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5712,9 +5703,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_outsel
   // R[mio_outsel_22]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5739,9 +5730,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_outsel
   // R[mio_outsel_23]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5766,9 +5757,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_outsel
   // R[mio_outsel_24]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5793,9 +5784,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_outsel
   // R[mio_outsel_25]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5820,9 +5811,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_outsel
   // R[mio_outsel_26]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5847,9 +5838,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_outsel
   // R[mio_outsel_27]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5874,9 +5865,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_outsel
   // R[mio_outsel_28]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5901,9 +5892,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_outsel
   // R[mio_outsel_29]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5928,9 +5919,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_outsel
   // R[mio_outsel_30]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5955,9 +5946,9 @@ module pinmux_reg_top (
     .qs     (mio_outsel_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_outsel
   // R[mio_outsel_31]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5983,10 +5974,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6011,9 +6000,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6038,9 +6027,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6065,9 +6054,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6092,9 +6081,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6119,9 +6108,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6146,9 +6135,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6173,9 +6162,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6200,9 +6189,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6227,9 +6216,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6254,9 +6243,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6281,9 +6270,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6308,9 +6297,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6335,9 +6324,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6362,9 +6351,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6389,9 +6378,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6416,9 +6405,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_16]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6443,9 +6432,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_17]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6470,9 +6459,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_18]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6497,9 +6486,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_19]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6524,9 +6513,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_20]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6551,9 +6540,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_21]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6578,9 +6567,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_22]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6605,9 +6594,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_23]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6632,9 +6621,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_24]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6659,9 +6648,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_25]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6686,9 +6675,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_26]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6713,9 +6702,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_27]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6740,9 +6729,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_28]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6767,9 +6756,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_29]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6794,9 +6783,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_30]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6821,9 +6810,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_regwen_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_pad_attr_regwen
   // R[mio_pad_attr_regwen_31]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6849,10 +6838,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_pad_attr
   // R[mio_pad_attr_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_0 (
@@ -6866,9 +6853,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_pad_attr
   // R[mio_pad_attr_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_1 (
@@ -6882,9 +6869,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_pad_attr
   // R[mio_pad_attr_2]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_2 (
@@ -6898,9 +6885,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_pad_attr
   // R[mio_pad_attr_3]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_3 (
@@ -6914,9 +6901,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_pad_attr
   // R[mio_pad_attr_4]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_4 (
@@ -6930,9 +6917,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_pad_attr
   // R[mio_pad_attr_5]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_5 (
@@ -6946,9 +6933,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_pad_attr
   // R[mio_pad_attr_6]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_6 (
@@ -6962,9 +6949,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_pad_attr
   // R[mio_pad_attr_7]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_7 (
@@ -6978,9 +6965,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_pad_attr
   // R[mio_pad_attr_8]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_8 (
@@ -6994,9 +6981,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_pad_attr
   // R[mio_pad_attr_9]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_9 (
@@ -7010,9 +6997,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_pad_attr
   // R[mio_pad_attr_10]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_10 (
@@ -7026,9 +7013,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_pad_attr
   // R[mio_pad_attr_11]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_11 (
@@ -7042,9 +7029,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_pad_attr
   // R[mio_pad_attr_12]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_12 (
@@ -7058,9 +7045,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_pad_attr
   // R[mio_pad_attr_13]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_13 (
@@ -7074,9 +7061,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_pad_attr
   // R[mio_pad_attr_14]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_14 (
@@ -7090,9 +7077,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_pad_attr
   // R[mio_pad_attr_15]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_15 (
@@ -7106,9 +7093,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_pad_attr
   // R[mio_pad_attr_16]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_16 (
@@ -7122,9 +7109,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_pad_attr
   // R[mio_pad_attr_17]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_17 (
@@ -7138,9 +7125,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_pad_attr
   // R[mio_pad_attr_18]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_18 (
@@ -7154,9 +7141,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_pad_attr
   // R[mio_pad_attr_19]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_19 (
@@ -7170,9 +7157,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_pad_attr
   // R[mio_pad_attr_20]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_20 (
@@ -7186,9 +7173,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_pad_attr
   // R[mio_pad_attr_21]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_21 (
@@ -7202,9 +7189,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_pad_attr
   // R[mio_pad_attr_22]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_22 (
@@ -7218,9 +7205,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_pad_attr
   // R[mio_pad_attr_23]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_23 (
@@ -7234,9 +7221,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_pad_attr
   // R[mio_pad_attr_24]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_24 (
@@ -7250,9 +7237,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_pad_attr
   // R[mio_pad_attr_25]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_25 (
@@ -7266,9 +7253,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_pad_attr
   // R[mio_pad_attr_26]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_26 (
@@ -7282,9 +7269,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_pad_attr
   // R[mio_pad_attr_27]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_27 (
@@ -7298,9 +7285,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_pad_attr
   // R[mio_pad_attr_28]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_28 (
@@ -7314,9 +7301,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_pad_attr
   // R[mio_pad_attr_29]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_29 (
@@ -7330,9 +7317,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_pad_attr
   // R[mio_pad_attr_30]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_30 (
@@ -7346,9 +7333,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_attr_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_pad_attr
   // R[mio_pad_attr_31]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_31 (
@@ -7363,10 +7350,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7391,9 +7376,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7418,9 +7403,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7445,9 +7430,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7472,9 +7457,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7499,9 +7484,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7526,9 +7511,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7553,9 +7538,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7580,9 +7565,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7607,9 +7592,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7634,9 +7619,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7661,9 +7646,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7688,9 +7673,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7715,9 +7700,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7742,9 +7727,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7769,9 +7754,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg dio_pad_attr_regwen
   // R[dio_pad_attr_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7797,10 +7782,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg dio_pad_attr
   // R[dio_pad_attr_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_0 (
@@ -7814,9 +7797,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_0_qs)
   );
 
+
   // Subregister 1 of Multireg dio_pad_attr
   // R[dio_pad_attr_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_1 (
@@ -7830,9 +7813,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_1_qs)
   );
 
+
   // Subregister 2 of Multireg dio_pad_attr
   // R[dio_pad_attr_2]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_2 (
@@ -7846,9 +7829,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_2_qs)
   );
 
+
   // Subregister 3 of Multireg dio_pad_attr
   // R[dio_pad_attr_3]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_3 (
@@ -7862,9 +7845,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_3_qs)
   );
 
+
   // Subregister 4 of Multireg dio_pad_attr
   // R[dio_pad_attr_4]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_4 (
@@ -7878,9 +7861,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_4_qs)
   );
 
+
   // Subregister 5 of Multireg dio_pad_attr
   // R[dio_pad_attr_5]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_5 (
@@ -7894,9 +7877,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_5_qs)
   );
 
+
   // Subregister 6 of Multireg dio_pad_attr
   // R[dio_pad_attr_6]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_6 (
@@ -7910,9 +7893,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_6_qs)
   );
 
+
   // Subregister 7 of Multireg dio_pad_attr
   // R[dio_pad_attr_7]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_7 (
@@ -7926,9 +7909,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_7_qs)
   );
 
+
   // Subregister 8 of Multireg dio_pad_attr
   // R[dio_pad_attr_8]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_8 (
@@ -7942,9 +7925,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_8_qs)
   );
 
+
   // Subregister 9 of Multireg dio_pad_attr
   // R[dio_pad_attr_9]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_9 (
@@ -7958,9 +7941,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_9_qs)
   );
 
+
   // Subregister 10 of Multireg dio_pad_attr
   // R[dio_pad_attr_10]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_10 (
@@ -7974,9 +7957,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_10_qs)
   );
 
+
   // Subregister 11 of Multireg dio_pad_attr
   // R[dio_pad_attr_11]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_11 (
@@ -7990,9 +7973,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_11_qs)
   );
 
+
   // Subregister 12 of Multireg dio_pad_attr
   // R[dio_pad_attr_12]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_12 (
@@ -8006,9 +7989,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_12_qs)
   );
 
+
   // Subregister 13 of Multireg dio_pad_attr
   // R[dio_pad_attr_13]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_13 (
@@ -8022,9 +8005,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_13_qs)
   );
 
+
   // Subregister 14 of Multireg dio_pad_attr
   // R[dio_pad_attr_14]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_14 (
@@ -8038,9 +8021,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_14_qs)
   );
 
+
   // Subregister 15 of Multireg dio_pad_attr
   // R[dio_pad_attr_15]: V(True)
-
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_15 (
@@ -8055,11 +8038,9 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_pad_sleep_status
   // R[mio_pad_sleep_status]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8084,8 +8065,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_0_qs)
   );
 
-
-  // F[en_1]: 1:1
+  //   F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8110,8 +8090,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_1_qs)
   );
 
-
-  // F[en_2]: 2:2
+  //   F[en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8136,8 +8115,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_2_qs)
   );
 
-
-  // F[en_3]: 3:3
+  //   F[en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8162,8 +8140,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_3_qs)
   );
 
-
-  // F[en_4]: 4:4
+  //   F[en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8188,8 +8165,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_4_qs)
   );
 
-
-  // F[en_5]: 5:5
+  //   F[en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8214,8 +8190,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_5_qs)
   );
 
-
-  // F[en_6]: 6:6
+  //   F[en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8240,8 +8215,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_6_qs)
   );
 
-
-  // F[en_7]: 7:7
+  //   F[en_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8266,8 +8240,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_7_qs)
   );
 
-
-  // F[en_8]: 8:8
+  //   F[en_8]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8292,8 +8265,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_8_qs)
   );
 
-
-  // F[en_9]: 9:9
+  //   F[en_9]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8318,8 +8290,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_9_qs)
   );
 
-
-  // F[en_10]: 10:10
+  //   F[en_10]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8344,8 +8315,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_10_qs)
   );
 
-
-  // F[en_11]: 11:11
+  //   F[en_11]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8370,8 +8340,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_11_qs)
   );
 
-
-  // F[en_12]: 12:12
+  //   F[en_12]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8396,8 +8365,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_12_qs)
   );
 
-
-  // F[en_13]: 13:13
+  //   F[en_13]: 13:13
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8422,8 +8390,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_13_qs)
   );
 
-
-  // F[en_14]: 14:14
+  //   F[en_14]: 14:14
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8448,8 +8415,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_14_qs)
   );
 
-
-  // F[en_15]: 15:15
+  //   F[en_15]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8474,8 +8440,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_15_qs)
   );
 
-
-  // F[en_16]: 16:16
+  //   F[en_16]: 16:16
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8500,8 +8465,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_16_qs)
   );
 
-
-  // F[en_17]: 17:17
+  //   F[en_17]: 17:17
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8526,8 +8490,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_17_qs)
   );
 
-
-  // F[en_18]: 18:18
+  //   F[en_18]: 18:18
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8552,8 +8515,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_18_qs)
   );
 
-
-  // F[en_19]: 19:19
+  //   F[en_19]: 19:19
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8578,8 +8540,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_19_qs)
   );
 
-
-  // F[en_20]: 20:20
+  //   F[en_20]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8604,8 +8565,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_20_qs)
   );
 
-
-  // F[en_21]: 21:21
+  //   F[en_21]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8630,8 +8590,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_21_qs)
   );
 
-
-  // F[en_22]: 22:22
+  //   F[en_22]: 22:22
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8656,8 +8615,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_22_qs)
   );
 
-
-  // F[en_23]: 23:23
+  //   F[en_23]: 23:23
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8682,8 +8640,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_23_qs)
   );
 
-
-  // F[en_24]: 24:24
+  //   F[en_24]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8708,8 +8665,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_24_qs)
   );
 
-
-  // F[en_25]: 25:25
+  //   F[en_25]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8734,8 +8690,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_25_qs)
   );
 
-
-  // F[en_26]: 26:26
+  //   F[en_26]: 26:26
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8760,8 +8715,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_26_qs)
   );
 
-
-  // F[en_27]: 27:27
+  //   F[en_27]: 27:27
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8786,8 +8740,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_27_qs)
   );
 
-
-  // F[en_28]: 28:28
+  //   F[en_28]: 28:28
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8812,8 +8765,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_28_qs)
   );
 
-
-  // F[en_29]: 29:29
+  //   F[en_29]: 29:29
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8838,8 +8790,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_29_qs)
   );
 
-
-  // F[en_30]: 30:30
+  //   F[en_30]: 30:30
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8864,8 +8815,7 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_status_en_30_qs)
   );
 
-
-  // F[en_31]: 31:31
+  //   F[en_31]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8891,11 +8841,8 @@ module pinmux_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8920,9 +8867,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8947,9 +8894,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8974,9 +8921,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9001,9 +8948,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9028,9 +8975,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9055,9 +9002,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9082,9 +9029,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9109,9 +9056,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9136,9 +9083,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9163,9 +9110,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9190,9 +9137,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9217,9 +9164,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9244,9 +9191,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9271,9 +9218,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9298,9 +9245,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9325,9 +9272,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_16]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9352,9 +9299,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_17]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9379,9 +9326,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_18]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9406,9 +9353,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_19]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9433,9 +9380,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_20]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9460,9 +9407,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_21]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9487,9 +9434,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_22]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9514,9 +9461,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_23]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9541,9 +9488,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_24]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9568,9 +9515,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_25]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9595,9 +9542,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_26]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9622,9 +9569,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_27]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9649,9 +9596,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_28]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9676,9 +9623,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_29]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9703,9 +9650,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_30]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9730,9 +9677,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_regwen_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_pad_sleep_regwen
   // R[mio_pad_sleep_regwen_31]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9758,10 +9705,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9786,9 +9731,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9813,9 +9758,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9840,9 +9785,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9867,9 +9812,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9894,9 +9839,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9921,9 +9866,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9948,9 +9893,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9975,9 +9920,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10002,9 +9947,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10029,9 +9974,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10056,9 +10001,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10083,9 +10028,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10110,9 +10055,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10137,9 +10082,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10164,9 +10109,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10191,9 +10136,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_16]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10218,9 +10163,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_17]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10245,9 +10190,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_18]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10272,9 +10217,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_19]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10299,9 +10244,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_20]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10326,9 +10271,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_21]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10353,9 +10298,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_22]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10380,9 +10325,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_23]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10407,9 +10352,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_24]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10434,9 +10379,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_25]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10461,9 +10406,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_26]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10488,9 +10433,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_27]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10515,9 +10460,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_28]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10542,9 +10487,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_29]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10569,9 +10514,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_30]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10596,9 +10541,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_en_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_31]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10624,10 +10569,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_0]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10652,9 +10595,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_0_qs)
   );
 
+
   // Subregister 1 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_1]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10679,9 +10622,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_1_qs)
   );
 
+
   // Subregister 2 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_2]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10706,9 +10649,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_2_qs)
   );
 
+
   // Subregister 3 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_3]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10733,9 +10676,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_3_qs)
   );
 
+
   // Subregister 4 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_4]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10760,9 +10703,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_4_qs)
   );
 
+
   // Subregister 5 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_5]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10787,9 +10730,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_5_qs)
   );
 
+
   // Subregister 6 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_6]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10814,9 +10757,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_6_qs)
   );
 
+
   // Subregister 7 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_7]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10841,9 +10784,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_7_qs)
   );
 
+
   // Subregister 8 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_8]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10868,9 +10811,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_8_qs)
   );
 
+
   // Subregister 9 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_9]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10895,9 +10838,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_9_qs)
   );
 
+
   // Subregister 10 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_10]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10922,9 +10865,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_10_qs)
   );
 
+
   // Subregister 11 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_11]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10949,9 +10892,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_11_qs)
   );
 
+
   // Subregister 12 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_12]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10976,9 +10919,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_12_qs)
   );
 
+
   // Subregister 13 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_13]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11003,9 +10946,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_13_qs)
   );
 
+
   // Subregister 14 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_14]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11030,9 +10973,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_14_qs)
   );
 
+
   // Subregister 15 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_15]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11057,9 +11000,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_15_qs)
   );
 
+
   // Subregister 16 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_16]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11084,9 +11027,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_16_qs)
   );
 
+
   // Subregister 17 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_17]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11111,9 +11054,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_17_qs)
   );
 
+
   // Subregister 18 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_18]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11138,9 +11081,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_18_qs)
   );
 
+
   // Subregister 19 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_19]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11165,9 +11108,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_19_qs)
   );
 
+
   // Subregister 20 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_20]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11192,9 +11135,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_20_qs)
   );
 
+
   // Subregister 21 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_21]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11219,9 +11162,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_21_qs)
   );
 
+
   // Subregister 22 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_22]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11246,9 +11189,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_22_qs)
   );
 
+
   // Subregister 23 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_23]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11273,9 +11216,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_23_qs)
   );
 
+
   // Subregister 24 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_24]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11300,9 +11243,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_24_qs)
   );
 
+
   // Subregister 25 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_25]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11327,9 +11270,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_25_qs)
   );
 
+
   // Subregister 26 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_26]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11354,9 +11297,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_26_qs)
   );
 
+
   // Subregister 27 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_27]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11381,9 +11324,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_27_qs)
   );
 
+
   // Subregister 28 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_28]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11408,9 +11351,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_28_qs)
   );
 
+
   // Subregister 29 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_29]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11435,9 +11378,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_29_qs)
   );
 
+
   // Subregister 30 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_30]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11462,9 +11405,9 @@ module pinmux_reg_top (
     .qs     (mio_pad_sleep_mode_30_qs)
   );
 
+
   // Subregister 31 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_31]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11490,11 +11433,9 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg dio_pad_sleep_status
   // R[dio_pad_sleep_status]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11519,8 +11460,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_0_qs)
   );
 
-
-  // F[en_1]: 1:1
+  //   F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11545,8 +11485,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_1_qs)
   );
 
-
-  // F[en_2]: 2:2
+  //   F[en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11571,8 +11510,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_2_qs)
   );
 
-
-  // F[en_3]: 3:3
+  //   F[en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11597,8 +11535,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_3_qs)
   );
 
-
-  // F[en_4]: 4:4
+  //   F[en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11623,8 +11560,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_4_qs)
   );
 
-
-  // F[en_5]: 5:5
+  //   F[en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11649,8 +11585,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_5_qs)
   );
 
-
-  // F[en_6]: 6:6
+  //   F[en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11675,8 +11610,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_6_qs)
   );
 
-
-  // F[en_7]: 7:7
+  //   F[en_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11701,8 +11635,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_7_qs)
   );
 
-
-  // F[en_8]: 8:8
+  //   F[en_8]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11727,8 +11660,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_8_qs)
   );
 
-
-  // F[en_9]: 9:9
+  //   F[en_9]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11753,8 +11685,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_9_qs)
   );
 
-
-  // F[en_10]: 10:10
+  //   F[en_10]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11779,8 +11710,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_10_qs)
   );
 
-
-  // F[en_11]: 11:11
+  //   F[en_11]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11805,8 +11735,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_11_qs)
   );
 
-
-  // F[en_12]: 12:12
+  //   F[en_12]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11831,8 +11760,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_12_qs)
   );
 
-
-  // F[en_13]: 13:13
+  //   F[en_13]: 13:13
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11857,8 +11785,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_13_qs)
   );
 
-
-  // F[en_14]: 14:14
+  //   F[en_14]: 14:14
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11883,8 +11810,7 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_status_en_14_qs)
   );
 
-
-  // F[en_15]: 15:15
+  //   F[en_15]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11910,11 +11836,8 @@ module pinmux_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11939,9 +11862,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11966,9 +11889,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -11993,9 +11916,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12020,9 +11943,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12047,9 +11970,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12074,9 +11997,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12101,9 +12024,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12128,9 +12051,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12155,9 +12078,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12182,9 +12105,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_9_qs)
   );
 
+
   // Subregister 10 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12209,9 +12132,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_10_qs)
   );
 
+
   // Subregister 11 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12236,9 +12159,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_11_qs)
   );
 
+
   // Subregister 12 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12263,9 +12186,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_12_qs)
   );
 
+
   // Subregister 13 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12290,9 +12213,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_13_qs)
   );
 
+
   // Subregister 14 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12317,9 +12240,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_regwen_14_qs)
   );
 
+
   // Subregister 15 of Multireg dio_pad_sleep_regwen
   // R[dio_pad_sleep_regwen_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -12345,10 +12268,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12373,9 +12294,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_0_qs)
   );
 
+
   // Subregister 1 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12400,9 +12321,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_1_qs)
   );
 
+
   // Subregister 2 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12427,9 +12348,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_2_qs)
   );
 
+
   // Subregister 3 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12454,9 +12375,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_3_qs)
   );
 
+
   // Subregister 4 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12481,9 +12402,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_4_qs)
   );
 
+
   // Subregister 5 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12508,9 +12429,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_5_qs)
   );
 
+
   // Subregister 6 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12535,9 +12456,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_6_qs)
   );
 
+
   // Subregister 7 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12562,9 +12483,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_7_qs)
   );
 
+
   // Subregister 8 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12589,9 +12510,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_8_qs)
   );
 
+
   // Subregister 9 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12616,9 +12537,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_9_qs)
   );
 
+
   // Subregister 10 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_10]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12643,9 +12564,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_10_qs)
   );
 
+
   // Subregister 11 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_11]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12670,9 +12591,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_11_qs)
   );
 
+
   // Subregister 12 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_12]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12697,9 +12618,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_12_qs)
   );
 
+
   // Subregister 13 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_13]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12724,9 +12645,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_13_qs)
   );
 
+
   // Subregister 14 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_14]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12751,9 +12672,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_en_14_qs)
   );
 
+
   // Subregister 15 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_15]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12779,10 +12700,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_0]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12807,9 +12726,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_0_qs)
   );
 
+
   // Subregister 1 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_1]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12834,9 +12753,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_1_qs)
   );
 
+
   // Subregister 2 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_2]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12861,9 +12780,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_2_qs)
   );
 
+
   // Subregister 3 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_3]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12888,9 +12807,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_3_qs)
   );
 
+
   // Subregister 4 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_4]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12915,9 +12834,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_4_qs)
   );
 
+
   // Subregister 5 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_5]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12942,9 +12861,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_5_qs)
   );
 
+
   // Subregister 6 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_6]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12969,9 +12888,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_6_qs)
   );
 
+
   // Subregister 7 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_7]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12996,9 +12915,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_7_qs)
   );
 
+
   // Subregister 8 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_8]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13023,9 +12942,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_8_qs)
   );
 
+
   // Subregister 9 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_9]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13050,9 +12969,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_9_qs)
   );
 
+
   // Subregister 10 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_10]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13077,9 +12996,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_10_qs)
   );
 
+
   // Subregister 11 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_11]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13104,9 +13023,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_11_qs)
   );
 
+
   // Subregister 12 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_12]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13131,9 +13050,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_12_qs)
   );
 
+
   // Subregister 13 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_13]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13158,9 +13077,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_13_qs)
   );
 
+
   // Subregister 14 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_14]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13185,9 +13104,9 @@ module pinmux_reg_top (
     .qs     (dio_pad_sleep_mode_14_qs)
   );
 
+
   // Subregister 15 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_15]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13213,10 +13132,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13241,9 +13158,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13268,9 +13185,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13295,9 +13212,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13322,9 +13239,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13349,9 +13266,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13376,9 +13293,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13403,9 +13320,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg wkup_detector_regwen
   // R[wkup_detector_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -13431,10 +13348,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg wkup_detector_en
   // R[wkup_detector_en_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13459,9 +13374,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_0_qs_int)
   );
 
+
   // Subregister 1 of Multireg wkup_detector_en
   // R[wkup_detector_en_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13486,9 +13401,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_1_qs_int)
   );
 
+
   // Subregister 2 of Multireg wkup_detector_en
   // R[wkup_detector_en_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13513,9 +13428,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_2_qs_int)
   );
 
+
   // Subregister 3 of Multireg wkup_detector_en
   // R[wkup_detector_en_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13540,9 +13455,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_3_qs_int)
   );
 
+
   // Subregister 4 of Multireg wkup_detector_en
   // R[wkup_detector_en_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13567,9 +13482,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_4_qs_int)
   );
 
+
   // Subregister 5 of Multireg wkup_detector_en
   // R[wkup_detector_en_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13594,9 +13509,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_5_qs_int)
   );
 
+
   // Subregister 6 of Multireg wkup_detector_en
   // R[wkup_detector_en_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13621,9 +13536,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_en_6_qs_int)
   );
 
+
   // Subregister 7 of Multireg wkup_detector_en
   // R[wkup_detector_en_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13649,11 +13564,9 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg wkup_detector
   // R[wkup_detector_0]: V(False)
-
-  // F[mode_0]: 2:0
+  //   F[mode_0]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13678,8 +13591,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_0_mode_0_qs_int)
   );
 
-
-  // F[filter_0]: 3:3
+  //   F[filter_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13704,8 +13616,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_0_filter_0_qs_int)
   );
 
-
-  // F[miodio_0]: 4:4
+  //   F[miodio_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13733,8 +13644,7 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg wkup_detector
   // R[wkup_detector_1]: V(False)
-
-  // F[mode_1]: 2:0
+  //   F[mode_1]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13759,8 +13669,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_1_mode_1_qs_int)
   );
 
-
-  // F[filter_1]: 3:3
+  //   F[filter_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13785,8 +13694,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_1_filter_1_qs_int)
   );
 
-
-  // F[miodio_1]: 4:4
+  //   F[miodio_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13814,8 +13722,7 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg wkup_detector
   // R[wkup_detector_2]: V(False)
-
-  // F[mode_2]: 2:0
+  //   F[mode_2]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13840,8 +13747,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_2_mode_2_qs_int)
   );
 
-
-  // F[filter_2]: 3:3
+  //   F[filter_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13866,8 +13772,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_2_filter_2_qs_int)
   );
 
-
-  // F[miodio_2]: 4:4
+  //   F[miodio_2]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13895,8 +13800,7 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg wkup_detector
   // R[wkup_detector_3]: V(False)
-
-  // F[mode_3]: 2:0
+  //   F[mode_3]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13921,8 +13825,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_3_mode_3_qs_int)
   );
 
-
-  // F[filter_3]: 3:3
+  //   F[filter_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13947,8 +13850,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_3_filter_3_qs_int)
   );
 
-
-  // F[miodio_3]: 4:4
+  //   F[miodio_3]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13976,8 +13878,7 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg wkup_detector
   // R[wkup_detector_4]: V(False)
-
-  // F[mode_4]: 2:0
+  //   F[mode_4]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14002,8 +13903,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_4_mode_4_qs_int)
   );
 
-
-  // F[filter_4]: 3:3
+  //   F[filter_4]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14028,8 +13928,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_4_filter_4_qs_int)
   );
 
-
-  // F[miodio_4]: 4:4
+  //   F[miodio_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14057,8 +13956,7 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg wkup_detector
   // R[wkup_detector_5]: V(False)
-
-  // F[mode_5]: 2:0
+  //   F[mode_5]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14083,8 +13981,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_5_mode_5_qs_int)
   );
 
-
-  // F[filter_5]: 3:3
+  //   F[filter_5]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14109,8 +14006,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_5_filter_5_qs_int)
   );
 
-
-  // F[miodio_5]: 4:4
+  //   F[miodio_5]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14138,8 +14034,7 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg wkup_detector
   // R[wkup_detector_6]: V(False)
-
-  // F[mode_6]: 2:0
+  //   F[mode_6]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14164,8 +14059,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_6_mode_6_qs_int)
   );
 
-
-  // F[filter_6]: 3:3
+  //   F[filter_6]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14190,8 +14084,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_6_filter_6_qs_int)
   );
 
-
-  // F[miodio_6]: 4:4
+  //   F[miodio_6]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14219,8 +14112,7 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg wkup_detector
   // R[wkup_detector_7]: V(False)
-
-  // F[mode_7]: 2:0
+  //   F[mode_7]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14245,8 +14137,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_7_mode_7_qs_int)
   );
 
-
-  // F[filter_7]: 3:3
+  //   F[filter_7]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14271,8 +14162,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_7_filter_7_qs_int)
   );
 
-
-  // F[miodio_7]: 4:4
+  //   F[miodio_7]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14298,11 +14188,8 @@ module pinmux_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_0]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14327,9 +14214,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_0_qs_int)
   );
 
+
   // Subregister 1 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_1]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14354,9 +14241,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_1_qs_int)
   );
 
+
   // Subregister 2 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_2]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14381,9 +14268,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_2_qs_int)
   );
 
+
   // Subregister 3 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_3]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14408,9 +14295,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_3_qs_int)
   );
 
+
   // Subregister 4 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_4]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14435,9 +14322,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_4_qs_int)
   );
 
+
   // Subregister 5 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_5]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14462,9 +14349,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_5_qs_int)
   );
 
+
   // Subregister 6 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_6]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14489,9 +14376,9 @@ module pinmux_reg_top (
     .qs     (aon_wkup_detector_cnt_th_6_qs_int)
   );
 
+
   // Subregister 7 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_7]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14517,10 +14404,8 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_0]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14545,9 +14430,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_0_qs)
   );
 
+
   // Subregister 1 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_1]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14572,9 +14457,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_1_qs)
   );
 
+
   // Subregister 2 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_2]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14599,9 +14484,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_2_qs)
   );
 
+
   // Subregister 3 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_3]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14626,9 +14511,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_3_qs)
   );
 
+
   // Subregister 4 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_4]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14653,9 +14538,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_4_qs)
   );
 
+
   // Subregister 5 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_5]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14680,9 +14565,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_5_qs)
   );
 
+
   // Subregister 6 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_6]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14707,9 +14592,9 @@ module pinmux_reg_top (
     .qs     (wkup_detector_padsel_6_qs)
   );
 
+
   // Subregister 7 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_7]: V(False)
-
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -14735,11 +14620,9 @@ module pinmux_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg wkup_cause
   // R[wkup_cause]: V(False)
-
-  // F[cause_0]: 0:0
+  //   F[cause_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14764,8 +14647,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_0_qs_int)
   );
 
-
-  // F[cause_1]: 1:1
+  //   F[cause_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14790,8 +14672,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_1_qs_int)
   );
 
-
-  // F[cause_2]: 2:2
+  //   F[cause_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14816,8 +14697,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_2_qs_int)
   );
 
-
-  // F[cause_3]: 3:3
+  //   F[cause_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14842,8 +14722,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_3_qs_int)
   );
 
-
-  // F[cause_4]: 4:4
+  //   F[cause_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14868,8 +14747,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_4_qs_int)
   );
 
-
-  // F[cause_5]: 5:5
+  //   F[cause_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14894,8 +14772,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_5_qs_int)
   );
 
-
-  // F[cause_6]: 6:6
+  //   F[cause_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14920,8 +14797,7 @@ module pinmux_reg_top (
     .qs     (aon_wkup_cause_cause_6_qs_int)
   );
 
-
-  // F[cause_7]: 7:7
+  //   F[cause_7]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -14945,8 +14821,6 @@ module pinmux_reg_top (
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_7_qs_int)
   );
-
-
 
 
 

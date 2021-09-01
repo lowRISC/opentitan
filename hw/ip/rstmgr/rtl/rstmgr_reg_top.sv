@@ -140,7 +140,6 @@ module rstmgr_reg_top (
 
   // Register instances
   // R[reset_info]: V(False)
-
   //   F[por]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -165,7 +164,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (reset_info_por_qs)
   );
-
 
   //   F[low_power_exit]: 1:1
   prim_subreg #(
@@ -192,7 +190,6 @@ module rstmgr_reg_top (
     .qs     (reset_info_low_power_exit_qs)
   );
 
-
   //   F[ndm_reset]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -217,7 +214,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (reset_info_ndm_reset_qs)
   );
-
 
   //   F[hw_req]: 3:3
   prim_subreg #(
@@ -246,7 +242,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_ctrl]: V(False)
-
   //   F[en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -271,7 +266,6 @@ module rstmgr_reg_top (
     // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
   );
-
 
   //   F[index]: 7:4
   prim_subreg #(
@@ -300,7 +294,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_attr]: V(True)
-
   prim_subreg_ext #(
     .DW    (4)
   ) u_alert_info_attr (
@@ -316,7 +309,6 @@ module rstmgr_reg_top (
 
 
   // R[alert_info]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_alert_info (
@@ -331,11 +323,9 @@ module rstmgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg sw_rst_regen
   // R[sw_rst_regen]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -360,8 +350,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_regen_en_0_qs)
   );
 
-
-  // F[en_1]: 1:1
+  //   F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -387,12 +376,9 @@ module rstmgr_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg sw_rst_ctrl_n
   // R[sw_rst_ctrl_n]: V(True)
-
-  // F[val_0]: 0:0
+  //   F[val_0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_0 (
@@ -406,8 +392,7 @@ module rstmgr_reg_top (
     .qs     (sw_rst_ctrl_n_val_0_qs)
   );
 
-
-  // F[val_1]: 1:1
+  //   F[val_1]: 1:1
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_1 (
@@ -420,8 +405,6 @@ module rstmgr_reg_top (
     .q      (reg2hw.sw_rst_ctrl_n[1].q),
     .qs     (sw_rst_ctrl_n_val_1_qs)
   );
-
-
 
 
 

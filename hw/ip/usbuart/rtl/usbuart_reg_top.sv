@@ -218,7 +218,6 @@ module usbuart_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[tx_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -243,7 +242,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_state_tx_watermark_qs)
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
@@ -270,7 +268,6 @@ module usbuart_reg_top (
     .qs     (intr_state_rx_watermark_qs)
   );
 
-
   //   F[tx_overflow]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -295,7 +292,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_state_tx_overflow_qs)
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
@@ -322,7 +318,6 @@ module usbuart_reg_top (
     .qs     (intr_state_rx_overflow_qs)
   );
 
-
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -347,7 +342,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_state_rx_frame_err_qs)
   );
-
 
   //   F[rx_break_err]: 5:5
   prim_subreg #(
@@ -374,7 +368,6 @@ module usbuart_reg_top (
     .qs     (intr_state_rx_break_err_qs)
   );
 
-
   //   F[rx_timeout]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -399,7 +392,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_state_rx_timeout_qs)
   );
-
 
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
@@ -428,7 +420,6 @@ module usbuart_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[tx_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -453,7 +444,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_enable_tx_watermark_qs)
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
@@ -480,7 +470,6 @@ module usbuart_reg_top (
     .qs     (intr_enable_rx_watermark_qs)
   );
 
-
   //   F[tx_overflow]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -505,7 +494,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_enable_tx_overflow_qs)
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
@@ -532,7 +520,6 @@ module usbuart_reg_top (
     .qs     (intr_enable_rx_overflow_qs)
   );
 
-
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -557,7 +544,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_enable_rx_frame_err_qs)
   );
-
 
   //   F[rx_break_err]: 5:5
   prim_subreg #(
@@ -584,7 +570,6 @@ module usbuart_reg_top (
     .qs     (intr_enable_rx_break_err_qs)
   );
 
-
   //   F[rx_timeout]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -609,7 +594,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (intr_enable_rx_timeout_qs)
   );
-
 
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
@@ -638,7 +622,6 @@ module usbuart_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[tx_watermark]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -652,7 +635,6 @@ module usbuart_reg_top (
     .q      (reg2hw.intr_test.tx_watermark.q),
     .qs     ()
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg_ext #(
@@ -668,7 +650,6 @@ module usbuart_reg_top (
     .qs     ()
   );
 
-
   //   F[tx_overflow]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -682,7 +663,6 @@ module usbuart_reg_top (
     .q      (reg2hw.intr_test.tx_overflow.q),
     .qs     ()
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg_ext #(
@@ -698,7 +678,6 @@ module usbuart_reg_top (
     .qs     ()
   );
 
-
   //   F[rx_frame_err]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -712,7 +691,6 @@ module usbuart_reg_top (
     .q      (reg2hw.intr_test.rx_frame_err.q),
     .qs     ()
   );
-
 
   //   F[rx_break_err]: 5:5
   prim_subreg_ext #(
@@ -728,7 +706,6 @@ module usbuart_reg_top (
     .qs     ()
   );
 
-
   //   F[rx_timeout]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -742,7 +719,6 @@ module usbuart_reg_top (
     .q      (reg2hw.intr_test.rx_timeout.q),
     .qs     ()
   );
-
 
   //   F[rx_parity_err]: 7:7
   prim_subreg_ext #(
@@ -760,7 +736,6 @@ module usbuart_reg_top (
 
 
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -776,7 +751,6 @@ module usbuart_reg_top (
 
 
   // R[ctrl]: V(False)
-
   //   F[tx]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -801,7 +775,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (ctrl_tx_qs)
   );
-
 
   //   F[rx]: 1:1
   prim_subreg #(
@@ -828,7 +801,6 @@ module usbuart_reg_top (
     .qs     (ctrl_rx_qs)
   );
 
-
   //   F[nf]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -853,7 +825,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (ctrl_nf_qs)
   );
-
 
   //   F[slpbk]: 4:4
   prim_subreg #(
@@ -880,7 +851,6 @@ module usbuart_reg_top (
     .qs     (ctrl_slpbk_qs)
   );
 
-
   //   F[llpbk]: 5:5
   prim_subreg #(
     .DW      (1),
@@ -905,7 +875,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (ctrl_llpbk_qs)
   );
-
 
   //   F[parity_en]: 6:6
   prim_subreg #(
@@ -932,7 +901,6 @@ module usbuart_reg_top (
     .qs     (ctrl_parity_en_qs)
   );
 
-
   //   F[parity_odd]: 7:7
   prim_subreg #(
     .DW      (1),
@@ -958,7 +926,6 @@ module usbuart_reg_top (
     .qs     (ctrl_parity_odd_qs)
   );
 
-
   //   F[rxblvl]: 9:8
   prim_subreg #(
     .DW      (2),
@@ -983,7 +950,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (ctrl_rxblvl_qs)
   );
-
 
   //   F[nco]: 31:16
   prim_subreg #(
@@ -1012,7 +978,6 @@ module usbuart_reg_top (
 
 
   // R[status]: V(True)
-
   //   F[txfull]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1026,7 +991,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (status_txfull_qs)
   );
-
 
   //   F[rxfull]: 1:1
   prim_subreg_ext #(
@@ -1042,7 +1006,6 @@ module usbuart_reg_top (
     .qs     (status_rxfull_qs)
   );
 
-
   //   F[txempty]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -1056,7 +1019,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (status_txempty_qs)
   );
-
 
   //   F[txidle]: 3:3
   prim_subreg_ext #(
@@ -1072,7 +1034,6 @@ module usbuart_reg_top (
     .qs     (status_txidle_qs)
   );
 
-
   //   F[rxidle]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -1086,7 +1047,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (status_rxidle_qs)
   );
-
 
   //   F[rxempty]: 5:5
   prim_subreg_ext #(
@@ -1104,7 +1064,6 @@ module usbuart_reg_top (
 
 
   // R[rdata]: V(True)
-
   prim_subreg_ext #(
     .DW    (8)
   ) u_rdata (
@@ -1120,7 +1079,6 @@ module usbuart_reg_top (
 
 
   // R[wdata]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -1147,7 +1105,6 @@ module usbuart_reg_top (
 
 
   // R[fifo_ctrl]: V(False)
-
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1172,7 +1129,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (fifo_ctrl_rxrst_qs)
   );
-
 
   //   F[txrst]: 1:1
   prim_subreg #(
@@ -1199,7 +1155,6 @@ module usbuart_reg_top (
     .qs     (fifo_ctrl_txrst_qs)
   );
 
-
   //   F[rxilvl]: 4:2
   prim_subreg #(
     .DW      (3),
@@ -1224,7 +1179,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
   );
-
 
   //   F[txilvl]: 6:5
   prim_subreg #(
@@ -1253,7 +1207,6 @@ module usbuart_reg_top (
 
 
   // R[fifo_status]: V(True)
-
   //   F[txlvl]: 5:0
   prim_subreg_ext #(
     .DW    (6)
@@ -1267,7 +1220,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (fifo_status_txlvl_qs)
   );
-
 
   //   F[rxlvl]: 21:16
   prim_subreg_ext #(
@@ -1285,7 +1237,6 @@ module usbuart_reg_top (
 
 
   // R[ovrd]: V(False)
-
   //   F[txen]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1310,7 +1261,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (ovrd_txen_qs)
   );
-
 
   //   F[txval]: 1:1
   prim_subreg #(
@@ -1339,7 +1289,6 @@ module usbuart_reg_top (
 
 
   // R[val]: V(True)
-
   prim_subreg_ext #(
     .DW    (16)
   ) u_val (
@@ -1355,7 +1304,6 @@ module usbuart_reg_top (
 
 
   // R[timeout_ctrl]: V(False)
-
   //   F[val]: 23:0
   prim_subreg #(
     .DW      (24),
@@ -1380,7 +1328,6 @@ module usbuart_reg_top (
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
   );
-
 
   //   F[en]: 31:31
   prim_subreg #(
@@ -1409,7 +1356,6 @@ module usbuart_reg_top (
 
 
   // R[usbstat]: V(True)
-
   //   F[frame]: 10:0
   prim_subreg_ext #(
     .DW    (11)
@@ -1423,7 +1369,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (usbstat_frame_qs)
   );
-
 
   //   F[host_timeout]: 14:14
   prim_subreg_ext #(
@@ -1439,7 +1384,6 @@ module usbuart_reg_top (
     .qs     (usbstat_host_timeout_qs)
   );
 
-
   //   F[host_lost]: 15:15
   prim_subreg_ext #(
     .DW    (1)
@@ -1453,7 +1397,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (usbstat_host_lost_qs)
   );
-
 
   //   F[device_address]: 22:16
   prim_subreg_ext #(
@@ -1471,7 +1414,6 @@ module usbuart_reg_top (
 
 
   // R[usbparam]: V(True)
-
   //   F[baud_req]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1486,7 +1428,6 @@ module usbuart_reg_top (
     .qs     (usbparam_baud_req_qs)
   );
 
-
   //   F[parity_req]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -1500,7 +1441,6 @@ module usbuart_reg_top (
     .q      (),
     .qs     (usbparam_parity_req_qs)
   );
-
 
 
 

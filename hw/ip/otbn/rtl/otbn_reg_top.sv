@@ -199,7 +199,6 @@ module otbn_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -226,7 +225,6 @@ module otbn_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -253,7 +251,6 @@ module otbn_reg_top (
 
 
   // R[intr_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -269,7 +266,6 @@ module otbn_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[fatal]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -283,7 +279,6 @@ module otbn_reg_top (
     .q      (reg2hw.alert_test.fatal.q),
     .qs     ()
   );
-
 
   //   F[recov]: 1:1
   prim_subreg_ext #(
@@ -301,7 +296,6 @@ module otbn_reg_top (
 
 
   // R[cmd]: V(True)
-
   prim_subreg_ext #(
     .DW    (8)
   ) u_cmd (
@@ -317,7 +311,6 @@ module otbn_reg_top (
 
 
   // R[status]: V(True)
-
   prim_subreg_ext #(
     .DW    (8)
   ) u_status (
@@ -333,7 +326,6 @@ module otbn_reg_top (
 
 
   // R[err_bits]: V(False)
-
   //   F[bad_data_addr]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -358,7 +350,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (err_bits_bad_data_addr_qs)
   );
-
 
   //   F[bad_insn_addr]: 1:1
   prim_subreg #(
@@ -385,7 +376,6 @@ module otbn_reg_top (
     .qs     (err_bits_bad_insn_addr_qs)
   );
 
-
   //   F[call_stack]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -410,7 +400,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (err_bits_call_stack_qs)
   );
-
 
   //   F[illegal_insn]: 3:3
   prim_subreg #(
@@ -437,7 +426,6 @@ module otbn_reg_top (
     .qs     (err_bits_illegal_insn_qs)
   );
 
-
   //   F[loop]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -462,7 +450,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (err_bits_loop_qs)
   );
-
 
   //   F[fatal_imem]: 5:5
   prim_subreg #(
@@ -489,7 +476,6 @@ module otbn_reg_top (
     .qs     (err_bits_fatal_imem_qs)
   );
 
-
   //   F[fatal_dmem]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -514,7 +500,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (err_bits_fatal_dmem_qs)
   );
-
 
   //   F[fatal_reg]: 7:7
   prim_subreg #(
@@ -541,7 +526,6 @@ module otbn_reg_top (
     .qs     (err_bits_fatal_reg_qs)
   );
 
-
   //   F[fatal_illegal_bus_access]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -566,7 +550,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (err_bits_fatal_illegal_bus_access_qs)
   );
-
 
   //   F[fatal_lifecycle_escalation]: 9:9
   prim_subreg #(
@@ -595,7 +578,6 @@ module otbn_reg_top (
 
 
   // R[start_addr]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -622,7 +604,6 @@ module otbn_reg_top (
 
 
   // R[fatal_alert_cause]: V(False)
-
   //   F[bus_integrity_error]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -647,7 +628,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (fatal_alert_cause_bus_integrity_error_qs)
   );
-
 
   //   F[imem_error]: 1:1
   prim_subreg #(
@@ -674,7 +654,6 @@ module otbn_reg_top (
     .qs     (fatal_alert_cause_imem_error_qs)
   );
 
-
   //   F[dmem_error]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -699,7 +678,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (fatal_alert_cause_dmem_error_qs)
   );
-
 
   //   F[reg_error]: 3:3
   prim_subreg #(
@@ -726,7 +704,6 @@ module otbn_reg_top (
     .qs     (fatal_alert_cause_reg_error_qs)
   );
 
-
   //   F[illegal_bus_access]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -751,7 +728,6 @@ module otbn_reg_top (
     // to register interface (read)
     .qs     (fatal_alert_cause_illegal_bus_access_qs)
   );
-
 
   //   F[lifecycle_escalation]: 5:5
   prim_subreg #(
@@ -780,7 +756,6 @@ module otbn_reg_top (
 
 
   // R[insn_cnt]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_insn_cnt (
@@ -793,7 +768,6 @@ module otbn_reg_top (
     .q      (),
     .qs     (insn_cnt_qs)
   );
-
 
 
 

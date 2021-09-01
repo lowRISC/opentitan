@@ -112,7 +112,6 @@ module rv_dm_regs_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -125,7 +124,6 @@ module rv_dm_regs_reg_top (
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
-
 
 
 

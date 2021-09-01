@@ -279,7 +279,6 @@ module otp_ctrl_core_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -304,7 +303,6 @@ module otp_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_state_otp_operation_done_qs)
   );
-
 
   //   F[otp_error]: 1:1
   prim_subreg #(
@@ -333,7 +331,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -358,7 +355,6 @@ module otp_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_enable_otp_operation_done_qs)
   );
-
 
   //   F[otp_error]: 1:1
   prim_subreg #(
@@ -387,7 +383,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[otp_operation_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -401,7 +396,6 @@ module otp_ctrl_core_reg_top (
     .q      (reg2hw.intr_test.otp_operation_done.q),
     .qs     ()
   );
-
 
   //   F[otp_error]: 1:1
   prim_subreg_ext #(
@@ -419,7 +413,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[fatal_macro_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -434,7 +427,6 @@ module otp_ctrl_core_reg_top (
     .qs     ()
   );
 
-
   //   F[fatal_check_error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
@@ -448,7 +440,6 @@ module otp_ctrl_core_reg_top (
     .q      (reg2hw.alert_test.fatal_check_error.q),
     .qs     ()
   );
-
 
   //   F[fatal_bus_integ_error]: 2:2
   prim_subreg_ext #(
@@ -466,7 +457,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[status]: V(True)
-
   //   F[vendor_test_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -480,7 +470,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_vendor_test_error_qs)
   );
-
 
   //   F[creator_sw_cfg_error]: 1:1
   prim_subreg_ext #(
@@ -496,7 +485,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_creator_sw_cfg_error_qs)
   );
 
-
   //   F[owner_sw_cfg_error]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -510,7 +498,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_owner_sw_cfg_error_qs)
   );
-
 
   //   F[hw_cfg_error]: 3:3
   prim_subreg_ext #(
@@ -526,7 +513,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_hw_cfg_error_qs)
   );
 
-
   //   F[secret0_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -540,7 +526,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_secret0_error_qs)
   );
-
 
   //   F[secret1_error]: 5:5
   prim_subreg_ext #(
@@ -556,7 +541,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_secret1_error_qs)
   );
 
-
   //   F[secret2_error]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -570,7 +554,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_secret2_error_qs)
   );
-
 
   //   F[life_cycle_error]: 7:7
   prim_subreg_ext #(
@@ -586,7 +569,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_life_cycle_error_qs)
   );
 
-
   //   F[dai_error]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -600,7 +582,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_dai_error_qs)
   );
-
 
   //   F[lci_error]: 9:9
   prim_subreg_ext #(
@@ -616,7 +597,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_lci_error_qs)
   );
 
-
   //   F[timeout_error]: 10:10
   prim_subreg_ext #(
     .DW    (1)
@@ -630,7 +610,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_timeout_error_qs)
   );
-
 
   //   F[lfsr_fsm_error]: 11:11
   prim_subreg_ext #(
@@ -646,7 +625,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_lfsr_fsm_error_qs)
   );
 
-
   //   F[scrambling_fsm_error]: 12:12
   prim_subreg_ext #(
     .DW    (1)
@@ -660,7 +638,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_scrambling_fsm_error_qs)
   );
-
 
   //   F[key_deriv_fsm_error]: 13:13
   prim_subreg_ext #(
@@ -676,7 +653,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_key_deriv_fsm_error_qs)
   );
 
-
   //   F[bus_integ_error]: 14:14
   prim_subreg_ext #(
     .DW    (1)
@@ -691,7 +667,6 @@ module otp_ctrl_core_reg_top (
     .qs     (status_bus_integ_error_qs)
   );
 
-
   //   F[dai_idle]: 15:15
   prim_subreg_ext #(
     .DW    (1)
@@ -705,7 +680,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (status_dai_idle_qs)
   );
-
 
   //   F[check_pending]: 16:16
   prim_subreg_ext #(
@@ -722,11 +696,9 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg err_code
   // R[err_code]: V(True)
-
-  // F[err_code_0]: 2:0
+  //   F[err_code_0]: 2:0
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_0 (
@@ -740,8 +712,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_0_qs)
   );
 
-
-  // F[err_code_1]: 5:3
+  //   F[err_code_1]: 5:3
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_1 (
@@ -755,8 +726,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_1_qs)
   );
 
-
-  // F[err_code_2]: 8:6
+  //   F[err_code_2]: 8:6
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_2 (
@@ -770,8 +740,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_2_qs)
   );
 
-
-  // F[err_code_3]: 11:9
+  //   F[err_code_3]: 11:9
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_3 (
@@ -785,8 +754,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_3_qs)
   );
 
-
-  // F[err_code_4]: 14:12
+  //   F[err_code_4]: 14:12
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_4 (
@@ -800,8 +768,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_4_qs)
   );
 
-
-  // F[err_code_5]: 17:15
+  //   F[err_code_5]: 17:15
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_5 (
@@ -815,8 +782,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_5_qs)
   );
 
-
-  // F[err_code_6]: 20:18
+  //   F[err_code_6]: 20:18
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_6 (
@@ -830,8 +796,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_6_qs)
   );
 
-
-  // F[err_code_7]: 23:21
+  //   F[err_code_7]: 23:21
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_7 (
@@ -845,8 +810,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_7_qs)
   );
 
-
-  // F[err_code_8]: 26:24
+  //   F[err_code_8]: 26:24
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_8 (
@@ -860,8 +824,7 @@ module otp_ctrl_core_reg_top (
     .qs     (err_code_err_code_8_qs)
   );
 
-
-  // F[err_code_9]: 29:27
+  //   F[err_code_9]: 29:27
   prim_subreg_ext #(
     .DW    (3)
   ) u_err_code_err_code_9 (
@@ -876,9 +839,7 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // R[direct_access_regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_direct_access_regwen (
@@ -894,7 +855,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[direct_access_cmd]: V(True)
-
   //   F[rd]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -909,7 +869,6 @@ module otp_ctrl_core_reg_top (
     .qs     ()
   );
 
-
   //   F[wr]: 1:1
   prim_subreg_ext #(
     .DW    (1)
@@ -923,7 +882,6 @@ module otp_ctrl_core_reg_top (
     .q      (reg2hw.direct_access_cmd.wr.q),
     .qs     ()
   );
-
 
   //   F[digest]: 2:2
   prim_subreg_ext #(
@@ -941,7 +899,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[direct_access_address]: V(False)
-
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -967,10 +924,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg direct_access_wdata
   // R[direct_access_wdata_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -995,9 +950,9 @@ module otp_ctrl_core_reg_top (
     .qs     (direct_access_wdata_0_qs)
   );
 
+
   // Subregister 1 of Multireg direct_access_wdata
   // R[direct_access_wdata_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1023,10 +978,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg direct_access_rdata
   // R[direct_access_rdata_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_direct_access_rdata_0 (
@@ -1040,9 +993,9 @@ module otp_ctrl_core_reg_top (
     .qs     (direct_access_rdata_0_qs)
   );
 
+
   // Subregister 1 of Multireg direct_access_rdata
   // R[direct_access_rdata_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_direct_access_rdata_1 (
@@ -1058,7 +1011,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_trigger_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1085,7 +1037,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_trigger]: V(True)
-
   //   F[integrity]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1099,7 +1050,6 @@ module otp_ctrl_core_reg_top (
     .q      (reg2hw.check_trigger.integrity.q),
     .qs     ()
   );
-
 
   //   F[consistency]: 1:1
   prim_subreg_ext #(
@@ -1117,7 +1067,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1144,7 +1093,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_timeout]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1171,7 +1119,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[integrity_check_period]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1198,7 +1145,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[consistency_check_period]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1225,7 +1171,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[vendor_test_read_lock]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1252,7 +1197,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[creator_sw_cfg_read_lock]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1279,7 +1223,6 @@ module otp_ctrl_core_reg_top (
 
 
   // R[owner_sw_cfg_read_lock]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1305,10 +1248,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg vendor_test_digest
   // R[vendor_test_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_vendor_test_digest_0 (
@@ -1322,9 +1263,9 @@ module otp_ctrl_core_reg_top (
     .qs     (vendor_test_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg vendor_test_digest
   // R[vendor_test_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_vendor_test_digest_1 (
@@ -1339,10 +1280,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg creator_sw_cfg_digest
   // R[creator_sw_cfg_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_creator_sw_cfg_digest_0 (
@@ -1356,9 +1295,9 @@ module otp_ctrl_core_reg_top (
     .qs     (creator_sw_cfg_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg creator_sw_cfg_digest
   // R[creator_sw_cfg_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_creator_sw_cfg_digest_1 (
@@ -1373,10 +1312,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg owner_sw_cfg_digest
   // R[owner_sw_cfg_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_owner_sw_cfg_digest_0 (
@@ -1390,9 +1327,9 @@ module otp_ctrl_core_reg_top (
     .qs     (owner_sw_cfg_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg owner_sw_cfg_digest
   // R[owner_sw_cfg_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_owner_sw_cfg_digest_1 (
@@ -1407,10 +1344,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg hw_cfg_digest
   // R[hw_cfg_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_hw_cfg_digest_0 (
@@ -1424,9 +1359,9 @@ module otp_ctrl_core_reg_top (
     .qs     (hw_cfg_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg hw_cfg_digest
   // R[hw_cfg_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_hw_cfg_digest_1 (
@@ -1441,10 +1376,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg secret0_digest
   // R[secret0_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret0_digest_0 (
@@ -1458,9 +1391,9 @@ module otp_ctrl_core_reg_top (
     .qs     (secret0_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg secret0_digest
   // R[secret0_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret0_digest_1 (
@@ -1475,10 +1408,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg secret1_digest
   // R[secret1_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret1_digest_0 (
@@ -1492,9 +1423,9 @@ module otp_ctrl_core_reg_top (
     .qs     (secret1_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg secret1_digest
   // R[secret1_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret1_digest_1 (
@@ -1509,10 +1440,8 @@ module otp_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg secret2_digest
   // R[secret2_digest_0]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret2_digest_0 (
@@ -1526,9 +1455,9 @@ module otp_ctrl_core_reg_top (
     .qs     (secret2_digest_0_qs)
   );
 
+
   // Subregister 1 of Multireg secret2_digest
   // R[secret2_digest_1]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_secret2_digest_1 (
@@ -1541,7 +1470,6 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .qs     (secret2_digest_1_qs)
   );
-
 
 
 

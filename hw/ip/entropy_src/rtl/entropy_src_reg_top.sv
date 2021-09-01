@@ -337,7 +337,6 @@ module entropy_src_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -362,7 +361,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (intr_state_es_entropy_valid_qs)
   );
-
 
   //   F[es_health_test_failed]: 1:1
   prim_subreg #(
@@ -389,7 +387,6 @@ module entropy_src_reg_top (
     .qs     (intr_state_es_health_test_failed_qs)
   );
 
-
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -414,7 +411,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (intr_state_es_observe_fifo_ready_qs)
   );
-
 
   //   F[es_fatal_err]: 3:3
   prim_subreg #(
@@ -443,7 +439,6 @@ module entropy_src_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -468,7 +463,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (intr_enable_es_entropy_valid_qs)
   );
-
 
   //   F[es_health_test_failed]: 1:1
   prim_subreg #(
@@ -495,7 +489,6 @@ module entropy_src_reg_top (
     .qs     (intr_enable_es_health_test_failed_qs)
   );
 
-
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -520,7 +513,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (intr_enable_es_observe_fifo_ready_qs)
   );
-
 
   //   F[es_fatal_err]: 3:3
   prim_subreg #(
@@ -549,7 +541,6 @@ module entropy_src_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[es_entropy_valid]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -563,7 +554,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.intr_test.es_entropy_valid.q),
     .qs     ()
   );
-
 
   //   F[es_health_test_failed]: 1:1
   prim_subreg_ext #(
@@ -579,7 +569,6 @@ module entropy_src_reg_top (
     .qs     ()
   );
 
-
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -593,7 +582,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.intr_test.es_observe_fifo_ready.q),
     .qs     ()
   );
-
 
   //   F[es_fatal_err]: 3:3
   prim_subreg_ext #(
@@ -611,7 +599,6 @@ module entropy_src_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -625,7 +612,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
-
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -643,7 +629,6 @@ module entropy_src_reg_top (
 
 
   // R[regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_regwen (
@@ -659,16 +644,13 @@ module entropy_src_reg_top (
 
 
   // R[rev]: V(False)
-
   //   F[abi_revision]: 7:0
   // constant-only read
   assign rev_abi_revision_qs = 8'h3;
 
-
   //   F[hw_revision]: 15:8
   // constant-only read
   assign rev_hw_revision_qs = 8'h3;
-
 
   //   F[chip_type]: 23:16
   // constant-only read
@@ -676,7 +658,6 @@ module entropy_src_reg_top (
 
 
   // R[conf]: V(False)
-
   //   F[enable]: 1:0
   prim_subreg #(
     .DW      (2),
@@ -701,7 +682,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (conf_enable_qs)
   );
-
 
   //   F[boot_bypass_disable]: 3:3
   prim_subreg #(
@@ -728,7 +708,6 @@ module entropy_src_reg_top (
     .qs     (conf_boot_bypass_disable_qs)
   );
 
-
   //   F[repcnt_disable]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -753,7 +732,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (conf_repcnt_disable_qs)
   );
-
 
   //   F[adaptp_disable]: 5:5
   prim_subreg #(
@@ -780,7 +758,6 @@ module entropy_src_reg_top (
     .qs     (conf_adaptp_disable_qs)
   );
 
-
   //   F[bucket_disable]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -805,7 +782,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (conf_bucket_disable_qs)
   );
-
 
   //   F[markov_disable]: 7:7
   prim_subreg #(
@@ -832,7 +808,6 @@ module entropy_src_reg_top (
     .qs     (conf_markov_disable_qs)
   );
 
-
   //   F[health_test_clr]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -857,7 +832,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (conf_health_test_clr_qs)
   );
-
 
   //   F[rng_bit_en]: 9:9
   prim_subreg #(
@@ -884,7 +858,6 @@ module entropy_src_reg_top (
     .qs     (conf_rng_bit_en_qs)
   );
 
-
   //   F[rng_bit_sel]: 11:10
   prim_subreg #(
     .DW      (2),
@@ -910,7 +883,6 @@ module entropy_src_reg_top (
     .qs     (conf_rng_bit_sel_qs)
   );
 
-
   //   F[extht_enable]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -935,7 +907,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (conf_extht_enable_qs)
   );
-
 
   //   F[repcnts_disable]: 13:13
   prim_subreg #(
@@ -964,7 +935,6 @@ module entropy_src_reg_top (
 
 
   // R[rate]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -991,7 +961,6 @@ module entropy_src_reg_top (
 
 
   // R[entropy_control]: V(False)
-
   //   F[es_route]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1016,7 +985,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (entropy_control_es_route_qs)
   );
-
 
   //   F[es_type]: 1:1
   prim_subreg #(
@@ -1045,7 +1013,6 @@ module entropy_src_reg_top (
 
 
   // R[entropy_data]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_data (
@@ -1061,7 +1028,6 @@ module entropy_src_reg_top (
 
 
   // R[health_test_windows]: V(False)
-
   //   F[fips_window]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1086,7 +1052,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (health_test_windows_fips_window_qs)
   );
-
 
   //   F[bypass_window]: 31:16
   prim_subreg #(
@@ -1115,7 +1080,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnt_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1129,7 +1093,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.repcnt_thresholds.fips_thresh.q),
     .qs     (repcnt_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1147,7 +1110,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnts_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1161,7 +1123,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.repcnts_thresholds.fips_thresh.q),
     .qs     (repcnts_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1179,7 +1140,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_hi_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1193,7 +1153,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q),
     .qs     (adaptp_hi_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1211,7 +1170,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_lo_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1225,7 +1183,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q),
     .qs     (adaptp_lo_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1243,7 +1200,6 @@ module entropy_src_reg_top (
 
 
   // R[bucket_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1257,7 +1213,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.bucket_thresholds.fips_thresh.q),
     .qs     (bucket_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1275,7 +1230,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_hi_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1289,7 +1243,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.markov_hi_thresholds.fips_thresh.q),
     .qs     (markov_hi_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1307,7 +1260,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_lo_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1321,7 +1273,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.markov_lo_thresholds.fips_thresh.q),
     .qs     (markov_lo_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1339,7 +1290,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_hi_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1353,7 +1303,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.extht_hi_thresholds.fips_thresh.q),
     .qs     (extht_hi_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1371,7 +1320,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_lo_thresholds]: V(True)
-
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1385,7 +1333,6 @@ module entropy_src_reg_top (
     .q      (reg2hw.extht_lo_thresholds.fips_thresh.q),
     .qs     (extht_lo_thresholds_fips_thresh_qs)
   );
-
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1403,7 +1350,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnt_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1417,7 +1363,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (repcnt_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1435,7 +1380,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnts_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1449,7 +1393,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (repcnts_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1467,7 +1410,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1481,7 +1423,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (adaptp_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1499,7 +1440,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_lo_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1513,7 +1453,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (adaptp_lo_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1531,7 +1470,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1545,7 +1483,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (extht_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1563,7 +1500,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_lo_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1577,7 +1513,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (extht_lo_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1595,7 +1530,6 @@ module entropy_src_reg_top (
 
 
   // R[bucket_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1609,7 +1543,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (bucket_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1627,7 +1560,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_hi_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1641,7 +1573,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (markov_hi_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1659,7 +1590,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_lo_watermarks]: V(True)
-
   //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1673,7 +1603,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (markov_lo_watermarks_fips_watermark_qs)
   );
-
 
   //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
@@ -1691,7 +1620,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnt_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_repcnt_total_fails (
@@ -1707,7 +1635,6 @@ module entropy_src_reg_top (
 
 
   // R[repcnts_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_repcnts_total_fails (
@@ -1723,7 +1650,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_hi_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_adaptp_hi_total_fails (
@@ -1739,7 +1665,6 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_lo_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_adaptp_lo_total_fails (
@@ -1755,7 +1680,6 @@ module entropy_src_reg_top (
 
 
   // R[bucket_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_bucket_total_fails (
@@ -1771,7 +1695,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_hi_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_markov_hi_total_fails (
@@ -1787,7 +1710,6 @@ module entropy_src_reg_top (
 
 
   // R[markov_lo_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_markov_lo_total_fails (
@@ -1803,7 +1725,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_hi_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_extht_hi_total_fails (
@@ -1819,7 +1740,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_lo_total_fails]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_extht_lo_total_fails (
@@ -1835,7 +1755,6 @@ module entropy_src_reg_top (
 
 
   // R[alert_threshold]: V(False)
-
   //   F[alert_threshold]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1860,7 +1779,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (alert_threshold_alert_threshold_qs)
   );
-
 
   //   F[alert_threshold_inv]: 31:16
   prim_subreg #(
@@ -1889,7 +1807,6 @@ module entropy_src_reg_top (
 
 
   // R[alert_summary_fail_counts]: V(True)
-
   prim_subreg_ext #(
     .DW    (16)
   ) u_alert_summary_fail_counts (
@@ -1905,7 +1822,6 @@ module entropy_src_reg_top (
 
 
   // R[alert_fail_counts]: V(True)
-
   //   F[repcnt_fail_count]: 7:4
   prim_subreg_ext #(
     .DW    (4)
@@ -1919,7 +1835,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (alert_fail_counts_repcnt_fail_count_qs)
   );
-
 
   //   F[adaptp_hi_fail_count]: 11:8
   prim_subreg_ext #(
@@ -1935,7 +1850,6 @@ module entropy_src_reg_top (
     .qs     (alert_fail_counts_adaptp_hi_fail_count_qs)
   );
 
-
   //   F[adaptp_lo_fail_count]: 15:12
   prim_subreg_ext #(
     .DW    (4)
@@ -1949,7 +1863,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (alert_fail_counts_adaptp_lo_fail_count_qs)
   );
-
 
   //   F[bucket_fail_count]: 19:16
   prim_subreg_ext #(
@@ -1965,7 +1878,6 @@ module entropy_src_reg_top (
     .qs     (alert_fail_counts_bucket_fail_count_qs)
   );
 
-
   //   F[markov_hi_fail_count]: 23:20
   prim_subreg_ext #(
     .DW    (4)
@@ -1980,7 +1892,6 @@ module entropy_src_reg_top (
     .qs     (alert_fail_counts_markov_hi_fail_count_qs)
   );
 
-
   //   F[markov_lo_fail_count]: 27:24
   prim_subreg_ext #(
     .DW    (4)
@@ -1994,7 +1905,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (alert_fail_counts_markov_lo_fail_count_qs)
   );
-
 
   //   F[repcnts_fail_count]: 31:28
   prim_subreg_ext #(
@@ -2012,7 +1922,6 @@ module entropy_src_reg_top (
 
 
   // R[extht_fail_counts]: V(True)
-
   //   F[extht_hi_fail_count]: 3:0
   prim_subreg_ext #(
     .DW    (4)
@@ -2026,7 +1935,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (extht_fail_counts_extht_hi_fail_count_qs)
   );
-
 
   //   F[extht_lo_fail_count]: 7:4
   prim_subreg_ext #(
@@ -2044,7 +1952,6 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_control]: V(False)
-
   //   F[fw_ov_mode]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2069,7 +1976,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_mode_qs)
   );
-
 
   //   F[fw_ov_entropy_insert]: 1:1
   prim_subreg #(
@@ -2098,7 +2004,6 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_rd_data]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_fw_ov_rd_data (
@@ -2114,7 +2019,6 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_wr_data]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_fw_ov_wr_data (
@@ -2130,7 +2034,6 @@ module entropy_src_reg_top (
 
 
   // R[observe_fifo_thresh]: V(False)
-
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2157,7 +2060,6 @@ module entropy_src_reg_top (
 
 
   // R[debug_status]: V(True)
-
   //   F[entropy_fifo_depth]: 2:0
   prim_subreg_ext #(
     .DW    (3)
@@ -2171,7 +2073,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (debug_status_entropy_fifo_depth_qs)
   );
-
 
   //   F[sha3_fsm]: 5:3
   prim_subreg_ext #(
@@ -2187,7 +2088,6 @@ module entropy_src_reg_top (
     .qs     (debug_status_sha3_fsm_qs)
   );
 
-
   //   F[sha3_block_pr]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -2201,7 +2101,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (debug_status_sha3_block_pr_qs)
   );
-
 
   //   F[sha3_squeezing]: 7:7
   prim_subreg_ext #(
@@ -2217,7 +2116,6 @@ module entropy_src_reg_top (
     .qs     (debug_status_sha3_squeezing_qs)
   );
 
-
   //   F[sha3_absorbed]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -2231,7 +2129,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (debug_status_sha3_absorbed_qs)
   );
-
 
   //   F[sha3_err]: 9:9
   prim_subreg_ext #(
@@ -2247,7 +2144,6 @@ module entropy_src_reg_top (
     .qs     (debug_status_sha3_err_qs)
   );
 
-
   //   F[main_sm_idle]: 16:16
   prim_subreg_ext #(
     .DW    (1)
@@ -2261,7 +2157,6 @@ module entropy_src_reg_top (
     .q      (),
     .qs     (debug_status_main_sm_idle_qs)
   );
-
 
   //   F[main_sm_state]: 31:24
   prim_subreg_ext #(
@@ -2279,7 +2174,6 @@ module entropy_src_reg_top (
 
 
   // R[seed]: V(False)
-
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2306,7 +2200,6 @@ module entropy_src_reg_top (
 
 
   // R[recov_alert_sts]: V(False)
-
   //   F[es_main_sm_alert]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -2331,7 +2224,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (recov_alert_sts_es_main_sm_alert_qs)
   );
-
 
   //   F[es_bus_cmp_alert]: 13:13
   prim_subreg #(
@@ -2360,7 +2252,6 @@ module entropy_src_reg_top (
 
 
   // R[err_code]: V(False)
-
   //   F[sfifo_esrng_err]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2385,7 +2276,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_esrng_err_qs)
   );
-
 
   //   F[sfifo_observe_err]: 1:1
   prim_subreg #(
@@ -2412,7 +2302,6 @@ module entropy_src_reg_top (
     .qs     (err_code_sfifo_observe_err_qs)
   );
 
-
   //   F[sfifo_esfinal_err]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2437,7 +2326,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_esfinal_err_qs)
   );
-
 
   //   F[es_ack_sm_err]: 20:20
   prim_subreg #(
@@ -2464,7 +2352,6 @@ module entropy_src_reg_top (
     .qs     (err_code_es_ack_sm_err_qs)
   );
 
-
   //   F[es_main_sm_err]: 21:21
   prim_subreg #(
     .DW      (1),
@@ -2489,7 +2376,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (err_code_es_main_sm_err_qs)
   );
-
 
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
@@ -2516,7 +2402,6 @@ module entropy_src_reg_top (
     .qs     (err_code_fifo_write_err_qs)
   );
 
-
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
@@ -2541,7 +2426,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
   );
-
 
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
@@ -2570,7 +2454,6 @@ module entropy_src_reg_top (
 
 
   // R[err_code_test]: V(False)
-
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2594,7 +2477,6 @@ module entropy_src_reg_top (
     // to register interface (read)
     .qs     (err_code_test_qs)
   );
-
 
 
 

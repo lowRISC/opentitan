@@ -1466,7 +1466,6 @@ module sysrst_ctrl_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1493,7 +1492,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1520,7 +1518,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[intr_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -1536,7 +1533,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1552,7 +1548,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1579,7 +1574,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ec_rst_ctl]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1606,7 +1600,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_ac_debounce_ctl]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1633,7 +1626,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_lid_debounce_ctl]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1660,7 +1652,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_pwrb_debounce_ctl]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1687,7 +1678,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_ctl]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1714,7 +1704,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_status]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1741,7 +1730,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[wkup_status]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1768,7 +1756,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_invert_ctl]: V(False)
-
   //   F[key0_in]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1793,7 +1780,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_key0_in_qs_int)
   );
-
 
   //   F[key0_out]: 1:1
   prim_subreg #(
@@ -1820,7 +1806,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_invert_ctl_key0_out_qs_int)
   );
 
-
   //   F[key1_in]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -1845,7 +1830,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_key1_in_qs_int)
   );
-
 
   //   F[key1_out]: 3:3
   prim_subreg #(
@@ -1872,7 +1856,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_invert_ctl_key1_out_qs_int)
   );
 
-
   //   F[key2_in]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -1897,7 +1880,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_key2_in_qs_int)
   );
-
 
   //   F[key2_out]: 5:5
   prim_subreg #(
@@ -1924,7 +1906,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_invert_ctl_key2_out_qs_int)
   );
 
-
   //   F[pwrb_in]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -1949,7 +1930,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_pwrb_in_qs_int)
   );
-
 
   //   F[pwrb_out]: 7:7
   prim_subreg #(
@@ -1976,7 +1956,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_invert_ctl_pwrb_out_qs_int)
   );
 
-
   //   F[ac_present]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -2001,7 +1980,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_ac_present_qs_int)
   );
-
 
   //   F[bat_disable]: 9:9
   prim_subreg #(
@@ -2028,7 +2006,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_invert_ctl_bat_disable_qs_int)
   );
 
-
   //   F[lid_open]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -2053,7 +2030,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_invert_ctl_lid_open_qs_int)
   );
-
 
   //   F[z3_wakeup]: 11:11
   prim_subreg #(
@@ -2082,7 +2058,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[pin_allowed_ctl]: V(False)
-
   //   F[bat_disable_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2107,7 +2082,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_bat_disable_0_qs_int)
   );
-
 
   //   F[ec_rst_l_0]: 1:1
   prim_subreg #(
@@ -2134,7 +2108,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_ec_rst_l_0_qs_int)
   );
 
-
   //   F[pwrb_out_0]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2159,7 +2132,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_pwrb_out_0_qs_int)
   );
-
 
   //   F[key0_out_0]: 3:3
   prim_subreg #(
@@ -2186,7 +2158,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_key0_out_0_qs_int)
   );
 
-
   //   F[key1_out_0]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -2211,7 +2182,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_key1_out_0_qs_int)
   );
-
 
   //   F[key2_out_0]: 5:5
   prim_subreg #(
@@ -2238,7 +2208,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_key2_out_0_qs_int)
   );
 
-
   //   F[z3_wakeup_0]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -2263,7 +2232,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_z3_wakeup_0_qs_int)
   );
-
 
   //   F[flash_wp_l_0]: 7:7
   prim_subreg #(
@@ -2290,7 +2258,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_flash_wp_l_0_qs_int)
   );
 
-
   //   F[bat_disable_1]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -2315,7 +2282,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_bat_disable_1_qs_int)
   );
-
 
   //   F[ec_rst_l_1]: 9:9
   prim_subreg #(
@@ -2342,7 +2308,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_ec_rst_l_1_qs_int)
   );
 
-
   //   F[pwrb_out_1]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -2367,7 +2332,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_pwrb_out_1_qs_int)
   );
-
 
   //   F[key0_out_1]: 11:11
   prim_subreg #(
@@ -2394,7 +2358,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_key0_out_1_qs_int)
   );
 
-
   //   F[key1_out_1]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -2419,7 +2382,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_key1_out_1_qs_int)
   );
-
 
   //   F[key2_out_1]: 13:13
   prim_subreg #(
@@ -2446,7 +2408,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_allowed_ctl_key2_out_1_qs_int)
   );
 
-
   //   F[z3_wakeup_1]: 14:14
   prim_subreg #(
     .DW      (1),
@@ -2471,7 +2432,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_allowed_ctl_z3_wakeup_1_qs_int)
   );
-
 
   //   F[flash_wp_l_1]: 15:15
   prim_subreg #(
@@ -2500,7 +2460,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[pin_out_ctl]: V(False)
-
   //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2525,7 +2484,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_ctl_bat_disable_qs_int)
   );
-
 
   //   F[ec_rst_l]: 1:1
   prim_subreg #(
@@ -2552,7 +2510,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_ctl_ec_rst_l_qs_int)
   );
 
-
   //   F[pwrb_out]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2577,7 +2534,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_ctl_pwrb_out_qs_int)
   );
-
 
   //   F[key0_out]: 3:3
   prim_subreg #(
@@ -2604,7 +2560,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_ctl_key0_out_qs_int)
   );
 
-
   //   F[key1_out]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -2629,7 +2584,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_ctl_key1_out_qs_int)
   );
-
 
   //   F[key2_out]: 5:5
   prim_subreg #(
@@ -2656,7 +2610,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_ctl_key2_out_qs_int)
   );
 
-
   //   F[z3_wakeup]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -2681,7 +2634,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_ctl_z3_wakeup_qs_int)
   );
-
 
   //   F[flash_wp_l]: 7:7
   prim_subreg #(
@@ -2710,7 +2662,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[pin_out_value]: V(False)
-
   //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2735,7 +2686,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_value_bat_disable_qs_int)
   );
-
 
   //   F[ec_rst_l]: 1:1
   prim_subreg #(
@@ -2762,7 +2712,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_value_ec_rst_l_qs_int)
   );
 
-
   //   F[pwrb_out]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2787,7 +2736,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_value_pwrb_out_qs_int)
   );
-
 
   //   F[key0_out]: 3:3
   prim_subreg #(
@@ -2814,7 +2762,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_value_key0_out_qs_int)
   );
 
-
   //   F[key1_out]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -2839,7 +2786,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_value_key1_out_qs_int)
   );
-
 
   //   F[key2_out]: 5:5
   prim_subreg #(
@@ -2866,7 +2812,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_pin_out_value_key2_out_qs_int)
   );
 
-
   //   F[z3_wakeup]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -2891,7 +2836,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_pin_out_value_z3_wakeup_qs_int)
   );
-
 
   //   F[flash_wp_l]: 7:7
   prim_subreg #(
@@ -2920,7 +2864,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[pin_in_value]: V(False)
-
   //   F[ac_present]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2945,7 +2888,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (pin_in_value_ac_present_qs)
   );
-
 
   //   F[ec_rst_l]: 1:1
   prim_subreg #(
@@ -2972,7 +2914,6 @@ module sysrst_ctrl_reg_top (
     .qs     (pin_in_value_ec_rst_l_qs)
   );
 
-
   //   F[pwrb_in]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2997,7 +2938,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (pin_in_value_pwrb_in_qs)
   );
-
 
   //   F[key0_in]: 3:3
   prim_subreg #(
@@ -3024,7 +2964,6 @@ module sysrst_ctrl_reg_top (
     .qs     (pin_in_value_key0_in_qs)
   );
 
-
   //   F[key1_in]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -3050,7 +2989,6 @@ module sysrst_ctrl_reg_top (
     .qs     (pin_in_value_key1_in_qs)
   );
 
-
   //   F[key2_in]: 5:5
   prim_subreg #(
     .DW      (1),
@@ -3075,7 +3013,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (pin_in_value_key2_in_qs)
   );
-
 
   //   F[lid_open]: 6:6
   prim_subreg #(
@@ -3104,7 +3041,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_intr_ctl]: V(False)
-
   //   F[pwrb_in_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3129,7 +3065,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_pwrb_in_h2l_qs_int)
   );
-
 
   //   F[key0_in_h2l]: 1:1
   prim_subreg #(
@@ -3156,7 +3091,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key0_in_h2l_qs_int)
   );
 
-
   //   F[key1_in_h2l]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -3181,7 +3115,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_key1_in_h2l_qs_int)
   );
-
 
   //   F[key2_in_h2l]: 3:3
   prim_subreg #(
@@ -3208,7 +3141,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key2_in_h2l_qs_int)
   );
 
-
   //   F[ac_present_h2l]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -3233,7 +3165,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_ac_present_h2l_qs_int)
   );
-
 
   //   F[ec_rst_l_h2l]: 5:5
   prim_subreg #(
@@ -3260,7 +3191,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_ec_rst_l_h2l_qs_int)
   );
 
-
   //   F[pwrb_in_l2h]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -3285,7 +3215,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_pwrb_in_l2h_qs_int)
   );
-
 
   //   F[key0_in_l2h]: 9:9
   prim_subreg #(
@@ -3312,7 +3241,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key0_in_l2h_qs_int)
   );
 
-
   //   F[key1_in_l2h]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -3337,7 +3265,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_key1_in_l2h_qs_int)
   );
-
 
   //   F[key2_in_l2h]: 11:11
   prim_subreg #(
@@ -3364,7 +3291,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key2_in_l2h_qs_int)
   );
 
-
   //   F[ac_present_l2h]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -3389,7 +3315,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_ctl_ac_present_l2h_qs_int)
   );
-
 
   //   F[ec_rst_l_l2h]: 13:13
   prim_subreg #(
@@ -3418,7 +3343,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_intr_debounce_ctl]: V(False)
-
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3445,7 +3369,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[auto_block_debounce_ctl]: V(False)
-
   //   F[debounce_timer]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -3470,7 +3393,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_auto_block_debounce_ctl_debounce_timer_qs_int)
   );
-
 
   //   F[auto_block_enable]: 16:16
   prim_subreg #(
@@ -3499,7 +3421,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[auto_block_out_ctl]: V(False)
-
   //   F[key0_out_sel]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3524,7 +3445,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_auto_block_out_ctl_key0_out_sel_qs_int)
   );
-
 
   //   F[key1_out_sel]: 1:1
   prim_subreg #(
@@ -3551,7 +3471,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_auto_block_out_ctl_key1_out_sel_qs_int)
   );
 
-
   //   F[key2_out_sel]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -3576,7 +3495,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_auto_block_out_ctl_key2_out_sel_qs_int)
   );
-
 
   //   F[key0_out_value]: 4:4
   prim_subreg #(
@@ -3603,7 +3521,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_auto_block_out_ctl_key0_out_value_qs_int)
   );
 
-
   //   F[key1_out_value]: 5:5
   prim_subreg #(
     .DW      (1),
@@ -3628,7 +3545,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_auto_block_out_ctl_key1_out_value_qs_int)
   );
-
 
   //   F[key2_out_value]: 6:6
   prim_subreg #(
@@ -3656,11 +3572,9 @@ module sysrst_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg com_sel_ctl
   // R[com_sel_ctl_0]: V(False)
-
-  // F[key0_in_sel_0]: 0:0
+  //   F[key0_in_sel_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3685,8 +3599,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_0_key0_in_sel_0_qs_int)
   );
 
-
-  // F[key1_in_sel_0]: 1:1
+  //   F[key1_in_sel_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3711,8 +3624,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_0_key1_in_sel_0_qs_int)
   );
 
-
-  // F[key2_in_sel_0]: 2:2
+  //   F[key2_in_sel_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3737,8 +3649,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_0_key2_in_sel_0_qs_int)
   );
 
-
-  // F[pwrb_in_sel_0]: 3:3
+  //   F[pwrb_in_sel_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3763,8 +3674,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_0_pwrb_in_sel_0_qs_int)
   );
 
-
-  // F[ac_present_sel_0]: 4:4
+  //   F[ac_present_sel_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3792,8 +3702,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 1 of Multireg com_sel_ctl
   // R[com_sel_ctl_1]: V(False)
-
-  // F[key0_in_sel_1]: 0:0
+  //   F[key0_in_sel_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3818,8 +3727,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_1_key0_in_sel_1_qs_int)
   );
 
-
-  // F[key1_in_sel_1]: 1:1
+  //   F[key1_in_sel_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3844,8 +3752,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_1_key1_in_sel_1_qs_int)
   );
 
-
-  // F[key2_in_sel_1]: 2:2
+  //   F[key2_in_sel_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3870,8 +3777,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_1_key2_in_sel_1_qs_int)
   );
 
-
-  // F[pwrb_in_sel_1]: 3:3
+  //   F[pwrb_in_sel_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3896,8 +3802,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_1_pwrb_in_sel_1_qs_int)
   );
 
-
-  // F[ac_present_sel_1]: 4:4
+  //   F[ac_present_sel_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3925,8 +3830,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 2 of Multireg com_sel_ctl
   // R[com_sel_ctl_2]: V(False)
-
-  // F[key0_in_sel_2]: 0:0
+  //   F[key0_in_sel_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3951,8 +3855,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_2_key0_in_sel_2_qs_int)
   );
 
-
-  // F[key1_in_sel_2]: 1:1
+  //   F[key1_in_sel_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3977,8 +3880,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_2_key1_in_sel_2_qs_int)
   );
 
-
-  // F[key2_in_sel_2]: 2:2
+  //   F[key2_in_sel_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4003,8 +3905,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_2_key2_in_sel_2_qs_int)
   );
 
-
-  // F[pwrb_in_sel_2]: 3:3
+  //   F[pwrb_in_sel_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4029,8 +3930,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_2_pwrb_in_sel_2_qs_int)
   );
 
-
-  // F[ac_present_sel_2]: 4:4
+  //   F[ac_present_sel_2]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4058,8 +3958,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 3 of Multireg com_sel_ctl
   // R[com_sel_ctl_3]: V(False)
-
-  // F[key0_in_sel_3]: 0:0
+  //   F[key0_in_sel_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4084,8 +3983,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_3_key0_in_sel_3_qs_int)
   );
 
-
-  // F[key1_in_sel_3]: 1:1
+  //   F[key1_in_sel_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4110,8 +4008,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_3_key1_in_sel_3_qs_int)
   );
 
-
-  // F[key2_in_sel_3]: 2:2
+  //   F[key2_in_sel_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4136,8 +4033,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_3_key2_in_sel_3_qs_int)
   );
 
-
-  // F[pwrb_in_sel_3]: 3:3
+  //   F[pwrb_in_sel_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4162,8 +4058,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_sel_ctl_3_pwrb_in_sel_3_qs_int)
   );
 
-
-  // F[ac_present_sel_3]: 4:4
+  //   F[ac_present_sel_3]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4189,11 +4084,8 @@ module sysrst_ctrl_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg com_det_ctl
   // R[com_det_ctl_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4218,9 +4110,9 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_det_ctl_0_qs_int)
   );
 
+
   // Subregister 1 of Multireg com_det_ctl
   // R[com_det_ctl_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4245,9 +4137,9 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_det_ctl_1_qs_int)
   );
 
+
   // Subregister 2 of Multireg com_det_ctl
   // R[com_det_ctl_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4272,9 +4164,9 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_det_ctl_2_qs_int)
   );
 
+
   // Subregister 3 of Multireg com_det_ctl
   // R[com_det_ctl_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4300,11 +4192,9 @@ module sysrst_ctrl_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg com_out_ctl
   // R[com_out_ctl_0]: V(False)
-
-  // F[bat_disable_0]: 0:0
+  //   F[bat_disable_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4329,8 +4219,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_0_bat_disable_0_qs_int)
   );
 
-
-  // F[interrupt_0]: 1:1
+  //   F[interrupt_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4355,8 +4244,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_0_interrupt_0_qs_int)
   );
 
-
-  // F[ec_rst_0]: 2:2
+  //   F[ec_rst_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4381,8 +4269,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_0_ec_rst_0_qs_int)
   );
 
-
-  // F[rst_req_0]: 3:3
+  //   F[rst_req_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4410,8 +4297,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 1 of Multireg com_out_ctl
   // R[com_out_ctl_1]: V(False)
-
-  // F[bat_disable_1]: 0:0
+  //   F[bat_disable_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4436,8 +4322,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_1_bat_disable_1_qs_int)
   );
 
-
-  // F[interrupt_1]: 1:1
+  //   F[interrupt_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4462,8 +4347,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_1_interrupt_1_qs_int)
   );
 
-
-  // F[ec_rst_1]: 2:2
+  //   F[ec_rst_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4488,8 +4372,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_1_ec_rst_1_qs_int)
   );
 
-
-  // F[rst_req_1]: 3:3
+  //   F[rst_req_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4517,8 +4400,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 2 of Multireg com_out_ctl
   // R[com_out_ctl_2]: V(False)
-
-  // F[bat_disable_2]: 0:0
+  //   F[bat_disable_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4543,8 +4425,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_2_bat_disable_2_qs_int)
   );
 
-
-  // F[interrupt_2]: 1:1
+  //   F[interrupt_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4569,8 +4450,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_2_interrupt_2_qs_int)
   );
 
-
-  // F[ec_rst_2]: 2:2
+  //   F[ec_rst_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4595,8 +4475,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_2_ec_rst_2_qs_int)
   );
 
-
-  // F[rst_req_2]: 3:3
+  //   F[rst_req_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4624,8 +4503,7 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 3 of Multireg com_out_ctl
   // R[com_out_ctl_3]: V(False)
-
-  // F[bat_disable_3]: 0:0
+  //   F[bat_disable_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4650,8 +4528,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_3_bat_disable_3_qs_int)
   );
 
-
-  // F[interrupt_3]: 1:1
+  //   F[interrupt_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4676,8 +4553,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_3_interrupt_3_qs_int)
   );
 
-
-  // F[ec_rst_3]: 2:2
+  //   F[ec_rst_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4702,8 +4578,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_com_out_ctl_3_ec_rst_3_qs_int)
   );
 
-
-  // F[rst_req_3]: 3:3
+  //   F[rst_req_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4729,9 +4604,7 @@ module sysrst_ctrl_reg_top (
   );
 
 
-
   // R[combo_intr_status]: V(False)
-
   //   F[combo0_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4756,7 +4629,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_combo_intr_status_combo0_h2l_qs_int)
   );
-
 
   //   F[combo1_h2l]: 1:1
   prim_subreg #(
@@ -4783,7 +4655,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_combo_intr_status_combo1_h2l_qs_int)
   );
 
-
   //   F[combo2_h2l]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -4808,7 +4679,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_combo_intr_status_combo2_h2l_qs_int)
   );
-
 
   //   F[combo3_h2l]: 3:3
   prim_subreg #(
@@ -4837,7 +4707,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_intr_status]: V(False)
-
   //   F[pwrb_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4862,7 +4731,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_pwrb_h2l_qs_int)
   );
-
 
   //   F[key0_in_h2l]: 1:1
   prim_subreg #(
@@ -4889,7 +4757,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_key0_in_h2l_qs_int)
   );
 
-
   //   F[key1_in_h2l]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -4914,7 +4781,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_key1_in_h2l_qs_int)
   );
-
 
   //   F[key2_in_h2l]: 3:3
   prim_subreg #(
@@ -4941,7 +4807,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_key2_in_h2l_qs_int)
   );
 
-
   //   F[ac_present_h2l]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -4966,7 +4831,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_ac_present_h2l_qs_int)
   );
-
 
   //   F[ec_rst_l_h2l]: 5:5
   prim_subreg #(
@@ -4993,7 +4857,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_ec_rst_l_h2l_qs_int)
   );
 
-
   //   F[pwrb_l2h]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -5018,7 +4881,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_pwrb_l2h_qs_int)
   );
-
 
   //   F[key0_in_l2h]: 7:7
   prim_subreg #(
@@ -5045,7 +4907,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_key0_in_l2h_qs_int)
   );
 
-
   //   F[key1_in_l2h]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -5070,7 +4931,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_key1_in_l2h_qs_int)
   );
-
 
   //   F[key2_in_l2h]: 9:9
   prim_subreg #(
@@ -5097,7 +4957,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_key2_in_l2h_qs_int)
   );
 
-
   //   F[ac_present_l2h]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -5123,7 +4982,6 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_status_ac_present_l2h_qs_int)
   );
 
-
   //   F[ec_rst_l_l2h]: 11:11
   prim_subreg #(
     .DW      (1),
@@ -5148,7 +5006,6 @@ module sysrst_ctrl_reg_top (
     // to register interface (read)
     .qs     (aon_key_intr_status_ec_rst_l_l2h_qs_int)
   );
-
 
 
 

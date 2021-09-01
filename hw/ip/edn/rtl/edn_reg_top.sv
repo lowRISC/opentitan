@@ -168,7 +168,6 @@ module edn_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[edn_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -193,7 +192,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (intr_state_edn_cmd_req_done_qs)
   );
-
 
   //   F[edn_fatal_err]: 1:1
   prim_subreg #(
@@ -222,7 +220,6 @@ module edn_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[edn_cmd_req_done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -247,7 +244,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (intr_enable_edn_cmd_req_done_qs)
   );
-
 
   //   F[edn_fatal_err]: 1:1
   prim_subreg #(
@@ -276,7 +272,6 @@ module edn_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[edn_cmd_req_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -290,7 +285,6 @@ module edn_reg_top (
     .q      (reg2hw.intr_test.edn_cmd_req_done.q),
     .qs     ()
   );
-
 
   //   F[edn_fatal_err]: 1:1
   prim_subreg_ext #(
@@ -308,7 +302,6 @@ module edn_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -322,7 +315,6 @@ module edn_reg_top (
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
-
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -340,7 +332,6 @@ module edn_reg_top (
 
 
   // R[regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -367,7 +358,6 @@ module edn_reg_top (
 
 
   // R[ctrl]: V(False)
-
   //   F[edn_enable]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -392,7 +382,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (ctrl_edn_enable_qs)
   );
-
 
   //   F[boot_req_mode]: 7:4
   prim_subreg #(
@@ -419,7 +408,6 @@ module edn_reg_top (
     .qs     (ctrl_boot_req_mode_qs)
   );
 
-
   //   F[auto_req_mode]: 11:8
   prim_subreg #(
     .DW      (4),
@@ -444,7 +432,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (ctrl_auto_req_mode_qs)
   );
-
 
   //   F[cmd_fifo_rst]: 15:12
   prim_subreg #(
@@ -473,7 +460,6 @@ module edn_reg_top (
 
 
   // R[sum_sts]: V(False)
-
   //   F[req_mode_sm_sts]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -498,7 +484,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (sum_sts_req_mode_sm_sts_qs)
   );
-
 
   //   F[boot_inst_ack]: 1:1
   prim_subreg #(
@@ -527,7 +512,6 @@ module edn_reg_top (
 
 
   // R[sw_cmd_req]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_sw_cmd_req (
@@ -543,7 +527,6 @@ module edn_reg_top (
 
 
   // R[sw_cmd_sts]: V(False)
-
   //   F[cmd_rdy]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -568,7 +551,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_rdy_qs)
   );
-
 
   //   F[cmd_sts]: 1:1
   prim_subreg #(
@@ -597,7 +579,6 @@ module edn_reg_top (
 
 
   // R[reseed_cmd]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_reseed_cmd (
@@ -613,7 +594,6 @@ module edn_reg_top (
 
 
   // R[generate_cmd]: V(True)
-
   prim_subreg_ext #(
     .DW    (32)
   ) u_generate_cmd (
@@ -629,7 +609,6 @@ module edn_reg_top (
 
 
   // R[max_num_reqs_between_reseeds]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -656,7 +635,6 @@ module edn_reg_top (
 
 
   // R[recov_alert_sts]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -683,7 +661,6 @@ module edn_reg_top (
 
 
   // R[err_code]: V(False)
-
   //   F[sfifo_rescmd_err]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -708,7 +685,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (err_code_sfifo_rescmd_err_qs)
   );
-
 
   //   F[sfifo_gencmd_err]: 1:1
   prim_subreg #(
@@ -735,7 +711,6 @@ module edn_reg_top (
     .qs     (err_code_sfifo_gencmd_err_qs)
   );
 
-
   //   F[edn_ack_sm_err]: 20:20
   prim_subreg #(
     .DW      (1),
@@ -760,7 +735,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (err_code_edn_ack_sm_err_qs)
   );
-
 
   //   F[edn_main_sm_err]: 21:21
   prim_subreg #(
@@ -787,7 +761,6 @@ module edn_reg_top (
     .qs     (err_code_edn_main_sm_err_qs)
   );
 
-
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
@@ -813,7 +786,6 @@ module edn_reg_top (
     .qs     (err_code_fifo_write_err_qs)
   );
 
-
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
@@ -838,7 +810,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
   );
-
 
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
@@ -867,7 +838,6 @@ module edn_reg_top (
 
 
   // R[err_code_test]: V(False)
-
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -891,7 +861,6 @@ module edn_reg_top (
     // to register interface (read)
     .qs     (err_code_test_qs)
   );
-
 
 
 

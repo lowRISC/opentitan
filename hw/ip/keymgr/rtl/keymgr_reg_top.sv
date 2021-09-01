@@ -308,7 +308,6 @@ module keymgr_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -335,7 +334,6 @@ module keymgr_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -362,7 +360,6 @@ module keymgr_reg_top (
 
 
   // R[intr_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -378,7 +375,6 @@ module keymgr_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[fatal_fault_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -392,7 +388,6 @@ module keymgr_reg_top (
     .q      (reg2hw.alert_test.fatal_fault_err.q),
     .qs     ()
   );
-
 
   //   F[recov_operation_err]: 1:1
   prim_subreg_ext #(
@@ -410,7 +405,6 @@ module keymgr_reg_top (
 
 
   // R[cfg_regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_cfg_regwen (
@@ -426,7 +420,6 @@ module keymgr_reg_top (
 
 
   // R[control]: V(False)
-
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -451,7 +444,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (control_start_qs)
   );
-
 
   //   F[operation]: 6:4
   prim_subreg #(
@@ -478,7 +470,6 @@ module keymgr_reg_top (
     .qs     (control_operation_qs)
   );
 
-
   //   F[cdi_sel]: 7:7
   prim_subreg #(
     .DW      (1),
@@ -503,7 +494,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (control_cdi_sel_qs)
   );
-
 
   //   F[dest_sel]: 14:12
   prim_subreg #(
@@ -532,7 +522,6 @@ module keymgr_reg_top (
 
 
   // R[sideload_clear]: V(False)
-
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -559,7 +548,6 @@ module keymgr_reg_top (
 
 
   // R[reseed_interval_shadowed]: V(False)
-
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -592,7 +580,6 @@ module keymgr_reg_top (
 
 
   // R[sw_binding_regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_binding_regwen (
@@ -607,10 +594,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -635,9 +620,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_0_qs)
   );
 
+
   // Subregister 1 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -662,9 +647,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_1_qs)
   );
 
+
   // Subregister 2 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -689,9 +674,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_2_qs)
   );
 
+
   // Subregister 3 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -716,9 +701,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_3_qs)
   );
 
+
   // Subregister 4 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_4]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -743,9 +728,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_4_qs)
   );
 
+
   // Subregister 5 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -770,9 +755,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_5_qs)
   );
 
+
   // Subregister 6 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_6]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -797,9 +782,9 @@ module keymgr_reg_top (
     .qs     (sealing_sw_binding_6_qs)
   );
 
+
   // Subregister 7 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -825,10 +810,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg attest_sw_binding
   // R[attest_sw_binding_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -853,9 +836,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_0_qs)
   );
 
+
   // Subregister 1 of Multireg attest_sw_binding
   // R[attest_sw_binding_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -880,9 +863,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_1_qs)
   );
 
+
   // Subregister 2 of Multireg attest_sw_binding
   // R[attest_sw_binding_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -907,9 +890,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_2_qs)
   );
 
+
   // Subregister 3 of Multireg attest_sw_binding
   // R[attest_sw_binding_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -934,9 +917,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_3_qs)
   );
 
+
   // Subregister 4 of Multireg attest_sw_binding
   // R[attest_sw_binding_4]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -961,9 +944,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_4_qs)
   );
 
+
   // Subregister 5 of Multireg attest_sw_binding
   // R[attest_sw_binding_5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -988,9 +971,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_5_qs)
   );
 
+
   // Subregister 6 of Multireg attest_sw_binding
   // R[attest_sw_binding_6]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1015,9 +998,9 @@ module keymgr_reg_top (
     .qs     (attest_sw_binding_6_qs)
   );
 
+
   // Subregister 7 of Multireg attest_sw_binding
   // R[attest_sw_binding_7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1043,10 +1026,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg salt
   // R[salt_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1071,9 +1052,9 @@ module keymgr_reg_top (
     .qs     (salt_0_qs)
   );
 
+
   // Subregister 1 of Multireg salt
   // R[salt_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1098,9 +1079,9 @@ module keymgr_reg_top (
     .qs     (salt_1_qs)
   );
 
+
   // Subregister 2 of Multireg salt
   // R[salt_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1125,9 +1106,9 @@ module keymgr_reg_top (
     .qs     (salt_2_qs)
   );
 
+
   // Subregister 3 of Multireg salt
   // R[salt_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1152,9 +1133,9 @@ module keymgr_reg_top (
     .qs     (salt_3_qs)
   );
 
+
   // Subregister 4 of Multireg salt
   // R[salt_4]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1179,9 +1160,9 @@ module keymgr_reg_top (
     .qs     (salt_4_qs)
   );
 
+
   // Subregister 5 of Multireg salt
   // R[salt_5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1206,9 +1187,9 @@ module keymgr_reg_top (
     .qs     (salt_5_qs)
   );
 
+
   // Subregister 6 of Multireg salt
   // R[salt_6]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1233,9 +1214,9 @@ module keymgr_reg_top (
     .qs     (salt_6_qs)
   );
 
+
   // Subregister 7 of Multireg salt
   // R[salt_7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1261,10 +1242,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg key_version
   // R[key_version]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1291,7 +1270,6 @@ module keymgr_reg_top (
 
 
   // R[max_creator_key_ver_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1318,7 +1296,6 @@ module keymgr_reg_top (
 
 
   // R[max_creator_key_ver_shadowed]: V(False)
-
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1351,7 +1328,6 @@ module keymgr_reg_top (
 
 
   // R[max_owner_int_key_ver_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1378,7 +1354,6 @@ module keymgr_reg_top (
 
 
   // R[max_owner_int_key_ver_shadowed]: V(False)
-
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1411,7 +1386,6 @@ module keymgr_reg_top (
 
 
   // R[max_owner_key_ver_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1438,7 +1412,6 @@ module keymgr_reg_top (
 
 
   // R[max_owner_key_ver_shadowed]: V(False)
-
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1470,10 +1443,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg sw_share0_output
   // R[sw_share0_output_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1498,9 +1469,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_0_qs)
   );
 
+
   // Subregister 1 of Multireg sw_share0_output
   // R[sw_share0_output_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1525,9 +1496,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_1_qs)
   );
 
+
   // Subregister 2 of Multireg sw_share0_output
   // R[sw_share0_output_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1552,9 +1523,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_2_qs)
   );
 
+
   // Subregister 3 of Multireg sw_share0_output
   // R[sw_share0_output_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1579,9 +1550,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_3_qs)
   );
 
+
   // Subregister 4 of Multireg sw_share0_output
   // R[sw_share0_output_4]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1606,9 +1577,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_4_qs)
   );
 
+
   // Subregister 5 of Multireg sw_share0_output
   // R[sw_share0_output_5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1633,9 +1604,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_5_qs)
   );
 
+
   // Subregister 6 of Multireg sw_share0_output
   // R[sw_share0_output_6]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1660,9 +1631,9 @@ module keymgr_reg_top (
     .qs     (sw_share0_output_6_qs)
   );
 
+
   // Subregister 7 of Multireg sw_share0_output
   // R[sw_share0_output_7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1688,10 +1659,8 @@ module keymgr_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg sw_share1_output
   // R[sw_share1_output_0]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1716,9 +1685,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_0_qs)
   );
 
+
   // Subregister 1 of Multireg sw_share1_output
   // R[sw_share1_output_1]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1743,9 +1712,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_1_qs)
   );
 
+
   // Subregister 2 of Multireg sw_share1_output
   // R[sw_share1_output_2]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1770,9 +1739,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_2_qs)
   );
 
+
   // Subregister 3 of Multireg sw_share1_output
   // R[sw_share1_output_3]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1797,9 +1766,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_3_qs)
   );
 
+
   // Subregister 4 of Multireg sw_share1_output
   // R[sw_share1_output_4]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1824,9 +1793,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_4_qs)
   );
 
+
   // Subregister 5 of Multireg sw_share1_output
   // R[sw_share1_output_5]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1851,9 +1820,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_5_qs)
   );
 
+
   // Subregister 6 of Multireg sw_share1_output
   // R[sw_share1_output_6]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1878,9 +1847,9 @@ module keymgr_reg_top (
     .qs     (sw_share1_output_6_qs)
   );
 
+
   // Subregister 7 of Multireg sw_share1_output
   // R[sw_share1_output_7]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
@@ -1907,7 +1876,6 @@ module keymgr_reg_top (
 
 
   // R[working_state]: V(False)
-
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -1934,7 +1902,6 @@ module keymgr_reg_top (
 
 
   // R[op_status]: V(False)
-
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1961,7 +1928,6 @@ module keymgr_reg_top (
 
 
   // R[err_code]: V(False)
-
   //   F[invalid_op]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1987,7 +1953,6 @@ module keymgr_reg_top (
     .qs     (err_code_invalid_op_qs)
   );
 
-
   //   F[invalid_kmac_input]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -2012,7 +1977,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (err_code_invalid_kmac_input_qs)
   );
-
 
   //   F[invalid_shadow_update]: 2:2
   prim_subreg #(
@@ -2041,7 +2005,6 @@ module keymgr_reg_top (
 
 
   // R[fault_status]: V(False)
-
   //   F[cmd]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2066,7 +2029,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (fault_status_cmd_qs)
   );
-
 
   //   F[kmac_fsm]: 1:1
   prim_subreg #(
@@ -2093,7 +2055,6 @@ module keymgr_reg_top (
     .qs     (fault_status_kmac_fsm_qs)
   );
 
-
   //   F[kmac_op]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2118,7 +2079,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (fault_status_kmac_op_qs)
   );
-
 
   //   F[kmac_out]: 3:3
   prim_subreg #(
@@ -2145,7 +2105,6 @@ module keymgr_reg_top (
     .qs     (fault_status_kmac_out_qs)
   );
 
-
   //   F[regfile_intg]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -2170,7 +2129,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (fault_status_regfile_intg_qs)
   );
-
 
   //   F[shadow]: 5:5
   prim_subreg #(
@@ -2197,7 +2155,6 @@ module keymgr_reg_top (
     .qs     (fault_status_shadow_qs)
   );
 
-
   //   F[ctrl_fsm_intg]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -2223,7 +2180,6 @@ module keymgr_reg_top (
     .qs     (fault_status_ctrl_fsm_intg_qs)
   );
 
-
   //   F[ctrl_fsm_cnt]: 7:7
   prim_subreg #(
     .DW      (1),
@@ -2248,7 +2204,6 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_cnt_qs)
   );
-
 
 
 

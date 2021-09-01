@@ -973,7 +973,6 @@ module flash_ctrl_core_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[prog_empty]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -998,7 +997,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_state_prog_empty_qs)
   );
-
 
   //   F[prog_lvl]: 1:1
   prim_subreg #(
@@ -1025,7 +1023,6 @@ module flash_ctrl_core_reg_top (
     .qs     (intr_state_prog_lvl_qs)
   );
 
-
   //   F[rd_full]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -1050,7 +1047,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_state_rd_full_qs)
   );
-
 
   //   F[rd_lvl]: 3:3
   prim_subreg #(
@@ -1077,7 +1073,6 @@ module flash_ctrl_core_reg_top (
     .qs     (intr_state_rd_lvl_qs)
   );
 
-
   //   F[op_done]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -1102,7 +1097,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_state_op_done_qs)
   );
-
 
   //   F[err]: 5:5
   prim_subreg #(
@@ -1131,7 +1125,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[prog_empty]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1156,7 +1149,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_enable_prog_empty_qs)
   );
-
 
   //   F[prog_lvl]: 1:1
   prim_subreg #(
@@ -1183,7 +1175,6 @@ module flash_ctrl_core_reg_top (
     .qs     (intr_enable_prog_lvl_qs)
   );
 
-
   //   F[rd_full]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -1208,7 +1199,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_enable_rd_full_qs)
   );
-
 
   //   F[rd_lvl]: 3:3
   prim_subreg #(
@@ -1235,7 +1225,6 @@ module flash_ctrl_core_reg_top (
     .qs     (intr_enable_rd_lvl_qs)
   );
 
-
   //   F[op_done]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -1260,7 +1249,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (intr_enable_op_done_qs)
   );
-
 
   //   F[err]: 5:5
   prim_subreg #(
@@ -1289,7 +1277,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[prog_empty]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1303,7 +1290,6 @@ module flash_ctrl_core_reg_top (
     .q      (reg2hw.intr_test.prog_empty.q),
     .qs     ()
   );
-
 
   //   F[prog_lvl]: 1:1
   prim_subreg_ext #(
@@ -1319,7 +1305,6 @@ module flash_ctrl_core_reg_top (
     .qs     ()
   );
 
-
   //   F[rd_full]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -1333,7 +1318,6 @@ module flash_ctrl_core_reg_top (
     .q      (reg2hw.intr_test.rd_full.q),
     .qs     ()
   );
-
 
   //   F[rd_lvl]: 3:3
   prim_subreg_ext #(
@@ -1349,7 +1333,6 @@ module flash_ctrl_core_reg_top (
     .qs     ()
   );
 
-
   //   F[op_done]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -1363,7 +1346,6 @@ module flash_ctrl_core_reg_top (
     .q      (reg2hw.intr_test.op_done.q),
     .qs     ()
   );
-
 
   //   F[err]: 5:5
   prim_subreg_ext #(
@@ -1381,7 +1363,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[alert_test]: V(True)
-
   //   F[recov_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1395,7 +1376,6 @@ module flash_ctrl_core_reg_top (
     .q      (reg2hw.alert_test.recov_err.q),
     .qs     ()
   );
-
 
   //   F[recov_mp_err]: 1:1
   prim_subreg_ext #(
@@ -1411,7 +1391,6 @@ module flash_ctrl_core_reg_top (
     .qs     ()
   );
 
-
   //   F[recov_ecc_err]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -1425,7 +1404,6 @@ module flash_ctrl_core_reg_top (
     .q      (reg2hw.alert_test.recov_ecc_err.q),
     .qs     ()
   );
-
 
   //   F[fatal_intg_err]: 3:3
   prim_subreg_ext #(
@@ -1443,7 +1421,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[flash_disable]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
@@ -1470,7 +1447,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[init]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
@@ -1497,7 +1473,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[ctrl_regwen]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_regwen (
@@ -1513,7 +1488,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[control]: V(False)
-
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1538,7 +1512,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (control_start_qs)
   );
-
 
   //   F[op]: 5:4
   prim_subreg #(
@@ -1565,7 +1538,6 @@ module flash_ctrl_core_reg_top (
     .qs     (control_op_qs)
   );
 
-
   //   F[prog_sel]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -1590,7 +1562,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (control_prog_sel_qs)
   );
-
 
   //   F[erase_sel]: 7:7
   prim_subreg #(
@@ -1617,7 +1588,6 @@ module flash_ctrl_core_reg_top (
     .qs     (control_erase_sel_qs)
   );
 
-
   //   F[partition_sel]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -1643,7 +1613,6 @@ module flash_ctrl_core_reg_top (
     .qs     (control_partition_sel_qs)
   );
 
-
   //   F[info_sel]: 10:9
   prim_subreg #(
     .DW      (2),
@@ -1668,7 +1637,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (control_info_sel_qs)
   );
-
 
   //   F[num]: 27:16
   prim_subreg #(
@@ -1697,7 +1665,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[addr]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1724,7 +1691,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[prog_type_en]: V(False)
-
   //   F[normal]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1749,7 +1715,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (prog_type_en_normal_qs)
   );
-
 
   //   F[repair]: 1:1
   prim_subreg #(
@@ -1778,7 +1743,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[erase_suspend]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1804,10 +1768,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1832,9 +1794,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1859,9 +1821,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1886,9 +1848,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1913,9 +1875,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1940,9 +1902,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1967,9 +1929,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1994,9 +1956,9 @@ module flash_ctrl_core_reg_top (
     .qs     (region_cfg_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg region_cfg_regwen
   // R[region_cfg_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -2022,11 +1984,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mp_region_cfg
   // R[mp_region_cfg_0]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2051,8 +2011,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2077,8 +2036,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2103,8 +2061,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2129,8 +2086,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2155,8 +2111,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2181,8 +2136,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2207,8 +2161,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_he_en_0_qs)
   );
 
-
-  // F[base_0]: 16:8
+  //   F[base_0]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2233,8 +2186,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_0_base_0_qs)
   );
 
-
-  // F[size_0]: 26:17
+  //   F[size_0]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2262,8 +2214,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg mp_region_cfg
   // R[mp_region_cfg_1]: V(False)
-
-  // F[en_1]: 0:0
+  //   F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2288,8 +2239,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_en_1_qs)
   );
 
-
-  // F[rd_en_1]: 1:1
+  //   F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2314,8 +2264,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_rd_en_1_qs)
   );
 
-
-  // F[prog_en_1]: 2:2
+  //   F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2340,8 +2289,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_prog_en_1_qs)
   );
 
-
-  // F[erase_en_1]: 3:3
+  //   F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2366,8 +2314,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_erase_en_1_qs)
   );
 
-
-  // F[scramble_en_1]: 4:4
+  //   F[scramble_en_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2392,8 +2339,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_scramble_en_1_qs)
   );
 
-
-  // F[ecc_en_1]: 5:5
+  //   F[ecc_en_1]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2418,8 +2364,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_ecc_en_1_qs)
   );
 
-
-  // F[he_en_1]: 6:6
+  //   F[he_en_1]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2444,8 +2389,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_he_en_1_qs)
   );
 
-
-  // F[base_1]: 16:8
+  //   F[base_1]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2470,8 +2414,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_1_base_1_qs)
   );
 
-
-  // F[size_1]: 26:17
+  //   F[size_1]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2499,8 +2442,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg mp_region_cfg
   // R[mp_region_cfg_2]: V(False)
-
-  // F[en_2]: 0:0
+  //   F[en_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2525,8 +2467,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_en_2_qs)
   );
 
-
-  // F[rd_en_2]: 1:1
+  //   F[rd_en_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2551,8 +2492,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_rd_en_2_qs)
   );
 
-
-  // F[prog_en_2]: 2:2
+  //   F[prog_en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2577,8 +2517,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_prog_en_2_qs)
   );
 
-
-  // F[erase_en_2]: 3:3
+  //   F[erase_en_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2603,8 +2542,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_erase_en_2_qs)
   );
 
-
-  // F[scramble_en_2]: 4:4
+  //   F[scramble_en_2]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2629,8 +2567,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_scramble_en_2_qs)
   );
 
-
-  // F[ecc_en_2]: 5:5
+  //   F[ecc_en_2]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2655,8 +2592,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_ecc_en_2_qs)
   );
 
-
-  // F[he_en_2]: 6:6
+  //   F[he_en_2]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2681,8 +2617,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_he_en_2_qs)
   );
 
-
-  // F[base_2]: 16:8
+  //   F[base_2]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2707,8 +2642,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_2_base_2_qs)
   );
 
-
-  // F[size_2]: 26:17
+  //   F[size_2]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2736,8 +2670,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg mp_region_cfg
   // R[mp_region_cfg_3]: V(False)
-
-  // F[en_3]: 0:0
+  //   F[en_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2762,8 +2695,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_en_3_qs)
   );
 
-
-  // F[rd_en_3]: 1:1
+  //   F[rd_en_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2788,8 +2720,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_rd_en_3_qs)
   );
 
-
-  // F[prog_en_3]: 2:2
+  //   F[prog_en_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2814,8 +2745,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_prog_en_3_qs)
   );
 
-
-  // F[erase_en_3]: 3:3
+  //   F[erase_en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2840,8 +2770,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_erase_en_3_qs)
   );
 
-
-  // F[scramble_en_3]: 4:4
+  //   F[scramble_en_3]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2866,8 +2795,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_scramble_en_3_qs)
   );
 
-
-  // F[ecc_en_3]: 5:5
+  //   F[ecc_en_3]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2892,8 +2820,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_ecc_en_3_qs)
   );
 
-
-  // F[he_en_3]: 6:6
+  //   F[he_en_3]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2918,8 +2845,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_he_en_3_qs)
   );
 
-
-  // F[base_3]: 16:8
+  //   F[base_3]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2944,8 +2870,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_3_base_3_qs)
   );
 
-
-  // F[size_3]: 26:17
+  //   F[size_3]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2973,8 +2898,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg mp_region_cfg
   // R[mp_region_cfg_4]: V(False)
-
-  // F[en_4]: 0:0
+  //   F[en_4]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2999,8 +2923,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_en_4_qs)
   );
 
-
-  // F[rd_en_4]: 1:1
+  //   F[rd_en_4]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3025,8 +2948,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_rd_en_4_qs)
   );
 
-
-  // F[prog_en_4]: 2:2
+  //   F[prog_en_4]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3051,8 +2973,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_prog_en_4_qs)
   );
 
-
-  // F[erase_en_4]: 3:3
+  //   F[erase_en_4]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3077,8 +2998,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_erase_en_4_qs)
   );
 
-
-  // F[scramble_en_4]: 4:4
+  //   F[scramble_en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3103,8 +3023,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_scramble_en_4_qs)
   );
 
-
-  // F[ecc_en_4]: 5:5
+  //   F[ecc_en_4]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3129,8 +3048,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_ecc_en_4_qs)
   );
 
-
-  // F[he_en_4]: 6:6
+  //   F[he_en_4]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3155,8 +3073,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_he_en_4_qs)
   );
 
-
-  // F[base_4]: 16:8
+  //   F[base_4]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3181,8 +3098,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_4_base_4_qs)
   );
 
-
-  // F[size_4]: 26:17
+  //   F[size_4]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3210,8 +3126,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg mp_region_cfg
   // R[mp_region_cfg_5]: V(False)
-
-  // F[en_5]: 0:0
+  //   F[en_5]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3236,8 +3151,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_en_5_qs)
   );
 
-
-  // F[rd_en_5]: 1:1
+  //   F[rd_en_5]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3262,8 +3176,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_rd_en_5_qs)
   );
 
-
-  // F[prog_en_5]: 2:2
+  //   F[prog_en_5]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3288,8 +3201,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_prog_en_5_qs)
   );
 
-
-  // F[erase_en_5]: 3:3
+  //   F[erase_en_5]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3314,8 +3226,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_erase_en_5_qs)
   );
 
-
-  // F[scramble_en_5]: 4:4
+  //   F[scramble_en_5]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3340,8 +3251,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_scramble_en_5_qs)
   );
 
-
-  // F[ecc_en_5]: 5:5
+  //   F[ecc_en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3366,8 +3276,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_ecc_en_5_qs)
   );
 
-
-  // F[he_en_5]: 6:6
+  //   F[he_en_5]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3392,8 +3301,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_he_en_5_qs)
   );
 
-
-  // F[base_5]: 16:8
+  //   F[base_5]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3418,8 +3326,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_5_base_5_qs)
   );
 
-
-  // F[size_5]: 26:17
+  //   F[size_5]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3447,8 +3354,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg mp_region_cfg
   // R[mp_region_cfg_6]: V(False)
-
-  // F[en_6]: 0:0
+  //   F[en_6]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3473,8 +3379,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_en_6_qs)
   );
 
-
-  // F[rd_en_6]: 1:1
+  //   F[rd_en_6]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3499,8 +3404,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_rd_en_6_qs)
   );
 
-
-  // F[prog_en_6]: 2:2
+  //   F[prog_en_6]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3525,8 +3429,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_prog_en_6_qs)
   );
 
-
-  // F[erase_en_6]: 3:3
+  //   F[erase_en_6]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3551,8 +3454,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_erase_en_6_qs)
   );
 
-
-  // F[scramble_en_6]: 4:4
+  //   F[scramble_en_6]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3577,8 +3479,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_scramble_en_6_qs)
   );
 
-
-  // F[ecc_en_6]: 5:5
+  //   F[ecc_en_6]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3603,8 +3504,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_ecc_en_6_qs)
   );
 
-
-  // F[he_en_6]: 6:6
+  //   F[he_en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3629,8 +3529,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_he_en_6_qs)
   );
 
-
-  // F[base_6]: 16:8
+  //   F[base_6]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3655,8 +3554,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_6_base_6_qs)
   );
 
-
-  // F[size_6]: 26:17
+  //   F[size_6]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3684,8 +3582,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg mp_region_cfg
   // R[mp_region_cfg_7]: V(False)
-
-  // F[en_7]: 0:0
+  //   F[en_7]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3710,8 +3607,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_en_7_qs)
   );
 
-
-  // F[rd_en_7]: 1:1
+  //   F[rd_en_7]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3736,8 +3632,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_rd_en_7_qs)
   );
 
-
-  // F[prog_en_7]: 2:2
+  //   F[prog_en_7]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3762,8 +3657,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_prog_en_7_qs)
   );
 
-
-  // F[erase_en_7]: 3:3
+  //   F[erase_en_7]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3788,8 +3682,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_erase_en_7_qs)
   );
 
-
-  // F[scramble_en_7]: 4:4
+  //   F[scramble_en_7]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3814,8 +3707,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_scramble_en_7_qs)
   );
 
-
-  // F[ecc_en_7]: 5:5
+  //   F[ecc_en_7]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3840,8 +3732,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_ecc_en_7_qs)
   );
 
-
-  // F[he_en_7]: 6:6
+  //   F[he_en_7]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3866,8 +3757,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_he_en_7_qs)
   );
 
-
-  // F[base_7]: 16:8
+  //   F[base_7]: 16:8
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3892,8 +3782,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_region_cfg_7_base_7_qs)
   );
 
-
-  // F[size_7]: 26:17
+  //   F[size_7]: 26:17
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3919,9 +3808,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // R[default_region]: V(False)
-
   //   F[rd_en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3946,7 +3833,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_rd_en_qs)
   );
-
 
   //   F[prog_en]: 1:1
   prim_subreg #(
@@ -3973,7 +3859,6 @@ module flash_ctrl_core_reg_top (
     .qs     (default_region_prog_en_qs)
   );
 
-
   //   F[erase_en]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -3998,7 +3883,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_erase_en_qs)
   );
-
 
   //   F[scramble_en]: 3:3
   prim_subreg #(
@@ -4025,7 +3909,6 @@ module flash_ctrl_core_reg_top (
     .qs     (default_region_scramble_en_qs)
   );
 
-
   //   F[ecc_en]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -4050,7 +3933,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_ecc_en_qs)
   );
-
 
   //   F[he_en]: 5:5
   prim_subreg #(
@@ -4078,10 +3960,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4106,9 +3986,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4133,9 +4013,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4160,9 +4040,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4187,9 +4067,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4214,9 +4094,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4241,9 +4121,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4268,9 +4148,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4295,9 +4175,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4322,9 +4202,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg bank0_info0_regwen
   // R[bank0_info0_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -4350,11 +4230,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_0]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4379,8 +4257,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4405,8 +4282,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4431,8 +4307,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4457,8 +4332,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4483,8 +4357,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4509,8 +4382,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_0_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4538,8 +4410,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_1]: V(False)
-
-  // F[en_1]: 0:0
+  //   F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4564,8 +4435,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_en_1_qs)
   );
 
-
-  // F[rd_en_1]: 1:1
+  //   F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4590,8 +4460,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_rd_en_1_qs)
   );
 
-
-  // F[prog_en_1]: 2:2
+  //   F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4616,8 +4485,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_prog_en_1_qs)
   );
 
-
-  // F[erase_en_1]: 3:3
+  //   F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4642,8 +4510,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_erase_en_1_qs)
   );
 
-
-  // F[scramble_en_1]: 4:4
+  //   F[scramble_en_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4668,8 +4535,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_scramble_en_1_qs)
   );
 
-
-  // F[ecc_en_1]: 5:5
+  //   F[ecc_en_1]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4694,8 +4560,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_1_ecc_en_1_qs)
   );
 
-
-  // F[he_en_1]: 6:6
+  //   F[he_en_1]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4723,8 +4588,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_2]: V(False)
-
-  // F[en_2]: 0:0
+  //   F[en_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4749,8 +4613,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_en_2_qs)
   );
 
-
-  // F[rd_en_2]: 1:1
+  //   F[rd_en_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4775,8 +4638,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_rd_en_2_qs)
   );
 
-
-  // F[prog_en_2]: 2:2
+  //   F[prog_en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4801,8 +4663,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_prog_en_2_qs)
   );
 
-
-  // F[erase_en_2]: 3:3
+  //   F[erase_en_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4827,8 +4688,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_erase_en_2_qs)
   );
 
-
-  // F[scramble_en_2]: 4:4
+  //   F[scramble_en_2]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4853,8 +4713,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_scramble_en_2_qs)
   );
 
-
-  // F[ecc_en_2]: 5:5
+  //   F[ecc_en_2]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4879,8 +4738,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_2_ecc_en_2_qs)
   );
 
-
-  // F[he_en_2]: 6:6
+  //   F[he_en_2]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4908,8 +4766,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_3]: V(False)
-
-  // F[en_3]: 0:0
+  //   F[en_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4934,8 +4791,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_en_3_qs)
   );
 
-
-  // F[rd_en_3]: 1:1
+  //   F[rd_en_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4960,8 +4816,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_rd_en_3_qs)
   );
 
-
-  // F[prog_en_3]: 2:2
+  //   F[prog_en_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4986,8 +4841,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_prog_en_3_qs)
   );
 
-
-  // F[erase_en_3]: 3:3
+  //   F[erase_en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5012,8 +4866,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_erase_en_3_qs)
   );
 
-
-  // F[scramble_en_3]: 4:4
+  //   F[scramble_en_3]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5038,8 +4891,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_scramble_en_3_qs)
   );
 
-
-  // F[ecc_en_3]: 5:5
+  //   F[ecc_en_3]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5064,8 +4916,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_3_ecc_en_3_qs)
   );
 
-
-  // F[he_en_3]: 6:6
+  //   F[he_en_3]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5093,8 +4944,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_4]: V(False)
-
-  // F[en_4]: 0:0
+  //   F[en_4]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5119,8 +4969,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_en_4_qs)
   );
 
-
-  // F[rd_en_4]: 1:1
+  //   F[rd_en_4]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5145,8 +4994,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_rd_en_4_qs)
   );
 
-
-  // F[prog_en_4]: 2:2
+  //   F[prog_en_4]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5171,8 +5019,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_prog_en_4_qs)
   );
 
-
-  // F[erase_en_4]: 3:3
+  //   F[erase_en_4]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5197,8 +5044,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_erase_en_4_qs)
   );
 
-
-  // F[scramble_en_4]: 4:4
+  //   F[scramble_en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5223,8 +5069,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_scramble_en_4_qs)
   );
 
-
-  // F[ecc_en_4]: 5:5
+  //   F[ecc_en_4]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5249,8 +5094,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_4_ecc_en_4_qs)
   );
 
-
-  // F[he_en_4]: 6:6
+  //   F[he_en_4]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5278,8 +5122,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_5]: V(False)
-
-  // F[en_5]: 0:0
+  //   F[en_5]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5304,8 +5147,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_en_5_qs)
   );
 
-
-  // F[rd_en_5]: 1:1
+  //   F[rd_en_5]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5330,8 +5172,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_rd_en_5_qs)
   );
 
-
-  // F[prog_en_5]: 2:2
+  //   F[prog_en_5]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5356,8 +5197,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_prog_en_5_qs)
   );
 
-
-  // F[erase_en_5]: 3:3
+  //   F[erase_en_5]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5382,8 +5222,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_erase_en_5_qs)
   );
 
-
-  // F[scramble_en_5]: 4:4
+  //   F[scramble_en_5]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5408,8 +5247,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_scramble_en_5_qs)
   );
 
-
-  // F[ecc_en_5]: 5:5
+  //   F[ecc_en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5434,8 +5272,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_5_ecc_en_5_qs)
   );
 
-
-  // F[he_en_5]: 6:6
+  //   F[he_en_5]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5463,8 +5300,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_6]: V(False)
-
-  // F[en_6]: 0:0
+  //   F[en_6]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5489,8 +5325,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_en_6_qs)
   );
 
-
-  // F[rd_en_6]: 1:1
+  //   F[rd_en_6]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5515,8 +5350,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_rd_en_6_qs)
   );
 
-
-  // F[prog_en_6]: 2:2
+  //   F[prog_en_6]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5541,8 +5375,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_prog_en_6_qs)
   );
 
-
-  // F[erase_en_6]: 3:3
+  //   F[erase_en_6]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5567,8 +5400,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_erase_en_6_qs)
   );
 
-
-  // F[scramble_en_6]: 4:4
+  //   F[scramble_en_6]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5593,8 +5425,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_scramble_en_6_qs)
   );
 
-
-  // F[ecc_en_6]: 5:5
+  //   F[ecc_en_6]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5619,8 +5450,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_6_ecc_en_6_qs)
   );
 
-
-  // F[he_en_6]: 6:6
+  //   F[he_en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5648,8 +5478,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_7]: V(False)
-
-  // F[en_7]: 0:0
+  //   F[en_7]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5674,8 +5503,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_en_7_qs)
   );
 
-
-  // F[rd_en_7]: 1:1
+  //   F[rd_en_7]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5700,8 +5528,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_rd_en_7_qs)
   );
 
-
-  // F[prog_en_7]: 2:2
+  //   F[prog_en_7]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5726,8 +5553,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_prog_en_7_qs)
   );
 
-
-  // F[erase_en_7]: 3:3
+  //   F[erase_en_7]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5752,8 +5578,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_erase_en_7_qs)
   );
 
-
-  // F[scramble_en_7]: 4:4
+  //   F[scramble_en_7]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5778,8 +5603,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_scramble_en_7_qs)
   );
 
-
-  // F[ecc_en_7]: 5:5
+  //   F[ecc_en_7]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5804,8 +5628,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_7_ecc_en_7_qs)
   );
 
-
-  // F[he_en_7]: 6:6
+  //   F[he_en_7]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5833,8 +5656,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 8 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_8]: V(False)
-
-  // F[en_8]: 0:0
+  //   F[en_8]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5859,8 +5681,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_en_8_qs)
   );
 
-
-  // F[rd_en_8]: 1:1
+  //   F[rd_en_8]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5885,8 +5706,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_rd_en_8_qs)
   );
 
-
-  // F[prog_en_8]: 2:2
+  //   F[prog_en_8]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5911,8 +5731,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_prog_en_8_qs)
   );
 
-
-  // F[erase_en_8]: 3:3
+  //   F[erase_en_8]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5937,8 +5756,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_erase_en_8_qs)
   );
 
-
-  // F[scramble_en_8]: 4:4
+  //   F[scramble_en_8]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5963,8 +5781,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_scramble_en_8_qs)
   );
 
-
-  // F[ecc_en_8]: 5:5
+  //   F[ecc_en_8]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5989,8 +5806,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_8_ecc_en_8_qs)
   );
 
-
-  // F[he_en_8]: 6:6
+  //   F[he_en_8]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6018,8 +5834,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 9 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_9]: V(False)
-
-  // F[en_9]: 0:0
+  //   F[en_9]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6044,8 +5859,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_en_9_qs)
   );
 
-
-  // F[rd_en_9]: 1:1
+  //   F[rd_en_9]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6070,8 +5884,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_rd_en_9_qs)
   );
 
-
-  // F[prog_en_9]: 2:2
+  //   F[prog_en_9]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6096,8 +5909,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_prog_en_9_qs)
   );
 
-
-  // F[erase_en_9]: 3:3
+  //   F[erase_en_9]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6122,8 +5934,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_erase_en_9_qs)
   );
 
-
-  // F[scramble_en_9]: 4:4
+  //   F[scramble_en_9]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6148,8 +5959,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_scramble_en_9_qs)
   );
 
-
-  // F[ecc_en_9]: 5:5
+  //   F[ecc_en_9]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6174,8 +5984,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info0_page_cfg_9_ecc_en_9_qs)
   );
 
-
-  // F[he_en_9]: 6:6
+  //   F[he_en_9]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6201,11 +6010,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg bank0_info1_regwen
   // R[bank0_info1_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6231,11 +6037,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank0_info1_page_cfg
   // R[bank0_info1_page_cfg]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6260,8 +6064,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6286,8 +6089,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6312,8 +6114,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6338,8 +6139,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6364,8 +6164,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6390,8 +6189,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info1_page_cfg_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6417,11 +6215,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg bank0_info2_regwen
   // R[bank0_info2_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6446,9 +6241,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg bank0_info2_regwen
   // R[bank0_info2_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6474,11 +6269,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank0_info2_page_cfg
   // R[bank0_info2_page_cfg_0]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6503,8 +6296,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6529,8 +6321,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6555,8 +6346,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6581,8 +6371,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6607,8 +6396,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6633,8 +6421,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_0_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6662,8 +6449,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank0_info2_page_cfg
   // R[bank0_info2_page_cfg_1]: V(False)
-
-  // F[en_1]: 0:0
+  //   F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6688,8 +6474,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_en_1_qs)
   );
 
-
-  // F[rd_en_1]: 1:1
+  //   F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6714,8 +6499,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_rd_en_1_qs)
   );
 
-
-  // F[prog_en_1]: 2:2
+  //   F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6740,8 +6524,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_prog_en_1_qs)
   );
 
-
-  // F[erase_en_1]: 3:3
+  //   F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6766,8 +6549,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_erase_en_1_qs)
   );
 
-
-  // F[scramble_en_1]: 4:4
+  //   F[scramble_en_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6792,8 +6574,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_scramble_en_1_qs)
   );
 
-
-  // F[ecc_en_1]: 5:5
+  //   F[ecc_en_1]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6818,8 +6599,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank0_info2_page_cfg_1_ecc_en_1_qs)
   );
 
-
-  // F[he_en_1]: 6:6
+  //   F[he_en_1]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6845,11 +6625,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6874,9 +6651,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6901,9 +6678,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_1_qs)
   );
 
+
   // Subregister 2 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_2]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6928,9 +6705,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_2_qs)
   );
 
+
   // Subregister 3 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_3]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6955,9 +6732,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_3_qs)
   );
 
+
   // Subregister 4 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_4]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -6982,9 +6759,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_4_qs)
   );
 
+
   // Subregister 5 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_5]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7009,9 +6786,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_5_qs)
   );
 
+
   // Subregister 6 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_6]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7036,9 +6813,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_6_qs)
   );
 
+
   // Subregister 7 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_7]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7063,9 +6840,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_7_qs)
   );
 
+
   // Subregister 8 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_8]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7090,9 +6867,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_regwen_8_qs)
   );
 
+
   // Subregister 9 of Multireg bank1_info0_regwen
   // R[bank1_info0_regwen_9]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -7118,11 +6895,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_0]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7147,8 +6922,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7173,8 +6947,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7199,8 +6972,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7225,8 +6997,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7251,8 +7022,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7277,8 +7047,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_0_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7306,8 +7075,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_1]: V(False)
-
-  // F[en_1]: 0:0
+  //   F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7332,8 +7100,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_en_1_qs)
   );
 
-
-  // F[rd_en_1]: 1:1
+  //   F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7358,8 +7125,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_rd_en_1_qs)
   );
 
-
-  // F[prog_en_1]: 2:2
+  //   F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7384,8 +7150,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_prog_en_1_qs)
   );
 
-
-  // F[erase_en_1]: 3:3
+  //   F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7410,8 +7175,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_erase_en_1_qs)
   );
 
-
-  // F[scramble_en_1]: 4:4
+  //   F[scramble_en_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7436,8 +7200,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_scramble_en_1_qs)
   );
 
-
-  // F[ecc_en_1]: 5:5
+  //   F[ecc_en_1]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7462,8 +7225,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_1_ecc_en_1_qs)
   );
 
-
-  // F[he_en_1]: 6:6
+  //   F[he_en_1]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7491,8 +7253,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_2]: V(False)
-
-  // F[en_2]: 0:0
+  //   F[en_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7517,8 +7278,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_en_2_qs)
   );
 
-
-  // F[rd_en_2]: 1:1
+  //   F[rd_en_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7543,8 +7303,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_rd_en_2_qs)
   );
 
-
-  // F[prog_en_2]: 2:2
+  //   F[prog_en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7569,8 +7328,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_prog_en_2_qs)
   );
 
-
-  // F[erase_en_2]: 3:3
+  //   F[erase_en_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7595,8 +7353,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_erase_en_2_qs)
   );
 
-
-  // F[scramble_en_2]: 4:4
+  //   F[scramble_en_2]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7621,8 +7378,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_scramble_en_2_qs)
   );
 
-
-  // F[ecc_en_2]: 5:5
+  //   F[ecc_en_2]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7647,8 +7403,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_2_ecc_en_2_qs)
   );
 
-
-  // F[he_en_2]: 6:6
+  //   F[he_en_2]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7676,8 +7431,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_3]: V(False)
-
-  // F[en_3]: 0:0
+  //   F[en_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7702,8 +7456,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_en_3_qs)
   );
 
-
-  // F[rd_en_3]: 1:1
+  //   F[rd_en_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7728,8 +7481,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_rd_en_3_qs)
   );
 
-
-  // F[prog_en_3]: 2:2
+  //   F[prog_en_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7754,8 +7506,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_prog_en_3_qs)
   );
 
-
-  // F[erase_en_3]: 3:3
+  //   F[erase_en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7780,8 +7531,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_erase_en_3_qs)
   );
 
-
-  // F[scramble_en_3]: 4:4
+  //   F[scramble_en_3]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7806,8 +7556,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_scramble_en_3_qs)
   );
 
-
-  // F[ecc_en_3]: 5:5
+  //   F[ecc_en_3]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7832,8 +7581,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_3_ecc_en_3_qs)
   );
 
-
-  // F[he_en_3]: 6:6
+  //   F[he_en_3]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7861,8 +7609,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_4]: V(False)
-
-  // F[en_4]: 0:0
+  //   F[en_4]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7887,8 +7634,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_en_4_qs)
   );
 
-
-  // F[rd_en_4]: 1:1
+  //   F[rd_en_4]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7913,8 +7659,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_rd_en_4_qs)
   );
 
-
-  // F[prog_en_4]: 2:2
+  //   F[prog_en_4]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7939,8 +7684,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_prog_en_4_qs)
   );
 
-
-  // F[erase_en_4]: 3:3
+  //   F[erase_en_4]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7965,8 +7709,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_erase_en_4_qs)
   );
 
-
-  // F[scramble_en_4]: 4:4
+  //   F[scramble_en_4]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7991,8 +7734,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_scramble_en_4_qs)
   );
 
-
-  // F[ecc_en_4]: 5:5
+  //   F[ecc_en_4]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8017,8 +7759,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_4_ecc_en_4_qs)
   );
 
-
-  // F[he_en_4]: 6:6
+  //   F[he_en_4]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8046,8 +7787,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_5]: V(False)
-
-  // F[en_5]: 0:0
+  //   F[en_5]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8072,8 +7812,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_en_5_qs)
   );
 
-
-  // F[rd_en_5]: 1:1
+  //   F[rd_en_5]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8098,8 +7837,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_rd_en_5_qs)
   );
 
-
-  // F[prog_en_5]: 2:2
+  //   F[prog_en_5]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8124,8 +7862,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_prog_en_5_qs)
   );
 
-
-  // F[erase_en_5]: 3:3
+  //   F[erase_en_5]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8150,8 +7887,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_erase_en_5_qs)
   );
 
-
-  // F[scramble_en_5]: 4:4
+  //   F[scramble_en_5]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8176,8 +7912,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_scramble_en_5_qs)
   );
 
-
-  // F[ecc_en_5]: 5:5
+  //   F[ecc_en_5]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8202,8 +7937,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_5_ecc_en_5_qs)
   );
 
-
-  // F[he_en_5]: 6:6
+  //   F[he_en_5]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8231,8 +7965,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_6]: V(False)
-
-  // F[en_6]: 0:0
+  //   F[en_6]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8257,8 +7990,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_en_6_qs)
   );
 
-
-  // F[rd_en_6]: 1:1
+  //   F[rd_en_6]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8283,8 +8015,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_rd_en_6_qs)
   );
 
-
-  // F[prog_en_6]: 2:2
+  //   F[prog_en_6]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8309,8 +8040,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_prog_en_6_qs)
   );
 
-
-  // F[erase_en_6]: 3:3
+  //   F[erase_en_6]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8335,8 +8065,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_erase_en_6_qs)
   );
 
-
-  // F[scramble_en_6]: 4:4
+  //   F[scramble_en_6]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8361,8 +8090,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_scramble_en_6_qs)
   );
 
-
-  // F[ecc_en_6]: 5:5
+  //   F[ecc_en_6]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8387,8 +8115,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_6_ecc_en_6_qs)
   );
 
-
-  // F[he_en_6]: 6:6
+  //   F[he_en_6]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8416,8 +8143,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_7]: V(False)
-
-  // F[en_7]: 0:0
+  //   F[en_7]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8442,8 +8168,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_en_7_qs)
   );
 
-
-  // F[rd_en_7]: 1:1
+  //   F[rd_en_7]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8468,8 +8193,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_rd_en_7_qs)
   );
 
-
-  // F[prog_en_7]: 2:2
+  //   F[prog_en_7]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8494,8 +8218,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_prog_en_7_qs)
   );
 
-
-  // F[erase_en_7]: 3:3
+  //   F[erase_en_7]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8520,8 +8243,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_erase_en_7_qs)
   );
 
-
-  // F[scramble_en_7]: 4:4
+  //   F[scramble_en_7]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8546,8 +8268,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_scramble_en_7_qs)
   );
 
-
-  // F[ecc_en_7]: 5:5
+  //   F[ecc_en_7]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8572,8 +8293,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_7_ecc_en_7_qs)
   );
 
-
-  // F[he_en_7]: 6:6
+  //   F[he_en_7]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8601,8 +8321,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 8 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_8]: V(False)
-
-  // F[en_8]: 0:0
+  //   F[en_8]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8627,8 +8346,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_en_8_qs)
   );
 
-
-  // F[rd_en_8]: 1:1
+  //   F[rd_en_8]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8653,8 +8371,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_rd_en_8_qs)
   );
 
-
-  // F[prog_en_8]: 2:2
+  //   F[prog_en_8]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8679,8 +8396,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_prog_en_8_qs)
   );
 
-
-  // F[erase_en_8]: 3:3
+  //   F[erase_en_8]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8705,8 +8421,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_erase_en_8_qs)
   );
 
-
-  // F[scramble_en_8]: 4:4
+  //   F[scramble_en_8]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8731,8 +8446,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_scramble_en_8_qs)
   );
 
-
-  // F[ecc_en_8]: 5:5
+  //   F[ecc_en_8]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8757,8 +8471,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_8_ecc_en_8_qs)
   );
 
-
-  // F[he_en_8]: 6:6
+  //   F[he_en_8]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8786,8 +8499,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 9 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_9]: V(False)
-
-  // F[en_9]: 0:0
+  //   F[en_9]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8812,8 +8524,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_en_9_qs)
   );
 
-
-  // F[rd_en_9]: 1:1
+  //   F[rd_en_9]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8838,8 +8549,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_rd_en_9_qs)
   );
 
-
-  // F[prog_en_9]: 2:2
+  //   F[prog_en_9]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8864,8 +8574,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_prog_en_9_qs)
   );
 
-
-  // F[erase_en_9]: 3:3
+  //   F[erase_en_9]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8890,8 +8599,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_erase_en_9_qs)
   );
 
-
-  // F[scramble_en_9]: 4:4
+  //   F[scramble_en_9]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8916,8 +8624,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_scramble_en_9_qs)
   );
 
-
-  // F[ecc_en_9]: 5:5
+  //   F[ecc_en_9]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8942,8 +8649,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info0_page_cfg_9_ecc_en_9_qs)
   );
 
-
-  // F[he_en_9]: 6:6
+  //   F[he_en_9]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8969,11 +8675,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg bank1_info1_regwen
   // R[bank1_info1_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -8999,11 +8702,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank1_info1_page_cfg
   // R[bank1_info1_page_cfg]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9028,8 +8729,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9054,8 +8754,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9080,8 +8779,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9106,8 +8804,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9132,8 +8829,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9158,8 +8854,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info1_page_cfg_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9185,11 +8880,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
-
   // Subregister 0 of Multireg bank1_info2_regwen
   // R[bank1_info2_regwen_0]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9214,9 +8906,9 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_regwen_0_qs)
   );
 
+
   // Subregister 1 of Multireg bank1_info2_regwen
   // R[bank1_info2_regwen_1]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9242,11 +8934,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg bank1_info2_page_cfg
   // R[bank1_info2_page_cfg_0]: V(False)
-
-  // F[en_0]: 0:0
+  //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9271,8 +8961,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_en_0_qs)
   );
 
-
-  // F[rd_en_0]: 1:1
+  //   F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9297,8 +8986,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_rd_en_0_qs)
   );
 
-
-  // F[prog_en_0]: 2:2
+  //   F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9323,8 +9011,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_prog_en_0_qs)
   );
 
-
-  // F[erase_en_0]: 3:3
+  //   F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9349,8 +9036,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_erase_en_0_qs)
   );
 
-
-  // F[scramble_en_0]: 4:4
+  //   F[scramble_en_0]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9375,8 +9061,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_scramble_en_0_qs)
   );
 
-
-  // F[ecc_en_0]: 5:5
+  //   F[ecc_en_0]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9401,8 +9086,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_0_ecc_en_0_qs)
   );
 
-
-  // F[he_en_0]: 6:6
+  //   F[he_en_0]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9430,8 +9114,7 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank1_info2_page_cfg
   // R[bank1_info2_page_cfg_1]: V(False)
-
-  // F[en_1]: 0:0
+  //   F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9456,8 +9139,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_en_1_qs)
   );
 
-
-  // F[rd_en_1]: 1:1
+  //   F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9482,8 +9164,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_rd_en_1_qs)
   );
 
-
-  // F[prog_en_1]: 2:2
+  //   F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9508,8 +9189,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_prog_en_1_qs)
   );
 
-
-  // F[erase_en_1]: 3:3
+  //   F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9534,8 +9214,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_erase_en_1_qs)
   );
 
-
-  // F[scramble_en_1]: 4:4
+  //   F[scramble_en_1]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9560,8 +9239,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_scramble_en_1_qs)
   );
 
-
-  // F[ecc_en_1]: 5:5
+  //   F[ecc_en_1]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9586,8 +9264,7 @@ module flash_ctrl_core_reg_top (
     .qs     (bank1_info2_page_cfg_1_ecc_en_1_qs)
   );
 
-
-  // F[he_en_1]: 6:6
+  //   F[he_en_1]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9613,9 +9290,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // R[bank_cfg_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -9641,11 +9316,9 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg mp_bank_cfg
   // R[mp_bank_cfg]: V(False)
-
-  // F[erase_en_0]: 0:0
+  //   F[erase_en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9670,8 +9343,7 @@ module flash_ctrl_core_reg_top (
     .qs     (mp_bank_cfg_erase_en_0_qs)
   );
 
-
-  // F[erase_en_1]: 1:1
+  //   F[erase_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9697,9 +9369,7 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // R[op_status]: V(False)
-
   //   F[done]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -9724,7 +9394,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (op_status_done_qs)
   );
-
 
   //   F[err]: 1:1
   prim_subreg #(
@@ -9753,7 +9422,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[status]: V(False)
-
   //   F[rd_full]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -9778,7 +9446,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (status_rd_full_qs)
   );
-
 
   //   F[rd_empty]: 1:1
   prim_subreg #(
@@ -9805,7 +9472,6 @@ module flash_ctrl_core_reg_top (
     .qs     (status_rd_empty_qs)
   );
 
-
   //   F[prog_full]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -9831,7 +9497,6 @@ module flash_ctrl_core_reg_top (
     .qs     (status_prog_full_qs)
   );
 
-
   //   F[prog_empty]: 3:3
   prim_subreg #(
     .DW      (1),
@@ -9856,7 +9521,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (status_prog_empty_qs)
   );
-
 
   //   F[init_wip]: 4:4
   prim_subreg #(
@@ -9885,7 +9549,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[err_code_intr_en]: V(False)
-
   //   F[flash_err_en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -9910,7 +9573,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_intr_en_flash_err_en_qs)
   );
-
 
   //   F[flash_alert_en]: 1:1
   prim_subreg #(
@@ -9937,7 +9599,6 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_intr_en_flash_alert_en_qs)
   );
 
-
   //   F[oob_err]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -9962,7 +9623,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_intr_en_oob_err_qs)
   );
-
 
   //   F[mp_err]: 3:3
   prim_subreg #(
@@ -9989,7 +9649,6 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_intr_en_mp_err_qs)
   );
 
-
   //   F[ecc_single_err]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -10014,7 +9673,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_intr_en_ecc_single_err_qs)
   );
-
 
   //   F[ecc_multi_err]: 5:5
   prim_subreg #(
@@ -10043,7 +9701,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[err_code]: V(False)
-
   //   F[flash_err]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -10068,7 +9725,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_flash_err_qs)
   );
-
 
   //   F[flash_alert]: 1:1
   prim_subreg #(
@@ -10095,7 +9751,6 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_flash_alert_qs)
   );
 
-
   //   F[oob_err]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -10120,7 +9775,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_oob_err_qs)
   );
-
 
   //   F[mp_err]: 3:3
   prim_subreg #(
@@ -10147,7 +9801,6 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_mp_err_qs)
   );
 
-
   //   F[ecc_single_err]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -10172,7 +9825,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (err_code_ecc_single_err_qs)
   );
-
 
   //   F[ecc_multi_err]: 5:5
   prim_subreg #(
@@ -10201,7 +9853,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[err_addr]: V(False)
-
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -10228,7 +9879,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[ecc_single_err_cnt]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -10254,10 +9904,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg ecc_single_err_addr
   // R[ecc_single_err_addr_0]: V(False)
-
   prim_subreg #(
     .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -10282,9 +9930,9 @@ module flash_ctrl_core_reg_top (
     .qs     (ecc_single_err_addr_0_qs)
   );
 
+
   // Subregister 1 of Multireg ecc_single_err_addr
   // R[ecc_single_err_addr_1]: V(False)
-
   prim_subreg #(
     .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -10311,7 +9959,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[ecc_multi_err_cnt]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -10337,10 +9984,8 @@ module flash_ctrl_core_reg_top (
   );
 
 
-
   // Subregister 0 of Multireg ecc_multi_err_addr
   // R[ecc_multi_err_addr_0]: V(False)
-
   prim_subreg #(
     .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -10365,9 +10010,9 @@ module flash_ctrl_core_reg_top (
     .qs     (ecc_multi_err_addr_0_qs)
   );
 
+
   // Subregister 1 of Multireg ecc_multi_err_addr
   // R[ecc_multi_err_addr_1]: V(False)
-
   prim_subreg #(
     .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -10394,7 +10039,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[phy_err_cfg_regwen]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -10421,7 +10065,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[phy_err_cfg]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10448,7 +10091,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[phy_alert_cfg]: V(False)
-
   //   F[alert_ack]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -10473,7 +10115,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (phy_alert_cfg_alert_ack_qs)
   );
-
 
   //   F[alert_trig]: 1:1
   prim_subreg #(
@@ -10502,7 +10143,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[phy_status]: V(False)
-
   //   F[init_wip]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -10528,7 +10168,6 @@ module flash_ctrl_core_reg_top (
     .qs     (phy_status_init_wip_qs)
   );
 
-
   //   F[prog_normal_avail]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -10553,7 +10192,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (phy_status_prog_normal_avail_qs)
   );
-
 
   //   F[prog_repair_avail]: 2:2
   prim_subreg #(
@@ -10582,7 +10220,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[scratch]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10609,7 +10246,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[fifo_lvl]: V(False)
-
   //   F[prog]: 4:0
   prim_subreg #(
     .DW      (5),
@@ -10634,7 +10270,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (fifo_lvl_prog_qs)
   );
-
 
   //   F[rd]: 12:8
   prim_subreg #(
@@ -10663,7 +10298,6 @@ module flash_ctrl_core_reg_top (
 
 
   // R[fifo_rst]: V(False)
-
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10687,7 +10321,6 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (fifo_rst_qs)
   );
-
 
 
 

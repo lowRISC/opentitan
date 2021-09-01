@@ -303,7 +303,6 @@ module i2c_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-
   //   F[fmt_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -328,7 +327,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_fmt_watermark_qs)
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
@@ -355,7 +353,6 @@ module i2c_reg_top (
     .qs     (intr_state_rx_watermark_qs)
   );
 
-
   //   F[fmt_overflow]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -380,7 +377,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_fmt_overflow_qs)
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
@@ -407,7 +403,6 @@ module i2c_reg_top (
     .qs     (intr_state_rx_overflow_qs)
   );
 
-
   //   F[nak]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -432,7 +427,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_nak_qs)
   );
-
 
   //   F[scl_interference]: 5:5
   prim_subreg #(
@@ -459,7 +453,6 @@ module i2c_reg_top (
     .qs     (intr_state_scl_interference_qs)
   );
 
-
   //   F[sda_interference]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -484,7 +477,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_sda_interference_qs)
   );
-
 
   //   F[stretch_timeout]: 7:7
   prim_subreg #(
@@ -511,7 +503,6 @@ module i2c_reg_top (
     .qs     (intr_state_stretch_timeout_qs)
   );
 
-
   //   F[sda_unstable]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -536,7 +527,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_sda_unstable_qs)
   );
-
 
   //   F[trans_complete]: 9:9
   prim_subreg #(
@@ -563,7 +553,6 @@ module i2c_reg_top (
     .qs     (intr_state_trans_complete_qs)
   );
 
-
   //   F[tx_empty]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -588,7 +577,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_tx_empty_qs)
   );
-
 
   //   F[tx_nonempty]: 11:11
   prim_subreg #(
@@ -615,7 +603,6 @@ module i2c_reg_top (
     .qs     (intr_state_tx_nonempty_qs)
   );
 
-
   //   F[tx_overflow]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -640,7 +627,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_tx_overflow_qs)
   );
-
 
   //   F[acq_overflow]: 13:13
   prim_subreg #(
@@ -667,7 +653,6 @@ module i2c_reg_top (
     .qs     (intr_state_acq_overflow_qs)
   );
 
-
   //   F[ack_stop]: 14:14
   prim_subreg #(
     .DW      (1),
@@ -692,7 +677,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_state_ack_stop_qs)
   );
-
 
   //   F[host_timeout]: 15:15
   prim_subreg #(
@@ -721,7 +705,6 @@ module i2c_reg_top (
 
 
   // R[intr_enable]: V(False)
-
   //   F[fmt_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -746,7 +729,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_fmt_watermark_qs)
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
@@ -773,7 +755,6 @@ module i2c_reg_top (
     .qs     (intr_enable_rx_watermark_qs)
   );
 
-
   //   F[fmt_overflow]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -798,7 +779,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_fmt_overflow_qs)
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
@@ -825,7 +805,6 @@ module i2c_reg_top (
     .qs     (intr_enable_rx_overflow_qs)
   );
 
-
   //   F[nak]: 4:4
   prim_subreg #(
     .DW      (1),
@@ -850,7 +829,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_nak_qs)
   );
-
 
   //   F[scl_interference]: 5:5
   prim_subreg #(
@@ -877,7 +855,6 @@ module i2c_reg_top (
     .qs     (intr_enable_scl_interference_qs)
   );
 
-
   //   F[sda_interference]: 6:6
   prim_subreg #(
     .DW      (1),
@@ -902,7 +879,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_sda_interference_qs)
   );
-
 
   //   F[stretch_timeout]: 7:7
   prim_subreg #(
@@ -929,7 +905,6 @@ module i2c_reg_top (
     .qs     (intr_enable_stretch_timeout_qs)
   );
 
-
   //   F[sda_unstable]: 8:8
   prim_subreg #(
     .DW      (1),
@@ -954,7 +929,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_sda_unstable_qs)
   );
-
 
   //   F[trans_complete]: 9:9
   prim_subreg #(
@@ -981,7 +955,6 @@ module i2c_reg_top (
     .qs     (intr_enable_trans_complete_qs)
   );
 
-
   //   F[tx_empty]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -1006,7 +979,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_tx_empty_qs)
   );
-
 
   //   F[tx_nonempty]: 11:11
   prim_subreg #(
@@ -1033,7 +1005,6 @@ module i2c_reg_top (
     .qs     (intr_enable_tx_nonempty_qs)
   );
 
-
   //   F[tx_overflow]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -1058,7 +1029,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_tx_overflow_qs)
   );
-
 
   //   F[acq_overflow]: 13:13
   prim_subreg #(
@@ -1085,7 +1055,6 @@ module i2c_reg_top (
     .qs     (intr_enable_acq_overflow_qs)
   );
 
-
   //   F[ack_stop]: 14:14
   prim_subreg #(
     .DW      (1),
@@ -1110,7 +1079,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (intr_enable_ack_stop_qs)
   );
-
 
   //   F[host_timeout]: 15:15
   prim_subreg #(
@@ -1139,7 +1107,6 @@ module i2c_reg_top (
 
 
   // R[intr_test]: V(True)
-
   //   F[fmt_watermark]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1153,7 +1120,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.fmt_watermark.q),
     .qs     ()
   );
-
 
   //   F[rx_watermark]: 1:1
   prim_subreg_ext #(
@@ -1169,7 +1135,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[fmt_overflow]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -1183,7 +1148,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.fmt_overflow.q),
     .qs     ()
   );
-
 
   //   F[rx_overflow]: 3:3
   prim_subreg_ext #(
@@ -1199,7 +1163,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[nak]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -1213,7 +1176,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.nak.q),
     .qs     ()
   );
-
 
   //   F[scl_interference]: 5:5
   prim_subreg_ext #(
@@ -1229,7 +1191,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[sda_interference]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -1243,7 +1204,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.sda_interference.q),
     .qs     ()
   );
-
 
   //   F[stretch_timeout]: 7:7
   prim_subreg_ext #(
@@ -1259,7 +1219,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[sda_unstable]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -1273,7 +1232,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.sda_unstable.q),
     .qs     ()
   );
-
 
   //   F[trans_complete]: 9:9
   prim_subreg_ext #(
@@ -1289,7 +1247,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[tx_empty]: 10:10
   prim_subreg_ext #(
     .DW    (1)
@@ -1303,7 +1260,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.tx_empty.q),
     .qs     ()
   );
-
 
   //   F[tx_nonempty]: 11:11
   prim_subreg_ext #(
@@ -1319,7 +1275,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[tx_overflow]: 12:12
   prim_subreg_ext #(
     .DW    (1)
@@ -1333,7 +1288,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.tx_overflow.q),
     .qs     ()
   );
-
 
   //   F[acq_overflow]: 13:13
   prim_subreg_ext #(
@@ -1349,7 +1303,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[ack_stop]: 14:14
   prim_subreg_ext #(
     .DW    (1)
@@ -1363,7 +1316,6 @@ module i2c_reg_top (
     .q      (reg2hw.intr_test.ack_stop.q),
     .qs     ()
   );
-
 
   //   F[host_timeout]: 15:15
   prim_subreg_ext #(
@@ -1381,7 +1333,6 @@ module i2c_reg_top (
 
 
   // R[alert_test]: V(True)
-
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1397,7 +1348,6 @@ module i2c_reg_top (
 
 
   // R[ctrl]: V(False)
-
   //   F[enablehost]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1423,7 +1373,6 @@ module i2c_reg_top (
     .qs     (ctrl_enablehost_qs)
   );
 
-
   //   F[enabletarget]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -1448,7 +1397,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (ctrl_enabletarget_qs)
   );
-
 
   //   F[llpbk]: 2:2
   prim_subreg #(
@@ -1477,7 +1425,6 @@ module i2c_reg_top (
 
 
   // R[status]: V(True)
-
   //   F[fmtfull]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1491,7 +1438,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (status_fmtfull_qs)
   );
-
 
   //   F[rxfull]: 1:1
   prim_subreg_ext #(
@@ -1507,7 +1453,6 @@ module i2c_reg_top (
     .qs     (status_rxfull_qs)
   );
 
-
   //   F[fmtempty]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -1521,7 +1466,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (status_fmtempty_qs)
   );
-
 
   //   F[hostidle]: 3:3
   prim_subreg_ext #(
@@ -1537,7 +1481,6 @@ module i2c_reg_top (
     .qs     (status_hostidle_qs)
   );
 
-
   //   F[targetidle]: 4:4
   prim_subreg_ext #(
     .DW    (1)
@@ -1551,7 +1494,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (status_targetidle_qs)
   );
-
 
   //   F[rxempty]: 5:5
   prim_subreg_ext #(
@@ -1567,7 +1509,6 @@ module i2c_reg_top (
     .qs     (status_rxempty_qs)
   );
 
-
   //   F[txfull]: 6:6
   prim_subreg_ext #(
     .DW    (1)
@@ -1581,7 +1522,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (status_txfull_qs)
   );
-
 
   //   F[acqfull]: 7:7
   prim_subreg_ext #(
@@ -1597,7 +1537,6 @@ module i2c_reg_top (
     .qs     (status_acqfull_qs)
   );
 
-
   //   F[txempty]: 8:8
   prim_subreg_ext #(
     .DW    (1)
@@ -1611,7 +1550,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (status_txempty_qs)
   );
-
 
   //   F[acqempty]: 9:9
   prim_subreg_ext #(
@@ -1629,7 +1567,6 @@ module i2c_reg_top (
 
 
   // R[rdata]: V(True)
-
   prim_subreg_ext #(
     .DW    (8)
   ) u_rdata (
@@ -1645,7 +1582,6 @@ module i2c_reg_top (
 
 
   // R[fdata]: V(False)
-
   //   F[fbyte]: 7:0
   prim_subreg #(
     .DW      (8),
@@ -1670,7 +1606,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
   //   F[start]: 8:8
   prim_subreg #(
@@ -1697,7 +1632,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[stop]: 9:9
   prim_subreg #(
     .DW      (1),
@@ -1722,7 +1656,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
   //   F[read]: 10:10
   prim_subreg #(
@@ -1749,7 +1682,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[rcont]: 11:11
   prim_subreg #(
     .DW      (1),
@@ -1774,7 +1706,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
   //   F[nakok]: 12:12
   prim_subreg #(
@@ -1803,7 +1734,6 @@ module i2c_reg_top (
 
 
   // R[fifo_ctrl]: V(False)
-
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1828,7 +1758,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
   //   F[fmtrst]: 1:1
   prim_subreg #(
@@ -1855,7 +1784,6 @@ module i2c_reg_top (
     .qs     ()
   );
 
-
   //   F[rxilvl]: 4:2
   prim_subreg #(
     .DW      (3),
@@ -1880,7 +1808,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
   );
-
 
   //   F[fmtilvl]: 6:5
   prim_subreg #(
@@ -1907,7 +1834,6 @@ module i2c_reg_top (
     .qs     (fifo_ctrl_fmtilvl_qs)
   );
 
-
   //   F[acqrst]: 7:7
   prim_subreg #(
     .DW      (1),
@@ -1932,7 +1858,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     ()
   );
-
 
   //   F[txrst]: 8:8
   prim_subreg #(
@@ -1961,7 +1886,6 @@ module i2c_reg_top (
 
 
   // R[fifo_status]: V(True)
-
   //   F[fmtlvl]: 6:0
   prim_subreg_ext #(
     .DW    (7)
@@ -1975,7 +1899,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (fifo_status_fmtlvl_qs)
   );
-
 
   //   F[txlvl]: 14:8
   prim_subreg_ext #(
@@ -1991,7 +1914,6 @@ module i2c_reg_top (
     .qs     (fifo_status_txlvl_qs)
   );
 
-
   //   F[rxlvl]: 22:16
   prim_subreg_ext #(
     .DW    (7)
@@ -2005,7 +1927,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (fifo_status_rxlvl_qs)
   );
-
 
   //   F[acqlvl]: 30:24
   prim_subreg_ext #(
@@ -2023,7 +1944,6 @@ module i2c_reg_top (
 
 
   // R[ovrd]: V(False)
-
   //   F[txovrden]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2049,7 +1969,6 @@ module i2c_reg_top (
     .qs     (ovrd_txovrden_qs)
   );
 
-
   //   F[sclval]: 1:1
   prim_subreg #(
     .DW      (1),
@@ -2074,7 +1993,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (ovrd_sclval_qs)
   );
-
 
   //   F[sdaval]: 2:2
   prim_subreg #(
@@ -2103,7 +2021,6 @@ module i2c_reg_top (
 
 
   // R[val]: V(True)
-
   //   F[scl_rx]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -2117,7 +2034,6 @@ module i2c_reg_top (
     .q      (),
     .qs     (val_scl_rx_qs)
   );
-
 
   //   F[sda_rx]: 31:16
   prim_subreg_ext #(
@@ -2135,7 +2051,6 @@ module i2c_reg_top (
 
 
   // R[timing0]: V(False)
-
   //   F[thigh]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2160,7 +2075,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timing0_thigh_qs)
   );
-
 
   //   F[tlow]: 31:16
   prim_subreg #(
@@ -2189,7 +2103,6 @@ module i2c_reg_top (
 
 
   // R[timing1]: V(False)
-
   //   F[t_r]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2214,7 +2127,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timing1_t_r_qs)
   );
-
 
   //   F[t_f]: 31:16
   prim_subreg #(
@@ -2243,7 +2155,6 @@ module i2c_reg_top (
 
 
   // R[timing2]: V(False)
-
   //   F[tsu_sta]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2268,7 +2179,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timing2_tsu_sta_qs)
   );
-
 
   //   F[thd_sta]: 31:16
   prim_subreg #(
@@ -2297,7 +2207,6 @@ module i2c_reg_top (
 
 
   // R[timing3]: V(False)
-
   //   F[tsu_dat]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2322,7 +2231,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timing3_tsu_dat_qs)
   );
-
 
   //   F[thd_dat]: 31:16
   prim_subreg #(
@@ -2351,7 +2259,6 @@ module i2c_reg_top (
 
 
   // R[timing4]: V(False)
-
   //   F[tsu_sto]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2376,7 +2283,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timing4_tsu_sto_qs)
   );
-
 
   //   F[t_buf]: 31:16
   prim_subreg #(
@@ -2405,7 +2311,6 @@ module i2c_reg_top (
 
 
   // R[timeout_ctrl]: V(False)
-
   //   F[val]: 30:0
   prim_subreg #(
     .DW      (31),
@@ -2430,7 +2335,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
   );
-
 
   //   F[en]: 31:31
   prim_subreg #(
@@ -2459,7 +2363,6 @@ module i2c_reg_top (
 
 
   // R[target_id]: V(False)
-
   //   F[address0]: 6:0
   prim_subreg #(
     .DW      (7),
@@ -2484,7 +2387,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (target_id_address0_qs)
   );
-
 
   //   F[mask0]: 13:7
   prim_subreg #(
@@ -2511,7 +2413,6 @@ module i2c_reg_top (
     .qs     (target_id_mask0_qs)
   );
 
-
   //   F[address1]: 20:14
   prim_subreg #(
     .DW      (7),
@@ -2536,7 +2437,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (target_id_address1_qs)
   );
-
 
   //   F[mask1]: 27:21
   prim_subreg #(
@@ -2565,7 +2465,6 @@ module i2c_reg_top (
 
 
   // R[acqdata]: V(True)
-
   //   F[abyte]: 7:0
   prim_subreg_ext #(
     .DW    (8)
@@ -2579,7 +2478,6 @@ module i2c_reg_top (
     .q      (reg2hw.acqdata.abyte.q),
     .qs     (acqdata_abyte_qs)
   );
-
 
   //   F[signal]: 9:8
   prim_subreg_ext #(
@@ -2597,7 +2495,6 @@ module i2c_reg_top (
 
 
   // R[txdata]: V(False)
-
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -2624,7 +2521,6 @@ module i2c_reg_top (
 
 
   // R[stretch_ctrl]: V(False)
-
   //   F[en_addr_tx]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2649,7 +2545,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (stretch_ctrl_en_addr_tx_qs)
   );
-
 
   //   F[en_addr_acq]: 1:1
   prim_subreg #(
@@ -2676,7 +2571,6 @@ module i2c_reg_top (
     .qs     (stretch_ctrl_en_addr_acq_qs)
   );
 
-
   //   F[stop_tx]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -2701,7 +2595,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (stretch_ctrl_stop_tx_qs)
   );
-
 
   //   F[stop_acq]: 3:3
   prim_subreg #(
@@ -2730,7 +2623,6 @@ module i2c_reg_top (
 
 
   // R[host_timeout_ctrl]: V(False)
-
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2754,7 +2646,6 @@ module i2c_reg_top (
     // to register interface (read)
     .qs     (host_timeout_ctrl_qs)
   );
-
 
 
 
