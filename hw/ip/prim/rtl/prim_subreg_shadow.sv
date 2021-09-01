@@ -53,7 +53,7 @@ module prim_subreg_shadow
   logic          staged_de, shadow_de, committed_de;
 
   // Subreg status and data signals
-  logic          staged_qe, shadow_qe, committed_qe;
+  logic          committed_qe;
   logic [DW-1:0] staged_q,  shadow_q,  committed_q;
   logic [DW-1:0] committed_qs;
 
@@ -110,7 +110,7 @@ module prim_subreg_shadow
     .wd       ( ~wr_data  ),
     .de       ( staged_de ),
     .d        ( ~d        ),
-    .qe       ( staged_qe ),
+    .qe       (           ),
     .q        ( staged_q  ),
     .qs       (           )
   );
@@ -134,7 +134,7 @@ module prim_subreg_shadow
     .wd       ( staged_q        ),
     .de       ( shadow_de       ),
     .d        ( staged_q        ),
-    .qe       ( shadow_qe       ),
+    .qe       (                 ),
     .q        ( shadow_q        ),
     .qs       (                 )
   );
@@ -165,7 +165,7 @@ module prim_subreg_shadow
   assign err_storage = (~shadow_q != committed_q);
 
   // Remaining output assignments
-  assign qe = staged_qe | shadow_qe | committed_qe;
+  assign qe = committed_qe;
   assign q  = committed_q;
   assign qs = committed_qs;
 
