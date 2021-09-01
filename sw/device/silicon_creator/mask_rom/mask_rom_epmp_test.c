@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
@@ -33,6 +34,15 @@
  * blocked unless the unlock function has been called with a region containing
  * the address of the access.
  */
+
+/**
+ * Secure MMIO context.
+ *
+ * This is placed at a fixed location in memory within the .static_critical
+ * section. The location of this data is known to ROM_EXT.
+ */
+__attribute__((section(".static_critical.sec_mmio_ctx")))  //
+volatile sec_mmio_ctx_t sec_mmio_ctx;
 
 /**
  * Exception types that may be encountered.

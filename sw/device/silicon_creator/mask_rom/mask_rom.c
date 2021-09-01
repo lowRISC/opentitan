@@ -30,10 +30,13 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// TODO(#7325): Defined here for now to be able to use the OTP driver since
-// sec_mmio requires this symbol. For the actual target, we need to define a
-// memory region to share the data with ROM_EXT.
-sec_mmio_ctx_t sec_mmio_ctx;
+// Secure MMIO context.
+//
+// This is placed at a fixed location in memory within the .static_critical
+// section. The location of this data is known to ROM_EXT.
+__attribute__((section(".static_critical.sec_mmio_ctx")))  //
+volatile sec_mmio_ctx_t sec_mmio_ctx;
+
 // In-memory copy of the ePMP register configuration.
 epmp_state_t epmp;
 // Life cycle state of the chip.
