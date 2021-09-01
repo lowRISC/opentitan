@@ -22,7 +22,9 @@
 `include "prim_assert.sv"
 
 module tlul_adapter_host import tlul_pkg::*; #(
-  parameter int unsigned MAX_REQS = 2
+  parameter int unsigned MAX_REQS = 2,
+  // TODO(#7966) disable data intgrity overwrite once dv support available
+  parameter bit EnableDataIntgGen = 1
 ) (
   input clk_i,
   input rst_ni,
