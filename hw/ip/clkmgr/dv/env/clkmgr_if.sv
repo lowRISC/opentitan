@@ -122,15 +122,14 @@ interface clkmgr_if (
     actual_clk_io_div4 = actual_div4_value;
   endfunction
 
-  task automatic init(logic [NUM_TRANS-1:0] idle, logic ip_clk_en, lc_ctrl_pkg::lc_tx_t scanmode,
+  task automatic init(logic [NUM_TRANS-1:0] idle, lc_ctrl_pkg::lc_tx_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack = lc_ctrl_pkg::Off);
     update_ast_clk_byp_ack(ast_clk_byp_ack);
+    update_idle(idle);
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_dft_en(lc_dft_en);
-    update_idle(idle);
-    update_ip_clk_en(ip_clk_en);
     update_scanmode(scanmode);
   endtask
 
