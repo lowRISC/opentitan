@@ -2,8 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import random
-from typing import List, Optional
+from typing import Optional
 
 from shared.operand import EnumOperandType, ImmOperandType, RegOperandType
 from shared.insn_yaml import InsnsFile
@@ -27,7 +26,7 @@ class KnownWDR(SnippetGen):
 
         self.bn_xor = self._get_named_insn(insns_file, 'bn.xor')
         self.bn_not = self._get_named_insn(insns_file, 'bn.not')
-        
+
         # BN.XOR has six operands: wrd, wrs1, wrs2, shift_type, shift_value
         # and flag_group
         if not (len(self.bn_xor.operands) == 6 and
@@ -80,14 +79,14 @@ class KnownWDR(SnippetGen):
         # Picks a random operand value for wrd.
         wrd_val_xor = model.pick_operand_value(self.wrd_op_type)
         if wrd_val_xor is None:
-                return None
+            return None
 
         # Picks a random operand value. It shouldn't matter because
         # in the end, we will feed the same value as wrs2 and XORing
         # would result with wrd becoming 0.
         wrs_val_xor = model.pick_operand_value(self.wrs_op_type)
         if wrs_val_xor is None:
-                return None
+            return None
 
         # Assertion is always true because ImmOperand has width embedded in it
         shift_bits = self.imm_op_type.op_val_to_enc_val(0, model.pc)
@@ -104,7 +103,7 @@ class KnownWDR(SnippetGen):
         # Result of this insn can be written to any register.
         wrd_val_not = model.pick_operand_value(self.wrd_op_type)
         if wrd_val_not is None:
-                return None
+            return None
 
         op_vals_xor = [wrd_val_xor, wrs_val_xor, wrs_val_xor, shift_type,
                        shift_bits, flg_group]
