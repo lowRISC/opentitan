@@ -12,10 +12,6 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     csr_wr(ral.intr_enable, en_intr);
   endtask
 
-  virtual task pre_start();
-    super.pre_start();
-  endtask
-
   task body();
     bit [TL_DW-1:0] rand_addr = $urandom_range(CreatorSwCfgOffset,
                                                CreatorSwCfgOffset + CreatorSwCfgSize);
