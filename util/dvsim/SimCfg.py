@@ -392,8 +392,11 @@ class SimCfg(FlowCfg):
             if self.reseed_ovrd is not None:
                 test.reseed = self.reseed_ovrd
 
-            # Apply reseed multiplier if set on the command line.
-            test.reseed *= self.reseed_multiplier
+            # Apply reseed multiplier if set on the command line. This is
+            # always positive but might not be an integer. Round to nearest,
+            # but make sure there's always at least one iteration.
+            scaled = round(test.reseed * self.reseed_multiplier)
+            test.reseed = max(1, scaled)
 
             # Create the unique set of builds needed.
             if test.build_mode.name not in build_list_names:

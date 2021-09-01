@@ -251,6 +251,19 @@ def wrapped_docstring():
     return '\n\n'.join(textwrap.fill(p) for p in paras)
 
 
+def parse_reseed_multiplier(as_str: str) -> float:
+    '''Parse the argument for --reseed-multiplier'''
+    try:
+        ret = float(as_str)
+    except ValueError:
+        raise argparse.ArgumentTypeError('Invalid reseed multiplier: {!r}. '
+                                         'Must be a float.'
+                                         .format(as_str))
+    if ret <= 0:
+        raise argparse.ArgumentTypeError('Reseed multiplier must be positive.')
+    return ret
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=wrapped_docstring(),
@@ -484,7 +497,7 @@ def parse_args():
 
     seedg.add_argument("--reseed-multiplier",
                        "-rx",
-                       type=int,
+                       type=parse_reseed_multiplier,
                        default=1,
                        metavar="N",
                        help=('Scale each reseed value in the test '
