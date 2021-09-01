@@ -35,7 +35,6 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   output keymgr_working_state_e working_state_o,
   output logic sw_binding_unlock_o,
   output logic init_o,
-  input fault_i,
 
   // Data input
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
@@ -125,7 +124,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   logic [CdiWidth-1:0] cdi_cnt;
 
   // error conditions
-  logic kmac_out_valid;
+  logic invalid_kmac_out;
   logic invalid_op;
   logic cnt_err;
   // states fall out of sparsely encoded range
@@ -178,22 +177,30 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   ///////////////////////////
   //  interaction between operation fsm and software
   ///////////////////////////
+  // categories of keymgr errors
+  logic [SyncErrLastIdx-1:0] sync_err;
+  logic [AsyncErrLastIdx-1:0] async_err;
+  logic [SyncFaultLastIdx-1:0] sync_fault;
+  logic [AsyncFaultLastIdx-1:0] async_fault;
 
   logic op_err;
   logic op_fault_err;
 
   // unlock sw binding configuration whenever an advance call is made without errors
-  assign sw_binding_unlock_o = adv_req & op_ack & ~|error_o;
+  assign sw_binding_unlock_o = adv_req & op_ack & ~(op_err | op_fault_err);
 
   // error definition
   // check incoming kmac data validity
-  assign kmac_out_valid = valid_data_chk(kmac_data_i[0]) &
-                          (~KmacEnMasking | valid_data_chk(kmac_data_i[1]));
+  // Only check during the periods when there is actual kmac output
+  assign invalid_kmac_out = (op_update | op_ack) &
+                            (~valid_data_chk(kmac_data_i[0]) |
+                            (~valid_data_chk(kmac_data_i[1]) & KmacEnMasking));
 
-  assign op_err = error_o[ErrInvalidOp] |
-                  error_o[ErrInvalidIn];
+  assign op_err = sync_err[SyncErrInvalidOp] |
+                  sync_err[SyncErrInvalidIn];
 
-  assign op_fault_err = error_o[ErrInvalidStates];
+  assign op_fault_err = |sync_fault |
+                        |async_fault;
 
 
   ///////////////////////////
@@ -358,7 +365,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   logic adv_state;
   logic dis_state;
   logic inv_state;
-  assign adv_state = op_ack & adv_req;
+  assign adv_state = op_ack & adv_req & ~op_err;
   assign dis_state = op_ack & dis_req;
   assign inv_state = op_fault_err;
 
@@ -686,6 +693,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
     endcase // unique case (adv_state_q)
   end
 
+
   // operations fsm update precedence
   // when in disabled state, always update.
   assign op_update_sel = (op_ack | op_update) & disabled ? KeyUpdateKmac :
@@ -693,26 +701,75 @@ module keymgr_ctrl import keymgr_pkg::*; #(
                          op_err                          ? KeyUpdateIdle :
                          (op_ack | op_update)            ? KeyUpdateKmac : KeyUpdateIdle;
 
-  assign error_o[ErrInvalidOp]     = op_done_o & (invalid_op | disabled);
-  assign error_o[ErrInvalidIn]     = op_ack & kmac_input_invalid_i;
-  assign error_o[ErrShadowUpdate]  = shadowed_update_err_i;
-  assign error_o[ErrInvalidStates] = (op_done_o | op_update) & fault_i;
 
-  assign fault_o[FaultCmd]         = kmac_cmd_err_i;
-  assign fault_o[FaultKmacFsm]     = kmac_fsm_err_i;
-  assign fault_o[FaultKmacOp]      = kmac_op_err_i;
-  // Kmac output is only checked on operation complete.  Invalid
-  // values are legal otherwise
-  assign fault_o[FaultKmacOut]     = op_ack & ~kmac_out_valid;
-  assign fault_o[FaultRegFileIntg] = regfile_intg_err_i;
-  assign fault_o[FaultShadow]      = shadowed_storage_err_i;
-  assign fault_o[FaultCtrlFsm]     = state_intg_err_q;
-  assign fault_o[FaultCtrlCnt]     = cnt_err;
+  // Advance calls are made up of multiple rounds of kmac operations.
+  // Any sync error that occurs is treated as an error of the entire call.
+  // Therefore sync errors that happen before the end of the call must be
+  // latched.
+  logic[SyncErrLastIdx-1:0] sync_err_q, sync_err_d;
+  logic[SyncFaultLastIdx-1:0] sync_fault_q, sync_fault_d;
+
+  logic err_vld;
+  assign err_vld = op_update | op_done_o;
+
+  // sync errors
+  // When an operation encounters a fault, the operation is always rejected as the FSM
+  // transitions to wipe
+  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | op_fault_err);
+  assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sync_err_q <= '0;
+    end else if (op_done_o) begin
+      sync_err_q <= '0;
+    end else if (op_update) begin
+      sync_err_q <= sync_err_d;
+    end
+  end
+  assign sync_err = sync_err_q | sync_err_d;
+
+  // async errors
+  assign async_err[AsyncErrShadowUpdate] = shadowed_update_err_i;
+
+  // sync faults
+  assign sync_fault_d[SyncFaultKmacOp] = err_vld & kmac_op_err_i;
+  assign sync_fault_d[SyncFaultKmacOut] = err_vld & invalid_kmac_out;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sync_fault_q <= '0;
+    end else if (op_update) begin
+      sync_fault_q <= sync_fault_d;
+    end
+  end
+  assign sync_fault = sync_fault_q | sync_fault_d;
+
+  // async faults
+  assign async_fault[AsyncFaultKmacCmd] = kmac_cmd_err_i;
+  assign async_fault[AsyncFaultKmacFsm] = kmac_fsm_err_i;
+  assign async_fault[AsyncFaultRegIntg] = regfile_intg_err_i;
+  assign async_fault[AsyncFaultShadow ] = shadowed_storage_err_i;
+  assign async_fault[AsyncFaultFsmIntg] = state_intg_err_q;
+  assign async_fault[AsyncFaultCntErr ] = cnt_err;
+
+  // output to error code register
+  assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
+  assign error_o[ErrInvalidIn]    = op_done_o & sync_err[SyncErrInvalidIn];
+  assign error_o[ErrShadowUpdate] = async_err[AsyncErrShadowUpdate];
+
+  // output to fault code register
+  assign fault_o[FaultKmacOp]  = op_done_o & sync_fault[SyncFaultKmacOp];
+  assign fault_o[FaultKmacOut] = op_done_o & sync_fault[SyncFaultKmacOut];
+  assign fault_o[FaultKmacCmd] = async_fault[AsyncFaultKmacCmd];
+  assign fault_o[FaultKmacFsm] = async_fault[AsyncFaultKmacFsm];
+  assign fault_o[FaultRegIntg] = async_fault[AsyncFaultRegIntg];
+  assign fault_o[FaultShadow]  = async_fault[AsyncFaultShadow];
+  assign fault_o[FaultCtrlFsm] = async_fault[AsyncFaultFsmIntg];
+  assign fault_o[FaultCtrlCnt] = async_fault[AsyncFaultCntErr];
 
   always_comb begin
     status_o = OpIdle;
     if (op_done_o) begin
-      status_o = |error_o ? OpDoneFail : OpDoneSuccess;
+      status_o = |error_o | |fault_o ? OpDoneFail : OpDoneSuccess;
     end else if (op_start_i) begin
       status_o = OpWip;
     end

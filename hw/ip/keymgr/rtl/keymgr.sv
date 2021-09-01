@@ -242,7 +242,6 @@ module keymgr
     .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .fault_o(fault_code),
-    .fault_i(|reg2hw.fault_status),
     .error_o(err_code),
     .data_en_o(data_en),
     .data_valid_o(data_valid),
@@ -517,25 +516,19 @@ module keymgr
     .intr_o                 (intr_op_done_o)
   );
 
-  assign hw2reg.err_code.invalid_op.d             = reg2hw.err_code.invalid_op.q  |
-                                                    err_code[ErrInvalidOp];
-  assign hw2reg.err_code.invalid_kmac_input.d     = reg2hw.err_code.invalid_kmac_input.q |
-                                                    err_code[ErrInvalidIn];
-  assign hw2reg.err_code.invalid_shadow_update.d  = reg2hw.err_code.invalid_shadow_update.q |
-                                                    err_code[ErrShadowUpdate];
-  assign hw2reg.err_code.invalid_states.d         = reg2hw.err_code.invalid_states.q |
-                                                    err_code[ErrInvalidStates];
-  assign hw2reg.err_code.invalid_op.de            = 1'b1;
-  assign hw2reg.err_code.invalid_kmac_input.de    = 1'b1;
-  assign hw2reg.err_code.invalid_shadow_update.de = 1'b1;
-  assign hw2reg.err_code.invalid_states.de        = 1'b1;
+  assign hw2reg.err_code.invalid_op.d             = 1'b1;
+  assign hw2reg.err_code.invalid_kmac_input.d     = 1'b1;
+  assign hw2reg.err_code.invalid_shadow_update.d  = 1'b1;
+  assign hw2reg.err_code.invalid_op.de            = err_code[ErrInvalidOp];
+  assign hw2reg.err_code.invalid_kmac_input.de    = err_code[ErrInvalidIn];
+  assign hw2reg.err_code.invalid_shadow_update.de = err_code[ErrShadowUpdate];
 
   // detailed breakdown of the invalid_states field above
-  assign hw2reg.fault_status.cmd.de           = fault_code[FaultCmd];
+  assign hw2reg.fault_status.cmd.de           = fault_code[FaultKmacCmd];
   assign hw2reg.fault_status.kmac_fsm.de      = fault_code[FaultKmacFsm];
   assign hw2reg.fault_status.kmac_op.de       = fault_code[FaultKmacOp];
   assign hw2reg.fault_status.kmac_out.de      = fault_code[FaultKmacOut];
-  assign hw2reg.fault_status.regfile_intg.de  = fault_code[FaultRegFileIntg];
+  assign hw2reg.fault_status.regfile_intg.de  = fault_code[FaultRegIntg];
   assign hw2reg.fault_status.shadow.de        = fault_code[FaultShadow];
   assign hw2reg.fault_status.ctrl_fsm_intg.de = fault_code[FaultCtrlFsm];
   assign hw2reg.fault_status.ctrl_fsm_cnt.de  = fault_code[FaultCtrlCnt];
@@ -555,15 +548,13 @@ module keymgr
   logic fault_errs, fault_err_req_q, fault_err_req_d, fault_err_ack;
   logic op_errs, op_err_req_q, op_err_req_d, op_err_ack;
 
-  // Error code fatal faults occur only when keymgr operation is actually invoked.
   // Fault status can happen independently of any operation
-  assign fault_errs = |reg2hw.fault_status |
-                      err_code[ErrInvalidStates];
+  assign fault_errs = |reg2hw.fault_status;
 
   assign fault_err_req_d = fault_errs    ? 1'b1 :
                            fault_err_ack ? 1'b0 : fault_err_req_q;
 
-  assign op_errs = err_code[ErrInvalidOp] | err_code[ErrInvalidIn] | err_code[ErrShadowUpdate];
+  assign op_errs = |err_code;
   assign op_err_req_d = op_errs    ? 1'b1 :
                         op_err_ack ? 1'b0 : op_err_req_q;
 
