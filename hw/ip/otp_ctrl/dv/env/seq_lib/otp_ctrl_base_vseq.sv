@@ -9,6 +9,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     .VIRTUAL_SEQUENCER_T (otp_ctrl_virtual_sequencer)
   );
   `uvm_object_utils(otp_ctrl_base_vseq)
+  `uvm_object_new
 
   // various knobs to enable certain routines
   bit do_otp_ctrl_init = 1'b1;
@@ -37,7 +38,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   lc_ctrl_state_pkg::lc_state_e lc_state;
   lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
-  `uvm_object_new
+  otp_ctrl_callback_vseq callback_vseq;
+
+  virtual task pre_start();
+    `uvm_create_on(callback_vseq, p_sequencer);
+    super.pre_start();
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     // OTP has dut and edn reset. If assign OTP values after `super.dut_init()`, and if dut reset
@@ -45,6 +51,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // running.
     otp_ctrl_vif_init();
     super.dut_init(reset_kind);
+    callback_vseq.dut_init_callback();
 
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins

@@ -22,6 +22,7 @@ filesets:
       - otp_ctrl_scoreboard.sv: {is_include_file: true}
       - otp_ctrl_env.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_callback_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_wake_up_vseq.sv: {is_include_file: true}
