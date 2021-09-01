@@ -529,14 +529,6 @@ INSTANTIATE_TEST_SUITE_P(
         },
         GetStatusCodesTestCase{
             .reg_val = {{
-                .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
-                .value = 1,
-            }},
-            .exp_val = kDifKeymgrStatusCodeIdle |
-                       kDifKeymgrStatusCodeInvalidState,
-        },
-        GetStatusCodesTestCase{
-            .reg_val = {{
                 .offset = KEYMGR_ERR_CODE_INVALID_KMAC_INPUT_BIT,
                 .value = 1,
             }},
@@ -555,13 +547,7 @@ INSTANTIATE_TEST_SUITE_P(
             .exp_val = kDifKeymgrStatusCodeIdle |
                        kDifKeymgrStatusCodeInvalidOperation |
                        kDifKeymgrStatusCodeInvalidKmacInput,
-        },
-        GetStatusCodesTestCase{.reg_val = {{
-                                   .offset = KEYMGR_ERR_CODE_INVALID_STATES_BIT,
-                                   .value = 1,
-                               }},
-                               .exp_val = kDifKeymgrStatusCodeIdle |
-                                          kDifKeymgrStatusCodeInvalidState}));
+        }));
 
 class GetStateTest : public DifKeymgrInitialized {};
 

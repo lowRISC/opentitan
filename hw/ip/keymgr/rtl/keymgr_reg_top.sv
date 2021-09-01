@@ -297,8 +297,6 @@ module keymgr_reg_top (
   logic err_code_invalid_kmac_input_wd;
   logic err_code_invalid_shadow_update_qs;
   logic err_code_invalid_shadow_update_wd;
-  logic err_code_invalid_states_qs;
-  logic err_code_invalid_states_wd;
   logic fault_status_cmd_qs;
   logic fault_status_kmac_fsm_qs;
   logic fault_status_kmac_op_qs;
@@ -1983,7 +1981,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.invalid_op.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (err_code_invalid_op_qs)
@@ -2009,7 +2007,7 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.invalid_kmac_input.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (err_code_invalid_kmac_input_qs)
@@ -2035,36 +2033,10 @@ module keymgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.invalid_shadow_update.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (err_code_invalid_shadow_update_qs)
-  );
-
-
-  //   F[invalid_states]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_err_code_invalid_states (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (err_code_we),
-    .wd     (err_code_invalid_states_wd),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.invalid_states.de),
-    .d      (hw2reg.err_code.invalid_states.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.err_code.invalid_states.q),
-
-    // to register interface (read)
-    .qs     (err_code_invalid_states_qs)
   );
 
 
@@ -2601,8 +2573,6 @@ module keymgr_reg_top (
 
   assign err_code_invalid_shadow_update_wd = reg_wdata[2];
 
-  assign err_code_invalid_states_wd = reg_wdata[3];
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -2847,7 +2817,6 @@ module keymgr_reg_top (
         reg_rdata_next[0] = err_code_invalid_op_qs;
         reg_rdata_next[1] = err_code_invalid_kmac_input_qs;
         reg_rdata_next[2] = err_code_invalid_shadow_update_qs;
-        reg_rdata_next[3] = err_code_invalid_states_qs;
       end
 
       addr_hit[59]: begin

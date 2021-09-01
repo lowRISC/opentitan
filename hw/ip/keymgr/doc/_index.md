@@ -201,55 +201,104 @@ This means the working states, even though functionally 256b, are maintained as 
 For advance-state and `generate-output` commands, the KMAC emitted output are also in 2-shares.
 Software is responsible for determining if the key should be preserved in shares or combined, depending on the use case.
 
-## Errors, Interrupts and Alerts
-An error code register is maintained {{< regref ERR_CODE >}} to check issues that might rise while using the key manager.
-There are two categories of errors
-*  Hardware fault errors - These errors indicate something fundamental has gone wrong and are errors that could not have been caused by software.
-   *  Invalid states - There are invalid / impossible states observed in the keymgr.  These are likely fault errors.
-   *  Invalid fsm state - The fsm reached an invalid state.  This is not possible by software and indicates a hardware fault.
-   *  Invalid kmac operation - The KMAC module itself reported an error.  This is not possible given the set of KMAC data interface inputs.
-   *  Invalid output - The data return from KMAC is all 0's or all 1's.  This is not possible given the set of KMAC data interface inputs.
+## Errors, Faults and Alerts
 
-*  Software operation errors - These errors could have been caused by user errors and is a sign that software should examine its usage of key manager.
-   *  Invalid operation - An invalid operation (for example `generate` while in Reset) was invoked.
-   *  Invalid input - Invalid software and hardware inputs were supplied (for example a greater key version than allowed in {{< regref MAX_OWNER_KEY_VER >}}, or a root key or seed that has never been initialized.
+The key manager has two overall categories of errors:
+* Recoverable errors
+* Fatal errors
 
-Two separate alerts are generated, one corresponding to each category above.
+Recoverable errors are those likely to have been introduced by software and not fatal to the key manager or the system.
+Fatal errors are logically impossible errors that have a high likelihood of being a fault and thus fatal.
+
+Each category of error can be further divided into two:
+* Synchronous errors
+* Asynchronous errors
+
+Synchronous errors happen only during a key manager transaction.
+Asynchronous errors can happen at any time.
+
+Given the above, we have 4 total categories of errors:
+* Synchronous recoverable errors
+* Asynchronous recoverable errors
+* Synchronous fatal errors
+* Asynchronous fatal errors
+
+All recoverable errors (synchronous and asynchronous) are captured in {{< regref ERR_CODE >}}.
+All fatal errors (synchronous and asynchronous) are captured in {{< regref FAULT_STATUS >}}.
+
+Recoverable errors cause a recoverable alert to be sent from the key manager.
+Fatal errors cause a fatal alert to be sent from the key manager.
+
+Below, the behavior of each category and its constituent errors are described in detail.
+
+### Synchronous Recoverable Errors
+
+These errors can only happen when a key manager transaction is invoked and are typically associated with incorrect software programming.
+At the end of the transaction, key manager reports whether there was an error in {{< regref ERR_CODE >}} and sends a recoverable alert.
+
+* {{< regref ERR_CODE.INVALID_OP >}} Software issued an invalid operation given the current key manager state.
+* {{< regref ERR_CODE.INVALID_KMAC_INPUT >}} Software supplied invalid input (for example a key greater than the max version) for a key manager operation.
+
+### Asynchronous Recoverable Errors
+
+These errors can happen at any time regardless of whether there is a key manager operation.
+The error is reported in {{< regref ERR_CODE >}} and the key manager sends a recoverable alert.
+
+* {{< regref ERR_CODE.INVALID_SHADOW_UPDATE >}} Software performed an invalid sequence while trying to update a key manager shadow register.
+
+### Synchronous Fatal Errors
+
+These errors can only happen when a key manager transaction is invoked and receives malformed transaction results that are not logically possible.
+At the end of the transaction, key manager reports whether there was an error in {{< regref FAULT_STATUS >}} and continuously sends fatal alerts .
+
+* {{< regref ERR_CODE.KMAC_OP >}} KMAC reports a transaction error, this is not possible given current definitions.
+* {{< regref ERR_CODE.KMAC_OUT >}} KMAC returns all 0's or all 1's as a result, this is not possible given current definitions.
+
+Note, these errors are synchronous from the perspective of the key manager, but they may be asynchronous from the perspective of another module.
+
+### Asynchronous Fatal Errors
+
+These errors can happen at any time regardless of whether there is a key manager operation.
+The error is reported in {{< regref FAULT_STATUS >}} and the key manager continuously sends fatal alerts.
+
+* {{< regref ERR_CODE.CMD >}} KMAC control's command lines are displaying non-one hot values.
+* {{< regref ERR_CODE.KMAC_FSM >}} KMAC control's FSM is in an invalid state.
+* {{< regref ERR_CODE.REGFILE_INTG >}} The key manager's regfile reports an integrity error.
+* {{< regref ERR_CODE.SHADOW >}} The key manager's regfile reports a shadow storage error.
+* {{< regref ERR_CODE.CTRL_FSM_INTG >}} The key manager's main control FSM is in an invalid state.
+* {{< regref ERR_CODE.CTRL_FSM_CNT >}} The key manager's main control count exhibits an incorrect value.
 
 ### Faults and Operational Faults
 
-The {{< regref FAULT_STATUS >}} register captures all faults that can occur within the key manager.
-Some of these faults can occur only when there is a key manager operation ongoing, other faults can happen at any time (for example register integrity faults or shadow storage faults).
-{{< regref FAULT_STATUS >}} captures all faults regardless of when they happen.
+Since fatal errors (faults) can happen at any time, their impact on the key manager depends on transaction timing.
 
-The {{< regref ERR_CODE.INVALID_STATES >}} field represents the presence of **any** fault during a key manager operation.
-This means if a fault happens before or during an operation, it will be recognized as an operational fault and result in keymgr's transition to `Invalid` state.
+If the fault happens while a transaction is ongoing, key manager transitions to the `Invalid` [state](#invalid-entry-wiping).
+
+If the fault happens while there is no transaction, an alert is first sent to the alert handler.
+If before the alert handler escalates an operation is run, the key manager again transitions to `Invalid` [state](#invalid-entry-wiping).
+If the alert handler escalates and disables the key manager, then the key manager will also transition to `Invalid` state if it is not already there.
 
 #### Example 1: Fault During Operation
 The key manager is running a generate operation and a non-onehot command was observed by the kmac interface.
 Since the non-onehot condition is a fault, it will be reflected in {{< regref FAULT_STATUS >}}.
-Since an operation was ongoing when this fault was seen, it will also be reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
-This is considered an operational fault and begin transition to the `Invalid` [state](#invalid-entry-wiping).
+Since an operation was ongoing when this fault was seen, it will also be reflected in {{< regref ERR_CODE.INVALID_OP >}}.
+This is considered an operational fault and begins transition to `Invalid`.
 
 #### Example 2: Fault During Idle
 The key manager is NOT running an operation and is idle.
 During this time, a fault was observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
 The faults will be reflected in {{< regref FAULT_STATUS >}}.
-However, since there was no ongoing key manager operation, the error is **not** reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
-This is **not** considered an operational fault and the key manager will remain in its current state.
+
+This is **not** considered an operational fault and the key manager will remain in its current state until an operation is invoked or the alert handler escalates.
 
 #### Example 3: Operation after Fault Detection
 Continuing from the example above, assume now the key manager begins an operation.
-Since the key manager has previous encountered a fault, any operation now is considered an operational fault and will be reflected in {{< regref ERR_CODE.INVALID_STATES >}}.
-This is considered an operational fault and begin transition to the `Invalid` [state](#invalid-entry-wiping).
+Since the key manager has previous encountered a fault, any operation now is considered an operational fault and begins transition to the `Invalid` [state](#invalid-entry-wiping).
 
 
-### Invalid Output
-When these errors occur, a fault alert is generated.
+#### Additional Details on Invalid Input
 
-### Invalid Input
-When these errors occur, an operation alert is generated
-What is considered invalid input depends on the current state and the operation called.
+What is considered invalid input changes based on current state and operation.
 
 When an advance operation is invoked:
 - The working state key is checked for all 0's and all 1's.
@@ -264,8 +313,7 @@ When a generate output key operation is invoked:
 When a generate output identity is invoked:
 - The working state key is checked for all 0's and all 1's.
 
-### Invalid Operation
-When these errors occur, an operation alert is generated.
+#### Invalid Operation
 
 The table below enumerates the legal operations in a given state.
 When an illegal operation is supplied, the error code is updated and the operation is flagged as `done with error`.

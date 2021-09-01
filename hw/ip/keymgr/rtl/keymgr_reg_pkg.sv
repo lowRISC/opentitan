@@ -111,21 +111,6 @@ package keymgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } invalid_op;
-    struct packed {
-      logic        q;
-    } invalid_kmac_input;
-    struct packed {
-      logic        q;
-    } invalid_shadow_update;
-    struct packed {
-      logic        q;
-    } invalid_states;
-  } keymgr_reg2hw_err_code_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
     } cmd;
     struct packed {
       logic        q;
@@ -203,10 +188,6 @@ package keymgr_reg_pkg;
       logic        d;
       logic        de;
     } invalid_shadow_update;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_states;
   } keymgr_hw2reg_err_code_reg_t;
 
   typedef struct packed {
@@ -246,36 +227,35 @@ package keymgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [944:944]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [943:943]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [942:941]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [940:937]
-    keymgr_reg2hw_control_reg_t control; // [936:929]
-    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [928:926]
-    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [925:910]
-    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [909:908]
-    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [907:652]
-    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [651:396]
-    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [395:140]
-    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [139:108]
-    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [107:76]
-    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [75:44]
-    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [43:12]
-    keymgr_reg2hw_err_code_reg_t err_code; // [11:8]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [940:940]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [939:939]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [938:937]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [936:933]
+    keymgr_reg2hw_control_reg_t control; // [932:925]
+    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [924:922]
+    keymgr_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [921:906]
+    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [905:904]
+    keymgr_reg2hw_sealing_sw_binding_mreg_t [7:0] sealing_sw_binding; // [903:648]
+    keymgr_reg2hw_attest_sw_binding_mreg_t [7:0] attest_sw_binding; // [647:392]
+    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [391:136]
+    keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [135:104]
+    keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t max_creator_key_ver_shadowed; // [103:72]
+    keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t max_owner_int_key_ver_shadowed; // [71:40]
+    keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t max_owner_key_ver_shadowed; // [39:8]
     keymgr_reg2hw_fault_status_reg_t fault_status; // [7:0]
   } keymgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_hw2reg_intr_state_reg_t intr_state; // [564:563]
-    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [562:562]
-    keymgr_hw2reg_control_reg_t control; // [561:560]
-    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [559:559]
-    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [558:295]
-    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [294:31]
-    keymgr_hw2reg_working_state_reg_t working_state; // [30:27]
-    keymgr_hw2reg_op_status_reg_t op_status; // [26:24]
-    keymgr_hw2reg_err_code_reg_t err_code; // [23:16]
+    keymgr_hw2reg_intr_state_reg_t intr_state; // [562:561]
+    keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [560:560]
+    keymgr_hw2reg_control_reg_t control; // [559:558]
+    keymgr_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [557:557]
+    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [556:293]
+    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [292:29]
+    keymgr_hw2reg_working_state_reg_t working_state; // [28:25]
+    keymgr_hw2reg_op_status_reg_t op_status; // [24:22]
+    keymgr_hw2reg_err_code_reg_t err_code; // [21:16]
     keymgr_hw2reg_fault_status_reg_t fault_status; // [15:0]
   } keymgr_hw2reg_t;
 

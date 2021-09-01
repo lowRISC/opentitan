@@ -56,7 +56,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
-  bit                                invalid_status_err;
+  bit                                is_fault_err;
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
@@ -135,7 +135,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     case (op)
       keymgr_pkg::OpAdvance: begin
         bit is_err = get_hw_invalid_input() || get_fault_err();
-
+        `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
         case (current_state)
           keymgr_pkg::StInit: begin
             compare_adv_creator_data(.cdi_type(current_cdi),
@@ -259,7 +259,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       begin
         cfg.clk_rst_vif.wait_n_clks(1);
         if (is_final_kdf) begin
-          if (get_err_code()) current_op_status = keymgr_pkg::OpDoneFail;
+          if (get_err_code() || get_fault_err()) current_op_status = keymgr_pkg::OpDoneFail;
           else                current_op_status = keymgr_pkg::OpDoneSuccess;
         end
       end
@@ -439,8 +439,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrShadowUpdate],
                        err_code[keymgr_pkg::ErrShadowUpdate])
 
-          `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrInvalidStates],
-                       err_code[keymgr_pkg::ErrInvalidStates])
           // when op error occurs with keymgr_en = 0, input is meaningless. Design may or may not
           // assert ErrInvalidIn,  which doesn't matter
           if (!err_code[keymgr_pkg::ErrInvalidOp] || cfg.keymgr_vif.get_keymgr_en()) begin
@@ -608,8 +606,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           if (addr_phase_read) begin
             addr_phase_is_sw_share_corrupted = is_sw_share_corrupted;
           end else if (data_phase_read && addr_phase_is_sw_share_corrupted) begin
+            // disable read check outside of the item compare.
+            // it is possible for the returned data when corrupted, to be 0
+            do_read_check = 1'b0;
             if (item.d_data != 0) begin
-              do_read_check = 1'b0;
               `DV_CHECK_NE(item.d_data, `gmv(csr))
             end
           end
@@ -645,40 +645,51 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void process_error_n_alert();
     bit [TL_DW-1:0] err = get_err_code();
+
+    // A detected fault will cause us to transition to invalid where
+    // operations are always error'd
+    if (get_fault_err()) begin
+      err[keymgr_pkg::ErrInvalidOp] = 1;
+    end
     void'(ral.err_code.predict(err));
 
-    if (get_fault_err()) begin
-      set_exp_alert("fatal_fault_err", .is_fatal(1));
-    end
     if (get_fault_err() || !cfg.keymgr_vif.get_keymgr_en()) begin
       is_sw_share_corrupted = 1;
       cfg.keymgr_vif.wipe_sideload_keys();
     end
+
+    if (get_fault_err()) begin
+      set_exp_alert("fatal_fault_err", .is_fatal(1));
+    end
+
     if (get_op_err()) set_exp_alert("recov_operation_err");
 
-    `uvm_info(`gfn, $sformatf("at %s, %s is issued and error code is 'b%0b",
+    `uvm_info(`gfn, $sformatf("at %s, %s is issued and error 'b%0b",
               current_state, get_operation(), err), UVM_MEDIUM)
   endfunction
 
   virtual function bit [TL_DW-1:0] get_fault_err();
-    bit [TL_DW-1:0] err = get_err_code();
-    return err[keymgr_pkg::ErrInvalidStates];
+
+    // faults are sticky, and will remain until reset
+    is_fault_err |= is_kmac_rsp_err | is_kmac_invalid_data;
+    return is_fault_err;
+
   endfunction
 
   virtual function bit [TL_DW-1:0] get_op_err();
     bit [TL_DW-1:0] err = get_err_code();
-    return err[keymgr_pkg::ErrInvalidOp] || err[keymgr_pkg::ErrInvalidIn];
+    bit fault = get_fault_err();
+
+    // A detected fault causes the operation to transition into invalid,
+    // which will report an invalid operation
+    return err[keymgr_pkg::ErrInvalidOp] || err[keymgr_pkg::ErrInvalidIn] ||
+      fault;
   endfunction
 
   virtual function bit [TL_DW-1:0] get_err_code();
     bit [TL_DW-1:0] err_code;
 
-    err_code[keymgr_pkg::ErrInvalidOp]  = get_op_error();
-
-    // this fault error is sticky, should preserve the value until reset
-    if (!invalid_status_err) invalid_status_err = is_kmac_rsp_err | is_kmac_invalid_data;
-    err_code[keymgr_pkg::ErrInvalidStates] = invalid_status_err;
-
+    err_code[keymgr_pkg::ErrInvalidOp] = get_op_error() | get_fault_err();
     err_code[keymgr_pkg::ErrInvalidIn] = get_hw_invalid_input() | get_sw_invalid_input();
 
     `uvm_info(`gfn, $sformatf({"op_err = %0d, rsp_err = %0d, hw_invalid = %0d, sw_invalid = %0d, ",
@@ -792,7 +803,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     if (current_state inside {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
                               keymgr_pkg::StOwnerKey}) begin
-      return !(err_code[keymgr_pkg::ErrInvalidStates] |
+      return !(get_fault_err() |
                err_code[keymgr_pkg::ErrInvalidIn]  |
                !cfg.keymgr_vif.get_keymgr_en());
     end else begin
@@ -894,7 +905,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    adv_data_a_array[Sealing][keymgr_pkg::StOwnerKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StOwnerKey] = act;
   endfunction
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
@@ -1061,7 +1072,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
-    invalid_status_err    = 0;
+    is_fault_err          = 0;
     is_sw_share_corrupted = 0;
     req_fifo.flush();
     rsp_fifo.flush();
