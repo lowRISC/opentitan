@@ -23,4 +23,10 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  // Override the task to check corresponding CSR status is updated correctly.
+  virtual task check_tl_intg_error_response();
+    bit exp_val = `gmv(ral.loc_alert_en_shadowed[LocalBusIntgFail]);
+    csr_rd_check(.ptr(ral.loc_alert_cause[LocalBusIntgFail]), .compare_value(exp_val));
+  endtask
+
 endclass
