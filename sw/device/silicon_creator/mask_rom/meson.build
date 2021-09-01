@@ -68,6 +68,7 @@ mask_rom_epmp_test_lib = declare_dependency(
   link_args: rom_link_args,
   dependencies: [
     freestanding_headers,
+    sw_silicon_creator_lib_base_sec_mmio,
     sw_silicon_creator_lib_driver_uart,
     sw_silicon_creator_lib_epmp_test_unlock,
     sw_silicon_creator_lib_fake_deps,

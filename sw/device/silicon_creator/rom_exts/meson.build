@@ -51,6 +51,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_lib_dif_uart,
         sw_lib_runtime_hart,
         sw_lib_runtime_print,
+        sw_silicon_creator_lib_base_sec_mmio,
         sw_silicon_creator_lib_manifest_section,
 
         # TODO: ePMP test status dependency should be removed from

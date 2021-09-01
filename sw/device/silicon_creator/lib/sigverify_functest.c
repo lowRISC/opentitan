@@ -12,9 +12,6 @@ static const char kMessage[] = "test message";
 // Digest of the test message above.
 hmac_digest_t act_digest;
 
-// sec_mmio (used by the OTP driver) requires this symbol to be defined.
-sec_mmio_ctx_t sec_mmio_ctx;
-
 // See sw/device/silicon_creator/keys/README.md for more details on how to
 // update the structs below.
 

@@ -7,8 +7,9 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
-// FIXME: Linker configuration.
-extern sec_mmio_ctx_t sec_mmio_ctx;
+// The context is declared as weak so that the mask ROM and ROM_EXT may
+// override its location.
+__attribute__((weak)) volatile sec_mmio_ctx_t sec_mmio_ctx;
 
 // FIXME: Replace for shutdown module handler.
 static sec_mmio_shutdown_handler sec_mmio_shutdown_cb;

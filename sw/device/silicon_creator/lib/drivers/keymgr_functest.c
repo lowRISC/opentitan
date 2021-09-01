@@ -37,9 +37,6 @@
 
 #define ASSERT_EQZ(x) CHECK((x) == 0)
 
-// sec_mmio (used by the lifecycle driver) requires this symbol to be defined.
-sec_mmio_ctx_t sec_mmio_ctx;
-
 enum {
   /** Creator Secret flash info page ID. */
   kFlashInfoPageIdCreatorSecret = 1,
