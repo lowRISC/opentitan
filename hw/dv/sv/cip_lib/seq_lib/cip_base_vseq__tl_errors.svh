@@ -299,30 +299,37 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
         tl_access(.addr($urandom), .write(write), .data(data),
                   .tl_intg_err_type(tl_intg_err_type));
 
-        `DV_CHECK_FATAL(cfg.tl_intg_alert_name inside {cfg.list_of_alerts}, $sformatf(
-            "tl intg alert (%s) is not inside %p", cfg.tl_intg_alert_name, cfg.list_of_alerts))
-
-        `uvm_info(`gfn, "expected fatal alert is triggered", UVM_LOW)
-
-        // Check both alert and CSR status update
-        fork
-          // This is a fatal alert and design keeps sending it until reset is issued.
-          // Check alerts are triggered for a few times
-          repeat ($urandom_range(5, 20)) begin
-            wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
-          end
-          // Check corresponding CSR status is updated correctly
-          foreach (cfg.tl_intg_alert_fields[csr_field]) begin
-            bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
-            csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
-          end
-        join
+        // Check design's response to tl_intg_error.
+        // This virtual task verifies the fatal alert is firing continuously and verifies integrity
+        // error status register field is set.
+        check_tl_intg_error_response();
       end
     join
 
     // issue hard reset for fatal alert to recover
     dut_init("HARD");
   end
+endtask
+
+virtual task check_tl_intg_error_response();
+  `DV_CHECK_FATAL(cfg.tl_intg_alert_name inside {cfg.list_of_alerts}, $sformatf(
+      "tl intg alert (%s) is not inside %p", cfg.tl_intg_alert_name, cfg.list_of_alerts))
+
+  `uvm_info(`gfn, "expected fatal alert is triggered", UVM_LOW)
+
+  // Check both alert and CSR status update
+  fork
+    // This is a fatal alert and design keeps sending it until reset is issued.
+    // Check alerts are triggered for a few times
+    repeat ($urandom_range(5, 20)) begin
+      wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
+    end
+    // Check corresponding CSR status is updated correctly
+    foreach (cfg.tl_intg_alert_fields[csr_field]) begin
+      bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
+      csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
+    end
+  join
 endtask
 
 `undef create_tl_access_error_case

@@ -69,7 +69,10 @@ package alert_handler_env_pkg;
     LocalAlertPingFail,
     LocalEscPingFail,
     LocalAlertIntFail,
-    LocalEscIntFail
+    LocalEscIntFail,
+    LocalBusIntgFail,
+    LocalShadowRegUpdateErr,
+    LocalShadowRegStorageErr
   } local_alert_type_e;
 
   // forward declare classes to allow typedefs below
