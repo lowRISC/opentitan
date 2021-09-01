@@ -203,14 +203,14 @@ class MemFile:
             seg_type = segment['p_type']
 
             # We're only interested in nonempty PT_LOAD segments
-            if seg_type != 'PT_LOAD' or segment['p_memsz'] == 0:
+            if seg_type != 'PT_LOAD' or segment['p_filesz'] == 0:
                 continue
 
             # seg_lma is the (relative) address of the first byte to be loaded.
             # seg_top is the address of the last byte to be loaded. A one-byte
             # segment will have seg_lma == seg_top.
             seg_lma = segment['p_paddr'] - base_addr
-            seg_top = seg_lma + segment['p_memsz'] - 1
+            seg_top = seg_lma + segment['p_filesz'] - 1
 
             assert seg_lma <= seg_top
 
