@@ -208,19 +208,21 @@ module lc_ctrl
     .clk_i,
     .rst_ni,
     // do not make a request unless there is room for the response
-    .req_i      ( dmi_req_valid & dmi_resp_ready         ),
-    .gnt_o      ( dmi_req_ready                          ),
-    .addr_i     ( top_pkg::TL_AW'({dmi_req.addr, 2'b00}) ),
-    .we_i       ( dmi_req.op == dm::DTM_WRITE            ),
-    .wdata_i    ( dmi_req.data                           ),
-    .be_i       ( {top_pkg::TL_DBW{1'b1}}                ),
-    .type_i     ( tlul_pkg::DataType                     ),
-    .valid_o    ( dmi_resp_valid                         ),
-    .rdata_o    ( dmi_resp.data                          ),
-    .err_o      (                                        ),
-    .intg_err_o (                                        ),
-    .tl_o       ( tap_tl_h2d                             ),
-    .tl_i       ( tap_tl_d2h                             )
+    .req_i        ( dmi_req_valid & dmi_resp_ready         ),
+    .gnt_o        ( dmi_req_ready                          ),
+    .addr_i       ( top_pkg::TL_AW'({dmi_req.addr, 2'b00}) ),
+    .we_i         ( dmi_req.op == dm::DTM_WRITE            ),
+    .wdata_i      ( dmi_req.data                           ),
+    .wdata_intg_i ('0                                      ),
+    .be_i         ( {top_pkg::TL_DBW{1'b1}}                ),
+    .type_i       ( tlul_pkg::DataType                     ),
+    .valid_o      ( dmi_resp_valid                         ),
+    .rdata_o      ( dmi_resp.data                          ),
+    .rdata_intg_o (                                        ),
+    .err_o        (                                        ),
+    .intg_err_o   (                                        ),
+    .tl_o         ( tap_tl_h2d                             ),
+    .tl_i         ( tap_tl_d2h                             )
   );
 
   // TL-UL to DMI transducing
