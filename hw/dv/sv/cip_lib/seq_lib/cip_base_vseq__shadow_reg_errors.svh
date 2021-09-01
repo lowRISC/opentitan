@@ -32,12 +32,15 @@ virtual task shadow_reg_wr(dv_base_reg csr, uvm_reg_data_t wdata);
     end
     begin
       string alert_name = csr.get_update_err_alert_name();
-      `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert()) begin
-                     cfg.clk_rst_vif.wait_clks(1);
-                   end,
-                   $sformatf("%0s update_err alert not detected", csr.get_name()))
-      `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
-                   $sformatf("timeout for alert:%0s", alert_name))
+      // This logic gates alert_handler testbench because it does not have outgoing alert.
+      if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+        `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert()) begin
+                       cfg.clk_rst_vif.wait_clks(1);
+                     end,
+                     $sformatf("%0s update_err alert not detected", csr.get_name()))
+        `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                     $sformatf("timeout for alert:%0s", alert_name))
+      end
     end
   join
 endtask
@@ -81,7 +84,9 @@ virtual task write_and_check_update_error(dv_base_reg shadowed_csr);
   csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(0), .predict(1));
 
   shadow_reg_wr(shadowed_csr, err_wdata);
-  predict_shadow_reg_status(.predict_update_err(1));
+  // If the shadow register is external register, writing two different value might not actually
+  // trigger update error. So we trigger dv_base_reg function to double check.
+  predict_shadow_reg_status(.predict_update_err(shadowed_csr.get_shadow_update_err()));
 
   read_check_shadow_reg_status("Write_and_check_update_error task");
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
@@ -104,8 +109,10 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
   csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(1), .predict(1));
 
-  `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
-               $sformatf("Unexpected alert: %s fired", alert_name))
+  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+    `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
+                 $sformatf("Unexpected alert: %s fired", alert_name))
+  end
 
   read_check_shadow_reg_status("Check_csr_read_clear_staged_val task");
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
@@ -127,12 +134,12 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
   err_val = get_shadow_reg_diff_val(shadowed_csr, origin_val);
 
   csr_poke(.ptr(shadowed_csr), .value(err_val), .kind(kind), .predict(1));
-  predict_shadow_reg_status(.predict_storage_err(1));
+  predict_shadow_reg_status(.predict_storage_err(shadowed_csr.get_shadow_storage_err()));
   `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
             shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH);
 
   // This non-blocking task checks if the alert is continuously firing until reset is issued.
-  check_fatal_alert_nonblocking(alert_name);
+  if (cfg.m_alert_agent_cfg.exists(alert_name)) check_fatal_alert_nonblocking(alert_name);
 
   // Wait random clock cycles and ensure the fatal alert is continuously firing.
   cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));

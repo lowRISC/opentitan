@@ -20,6 +20,8 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     has_edn = 1;
     super.initialize(csr_base_addr);
+    shadow_update_err_status_fields[ral.loc_alert_cause[LocalShadowRegUpdateErr].la] = 1;
+    shadow_storage_err_status_fields[ral.loc_alert_cause[LocalShadowRegStorageErr].la] = 1;
 
     // set num_interrupts & num_alerts
     begin

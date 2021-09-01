@@ -29,4 +29,22 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     csr_rd_check(.ptr(ral.loc_alert_cause[LocalBusIntgFail]), .compare_value(exp_val));
   endtask
 
+  virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
+                                                  bit predict_storage_err = 0);
+    if (predict_update_err) begin
+      foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+        if (`gmv(ral.loc_alert_en_shadowed[LocalShadowRegUpdateErr])) begin
+          void'(status_field.predict(cfg.shadow_update_err_status_fields[status_field]));
+        end
+      end
+    end
+    if (predict_storage_err) begin
+      foreach (cfg.shadow_storage_err_status_fields[status_field]) begin
+        if (`gmv(ral.loc_alert_en_shadowed[LocalShadowRegStorageErr])) begin
+          void'(status_field.predict(cfg.shadow_storage_err_status_fields[status_field]));
+        end
+      end
+    end
+  endfunction
+
 endclass
