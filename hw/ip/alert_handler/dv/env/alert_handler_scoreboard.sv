@@ -293,12 +293,21 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[i] == 0) under_intr_classes[i] = 0;
             end
           end
-          "classa_clr": if (ral.classa_clr_regwen.get_mirrored_value()) clr_reset_esc_class(0);
-          "classb_clr": if (ral.classb_clr_regwen.get_mirrored_value()) clr_reset_esc_class(1);
-          "classc_clr": if (ral.classc_clr_regwen.get_mirrored_value()) clr_reset_esc_class(2);
-          "classd_clr": if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
+          "classa_clr_shadowed": begin
+            if (ral.classa_clr_regwen.get_mirrored_value()) clr_reset_esc_class(0);
+          end
+          "classb_clr_shadowed": begin
+            if (ral.classb_clr_regwen.get_mirrored_value()) clr_reset_esc_class(1);
+          end
+          "classc_clr_shadowed": begin
+            if (ral.classc_clr_regwen.get_mirrored_value()) clr_reset_esc_class(2);
+          end
+          "classd_clr_shadowed": begin
+            if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
+          end
           default: begin
-           //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+            // TODO: align all names with shadow post_fix and re-enable this check.
+            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end
         endcase
       end
