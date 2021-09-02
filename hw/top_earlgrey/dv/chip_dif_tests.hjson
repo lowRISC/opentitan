@@ -57,18 +57,6 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_kmac_cshake_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/kmac_cshake_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_kmac_kmac_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/kmac_kmac_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
       name: chip_otbn_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/otbn_smoketest:1"]
