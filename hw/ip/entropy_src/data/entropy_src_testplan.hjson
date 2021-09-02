@@ -12,8 +12,7 @@
     {
       name: smoke
       desc: '''
-            Enable entropy_src in LFSR mode, wait for interrupt, verify entropy
-            for power-on seed.
+            Enable entropy_src, wait for interrupt, verify entropy.
             '''
       milestone: V1
       tests: ["entropy_src_smoke"]
@@ -40,25 +39,13 @@
       tests: []
     }
     {
-      name: lfsr_mode
-      desc: '''
-            Verify LFSR entropy matches predicted
-            - Random seeds
-            - Random rng activity
-            - Random rates
-            - Verify FIPS bits match predicted
-            '''
-      milestone: V2
-      tests: ["entropy_src_rng"]
-    }
-    {
       name: rng_mode
       desc: '''
             Verify rng entropy
             - Random FIFO depths
             - Random rates
-            - Verify rng single_bit_mode for all bit_selector values
-      Verify FIPS bits match predicted
+            - Verify single_bit_mode for all bit_selector values
+            Verify FIPS bits match predicted
             '''
       milestone: V2
       tests: ["entropy_src_rng"]
@@ -83,8 +70,8 @@
     {
       name: conditioning
       desc: '''
-            Verify genbits in bypass mode as predicted.
-            Verify genbits after shah3 conditioning as predicted.
+            Verify genbits seeds in bypass mode as predicted.
+            Verify genbits seeds after shah3 conditioning as predicted.
             '''
       milestone: V2
       tests: []
