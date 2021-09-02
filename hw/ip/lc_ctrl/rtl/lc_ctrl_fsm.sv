@@ -223,10 +223,18 @@ module lc_ctrl_fsm
                                LcStTestLocked0,
                                LcStTestLocked1,
                                LcStTestLocked2,
+                               LcStTestLocked3,
+                               LcStTestLocked4,
+                               LcStTestLocked5,
+                               LcStTestLocked6,
                                LcStTestUnlocked0,
                                LcStTestUnlocked1,
                                LcStTestUnlocked2,
                                LcStTestUnlocked3,
+                               LcStTestUnlocked4,
+                               LcStTestUnlocked5,
+                               LcStTestUnlocked6,
+                               LcStTestUnlocked7,
                                LcStRma}) begin
           if (use_ext_clock_i) begin
             lc_clk_byp_req = On;
@@ -397,7 +405,9 @@ module lc_ctrl_fsm
 
     // If at any time the life cycle state encoding is not valid,
     // we jump into the terminal error state right away.
-    if (state_invalid_error_o) begin
+    // Note that state_invalid_error is a multibit error signal
+    // with different error sources - need to reduce this to one bit here.
+    if (|state_invalid_error) begin
       fsm_state_d = InvalidSt;
     end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
       fsm_state_d = EscalateSt;
@@ -438,7 +448,7 @@ module lc_ctrl_fsm
   assign lc_cnt_q = lc_cnt_e'(lc_cnt_raw_q);
   prim_flop #(
     .Width(LcCountWidth),
-    .ResetValue(LcCountWidth'(LcCnt16))
+    .ResetValue(LcCountWidth'(LcCnt24))
   ) u_cnt_regs (
     .clk_i,
     .rst_ni,
@@ -494,17 +504,21 @@ module lc_ctrl_fsm
   // This decodes the state into a format that can be exposed in the CSRs,
   // and flags any errors in the state encoding. Errors will move the
   // main FSM into INVALID right away.
+  logic [5:0] state_invalid_error;
   lc_ctrl_state_decode u_lc_ctrl_state_decode (
-    .lc_state_valid_i  ( lc_state_valid_q ),
-    .lc_state_i        ( lc_state_q       ),
-    .lc_cnt_i          ( lc_cnt_q         ),
+    .lc_state_valid_i      ( lc_state_valid_q  ),
+    .lc_state_i            ( lc_state_q        ),
+    .lc_cnt_i              ( lc_cnt_q          ),
     .secrets_valid_i,
-    .fsm_state_i       ( fsm_state_q      ),
+    .fsm_state_i           ( fsm_state_q       ),
     .dec_lc_state_o,
     .dec_lc_id_state_o,
     .dec_lc_cnt_o,
-    .state_invalid_error_o
+    .state_invalid_error_o (state_invalid_error)
   );
+
+  // Output logically reduced version.
+  assign state_invalid_error_o = |state_invalid_error;
 
   // LC transition checker logic and next state generation.
   lc_ctrl_state_transition u_lc_ctrl_state_transition (

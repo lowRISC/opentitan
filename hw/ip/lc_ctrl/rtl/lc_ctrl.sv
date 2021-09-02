@@ -320,7 +320,7 @@ module lc_ctrl
     transition_token_d        = transition_token_q;
     transition_target_d       = transition_target_q;
     transition_cmd            = 1'b0;
-    otp_vendor_test_ctrl_d           = otp_vendor_test_ctrl_q;
+    otp_vendor_test_ctrl_d    = otp_vendor_test_ctrl_q;
     use_ext_clock_d           = use_ext_clock_q;
 
     // SW mutex claim.

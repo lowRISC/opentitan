@@ -296,7 +296,7 @@ module lc_ctrl_signal_decode
   prim_flop #(
     .Width(LcKeymgrDivWidth),
     .ResetValue(RndCnstLcKeymgrDivInvalid)
-  ) u_prim_flo_keymgr_div (
+  ) u_prim_flop_keymgr_div (
     .clk_i  ( clk_i           ),
     .rst_ni ( rst_ni          ),
     .d_i    ( lc_keymgr_div_d ),
