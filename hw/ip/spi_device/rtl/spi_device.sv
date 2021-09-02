@@ -387,31 +387,83 @@ module spi_device
     .dst_pulse_o (intr_fwm_txunderflow)
   );
 
-  assign intr_rxlvl_o       = reg2hw.intr_enable.rxlvl.q       & reg2hw.intr_state.rxlvl.q;
-  assign intr_txlvl_o       = reg2hw.intr_enable.txlvl.q       & reg2hw.intr_state.txlvl.q;
-  assign intr_rxf_o         = reg2hw.intr_enable.rxf.q         & reg2hw.intr_state.rxf.q;
-  assign intr_rxerr_o       = reg2hw.intr_enable.rxerr.q       & reg2hw.intr_state.rxerr.q;
-  assign intr_rxoverflow_o  = reg2hw.intr_enable.rxoverflow.q  & reg2hw.intr_state.rxoverflow.q;
-  assign intr_txunderflow_o = reg2hw.intr_enable.txunderflow.q & reg2hw.intr_state.txunderflow.q;
+  prim_intr_hw #(.Width(1)) u_intr_rxf (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_sram_rxf_full      ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxf.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxf.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxf.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxf.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxf.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxf.d ),
+    .intr_o                 (intr_rxf_o              )
+  );
 
-  assign hw2reg.intr_state.rxf.d    = 1'b1;
-  assign hw2reg.intr_state.rxf.de   = intr_sram_rxf_full |
-                                      (reg2hw.intr_test.rxf.qe   & reg2hw.intr_test.rxf.q);
-  assign hw2reg.intr_state.rxerr.d  = 1'b1;
-  assign hw2reg.intr_state.rxerr.de = intr_fwm_rxerr |
-                                      (reg2hw.intr_test.rxerr.qe & reg2hw.intr_test.rxerr.q);
-  assign hw2reg.intr_state.rxlvl.d  = 1'b1;
-  assign hw2reg.intr_state.rxlvl.de = intr_fwm_rxlvl |
-                                      (reg2hw.intr_test.rxlvl.qe & reg2hw.intr_test.rxlvl.q);
-  assign hw2reg.intr_state.txlvl.d  = 1'b1;
-  assign hw2reg.intr_state.txlvl.de = intr_fwm_txlvl |
-                                      (reg2hw.intr_test.txlvl.qe & reg2hw.intr_test.txlvl.q);
-  assign hw2reg.intr_state.rxoverflow.d   = 1'b1;
-  assign hw2reg.intr_state.rxoverflow.de  = intr_fwm_rxoverflow |
-      (reg2hw.intr_test.rxoverflow.qe  & reg2hw.intr_test.rxoverflow.q);
-  assign hw2reg.intr_state.txunderflow.d  = 1'b1;
-  assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
-      (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
+  prim_intr_hw #(.Width(1)) u_intr_rxlvl (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_fwm_rxlvl            ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxlvl.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxlvl.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxlvl.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxlvl.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxlvl.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxlvl.d ),
+    .intr_o                 (intr_rxlvl_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_txlvl (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_fwm_txlvl            ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.txlvl.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.txlvl.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.txlvl.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.txlvl.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.txlvl.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.txlvl.d ),
+    .intr_o                 (intr_txlvl_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_rxerr (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_fwm_rxerr            ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxerr.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxerr.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxerr.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxerr.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxerr.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxerr.d ),
+    .intr_o                 (intr_rxerr_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_rxoverflow (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_fwm_rxoverflow            ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxoverflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxoverflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxoverflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxoverflow.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxoverflow.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxoverflow.d ),
+    .intr_o                 (intr_rxoverflow_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_txunderflow (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_fwm_txunderflow            ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.txunderflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.txunderflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.txunderflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.txunderflow.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.txunderflow.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.txunderflow.d ),
+    .intr_o                 (intr_txunderflow_o              )
+  );
 
   // SPI Flash commands registers
   // TODO: Add 2FF sync? or just waive?
