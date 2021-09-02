@@ -367,7 +367,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   logic inv_state;
   assign adv_state = op_ack & adv_req & ~op_err;
   assign dis_state = op_ack & dis_req;
-  assign inv_state = op_fault_err;
+  assign inv_state = op_ack & op_fault_err;
 
   always_comb begin
     // persistent data
@@ -447,8 +447,12 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
       // load the root key.
       StCtrlRootKey: begin
-        init_o = 1'b1;
-        state_d = (!en_i || inv_state) ? StCtrlWipe : StCtrlInit;
+        // we cannot directly use inv_state here for 2 reasons
+        // - inv_state is sync'd to the completion of a real kmac operation,
+        //   which is not the case here.
+        // - using inv_state would cause a combo loop between init_o and inv_state.
+        init_o = en_i & ~|async_fault;
+        state_d = !init_o ? StCtrlWipe : StCtrlInit;
       end
 
       // Beginning from the Init state, operations are accepted.
@@ -693,13 +697,12 @@ module keymgr_ctrl import keymgr_pkg::*; #(
     endcase // unique case (adv_state_q)
   end
 
-
   // operations fsm update precedence
   // when in disabled state, always update.
-  assign op_update_sel = (op_ack | op_update) & disabled ? KeyUpdateKmac :
-                         op_fault_err                    ? KeyUpdateWipe :
-                         op_err                          ? KeyUpdateIdle :
-                         (op_ack | op_update)            ? KeyUpdateKmac : KeyUpdateIdle;
+  assign op_update_sel = (op_ack | op_update) & disabled     ? KeyUpdateKmac :
+                         (op_ack | op_update) & op_fault_err ? KeyUpdateWipe :
+                         (op_ack | op_update) & op_err       ? KeyUpdateIdle :
+                         (op_ack | op_update)                ? KeyUpdateKmac : KeyUpdateIdle;
 
 
   // Advance calls are made up of multiple rounds of kmac operations.
@@ -714,7 +717,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
   // sync errors
   // When an operation encounters a fault, the operation is always rejected as the FSM
-  // transitions to wipe
+  // transitions to wipe.  When an operation is ongoing and en drops, it is also rejected.
   assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | op_fault_err);
   assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
