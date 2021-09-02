@@ -120,7 +120,7 @@ module lc_ctrl_fsm
   ///////////////
   fsm_state_e fsm_state_d, fsm_state_q;
 
-  // Continously feed in valid signal for LC state.
+  // Continuously feed in valid signal for LC state.
   logic lc_state_valid_d, lc_state_valid_q;
   assign lc_state_valid_d = lc_state_valid_i;
 
@@ -142,6 +142,9 @@ module lc_ctrl_fsm
   // Hashed token to compare against.
   logic hashed_token_valid_mux;
   lc_token_t hashed_token_mux;
+
+  // Multibit state error from state decoder
+  logic [5:0] state_invalid_error;
 
   always_comb begin : p_fsm
     // FSM default state assignments.
@@ -504,7 +507,6 @@ module lc_ctrl_fsm
   // This decodes the state into a format that can be exposed in the CSRs,
   // and flags any errors in the state encoding. Errors will move the
   // main FSM into INVALID right away.
-  logic [5:0] state_invalid_error;
   lc_ctrl_state_decode u_lc_ctrl_state_decode (
     .lc_state_valid_i      ( lc_state_valid_q  ),
     .lc_state_i            ( lc_state_q        ),
@@ -585,14 +587,24 @@ module lc_ctrl_fsm
   // Assertions //
   ////////////////
 
-  `ASSERT(ClkBypStaysOnOnceAsserted_A,
+  `ASSERT(EscStaysOnOnceAsserted_A,
       lc_escalate_en_o == On
       |=>
       lc_escalate_en_o == On)
+
+  `ASSERT(ClkBypStaysOnOnceAsserted_A,
+      lc_clk_byp_req_o == On
+      |=>
+      lc_clk_byp_req_o == On)
 
   `ASSERT(FlashRmaStaysOnOnceAsserted_A,
       lc_flash_rma_req_o == On
       |=>
       lc_flash_rma_req_o == On)
+
+  `ASSERT(NoClkBypInProdStates_A,
+      lc_state_q inside {LcStProd, LcStProdEnd, LcStDev}
+      |=>
+      lc_clk_byp_req_o == Off)
 
 endmodule : lc_ctrl_fsm
