@@ -785,7 +785,7 @@
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
-      tests: ["chip_dif_pwrmgr_smoketest",
+      tests: ["chip_pwrmgr_smoketest",
               "chip_sw_pwrmgr_usbdev_wakeup"]
     }
     {
@@ -2403,30 +2403,31 @@
     ////////////////////////////
 
     {
-      name: chip_sw_dif_smoketest
-      desc: '''Run smoke tests developed for each DIF.
+      name: chip_sw_smoketest
+      desc: '''Run smoke tests developed for each IP.
 
-            The DIF smoke tests are developed by the SW team to test each block's DIF
-            implementation. We need to ensure that they work in DV as well.
+            The smoke tests are developed by the SW team to test each IP is
+            alive, and can be actuated by the DIF. We need to ensure that they
+            work in DV as well.
             '''
       milestone: V2
-      tests: ["chip_dif_aes_smoketest",
-              "chip_dif_aon_timer_smoketest",
-              "chip_dif_clkmgr_smoketest",
+      tests: ["chip_aes_smoketest",
+              "chip_aon_timer_smoketest",
+              "chip_clkmgr_smoketest",
               // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
-              // "chip_dif_csrng_smoketest",
-              "chip_dif_entropy_src_smoketest",
-              "chip_dif_gpio_smoketest",
-              "chip_dif_hmac_smoketest",
-              "chip_dif_kmac_smoketest",
-              "chip_dif_kmac_cshake_smoketest",
-              "chip_dif_otbn_smoketest",
-              "chip_dif_otp_ctrl_smoketest",
-              "chip_dif_rv_plic_smoketest",
-              "chip_dif_pwrmgr_smoketest",
-              "chip_dif_rv_timer_smoketest",
-              "chip_dif_rstmgr_smoketest",
-              "chip_dif_uart_smoketest",
+              // "chip_csrng_smoketest",
+              "chip_entropy_src_smoketest",
+              "chip_gpio_smoketest",
+              "chip_hmac_smoketest",
+              "chip_kmac_smoketest",
+              "chip_kmac_cshake_smoketest",
+              "chip_otbn_smoketest",
+              "chip_otp_ctrl_smoketest",
+              "chip_rv_plic_smoketest",
+              "chip_pwrmgr_smoketest",
+              "chip_rv_timer_smoketest",
+              "chip_rstmgr_smoketest",
+              "chip_uart_smoketest",
             ]
     }
     {

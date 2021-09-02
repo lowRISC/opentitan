@@ -106,7 +106,7 @@ To get a different type of disassembly, e.g. one which includes data sections in
 For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code.
 
 ```console
-$ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source build-bin/sw/device/tests/dif_uart_smoketest_sim_verilator.elf
+$ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source build-bin/sw/device/tests/uart_smoketest_sim_verilator.elf
 ```
 
 Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.

@@ -148,9 +148,9 @@
   // dictionary declared in `sw/device/tests/meson.build`, the `sw_images` list
   // below should contain `sw/device/tests/<sw_test_name>` (without any more
   // subdirectories) because that is where the meson target is created. For
-  // example `dif_rv_plic_smoketest` is added to `sw_tests` in
-  // `sw/device/tests/dif/meson.build`, but the final meson targets all start
-  // `sw/device/tests/dif_rv_plic_smoketest_`.
+  // example `gpio_test` is added to `sw_tests` in
+  // `sw/device/tests/sim_dv/meson.build`, but the final meson targets all
+  // start with `sw/device/tests/gpio_test_`.
   //
   // Each entry in `sw_images` is followed by an index separated with ':' which
   // is used by the testbench to know what type of image is it:
@@ -238,7 +238,7 @@
     {
       name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
+      sw_images: ["sw/device/tests/rv_timer_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
 

@@ -214,7 +214,7 @@ jobs:
       ninja -C "$OBJ_DIR" sw/device/sca/aes_serial_export_fpga_nexysvideo
       # Build binaries for Verilator simulation.
       ninja -C "$OBJ_DIR" sw/device/boot_rom/boot_rom_export_sim_verilator
-      ninja -C "$OBJ_DIR" sw/device/tests/dif_aes_smoketest_export_sim_verilator
+      ninja -C "$OBJ_DIR" sw/device/tests/aes_smoketest_export_sim_verilator
       ninja -C "$OBJ_DIR" sw/device/examples/hello_world/hello_world_export_sim_verilator
     displayName: Build embedded targets
   - template: ci/upload-artifacts-template.yml
@@ -396,7 +396,7 @@ jobs:
       . util/build_consts.sh
       pytest --version
       pytest test/systemtest/earlgrey/test_sim_verilator.py \
-        -k test_apps_selfchecking_silicon_creator[dif_uart_smoketest] \
+        -k test_apps_selfchecking_silicon_creator[uart_smoketest] \
         --log-cli-level=DEBUG \
         --test-run-title="Run silicon_creator system test with Verilator simulation" \
         --napoleon-docstrings

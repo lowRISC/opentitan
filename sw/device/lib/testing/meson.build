@@ -24,7 +24,7 @@ sw_lib_testing_entropy_testutils = declare_dependency(
 # Random number generator.
 sw_lib_testing_rand_testutils = declare_dependency(
   link_with: static_library(
-    'sw_lib_rand_testutils',
+    'sw_lib_testing_rand_testutils',
     sources: ['rand_testutils.c'],
   )
 )

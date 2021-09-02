@@ -2,135 +2,135 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  # This auxiliary chip sim cfg specification focuses on chip level DIF smoke tests.
+  # This auxiliary chip sim cfg specification focuses on chip level smoke tests.
   # Please see chip_sim_cfg.hjson for full setup details.
 
   # Note: Please maintain alphabetical order.
   tests: [
     {
-      name: chip_dif_aes_smoketest
+      name: chip_aes_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_aes_smoketest:1"]
+      sw_images: ["sw/device/tests/aes_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_aon_timer_smoketest
+      name: chip_aon_timer_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_aon_timer_smoketest:1"]
+      sw_images: ["sw/device/tests/aon_timer_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_clkmgr_smoketest
+      name: chip_clkmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_clkmgr_smoketest:1"]
+      sw_images: ["sw/device/tests/clkmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
     // {
-    //  name: chip_dif_csrng_smoketest
+    //  name: chip_csrng_smoketest
     //  uvm_test_seq: chip_sw_base_vseq
-    //  sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
+    //  sw_images: ["sw/device/tests/csrng_smoketest:1"]
     //  en_run_modes: ["sw_test_mode"]
     // }
     {
-      name: chip_dif_entropy_src_smoketest
+      name: chip_entropy_src_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_entropy_src_smoketest:1"]
+      sw_images: ["sw/device/tests/entropy_src_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_gpio_smoketest
+      name: chip_gpio_smoketest
       uvm_test_seq: chip_sw_gpio_smoke_vseq
-      sw_images: ["sw/device/tests/dif_gpio_smoketest:1"]
+      sw_images: ["sw/device/tests/gpio_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_hmac_smoketest
+      name: chip_hmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_hmac_smoketest:1"]
+      sw_images: ["sw/device/tests/hmac_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_kmac_smoketest
+      name: chip_kmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
+      sw_images: ["sw/device/tests/kmac_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_kmac_cshake_smoketest
+      name: chip_kmac_cshake_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_kmac_cshake_smoketest:1"]
+      sw_images: ["sw/device/tests/kmac_cshake_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_kmac_kmac_smoketest
+      name: chip_kmac_kmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_kmac_kmac_smoketest:1"]
+      sw_images: ["sw/device/tests/kmac_kmac_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_otbn_smoketest
+      name: chip_otbn_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+      sw_images: ["sw/device/tests/otbn_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_otp_ctrl_smoketest
+      name: chip_otp_ctrl_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_otp_ctrl_smoketest:1"]
+      sw_images: ["sw/device/tests/otp_ctrl_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_rv_plic_smoketest
+      name: chip_rv_plic_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_rv_plic_smoketest:1"]
+      sw_images: ["sw/device/tests/rv_plic_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_pwrmgr_smoketest
+      name: chip_pwrmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_pwrmgr_smoketest:1"]
+      sw_images: ["sw/device/tests/pwrmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
       run_opts: ["+sw_test_timeout_ns=3000000"]
     }
     {
-      name: chip_dif_rv_timer_smoketest
+      name: chip_rv_timer_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
+      sw_images: ["sw/device/tests/rv_timer_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_rstmgr_smoketest
+      name: chip_rstmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_rstmgr_smoketest:1"]
+      sw_images: ["sw/device/tests/rstmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_uart_smoketest
+      name: chip_uart_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_uart_smoketest:1"]
+      sw_images: ["sw/device/tests/uart_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
   ]
   regressions: [
     {
       name: dif
-      tests: ["chip_dif_aes_smoketest",
-              "chip_dif_aon_timer_smoketest",
-              "chip_dif_clkmgr_smoketest",
+      tests: ["chip_aes_smoketest",
+              "chip_aon_timer_smoketest",
+              "chip_clkmgr_smoketest",
               // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
-              // "chip_dif_csrng_smoketest",
-              "chip_dif_entropy_src_smoketest",
-              "chip_dif_gpio_smoketest",
-              "chip_dif_hmac_smoketest",
-              "chip_dif_kmac_smoketest",
-              "chip_dif_otbn_smoketest",
-              "chip_dif_otp_ctrl_smoketest",
-              "chip_dif_rv_plic_smoketest",
-              "chip_dif_pwrmgr_smoketest",
-              "chip_dif_rv_timer_smoketest",
-              "chip_dif_rstmgr_smoketest",
-              "chip_dif_uart_smoketest",
+              // "chip_csrng_smoketest",
+              "chip_entropy_src_smoketest",
+              "chip_gpio_smoketest",
+              "chip_hmac_smoketest",
+              "chip_kmac_smoketest",
+              "chip_otbn_smoketest",
+              "chip_otp_ctrl_smoketest",
+              "chip_rv_plic_smoketest",
+              "chip_pwrmgr_smoketest",
+              "chip_rv_timer_smoketest",
+              "chip_rstmgr_smoketest",
+              "chip_uart_smoketest",
             ]
     }
   ]

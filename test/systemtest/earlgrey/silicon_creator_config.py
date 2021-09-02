@@ -19,7 +19,7 @@
 #   on all targets if not given (optional).
 TEST_SILICON_CREATOR_APPS_SELFCHECKING = [
     {
-        "name": "dif_uart_smoketest",
+        "name": "uart_smoketest",
         "signing_key": "fpga_key_1",
     },
 ]

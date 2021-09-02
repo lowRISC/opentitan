@@ -145,7 +145,7 @@ def main():
             'sw/device/boot_rom/boot_rom_export_fpga_nexysvideo',
             'sw/device/sca/aes_serial_export_fpga_nexysvideo',
             'sw/device/boot_rom/boot_rom_export_sim_verilator',
-            'sw/device/tests/dif_aes_smoketest_export_sim_verilator',
+            'sw/device/tests/aes_smoketest_export_sim_verilator',
             'sw/device/examples/hello_world/hello_world_export_sim_verilator',
         ]
         for binary in binaries:

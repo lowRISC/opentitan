@@ -25,10 +25,362 @@ sw_rom_ext_tests = {
   # },
 }
 
-subdir('dif')
-subdir('sim_dv')
-subdir('otbn')
+###############################################################################
+# Smoke Tests
+###############################################################################
+rv_plic_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'rv_plic_smoketest_lib',
+    sources: ['rv_plic_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_uart,
+      sw_lib_dif_rv_plic,
+      sw_lib_irq,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'rv_plic_smoketest': {
+    'library': rv_plic_smoketest_lib,
+  }
+}
 
+uart_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'uart_smoketest_lib',
+    sources: ['uart_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_uart,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'uart_smoketest': {
+    'library': uart_smoketest_lib,
+  }
+}
+sw_rom_ext_tests += {
+  'uart_smoketest': {
+    'library': uart_smoketest_lib,
+  }
+}
+
+rv_timer_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'rv_timer_smoketest_lib',
+    sources: ['rv_timer_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_rv_timer,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      sw_lib_irq,
+    ],
+  ),
+)
+sw_tests += {
+  'rv_timer_smoketest': {
+    'library': rv_timer_smoketest_lib,
+  }
+}
+
+hmac_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'hmac_smoketest_lib',
+    sources: ['hmac_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_hmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'hmac_smoketest': {
+    'library': hmac_smoketest_lib,
+  }
+}
+
+kmac_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_smoketest_lib',
+    sources: ['kmac_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_smoketest': {
+    'library': kmac_smoketest_lib,
+  }
+}
+
+kmac_cshake_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_cshake_smoketest_lib',
+    sources: ['kmac_cshake_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_cshake_smoketest': {
+    'library': kmac_cshake_smoketest_lib,
+  }
+}
+
+kmac_kmac_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_kmac_smoketest_lib',
+    sources: ['kmac_kmac_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_kmac_smoketest': {
+    'library': kmac_kmac_smoketest_lib,
+  }
+}
+
+rstmgr_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'rstmgr_smoketest_lib',
+    sources: ['rstmgr_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'rstmgr_smoketest': {
+    'library': rstmgr_smoketest_lib,
+  }
+}
+
+otbn_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'otbn_smoketest_lib',
+    sources: ['otbn_smoketest.c'],
+    dependencies: [
+      sw_lib_testing_entropy_testutils,
+      sw_lib_dif_otbn,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_otbn,
+      top_earlgrey,
+      sw_otbn['barrett384']['rv32embed_dependency'],
+      sw_otbn['err_test']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += {
+  'otbn_smoketest': {
+    'library': otbn_smoketest_lib,
+  }
+}
+
+otp_ctrl_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'otp_ctrl_smoketest_lib',
+    sources: ['otp_ctrl_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_otp_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'otp_ctrl_smoketest': {
+    'library': otp_ctrl_smoketest_lib,
+  }
+}
+
+gpio_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'gpio_smoketest_lib',
+    sources: ['gpio_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_gpio,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'gpio_smoketest': {
+    'library': gpio_smoketest_lib,
+  }
+}
+
+aes_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'aes_smoketest_lib',
+    sources: ['aes_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_aes,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_entropy_testutils,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'aes_smoketest': {
+    'library': aes_smoketest_lib,
+  }
+}
+
+clkmgr_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_smoketest_lib',
+    sources: ['clkmgr_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_smoketest': {
+    'library': clkmgr_smoketest_lib,
+  }
+}
+
+csrng_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'csrng_smoketest_lib',
+    sources: ['csrng_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_csrng,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'csrng_smoketest': {
+    'library': csrng_smoketest_lib,
+  }
+}
+
+entropy_src_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'entropy_src_smoketest_lib',
+    sources: ['entropy_src_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_entropy_src,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'entropy_src_smoketest': {
+    'library': entropy_src_smoketest_lib,
+  }
+}
+
+aon_timer_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'aon_timer_smoketest_lib',
+    sources: ['aon_timer_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'aon_timer_smoketest': {
+    'library': aon_timer_smoketest_lib,
+  }
+}
+
+pwrmgr_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_smoketest_lib',
+    sources: ['pwrmgr_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_smoketest': {
+    'library': pwrmgr_smoketest_lib,
+  }
+}
+
+pmp_smoketest_napot_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_smoketest_napot_lib',
+    sources: ['pmp_smoketest_napot.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'pmp_smoketest_napot': {
+    'library': pmp_smoketest_napot_lib,
+  }
+}
+
+pmp_smoketest_tor_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_smoketest_tor_lib',
+    sources: ['pmp_smoketest_tor.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'pmp_smoketest_tor': {
+    'library': pmp_smoketest_tor_lib,
+  }
+}
+
+###############################################################################
+# IP Integration Tests
+###############################################################################
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
     'flash_ctrl_test_lib',
@@ -84,6 +436,17 @@ sw_tests += {
   }
 }
 
+###############################################################################
+# DV Simulation (target-specific) Tests
+###############################################################################
+subdir('sim_dv')
+
+###############################################################################
+# Other Tests
+###############################################################################
+# TODO: un-subfolder these
+subdir('otbn')
+
 coverage_test_lib = declare_dependency(
   link_with: static_library(
     'coverage_test_lib',
@@ -99,44 +462,10 @@ sw_tests += {
   }
 }
 
-pmp_smoketest_napot_lib = declare_dependency(
-  link_with: static_library(
-    'pmp_smoketest_napot_lib',
-    sources: ['pmp_smoketest_napot.c'],
-    dependencies: [
-      sw_lib_irq,
-      sw_lib_runtime_log,
-      sw_lib_runtime_hart,
-      sw_lib_runtime_pmp,
-      sw_lib_testing_test_status,
-    ],
-  ),
-)
-sw_tests += {
-  'pmp_smoketest_napot': {
-    'library': pmp_smoketest_napot_lib,
-  }
-}
-
-pmp_smoketest_tor_lib = declare_dependency(
-  link_with: static_library(
-    'pmp_smoketest_tor_lib',
-    sources: ['pmp_smoketest_tor.c'],
-    dependencies: [
-      sw_lib_irq,
-      sw_lib_runtime_log,
-      sw_lib_runtime_hart,
-      sw_lib_runtime_pmp,
-      sw_lib_testing_test_status,
-    ],
-  ),
-)
-sw_tests += {
-  'pmp_smoketest_tor': {
-    'library': pmp_smoketest_tor_lib,
-  }
-}
-
+###############################################################################
+# Build Targets
+###############################################################################
+# (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
@@ -256,6 +585,7 @@ signing_keys = {
   },
 }
 
+# (signed) test binaries loaded with ROM from sw/device/silicon_creator/
 foreach sw_test_name, sw_test_info : sw_rom_ext_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
