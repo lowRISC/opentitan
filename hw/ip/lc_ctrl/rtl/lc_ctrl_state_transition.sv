@@ -81,7 +81,7 @@ module lc_ctrl_state_transition
 
       // In case the transition target is SCRAP, max out the counter.
       if (trans_target_i == DecLcStScrap) begin
-        next_lc_cnt_o = LcCnt16;
+        next_lc_cnt_o = LcCnt24;
       end
     end
 

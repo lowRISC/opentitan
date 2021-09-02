@@ -19,7 +19,7 @@ module lc_ctrl_state_decode
   output dec_lc_state_e     dec_lc_state_o,
   output dec_lc_id_state_e  dec_lc_id_state_o,
   output dec_lc_cnt_t       dec_lc_cnt_o,
-  output logic              state_invalid_error_o
+  output logic [5:0]        state_invalid_error_o
 );
 
   //////////////////////////
@@ -35,7 +35,7 @@ module lc_ctrl_state_decode
     dec_lc_state_o        = DecLcStInvalid;
     dec_lc_cnt_o          = {DecLcCountWidth{1'b1}};
     dec_lc_id_state_o     = DecLcIdInvalid;
-    state_invalid_error_o = 1'b0;
+    state_invalid_error_o = '0;
 
     unique case (fsm_state_i)
       // Don't decode anything in ResetSt
@@ -52,7 +52,7 @@ module lc_ctrl_state_decode
         // This will trigger an invalid_state_error when the OTP partition
         // is corrupt and moved into an error state, where the valid bit is
         // deasserted.
-        state_invalid_error_o = ~lc_state_valid_i;
+        state_invalid_error_o[0] = ~lc_state_valid_i;
 
         unique case (lc_state_i)
           LcStRaw:           dec_lc_state_o = DecLcStRaw;
@@ -76,7 +76,7 @@ module lc_ctrl_state_decode
           LcStProdEnd:       dec_lc_state_o = DecLcStProdEnd;
           LcStRma:           dec_lc_state_o = DecLcStRma;
           LcStScrap:         dec_lc_state_o = DecLcStScrap;
-          default:           state_invalid_error_o = 1'b1;
+          default:           state_invalid_error_o[1] = 1'b1;
         endcase // lc_state_i
 
         unique case (lc_cnt_i)
@@ -105,7 +105,7 @@ module lc_ctrl_state_decode
           LcCnt22:  dec_lc_cnt_o = 5'd22;
           LcCnt23:  dec_lc_cnt_o = 5'd23;
           LcCnt24:  dec_lc_cnt_o = 5'd24;
-          default:  state_invalid_error_o = 1'b1;
+          default:  state_invalid_error_o[2] = 1'b1;
         endcase // lc_cnt_i
 
         unique case (secrets_valid_i)
@@ -113,13 +113,13 @@ module lc_ctrl_state_decode
           Off:  dec_lc_id_state_o = DecLcIdBlank;
           // If the secrets have been provisioned, the ID state is "personalized".
           On:   dec_lc_id_state_o = DecLcIdPersonalized;
-          default: state_invalid_error_o = 1'b1;
+          default: state_invalid_error_o[3] = 1'b1;
         endcase // secrets_valid_i
 
         // Require that any non-raw state has a valid, nonzero
         // transition count.
         if (lc_state_i != LcStRaw && lc_cnt_i == LcCnt0) begin
-          state_invalid_error_o = 1'b1;
+          state_invalid_error_o[4] = 1'b1;
         end
 
         // We can't have a personalized device that is
@@ -130,7 +130,7 @@ module lc_ctrl_state_decode
                                  LcStProdEnd,
                                  LcStRma,
                                  LcStScrap})) begin
-          state_invalid_error_o = 1'b1;
+          state_invalid_error_o[5] = 1'b1;
         end
       end
     endcase // lc_id_state_i
