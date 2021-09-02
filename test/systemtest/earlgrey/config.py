@@ -99,10 +99,10 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "kmac_cshake_smoketest",
+        "name": "kmac_mode_cshake_test",
     },
     {
-        "name": "kmac_kmac_smoketest",
+        "name": "kmac_mode_kmac_test",
     },
     {
         "name": "flash_ctrl_test",

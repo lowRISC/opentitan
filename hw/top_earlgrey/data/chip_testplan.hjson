@@ -2420,7 +2420,6 @@
               "chip_gpio_smoketest",
               "chip_hmac_smoketest",
               "chip_kmac_smoketest",
-              "chip_kmac_cshake_smoketest",
               "chip_otbn_smoketest",
               "chip_otp_ctrl_smoketest",
               "chip_rv_plic_smoketest",

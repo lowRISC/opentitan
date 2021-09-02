@@ -126,42 +126,6 @@ sw_tests += {
   }
 }
 
-kmac_cshake_smoketest_lib = declare_dependency(
-  link_with: static_library(
-    'kmac_cshake_smoketest_lib',
-    sources: ['kmac_cshake_smoketest.c'],
-    dependencies: [
-      sw_lib_dif_kmac,
-      sw_lib_runtime_log,
-      sw_lib_mmio,
-      sw_lib_runtime_hart,
-    ],
-  ),
-)
-sw_tests += {
-  'kmac_cshake_smoketest': {
-    'library': kmac_cshake_smoketest_lib,
-  }
-}
-
-kmac_kmac_smoketest_lib = declare_dependency(
-  link_with: static_library(
-    'kmac_kmac_smoketest_lib',
-    sources: ['kmac_kmac_smoketest.c'],
-    dependencies: [
-      sw_lib_dif_kmac,
-      sw_lib_runtime_log,
-      sw_lib_mmio,
-      sw_lib_runtime_hart,
-    ],
-  ),
-)
-sw_tests += {
-  'kmac_kmac_smoketest': {
-    'library': kmac_kmac_smoketest_lib,
-  }
-}
-
 rstmgr_smoketest_lib = declare_dependency(
   link_with: static_library(
     'rstmgr_smoketest_lib',
@@ -381,6 +345,7 @@ sw_tests += {
 ###############################################################################
 # IP Integration Tests
 ###############################################################################
+# Flash Controller Tests
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
     'flash_ctrl_test_lib',
@@ -399,6 +364,45 @@ sw_tests += {
   }
 }
 
+# KMAC Tests
+kmac_mode_kmac_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_mode_kmac_test_lib',
+    sources: ['kmac_mode_kmac_test.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_mode_kmac_test': {
+    'library': kmac_mode_kmac_test_lib,
+  }
+}
+
+kmac_mode_cshake_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_mode_cshake_test_lib',
+    sources: ['kmac_mode_cshake_test.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_mode_cshake_test': {
+    'library': kmac_mode_cshake_test_lib,
+  }
+}
+
+
+# Lifecycle Controller Tests
 lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
   link_with: static_library(
     'lc_ctrl_otp_hw_cfg_test_lib',
@@ -420,6 +424,7 @@ sw_tests += {
   }
 }
 
+# USB Device Tests
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
     'usbdev_test_lib',
