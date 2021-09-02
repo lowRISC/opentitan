@@ -482,6 +482,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
   endtask
 
+  // process an access to the test access area
+  // Please override this as needed in closed-source
+  protected virtual task test_access_process_tl_access(tl_seq_item item,
+                                                       tl_channels_e channel,
+                                                       string ral_name);
+    return; // do nothing for OS
+  endtask : test_access_process_tl_access
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg     csr;
     dv_base_reg dv_reg;
@@ -515,8 +523,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       return;
     // TEST ACCESS window
-    end else if ((csr_addr & addr_mask) inside
-         {[TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + TEST_ACCESS_WINDOW_SIZE]}) begin
+    // cfg.ral -> otp_ctrl_reg_block (otp_ctrl RAL)
+    // ral_name != cfg.ral.get_name() -> CS RAL (TEST ACCESS SHIM registers)
+    end else if (ral_name != cfg.ral.get_name()) begin
+      test_access_process_tl_access(item, channel, ral_name);
       return;
     end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
