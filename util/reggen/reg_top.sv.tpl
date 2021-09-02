@@ -663,7 +663,7 @@ ${bits.msb}\
     reg_name = reg.name.lower()
     clk_expr = reg.async_clk.clock if reg.async_clk else reg_clk_expr
     rst_expr = reg.async_clk.reset if reg.async_clk else reg_rst_expr
-    re_expr = f'{reg_name}_re' if field.swaccess.allows_read() else "1'b0"
+    re_expr = f'{reg_name}_re' if field.swaccess.allows_read() or reg.shadowed else "1'b0"
 
     # software inputs to field instance, write enable, read enable, write data
     if field.swaccess.allows_write():

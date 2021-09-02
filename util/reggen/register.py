@@ -341,8 +341,12 @@ class Register(RegBase):
 
         This is true if any of the following are true:
 
-          - The register is shadowed (because shadow registers need to know
-            about reads)
+          - The register is shadowed, because the read has a side effect.
+            I.e., this puts the register back into Phase 0 (next write will
+            go to the staged register). This is useful for software in case
+            it lost track of the current phase. See comportability spec for
+            more details:
+            https://docs.opentitan.org/doc/rm/register_tool/#shadow-registers
 
           - There's an RC field (where we'll attach the read-enable signal to
             the subreg's we port)
