@@ -22,14 +22,14 @@ TEST_APPS_SELFCHECKING = [
         "name": "crt_test",
     },
     {
-        "name": "dif_otbn_smoketest_rtl",
-        "binary_name": "dif_otbn_smoketest",
+        "name": "otbn_smoketest_rtl",
+        "binary_name": "otbn_smoketest",
         "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
         "targets": ["sim_verilator"],
     },
     {
-        "name": "dif_otbn_smoketest_model",
-        "binary_name": "dif_otbn_smoketest",
+        "name": "otbn_smoketest_model",
+        "binary_name": "otbn_smoketest",
         "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
         "targets": ["sim_verilator"],
     },
@@ -50,59 +50,59 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["fpga_cw310"],
     },
     {
-        "name": "dif_aes_smoketest",
+        "name": "aes_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
-        "name": "dif_aon_timer_smoketest",
+        "name": "aon_timer_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_otp_ctrl_smoketest",
+        "name": "otp_ctrl_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_rv_plic_smoketest",
+        "name": "rv_plic_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     # TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
     # {
-    #     "name": "dif_pwrmgr_smoketest",
+    #     "name": "pwrmgr_smoketest",
     # },
     {
-        "name": "dif_rstmgr_smoketest",
+        "name": "rstmgr_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
-        "name": "dif_rv_timer_smoketest",
+        "name": "rv_timer_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_uart_smoketest",
+        "name": "uart_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
-        "name": "dif_clkmgr_smoketest",
+        "name": "clkmgr_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     # TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
     # {
-    #    "name": "dif_csrng_smoketest",
+    #    "name": "csrng_smoketest",
     #   "targets": ["sim_verilator", "fpga_cw310"],
     # },
     {
-        "name": "dif_entropy_src_smoketest",
+        "name": "entropy_src_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_kmac_smoketest",
+        "name": "kmac_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
-        "name": "dif_kmac_cshake_smoketest",
+        "name": "kmac_cshake_smoketest",
     },
     {
-        "name": "dif_kmac_kmac_smoketest",
+        "name": "kmac_kmac_smoketest",
     },
     {
         "name": "flash_ctrl_test",
@@ -122,7 +122,7 @@ TEST_APPS_SELFCHECKING = [
     },
     # Cannot run on sim_verilator due to the differences in the top level.
     {
-        "name": "dif_gpio_smoketest",
+        "name": "gpio_smoketest",
         "targets": ["fpga_cw310", "fpga_nexysvideo"],
     },
     {

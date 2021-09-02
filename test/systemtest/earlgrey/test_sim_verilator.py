@@ -224,7 +224,7 @@ def test_spiflash(tmp_path, bin_dir):
     assert sim.find_in_uart0(spiwait_msg, timeout=120)
 
     log.debug("SPI is ready, continuing with spiload")
-    app_bin = bin_dir / 'sw/device/tests/dif_uart_smoketest_sim_verilator.bin'
+    app_bin = bin_dir / 'sw/device/tests/uart_smoketest_sim_verilator.bin'
     spiflash = bin_dir / 'sw/host/spiflash/spiflash'
     utils.load_sw_over_spi(tmp_path, spiflash, app_bin,
                            ['--verilator', sim.spi0_device_path])

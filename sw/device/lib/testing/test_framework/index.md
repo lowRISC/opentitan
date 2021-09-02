@@ -23,4 +23,4 @@ bool test_main() {
 }
 ```
 
-Check out the [rv\_timer smoke test](https://cs.opensource.google/opentitan/opentitan/+/master:sw/device/tests/dif/dif_rv_timer_smoketest.c) for an example chip-level test that uses the current test framework.
+Check out the [rv\_timer smoke test](https://cs.opensource.google/opentitan/opentitan/+/master:sw/device/tests/rv_timer_smoketest.c) for an example chip-level test that uses the current test framework.

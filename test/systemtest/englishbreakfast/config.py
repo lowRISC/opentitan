@@ -19,7 +19,7 @@
 #   on all targets if not given (optional).
 TEST_APPS_SELFCHECKING = [
     {
-        "name": "dif_aes_smoketest",
+        "name": "aes_smoketest",
         "targets": ["sim_verilator"],
     },
 ]

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This test vseq is paired with SW test `sw/device/tests/dif_gpio_smoketest.c`.
+// This test vseq is paired with SW test `sw/device/tests/gpio_smoketest.c`.
 class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_gpio_smoke_vseq)
 

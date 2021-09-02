@@ -499,7 +499,7 @@ Software unit tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_u
 
 ### DIF_TEST_SMOKE
 
-Smoke tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_smoketest.c`.
+Smoke tests exist for the DIF in `sw/device/tests` named `<ip>_smoketest.c`.
 
 This should perform a basic test of the main datapath of the hardware module by the embedded core, via the DIF, and should be able to be run on all OpenTitan platforms (including FPGA, simulation, and DV).
 This test will be shared with DV.

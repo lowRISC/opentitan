@@ -1,11 +1,11 @@
 diff --git a/sw/device/boot_rom/rom_crt.S b/sw/device/boot_rom/rom_crt.S
-index 538712db1..1c8e29d86 100644
+index 8c61ec4d7..1c8e29d86 100644
 --- a/sw/device/boot_rom/rom_crt.S
 +++ b/sw/device/boot_rom/rom_crt.S
 @@ -81,19 +81,6 @@ _reset_start:
  _start:
    .globl _start
-
+ 
 -  // Enable entropy complex - this is not the full enable
 -  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
 -  li   t0, 0x2
@@ -52,13 +52,13 @@ index 8861f54ba..8442bb896 100644
 -  mmio_region_write32(reg32, reg_offset, reg_value & mask);
  }
 diff --git a/sw/device/sca/aes_serial.c b/sw/device/sca/aes_serial.c
-index 50bee15fa..8f5976a83 100644
+index 901eba868..b19979b89 100644
 --- a/sw/device/sca/aes_serial.c
 +++ b/sw/device/sca/aes_serial.c
 @@ -203,18 +203,13 @@ int main(void) {
    sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
    sca_get_uart(&uart1);
-
+ 
 -  LOG_INFO("Running AES serial");
 -
 -  LOG_INFO("Initializing simple serial interface to capture board.");
@@ -66,22 +66,22 @@ index 50bee15fa..8f5976a83 100644
    simple_serial_register_handler('k', aes_serial_set_key);
    simple_serial_register_handler('p', aes_serial_single_encrypt);
    simple_serial_register_handler('b', aes_serial_batch_encrypt);
-
+ 
 -  LOG_INFO("Initializing AES unit.");
    init_aes();
-
+ 
 -  LOG_INFO("Starting simple serial packet handling.");
    while (true) {
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 1c74eb0ee..cc087c4b9 100644
+index 9210f4529..81fd2a223 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
    kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
  };
-
+ 
 -static dif_uart_t uart0;
  static dif_uart_t uart1;
  static dif_gpio_t gpio;
@@ -102,9 +102,9 @@ index 1c74eb0ee..cc087c4b9 100644
    IGNORE_RESULT(dif_uart_configure(&uart1, uart_config));
 +  base_uart_stdout(&uart1);
  }
-
+ 
  /**
-@@ -147,32 +147,11 @@ void handler_irq_timer(void) {
+@@ -155,32 +147,11 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
@@ -137,8 +137,8 @@ index 1c74eb0ee..cc087c4b9 100644
 +      .last_hintable_clock = CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT};
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr));
-
-@@ -182,19 +165,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+ 
+@@ -194,19 +165,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
          kDifClkmgrToggleDisabled));
    }
@@ -158,33 +158,33 @@ index 1c74eb0ee..cc087c4b9 100644
    if (disable & kScaPeripheralUsb) {
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
          &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
-diff --git a/sw/device/tests/dif/dif_aes_smoketest.c b/sw/device/tests/dif/dif_aes_smoketest.c
+diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
 index 5b995c27f..0ce27b2f1 100644
---- a/sw/device/tests/dif/dif_aes_smoketest.c
-+++ b/sw/device/tests/dif/dif_aes_smoketest.c
+--- a/sw/device/tests/aes_smoketest.c
++++ b/sw/device/tests/aes_smoketest.c
 @@ -7,7 +7,6 @@
  #include "sw/device/lib/dif/dif_aes.h"
  #include "sw/device/lib/runtime/log.h"
  #include "sw/device/lib/testing/check.h"
 -#include "sw/device/lib/testing/entropy_testutils.h"
  #include "sw/device/lib/testing/test_framework/test_main.h"
-
+ 
  #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 @@ -67,9 +66,6 @@ bool test_main(void) {
-
+ 
    LOG_INFO("Running AES test");
-
+ 
 -  // First of all, we need to get the entropy complex up and running.
 -  entropy_testutils_boot_mode_init();
 -
    // Initialise AES.
    dif_aes_params_t params = {
        .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
-diff --git a/sw/device/tests/dif/meson.build b/sw/device/tests/dif/meson.build
-index b1fd4acce..96cee10c6 100644
---- a/sw/device/tests/dif/meson.build
-+++ b/sw/device/tests/dif/meson.build
-@@ -217,7 +217,6 @@ dif_aes_smoketest_lib = declare_dependency(
+diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
+index b52efb47d..c8ba0060b 100644
+--- a/sw/device/tests/meson.build
++++ b/sw/device/tests/meson.build
+@@ -243,7 +243,6 @@ aes_smoketest_lib = declare_dependency(
        sw_lib_dif_aes,
        sw_lib_mmio,
        sw_lib_runtime_log,
