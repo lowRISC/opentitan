@@ -7,7 +7,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use opentitanlib::transport::{EmptyTransport, Transport};
-use opentitanlib::util::parse_u16;
+use opentitanlib::util::parse_int::ParseInt;
 
 pub mod ultradebug;
 pub mod verilator;
@@ -17,10 +17,10 @@ pub struct BackendOpts {
     #[structopt(long, default_value, help = "Name of the debug interface")]
     interface: String,
 
-    #[structopt(long, parse(try_from_str = parse_u16),
+    #[structopt(long, parse(try_from_str = u16::from_str),
                 help="USB Vendor ID of the interface")]
     usb_vid: Option<u16>,
-    #[structopt(long, parse(try_from_str = parse_u16),
+    #[structopt(long, parse(try_from_str = u16::from_str),
                 help="USB Product ID of the interface")]
     usb_pid: Option<u16>,
     #[structopt(long, help = "USB serial number of the interface")]
