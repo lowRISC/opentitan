@@ -30,7 +30,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
-    cfg.efuse_sw_app_enable_vif.drive_pin(.idx(0), .val(cfg.efuse_sw_app_enable));
+    cfg.otp_en_cs_sw_app_read_vif.drive(.val(cfg.otp_en_cs_sw_app_read));
 
     // Enables
     ral.ctrl.enable.set(cfg.enable);
