@@ -30,14 +30,8 @@ package entropy_src_env_pkg;
     HealthTestFailed = 1,
     EBusChkFailed    = 2,
     ObserveFifoReady = 3,
-    FifoErr          = 4
+    FatalErr         = 4
   } entropy_src_intr_e;
-
-  typedef enum int {
-    Disabled  = 0,
-    PtrngMode = 1,
-    LfsrMode  = 2
-  } mode_e;
 
   // package sources
   `include "entropy_src_env_cfg.sv"

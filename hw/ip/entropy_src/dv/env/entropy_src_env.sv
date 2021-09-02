@@ -34,9 +34,13 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_csrng_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
     cfg.m_csrng_agent_cfg.if_mode    = dv_utils_pkg::Host;
 
-    if (!uvm_config_db#(virtual pins_if)::get(this, "", "efuse_es_sw_reg_en_vif",
-                                              cfg.efuse_es_sw_reg_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get efuse_es_sw_reg_en_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_es_fw_read_vif",
+        cfg.otp_en_es_fw_read_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get otp_en_es_fw_read_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_es_fw_over_vif",
+        cfg.otp_en_es_fw_over_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get otp_en_es_fw_over_vif from uvm_config_db")
     end
   endfunction
 

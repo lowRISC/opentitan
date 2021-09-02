@@ -15,31 +15,30 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
        m_csrng_agent_cfg;
 
-  virtual pins_if  efuse_es_sw_reg_en_vif;
+  virtual pins_if#(8)   otp_en_es_fw_read_vif;
+  virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
   // Knobs & Weights
-  uint          efuse_es_sw_reg_en_pct, enable_pct, mode_ptrng_pct, route_software_pct,
+  uint          enable_pct, route_software_pct,
+                otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
                 type_bypass_pct, boot_bypass_disable_pct;
-  rand bit      efuse_es_sw_reg_en, enable, route_software, type_bypass,
+  rand bit      enable, route_software, type_bypass,
                 boot_bypass_disable;
-  rand mode_e   mode;
+
+  rand otp_ctrl_pkg::otp_en_t   otp_en_es_fw_read, otp_en_es_fw_over;
 
   // Constraints
-  constraint c_efuse_es_sw_reg_en {efuse_es_sw_reg_en dist { 1 :/ efuse_es_sw_reg_en_pct,
-                                                             0 :/ (100 - efuse_es_sw_reg_en_pct) };}
+  constraint c_otp_en_es_fw_read {otp_en_es_fw_read dist {
+                                  otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_read_pct,
+                                  otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_read_pct) };}
+
+  constraint c_otp_en_es_fw_over {otp_en_es_fw_over dist {
+                                  otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_over_pct,
+                                  otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_over_pct) };}
 
   constraint c_enable {enable dist { 1 :/ enable_pct,
                                      0 :/ 100 - enable_pct };
   }
-
-  constraint c_mode {
-    solve enable before mode;
-
-    if (enable)
-      mode dist { PtrngMode :/ mode_ptrng_pct,
-                  LfsrMode  :/ (100 - mode_ptrng_pct) };
-    else
-      mode == Disabled;}
 
   constraint c_route {route_software dist { 1 :/ route_software_pct,
                                             0 :/ (100 - route_software_pct) };}
@@ -77,15 +76,15 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     str = {str, "\n"};
     str = {str,  $sformatf("\n\t |************ entropy_src_env_cfg ****************| \t")                    };
     str = {str,  $sformatf("\n\t |***** enable                   : %10d *****| \t", enable)                  };
-    str = {str,  $sformatf("\n\t |***** mode                     : %10s *****| \t", mode.name())             };
-    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en       : %10d *****| \t", efuse_es_sw_reg_en)      };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read        : %10d *****| \t", otp_en_es_fw_read)       };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over        : %10d *****| \t", otp_en_es_fw_over)       };
     str = {str,  $sformatf("\n\t |***** route_software           : %10d *****| \t", route_software)          };
     str = {str,  $sformatf("\n\t |***** type_bypass              : %10d *****| \t", type_bypass)             };
     str = {str,  $sformatf("\n\t |***** boot_bypass_disable      : %10d *****| \t", boot_bypass_disable)     };
     str = {str,  $sformatf("\n\t |------------ knobs ------------------------------| \t")                    };
     str = {str,  $sformatf("\n\t |***** enable_pct               : %10d *****| \t", enable_pct)              };
-    str = {str,  $sformatf("\n\t |***** mode_ptrng_pct           : %10d *****| \t", mode_ptrng_pct)          };
-    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en_pct   : %10d *****| \t", efuse_es_sw_reg_en_pct)  };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read_pct    : %10d *****| \t", otp_en_es_fw_read_pct)   };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over_pct    : %10d *****| \t", otp_en_es_fw_over_pct)   };
     str = {str,  $sformatf("\n\t |***** route_software_pct       : %10d *****| \t", route_software_pct)      };
     str = {str,  $sformatf("\n\t |***** type_bypass_pct          : %10d *****| \t", type_bypass_pct)         };
     str = {str,  $sformatf("\n\t |***** boot_bypass_disable_pct  : %10d *****| \t", boot_bypass_disable_pct) };

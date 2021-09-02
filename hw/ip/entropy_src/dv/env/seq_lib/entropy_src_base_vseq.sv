@@ -33,7 +33,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // setup basic entropy_src features
   virtual task entropy_src_init();
     // Set fuse
-    cfg.efuse_es_sw_reg_en_vif.drive_pin(.idx(0), .val(cfg.efuse_es_sw_reg_en));
+    cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
+    cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
 
     // Set entropy_src controls
     // TODO: hardcode for now, fix up contraints
@@ -44,8 +45,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.entropy_control.es_route.set(4'ha);
     csr_update(.csr(ral.entropy_control));
 
-    // Enable entropy_src in ptrng or lfsr mode
-    // TODO: hardcode for now, fix up contraints
+    // Enable entropy_src
+    ral.conf.enable.set({1'b0, cfg.enable});
     // ral.conf.enable.set(cfg.mode);
     // ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
     ral.entropy_control.es_route.set(4'ha);

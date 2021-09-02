@@ -155,7 +155,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH - 1:0]        csrng_data;
     bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]         fips_data;
 
-    // TODO: Add shah3/lfsr prediction
+    // TODO: Add shah3 prediction
     if (cfg.type_bypass) begin
       fips_data = '0;
     end
