@@ -10,8 +10,8 @@ class csrng_smoke_test extends csrng_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.efuse_sw_app_enable_pct = 100;
-    cfg.sw_app_enable_pct       = 100;
+    cfg.otp_en_cs_sw_app_read_pct = 100;
+    cfg.sw_app_enable_pct         = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
