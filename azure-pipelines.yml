@@ -265,22 +265,7 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_earlgrey"
-
-      # Compile the simulation without threading; the runners provided by
-      # Azure provide two virtual CPUs, which seems to equal one physical
-      # CPU (at most); the use of threading slows down the simulation.
-      fusesoc --cores-root=. \
-        run --flag=fileset_top --target=sim --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:dv:chip_verilator_sim \
-        --verilator_options="--threads 4"
-
-      cp "$OBJ_DIR/hw/sim-verilator/Vchip_sim_tb" \
-        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
+  - bash: ci/scripts/build-chip-verilator.sh earlgrey
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
@@ -301,22 +286,7 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_englishbreakfast"
-
-      # Compile the simulation without threading; the runners provided by
-      # Azure provide two virtual CPUs, which seems to equal one physical
-      # CPU (at most); the use of threading slows down the simulation.
-      fusesoc --cores-root=. \
-        run --flag=fileset_topgen --target=sim --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_englishbreakfast_verilator \
-        --verilator_options="--no-threads"
-
-      cp "$OBJ_DIR/hw/sim-verilator/Vchip_englishbreakfast_verilator" \
-        "$BIN_DIR/hw/top_englishbreakfast"
+  - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
