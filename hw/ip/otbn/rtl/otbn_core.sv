@@ -36,8 +36,6 @@ module otbn_core
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
 
-  input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
-
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
   output logic [ImemAddrWidth-1:0] imem_addr_o,
@@ -174,26 +172,21 @@ module otbn_core
   logic            urnd_advance;
   logic [WLEN-1:0] urnd_data;
 
-  logic                     controller_start;
-  logic [ImemAddrWidth-1:0] controller_start_addr;
+  logic        controller_start;
 
   logic        state_reset;
   logic [31:0] insn_cnt;
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
-  otbn_start_stop_control #(
-    .ImemSizeByte(ImemSizeByte)
-  ) u_otbn_start_stop_control (
+  otbn_start_stop_control u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,
 
     .start_i,
-    .start_addr_i,
 
-    .controller_start_o      (controller_start),
-    .controller_start_addr_o (controller_start_addr),
-    .controller_done_i       (done_o),
+    .controller_start_o (controller_start),
+    .controller_done_i  (done_o),
 
     .urnd_reseed_req_o  (urnd_reseed_req),
     .urnd_reseed_busy_i (urnd_reseed_busy),
@@ -268,8 +261,6 @@ module otbn_core
     .locked_o,
 
     .err_bits_o,
-
-    .start_addr_i (controller_start_addr),
 
     // Next instruction selection (to instruction fetch)
     .insn_fetch_req_addr_o  (insn_fetch_req_addr),

@@ -21,13 +21,11 @@ module otbn_controller
   input  logic  clk_i,
   input  logic  rst_ni,
 
-  input  logic  start_i, // start the processing at start_addr_i
+  input  logic  start_i, // start the processing at address zero
   output logic  done_o,  // processing done, signaled by ECALL or error occurring
   output logic  locked_o, // OTBN in locked state and must be reset to perform any further actions
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
-
-  input  logic [ImemAddrWidth-1:0] start_addr_i,
 
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
@@ -257,7 +255,7 @@ module otbn_controller
     // `insn_fetch_req_valid_o` before any errors are considered.
     state_raw                = state_q;
     insn_fetch_req_valid_raw = 1'b0;
-    insn_fetch_req_addr_o    = start_addr_i;
+    insn_fetch_req_addr_o    = '0;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
@@ -266,7 +264,7 @@ module otbn_controller
         if (start_i) begin
           state_raw = OtbnStateRun;
 
-          insn_fetch_req_addr_o    = start_addr_i;
+          insn_fetch_req_addr_o    = '0;
           insn_fetch_req_valid_raw = 1'b1;
         end
       end

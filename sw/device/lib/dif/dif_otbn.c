@@ -220,18 +220,6 @@ dif_otbn_result_t dif_otbn_irq_force(const dif_otbn_t *otbn,
   return kDifOtbnOk;
 }
 
-dif_otbn_result_t dif_otbn_set_start_addr(const dif_otbn_t *otbn,
-                                          unsigned int start_addr) {
-  if (otbn == NULL || start_addr % sizeof(uint32_t) != 0 ||
-      start_addr >= OTBN_IMEM_SIZE_BYTES) {
-    return kDifOtbnBadArg;
-  }
-
-  mmio_region_write32(otbn->base_addr, OTBN_START_ADDR_REG_OFFSET, start_addr);
-
-  return kDifOtbnOk;
-}
-
 dif_otbn_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn,
                                      dif_otbn_cmd_t cmd) {
   if (otbn == NULL) {

@@ -46,13 +46,12 @@ typedef enum otbn_status {
 } otbn_status_t;
 
 /**
- * Start the execution of the application loaded into OTBN at the start address.
+ * Start the execution of the application loaded into OTBN
  *
- * @param start_addr The IMEM byte address to start the execution at.
  * @return `kErrorOtbInvalidArgument` if `start_addr` is invalid, `kErrorOk`
  *         otherwise.
  */
-rom_error_t otbn_start(uint32_t start_addr);
+rom_error_t otbn_execute(void);
 
 /**
  * Is OTBN busy executing an application?

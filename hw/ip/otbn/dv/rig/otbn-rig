@@ -60,7 +60,6 @@ def gen_main(args: argparse.Namespace) -> int:
     # Run the generator
     try:
         init_data, snippet, end_addr = gen_program(config,
-                                                   args.start_addr,
                                                    args.size,
                                                    insns_file)
     except RuntimeError as err:
@@ -156,8 +155,6 @@ def main() -> int:
     gen.add_argument('--size', type=int, default=100,
                      help=('Max number of instructions in stream. '
                            'Defaults to 100.'))
-    gen.add_argument('--start-addr', type=int, default=0,
-                     help='Reset address. Defaults to 0.')
     gen.add_argument('--config', type=str, default='default',
                      help='Configuration to use')
     gen.add_argument('--output', '-o',

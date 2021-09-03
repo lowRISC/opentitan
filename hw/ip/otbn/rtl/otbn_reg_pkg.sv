@@ -46,10 +46,6 @@ package otbn_reg_pkg;
   } otbn_reg2hw_cmd_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
-  } otbn_reg2hw_start_addr_reg_t;
-
-  typedef struct packed {
     logic        d;
     logic        de;
   } otbn_hw2reg_intr_state_reg_t;
@@ -138,12 +134,11 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [48:48]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [47:47]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [46:45]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [44:41]
-    otbn_reg2hw_cmd_reg_t cmd; // [40:32]
-    otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [16:16]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [15:15]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [14:13]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [12:9]
+    otbn_reg2hw_cmd_reg_t cmd; // [8:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
@@ -163,9 +158,8 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
   parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 14;
   parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 18;
-  parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
-  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
-  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
+  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 1c;
+  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 20;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -195,13 +189,12 @@ package otbn_reg_pkg;
     OTBN_CMD,
     OTBN_STATUS,
     OTBN_ERR_BITS,
-    OTBN_START_ADDR,
     OTBN_FATAL_ALERT_CAUSE,
     OTBN_INSN_CNT
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [10] = '{
+  parameter logic [3:0] OTBN_PERMIT [9] = '{
     4'b 0001, // index[0] OTBN_INTR_STATE
     4'b 0001, // index[1] OTBN_INTR_ENABLE
     4'b 0001, // index[2] OTBN_INTR_TEST
@@ -209,9 +202,8 @@ package otbn_reg_pkg;
     4'b 0001, // index[4] OTBN_CMD
     4'b 0001, // index[5] OTBN_STATUS
     4'b 0111, // index[6] OTBN_ERR_BITS
-    4'b 1111, // index[7] OTBN_START_ADDR
-    4'b 0001, // index[8] OTBN_FATAL_ALERT_CAUSE
-    4'b 1111  // index[9] OTBN_INSN_CNT
+    4'b 0001, // index[7] OTBN_FATAL_ALERT_CAUSE
+    4'b 1111  // index[8] OTBN_INSN_CNT
   };
 
 endpackage

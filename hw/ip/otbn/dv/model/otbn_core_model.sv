@@ -26,9 +26,7 @@ module otbn_core_model
   // Scope of an RTL OTBN implementation (for DPI). If empty, this is a "standalone" model, which
   // should update DMEM on completion. If not empty, we assume it's the scope for the top-level of a
   // real implementation running alongside and we check DMEM contents on completion.
-  parameter string DesignScope = "",
-
-  localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
+  parameter string DesignScope = ""
 )(
   input  logic  clk_i,
   input  logic  rst_ni,
@@ -37,8 +35,6 @@ module otbn_core_model
   output bit    done_o,  // operation done
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
-
-  input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
   input logic            edn_rnd_data_valid_i, // provide RND data from EDN
   input logic [WLEN-1:0] edn_rnd_data_i,
@@ -51,10 +47,6 @@ module otbn_core_model
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
-
-  `ASSERT_INIT(StartAddr32_A, ImemAddrWidth <= 32)
-  logic [31:0] start_addr_32;
-  assign start_addr_32 = {{32 - ImemAddrWidth{1'b0}}, start_addr_i};
 
   // Work-around for Verilator. IEEE 1800-2017 says you should compare/assign to a chandle with
   // null. Verilator would prefer you to use zero: it treats null as a synonym of 1'b0 and chandle
@@ -109,7 +101,7 @@ module otbn_core_model
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
-                                  start_i, start_addr_32,
+                                  start_i,
                                   status,
                                   edn_rnd_data_valid_i, edn_rnd_data_i,
                                   edn_urnd_data_valid_i,

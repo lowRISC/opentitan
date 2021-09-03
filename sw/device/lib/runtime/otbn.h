@@ -177,18 +177,14 @@ otbn_result_t otbn_init(otbn_t *ctx, const dif_otbn_config_t dif_config);
 otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 
 /**
- * Calls a function on OTBN.
+ * Starts the OTBN execute operation.
  *
- * Set the entry point (start address) of OTBN to the desired function, and
- * starts the OTBN operation.
- *
- * Use `otbn_busy_wait_for_done()` to wait for the function call to complete.
+ * Use `otbn_busy_wait_for_done()` to wait for execution to complete.
  *
  * @param ctx The context object.
- * @param func The function to be called.
  * @return The result of the operation.
  */
-otbn_result_t otbn_call_function(otbn_t *ctx, otbn_ptr_t func);
+otbn_result_t otbn_execute(otbn_t *ctx);
 
 /**
  * Busy waits for OTBN to be done with the current operation.
@@ -235,19 +231,6 @@ otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
  * @return The result of the operation.
  */
 otbn_result_t otbn_zero_data_memory(otbn_t *ctx);
-
-/**
- * Gets the address in OTBN instruction memory referenced by `ptr`.
- *
- * @param ctx The context object.
- * @param ptr The pointer to convert.
- * @param[out] imem_addr_otbn The address of the function in OTBN's instruction
- *                            memory.
- * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the
- *         instruction memory space of the currently loaded application.
- */
-otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
-                                         uint32_t *imem_addr_otbn);
 
 /**
  * Gets the address in OTBN data memory referenced by `ptr`.

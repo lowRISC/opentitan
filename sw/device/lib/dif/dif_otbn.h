@@ -251,17 +251,6 @@ dif_otbn_result_t dif_otbn_irq_force(const dif_otbn_t *otbn,
                                      dif_otbn_interrupt_t irq_type);
 
 /**
- * Set the start address of the execution.
- *
- * @param otbn OTBN instance.
- * @param start_addr The IMEM byte address to start the execution at.
- * @return `kDifOtbnBadArg` if `otbn` is `NULL` or `start_addr` is invalid,
- *         `kDifOtbnOk` otherwise.
- */
-dif_otbn_result_t dif_otbn_set_start_addr(const dif_otbn_t *otbn,
-                                          unsigned int start_addr);
-
-/**
  * Start an operation by issuing a command.
  *
  * @param otbn OTBN instance.

@@ -93,8 +93,6 @@ module otbn
 
   err_bits_t err_bits;
 
-  logic [ImemAddrWidth-1:0] start_addr;
-
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
 
@@ -637,11 +635,6 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.de = done;
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits.lifecycle_escalation;
 
-  // START_ADDR register
-  assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
-  logic [top_pkg::TL_DW-ImemAddrWidth-1:0] unused_start_addr_bits;
-  assign unused_start_addr_bits = reg2hw.start_addr.q[top_pkg::TL_DW-1:ImemAddrWidth];
-
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
   assign hw2reg.fatal_alert_cause.imem_intg_violation.de = imem_rerror;
@@ -799,8 +792,6 @@ module otbn
 
       .err_bits_o (err_bits_model),
 
-      .start_addr_i (start_addr),
-
       .edn_rnd_data_valid_i  ( edn_rnd_data_valid ),
       .edn_rnd_data_i        ( edn_rnd_data ),
       .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
@@ -828,8 +819,6 @@ module otbn
       .locked_o               (locked_rtl),
 
       .err_bits_o             (err_bits_rtl),
-
-      .start_addr_i           (start_addr),
 
       .imem_req_o             (imem_req_core),
       .imem_addr_o            (imem_addr_core),
@@ -878,8 +867,6 @@ module otbn
       .locked_o               (locked),
 
       .err_bits_o             (err_bits),
-
-      .start_addr_i           (start_addr),
 
       .imem_req_o             (imem_req_core),
       .imem_addr_o            (imem_addr_core),

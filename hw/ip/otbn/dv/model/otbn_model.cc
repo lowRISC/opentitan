@@ -219,10 +219,8 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
   return 0;
 }
 
-int OtbnModel::start(unsigned start_addr) {
+int OtbnModel::start() {
   const MemArea &imem = mem_util_.GetMemArea(true);
-  assert(start_addr % 4 == 0);
-  assert(start_addr / 4 < imem.GetSizeWords());
 
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -242,7 +240,7 @@ int OtbnModel::start(unsigned start_addr) {
   try {
     iss->load_d(dfname);
     iss->load_i(ifname);
-    iss->start(start_addr);
+    iss->start();
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when starting ISS: " << err.what() << "\n";
     return -1;
@@ -539,8 +537,8 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }
 
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned start_addr,
-                         unsigned status, svLogic edn_rnd_data_valid,
+unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
+                         svLogic edn_rnd_data_valid,
                          svLogicVecVal *edn_rnd_data, /* logic [255:0] */
                          svLogic edn_urnd_data_valid,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
@@ -572,7 +570,7 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned start_addr,
 
   // Start the model if requested
   if (start) {
-    switch (model->start(start_addr)) {
+    switch (model->start()) {
       case 0:
         // All good
         status |= RUNNING_BIT;

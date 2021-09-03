@@ -166,22 +166,13 @@ class OTBNState:
         self._err_bits = 0
         self._urnd_reseed_complete = False
 
-        self.pc = self.get_start_addr()
+        self.pc = 0
 
         # Reset CSRs, WSRs, loop stack and call stack
         self.csrs = CSRFile()
         self.wsrs = WSRFile()
         self.loop_stack = LoopStack()
         self.gprs.start()
-
-    def get_start_addr(self) -> int:
-        '''Get the start address of the processor.
-
-        Set the start address by writing the external register START_ADDR before
-        calling start(), and commiting the external register changes.
-
-        '''
-        return self.ext_regs.read('START_ADDR', True)
 
     def stop(self) -> None:
         '''Set flags to stop the processor and maybe abort the instruction.

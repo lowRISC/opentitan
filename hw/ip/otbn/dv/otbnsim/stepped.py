@@ -12,7 +12,7 @@ The valid commands are as follows. All arguments are shown here as <argname>.
 The integer arguments are read with Python's int() function, so should be
 prefixed with "0x" if they are hexadecimal.
 
-    start <addr>         Set the PC to <addr> and start OTBN
+    start                Set the PC to zero and start OTBN
 
     step                 Run one instruction. Print trace information to
                          stdout.
@@ -75,16 +75,10 @@ def end_command() -> None:
 
 def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Jump to an address given as the (only) argument and start running'''
-    if len(args) != 1:
-        raise ValueError('start expects exactly 1 argument. Got {}.'
-                         .format(args))
+    if len(args) != 0:
+        raise ValueError('start expects zero arguments. Got {}.'.format(args))
 
-    addr = read_word('addr', args[0], 32)
-    if addr & 3:
-        raise ValueError('start address must be word-aligned. Got {:#08x}.'
-                         .format(addr))
-    print('START {:#08x}'.format(addr))
-    sim.state.ext_regs.write('START_ADDR', addr, False)
+    print('START')
     sim.state.ext_regs.commit()
     sim.start()
 

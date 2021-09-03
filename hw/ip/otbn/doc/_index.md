@@ -569,7 +569,7 @@ The software then runs to completion, without the ability for host software to i
 
 - OTBN transitions into the busy state, and reflects this by setting {{< regref "STATUS">}} to `BUSY_EXECUTE`.
 - The internal randomness source, which provides random numbers to the `URND` CSR and WSR, is re-seeded from the EDN.
-- The instruction at {{< regref "START_ADDR" >}} is fetched and executed.
+- The instruction at address zero is fetched and executed.
 - From this point on, all subsequent instructions are executed according to their semantics until either an {{< otbnInsnRef "ECALL" >}} instruction is executed, or an error is detected.
 - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
 - The {{< regref "ERR_BITS" >}} register is set to indicate either a successful execution (value `0`), or to indicate the error that was observed (a non-zero value).

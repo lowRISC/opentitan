@@ -39,8 +39,8 @@ struct ISSWrapper {
   // Dump the contents of DMEM to a file
   void dump_d(const std::string &path) const;
 
-  // Jump to a new address and start running
-  void start(uint32_t addr);
+  // Jump to address zero and start running
+  void start();
 
   // Provide data for RND. ISS will stall when RND is read and RND data isn't
   // available

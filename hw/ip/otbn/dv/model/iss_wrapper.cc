@@ -341,9 +341,10 @@ void ISSWrapper::dump_d(const std::string &path) const {
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::start(uint32_t addr) {
+void ISSWrapper::start() {
   std::ostringstream oss;
-  oss << "start " << addr << "\n";
+  oss << "start "
+      << "\n";
   run_command(oss.str(), nullptr);
 
   // "Reset" our mirror of INSN_CNT. This gets zeroed on this cycle in the

@@ -14,7 +14,6 @@ interface otbn_model_if #(
 
   // Inputs to DUT
   logic                     start;        // Start the operation
-  logic [ImemAddrWidth-1:0] start_addr;   // Start byte address in IMEM
 
   // Outputs from DUT
   bit                       done;         // Operation done
@@ -36,14 +35,12 @@ interface otbn_model_if #(
     end
   endtask
 
-  // Start model by setting start and start_addr for a cycle. Waits until not in reset.
-  task automatic start_model(bit [ImemAddrWidth-1:0] start_addr);
+  // Start model by setting start for a cycle. Waits until not in reset.
+  task automatic start_model();
     wait(rst_ni);
     start = 1'b1;
-    start_addr = start_addr;
     @(posedge clk_i or negedge rst_ni);
     start = 1'b0;
-    start_addr = 'x;
   endtask
 
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch

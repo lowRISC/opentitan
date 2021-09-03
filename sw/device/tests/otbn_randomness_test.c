@@ -13,14 +13,12 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(randomness);
-OTBN_DECLARE_PTR_SYMBOL(randomness, main);
 OTBN_DECLARE_PTR_SYMBOL(randomness, rv);
 OTBN_DECLARE_PTR_SYMBOL(randomness, fail_idx);
 OTBN_DECLARE_PTR_SYMBOL(randomness, rnd_out);
 OTBN_DECLARE_PTR_SYMBOL(randomness, urnd_out);
 
 static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
-static const otbn_ptr_t kFuncMain = OTBN_PTR_T_INIT(randomness, main);
 static const otbn_ptr_t kVarRv = OTBN_PTR_T_INIT(randomness, rv);
 static const otbn_ptr_t kVarFailIdx = OTBN_PTR_T_INIT(randomness, fail_idx);
 static const otbn_ptr_t kVarRndOut = OTBN_PTR_T_INIT(randomness, rnd_out);
@@ -50,7 +48,7 @@ bool test_main() {
   CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppCfiTest) == kOtbnOk);
 
-  CHECK(otbn_call_function(&otbn_ctx, kFuncMain) == kOtbnOk);
+  CHECK(otbn_execute(&otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(&otbn_ctx) == kOtbnOk);
 
   // Check for successful test execution (self-reported).

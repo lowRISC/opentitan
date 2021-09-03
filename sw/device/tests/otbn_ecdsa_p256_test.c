@@ -33,7 +33,6 @@
  */
 
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, start);
 
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_msg);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_r);
@@ -53,8 +52,6 @@ OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, d);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa);
-static const otbn_ptr_t kOtbnAppP256EcdsaFuncStart =
-    OTBN_PTR_T_INIT(p256_ecdsa, start);
 
 static const otbn_ptr_t kOtbnVarDptrMsg = OTBN_PTR_T_INIT(p256_ecdsa, dptr_msg);
 static const otbn_ptr_t kOtbnVarDptrR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_r);
@@ -180,7 +177,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
                                kOtbnVarD) == kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  CHECK(otbn_call_function(otbn_ctx, kOtbnAppP256EcdsaFuncStart) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
@@ -229,7 +226,7 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
                                kOtbnVarY) == kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  CHECK(otbn_call_function(otbn_ctx, kOtbnAppP256EcdsaFuncStart) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.

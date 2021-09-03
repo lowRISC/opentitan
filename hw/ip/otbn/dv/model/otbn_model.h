@@ -29,9 +29,9 @@ class OtbnModel {
   // implementation too (which needs checking).
   bool has_rtl() const { return !design_scope_.empty(); }
 
-  // Start a new run with the model, writing IMEM/DMEM and jumping to the given
-  // start address. Returns 0 on success; -1 on failure.
-  int start(unsigned start_addr);
+  // Start a new run with the model, writing IMEM/DMEM and jumping to address
+  // zero. Returns 0 on success; -1 on failure.
+  int start();
 
   // Step once in the model. Returns 1 if the model has finished, 0 if not and
   // -1 on failure. If gen_trace is true, pass trace entries to the trace

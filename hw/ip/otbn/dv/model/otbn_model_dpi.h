@@ -52,10 +52,10 @@ void otbn_model_destroy(OtbnModel *model);
 // the contents of DMEM from the ISS and inject them into the simulation
 // memory.
 //
-// If start is true, we start the model at start_addr and then step once (as
-// described above).
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned start_addr,
-                         unsigned status, svLogic edn_rnd_data_valid,
+// If start is true, we start the model and then step once (as described
+// above).
+unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
+                         svLogic edn_rnd_data_valid,
                          svLogicVecVal *edn_rnd_data, /* logic [255:0] */
                          svLogic edn_urnd_data_valid,
                          svBitVecVal *insn_cnt /* bit [31:0] */,

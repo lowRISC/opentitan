@@ -59,16 +59,8 @@ static rom_error_t check_offset_len(uint32_t offset_bytes, size_t len,
   return kErrorOk;
 }
 
-rom_error_t otbn_start(uint32_t start_addr) {
-  // TODO: Update to use alignment utility functions.
-  // https://github.com/lowRISC/opentitan/issues/6112
-  if (start_addr % sizeof(uint32_t) != 0 || start_addr >= kOtbnIMemSizeBytes) {
-    return kErrorOtbnInvalidArgument;
-  }
-
-  abs_mmio_write32(kBase + OTBN_START_ADDR_REG_OFFSET, start_addr);
+rom_error_t otbn_execute(void) {
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
-
   return kErrorOk;
 }
 

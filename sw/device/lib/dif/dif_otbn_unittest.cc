@@ -199,36 +199,6 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_EQ(dif_otbn_irq_force(&dif_otbn_, kDifOtbnInterruptDone), kDifOtbnOk);
 }
 
-class SetStartAddrTest : public OtbnTest {};
-
-TEST_F(SetStartAddrTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_set_start_addr(nullptr, 0), kDifOtbnBadArg);
-}
-
-TEST_F(SetStartAddrTest, BadStartAddress) {
-  // Must be 4-byte aligned.
-  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 1), kDifOtbnBadArg);
-
-  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 2), kDifOtbnBadArg);
-
-  // Valid addresses (ignoring alignment): 0 .. (OTBN_IMEM_SIZE_BYTES - 1)
-  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, OTBN_IMEM_SIZE_BYTES),
-            kDifOtbnBadArg);
-
-  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, OTBN_IMEM_SIZE_BYTES + 32),
-            kDifOtbnBadArg);
-}
-
-TEST_F(SetStartAddrTest, Success) {
-  // Test assumption.
-  ASSERT_GE(OTBN_IMEM_SIZE_BYTES, 8);
-
-  // Write start address.
-  EXPECT_WRITE32(OTBN_START_ADDR_REG_OFFSET, 4);
-
-  EXPECT_EQ(dif_otbn_set_start_addr(&dif_otbn_, 4), kDifOtbnOk);
-}
-
 class WriteCmdTest : public OtbnTest {};
 
 TEST_F(WriteCmdTest, NullArgs) {
