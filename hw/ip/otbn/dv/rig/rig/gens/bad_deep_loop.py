@@ -197,7 +197,7 @@ class BadDeepLoop(SnippetGen):
         else:
             body_snippet = Snippet.merge_list([body_snippet, real_body_snippet])
 
-        return (LoopSnippet(hd_pc, hd_insn, body_snippet), model)
+        return (LoopSnippet(hd_pc, hd_insn, body_snippet, None), model)
 
     def gen(self,
             cont: GenCont,

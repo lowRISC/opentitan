@@ -58,12 +58,10 @@ class BadZeroLoop(Loop):
         if pieces is None:
             return None
 
-        good_shape, good_hd_insn, body_snippet, model = pieces
+        bodysize, good_hd_insn, body_snippet, model, warp = pieces
 
         # If we successfully generated a loop, generate a new head instruction
         # with the same body size but with zero iterations.
-        _, _, bodysize = good_shape
-
         insn = self.pick_loop_insn()
         op0_type = insn.operands[0].op_type
         op1_type = insn.operands[1].op_type
@@ -76,7 +74,7 @@ class BadZeroLoop(Loop):
         assert enc_bodysize is not None
         bad_hd_insn = ProgInsn(insn, [iter_opval, enc_bodysize], None)
 
-        snippet = LoopSnippet(model_before.pc, bad_hd_insn, body_snippet)
+        snippet = LoopSnippet(model_before.pc, bad_hd_insn, body_snippet, None)
         snippet.insert_into_program(program)
 
         # Return with the initial model (because the head instruction is bad,
