@@ -24,10 +24,6 @@ To control random generation, there is a `--seed` parameter. The
 output should be stable for a fixed seed. If not specified, the seed
 is zero.
 
-To support testing with the `START_ADDR` register, which allows the
-host processor to control OTBN's reset address, there is a
-`--start-addr` parameter. By default this is zero.
-
 ### The size parameter
 
 The `--size` parameter is used to control how big the program grows. A

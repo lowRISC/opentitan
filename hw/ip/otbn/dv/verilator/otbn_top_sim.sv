@@ -12,8 +12,6 @@ module otbn_top_sim (
   parameter int ImemSizeByte = otbn_reg_pkg::OTBN_IMEM_SIZE;
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = otbn_reg_pkg::OTBN_DMEM_SIZE;
-  // Start address of first instruction in IMem
-  parameter int ImemStartAddr = 32'h0;
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
@@ -69,8 +67,6 @@ module otbn_top_sim (
     .locked_o               (                  ),
 
     .err_bits_o             ( otbn_err_bits_d  ),
-
-    .start_addr_i           ( ImemStartAddr    ),
 
     .imem_req_o             ( imem_req         ),
     .imem_addr_o            ( imem_addr        ),
@@ -287,8 +283,6 @@ module otbn_top_sim (
 
     .start_i               ( otbn_start ),
     .done_o                ( otbn_model_done ),
-
-    .start_addr_i          ( ImemStartAddr ),
 
     .err_bits_o            ( otbn_model_err_bits ),
 

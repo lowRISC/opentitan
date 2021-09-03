@@ -23,12 +23,12 @@ def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
 def _simulate_asm_file(asm_file: str, tmpdir: py.path.local) -> ExecutionStats:
     '''Run the OTBN simulator, collect statistics, and return them.'''
 
-    sim = testutil.prepare_sim_for_asm_file(asm_file, tmpdir, start_addr=0)
+    sim = testutil.prepare_sim_for_asm_file(asm_file, tmpdir)
     return _run_sim_for_stats(sim)
 
 
 def _simulate_asm_str(assembly: str, tmpdir: py.path.local) -> ExecutionStats:
-    sim = testutil.prepare_sim_for_asm_str(assembly, tmpdir, start_addr=0)
+    sim = testutil.prepare_sim_for_asm_str(assembly, tmpdir)
     return _run_sim_for_stats(sim)
 
 

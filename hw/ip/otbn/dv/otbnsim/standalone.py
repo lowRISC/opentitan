@@ -44,7 +44,6 @@ def main() -> int:
     sim = OTBNSim()
     exp_end_addr = load_elf(sim, args.elf)
 
-    sim.state.ext_regs.write('START_ADDR', 0, False)
     sim.state.ext_regs.commit()
 
     sim.start()

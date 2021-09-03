@@ -25,28 +25,14 @@ class OtbnTest : public mask_rom_test::MaskRomTest {
 
 class StartTest : public OtbnTest {};
 
-TEST_F(StartTest, BadStartAddress) {
-  // Must be 4-byte aligned.
-  EXPECT_EQ(otbn_start(1), kErrorOtbnInvalidArgument);
-  EXPECT_EQ(otbn_start(2), kErrorOtbnInvalidArgument);
-
-  // Valid addresses (ignoring alignment): 0 .. (OTBN_IMEM_SIZE_BYTES - 1)
-  EXPECT_EQ(otbn_start(OTBN_IMEM_SIZE_BYTES), kErrorOtbnInvalidArgument);
-
-  EXPECT_EQ(otbn_start(OTBN_IMEM_SIZE_BYTES + 32), kErrorOtbnInvalidArgument);
-}
-
 TEST_F(StartTest, Success) {
   // Test assumption.
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
-  // Write start address.
-  EXPECT_ABS_WRITE32(base_ + OTBN_START_ADDR_REG_OFFSET, 4);
-
-  // Set EXECUTE command.
+  // Send EXECUTE command.
   EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
 
-  EXPECT_EQ(otbn_start(4), kErrorOk);
+  EXPECT_EQ(otbn_execute(), kErrorOk);
 }
 
 class IsBusyTest : public OtbnTest {};

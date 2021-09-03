@@ -182,7 +182,7 @@ class Model:
     following the instruction stream to this point.
 
     '''
-    def __init__(self, dmem_size: int, reset_addr: int, fuel: int) -> None:
+    def __init__(self, dmem_size: int, fuel: int) -> None:
         assert fuel >= 0
         self.initial_fuel = fuel
         self.fuel = fuel
@@ -246,11 +246,12 @@ class Model:
 
         # The current PC (the address of the next instruction that needs
         # generating)
-        self.pc = reset_addr
+        self.pc = 0
 
     def copy(self) -> 'Model':
         '''Return a deep copy of the model'''
-        ret = Model(self.dmem_size, self.pc, self.initial_fuel)
+        ret = Model(self.dmem_size, self.initial_fuel)
+        ret.pc = self.pc
         ret.fuel = self.fuel
         ret._known_regs = {n: regs.copy()
                            for n, regs in self._known_regs.items()}

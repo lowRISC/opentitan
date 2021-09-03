@@ -67,7 +67,6 @@ static const bool kTestDecrypt = true;
 static const bool kTestRsaGreater1k = false;
 
 OTBN_DECLARE_APP_SYMBOLS(rsa);
-OTBN_DECLARE_PTR_SYMBOL(rsa, start);
 OTBN_DECLARE_PTR_SYMBOL(rsa, mode);
 OTBN_DECLARE_PTR_SYMBOL(rsa, n_limbs);
 OTBN_DECLARE_PTR_SYMBOL(rsa, in);
@@ -76,7 +75,6 @@ OTBN_DECLARE_PTR_SYMBOL(rsa, modulus);
 OTBN_DECLARE_PTR_SYMBOL(rsa, exp);
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
-static const otbn_ptr_t kOtbnFuncRsaStart = OTBN_PTR_T_INIT(rsa, start);
 static const otbn_ptr_t kOtbnVarRsaMode = OTBN_PTR_T_INIT(rsa, mode);
 static const otbn_ptr_t kOtbnVarRsaNLimbs = OTBN_PTR_T_INIT(rsa, n_limbs);
 static const otbn_ptr_t kOtbnVarRsaIn = OTBN_PTR_T_INIT(rsa, in);
@@ -127,7 +125,7 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
         kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaStart) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
@@ -171,7 +169,7 @@ static void rsa_decrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
         kOtbnOk);
 
   // Call OTBN to perform operation
-  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaStart) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.

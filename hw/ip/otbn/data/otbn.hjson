@@ -171,7 +171,7 @@
                   <td>EXECUTE</td>
                   <td>
                     Start the execution of the program stored in the
-                    instruction memory, starting at address !!START_ADDR.
+                    instruction memory, starting at address zero.
                   </td>
                 </tr>
                 <tr>
@@ -328,21 +328,6 @@
         }
       ]
     } // register : err_bits
-    { name: "START_ADDR",
-      desc: "Start byte address in the instruction memory",
-      swaccess: "wo",
-      hwaccess: "hro",
-      fields: [
-        { bits: "31:0",
-          name: "start_addr",
-          resval: 0,
-          desc: '''
-            Byte address in the instruction memory OTBN starts to execute from
-            when instructed to do so by issuing the EXECUTE command.
-          '''
-        }
-      ]
-    } // register : start_addr
     { name: "FATAL_ALERT_CAUSE",
       desc: '''
         Description of the error that caused a fatal alert.

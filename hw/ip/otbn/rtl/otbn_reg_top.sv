@@ -187,8 +187,6 @@ module otbn_reg_top (
   logic err_bits_bus_intg_violation_qs;
   logic err_bits_illegal_bus_access_qs;
   logic err_bits_lifecycle_escalation_qs;
-  logic start_addr_we;
-  logic [31:0] start_addr_wd;
   logic fatal_alert_cause_imem_intg_violation_qs;
   logic fatal_alert_cause_dmem_intg_violation_qs;
   logic fatal_alert_cause_reg_intg_violation_qs;
@@ -603,32 +601,6 @@ module otbn_reg_top (
   );
 
 
-  // R[start_addr]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (32'h0)
-  ) u_start_addr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (start_addr_we),
-    .wd     (start_addr_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.start_addr.q),
-
-    // to register interface (read)
-    .qs     ()
-  );
-
-
   // R[fatal_alert_cause]: V(False)
   //   F[imem_intg_violation]: 0:0
   prim_subreg #(
@@ -797,7 +769,7 @@ module otbn_reg_top (
 
 
 
-  logic [9:0] addr_hit;
+  logic [8:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
@@ -807,9 +779,8 @@ module otbn_reg_top (
     addr_hit[4] = (reg_addr == OTBN_CMD_OFFSET);
     addr_hit[5] = (reg_addr == OTBN_STATUS_OFFSET);
     addr_hit[6] = (reg_addr == OTBN_ERR_BITS_OFFSET);
-    addr_hit[7] = (reg_addr == OTBN_START_ADDR_OFFSET);
-    addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
-    addr_hit[9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
+    addr_hit[7] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[8] = (reg_addr == OTBN_INSN_CNT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -825,8 +796,7 @@ module otbn_reg_top (
                (addr_hit[5] & (|(OTBN_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(OTBN_PERMIT[6] & ~reg_be))) |
                (addr_hit[7] & (|(OTBN_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be))) |
-               (addr_hit[9] & (|(OTBN_PERMIT[9] & ~reg_be)))));
+               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -846,10 +816,7 @@ module otbn_reg_top (
 
   assign cmd_wd = reg_wdata[7:0];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign start_addr_we = addr_hit[7] & reg_we & !reg_error;
-
-  assign start_addr_wd = reg_wdata[31:0];
-  assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
+  assign insn_cnt_re = addr_hit[8] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -895,10 +862,6 @@ module otbn_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = '0;
-      end
-
-      addr_hit[8]: begin
         reg_rdata_next[0] = fatal_alert_cause_imem_intg_violation_qs;
         reg_rdata_next[1] = fatal_alert_cause_dmem_intg_violation_qs;
         reg_rdata_next[2] = fatal_alert_cause_reg_intg_violation_qs;
@@ -907,7 +870,7 @@ module otbn_reg_top (
         reg_rdata_next[5] = fatal_alert_cause_lifecycle_escalation_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = insn_cnt_qs;
       end
 

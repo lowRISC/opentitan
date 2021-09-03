@@ -73,7 +73,7 @@ class ExecutionStats:
             if call_stack:
                 caller_func = call_stack[0]
             else:
-                caller_func = state_bc.get_start_addr()
+                caller_func = 0  # (start address)
 
             self.func_calls.append({
                 'call_site': pc,

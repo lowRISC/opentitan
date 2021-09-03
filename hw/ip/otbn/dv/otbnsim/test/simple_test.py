@@ -150,7 +150,7 @@ def test_count(tmpdir: py.path.local,
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
     stepped_py = os.path.join(SIM_DIR, 'stepped.py')
-    commands = 'load_elf {}\nstart 0\nrun\nprint_regs\n'.format(elf_file)
+    commands = 'load_elf {}\nstart\nrun\nprint_regs\n'.format(elf_file)
     sim_proc = subprocess.run([stepped_py], check=True, input=commands,
                               stdout=subprocess.PIPE, universal_newlines=True)
 

@@ -19,7 +19,6 @@ package otbn_model_pkg;
   import "DPI-C" context function
     int unsigned otbn_model_step(chandle          model,
                                  logic            start,
-                                 int unsigned     start_addr,
                                  int unsigned     status,
                                  logic            edn_rnd_data_valid,
                                  logic [WLEN-1:0] edn_rnd_data,

@@ -13,17 +13,12 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
-OTBN_DECLARE_PTR_SYMBOL(barrett384, wrap_barrett384);
 
 static const otbn_app_t kAppBarrett = OTBN_APP_T_INIT(barrett384);
-static const otbn_ptr_t kFuncWrapBarrett384 =
-    OTBN_PTR_T_INIT(barrett384, wrap_barrett384);
 
 OTBN_DECLARE_APP_SYMBOLS(err_test);
-OTBN_DECLARE_PTR_SYMBOL(err_test, err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
-static const otbn_ptr_t kFuncWrapErrTest = OTBN_PTR_T_INIT(err_test, err_test);
 
 const test_config_t kTestConfig;
 
@@ -108,7 +103,7 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u,
                             sizeof(u)) == kDifOtbnOk);
 
-  CHECK(otbn_call_function(otbn_ctx, kFuncWrapBarrett384) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Reading back result (c).
@@ -136,7 +131,7 @@ static void test_barrett384(otbn_t *otbn_ctx) {
 static void test_err_test(otbn_t *otbn_ctx) {
   CHECK(otbn_load_app(otbn_ctx, kAppErrTest) == kOtbnOk);
 
-  CHECK(otbn_call_function(otbn_ctx, kFuncWrapErrTest) == kOtbnOk);
+  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOperationFailed);
 
   check_otbn_err_bits(otbn_ctx, kDifOtbnErrBitsBadDataAddr);

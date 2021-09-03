@@ -12,20 +12,6 @@
  */
 const int kOtbnWlenBytes = 256 / 8;
 
-otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
-                                         uint32_t *imem_addr_otbn) {
-  uintptr_t ptr_addr = (uintptr_t)ptr;
-  uintptr_t app_imem_start_addr = (uintptr_t)ctx->app.imem_start;
-  uintptr_t app_imem_end_addr = (uintptr_t)ctx->app.imem_end;
-
-  if (imem_addr_otbn == NULL || ptr == NULL || ctx == NULL ||
-      ptr_addr < app_imem_start_addr || ptr_addr > app_imem_end_addr) {
-    return kOtbnBadArg;
-  }
-  *imem_addr_otbn = ptr_addr - app_imem_start_addr;
-  return kOtbnOk;
-}
-
 otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *dmem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
@@ -106,19 +92,9 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   return kOtbnOk;
 }
 
-otbn_result_t otbn_call_function(otbn_t *ctx, otbn_ptr_t func) {
+otbn_result_t otbn_execute(otbn_t *ctx) {
   if (ctx == NULL || !ctx->app_is_loaded) {
     return kOtbnBadArg;
-  }
-
-  uint32_t func_imem_addr;
-  otbn_result_t result = otbn_func_ptr_to_imem_addr(ctx, func, &func_imem_addr);
-  if (result != kOtbnOk) {
-    return result;
-  }
-
-  if (dif_otbn_set_start_addr(&ctx->dif, func_imem_addr) != kDifOtbnOk) {
-    return kOtbnError;
   }
 
   if (dif_otbn_write_cmd(&ctx->dif, kDifOtbnCmdExecute) != kDifOtbnOk) {

@@ -187,8 +187,6 @@ module tb;
 
     .err_bits_o   (),
 
-    .start_addr_i (model_if.start_addr),
-
     .edn_rnd_data_valid_i  (edn_rnd_data_valid),
     .edn_rnd_data_i        (dut.edn_rnd_data),
     .edn_urnd_data_valid_i (edn_urnd_data_valid),
