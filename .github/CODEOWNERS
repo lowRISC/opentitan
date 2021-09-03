@@ -57,7 +57,10 @@ formal/             @cindychip
 # lint/             # TBD
 
 # SW related
-/sw/                @mcy @moidx @sriyerg
+sw/**/*.c           @ot-c-cpp-reviewers
+sw/**/*.cc          @ot-c-cpp-reviewers
+sw/**/*.h           @ot-c-cpp-reviewers
+sw/**/*.rs          @ot-rust-reviewers
 
 # Common docs
 /doc/               @asb
