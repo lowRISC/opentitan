@@ -141,7 +141,7 @@ We expect to:
 - Complete a loop with the maximal number of iterations.
   Obviously, this isn't a reasonable thing to do for real in a test (there's a 32-bit iteration counter!).
   The testbench will have to force a signal to skip past some iterations.
-  Tracked as `MaxIterLoop_C`.
+  Tracked as `MaximalLoop_C`.
 - Run through a "badly nested" loop, where the body contains the final instruction from an outer loop (checking that we don't wrongly skip back).
   Tracked as `BadNestingEnd_C` and `BadNestingMiddle_C`.
 - Jump into a loop body from outside.
