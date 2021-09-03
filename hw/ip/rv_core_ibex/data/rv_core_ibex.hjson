@@ -551,7 +551,7 @@
           regwen: "DBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  See !!IBUS_ADDR_MATCHING for detailed description.
+                  See !!IBUS_ADDR_MATCHING_0 for detailed description.
                   ''',
                   count: "NumRegions",
           compact: false,
@@ -575,7 +575,7 @@
           regwen: "DBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  See !!IBUS_REMAP_ADDR for a detailed description.
+                  See !!IBUS_REMAP_ADDR_0 for a detailed description.
                   ''',
                   count: "NumRegions",
           compact: false,

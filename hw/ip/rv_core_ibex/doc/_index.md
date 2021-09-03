@@ -50,7 +50,13 @@ There are separate translations controls for instruction and data.
 Each control contains two programmable regions (2 for instruction and 2 for data).
 If a transaction matches multiple regions, the lowest indexed region has priority.
 
-For details on how to program the related registers, please see {{< regref "IBUS_ADDR_MATCHING0" >}} and {{< regref "IBUS_REMAP_ADDR0" >}}
+For details on how to program the related registers, please see {{< regref "IBUS_ADDR_MATCHING_0" >}} and {{< regref "IBUS_REMAP_ADDR_0" >}}.
+
+## Register Table
+
+A number of memory-mapped registers are available to control Ibex-related functionality that's specific to OpenTitan.
+
+{{< incGenFromIpDesc "../data/rv_core_ibex.hjson" "registers" >}}
 
 ## Hardware Interfaces
 
