@@ -192,6 +192,9 @@ module rv_core_ibex_cfg_reg_top (
   logic err_status_fatal_core_err_wd;
   logic err_status_recov_core_err_qs;
   logic err_status_recov_core_err_wd;
+  logic [31:0] rnd_data_qs;
+  logic rnd_status_re;
+  logic rnd_status_qs;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -998,8 +1001,49 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[rnd_data]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (32'h0)
+  ) u_rnd_data (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [23:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.rnd_data.de),
+    .d      (hw2reg.rnd_data.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (rnd_data_qs)
+  );
+
+
+  // R[rnd_status]: V(True)
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_rnd_status (
+    .re     (rnd_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rnd_status.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (rnd_status_qs)
+  );
+
+
+
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
@@ -1026,6 +1070,8 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[21] = (reg_addr == RV_CORE_IBEX_NMI_ENABLE_OFFSET);
     addr_hit[22] = (reg_addr == RV_CORE_IBEX_NMI_STATE_OFFSET);
     addr_hit[23] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
+    addr_hit[24] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
+    addr_hit[25] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1056,7 +1102,9 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[20] & (|(RV_CORE_IBEX_CFG_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(RV_CORE_IBEX_CFG_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(RV_CORE_IBEX_CFG_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be)))));
+               (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1146,6 +1194,7 @@ module rv_core_ibex_cfg_reg_top (
   assign err_status_fatal_core_err_wd = reg_wdata[9];
 
   assign err_status_recov_core_err_wd = reg_wdata[10];
+  assign rnd_status_re = addr_hit[25] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1253,6 +1302,14 @@ module rv_core_ibex_cfg_reg_top (
         reg_rdata_next[8] = err_status_fatal_intg_err_qs;
         reg_rdata_next[9] = err_status_fatal_core_err_qs;
         reg_rdata_next[10] = err_status_recov_core_err_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[31:0] = rnd_data_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[0] = rnd_status_qs;
       end
 
       default: begin
