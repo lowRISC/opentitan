@@ -584,7 +584,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       regwen:   "CLASS${chars[i]}_CLR_REGWEN",
       fields: [
         { bits: "0",
-          desc: '''Writing to this register clears the accumulator and aborts escalation
+          desc: '''Writing 1 to this register clears the accumulator and aborts escalation
           (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_CLR_REGWEN is false.
           '''
         }
