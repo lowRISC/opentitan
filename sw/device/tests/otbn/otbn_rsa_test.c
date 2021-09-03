@@ -67,8 +67,8 @@ static const bool kTestDecrypt = true;
 static const bool kTestRsaGreater1k = false;
 
 OTBN_DECLARE_APP_SYMBOLS(rsa);
-OTBN_DECLARE_PTR_SYMBOL(rsa, rsa_encrypt);
-OTBN_DECLARE_PTR_SYMBOL(rsa, rsa_decrypt);
+OTBN_DECLARE_PTR_SYMBOL(rsa, start);
+OTBN_DECLARE_PTR_SYMBOL(rsa, mode);
 OTBN_DECLARE_PTR_SYMBOL(rsa, n_limbs);
 OTBN_DECLARE_PTR_SYMBOL(rsa, in);
 OTBN_DECLARE_PTR_SYMBOL(rsa, out);
@@ -76,10 +76,8 @@ OTBN_DECLARE_PTR_SYMBOL(rsa, modulus);
 OTBN_DECLARE_PTR_SYMBOL(rsa, exp);
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
-static const otbn_ptr_t kOtbnFuncRsaRsaEncrypt =
-    OTBN_PTR_T_INIT(rsa, rsa_encrypt);
-static const otbn_ptr_t kOtbnFuncRsaRsaDecrypt =
-    OTBN_PTR_T_INIT(rsa, rsa_decrypt);
+static const otbn_ptr_t kOtbnFuncRsaStart = OTBN_PTR_T_INIT(rsa, start);
+static const otbn_ptr_t kOtbnVarRsaMode = OTBN_PTR_T_INIT(rsa, mode);
 static const otbn_ptr_t kOtbnVarRsaNLimbs = OTBN_PTR_T_INIT(rsa, n_limbs);
 static const otbn_ptr_t kOtbnVarRsaIn = OTBN_PTR_T_INIT(rsa, in);
 static const otbn_ptr_t kOtbnVarRsaOut = OTBN_PTR_T_INIT(rsa, out);
@@ -118,6 +116,9 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
   CHECK(n_limbs != 0 && n_limbs <= 16);
 
   // Write input arguments.
+  uint32_t mode = 1;  // mode 1 => encrypt
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
+                               kOtbnVarRsaMode) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(n_limbs), &n_limbs,
                                kOtbnVarRsaNLimbs) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, modulus,
@@ -126,7 +127,7 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
         kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaRsaEncrypt) == kOtbnOk);
+  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaStart) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
@@ -157,6 +158,9 @@ static void rsa_decrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
   CHECK(n_limbs != 0 && n_limbs <= 16);
 
   // Write input arguments.
+  uint32_t mode = 2;  // mode 2 => decrypt
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
+                               kOtbnVarRsaMode) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(n_limbs), &n_limbs,
                                kOtbnVarRsaNLimbs) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, modulus,
@@ -167,7 +171,7 @@ static void rsa_decrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
         kOtbnOk);
 
   // Call OTBN to perform operation
-  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaRsaDecrypt) == kOtbnOk);
+  CHECK(otbn_call_function(otbn_ctx, kOtbnFuncRsaStart) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.

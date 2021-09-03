@@ -3,8 +3,25 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
+.globl start
+start:
+  /* Read mode, then tail-call either rsa_encrypt or rsa_decrypt */
+  la    x2, mode
+  lw    x2, 0(x2)
 
- .globl rsa_encrypt
+  li    x3, 1
+  beq   x2, x3, rsa_encrypt
+
+  li    x3, 2
+  beq   x2, x3, rsa_decrypt
+
+  /* Mode is neither 1 (= encrypt) nor 2 (= decrypt). Fail. */
+  unimp
+
+
+/**
+ * RSA encryption
+ */
 rsa_encrypt:
   jal      x1, modload
   jal      x1, modexp_65537
@@ -13,7 +30,6 @@ rsa_encrypt:
 /**
  * RSA decryption
  */
-.globl rsa_decrypt
 rsa_decrypt:
   jal      x1, modload
   jal      x1, modexp
@@ -21,14 +37,15 @@ rsa_decrypt:
 
 
 .data
-
 /*
 The structure of the 256b below are mandated by the calling convention of the
 RSA library.
 */
 
-/* reserved */
-.word 0x00000000
+/* Mode (1 = encrypt; 2 = decrypt) */
+.globl mode
+mode:
+  .word 0x00000000
 
 /* N: Key/modulus size in 256b limbs (i.e. for RSA-1024: N = 4) */
 .globl n_limbs
