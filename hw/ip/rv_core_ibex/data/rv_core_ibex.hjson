@@ -671,6 +671,44 @@
           },
         ]
       },
+
+      { name: "RND_DATA",
+        desc: "Random data from EDN",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "31:0",
+            name: "DATA",
+            resval: "0x0",
+            desc:  '''
+              Random bits taken from the EDN. !!RND_STATUS.RND_DATA_VALID
+              indicates if this data is valid. When valid, reading from this
+              register invalidates the data and requests new data from the EDN.
+              The register becomes valid again when the EDN provides new data.
+              When invalid the register value will read as 0x0 with an EDN
+              request for new data pending. Upon reset the data will be invalid
+              with a new EDN request pending.
+            '''
+          },
+        ]
+      },
+
+      { name: "RND_STATUS",
+        desc: "Status of random data in !!RND_DATA",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            resval: "0",
+            name: "RND_DATA_VALID",
+            desc: '''
+              When set, the data in !!RND_DATA is valid. When clear an EDN
+              request for new data for !!RND_DATA is pending.
+            '''
+          },
+        ]
+      },
     ],
   },
 }

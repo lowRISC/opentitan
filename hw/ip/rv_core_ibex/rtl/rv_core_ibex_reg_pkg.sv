@@ -113,6 +113,15 @@ package rv_core_ibex_reg_pkg;
     } recov_core_err;
   } rv_core_ibex_hw2reg_err_status_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } rv_core_ibex_hw2reg_rnd_data_reg_t;
+
+  typedef struct packed {
+    logic        d;
+  } rv_core_ibex_hw2reg_rnd_status_reg_t;
+
   // Register -> HW type for cfg interface
   typedef struct packed {
     rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [275:268]
@@ -129,8 +138,10 @@ package rv_core_ibex_reg_pkg;
 
   // HW -> register type for cfg interface
   typedef struct packed {
-    rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [11:8]
-    rv_core_ibex_hw2reg_err_status_reg_t err_status; // [7:0]
+    rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [45:42]
+    rv_core_ibex_hw2reg_err_status_reg_t err_status; // [41:34]
+    rv_core_ibex_hw2reg_rnd_data_reg_t rnd_data; // [33:1]
+    rv_core_ibex_hw2reg_rnd_status_reg_t rnd_status; // [0:0]
   } rv_core_ibex_cfg_hw2reg_t;
 
   // Register offsets for cfg interface
@@ -158,6 +169,8 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 7'h 54;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 7'h 58;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 5c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 7'h 60;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 7'h 64;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 4'h 0;
@@ -165,6 +178,8 @@ package rv_core_ibex_reg_pkg;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_RECOV_SW_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_FATAL_HW_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_RECOV_HW_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RV_CORE_IBEX_RND_STATUS_RESVAL = 1'h 0;
+  parameter logic [0:0] RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_RESVAL = 1'h 0;
 
   // Register index for cfg interface
   typedef enum int {
@@ -191,11 +206,13 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_DBUS_REMAP_ADDR_1,
     RV_CORE_IBEX_NMI_ENABLE,
     RV_CORE_IBEX_NMI_STATE,
-    RV_CORE_IBEX_ERR_STATUS
+    RV_CORE_IBEX_ERR_STATUS,
+    RV_CORE_IBEX_RND_DATA,
+    RV_CORE_IBEX_RND_STATUS
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [24] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [26] = '{
     4'b 0001, // index[ 0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[ 1] RV_CORE_IBEX_SW_ALERT_REGWEN_0
     4'b 0001, // index[ 2] RV_CORE_IBEX_SW_ALERT_REGWEN_1
@@ -219,7 +236,9 @@ package rv_core_ibex_reg_pkg;
     4'b 1111, // index[20] RV_CORE_IBEX_DBUS_REMAP_ADDR_1
     4'b 0001, // index[21] RV_CORE_IBEX_NMI_ENABLE
     4'b 0001, // index[22] RV_CORE_IBEX_NMI_STATE
-    4'b 0011  // index[23] RV_CORE_IBEX_ERR_STATUS
+    4'b 0011, // index[23] RV_CORE_IBEX_ERR_STATUS
+    4'b 1111, // index[24] RV_CORE_IBEX_RND_DATA
+    4'b 0001  // index[25] RV_CORE_IBEX_RND_STATUS
   };
 
 endpackage

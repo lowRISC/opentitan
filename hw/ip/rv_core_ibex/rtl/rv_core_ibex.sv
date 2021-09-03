@@ -582,4 +582,13 @@ module rv_core_ibex
     );
   end
 
+  //////////////
+  // RND Data //
+  //////////////
+
+  // Not yet implemented, tie-off all signals for now
+  assign hw2reg.rnd_data.de = 1'b0;
+  assign hw2reg.rnd_data.d  = '0;
+
+  assign hw2reg.rnd_status.d = 1'b0;
 endmodule
