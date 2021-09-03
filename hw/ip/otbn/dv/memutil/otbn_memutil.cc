@@ -83,7 +83,7 @@ void OtbnMemUtil::OnSymbol(const std::string &name, uint32_t value) {
   // FROM and TO are decimal loop counts and the value of the symbol is the
   // address where it should apply. Trailing junk is allowed (to ensure
   // uniqueness).
-  std::regex lw_re("_loop_warp_([0-9])+_([0-9])+.*");
+  std::regex lw_re("_loop_warp_([0-9]+)_([0-9]+).*");
   std::smatch lw_match;
   if (std::regex_match(name, lw_match, lw_re)) {
     assert(lw_match.size() == 3);
