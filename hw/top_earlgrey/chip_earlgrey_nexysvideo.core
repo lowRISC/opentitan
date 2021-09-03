@@ -20,7 +20,7 @@ filesets:
     files:
       - data/clocks.xdc
       - data/pins_nexysvideo.xdc
-      - data/placement.xdc
+      - data/placement_nexysvideo.xdc
     file_type: xdc
 
   files_tcl:
