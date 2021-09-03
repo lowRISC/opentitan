@@ -199,6 +199,8 @@ int main(int argc, char **argv) {
     }
   }
 
+  verilator_top.reset();
+
   return 0;
 }
 
