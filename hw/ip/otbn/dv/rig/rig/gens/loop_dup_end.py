@@ -52,9 +52,8 @@ class LoopDupEndInner(Loop):
         iters = self.pick_iterations(op0_type, bodysize, model)
         if iters is None:
             return None
-        iter_opval, num_iters = iters
 
-        return (iter_opval, num_iters, bodysize)
+        return (bodysize, iters)
 
 
 class LoopDupEnd(Loop):

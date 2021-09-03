@@ -167,6 +167,12 @@ class LoopStack:
     def maybe_full(self) -> bool:
         return self.max_depth() == LoopStack.stack_depth
 
+    def force_full(self) -> None:
+        '''Make the loop stack look like it's completely full'''
+        self._stack = []
+        self._min_stuck = LoopStack.stack_depth
+        self._max_stuck = LoopStack.stack_depth
+
 
 class Model:
     '''An abstract model of the processor and memories

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from shared.insn_yaml import InsnsFile
 from shared.mem_layout import get_memory_layout
@@ -28,9 +28,6 @@ class Snippet:
     @staticmethod
     def _addr_from_json(where: str, json: object) -> int:
         '''Read an instruction address from a parsed json object'''
-
-        # The address should be an aligned non-negative integer and insns
-        # should itself be a list (of serialized Insn objects).
         if not isinstance(json, int):
             raise ValueError('First coordinate of {} is not an integer.'
                              .format(where))
@@ -41,6 +38,17 @@ class Snippet:
             raise ValueError('Address of {} is {}, '
                              'but should be 4-byte aligned.'
                              .format(where, json))
+        return json
+
+    @staticmethod
+    def _nonneg_from_hjson(what: str, json: object) -> int:
+        '''Read a non-negative value from a parsed json object'''
+        if not isinstance(json, int):
+            raise ValueError('{} is not an integer.'
+                             .format(what))
+        if json < 0:
+            raise ValueError('{} is {}, but should be non-negative.'
+                             .format(what, json))
         return json
 
     @staticmethod
@@ -278,31 +286,44 @@ class BranchSnippet(Snippet):
 
 class LoopSnippet(Snippet):
     '''A snippet representing a loop'''
-    def __init__(self, addr: int, hd_insn: ProgInsn, body: Snippet):
+
+    # A pair (from, to), giving a loop warp to apply at some address
+    Warp = Tuple[int, int]
+
+    def __init__(self,
+                 addr: int,
+                 hd_insn: ProgInsn,
+                 body: Snippet,
+                 warp: Optional[Warp]):
         self.addr = addr
         self.hd_insn = hd_insn
         self.body = body
+        self.warp = warp
 
     def insert_into_program(self, program: Program) -> None:
         program.add_insns(self.addr, [self.hd_insn])
+        if self.warp is not None:
+            warp_lo, warp_hi = self.warp
+            program.add_loop_warp(self.addr + 4, warp_lo, warp_hi)
         self.body.insert_into_program(program)
 
     def to_json(self) -> object:
         return ['LS',
                 self.addr,
                 self.hd_insn.to_json(),
-                self.body.to_json()]
+                self.body.to_json(),
+                self.warp]
 
     @staticmethod
     def _from_json_lst(insns_file: InsnsFile,
                        idx: List[int],
                        json: List[object]) -> Snippet:
-        if len(json) != 3:
+        if len(json) != 4:
             raise ValueError('List for snippet {} is of the wrong '
                              'length for a LoopSnippet ({}, not 4)'
                              .format(idx, len(json)))
 
-        j_addr, j_hd_insn, j_body = json
+        j_addr, j_hd_insn, j_body, j_warp = json
 
         addr_where = 'address for snippet {}'.format(idx)
         addr = Snippet._addr_from_json(addr_where, j_addr)
@@ -311,4 +332,20 @@ class LoopSnippet(Snippet):
         hd_insn = ProgInsn.from_json(insns_file, hi_where, j_hd_insn)
         body = Snippet.from_json(insns_file, idx + [0], j_body)
 
-        return LoopSnippet(addr, hd_insn, body)
+        if j_warp is None:
+            warp = None
+        else:
+            if not isinstance(j_warp, list) or len(j_warp) != 2:
+                raise ValueError(f'Loop warp for snippet {idx} is not a '
+                                 'length-2 list.')
+
+            j_warp_lo, j_warp_hi = j_warp
+            warp_what = f'Loop warp for snippet {idx}'
+            warp_lo = Snippet._nonneg_from_hjson(warp_what, j_warp_lo)
+            warp_hi = Snippet._nonneg_from_hjson(warp_what, j_warp_hi)
+            if warp_lo >= warp_hi:
+                raise ValueError(f'{warp_what} goes from {warp_lo} to '
+                                 f'{warp_hi} (the wrong way!)')
+            warp = (warp_lo, warp_hi)
+
+        return LoopSnippet(addr, hd_insn, body, warp)

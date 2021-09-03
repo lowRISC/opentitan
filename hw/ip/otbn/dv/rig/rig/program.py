@@ -207,6 +207,10 @@ class Program:
         # this might be less.
         self.space = self.imem_size // 4
 
+        # Loop warps, keyed by address and starting count. Value is destination
+        # count.
+        self.loop_warps = {}  # type: Dict[Tuple[int, int], int]
+
     def copy(self) -> 'Program':
         '''Return a a shallow copy of the program
 
@@ -292,6 +296,10 @@ class Program:
             # argument.
             self._sections[addr] = list(insns)
 
+    def add_loop_warp(self, addr: int, warp_lo: int, warp_hi: int) -> None:
+        assert 0 <= warp_lo <= warp_hi
+        self.loop_warps[(addr, warp_lo)] = warp_hi
+
     @staticmethod
     def _get_section_comment(idx: int,
                              addr: int,
@@ -351,7 +359,11 @@ class Program:
             out_file.write('    {} PT_LOAD AT ( {:#x} );\n'.format(seg, lma))
         out_file.write('}\n\n')
 
-        out_file.write('_expected_end_addr = {:#x};\n\n'.format(end_addr))
+        out_file.write('_expected_end_addr = {:#x};\n'.format(end_addr))
+        for (lw_addr, lw_from), lw_to in self.loop_warps.items():
+            out_file.write('_loop_warp_{}_{}_at_{:#x} = {:#x};\n'
+                           .format(lw_from, lw_to, lw_addr, lw_addr))
+        out_file.write('\n')
 
         out_file.write('SECTIONS\n'
                        '{\n')
