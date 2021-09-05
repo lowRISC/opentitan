@@ -88,31 +88,26 @@ The tasks in question are:
 
 These tasks are started by the parent sequence's `pre_start` task, and terminated gracefully in the parent sequence's `post_start` task.
 
-The `pwrmgr_smoke_vseq` sequence tests the pwrmgr through POR, entry and exit from software initiated low power and reset.
-
-The `pwrmgr_wakeup_vseq` sequence checks the transitions to low power and the wakeup settings.
-It randomizes wakeup inputs, wakeup enables, the wakeup info capture enable, and the interrupt enable.
-
-The `pwrmgr_clks_en_vseq` sequence checks that the peripheral clock enables match the settings of the `control` CSR during low power.
-It uses a subset of the wakeup sequence.
-
-The `pwrmgr_aborted_lowpower_vseq` sequence creates scenarios that lead to aborting a lowpower transition.
-The abort can be due to the processor waking up very soon, or otp, lc, or flash being busy.
-
-The `pwrmgr_reset_vseq` sequence checks the pwrmgr response to resets and reset enables.
-
-The `pwrmgr_escalation_reset_vseq` sequence checks the response to an escalation reset.
-
-The `pwrmgr_reset_wakeup_vseq` sequence aligns reset and wakeup from low power.
-
-The `pwrmgr_lowpower_wakeup_race_vseq` sequence aligns a wakeup event coming in proximity to low power entry.
-Notice the wakeup is not expected to impact low power entry, since it is not sampled at this time.
+The test sequences besides the base are as follows:
+* `pwrmgr_smoke_vseq` tests the pwrmgr through POR, entry and exit from software initiated low power and reset.
+* `pwrmgr_wakeup_vseq` checks the transitions to low power and the wakeup settings.
+  It randomizes wakeup inputs, wakeup enables, the wakeup info capture enable, and the interrupt enable.
+* `pwrmgr_clks_en_vseq` checks that the peripheral clock enables match the settings of the `control` CSR during low power.
+  It uses a subset of the wakeup sequence.
+* `pwrmgr_aborted_lowpower_vseq` creates scenarios that lead to aborting a lowpower transition.
+  The abort can be due to the processor waking up very soon, or otp, lc, or flash being busy.
+* `pwrmgr_reset_vseq` checks the pwrmgr response to resets and reset enables.
+* `pwrmgr_escalation_reset_vseq` checks the response to an escalation reset.
+* `pwrmgr_reset_wakeup_vseq` aligns reset and wakeup from low power.
+* `pwrmgr_lowpower_wakeup_race_vseq` aligns a wakeup event coming in proximity to low power entry.
+  Notice the wakeup is not expected to impact low power entry, since it is not sampled at this time.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* wakeup_cg
-* lowpower_clock_enables_cg
+* `wakeup_ctrl_cg` covers wakeup and capture control.
+* `wakeup_intr_cg` covers control of the interrupt due to a wakeup.
+* `clock_enables_cg` covers clock controls.
 * reset_cg
 * reset_lowpower_distance_cg
 
@@ -136,19 +131,19 @@ See also the test plan for specific ways these are driven to trigger different t
 - Input `slow_clk_val` is unused.
 - Outputs `core_clk_en`, `io_clk_en`, and `usb_clk_en` reset low, and go high prior to the slow fsm requesting the fast fsm to wakeup.
   Notice the usb clock can be programmed to stay low on wakeup via the `control` CSR.
-  These clock enables should match their corresponding enables in the `control` CSR on low power transitions.
-  These clock enables are cleared on reset.
-  These clock enables are checked in the scoreboard.
+  These clock enables are cleared on reset, and should match their corresponding enables in the `control` CSR on low power transitions.
+  These clock enables are checked via SVAs in `hw/ip/pwrmgr/dv/sva/pwrmgr_clock_enables_sva_if.sv`.
   When slow fsm transitions to `SlowPwrStateReqPwrUp` the clock enables should be on (except usb should match `control.usb_clk_en_active`).
   When slow fsm transitions to `SlowPwrStatePwrClampOn` the clock enables should match their bits in the `control` CSR.
 - Inputs `core_clk_val`, `io_clk_val`, and `usb_clk_val` track the corresponding enables.
-  They are driven by sequences, which turn them off when their enables go off, and turn them back on a few random slow clock cycles after their enables go on.
+  They are driven by `slow_responder`, which turn them off when their enables go off, and turn them back on a few random slow clock cycles after their enables go on.
   Slow fsm waits for them to go high prior to requesting fast fsm wakeup.
   Lack of a high transition when needed is detected via timeout.
   Such timeout would be due to the corresponding enables being set incorrectly.
+  These inputs are checked via SVAs in `hw/ip/pwrmgr/dv/sva/pwrmgr_ast_sva_if.sv`.
 - Output `main_pd_n` should go high when slow fsm transitions to `SlowPwrStateMainPowerOn`, and should match `control.main_pd_n` CSR when slow fsm transitions to `SlowPwrStateMainPowerOff`.
 - Input `main_pok` should turn on for the slow fsm to start power up sequence.
-  Sequences will turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
+  This is also driven by `slow_responder`, which turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
   Lack of a high transition causes a timeout, and would point to `main_pd_n` being set incorrectly.
 - Output transitions of `pwr_clamp_env` must always precede transitions of
   `pwr_clamp` output.
@@ -161,14 +156,15 @@ See also the test plan for specific ways these are driven to trigger different t
 - Output `rst_lc_req` resets to 1, also set on reset transition, and on low power transitions that turn off main clock.
   Cleared early on during the steps to fast fsm active.
 - Input `rst_lc_src_n` go low in response to `rst_lc_req` high, go high when `rst_lc_req` clears (and lc is reset).
-  Driven by sequences in response to `rst_lc_req`, waiting a few random cycles prior to transitions.
+  Driven by `fast_responder` in response to `rst_lc_req`, waiting a few random cycles prior to transitions.
   Fast fsm waits for it to go low before deactivating, and for it to go high before activating.
   Checked implicitly by lack of timeout: a timeout would be due to `rst_lc_req` being set incorrectly.
 - Output `rst_sys_req` resets to 1, also set to on reset, and on low power transitions that turn off main clock.
-Cleared right before the fast fsm goes active.
+  Cleared right before the fast fsm goes active.
 - Input `rst_sys_src_n` go low in response to `rst_sys_req` high.
   Transitions go high when `rst_sysd_req` clears (and lc is reset).
   Fast fsm waits for it to go low before deactivating.
+  Also driver by `fast_responder`.
   Checked implicitly by lack of timeout.
 - Output `rstreqs` correspond to the enabled pwrmgr rstreqs inputs plus escalation reset.
   Checked in scoreboard.
@@ -179,15 +175,15 @@ Cleared right before the fast fsm goes active.
 - Output `ip_clk_en` resets low, is driven high by fast fsm when going active, and driven low when going inactive.
 - Input `clk_status` is expected to track `ip_clk_en`.
   Fast fsm waits for it going high prior to going active, and for it to go low prior to deactivating.
-  Driven by sequences, which turns it off when `ip_clk_en` goes low, and rurn it back on a few random cycles after `ip_clk_en` going high.
+  Driven by `fast_responder`, which turns it off when `ip_clk_en` goes low, and rurn it back on a few random cycles after `ip_clk_en` going high.
   Checked by lack of a timeout: such timeout would be due to `ip_clk_en` being set incorrectly.
 
 ##### OTP
 - Output `otp_init` resets low, goes high when the fast fsm is going active, and low after the `otp_done` input goes high.
-- Input `otp_done` is driven by sequences.
+- Input `otp_done` is driven by `fast_responder`.
   It is initialized low, and goes high some random cycles after `otp_init` goes high.
   The sequencer will timeout if `otp_init` is not driven high.
-- Input `otp_idle` will be normally be set high, but will be set low by the `pwrmgr_aborted_lowpower_vseq` sequence.
+- Input `otp_idle` will normally be set high, but will be set low by the `pwrmgr_aborted_lowpower_vseq` sequence.
 
 ###### LC
 The pins connecting to LC behave pretty much the same way as those to OTP.

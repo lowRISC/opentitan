@@ -51,7 +51,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeup_en),
                  .err_msg("failed wake_status check"));
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0), .err_msg("failed reset_status check"));
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
+                 .err_msg("failed reset_status check"));
 
     // Enable resets.
     reset_en = '1;

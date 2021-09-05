@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // pwrmgr interface.
-
+//
+// Samples some internal signals to help coverage collection:
 interface pwrmgr_if (
   input logic clk,
   input logic rst_n,
@@ -51,19 +52,40 @@ interface pwrmgr_if (
   // Relevant CSR values.
   pwrmgr_env_pkg::clk_enables_t                                  clk_enables;
 
+  logic                                                          wakeup_en_regwen;
   logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
   logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
+  logic                                                          wakeup_capture_en;
 
   logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
   logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
+  // Internal signals.
+`ifndef PATO_TO_DUT
+  `define PATH_TO_DUT tb.dut
+`endif
+
   // Slow fsm state.
-  pwrmgr_pkg::slow_pwr_state_e                                   slow_state;
-  always_comb slow_state = tb.dut.u_slow_fsm.state_q;
+  pwrmgr_pkg::slow_pwr_state_e slow_state;
+  always_comb slow_state = `PATH_TO_DUT.u_slow_fsm.state_q;
 
   // Fast fsm state.
   pwrmgr_pkg::fast_pwr_state_e fast_state;
-  always_comb fast_state = tb.dut.i_fsm.state_q;
+  always_comb fast_state = `PATH_TO_DUT.i_fsm.state_q;
+
+  // Wakeup_status ro CSR.
+  logic [pwrmgr_reg_pkg::NumWkups-1:0] wake_status;
+  always_comb
+    wake_status = {
+      `PATH_TO_DUT.hw2reg.wake_status[4].d,
+      `PATH_TO_DUT.hw2reg.wake_status[3].d,
+      `PATH_TO_DUT.hw2reg.wake_status[2].d,
+      `PATH_TO_DUT.hw2reg.wake_status[1].d,
+      `PATH_TO_DUT.hw2reg.wake_status[0].d
+    };
+
+  logic intr_enable;
+  always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
 
   function automatic void update_ast_main_pok(logic value);
     pwr_ast_rsp.main_pok = value;
@@ -93,8 +115,24 @@ interface pwrmgr_if (
     pwr_cpu.core_sleeping = value;
   endfunction
 
+  function automatic void update_wakeup_en_regwen(logic value);
+    wakeup_en_regwen &= value;
+  endfunction
+
+  function automatic void update_wakeup_en(logic [pwrmgr_reg_pkg::NumWkups-1:0] value);
+    wakeup_en = value;
+  endfunction
+
+  function automatic void update_wakeup_status(logic [pwrmgr_reg_pkg::NumWkups-1:0] value);
+    wakeup_status = value;
+  endfunction
+
   function automatic void update_wakeups(logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups);
     wakeups_i = wakeups;
+  endfunction
+
+  function automatic void update_wakeup_capture_dis(logic value);
+    wakeup_capture_en = !value;
   endfunction
 
   function automatic void update_resets(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] resets);
