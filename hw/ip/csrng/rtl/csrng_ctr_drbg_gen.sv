@@ -9,6 +9,7 @@
 // ctr_drbg cmd module.
 
 module csrng_ctr_drbg_gen import csrng_pkg::*; #(
+  parameter int NApps = 4,
   parameter int Cmd = 3,
   parameter int StateId = 4,
   parameter int BlkLen = 128,
@@ -88,7 +89,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   localparam int BlkEncAckFifoDepth = 1;
   localparam int BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
   localparam int AdstageFifoDepth = 1;
-  localparam int AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1;
+  localparam int AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+1;
   localparam int RCStageFifoDepth = 1;
   localparam int RCStageFifoWidth = KeyLen+BlkLen+BlkLen+CtrLen+1+1+StateId+Cmd;
   localparam int GenbitsFifoDepth = 1;
@@ -175,11 +176,14 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                        v_ctr_inc;
   logic                        interate_ctr_done;
   logic                        interate_ctr_inc;
+  logic [NApps-1:0]            capt_adata;
+  logic [SeedLen-1:0]          update_adata[NApps];
 
   // flops
   logic [CtrLen-1:0]           v_ctr_q, v_ctr_d;
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
-  logic [SeedLen-1:0]          update_adata_q, update_adata_d;
+  logic [SeedLen-1:0]          update_adata_q[NApps], update_adata_d[NApps];
+  logic [NApps-1:0]            update_adata_vld_q, update_adata_vld_d;
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
@@ -230,11 +234,13 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     if (!rst_ni) begin
       v_ctr_q            <= '0;
       interate_ctr_q     <= '0;
-      update_adata_q     <= '0;
+      update_adata_q     <= '{default:0};
+      update_adata_vld_q <= '{default:0};
     end else begin
       v_ctr_q            <= v_ctr_d;
       interate_ctr_q     <= interate_ctr_d;
       update_adata_q     <= update_adata_d;
+      update_adata_vld_q <= update_adata_vld_d;
     end
 
 
@@ -392,10 +398,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .depth_o        ()
   );
 
-  assign sfifo_adstage_wdata = {genreq_key,v_sized,genreq_rc,genreq_fips,genreq_adata,genreq_glast};
+  assign sfifo_adstage_wdata = {genreq_key,v_sized,genreq_rc,genreq_fips,genreq_glast};
   assign sfifo_adstage_pop = sfifo_adstage_not_empty && sfifo_bencack_pop;
-  assign {adstage_key,adstage_v,adstage_rc,adstage_fips,
-          adstage_adata,adstage_glast} = sfifo_adstage_rdata;
+  assign {adstage_key,adstage_v,adstage_rc,adstage_fips,adstage_glast} = sfifo_adstage_rdata;
 
   assign ctr_drbg_gen_sfifo_gadstage_err_o =
          {(sfifo_adstage_push && sfifo_adstage_full),
@@ -403,12 +408,29 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           (sfifo_adstage_full && !sfifo_adstage_not_empty)};
 
 
-  // store adata for use on the final genbit command
-  assign update_adata_d =
-         (sfifo_genbits_push && adstage_glast) ? SeedLen'(0) :
-         (update_adata_q != SeedLen'(0)) ? update_adata_q :
-         (sfifo_adstage_pop && !adstage_glast) ? adstage_adata :
-         update_adata_q;
+  // array to hold each channel's adata
+  for (genvar i = 0; i < NApps; i = i+1) begin : gen_adata
+    assign capt_adata[i] = (sfifo_adstage_push && (genreq_id == i));
+
+    assign update_adata_vld_d[i] = capt_adata[i] && !update_adata_vld_q[i] ? 1'b1 :
+           (gen_upd_req_o && upd_gen_rdy_i && (sfifo_bencack_inst_id == i)) ? 1'b0 :
+           update_adata_vld_q[i];
+
+    assign update_adata_d[i] = (capt_adata[i] && !update_adata_vld_q[i]) ? genreq_adata :
+           update_adata_q[i];
+    assign update_adata[i] = update_adata_q[i] & {SeedLen{update_adata_vld_q[i] &&
+                                                          (genreq_id == i)}};
+  end
+
+  always_comb begin
+    adstage_adata = '0;
+    for (int i = 0; i < NApps; i = i+1) begin
+      // since only one bus is active at a time based on the instant id,
+      // an "or" of all the buses can be done below
+      adstage_adata |= update_adata[i];
+    end
+  end
+
 
   //--------------------------------------------
   // block_encrypt response fifo from block encrypt
@@ -458,7 +480,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   assign gen_upd_req_o = sfifo_bencack_not_empty && adstage_glast;
   assign gen_upd_ccmd_o = sfifo_bencack_ccmd;
   assign gen_upd_inst_id_o = sfifo_bencack_inst_id;
-  assign gen_upd_pdata_o = update_adata_q;
+  assign gen_upd_pdata_o = adstage_adata;
   assign gen_upd_key_o = adstage_key;
   assign gen_upd_v_o = adstage_v;
 

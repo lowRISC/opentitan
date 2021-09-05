@@ -1356,6 +1356,7 @@ module csrng_core import csrng_pkg::*; #(
 
 
   csrng_ctr_drbg_gen #(
+    .NApps(NApps),
     .Cmd(Cmd),
     .StateId(StateId),
     .BlkLen(BlkLen),
