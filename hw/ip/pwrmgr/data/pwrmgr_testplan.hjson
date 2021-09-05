@@ -71,6 +71,7 @@
             - Checks the output `pwr_rst_req.reset_cause` matches a low power
               cause.
             - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
+            - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
             '''
       milestone: V2
       tests: []
@@ -227,20 +228,31 @@
 
   covergroups: [
     {
-      name: wakeup_cg
+      name: wakeup_ctrl_cg
       desc: '''
-            Collects coverage related to wakeup functionality.
+            Collects coverage on wakeup enable and capture functionality.
 
-            Covergroup contains coverpoints for the `wakeups_i` input,
-            `wakeup_en`, `wakeup_info`, and `wakeup_info_capture_dis`, 
-            and suitable crosses.
+            This is collected per individual wakeup bit. Covergroup contains
+            coverpoints for the `wakeup_en` CSR bit, `wakeup_info_capture_dis`
+            CSR, `wakeups_i` input bit, and `wakeup_status` CSR bit, and their
+            cross.
             '''
     }
     {
-      name: lowpower_clock_enables_cg
+      name: wakeup_intr_cg
       desc: '''
-            Collects coverage on clock enables from `control` CSR during a
-            lowpower transition.
+            Collects coverage on interrupts for wakeup functionality.
+
+            This is collected per individual wakeup bit. Covergroup contains
+            coverpoints for the `intr_en` CSR, the `wakeup_status` CSR bit,
+            and `intr_status` CSR, and their cross.
+            '''
+    }
+    {
+      name: clock_control_cg
+      desc: '''
+            Collects coverage on clock enable bits from `control` CSR during a
+            lowpower transition and active state.
             '''
     }
     {
