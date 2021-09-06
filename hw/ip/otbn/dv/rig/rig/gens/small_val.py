@@ -60,16 +60,33 @@ class SmallVal(SnippetGen):
         grd_val = model.pick_operand_value(self.grd_op_type)
         assert grd_val is not None
 
-        # Pick a target value. For now, we take arbitrary values in the range
-        # [-64, 64]. Ideally ten percent of the time we want to have a random
-        # value that is actually divisible by 32. That way we would have valid
-        # registers that have values to point as WDR addresses for BN.XID
-        # Other values are for helping with the misaligned address calculations
-        temp_val = random.randint(-64, 64)
-        gen_for_bn = random.randint(0, 9)
+        # Pick a target value. As well as "genuinely small" values, we also
+        # want to see some small-ish values that can be used as bases for
+        # address calculations. These need to be 2-byte, 4-byte or 32-byte
+        # aligned, for misaligned jumps, aligned jumps and correctly-aligned
+        # BN.LID/BN.SID operations, respectively.
+        shift = random.choices([0, 1, 2, 5], weights=[7, 1, 1, 1])[0]
 
-        shifts = {0: 5, 1: 1, 2: 2}
-        tgt_val = temp_val << shifts.get(gen_for_bn, 0)
+        # Figure out the range of representable values (this is important for
+        # larger shifts to make sure we don't try for something we can't
+        # represent). This will always succeed (because addi isn't PC-relative
+        # and model.pc isn't None anyway)
+        rng = self.imm_op_type.get_op_val_range(model.pc)
+        assert rng is not None
+
+        # Shift rng down to get the range of representable "unshifted" values.
+        # Round inwards.
+        lo, hi = rng
+        lo_sh = (lo + (1 << shift) // 2) >> shift
+        hi_sh = hi >> shift
+        assert lo_sh <= hi_sh
+
+        # Truncate to [-10, 10] (which is what gives the "small" part)
+        lb = max(lo_sh, -10)
+        ub = min(hi_sh, 10)
+        assert lb <= ub
+
+        tgt_val = random.randint(lb, ub) << shift
 
         # We'll use x0 as the register source. Since the register source has
         # value zero, we need -tgt_val as our immediate. The small range of
