@@ -117,7 +117,7 @@ def main() -> int:
                               'defaults to the OBJ_DIR environment variable '
                               'if set, or build-out at the top of the '
                               'repository if not.'))
-    parser.add_argument('--seed', type=read_positive, default=0)
+    parser.add_argument('--seed', type=read_positive, default=1)
     parser.add_argument('--size', type=read_positive, default=100)
     parser.add_argument('--verbose', '-v', action='store_true')
     parser.add_argument('--no-smoke', action='store_true',
@@ -125,6 +125,9 @@ def main() -> int:
                               'generating exactly one binary)'))
     parser.add_argument('--jobs', '-j', type=read_jobs, nargs='?',
                         const='unlimited', help='Number of parallel jobs.')
+    parser.add_argument('--gen-only', action='store_true',
+                        help="Generate the ninja file but don't run it")
+    parser.add_argument('--ninja-suffix', type=str)
     parser.add_argument('destdir',
                         help='Destination directory')
 
@@ -143,9 +146,16 @@ def main() -> int:
 
     os.makedirs(args.destdir, exist_ok=True)
 
-    with open(os.path.join(args.destdir, 'build.ninja'), 'w') as ninja_handle:
+    ninja_fname = 'build.ninja'
+    if args.ninja_suffix is not None:
+        ninja_fname += '.' + args.ninja_suffix
+
+    with open(os.path.join(args.destdir, ninja_fname), 'w') as ninja_handle:
         write_ninja(ninja_handle, not args.no_smoke, rig_count,
                     args.seed, args.size, toolchain, otbn_dir)
+
+    if args.gen_only:
+        return 0
 
     # Handle the -j argument like Make does, defaulting to 1 thread. This
     # behaves a bit more reasonably than ninja's default (# cores) if we're
