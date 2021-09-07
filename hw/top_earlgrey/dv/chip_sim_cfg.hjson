@@ -41,7 +41,7 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_dif_tests.hjson",
+                "{proj_root}/hw/top_earlgrey/dv/chip_smoketests.hjson",
                 "{proj_root}/hw/top_earlgrey/dv/chip_mask_rom_tests.hjson",
                 ]
 
@@ -239,6 +239,18 @@
       name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/rv_timer_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_kmac_mode_cshake_test
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/kmac_mode_cshake_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_kmac_mode_kmac_test
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/kmac_mode_kmac_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
 
