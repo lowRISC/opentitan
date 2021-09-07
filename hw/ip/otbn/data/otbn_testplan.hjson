@@ -87,5 +87,13 @@
       milestone: V2
       tests: []
     }
+    {
+      name: lc_escalation
+      desc: '''
+            Trigger the life cycle escalation input.
+            '''
+      milestone: V2
+      tests: []
+    }
   ]
 }
