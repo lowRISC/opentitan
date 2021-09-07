@@ -859,7 +859,9 @@ Depending on the application additional steps might be necessary, such as deleti
 
 ## Driver {#driver}
 
-A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h` ([API documentation](/sw/apis/otbn_8h.html)).
+A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h` ([API documentation](/sw/apis/lib_2runtime_2otbn_8h.html)).
+
+Another driver for OTBN is part of the silicon creator code at `sw/device/silicon_creator/lib/drivers/otbn.h`.
 
 ## Register Table
 
