@@ -714,6 +714,7 @@ Further, any differential signal mismatch on both the `esc_tx_i.esc_p/n` and `es
 Mismatches on `esc_rx_i.resp_p/n` can be directly detected at the sender.
 Mismatches on the `esc_tx_i.esc_p/n` line will be signaled back to the sender by setting both the positive and negative response wires to the same value - and that value is being toggled each cycle.
 This implicitly triggers a signal integrity alert on the sender side.
+In addition to that, a signal integrity error on the `esc_tx_i.esc_p/n` lines will lead to assertion of the `esc_req_o` output, since it cannot be guaranteed that the back signalling mechanism always works when the sender / receiver pair is being tampered with.
 
 This back-signaling mechanism can be leveraged to fast-track escalation and use
 another countermeasure in case it is detected that a particular escalation
@@ -733,7 +734,7 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
     { name: 'esc_rx_i.resp_n', wave: '1....|.01010',  node: '.......d' },
     { name: 'esc_tx_i.esc_p',  wave: '0....|1.....',  node: '......c..' },
     { name: 'esc_tx_i.esc_n',  wave: '1....|......' },
-    { name: 'esc_req_o',       wave: '0....|......'},
+    { name: 'esc_req_o',       wave: '0....|1.....'},
   ],
   edge: [
    'a~>b',
