@@ -55,9 +55,9 @@ static void setup_edn(void) {
   // run before a DIF is available,
   // https://github.com/lowRISC/opentitan/issues/6082
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0xaa);
+                      EDN_CTRL_REG_OFFSET, 0x55aa);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0xaa);
+                      EDN_CTRL_REG_OFFSET, 0x55aa);
 }
 
 void entropy_testutils_boot_mode_init(void) {

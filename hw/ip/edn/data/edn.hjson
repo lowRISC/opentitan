@@ -77,7 +77,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      fields: [
+      tags: [// Internal HW can modify status register
+                "excl:CsrAllTests:CsrExclWrite"]
+     fields: [
         { bits: "3:0",
           name: "EDN_ENABLE",
           desc: '''
@@ -254,7 +256,41 @@
       desc: "Recoverable alert status register",
       swaccess: "rw0c",
       hwaccess: "hwo",
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
       fields: [
+        { bits: "0",
+          name: "EDN_ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the EDN_ENABLE field is set to an illegal value,
+                something other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
+        { bits: "1",
+          name: "BOOT_REQ_MODE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the BOOT_REQ_MODE field is set to an illegal value,
+                something other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
+        { bits: "2",
+          name: "AUTO_REQ_MODE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the AUTO_REQ_MODE field is set to an illegal value,
+                something other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
+        { bits: "3",
+          name: "CMD_FIFO_RST_FIELD_ALERT",
+          desc: '''
+                This bit is set when the CMD_FIFO_RST field is set to an illegal value,
+                something other than 0x5 or 0xA.
+                Writing a zero to this register resets the status bits.
+                '''
+        }
         { bits: "12",
           name: "EDN_BUS_CMP_ALERT",
           desc: '''
