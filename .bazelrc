@@ -1,0 +1,6 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+#https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
+build --cxxopt='-std=c++14'
