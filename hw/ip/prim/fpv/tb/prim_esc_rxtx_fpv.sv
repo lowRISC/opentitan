@@ -20,7 +20,7 @@ module prim_esc_rxtx_fpv
   input        ping_req_i,
   output logic ping_ok_o,
   output logic integ_fail_o,
-  output logic esc_en_o
+  output logic esc_req_o
 );
 
   esc_rx_t esc_rx_in, esc_rx_out;
@@ -49,7 +49,7 @@ module prim_esc_rxtx_fpv
   ) u_prim_esc_receiver (
     .clk_i    ,
     .rst_ni   ,
-    .esc_en_o ,
+    .esc_req_o ,
     .esc_rx_o     ( esc_rx_out ),
     .esc_tx_i     ( esc_tx_in  )
   );

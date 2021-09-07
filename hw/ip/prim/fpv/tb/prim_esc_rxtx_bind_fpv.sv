@@ -17,7 +17,7 @@ module prim_esc_rxtx_bind_fpv;
     .ping_req_i  ,
     .ping_ok_o   ,
     .integ_fail_o,
-    .esc_en_o
+    .esc_req_o
   );
 
 endmodule : prim_esc_rxtx_bind_fpv

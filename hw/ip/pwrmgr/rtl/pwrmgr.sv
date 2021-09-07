@@ -85,7 +85,7 @@ module pwrmgr
   ) u_esc_rx (
     .clk_i,
     .rst_ni,
-    .esc_en_o(esc_rst_req),
+    .esc_req_o(esc_rst_req),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
   );

@@ -193,9 +193,9 @@ module rv_core_ibex
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_prim_esc_receiver (
-    .clk_i    ( clk_esc_i  ),
-    .rst_ni   ( rst_esc_ni ),
-    .esc_en_o ( esc_irq_nm ),
+    .clk_i     ( clk_esc_i  ),
+    .rst_ni    ( rst_esc_ni ),
+    .esc_req_o ( esc_irq_nm ),
     .esc_rx_o,
     .esc_tx_i
   );

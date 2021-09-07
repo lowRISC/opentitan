@@ -511,9 +511,9 @@ module lc_ctrl
   ) u_prim_esc_receiver0 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_scrap_state0),
-    .esc_rx_o (esc_scrap_state0_rx_o),
-    .esc_tx_i (esc_scrap_state0_tx_i)
+    .esc_req_o (esc_scrap_state0),
+    .esc_rx_o  (esc_scrap_state0_rx_o),
+    .esc_tx_i  (esc_scrap_state0_tx_i)
   );
 
   // This escalation action moves the life cycle
@@ -525,9 +525,9 @@ module lc_ctrl
   ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
-    .esc_en_o (esc_scrap_state1),
-    .esc_rx_o (esc_scrap_state1_rx_o),
-    .esc_tx_i (esc_scrap_state1_tx_i)
+    .esc_req_o (esc_scrap_state1),
+    .esc_rx_o  (esc_scrap_state1_rx_o),
+    .esc_tx_i  (esc_scrap_state1_tx_i)
   );
 
   ////////////////////////////

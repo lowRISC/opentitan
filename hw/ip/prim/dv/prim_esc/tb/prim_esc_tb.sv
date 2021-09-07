@@ -36,7 +36,7 @@ module prim_esc_tb;
   // DUTs
   //////////////////////////////////////////////////////
 
-  logic ping_req, ping_ok, integ_fail, esc_req, esc_en;
+  logic ping_req, ping_ok, integ_fail, esc_req, esc_req_out;
   prim_esc_pkg::esc_tx_t esc_tx;
   prim_esc_pkg::esc_rx_t esc_rx;
 
@@ -58,7 +58,7 @@ module prim_esc_tb;
   ) i_esc_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),
-    .esc_en_o(esc_en),
+    .esc_req_o(esc_req_out),
     .esc_rx_o(esc_rx),
     .esc_tx_i(esc_tx)
   );
@@ -96,10 +96,10 @@ module prim_esc_tb;
 
     // Sequence 2. Escalation request sequence.
     esc_req = 1;
-    // Drive random length of esc_req and check `esc_en` and `integ_fail` outputs.
+    // Drive random length of esc_req and check `esc_req_out` and `integ_fail` outputs.
     main_clk.wait_clks($urandom_range(1, 20));
     if (integ_fail == 1) test_error("Esc_req unexpected signal integrity error!");
-    if (esc_en == 0)     test_error("Esc_req did not set esc_en!");
+    if (esc_req_out == 0)     test_error("Esc_req did not set esc_req!");
     esc_req = 0;
 
     $display("Escalation request sequence finished!");
@@ -113,7 +113,7 @@ module prim_esc_tb;
     release esc_tx.esc_n;
     // Wait #1ps to avoid a race condition on clock edge.
     #1ps;
-    if (esc_en == 1) test_error("Signal integrity error should not set esc_en!");
+    if (esc_req_out == 1) test_error("Signal integrity error should not set esc_req!");
     esc_req = 0;
 
     $display("Escalation esc_p/n integrity sequence finished!");
@@ -126,9 +126,9 @@ module prim_esc_tb;
       begin
         // After one ping_req, esc_receiver will start a counter to expect next ping_req. If the
         // counter reaches its max value but no ping_req has been received, design will set
-        // `esc_en_o` signal.
+        // `esc_req_out` signal.
         main_clk.wait_clks(TIMEOUT_CYCLES + 1);
-        if (esc_en != 1) test_error("Design failed to detect ping request timeout!");
+        if (esc_req_out != 1) test_error("Design failed to detect ping request timeout!");
       end
       begin
         // Wait for a ping handshake to complete.
@@ -136,7 +136,7 @@ module prim_esc_tb;
         main_clk.wait_clks(2);
         ping_req = 0;
         if (integ_fail == 1) test_error("Ping_req unexpected signal integrity error!");
-        if (esc_en == 1)     test_error("Ping request should not set esc_en!");
+        if (esc_req_out == 1) test_error("Ping request should not set esc_req_out!");
       end
     join
     main_clk.apply_reset();
@@ -149,9 +149,9 @@ module prim_esc_tb;
     wait (ping_ok == 1);
     main_clk.wait_clks(2);
     ping_req = 0;
-    // If cnt_q[0] and cnt_q[1]'s value do not match, deisgn will set `esc_en_o` signal.
+    // If cnt_q[0] and cnt_q[1]'s value do not match, deisgn will set `esc_req_out` signal.
     force prim_esc_tb.i_esc_receiver.cnt_q[1] = 0;
-    wait (esc_en == 1);
+    wait (esc_req_out == 1);
     if (integ_fail == 1) begin
       test_error("Escalation receiver counter unexpected signal integrity error!");
     end
