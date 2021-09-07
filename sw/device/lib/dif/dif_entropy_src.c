@@ -18,38 +18,32 @@
 static void set_config_register(const dif_entropy_src_t *entropy,
                                 const dif_entropy_src_config_t *config) {
   // TODO: Make this configurable at the API level.
-  // TODO: Currently bypass disable cannot be set, as it causes the hw fsm to
-  // get stuck
-  // uint32_t reg = 0;
-  uint32_t reg =
-      bitfield_bit32_write(0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_BIT, 1);
+  uint32_t reg = bitfield_field32_write(
+      0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_FIELD, 0x5);
 
-  // Configure test cases
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_REPCNT_DISABLE_BIT,
-                             !config->tests[kDifEntropySrcTestRepCount]);
-  reg = bitfield_bit32_write(
-      reg, ENTROPY_SRC_CONF_ADAPTP_DISABLE_BIT,
-      !config->tests[kDifEntropySrcTestAdaptiveProportion]);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_BUCKET_DISABLE_BIT,
-                             !config->tests[kDifEntropySrcTestBucket]);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_MARKOV_DISABLE_BIT,
-                             !config->tests[kDifEntropySrcTestMarkov]);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_HEALTH_TEST_CLR_BIT,
-                             config->reset_health_test_registers);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_EXTHT_ENABLE_BIT, 0);
+  uint32_t health_clr_sel = config->reset_health_test_registers ? 0xa : 0x5;
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_HEALTH_TEST_CLR_FIELD,
+                               health_clr_sel);
 
   // Configure single RNG bit mode
-  bool rng_bit_en =
-      config->single_bit_mode != kDifEntropySrcSingleBitModeDisabled;
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_EN_BIT, rng_bit_en);
+  uint32_t rng_bit_en =
+      (config->single_bit_mode == kDifEntropySrcSingleBitModeDisabled) ? 0x5
+                                                                       : 0xa;
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
+                               rng_bit_en);
 
   uint32_t rng_bit_sel = rng_bit_en ? config->single_bit_mode : 0;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
                                rng_bit_sel);
 
-  // Enable configuration
+  // Configure lfsr
+  uint32_t lfsr_sel = config->mode == kDifEntropySrcModeLfsr ? 0xa : 0x5;
   reg =
-      bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, config->mode);
+      bitfield_field32_write(reg, ENTROPY_SRC_CONF_LFSR_ENABLE_FIELD, lfsr_sel);
+
+  // Enable configuration
+  uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
   mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       reg);
 }
@@ -82,9 +76,11 @@ dif_entropy_src_result_t dif_entropy_src_configure(
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
   // a regular mode of operation.
-  uint32_t reg = bitfield_bit32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_BIT, config.route_to_firmware);
-  reg = bitfield_bit32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_BIT, 0);
+  uint32_t es_route_val = config.route_to_firmware ? 0xa : 0x5;
+  uint32_t reg = bitfield_field32_write(
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
+                               0x5);
   mmio_region_write32(entropy->params.base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, reg);
 

@@ -89,20 +89,29 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
                  });
   EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
 
-  EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
+  // Current dif does not perform a read modified write
+  // EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
+
   uint32_t rng_bit_enable = test_param.expected_rng_bit_en ? 0xa : 0x5;
+  // Current dif does not set these fields
   uint32_t lfsr_enable =
-      test_param.expected_mode == kDifEntropyModeLfsr ? 0xa : 0x5;
-  uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
+      test_param.expected_mode == kDifEntropySrcModeLfsr ? 0xa : 0x5;
+
+  // uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
+  uint32_t enable =
+      test_param.expected_mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
+  uint32_t reset_ht = test_param.reset_health_test_registers ? 0xa : 0x5;
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
           {ENTROPY_SRC_CONF_RNG_BIT_SEL_OFFSET, test_param.expected_rng_sel},
           {ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET, rng_bit_enable},
-          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, 0xa},
+          {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET, reset_ht},
+          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, 0x5},
+          // Current dif doesn ot set these fields
           {ENTROPY_SRC_CONF_LFSR_ENABLE_OFFSET, lfsr_enable},
-          {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
-          {ENTROPY_SRC_CONF_ENABLE_OFFSET, 0xa},
+          //{ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
+          {ENTROPY_SRC_CONF_ENABLE_OFFSET, enable},
       });
 
   EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_), kDifEntropySrcOk);
@@ -113,8 +122,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(
         // Test entropy mode.
         ConfigParams{kDifEntropySrcModeDisabled,
-                     kDifEntropySrcSingleBitModeDisabled, false, 0, false, 0,
-                     0},
+                     kDifEntropySrcSingleBitModeDisabled, false, false,
+                     kDifEntropySrcModeDisabled, false, 0, 0},
         ConfigParams{kDifEntropySrcModePtrng,
                      kDifEntropySrcSingleBitModeDisabled, false, false, 1,
                      false, 0, 0},
