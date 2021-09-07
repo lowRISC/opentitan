@@ -20,7 +20,7 @@ module prim_esc_rxtx_assert_fpv (
   input        ping_req_i,
   input        ping_ok_o,
   input        integ_fail_o,
-  input        esc_en_o
+  input        esc_req_o
 );
 
   logic error_present;
@@ -103,7 +103,7 @@ module prim_esc_rxtx_assert_fpv (
   `ASSERT(EscCheck_A,
       ##1 esc_req_i
       |->
-      ##[0:1] esc_en_o,
+      ##[0:1] esc_req_o,
       clk_i,
       !rst_ni ||
       error_present)
@@ -143,10 +143,10 @@ module prim_esc_rxtx_assert_fpv (
   `ASSERT(AutoEscalation0_A,
       ping_req_i &&
       ping_ok_o &&
-      !esc_en_o ##1
+      !esc_req_o ##1
       !ping_req_i [*0 : 2**prim_esc_rxtx_fpv.u_prim_esc_receiver.TimeoutCntDw - 4]
       |->
-      !esc_en_o,
+      !esc_req_o,
       clk_i,
       !rst_ni ||
       error_d ||
@@ -157,10 +157,10 @@ module prim_esc_rxtx_assert_fpv (
   `ASSERT(AutoEscalation1_A,
       ping_req_i &&
       ping_ok_o &&
-      !esc_en_o ##1
+      !esc_req_o ##1
       !ping_req_i [* 2**prim_esc_rxtx_fpv.u_prim_esc_receiver.TimeoutCntDw - 3 : $]
       |->
-      esc_en_o,
+      esc_req_o,
       clk_i,
       !rst_ni ||
       error_d ||
