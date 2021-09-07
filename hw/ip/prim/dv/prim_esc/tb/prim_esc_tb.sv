@@ -98,8 +98,8 @@ module prim_esc_tb;
     esc_req = 1;
     // Drive random length of esc_req and check `esc_req_out` and `integ_fail` outputs.
     main_clk.wait_clks($urandom_range(1, 20));
-    if (integ_fail == 1) test_error("Esc_req unexpected signal integrity error!");
-    if (esc_req_out == 0)     test_error("Esc_req did not set esc_req!");
+    if (integ_fail == 1)  test_error("Esc_req unexpected signal integrity error!");
+    if (esc_req_out == 0) test_error("Esc_req did not set esc_req!");
     esc_req = 0;
 
     $display("Escalation request sequence finished!");
@@ -113,7 +113,7 @@ module prim_esc_tb;
     release esc_tx.esc_n;
     // Wait #1ps to avoid a race condition on clock edge.
     #1ps;
-    if (esc_req_out == 1) test_error("Signal integrity error should not set esc_req!");
+    if (esc_req_out == 0) test_error("Signal integrity error should set esc_req!");
     esc_req = 0;
 
     $display("Escalation esc_p/n integrity sequence finished!");
