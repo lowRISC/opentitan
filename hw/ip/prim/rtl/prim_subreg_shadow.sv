@@ -86,9 +86,9 @@ module prim_subreg_shadow
   always_ff @(posedge clk_i or negedge rst_ni) begin : phase_reg
     if (!rst_ni) begin
       phase_q <= 1'b0;
-    end else if (wr_en) begin
+    end else if (wr_en && !err_storage) begin
       phase_q <= ~phase_q;
-    end else if (phase_clear) begin
+    end else if (phase_clear || err_storage) begin
       phase_q <= 1'b0;
     end
   end
