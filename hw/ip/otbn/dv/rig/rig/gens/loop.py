@@ -12,7 +12,7 @@ from .jump import Jump
 from .straight_line_insn import StraightLineInsn
 from ..config import Config
 from ..program import ProgInsn, Program
-from ..model import Model
+from ..model import LoopStack, Model
 from ..snippet import LoopSnippet, ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
 
@@ -473,8 +473,14 @@ class Loop(SnippetGen):
                     hd_insn: ProgInsn,
                     end_addr: int,
                     model: Model,
-                    program: Program) -> Model:
-        '''Set up a Model for use in body; insert hd_insn into program'''
+                    program: Program,
+                    has_warp: bool) -> [Model, Optional[LoopStack]]:
+        '''Set up a Model for use in body; insert hd_insn into program
+
+        This may hack model.loop_stack to avoid generating further loops. If it
+        does so, it will return the "real" loop stack as a second return value.
+
+        '''
         body_model = model.copy()
         body_model.update_for_insn(hd_insn)
         body_model.pc += 4
@@ -482,7 +488,18 @@ class Loop(SnippetGen):
 
         program.add_insns(model.pc, [hd_insn])
 
-        return body_model
+        # If the loop we're generating has an associated warp, we want to avoid
+        # generating any more loops in the body. It's really bad if we generate
+        # a loop or loopi instruction as the first instruction of the body
+        # (because it breaks the warping). But there's also no real benefit to
+        # allowing it, so let's not. To avoid generating any more loops, we
+        # hack the loop stack to pretend it is full.
+        ret_loop_stack = None
+        if has_warp:
+            ret_loop_stack = body_model.loop_stack.copy()
+            body_model.loop_stack.force_full()
+
+        return (body_model, ret_loop_stack)
 
     def _pick_head(self,
                    space_here: int,
@@ -549,7 +566,9 @@ class Loop(SnippetGen):
         end_addr = model.pc + 4 * bodysize
 
         body_program = program.copy()
-        body_model = self._setup_body(hd_insn, end_addr, model, body_program)
+        body_model, body_loop_stack = self._setup_body(hd_insn, end_addr,
+                                                       model, body_program,
+                                                       warp is not None)
 
         # Constrain fuel in body_model: subtract one (for the first instruction
         # after the loop) and then divide by the number of iterations. When we
@@ -572,6 +591,12 @@ class Loop(SnippetGen):
             return None
 
         body_snippet, body_model = body_ret
+
+        # If we hacked the loop stack in _setup_body, the "correct" value of
+        # the loop stack is in body_loop_stack. Put it back.
+        if body_loop_stack is not None:
+            body_model.loop_stack = body_loop_stack
+
         body_model.loop_stack.pop(end_addr)
 
         # Calculate the actual amount of fuel that we used
