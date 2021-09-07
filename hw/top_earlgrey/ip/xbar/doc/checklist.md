@@ -55,9 +55,7 @@ Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         | top_earlgrey uses single clock at this moment. (new PR by Tim is pending )
 Code Quality  | [FPGA_TIMING][]         | Done        | Pipeline inserted in front of Core IBEX. meet timing @ 50MHz on NexysVideo
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
-Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
-Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
-Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
 Review        | Reviewer(s)             | Done        | @sjgitty @weicaiyang
 Review        | Signoff date            | Done        | 2019-11-04
 
@@ -78,9 +76,7 @@ Review        | Signoff date            | Done        | 2019-11-04
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
-[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
-[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec-non-reset-flops" >}}
-[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec-shadow-regs" >}}
+[SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
 
 ### D3
 
@@ -96,6 +92,9 @@ Review        | [REVIEW_SW_CSR][]       | N/A         |
 Review        | [REVIEW_SW_FATAL_ERR][] | Done        |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
+Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @weicaiyang @tjaychen
 Review        | Signoff date            | Done        | 2019-11-07
 
@@ -110,6 +109,9 @@ Review        | Signoff date            | Done        | 2019-11-07
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
+[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ## Verification Checklist
 

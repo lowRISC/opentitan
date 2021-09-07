@@ -55,9 +55,7 @@ Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet.
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]  | Done        |
-Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
-Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_CM_DOCUMENTED][]   | Done        |
 Security      | [SEC_RND_CNST][]        | Done        |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
@@ -75,9 +73,7 @@ Security      | [SEC_RND_CNST][]        | Done        |
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc_setup" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga_timing" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
-[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
-[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
+[SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 [SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
 
 ### D3
@@ -94,6 +90,9 @@ Review        | [REVIEW_SW_CSR][]       | Not Started |
 Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
 Review        | [REVIEW_SW_CHANGE][]    | Not Started |
 Review        | [REVIEW_SW_ERRATA][]    | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
+Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
@@ -108,6 +107,9 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
+[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ## Verification Checklist
 

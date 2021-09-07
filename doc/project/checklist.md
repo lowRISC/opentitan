@@ -120,19 +120,14 @@ The IP block is synthesized as part of the continuous integration checking and m
 
 All CDC synchronization flops use behavioral synchronization macros (e.g. `prim_flop_2sync`) not manually created flops.
 
-### SEC_CM_IMPLEMENTED
+### SEC_CM_DOCUMENTED
 
-Any appropriate security counter-measures documented and implemented.
-For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding.
+Any appropriate security counter-measures have been documented and reviewed.
+The implementation of security countermeasures can be delayed until D3 if:
+- The addition of those countermeasures would not negatively impact PPA by more than 10%, and
+- The software interface would not be materially affected by those countermeasures
 
-### SEC_NON_RESET_FLOPS
-
-A review of sensitive security-critical storage flops was completed.
-Where appropriate, non-reset flops are used to store secure material.
-
-### SEC_SHADOW_REGS
-
-Shadow registers are implemented for all appropriate storage of critical control functions.
+Where the area impact of countermeasures can be reliably estimated, it is acceptable to insert dummy logic at D2 in order to meet the above criteria.
 
 ### SEC_RND_CNST
 
@@ -183,6 +178,20 @@ Any other software-visible design changes have been reviewed by the software tea
 ### REVIEW_SW_ERRATA
 
 All known "Won't Fix" bugs and "Errata" have been reviewed by the software team.
+
+### SEC_CM_IMPLEMENTED
+
+Any appropriate security counter-measures are implemented.
+For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding.
+
+### SEC_NON_RESET_FLOPS
+
+A review of sensitive security-critical storage flops was completed.
+Where appropriate, non-reset flops are used to store secure material.
+
+### SEC_SHADOW_REGS
+
+Shadow registers are implemented for all appropriate storage of critical control functions.
 
 ## V1
 

@@ -53,9 +53,7 @@ Code Quality  | [LINT_PASS][]           | Done           |
 Code Quality  | [CDC_SETUP][]           | N/A            |
 Code Quality  | [FPGA_TIMING][]         | Done           |
 Code Quality  | [CDC_SYNCMACRO][]       | N/A            |
-Security      | [SEC_CM_IMPLEMENTED][]  | N/A            |
-Security      | [SEC_NON_RESET_FLOPS][] | N/A            |
-Security      | [SEC_SHADOW_REGS][]     | N/A            |
+Security      | [SEC_CM_DOCUMENTED][]   | N/A            |
 
 [#68]: https://github.com/lowRISC/opentitan/issues/68
 
@@ -74,9 +72,7 @@ Security      | [SEC_SHADOW_REGS][]     | N/A            |
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc_setup" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga_timing" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
-[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
-[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
+[SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 [SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
 
 ### D3
@@ -93,6 +89,9 @@ Review        | [REVIEW_SW_CSR][]       | Done        |
 Review        | [REVIEW_SW_FATAL_ERR][] | Done        | by @moidx
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | N/A         |
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
+Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @tjaychen @sjgitty @shakushw
 Review        | Signoff date            | Done        | 2019-10-30
 
@@ -107,6 +106,9 @@ Review        | Signoff date            | Done        | 2019-10-30
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
+[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ## Verification Checklist
 
