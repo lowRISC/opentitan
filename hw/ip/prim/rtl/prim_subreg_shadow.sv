@@ -38,13 +38,21 @@ module prim_subreg_shadow
   output logic err_storage
 );
 
-  // Since the shadow and staging registers work with the 1's complement value,
+  // Since the shadow register works with the 1's complement value,
   // we need to invert the polarity of the SW access if it is either "W1S" or "W0C".
   // W1C is forbidden since the W0S complement is not implemented.
   `ASSERT_INIT(CheckSwAccessIsLegal_A,
       SwAccess inside {SwAccessRW, SwAccessRO, SwAccessWO, SwAccessW1S, SwAccessW0C, SwAccessRC})
   localparam sw_access_e InvertedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessW0C :
                                             (SwAccess == SwAccessW0C) ? SwAccessW1S : SwAccess;
+
+  // For the staging register, we set the SwAccess to RW in case of W1S and W0C in
+  // order to always capture the data value on the first write operation - no matter
+  // whether the data value will actually have an effect. That way, we can still capture
+  // inconsistent double writes which would otherwise be ignored due to the data value filtering
+  // effect that W1S and W0C can have.
+  localparam sw_access_e StagedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessRW :
+                                          (SwAccess == SwAccessW0C) ? SwAccessRW : SwAccess;
 
   // Subreg control signals
   logic          phase_clear;
@@ -100,9 +108,9 @@ module prim_subreg_shadow
   assign staged_we = we & ~phase_q & ~err_storage;
   assign staged_de = de & ~phase_q & ~err_storage;
   prim_subreg #(
-    .DW       ( DW               ),
-    .SwAccess ( InvertedSwAccess ),
-    .RESVAL   ( ~RESVAL          )
+    .DW       ( DW             ),
+    .SwAccess ( StagedSwAccess ),
+    .RESVAL   ( ~RESVAL        )
   ) staged_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
