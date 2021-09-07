@@ -587,7 +587,7 @@ Errors which could be caused by a programmer's mistake are typically considered 
 The description of the {{< regref "ERR_BITS" >}} register lists all possible error causes; those prefixed with `fatal_` are fatal errors.
 
 Recoverable errors terminate the currently active OTBN operation and return control to the host CPU.
-Fatal errors render OTBN unusable until it is reset.
+Fatal errors lock OTBN until it is reset.
 
 ### Recoverable Errors {#design-details-recoverable-errors}
 
