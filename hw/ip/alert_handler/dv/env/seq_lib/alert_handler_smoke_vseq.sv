@@ -168,15 +168,12 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
       // wait escalation done, and random interrupt with clear_esc
       wait_alert_handshake_done();
-      fork
-        begin
-          wait_esc_handshake_done();
-        end
-        begin
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
-          if ($urandom_range(0, 1) && (esc_int_err == 0)) clear_esc();
-        end
-      join
+      if ($urandom_range(0, 1) && (esc_int_err == 0)) begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
+        clear_esc();
+      end
+      wait_esc_handshake_done();
+
       read_alert_cause();
       read_esc_status();
       if (do_clr_esc) clear_esc();
