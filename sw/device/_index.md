@@ -16,8 +16,7 @@ The Reference Firmware Images are, in boot order:
 
 There are also some other standalone firmware images in the repository, which are only used for testing.
 
-- [`sw/device/tests`]({{< relref "sw/device/tests/README.md" >}}) contains many standalone smoke test images.
-  This directory also contains unit tests for software modules, which are executed on host (not device) systems using [GoogleTest](https://github.com/google/googletest).
+- [`sw/device/tests`]({{< relref "sw/device/tests/index.md" >}}) contains several categories of chip-level tests, including smoke, IP integration, and system-level (use case) tests.
 
 - [`sw/device/benchmarks/coremark`]({{< relref "sw/device/benchmarks/coremark/README.md" >}}) contains infrastructure for running the [CoreMark](https://github.com/eembc/coremark) benchmark suite on the OpenTitan device.
 - `sw/device/riscv_compliance_support` contains infrastructure so we can run the [RISC-V Compliance](https://github.com/riscv/riscv-compliance) tests on the OpenTitan core.
