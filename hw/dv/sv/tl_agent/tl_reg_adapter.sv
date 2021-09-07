@@ -82,7 +82,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
     ITEM_T bus_rsp;
     `downcast(bus_rsp, bus_item)
-    rw.kind    = bus_rsp.a_opcode == tlul_pkg::PutFullData ? UVM_WRITE : UVM_READ;
+    rw.kind    = bus_rsp.is_write() ? UVM_WRITE : UVM_READ;
     rw.addr    = bus_rsp.a_addr;
     rw.data    = (rw.kind == UVM_WRITE) ? bus_rsp.a_data : bus_rsp.d_data;
     rw.byte_en = bus_rsp.a_mask;
