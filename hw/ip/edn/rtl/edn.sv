@@ -36,8 +36,6 @@ module edn
 
   // Interrupts
   output logic      intr_edn_cmd_req_done_o,
-  // TODO: add intrp
-  // output logic      intr_edn_ebus_check_failed_o,
   output logic      intr_edn_fatal_err_o
 );
 
@@ -89,9 +87,6 @@ module edn
     .fatal_alert_test_o(alert_test[1]),
 
     .intr_edn_cmd_req_done_o,
-  // TODO: add intrp - remove () below
-  //  .intr_edn_ebus_check_failed_o,
-    .intr_edn_ebus_check_failed_o(),
     .intr_edn_fatal_err_o
   );
 
@@ -135,8 +130,6 @@ module edn
 
   // Interrupt Asserts
   `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
-  // TODO: add intrp
-  // `ASSERT_KNOWN(IntrEdnEBusCheckFailedKnownO_A, intr_edn_ebus_check_failed_o)
-  `ASSERT_KNOWN(IntrEdnFifoErrKnownO_A, intr_edn_fatal_err_o)
+
 
 endmodule

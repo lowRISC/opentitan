@@ -153,8 +153,16 @@ module edn_reg_top (
   logic [31:0] max_num_reqs_between_reseeds_qs;
   logic [31:0] max_num_reqs_between_reseeds_wd;
   logic recov_alert_sts_we;
-  logic recov_alert_sts_qs;
-  logic recov_alert_sts_wd;
+  logic recov_alert_sts_edn_enable_field_alert_qs;
+  logic recov_alert_sts_edn_enable_field_alert_wd;
+  logic recov_alert_sts_boot_req_mode_field_alert_qs;
+  logic recov_alert_sts_boot_req_mode_field_alert_wd;
+  logic recov_alert_sts_auto_req_mode_field_alert_qs;
+  logic recov_alert_sts_auto_req_mode_field_alert_wd;
+  logic recov_alert_sts_cmd_fifo_rst_field_alert_qs;
+  logic recov_alert_sts_cmd_fifo_rst_field_alert_wd;
+  logic recov_alert_sts_edn_bus_cmp_alert_qs;
+  logic recov_alert_sts_edn_bus_cmp_alert_wd;
   logic err_code_sfifo_rescmd_err_qs;
   logic err_code_sfifo_gencmd_err_qs;
   logic err_code_edn_ack_sm_err_qs;
@@ -635,28 +643,129 @@ module edn_reg_top (
 
 
   // R[recov_alert_sts]: V(False)
+  //   F[edn_enable_field_alert]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
-  ) u_recov_alert_sts (
+  ) u_recov_alert_sts_edn_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (recov_alert_sts_we),
-    .wd     (recov_alert_sts_wd),
+    .wd     (recov_alert_sts_edn_enable_field_alert_wd),
 
     // from internal hardware
-    .de     (hw2reg.recov_alert_sts.de),
-    .d      (hw2reg.recov_alert_sts.d),
+    .de     (hw2reg.recov_alert_sts.edn_enable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.edn_enable_field_alert.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (recov_alert_sts_qs)
+    .qs     (recov_alert_sts_edn_enable_field_alert_qs)
+  );
+
+  //   F[boot_req_mode_field_alert]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_boot_req_mode_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_boot_req_mode_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.boot_req_mode_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.boot_req_mode_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_boot_req_mode_field_alert_qs)
+  );
+
+  //   F[auto_req_mode_field_alert]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_auto_req_mode_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_auto_req_mode_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.auto_req_mode_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.auto_req_mode_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_auto_req_mode_field_alert_qs)
+  );
+
+  //   F[cmd_fifo_rst_field_alert]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_cmd_fifo_rst_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_cmd_fifo_rst_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_cmd_fifo_rst_field_alert_qs)
+  );
+
+  //   F[edn_bus_cmp_alert]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_edn_bus_cmp_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_edn_bus_cmp_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.edn_bus_cmp_alert.de),
+    .d      (hw2reg.recov_alert_sts.edn_bus_cmp_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_edn_bus_cmp_alert_qs)
   );
 
 
@@ -956,7 +1065,15 @@ module edn_reg_top (
   assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
   assign recov_alert_sts_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign recov_alert_sts_wd = reg_wdata[12];
+  assign recov_alert_sts_edn_enable_field_alert_wd = reg_wdata[0];
+
+  assign recov_alert_sts_boot_req_mode_field_alert_wd = reg_wdata[1];
+
+  assign recov_alert_sts_auto_req_mode_field_alert_wd = reg_wdata[2];
+
+  assign recov_alert_sts_cmd_fifo_rst_field_alert_wd = reg_wdata[3];
+
+  assign recov_alert_sts_edn_bus_cmp_alert_wd = reg_wdata[12];
   assign err_code_test_we = addr_hit[14] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
@@ -1023,7 +1140,11 @@ module edn_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[12] = recov_alert_sts_qs;
+        reg_rdata_next[0] = recov_alert_sts_edn_enable_field_alert_qs;
+        reg_rdata_next[1] = recov_alert_sts_boot_req_mode_field_alert_qs;
+        reg_rdata_next[2] = recov_alert_sts_auto_req_mode_field_alert_qs;
+        reg_rdata_next[3] = recov_alert_sts_cmd_fifo_rst_field_alert_qs;
+        reg_rdata_next[12] = recov_alert_sts_edn_bus_cmp_alert_qs;
       end
 
       addr_hit[13]: begin

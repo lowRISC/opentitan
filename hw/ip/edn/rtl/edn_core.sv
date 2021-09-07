@@ -36,7 +36,6 @@ module edn_core import edn_pkg::*;
 
   // Interrupts
   output logic        intr_edn_cmd_req_done_o,
-  output logic        intr_edn_ebus_check_failed_o,
   output logic        intr_edn_fatal_err_o
 );
 
@@ -53,7 +52,6 @@ module edn_core import edn_pkg::*;
 
   // signals
   logic event_edn_cmd_req_done;
-  logic event_edn_ebus_check_failed;
   logic event_edn_fatal_err;
   logic edn_enable;
   logic edn_enable_pfe;
@@ -149,12 +147,6 @@ module edn_core import edn_pkg::*;
   logic                               edn_bus_cmp_alert;
   logic                               unused_err_code_test_bit;
 
-  // TODO: remove when connected
-  logic                               unused_edn_enable_pfa;
-  logic                               unused_boot_req_mode_pfa;
-  logic                               unused_auto_req_mode_pfa;
-  logic                               unused_cmd_fifo_rst_pfa;
-
   // flops
   logic [31:0]                        cs_cmd_req_q, cs_cmd_req_d;
   logic                               cs_cmd_req_vld_q, cs_cmd_req_vld_d;
@@ -226,24 +218,6 @@ module edn_core import edn_pkg::*;
     .intr_o                 (intr_edn_cmd_req_done_o)
   );
 
-  // TODO: add intrp
-//  prim_intr_hw #(
-//    .Width(1)
-//  ) u_intr_hw_edn_ebus_check_failed (
-//    .clk_i                  (clk_i),
-//    .rst_ni                 (rst_ni),
-//    .event_intr_i           (event_edn_ebus_check_failed),
-//    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.edn_ebus_check_failed.q),
-//    .reg2hw_intr_test_q_i   (reg2hw.intr_test.edn_ebus_check_failed.q),
-//    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.edn_ebus_check_failed.qe),
-//    .reg2hw_intr_state_q_i  (reg2hw.intr_state.edn_ebus_check_failed.q),
-//    .hw2reg_intr_state_de_o (hw2reg.intr_state.edn_ebus_check_failed.de),
-//    .hw2reg_intr_state_d_o  (hw2reg.intr_state.edn_ebus_check_failed.d),
-//    .intr_o                 (intr_edn_ebus_check_failed_o)
-//  );
-
-  // TODO: remove when intrp is added
-  assign intr_edn_ebus_check_failed_o = event_edn_ebus_check_failed;
 
   prim_intr_hw #(
     .Width(1)
@@ -262,9 +236,6 @@ module edn_core import edn_pkg::*;
 
   // interrupt for sw app interface only
   assign event_edn_cmd_req_done = csrng_cmd_ack;
-
-  // entropy bus check failed interrupt
-  assign event_edn_ebus_check_failed = edn_bus_cmp_alert;
 
   // set the interrupt sources
   assign event_edn_fatal_err = edn_enable && (
@@ -345,18 +316,14 @@ module edn_core import edn_pkg::*;
   assign edn_enable_pfe = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == EDN_FIELD_ON);
   assign edn_enable_pfd = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == ~EDN_FIELD_ON);
   assign edn_enable_pfa = !(edn_enable_pfe || edn_enable_pfd);
-  // TODO: add below to status reg
-//  assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
-//  assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
-  assign unused_edn_enable_pfa = edn_enable_pfa;
+  assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
+  assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
   assign cmd_fifo_rst_pfe = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == EDN_FIELD_ON);
   assign cmd_fifo_rst_pfd = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == ~EDN_FIELD_ON);
   assign cmd_fifo_rst_pfa = !(cmd_fifo_rst_pfe || cmd_fifo_rst_pfd);
-  // TODO: add below to status reg
-//  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
-//  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d  = cmd_fifo_rst_pfa;
-  assign unused_cmd_fifo_rst_pfa = cmd_fifo_rst_pfa;
+  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
+  assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d  = cmd_fifo_rst_pfa;
 
   // master module enable
   assign edn_enable = edn_enable_pfe;
@@ -369,10 +336,8 @@ module edn_core import edn_pkg::*;
   assign auto_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == EDN_FIELD_ON);
   assign auto_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == ~EDN_FIELD_ON);
   assign auto_req_mode_pfa = !(auto_req_mode_pfe || auto_req_mode_pfd);
-  // TODO: add below to status reg
-//  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
-//  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.d  = auto_req_mode_pfa;
-  assign unused_auto_req_mode_pfa = auto_req_mode_pfa;
+  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
+  assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.d  = auto_req_mode_pfa;
 
 
   // SW interface connection
@@ -561,10 +526,8 @@ module edn_core import edn_pkg::*;
   assign boot_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == EDN_FIELD_ON);
   assign boot_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == ~EDN_FIELD_ON);
   assign boot_req_mode_pfa = !(boot_req_mode_pfe || boot_req_mode_pfd);
-  // TODO: add below to status reg
-//  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;
-//  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
-  assign unused_boot_req_mode_pfa = boot_req_mode_pfa;
+  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;
+  assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
 
 
   // boot request
@@ -676,8 +639,8 @@ module edn_core import edn_pkg::*;
 
   assign recov_alert_o = edn_bus_cmp_alert;
 
-  assign hw2reg.recov_alert_sts.de = edn_bus_cmp_alert;
-  assign hw2reg.recov_alert_sts.d  = edn_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.de = edn_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.d  = edn_bus_cmp_alert;
 
   //--------------------------------------------
   // end point interface packers generation
