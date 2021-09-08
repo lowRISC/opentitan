@@ -30,10 +30,8 @@ FPGA_BIT_NAME=lowrisc_systems_chip_earlgrey_nexysvideo_0.1
 ./meson_init.sh
 ninja -C "${OBJ_DIR}" "${TARGET_EXPORT}"
 
-srec_cat "${TARGET}.bin" -binary -offset 0x0 -o "${TARGET}.brammem" \
-  -vmem -Output_Block_Size 4;
-
-util/fpga/addr4x.py -i "${TARGET}.brammem" -o "${TARGET}.mem"
+# Create the Vivado image for splicing.
+hw/ip/rom_ctrl/util/gen_vivado_mem_image.py "${TARGET}.32.vmem" "${TARGET}.updatemem.mem"
 
 # The --debug flag is undocumented and causes updatemem to print out the INIT_XX
 # values of the four BRAM cells. These values are also oberservable when opening
@@ -41,7 +39,7 @@ util/fpga/addr4x.py -i "${TARGET}.brammem" -o "${TARGET}.mem"
 # the corresponding BRAM cells. This information is very useful when debugging
 # the splicing flow.
 updatemem -force --meminfo "${FPGA_BUILD_DIR}/rom.mmi" \
-  --data "${TARGET}.mem" \
+  --data "${TARGET}.updatemem.mem" \
   --bit "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit"  --proc dummy \
   --out "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.splice.bit" \
   --debug
