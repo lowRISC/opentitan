@@ -29,6 +29,7 @@ module aes_ctrl_reg_shadowed
   output aes_op_e   operation_o,
   output aes_mode_e mode_o,
   output key_len_e  key_len_o,
+  output logic      sideload_o,
   output logic      manual_operation_o,
   output logic      force_zero_masks_o,
 
@@ -48,11 +49,13 @@ module aes_ctrl_reg_shadowed
   logic      err_update_operation;
   logic      err_update_mode;
   logic      err_update_key_len;
+  logic      err_update_sideload;
   logic      err_update_manual_operation;
   logic      err_update_force_zero_masks;
   logic      err_storage_operation;
   logic      err_storage_mode;
   logic      err_storage_key_len;
+  logic      err_storage_sideload;
   logic      err_storage_manual_operation;
   logic      err_storage_force_zero_masks;
 
@@ -61,8 +64,8 @@ module aes_ctrl_reg_shadowed
 
   // Get and forward write enable. Writes are only allowed if the module is idle.
   assign qe_o = reg2hw_ctrl_i.operation.qe & reg2hw_ctrl_i.mode.qe &
-      reg2hw_ctrl_i.key_len.qe & reg2hw_ctrl_i.manual_operation.qe &
-      reg2hw_ctrl_i.force_zero_masks.qe;
+      reg2hw_ctrl_i.key_len.qe & reg2hw_ctrl_i.sideload.qe &
+      reg2hw_ctrl_i.manual_operation.qe & reg2hw_ctrl_i.force_zero_masks.qe;
 
   // Get and resolve values from register interface.
   assign ctrl_wd.operation = aes_op_e'(reg2hw_ctrl_i.operation.q);
@@ -89,6 +92,7 @@ module aes_ctrl_reg_shadowed
     endcase
   end
 
+  assign ctrl_wd.sideload = reg2hw_ctrl_i.sideload.q;
   assign ctrl_wd.manual_operation = reg2hw_ctrl_i.manual_operation.q;
 
   // SecAllowForcingMasks forbids forcing the masks. Forcing the masks to zero is only
@@ -161,6 +165,26 @@ module aes_ctrl_reg_shadowed
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (AES_CTRL_SHADOWED_SIDELOAD_RESVAL)
+  ) u_ctrl_reg_shadowed_sideload (
+    .clk_i,
+    .rst_ni,
+    .rst_shadowed_ni,
+    .re         (reg2hw_ctrl_i.sideload.re),
+    .we         (we_i),
+    .wd         (ctrl_wd.sideload),
+    .de         (1'b0),
+    .d          ('0),
+    .qe         (),
+    .q          (hw2reg_ctrl_o.sideload.d),
+    .qs         (),
+    .err_update (err_update_sideload),
+    .err_storage(err_storage_sideload)
+  );
+
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL)
   ) u_ctrl_reg_shadowed_manual_operation (
     .clk_i,
@@ -200,15 +224,16 @@ module aes_ctrl_reg_shadowed
 
   // Collect alerts.
   assign err_update_o = err_update_operation | err_update_mode | err_update_key_len |
-      err_update_manual_operation | err_update_force_zero_masks;
+      err_update_sideload | err_update_manual_operation | err_update_force_zero_masks;
   assign err_storage_o = err_storage_operation | err_storage_mode | err_storage_key_len |
-      err_storage_manual_operation | err_storage_force_zero_masks;
+      err_storage_sideload | err_storage_manual_operation | err_storage_force_zero_masks;
 
   // Generate shorter references.
   // Doing that here as opposed to in aes_core avoids several Verilator lint errors.
   assign operation_o        = aes_op_e'(hw2reg_ctrl_o.operation.d);
   assign mode_o             = aes_mode_e'(hw2reg_ctrl_o.mode.d);
   assign key_len_o          = key_len_e'(hw2reg_ctrl_o.key_len.d);
+  assign sideload_o         = hw2reg_ctrl_o.sideload.d;
   assign manual_operation_o = hw2reg_ctrl_o.manual_operation.d;
   assign force_zero_masks_o = hw2reg_ctrl_o.force_zero_masks.d;
 

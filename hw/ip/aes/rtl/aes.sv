@@ -52,6 +52,9 @@ module aes
   output edn_pkg::edn_req_t                         edn_o,
   input  edn_pkg::edn_rsp_t                         edn_i,
 
+  // Key manager (keymgr) key sideload interface
+  input  keymgr_pkg::hw_key_req_t                   keymgr_key_i,
+
   // Bus interface
   input  tlul_pkg::tl_h2d_t                         tl_i,
   output tlul_pkg::tl_d2h_t                         tl_o,
@@ -165,6 +168,8 @@ module aes
     .entropy_masking_req_o  ( entropy_masking_req  ),
     .entropy_masking_ack_i  ( entropy_masking_ack  ),
     .entropy_masking_i      ( edn_data             ),
+
+    .keymgr_key_i           ( keymgr_key_i         ),
 
     .lc_escalate_en_i       ( lc_escalate_en       ),
 

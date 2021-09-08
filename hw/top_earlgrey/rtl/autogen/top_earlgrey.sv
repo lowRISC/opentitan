@@ -552,6 +552,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
+  keymgr_pkg::hw_key_req_t       keymgr_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
@@ -2007,6 +2008,7 @@ module top_earlgrey #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[5]),
       .edn_i(edn0_edn_rsp[5]),
+      .keymgr_key_i(keymgr_aes_key),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
 
@@ -2101,7 +2103,7 @@ module top_earlgrey #(
       // Inter-module signals
       .edn_o(edn0_edn_req[0]),
       .edn_i(edn0_edn_rsp[0]),
-      .aes_key_o(),
+      .aes_key_o(keymgr_aes_key),
       .kmac_key_o(keymgr_kmac_key),
       .otbn_key_o(),
       .kmac_data_o(kmac_app_req[0]),
