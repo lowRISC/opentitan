@@ -159,6 +159,12 @@ The source clocks are gated off during low power states as controlled by the pow
 When the power manager makes a clock enable request, the clock manager ensures all root clock gates are enabled before acknowledging.
 Likewise, when the power manager makes a clock disable request, the clock manager ensures all root clock gates off disabled before acknowledging.
 
+Note, the power manager's request to turn off clocks supersedes all other local controls in the clock manager.
+This means even if a particular clock is turned on by the clock manager (for example a transactional unit that is ongoing or a peripheral that is enabled), the power manager requests will still turn clocks on / off at the root.
+
+This makes it software's responsibility to ensure low power entry requests (which can only be initiated by software) do not conflict with any ongoing activities controlled by software.
+For example, software should ensure that Aes / Otbn activities have completed before initializing a low power entry process.
+
 ### Clock Division
 
 Not all clocks are the same frequency as the source.
