@@ -290,7 +290,8 @@ module sram_ctrl
     // tie off unused signals
     logic unused_sigs;
     assign unused_sigs = ^{lc_hw_debug_en_i,
-                           reg2hw.exec.q};
+                           reg2hw.exec.q,
+                           otp_en_sram_ifetch_i};
   end
 
   /////////////////////////
