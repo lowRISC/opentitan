@@ -6,6 +6,7 @@ use anyhow::{bail, Result};
 
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::io::gpio::Gpio;
@@ -119,6 +120,9 @@ impl Transport for Ultradebug {
 
     fn gpio(&self) -> Result<Box<dyn Gpio>> {
         Ok(Box::new(gpio::UltradebugGpio::open(&self)?))
+    }
+    fn enumerate_gpio(&self) -> HashMap<String, u32> {
+        gpio::UltradebugGpio::enumerate()
     }
 
     fn spi(&self) -> Result<Box<dyn Target>> {

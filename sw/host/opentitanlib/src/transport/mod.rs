@@ -4,6 +4,7 @@
 
 use anyhow::{anyhow, Result};
 use bitflags::bitflags;
+use std::collections::HashMap;
 
 use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
@@ -69,12 +70,24 @@ pub trait Transport {
     fn spi(&self) -> Result<Box<dyn Target>> {
         unimplemented!();
     }
+    /// Returns a mapping from symbolic names to spi port index to be used above.
+    fn enumerate_spi(&self) -> HashMap<String, u32> {
+        unimplemented!();
+    }
     /// Returns a [`Uart`] implementation.
     fn uart(&self) -> Result<Box<dyn Uart>> {
         unimplemented!();
     }
+    /// Returns a mapping from symbolic names to uart index to be used above.
+    fn enumerate_uart(&self) -> HashMap<String, u32> {
+        unimplemented!();
+    }
     /// Returns a [`Gpio`] implementation.
     fn gpio(&self) -> Result<Box<dyn Gpio>> {
+        unimplemented!();
+    }
+    /// Returns a mapping from symbolic names to gpio index to be used above.
+    fn enumerate_gpio(&self) -> HashMap<String, u32> {
         unimplemented!();
     }
 }

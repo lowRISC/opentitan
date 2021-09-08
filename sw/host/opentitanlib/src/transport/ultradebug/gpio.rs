@@ -5,6 +5,7 @@
 use anyhow::Result;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::io::gpio::Gpio;
@@ -30,6 +31,15 @@ impl UltradebugGpio {
         Ok(UltradebugGpio {
             device: ultradebug.mpsse(ftdi::Interface::B)?,
         })
+    }
+
+    pub fn enumerate() -> HashMap<String, u32> {
+        let mut pins = HashMap::new();
+        pins.insert(String::from("UD_SPI_ZB"), Self::PIN_SPI_ZB);
+        pins.insert(String::from("UD_RESET_B"), Self::PIN_RESET_B);
+        pins.insert(String::from("UD_BOOTSTRAP"), Self::PIN_BOOTSTRAP);
+        pins.insert(String::from("UD_TGT_RESET"), Self::PIN_TGT_RESET);
+        pins
     }
 }
 
