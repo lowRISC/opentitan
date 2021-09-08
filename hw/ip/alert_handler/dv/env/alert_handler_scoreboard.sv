@@ -32,7 +32,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   int intr_cnter_per_class    [NUM_ALERT_CLASSES];
   int accum_cnter_per_class   [NUM_ALERT_CLASSES];
   esc_state_e state_per_class [NUM_ALERT_CLASSES];
-  int  esc_cnter_per_signal[NUM_ESC_SIGNALS];
   int  esc_signal_release  [NUM_ESC_SIGNALS];
   int  esc_sig_class       [NUM_ESC_SIGNALS]; // one class can increment one esc signal at a time
   // For different alert classify in the same class and trigger at the same cycle, design only
@@ -220,15 +219,45 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // check if escalation signal's duration length is correct
   virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
-    // if ping periodic check enabled, will not check cycle count, because cycle count might be
-    // connected with ping request, which makes the length unpredictable
-    // it is beyond this scb to check ping timer (FPV checks it).
-    if (ral.ping_timer_en_shadowed.get_mirrored_value() && !cfg.under_reset) begin
-      `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
-                   $sformatf("check signal_%0d", esc_sig_i))
+    int class_a = `gmv(ral.classa_ctrl_shadowed);
+    int class_b = `gmv(ral.classb_ctrl_shadowed);
+    int class_c = `gmv(ral.classc_ctrl_shadowed);
+    int class_d = `gmv(ral.classd_ctrl_shadowed);
+    int sig_index = AlertClassCtrlEnE0+esc_sig_i;
+    bit [NUM_ALERT_CLASSES-1:0] select_class = {class_d[sig_index], class_c[sig_index],
+                                                class_b[sig_index], class_a[sig_index]};
+
+
+    // Only compare the escalation signal length if exactly one class is assigned to this signal.
+    // Otherwise scb cannot predict the accurate cycle length if multiple classes are merged.
+    if ($countones(select_class) == 1) begin
+      int exp_cycle, phase, class_i;
+      // Find the class that triggers the escalation, and find which phase the escalation signal is
+      // reflecting.
+      for (class_i = 0; class_i < NUM_ALERT_CLASSES; class_i++) begin
+        if (select_class[class_i] == 1) begin
+          phase = `gmv(ral.get_reg_by_name($sformatf("class%0s_ctrl_shadowed",
+                                                     class_name[class_i])));
+          break;
+        end
+      end
+      phase = phase[(AlertClassCtrlMapE0 + esc_sig_i * 2) +: 2];
+      exp_cycle = `gmv(ral.get_reg_by_name($sformatf("class%0s_phase%0d_cyc_shadowed",
+                       class_name[class_i], phase))) + 1;
+      // Minimal phase length is 2 cycles.
+      exp_cycle = exp_cycle < 2 ? 2 : exp_cycle;
+      `uvm_info(`gfn, $sformatf("esc_signal_%0d, esc phase %0d, esc class %0d",
+                esc_sig_i, phase, class_i), UVM_HIGH);
+
+      // If the escalation signal is interrupted by reset or esc_clear, we expect the signal length
+      // to be shorter than the phase_cycle_length.
+      if (cfg.under_reset || under_esc_classes[class_i] == 0) begin
+        `DV_CHECK_LE(cycle_cnt, exp_cycle)
+      end else begin
+        `DV_CHECK_EQ(cycle_cnt, exp_cycle)
+      end
       if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
     end
-    esc_cnter_per_signal[esc_sig_i] = 0;
     esc_sig_class[esc_sig_i] = 0;
   endfunction
 
@@ -405,9 +434,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // two counters for phases cycle length and esc signals cycle length
   // phase cycle cnter: "intr_cnter_per_class" is used to check "esc_cnt" registers
-  // esc signal cnter: "esc_cnter_per_signal" is used to check escalation esc_p/n cycle length
-  // escalation signal is always one cycle longer than phase length, and the esc_p/n signal is an
-  // "OR" result of different classes
   virtual task esc_phase_signal_cnter();
     for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
       fork
@@ -417,8 +443,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             fork
               begin : inc_esc_cnt
                 for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
-                  int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
-                                     .get_mirrored_value();
+                  int phase_thresh = `gmv(reg_esc_phase_cycs_per_class_q[class_i][phase_i]);
                   bit[TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
                   int enabled_sig_q[$];
                   for (int sig_i = 0; sig_i < NUM_ESC_SIGNALS; sig_i++) begin
@@ -427,17 +452,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                     end
                   end
                   if (under_esc_classes[class_i]) begin
-                    incr_esc_sig_cnt(enabled_sig_q, class_i);
                     intr_cnter_per_class[class_i] = 1;
                     state_per_class[class_i] = esc_state_e'(phase_i + int'(EscStatePhase0));
                     cfg.clk_rst_vif.wait_n_clks(1);
                     while (under_esc_classes[class_i] &&
                            intr_cnter_per_class[class_i] < phase_thresh) begin
-                      incr_esc_sig_cnt(enabled_sig_q, class_i);
                       intr_cnter_per_class[class_i]++;
                       cfg.clk_rst_vif.wait_n_clks(1);
                     end
-                    incr_esc_sig_cnt(enabled_sig_q, class_i);
                     foreach (enabled_sig_q[i]) begin
                       int index = enabled_sig_q[i];
                       if (esc_sig_class[index] == (class_i + 1)) esc_signal_release[index] = 1;
@@ -478,26 +500,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // increase signal count only when current signal is not incremented by other class already
-  // so use esc_sig_class to gate only one class access the counter at a time
-  virtual function void incr_esc_sig_cnt(const ref int sig_q[$], int class_i);
-    foreach (sig_q[i]) begin
-      int index = sig_q[i];
-      if (esc_sig_class[index] == 0) esc_sig_class[index] = class_i + 1;
-      if (esc_sig_class[index] == (class_i + 1)) begin
-        if (!under_reset) esc_cnter_per_signal[index]++;
-        `uvm_info(`gfn, $sformatf("class_%0d signal_%0d, esc_cnt=%0d", class_i, index,
-                                  esc_cnter_per_signal[index]), UVM_DEBUG)
-      end
-    end
-  endfunction
-
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     under_intr_classes    = '{default:0};
     intr_cnter_per_class  = '{default:0};
     under_esc_classes     = '{default:0};
-    esc_cnter_per_signal  = '{default:0};
     esc_sig_class         = '{default:0};
     accum_cnter_per_class = '{default:0};
     state_per_class       = '{default:EscStateIdle};
