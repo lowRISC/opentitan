@@ -194,15 +194,43 @@ class BadLoadStore(SnippetGen):
             if reg_val + max_offset > model.dmem_size:
                 oob.append((reg_idx, reg_val))
 
+        # Pick a representable target address that is (usually) correctly
+        # aligned but doesn't lie in memory. If we can hit the "just out of
+        # bounds" case, do so with high-ish probability.
         if random.random() < 0.2 and barely_oob:
             idx, val = random.choice(barely_oob)
             tgt_addr = model.dmem_size
         elif oob:
+            # We're going for some arbitrary out-of-bounds address. First, pick
+            # a register for the base address and then use it to calculate the
+            # range of representable target addresses.
             idx, val = random.choice(oob)
-            if val + min_offset < 0:
-                tgt_addr = random.randrange(val + min_offset, -1)
+
+            if val + min_offset <= -4:
+                tgt_lo = val + min_offset
+                tgt_hi = -1
             else:
-                tgt_addr = random.randrange(model.dmem_size, val + max_offset)
+                tgt_lo = max(model.dmem_size, val + min_offset)
+                tgt_hi = val + max_offset
+
+            # At this point, we can represent any value in [tgt_lo, tgt_hi],
+            # but the addresses aren't necessarily aligned. Force correct
+            # alignment (so that a misalignment check won't mask broken range
+            # checks) most of the time.
+            if random.random() < 0.9:
+                # Round inwards and divide by 4. The result shouldn't be empty
+                # because we know that tgt_lo <= -4 < tgt_hi (in the first
+                # branch above) or, in the second branch, the only way that
+                # tgt_lo could equal tgt_hi is if they are both
+                # model.dmem_size, which is a multiple of 4.
+                word_lo = (tgt_lo + 3) // 4
+                word_hi = tgt_hi // 4
+                assert word_lo <= word_hi
+
+                word_addr = random.randint(word_lo, word_hi)
+                tgt_addr = word_addr * 4
+            else:
+                tgt_addr = random.randint(tgt_lo, tgt_hi)
         else:
             return None
 
