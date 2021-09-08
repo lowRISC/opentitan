@@ -27,7 +27,6 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     esc_sig_len: coverpoint sig_len {
       bins len_2 = {2};
       bins lens_less_than_1000[20] = {[3:1000]};
-      bins lens_more_than_1000     = {[1001:$]};
     }
     len_per_esc_sig: cross esc_sig_index, esc_sig_len;
   endgroup : esc_sig_length_cg
