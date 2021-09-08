@@ -105,7 +105,7 @@ module tlul_adapter_host import tlul_pkg::*; #(
   };
 
   // TODO #7966 disable data intgrity overwrite once dv support available
-  tlul_cmd_intg_gen #(.EnableDataIntgGen (1'b1)) u_cmd_intg_gen (
+  tlul_cmd_intg_gen #(.EnableDataIntgGen (EnableDataIntgGen)) u_cmd_intg_gen (
     .tl_i(tl_out),
     .tl_o(tl_o)
   );
