@@ -391,7 +391,8 @@ TEST_F(DaiReadTest, Read32) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x6a0);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_MANUF_STATE_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
@@ -489,7 +490,8 @@ TEST_F(DaiProgramTest, Program32) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x6a0);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_MANUF_STATE_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x12345678);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
@@ -541,13 +543,16 @@ TEST_F(DaiProgramTest, Unaligned) {
 
 TEST_F(DaiProgramTest, OutOfRange) {
   // Check that we can't write a digest directly.
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionCreatorSwCfg,
-                                       /*address=*/0x338, /*value=*/42),
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(
+                &otp_, kDifOtpCtrlPartitionCreatorSwCfg,
+                /*address=*/OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET,
+                /*value=*/42),
             kDifOtpCtrlDaiOutOfRange);
 
   // Same digest check for 64-bit.
-  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionSecret2,
-                                       /*address=*/0x7a0, /*value=*/42),
+  EXPECT_EQ(dif_otp_ctrl_dai_program64(
+                &otp_, kDifOtpCtrlPartitionSecret2,
+                /*address=*/OTP_CTRL_PARAM_SECRET2_DIGEST_OFFSET, /*value=*/42),
             kDifOtpCtrlDaiOutOfRange);
 }
 
@@ -582,7 +587,8 @@ TEST_F(DaiDigestTest, DigestSw) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x338);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x00abcdef);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0xabcdef00);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
@@ -597,7 +603,8 @@ TEST_F(DaiDigestTest, DigestHw) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
-  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x680);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_DEVICE_ID_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
 
@@ -728,7 +735,8 @@ class BlockingIoTest : public OtpTest {
 
 TEST_F(BlockingIoTest, Read) {
   for (int i = 0; i < kWords; ++i) {
-    auto offset = 0x340 + 0x10 + i * sizeof(uint32_t);
+    auto offset =
+        OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET + 0x10 + i * sizeof(uint32_t);
     EXPECT_READ32(OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + offset, i + 1);
   }
 
