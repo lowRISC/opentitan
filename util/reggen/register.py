@@ -160,6 +160,17 @@ class Register(RegBase):
                                              field.name,
                                              field.swaccess.key))
 
+        # Shadow registers do not support all swaccess types, hence we
+        # need to check that here.
+        if self.shadowed:
+            for field in self.fields:
+                if field.swaccess.key not in ['rw', 'ro', 'wo', 'rw1s', 'rw0c']:
+                    raise ValueError("Shadowed register {} has a field ({}) with "
+                                     "incompatible type '{}'."
+                                     .format(self.name,
+                                             field.name,
+                                             field.swaccess.key))
+
         # Check that fields will be updated together. This generally comes "for
         # free", but there's a slight wrinkle with RC fields: these use the
         # register's read-enable input as their write-enable. We want to ensure
