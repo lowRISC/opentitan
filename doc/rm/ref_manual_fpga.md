@@ -53,9 +53,9 @@ The `cw310_loader.py` can then be used to directly flash the updated bitstream t
 
 After building, the FPGA bitstream contains only the boot ROM.
 Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as software in the `sw/device/benchmark`, `sw/device/examples` and `sw/device/tests` directories.
-To load additional software, a custom load tool named [spiflash]({{< relref "sw/host/spiflash/README.md" >}}) is required.
+To load additional software, the `cw310_loader.py` is required.
 
-Once the tool is built, also build the binary you wish to load.
+Also the binary you wish to load needs to be built first.
 For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that is able to fit in the emulated flash space.
 The example below builds the `hello_world` image and loads it onto the FPGA.
 The loading output is also shown.
@@ -63,18 +63,22 @@ The loading output is also shown.
 ```console
 $ cd ${REPO_TOP}
 $ ./meson_init.sh
-$ ninja -C build-out
-$ build-bin/sw/host/spiflash/spiflash \
-    --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
+$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_cw310
+$ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
 
-Running SPI flash update.
-Image divided into 6 frames.
-frame: 0x00000000 to offset: 0x00000000
-frame: 0x00000001 to offset: 0x000003d8
-frame: 0x00000002 to offset: 0x000007b0
-frame: 0x00000003 to offset: 0x00000b88
-frame: 0x00000004 to offset: 0x00000f60
-frame: 0x80000005 to offset: 0x00001338
+CW310 Loader: Attemping to find CW310 FPGA Board:
+    No bitstream specified
+CW310 Board Found:
+INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
+Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin"...
+Transferring frame 0x00000000 @             0x00000000.
+Transferring frame 0x00000001 @             0x000007D8.
+Transferring frame 0x00000002 @             0x00000FB0.
+Transferring frame 0x00000003 @             0x00001788.
+Transferring frame 0x00000004 @             0x00001F60.
+Transferring frame 0x00000005 @             0x00002738.
+Transferring frame 0x80000006 @             0x00002F10.
+Loading done.
 ```
 
 For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/boot_rom/README.md" >}}).
