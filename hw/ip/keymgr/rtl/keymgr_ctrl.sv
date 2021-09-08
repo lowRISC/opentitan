@@ -136,10 +136,10 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
   logic adv_op, dis_op, gen_id_op, gen_sw_op, gen_hw_op, gen_op;
   assign adv_op    = (op_i == OpAdvance);
-  assign dis_op    = (op_i == OpDisable);
   assign gen_id_op = (op_i == OpGenId);
   assign gen_sw_op = (op_i == OpGenSwOut);
   assign gen_hw_op = (op_i == OpGenHwOut);
+  assign dis_op    = ~(op_i inside {OpAdvance, OpGenId, OpGenSwOut, OpGenHwOut});
   assign gen_op    = (gen_id_op | gen_sw_op | gen_hw_op);
 
   ///////////////////////////
