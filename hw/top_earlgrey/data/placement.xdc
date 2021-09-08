@@ -1,16 +1,3 @@
-############
-# Boot ROM #
-############
-# We need to enforce a defined placement of the Boot ROM to enable the Boot ROM splicing script.
-# Any change in ROM instances path should be updated in following two files
-# 1. hw/top_earlgrey/data/placement.xdc and
-# 2. hw/top_earlgrey/util/vivado_hook_opt_design_post.tcl
-set_property LOC RAMB36_X0Y10 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_0" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-set_property LOC RAMB36_X0Y11 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_1" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-set_property LOC RAMB36_X0Y12 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_2" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-set_property LOC RAMB36_X0Y13 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_3" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-set_property LOC RAMB36_X0Y14 [get_cells -hierarchical -filter { NAME =~ "*u_rom_ctrl*u_rom*rdata_o_reg_4" && PRIMITIVE_TYPE =~ BMEM.*.* }]
-
 # Clock net "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]" driven by instance "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufhce.u_bufhce" located at site "BUFHCE_X1Y0"
 #startgroup
 create_pblock {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}
