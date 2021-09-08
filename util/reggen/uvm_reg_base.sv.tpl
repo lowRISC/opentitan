@@ -326,7 +326,11 @@ reg, mr, reg_idx)">\
 <%
     if compact_field_inst_name:
       reg_field_name = compact_field_inst_name
-      if len(fields) > 1:
+      # If len(fields) > 1, we define generated reg fields as an array and we need an index to
+      # refer to the field object
+      # If start_idx > 0, the fields cross more than one register, we define an array for the
+      # fields even when the last register only contains one field.
+      if len(fields) > 1 or start_idx > 0:
         reg_field_name = reg_field_name + f'[{idx + start_idx}]'
     else:
       reg_field_name = field.name.lower()
