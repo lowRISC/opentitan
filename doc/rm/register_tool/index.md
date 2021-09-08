@@ -576,6 +576,8 @@ The general behavior of updating a shadow register is as follows:
    The phase is tracked internally to the module.
    If needed, software can put the shadow register back into the first phase by performing a read operation.
    If the register is of type `RO`, software cannot interfere with the update process and read operations do not clear the phase tracker.
+   If the register is of type `RW1S` or `RW0C`, the staged register will latch the raw data value coming from the bus side.
+   The raw data value of the second write is compared with the raw data value in the staged register before being filtered by the `RW1S` or `RW0C` set/clear logic.
 
 1. If the value of the shadow register and the committed register are **ever** mismatched, a storage error is signaled to the hardware using the `err_storage` signal.
 
