@@ -167,6 +167,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   logic op_update;
   logic op_busy;
   logic disabled;
+  logic invalid;
 
   logic adv_req, dis_req, id_req, gen_req;
   assign adv_req = op_req & adv_op;
@@ -225,7 +226,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   ///////////////////////////
 
   logic prng_en;
-  assign prng_en_o = prng_en | disabled | wipe_req;
+  assign prng_en_o = prng_en | disabled | invalid | wipe_req;
 
   //////////////////////////
   // Main Control FSM
@@ -389,6 +390,9 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
     // indication that state is disabled
     disabled = 1'b0;
+
+    // indication that state is invalid
+    invalid = 1'b0;
 
     // enable prng toggling
     prng_reseed_req_o = 1'b0;
@@ -568,7 +572,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
       StCtrlInvalid: begin
         op_req = op_start_i;
-        disabled = 1'b1;
+        invalid = 1'b1;
       end
 
       // latch the fault indication and start to wipe the key manager
@@ -698,9 +702,11 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   end
 
   // operations fsm update precedence
-  // when in disabled state, always update.
-  assign op_update_sel = (op_ack | op_update) & disabled     ? KeyUpdateKmac :
+  // when in invalid state, always update.
+  // when in disabled state, always update unless a fault is encountered.
+  assign op_update_sel = (op_ack | op_update) & invalid      ? KeyUpdateKmac :
                          (op_ack | op_update) & op_fault_err ? KeyUpdateWipe :
+                         (op_ack | op_update) & disabled     ? KeyUpdateKmac :
                          (op_ack | op_update) & op_err       ? KeyUpdateIdle :
                          (op_ack | op_update)                ? KeyUpdateKmac : KeyUpdateIdle;
 
@@ -718,7 +724,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   // sync errors
   // When an operation encounters a fault, the operation is always rejected as the FSM
   // transitions to wipe.  When an operation is ongoing and en drops, it is also rejected.
-  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | op_fault_err);
+  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | invalid | op_fault_err);
   assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
