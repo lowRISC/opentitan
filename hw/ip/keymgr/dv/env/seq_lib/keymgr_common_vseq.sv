@@ -5,6 +5,8 @@
 class keymgr_common_vseq extends keymgr_base_vseq;
   `uvm_object_utils(keymgr_common_vseq)
 
+  bit csr_vseq_done;
+
   constraint num_trans_c {
     num_trans inside {[1:2]};
   }
@@ -37,4 +39,39 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     super.read_and_check_all_csrs_after_reset();
   endtask
 
+  virtual task run_csr_vseq(string csr_test_type = "",
+                            int    num_test_csrs = 0,
+                            bit    do_rand_wr_and_reset = 1);
+    csr_vseq_done = 0;
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
+    csr_vseq_done = 1;
+  endtask
+
+  virtual task check_tl_intg_error_response();
+    super.check_tl_intg_error_response();
+    check_state_after_non_operation_fault();
+  endtask
+
+  virtual task read_check_shadow_reg_status(string msg_id);
+    super.read_check_shadow_reg_status(msg_id);
+
+    if (`gmv(ral.fault_status.shadow)) begin
+      check_state_after_non_operation_fault();
+    end
+  endtask
+
+  // Check state is StInvalid when there is an non-operation fault like integrity error, storage
+  // error.
+  virtual task check_state_after_non_operation_fault();
+    // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
+    wait(csr_vseq_done);
+
+    // issue an advance operation and check that state enters StInvalid
+    keymgr_advance(.wait_done(0));
+    // waiting for done is called separately as this one expects to be failed
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
+                 .spinwait_delay_ns($urandom_range(0, 100)));
+    read_current_state();
+    `DV_CHECK_EQ(current_state, keymgr_pkg::StInvalid)
+  endtask
 endclass

@@ -705,6 +705,8 @@
               resval: "0"
             },
         ],
+        tags: [// HW-update reg
+               "excl:CsrNonInitTests:CsrExclCheck"]
       },
     },
 
@@ -729,6 +731,8 @@
               resval: "0"
             },
         ],
+        tags: [// HW-update reg
+               "excl:CsrNonInitTests:CsrExclCheck"]
       },
     },
 
