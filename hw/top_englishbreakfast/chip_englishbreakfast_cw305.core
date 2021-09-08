@@ -17,7 +17,6 @@ filesets:
     files:
       - data/pins_cw305.xdc
       - data/clocks.xdc
-      - data/placement.xdc
     file_type: xdc
 
   files_tcl:
