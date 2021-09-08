@@ -157,6 +157,12 @@
       act:     "req"
       package: "edn_pkg"
     }
+    { struct:  "hw_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      package: "keymgr_pkg"
+    }
   ],
   alert_list: [
     //{ name: "informative",
@@ -431,6 +437,14 @@
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_key_len"]
       }
       { bits: "10",
+        name: "SIDELOAD",
+        resval: "0",
+        desc: '''
+          Controls whether the AES unit uses the key provided by the key manager via key sideload interface (1) or the key provided by software via Initial Key Registers KEY_SHARE1_0 - KEY_SHARE1_7 (0).
+        '''
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_sideload"]
+      }
+      { bits: "11",
         name: "MANUAL_OPERATION",
         resval: "0"
         desc:  '''
@@ -443,7 +457,7 @@
         '''
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
       }
-      { bits: "11",
+      { bits: "12",
         name: "FORCE_ZERO_MASKS",
         resval: "0"
         desc:  '''

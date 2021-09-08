@@ -257,11 +257,12 @@ typedef enum logic [AddRKSelWidth-1:0] {
   ADD_RK_FINAL = MUX3_SEL_2
 } add_rk_sel_e;
 
-parameter int KeyInitSelNum = 2;
-parameter int KeyInitSelWidth = Mux2SelWidth;
+parameter int KeyInitSelNum = 3;
+parameter int KeyInitSelWidth = Mux3SelWidth;
 typedef enum logic [KeyInitSelWidth-1:0] {
-  KEY_INIT_INPUT = MUX2_SEL_0,
-  KEY_INIT_CLEAR = MUX2_SEL_1
+  KEY_INIT_INPUT  = MUX3_SEL_0,
+  KEY_INIT_KEYMGR = MUX3_SEL_1,
+  KEY_INIT_CLEAR  = MUX3_SEL_2
 } key_init_sel_e;
 
 parameter int IVSelNum = 6;
@@ -327,6 +328,7 @@ typedef enum logic [Sp2VWidth-1:0] {
 typedef struct packed {
   logic      force_zero_masks;
   logic      manual_operation;
+  logic      sideload;
   key_len_e  key_len;
   aes_mode_e mode;
   aes_op_e   operation;
@@ -335,6 +337,7 @@ typedef struct packed {
 parameter ctrl_reg_t CTRL_RESET = '{
   force_zero_masks: aes_reg_pkg::AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL,
   manual_operation: aes_reg_pkg::AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL,
+  sideload:         aes_reg_pkg::AES_CTRL_SHADOWED_SIDELOAD_RESVAL,
   key_len:          key_len_e'(aes_reg_pkg::AES_CTRL_SHADOWED_KEY_LEN_RESVAL),
   mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),
   operation:        aes_op_e'(aes_reg_pkg::AES_CTRL_SHADOWED_OPERATION_RESVAL)

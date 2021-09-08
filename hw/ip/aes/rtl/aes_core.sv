@@ -38,6 +38,9 @@ module aes_core
   input  logic                        entropy_masking_ack_i,
   input  logic     [EntropyWidth-1:0] entropy_masking_i,
 
+  // Key manager (keymgr) key sideload interface
+  input  keymgr_pkg::hw_key_req_t     keymgr_key_i,
+
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,
 
@@ -58,6 +61,7 @@ module aes_core
   aes_mode_e                                  aes_mode_q;
   ciph_op_e                                   cipher_op;
   key_len_e                                   key_len_q;
+  logic                                       sideload_q;
   logic                                       manual_operation_q;
   logic                                       force_zero_masks_q;
   logic                                       ctrl_err_update;
@@ -95,6 +99,7 @@ module aes_core
   key_init_sel_e                              key_init_sel_ctrl;
   key_init_sel_e                              key_init_sel;
   logic                                       key_init_sel_err;
+  logic                [NumRegsKey-1:0][31:0] key_sideload [NumSharesKey];
 
   logic                 [NumRegsIv-1:0][31:0] iv;
   logic                 [NumRegsIv-1:0]       iv_qe;
@@ -213,6 +218,14 @@ module aes_core
     end
   end
 
+  always_comb begin : key_sideload_get
+    for (int s = 0; s < NumSharesKey; s++) begin
+      for (int i = 0; i < NumRegsKey; i++) begin
+        key_sideload[s][i] = keymgr_key_i.key[s][i * 32 +: 32];
+      end
+    end
+  end
+
   always_comb begin : iv_get
     for (int i = 0; i < NumRegsIv; i++) begin
       iv[i]    = reg2hw.iv[i].q;
@@ -242,9 +255,10 @@ module aes_core
   // Initial Key registers
   always_comb begin : key_init_mux
     unique case (key_init_sel)
-      KEY_INIT_INPUT: key_init_d = key_init;
-      KEY_INIT_CLEAR: key_init_d = prd_clearing_256;
-      default:        key_init_d = prd_clearing_256;
+      KEY_INIT_INPUT:  key_init_d = key_init;
+      KEY_INIT_KEYMGR: key_init_d = key_sideload;
+      KEY_INIT_CLEAR:  key_init_d = prd_clearing_256;
+      default:         key_init_d = prd_clearing_256;
     endcase
   end
 
@@ -477,6 +491,7 @@ module aes_core
     .operation_o        ( aes_op_q             ),
     .mode_o             ( aes_mode_q           ),
     .key_len_o          ( key_len_q            ),
+    .sideload_o         ( sideload_q           ),
     .manual_operation_o ( manual_operation_q   ),
     .force_zero_masks_o ( force_zero_masks_q   ),
     .err_update_o       ( ctrl_err_update      ),
@@ -502,6 +517,7 @@ module aes_core
     .op_i                      ( aes_op_q                               ),
     .mode_i                    ( aes_mode_q                             ),
     .cipher_op_i               ( cipher_op                              ),
+    .sideload_i                ( sideload_q                             ),
     .manual_operation_i        ( manual_operation_q                     ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
@@ -513,6 +529,7 @@ module aes_core
     .alert_fatal_i             ( alert_fatal_o                          ),
     .alert_o                   ( ctrl_alert                             ),
 
+    .key_sideload_valid_i      ( keymgr_key_i.valid                     ),
     .key_init_qe_i             ( key_init_qe                            ),
     .iv_qe_i                   ( iv_qe                                  ),
     .data_in_qe_i              ( data_in_qe                             ),

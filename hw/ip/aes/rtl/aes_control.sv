@@ -24,6 +24,7 @@ module aes_control
   input  aes_op_e                   op_i,
   input  aes_mode_e                 mode_i,
   input  ciph_op_e                  cipher_op_i,
+  input  logic                      sideload_i,
   input  logic                      manual_operation_i,
   input  logic                      start_i,
   input  logic                      key_iv_data_in_clear_i,
@@ -36,6 +37,7 @@ module aes_control
   output logic                      alert_o,
 
   // I/O register read/write enables
+  input  logic                      key_sideload_valid_i,
   input  logic     [NumRegsKey-1:0] key_init_qe_i [NumSharesKey],
   input  logic      [NumRegsIv-1:0] iv_qe_i,
   input  logic    [NumRegsData-1:0] data_in_qe_i,
@@ -150,6 +152,7 @@ module aes_control
   logic                     key_init_load;
   logic                     key_init_arm;
   sp2v_e                    key_init_ready, key_init_ready_chk;
+  logic                     key_sideload;
 
   logic  [NumSlicesCtr-1:0] iv_qe;
   logic                     iv_clear;
@@ -238,7 +241,10 @@ module aes_control
 
   // Check common start conditions. These are needed for any mode, unless we are running in
   // manual mode.
-  assign start_common = (key_init_ready_chk == SP2V_HIGH) ? data_in_new_chk : SP2V_LOW;
+  assign start_common =
+      (key_init_ready_chk == SP2V_HIGH && data_in_new_chk == SP2V_HIGH) ?
+          // If key sideload is enabled, we only start if the key is valid.
+          (sideload_i ? (key_sideload_valid_i ? SP2V_HIGH : SP2V_LOW) : SP2V_HIGH) : SP2V_LOW;
 
   // Check mode-specific start conditions. If the IV (and counter) is needed, we only start if
   // also the IV (and counter) is ready.
@@ -311,7 +317,7 @@ module aes_control
     cipher_data_out_clear_o = 1'b0;
 
     // Initial key registers
-    key_init_sel_o = KEY_INIT_INPUT;
+    key_init_sel_o = sideload_i ? KEY_INIT_KEYMGR : KEY_INIT_INPUT;
     for (int s = 0; s < NumSharesKey; s++) begin
       key_init_we_o[s] = {NumRegsKey{SP2V_LOW}};
     end
@@ -366,10 +372,13 @@ module aes_control
         idle_we = 1'b1;
 
         if (idle) begin
-          // Initial key and IV updates are ignored if we are not idle.
+          // Initial key and IV updates are ignored if we are not idle. If key sideload is enabled,
+          // software writes to the initial key registers are ignored.
           for (int s = 0; s < NumSharesKey; s++) begin
             for (int i = 0; i < NumRegsKey; i++) begin
-              key_init_we_o[s][i] = key_init_qe_i[s][i] ? SP2V_HIGH : SP2V_LOW;
+              key_init_we_o[s][i] =
+                  sideload_i          ? (key_sideload ? SP2V_HIGH : SP2V_LOW) :
+                  key_init_qe_i[s][i] ? SP2V_HIGH                             : SP2V_LOW;
             end
           end
           for (int i = 0; i < NumSlicesCtr; i++) begin
@@ -642,6 +651,16 @@ module aes_control
   /////////////////////
   // Status Tracking //
   /////////////////////
+
+  // We only take a new sideload key if sideload is enabled, if the provided sideload key is marked
+  // as valid, and after the control register has been written. After that point we don't update
+  // the key anymore, as we don't have a notion of when it actually changes. This would be required
+  // to trigger decryption key generation for ECB/CBC decryption.
+  // To update the sideload key, software has to:
+  // 1) wait unitl AES is idle,
+  // 2) wait for the key manager to provide the new key,
+  // 3) start a new message by writing the control register and providing the IV (if needed).
+  assign key_sideload = sideload_i & key_sideload_valid_i & ctrl_we_q;
 
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or

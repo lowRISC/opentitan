@@ -17,6 +17,7 @@ module tb;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire edn_req;
+  keymgr_pkg::hw_key_req_t keymgr_key;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -25,9 +26,12 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-    // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
+  // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
   `DV_ALERT_IF_CONNECT
+
+  // for now drive a static key marked as invalid
+  assign keymgr_key = keymgr_pkg::HW_KEY_REQ_DEFAULT;
 
   // dut
   aes #(
@@ -45,6 +49,7 @@ module tb;
     .rst_edn_ni       ( edn_rst_n                     ),
     .edn_o            ( edn_if.req                    ),
     .edn_i            ( {edn_if.ack, edn_if.d_data}   ),
+    .keymgr_key_i     ( keymgr_key                    ),
 
     .tl_i             ( tl_if.h2d                     ),
     .tl_o             ( tl_if.d2h                     ),

@@ -4739,6 +4739,18 @@
           index: 5
         }
         {
+          name: keymgr_key
+          struct: hw_key_req
+          package: keymgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: aes
+          default: ""
+          top_signame: keymgr_aes_key
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5176,6 +5188,10 @@
           act: req
           width: 1
           inst_name: keymgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: keymgr_aes_key
           index: -1
         }
         {
@@ -7033,6 +7049,10 @@
       otp_ctrl.otp_keymgr_key:
       [
         keymgr.otp_key
+      ]
+      keymgr.aes_key:
+      [
+        aes.keymgr_key
       ]
       keymgr.kmac_key:
       [
@@ -16178,6 +16198,18 @@
         index: 5
       }
       {
+        name: keymgr_key
+        struct: hw_key_req
+        package: keymgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: aes
+        default: ""
+        top_signame: keymgr_aes_key
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16312,6 +16344,10 @@
         act: req
         width: 1
         inst_name: keymgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: keymgr_aes_key
         index: -1
       }
       {
@@ -18987,6 +19023,17 @@
         act: req
         suffix: ""
         default: "'0"
+      }
+      {
+        package: keymgr_pkg
+        struct: hw_key_req
+        signame: keymgr_aes_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: keymgr_pkg::HW_KEY_REQ_DEFAULT
       }
       {
         package: keymgr_pkg

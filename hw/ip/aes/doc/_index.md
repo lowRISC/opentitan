@@ -26,6 +26,7 @@ The AES unit supports the following features:
 - Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
 - Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below]({{< relref "#fault-injection" >}}))
 - Register-based data and control interface
+- System key-manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.
 - On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see [Theory of Operations below]({{< relref "#theory-of-operations" >}}))
 
 This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round for the unmasked implementation, \~5 cycles per round for the DOM implementation).
@@ -130,6 +131,7 @@ Signal             | Direction        | Type                   | Description
 `lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}). This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
 `edn_o`            | `output`         | `edn_pkg::edn_req_t`   | Entropy request to [entropy distribution network (EDN)]({{< relref "hw/ip/edn/doc" >}}) for reseeding internal pseudo-random number generators (PRNGs) used for register clearing and masking.
 `edn_i`            | `input`          | `edn_pkg::edn_rsp_t`   | [EDN]({{< relref "hw/ip/edn/doc" >}}) acknowledgment and entropy input for reseeding internal PRNGs.
+`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager]({{< relref "hw/ip/keymgr/doc" >}}).
 
 Note that the `edn_o` and `edn_i` signals used to interface [EDN]({{< relref "hw/ip/edn/doc" >}}) follow a REQ/ACK protocol.
 The entropy distributed by EDN is obtained from the [cryptographically secure random number generator (CSRNG)]({{< relref "hw/ip/csrng/doc" >}}).
@@ -320,10 +322,15 @@ Typically, systems requiring security above AES-128 go directly for AES-256.
 
 ### System Key-Manager Interface
 
-This version of the AES unit is controlled entirely by the processor.
+By default, the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
-Future versions of the AES unit might include a separate interface through which a possible system key manager can provide the key without exposing it to the processor or other hosts attached to the system bus interconnect.
+Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager]({{< relref "hw/ip/keymgr/doc" >}}) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
+To this end, the processor has to set the SIDELOAD bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
+Any write operations of the processor to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} are then ignored.
+In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
+To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the {{< regref "CTRL_SHADOWED" >}} register to start a new message.
+After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization]({{< relref "#de-initialization" >}}) below).
 
 
 # Security Hardening
@@ -453,7 +460,7 @@ Note that at this point, the key, IV and data registers' values can no longer be
 ## Initialization
 
 Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
-If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
+If the AES unit is not idle, write operations to {{< regref "CTRL_SHADOWED" >}}, the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
 Then software must write the initial key to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}}.

@@ -175,6 +175,8 @@ module aes_reg_top (
   logic [5:0] ctrl_shadowed_mode_wd;
   logic [2:0] ctrl_shadowed_key_len_qs;
   logic [2:0] ctrl_shadowed_key_len_wd;
+  logic ctrl_shadowed_sideload_qs;
+  logic ctrl_shadowed_sideload_wd;
   logic ctrl_shadowed_manual_operation_qs;
   logic ctrl_shadowed_manual_operation_wd;
   logic ctrl_shadowed_force_zero_masks_qs;
@@ -758,7 +760,21 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_key_len_qs)
   );
 
-  //   F[manual_operation]: 10:10
+  //   F[sideload]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl_shadowed_sideload (
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
+    .wd     (ctrl_shadowed_sideload_wd),
+    .d      (hw2reg.ctrl_shadowed.sideload.d),
+    .qre    (reg2hw.ctrl_shadowed.sideload.re),
+    .qe     (reg2hw.ctrl_shadowed.sideload.qe),
+    .q      (reg2hw.ctrl_shadowed.sideload.q),
+    .qs     (ctrl_shadowed_sideload_qs)
+  );
+
+  //   F[manual_operation]: 11:11
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
@@ -772,7 +788,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_manual_operation_qs)
   );
 
-  //   F[force_zero_masks]: 11:11
+  //   F[force_zero_masks]: 12:12
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_force_zero_masks (
@@ -1232,9 +1248,11 @@ module aes_reg_top (
 
   assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
 
-  assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
+  assign ctrl_shadowed_sideload_wd = reg_wdata[10];
 
-  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[11];
+  assign ctrl_shadowed_manual_operation_wd = reg_wdata[11];
+
+  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[12];
   assign trigger_we = addr_hit[30] & reg_we & !reg_error;
 
   assign trigger_start_wd = reg_wdata[0];
@@ -1370,8 +1388,9 @@ module aes_reg_top (
         reg_rdata_next[0] = ctrl_shadowed_operation_qs;
         reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
         reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
-        reg_rdata_next[10] = ctrl_shadowed_manual_operation_qs;
-        reg_rdata_next[11] = ctrl_shadowed_force_zero_masks_qs;
+        reg_rdata_next[10] = ctrl_shadowed_sideload_qs;
+        reg_rdata_next[11] = ctrl_shadowed_manual_operation_qs;
+        reg_rdata_next[12] = ctrl_shadowed_force_zero_masks_qs;
       end
 
       addr_hit[30]: begin
