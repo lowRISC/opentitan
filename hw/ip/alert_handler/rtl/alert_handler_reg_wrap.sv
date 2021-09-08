@@ -461,7 +461,17 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       reg2hw.classd_phase0_cyc_shadowed.err_update,
       reg2hw.classd_phase1_cyc_shadowed.err_update,
       reg2hw.classd_phase2_cyc_shadowed.err_update,
-      reg2hw.classd_phase3_cyc_shadowed.err_update
+      reg2hw.classd_phase3_cyc_shadowed.err_update,
+
+      reg2hw.classa_crashdump_trigger_shadowed.err_update,
+      reg2hw.classb_crashdump_trigger_shadowed.err_update,
+      reg2hw.classc_crashdump_trigger_shadowed.err_update,
+      reg2hw.classd_crashdump_trigger_shadowed.err_update,
+
+      reg2hw.classa_clr_shadowed.err_update,
+      reg2hw.classb_clr_shadowed.err_update,
+      reg2hw.classc_clr_shadowed.err_update,
+      reg2hw.classd_clr_shadowed.err_update
     };
 
     reg2hw_wrap.shadowed_err_storage |= |{
@@ -545,7 +555,17 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       reg2hw.classd_phase0_cyc_shadowed.err_storage,
       reg2hw.classd_phase1_cyc_shadowed.err_storage,
       reg2hw.classd_phase2_cyc_shadowed.err_storage,
-      reg2hw.classd_phase3_cyc_shadowed.err_storage
+      reg2hw.classd_phase3_cyc_shadowed.err_storage,
+
+      reg2hw.classa_crashdump_trigger_shadowed.err_storage,
+      reg2hw.classb_crashdump_trigger_shadowed.err_storage,
+      reg2hw.classc_crashdump_trigger_shadowed.err_storage,
+      reg2hw.classd_crashdump_trigger_shadowed.err_storage,
+
+      reg2hw.classa_clr_shadowed.err_storage,
+      reg2hw.classb_clr_shadowed.err_storage,
+      reg2hw.classc_clr_shadowed.err_storage,
+      reg2hw.classd_clr_shadowed.err_storage
     };
   end
 
