@@ -655,7 +655,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
             `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
             wr_data &= wr_mask;
-            repeat(num_write) begin
+            repeat (num_write) begin
               tl_access(.addr(all_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
               void'(all_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
             end
@@ -675,7 +675,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       `DV_SPINWAIT_EXIT(
           forever begin
             // 1 extra cycle to make sure no race condition
-            repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1) begin
+            repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1) begin
               cfg.clk_rst_vif.wait_n_clks(1);
               if (cfg.m_alert_agent_cfg[alert_name].vif.get_alert() == 1) break;
             end
@@ -718,7 +718,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
     num_accesses = (num_accesses < min_accesses) ? min_accesses : num_accesses;
 
-    repeat(num_accesses * num_times) begin
+    repeat (num_accesses * num_times) begin
       if (cfg.under_reset) break;
       fork
         begin
