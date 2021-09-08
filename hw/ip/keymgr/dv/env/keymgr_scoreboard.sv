@@ -274,6 +274,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
         if (adv_cnt != keymgr_pkg::CDIs - 1) begin
           adv_cnt++;
+          is_sw_share_corrupted = 1;
+          cfg.keymgr_vif.wipe_sideload_keys();
         end else begin
           adv_cnt = 0;
           update_state(keymgr_pkg::StInvalid);
@@ -290,7 +292,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         case (op)
           keymgr_pkg::OpAdvance: begin
             // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
-            if (current_state == keymgr_pkg::StOwnerKey) begin
+            if (current_state == keymgr_pkg::StOwnerKey || get_op_err()) begin
               update_result = NotUpdate;
             end else begin
               update_result = UpdateInternalKey;
@@ -300,14 +302,16 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               adv_cnt++;
             end else begin
               adv_cnt = 0;
-              if (!get_op_err()) update_state(get_next_state(current_state));
-              // set sw_binding_regwen after advance OP
-              void'(ral.sw_binding_regwen.predict(.value(1)));
-              ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
+              if (!get_op_err()) begin
+                update_state(get_next_state(current_state));
+                // set sw_binding_regwen after advance OP
+                void'(ral.sw_binding_regwen.predict(.value(1)));
+                ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
+              end
             end
           end
           keymgr_pkg::OpDisable: begin
-            update_result = UpdateInternalKey;
+            update_result = NotUpdate;
             if (adv_cnt != keymgr_pkg::CDIs - 1) begin
               adv_cnt++;
             end else begin
@@ -683,7 +687,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // A detected fault will cause us to transition to invalid where
     // operations are always error'd
-    err_code[keymgr_pkg::ErrInvalidOp] = get_op_error() | get_fault_err();
+    err_code[keymgr_pkg::ErrInvalidOp] = get_invalid_op() | get_fault_err();
 
     err_code[keymgr_pkg::ErrInvalidIn] = get_hw_invalid_input() | get_sw_invalid_input();
 
@@ -738,7 +742,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function bit get_hw_invalid_input();
     bit is_err;
 
-    if (current_internal_key[current_cdi] inside {0, '1} && current_state != keymgr_pkg::StReset)
+    // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
+    if (get_invalid_op()) return 0;
+
+    if ((current_internal_key[current_cdi][0] inside {0, '1} ||
+         current_internal_key[current_cdi][1] inside {0, '1}) &&
+         current_state != keymgr_pkg::StReset)
     begin
       is_err = 1;
       `uvm_info(`gfn, $sformatf("internal key for %s %s is invalid", current_state, current_cdi),
@@ -763,16 +772,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         if (cfg.keymgr_vif.rom_digest.data inside {0, '1}) begin
           is_err = 1;
           `uvm_info(`gfn, "HW invalid input on rom_digest", UVM_LOW)
-        end
-
-        if (cfg.keymgr_vif.otp_key.key_share0 inside {0, '1}) begin
-          is_err = 1;
-          `uvm_info(`gfn, "HW invalid input on otp key_share0", UVM_LOW)
-        end
-
-        if (cfg.keymgr_vif.otp_key.key_share1 inside {0, '1}) begin
-          is_err = 1;
-          `uvm_info(`gfn, "HW invalid input on otp key_share1", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
