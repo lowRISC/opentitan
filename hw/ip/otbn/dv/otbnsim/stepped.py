@@ -29,6 +29,8 @@ prefixed with "0x" if they are hexadecimal.
                          at address <addr> and will jump from iteration <from>
                          to iteration <to>.
 
+    clear_loop_warps     Clear any loop warp rules
+
     load_d <path>        Replace the current contents of DMEM with <path>
                          (read as an array of 32-bit little-endian words)
 
@@ -155,6 +157,15 @@ def on_add_loop_warp(sim: OTBNSim, args: List[str]) -> None:
     sim.add_loop_warp(addr, from_cnt, to_cnt)
 
 
+def on_clear_loop_warps(sim: OTBNSim, args: List[str]) -> None:
+    '''Run until ecall or error'''
+    if len(args):
+        raise ValueError('clear_loop_warps expects zero arguments. Got {}.'
+                         .format(args))
+
+    sim.loop_warps = {}
+
+
 def on_load_d(sim: OTBNSim, args: List[str]) -> None:
     '''Load contents of data memory from file at path given by only argument'''
     if len(args) != 1:
@@ -238,6 +249,7 @@ _HANDLERS = {
     'run': on_run,
     'load_elf': on_load_elf,
     'add_loop_warp': on_add_loop_warp,
+    'clear_loop_warps': on_clear_loop_warps,
     'load_d': on_load_d,
     'load_i': on_load_i,
     'dump_d': on_dump_d,

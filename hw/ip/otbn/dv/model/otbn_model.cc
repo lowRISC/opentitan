@@ -195,6 +195,13 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
   if (!iss)
     return -1;
 
+  try {
+    iss->clear_loop_warps();
+  } catch (std::runtime_error &err) {
+    std::cerr << "Error when clearing loop warps: " << err.what() << "\n";
+    return -1;
+  }
+
   for (auto &pr : memutil.GetLoopWarps()) {
     auto &key = pr.first;
     uint32_t addr = key.first;
