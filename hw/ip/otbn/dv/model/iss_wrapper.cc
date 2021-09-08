@@ -331,6 +331,10 @@ void ISSWrapper::add_loop_warp(uint32_t addr, uint32_t from_cnt,
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::clear_loop_warps() {
+  run_command("clear_loop_warps\n", nullptr);
+}
+
 void ISSWrapper::dump_d(const std::string &path) const {
   std::ostringstream oss;
   oss << "dump_d " << path << "\n";
