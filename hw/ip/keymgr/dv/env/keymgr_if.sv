@@ -364,17 +364,20 @@ interface keymgr_if(input clk, input rst_n);
     fork
       forever begin
         @(kmac_key or is_kmac_key_good);
-        #1ps; // avoid race condition
+        // one cycle to sync with clock, one cycle to allow design to clear the key
+        repeat (2) @(posedge clk);
         if (!is_kmac_key_good) check_invalid_key(kmac_key, "KMAC");
       end
       forever begin
         @(aes_key or aes_sideload_status);
-        #1ps; // avoid race condition
+        // one cycle to sync with clock, one cycle to allow design to clear the key
+        repeat (2) @(posedge clk);
         if (aes_sideload_status != SideLoadAvail) check_invalid_key(aes_key, "AES");
       end
       forever begin
         @(otbn_key or otbn_sideload_status);
-        #1ps; // avoid race condition
+        // one cycle to sync with clock, one cycle to allow design to clear the key
+        repeat (2) @(posedge clk);
         if (otbn_sideload_status != SideLoadAvail) check_invalid_key(otbn_key, "OTBN");
       end
     join
@@ -397,15 +400,18 @@ interface keymgr_if(input clk, input rst_n);
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
                            kmac_key == kmac_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, kmac_key_exp.valid == kmac_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
+                           kmac_key_exp.valid == kmac_key.valid)
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
                            aes_key == aes_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_key_exp.valid == aes_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
+                           aes_key_exp.valid == aes_key.valid)
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
                            -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_key_exp.valid == otbn_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
+                           otbn_key_exp.valid == otbn_key.valid)
 
   // for EDN assertion
   // sync req/ack to core clk domain
