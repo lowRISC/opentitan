@@ -133,7 +133,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_pkg::OpAdvance: begin
-        bit is_err = get_hw_invalid_input() || get_fault_err();
+        bit is_err = get_hw_invalid_input();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
 
         case (current_state)
@@ -141,13 +141,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             compare_adv_creator_data(.cdi_type(current_cdi),
                                      .exp_match(!is_err),
                                      .byte_data_q(item.byte_data_q));
-            if (is_err) compare_invalid_data(item.byte_data_q);
           end
           keymgr_pkg::StCreatorRootKey: begin
             compare_adv_owner_int_data(.cdi_type(current_cdi),
                                        .exp_match(!is_err),
                                        .byte_data_q(item.byte_data_q));
-            if (is_err) compare_invalid_data(item.byte_data_q);
           end
           keymgr_pkg::StOwnerIntKey: begin
             compare_adv_owner_data(.cdi_type(current_cdi),
