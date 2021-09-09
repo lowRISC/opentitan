@@ -15,6 +15,8 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
     // forcing internal design may cause uninitialized reg to be used, disable these checking
     $assertoff(0, "tb.keymgr_kmac_intf");
     $assertoff(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+    $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
+    $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");
     cfg.keymgr_vif.force_cmd_err();
 
     // if it's in StDisabled, do an OP to ensure fault error occurs
@@ -29,7 +31,7 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
     check_fatal_alert_nonblocking("fatal_fault_err");
 
     cfg.clk_rst_vif.wait_clks($urandom_range(1, 500));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StDisabled));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
   endtask : trigger_error
 
   // disable checker in seq, only check in scb
@@ -44,5 +46,7 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
     cfg.en_scb = 1;
     $asserton(0, "tb.keymgr_kmac_intf");
     $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+    $asserton(0, "tb.dut.u_ctrl.DataEn_A");
+    $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
   endtask
 endclass : keymgr_cmd_invalid_vseq
