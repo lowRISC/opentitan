@@ -922,12 +922,17 @@ class BNLID(OTBNInsn):
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
 
+        saw_err = False
+
         if grd_val > 31:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            saw_err = True
 
         if not state.dmem.is_valid_256b_addr(addr):
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
+            saw_err = True
+
+        if saw_err:
             return
 
         wrd = grd_val & 0x1f
@@ -972,12 +977,17 @@ class BNSID(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
+        saw_err = False
+
         if grs2_val > 31:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            saw_err = True
 
         if not state.dmem.is_valid_256b_addr(addr):
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
+            saw_err = True
+
+        if saw_err:
             return
 
         wrs = grs2_val & 0x1f
