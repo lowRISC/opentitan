@@ -17,6 +17,20 @@
     }
 
     {
+      name: prim_ping_req_interrupted_by_esc_req_test
+      desc: '''Verify prim_esc will process the esc_req when ping handshake is in progress.
+
+            - Send a ping request by driving `ping_req` pin to 1.
+            - Randomly wait a few cycles before the ping handshake is completed.
+            - Send an escalation request by driving `esc_req` pin to 1.
+            - Wait for `ping_ok` to set and `esc_req_out` to set.
+            - Check the sequence completes without any signal integrity error.
+            '''
+      milestone: V1
+      tests: ["prim_esc_test"]
+    }
+
+    {
       name: prim_esc_tx_integrity_errors_test
       desc: '''Verify `esc_tx` signal integrity error.
 
@@ -24,6 +38,7 @@
             - Force `esc_n` signal to stay high to trigger an integrity error.
             - Verify that prim_esc_sender identifies the error by setting `integ_fail` signal.
             - Release the `esc_n` signal.
+            - Send a ping request and repeat the above sequence and checkings.
             '''
       milestone: V1
       tests: ["prim_esc_test"]
