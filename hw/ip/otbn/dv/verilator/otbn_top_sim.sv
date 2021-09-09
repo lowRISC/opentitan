@@ -316,14 +316,14 @@ module otbn_top_sim (
       end
       if (otbn_done_q && otbn_model_done) begin
         if (otbn_err_bits_q != otbn_model_err_bits) begin
-          $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (%0x != %0x).",
+          $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (0x%0x != 0x%0x).",
                    $time, otbn_err_bits_q, otbn_model_err_bits);
           err_bits_mismatch_latched <= 1'b1;
         end
       end
       if (insn_cnt != otbn_model_insn_cnt) begin
         if (!cnt_mismatch_latched) begin
-          $display("ERROR: At time %0t, insn_cnt != otbn_model_insn_cnt (%0x != %0x).",
+          $display("ERROR: At time %0t, insn_cnt != otbn_model_insn_cnt (0x%0x != 0x%0x).",
                    $time, insn_cnt, otbn_model_insn_cnt);
         end
         cnt_mismatch_latched <= 1'b1;
