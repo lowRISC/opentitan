@@ -462,6 +462,7 @@
   );
 
   prim_clock_gating #(
+    .NoFpgaGate(1'b1),
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
@@ -491,6 +492,7 @@
   );
 
   prim_clock_gating #(
+    .NoFpgaGate(1'b1),
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
@@ -520,6 +522,7 @@
   );
 
   prim_clock_gating #(
+    .NoFpgaGate(1'b1),
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
@@ -549,6 +552,7 @@
   );
 
   prim_clock_gating #(
+    .NoFpgaGate(1'b1),
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
