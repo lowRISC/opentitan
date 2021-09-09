@@ -236,8 +236,13 @@ class BEQ(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
         val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+
+        tgt_pc = self.offset & ((1 << 32) - 1)
         if val1 == val2:
-            state.set_next_pc(self.offset & ((1 << 32) - 1))
+            if not state.is_pc_valid(tgt_pc):
+                state.stop_at_end_of_cycle(ErrBits.BAD_INSN_ADDR)
+            else:
+                state.set_next_pc(tgt_pc)
 
 
 class BNE(OTBNInsn):
@@ -253,8 +258,13 @@ class BNE(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
         val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+
+        tgt_pc = self.offset & ((1 << 32) - 1)
         if val1 != val2:
-            state.set_next_pc(self.offset & ((1 << 32) - 1))
+            if not state.is_pc_valid(tgt_pc):
+                state.stop_at_end_of_cycle(ErrBits.BAD_INSN_ADDR)
+            else:
+                state.set_next_pc(tgt_pc)
 
 
 class JAL(OTBNInsn):
@@ -270,7 +280,12 @@ class JAL(OTBNInsn):
         mask32 = ((1 << 32) - 1)
         link_pc = (state.pc + 4) & mask32
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
-        state.set_next_pc(self.offset & mask32)
+
+        next_pc = self.offset & mask32
+        if not state.is_pc_valid(next_pc):
+            state.stop_at_end_of_cycle(ErrBits.BAD_INSN_ADDR)
+        else:
+            state.set_next_pc(next_pc)
 
 
 class JALR(OTBNInsn):
@@ -285,10 +300,17 @@ class JALR(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        link_pc = (state.pc + 4) & ((1 << 32) - 1)
+
+        mask32 = ((1 << 32) - 1)
+        link_pc = (state.pc + 4) & mask32
 
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
-        state.set_next_pc((val1 + self.offset) & ((1 << 32) - 1))
+
+        next_pc = (val1 + self.offset) & mask32
+        if not state.is_pc_valid(next_pc):
+            state.stop_at_end_of_cycle(ErrBits.BAD_INSN_ADDR)
+        else:
+            state.set_next_pc(next_pc)
 
 
 class CSRRS(OTBNInsn):
