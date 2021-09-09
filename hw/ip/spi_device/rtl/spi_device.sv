@@ -634,7 +634,9 @@ module spi_device
     .clk_o  (sram_clk_muxed)
   );
 
-  prim_clock_gating u_sram_clk_cg (
+  prim_clock_gating #(
+    .FpgaBufGlobal(1'b0)
+  ) u_sram_clk_cg (
     .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
     .test_en_i ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
