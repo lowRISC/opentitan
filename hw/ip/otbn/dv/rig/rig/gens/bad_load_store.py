@@ -208,7 +208,7 @@ class BadLoadStore(SnippetGen):
 
             if val + min_offset <= -4:
                 tgt_lo = val + min_offset
-                tgt_hi = -1
+                tgt_hi = min(val + max_offset, -1)
             else:
                 tgt_lo = max(model.dmem_size, val + min_offset)
                 tgt_hi = val + max_offset
