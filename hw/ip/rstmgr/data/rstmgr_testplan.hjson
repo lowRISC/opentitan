@@ -30,7 +30,7 @@
               units match `sw_rst_ctrl_n` CSR.
             '''
       milestone: V1
-      tests: []
+      tests: ["rstmgr_smoke"]
     }
     {
       name: reset_stretcher
@@ -49,7 +49,7 @@
               has had at least 32 cycles of steady input reset active.
             '''
       milestone: V2
-      tests: ["rstmgr_smoke"]
+      tests: ["rstmgr_por_stretcher"]
     }
     {
       name: sw_rst_regen_clear_once

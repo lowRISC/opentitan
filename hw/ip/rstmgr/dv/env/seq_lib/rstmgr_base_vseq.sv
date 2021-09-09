@@ -82,7 +82,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
 
-  function void set_rstreqs(logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs);
+  function void set_rstreqs(logic [pwrmgr_pkg::TotalResetWidth:0] rstreqs);
     cfg.rstmgr_vif.pwr_i.rstreqs = rstreqs;
   endfunction
 
@@ -187,9 +187,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[9])
   endtask
 
-  // Sends either a low power exit or hardware request reset, and drops it once it should have
-  // caused the hardware to handle it.
-  task send_reset(pwrmgr_pkg::reset_cause_e reset_cause, logic [NumHwResets-1:0] rstreqs);
+  // Sends either a low power exit or an external hardware reset request, and drops it once it
+  // should have caused the hardware to handle it.
+  task send_reset(pwrmgr_pkg::reset_cause_e reset_cause,
+                  logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs);
     set_reset_cause(reset_cause);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     set_rstreqs(rstreqs);

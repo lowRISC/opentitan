@@ -5,6 +5,7 @@
 // clkmgr interface.
 
 interface rstmgr_if (
+  input logic clk_aon,
   input logic clk,
   input logic rst_n
 );
@@ -33,5 +34,9 @@ interface rstmgr_if (
 
   // reset outputs
   rstmgr_pkg::rstmgr_out_t     resets_o;
+
+  // Supporting code.
+  int                          aon_cycles;
+  always @(posedge clk_aon) aon_cycles += 1;
 
 endinterface

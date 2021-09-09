@@ -17,11 +17,20 @@ class rstmgr_env_cov extends cip_base_env_cov #(
   // rstmgr_env_cfg: cfg
 
   // covergroups
-  // [add covergroups here]
+  covergroup reset_stretcher_cg with function sample (byte length, byte count);
+    length_cp: coverpoint length {
+      bins lb[8] = {[1 : 40]};
+      bins others = default;
+    }
+    count_cp: coverpoint count {
+      bins cb[4] = {[0 : 15]};
+      bins others = default;
+    }
+  endgroup
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // [instantiate covergroups here]
+    reset_stretcher_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
