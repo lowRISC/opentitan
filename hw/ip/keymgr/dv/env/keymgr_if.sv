@@ -389,6 +389,10 @@ interface keymgr_if(input clk, input rst_n);
         `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
             $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
             msg_id)
+        // once key is wiped, 2 shares will be wiped to different values
+        `DV_CHECK_CASE_NE(act_key.key[1], act_key.key[0],
+            $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
+            msg_id)
       end
     end
   endfunction
