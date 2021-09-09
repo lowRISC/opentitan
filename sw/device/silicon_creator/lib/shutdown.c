@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/epmp_defs.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -231,16 +232,27 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   // Switch to assembly as RAM (incl. stack) is about to get scrambled.
 #ifdef OT_PLATFORM_RV32
   while (true) {
+    // Set PMP entry 2 as a NAPOT region covering the entire 32-bit address
+    // space: [0, 2**32). By locking it without read, write or execute
+    // permissions we effectively restrict accesses to those allowed by
+    // the first two PMP entries which contain the ROM TOR region.
+    const uint32_t kPmpcfg0ClearMask = 0xff << 16;
+    const uint32_t kPmpcfg0SetMask = (EPMP_CFG_L | EPMP_CFG_A_NAPOT) << 16;
+    const uint32_t kPmpaddr2Value = 0x1fffffff;
+
     asm volatile(
         // Request a new scrambling key, then lock the SRAM control register.
         "sw %[kRenewKey], %[kCtrlOffset](%[kMainRamCtrlBase]);"
         "sw zero, %[kRegWriteEn](%[kMainRamCtrlBase]);"
 
-        // TODO(lowRISC/opentitan#7148): restrict the ePMP such that only
-        // ROM may execute.  mundaym's suggestion: set entry 2 as a NAPOT
-        // region covering the entire address space, clear all its permission
-        // bits and set the lock bit, and then finally disable RLB to prevent
-        // any further modifications.
+        // Configure PMP entry 2 as described above.
+        "csrc pmpcfg0, %[kPmpcfg0ClearMask];"
+        "csrs pmpcfg0, %[kPmpcfg0SetMask];"
+        "csrw pmpaddr2, %[kPmpaddr2Value];"
+
+        // Clear the mseccfg.RLB bit to prevent any further modifications to
+        // the locked PMP entries.
+        "csrci %[kMseccfgAddr], %[kMseccfgRlbMask];"
 
         // Generate a halt-maze.
         "1:"
@@ -252,7 +264,12 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
         : [kRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
           [kCtrlOffset] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
           [kMainRamCtrlBase] "r"(kSramCtrlBase),
-          [kRegWriteEn] "I"(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET));
+          [kRegWriteEn] "I"(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET),
+          [kPmpcfg0ClearMask] "r"(kPmpcfg0ClearMask),
+          [kPmpcfg0SetMask] "r"(kPmpcfg0SetMask),
+          [kPmpaddr2Value] "r"(kPmpaddr2Value),
+          [kMseccfgAddr] "I"(EPMP_MSECCFG),
+          [kMseccfgRlbMask] "I"(EPMP_MSECCFG_RLB));
   }
 #endif
 }
