@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// smoke test vseq
+// Tests the different kinds of reset: POR, low power wakeup, hardware reset, debug_mode reset,
+// and software initiated peripheral resets.
 class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_smoke_vseq)
 
@@ -10,7 +11,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
   rand ibex_pkg::crash_dump_t cpu_dump;
   rand alert_pkg::alert_crashdump_t alert_dump;
-  rand logic [NumHwResets-1:0] rstreqs;
+  rand logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs;
   rand logic [NumSwResets-1:0] sw_rst_regen;
   rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
 

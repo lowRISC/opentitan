@@ -3,5 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "rstmgr_base_vseq.sv"
+`include "rstmgr_por_stretcher_vseq.sv"
 `include "rstmgr_smoke_vseq.sv"
 `include "rstmgr_common_vseq.sv"

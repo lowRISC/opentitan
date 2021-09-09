@@ -25,8 +25,8 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if (
-    .clk  (clk),
-    .rst_n(rst_n)
+    .clk,
+    .rst_n
   );
   clk_rst_if aon_clk_rst_if (.clk(clk_aon));
   clk_rst_if io_clk_rst_if (.clk(clk_io));
@@ -37,13 +37,14 @@ module tb;
 
   pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
-    .clk  (clk),
-    .rst_n(rst_n)
+    .clk,
+    .rst_n
   );
 
   rstmgr_if rstmgr_if (
-    .clk  (clk),
-    .rst_n(rst_n)
+    .clk_aon,
+    .clk,
+    .rst_n
   );
 
   initial begin
@@ -91,7 +92,7 @@ module tb;
     .scan_rst_ni(rstmgr_if.scan_rst_ni),
     .scanmode_i (rstmgr_if.scanmode_i),
 
-    .resets_o    (rstmgr_if.resets_o)
+    .resets_o(rstmgr_if.resets_o)
   );
 
   initial begin

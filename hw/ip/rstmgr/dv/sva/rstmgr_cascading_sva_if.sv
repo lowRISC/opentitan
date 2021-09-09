@@ -7,6 +7,8 @@
 // The hierarchy is
 //   por > lc > sys > specific peripherals
 // In addition, a scan reset is at the same level as por.
+//
+// Local terminology: A cascading relationship is between an "above" and a "below" reset.
 interface rstmgr_cascading_sva_if (
   input logic clk_i,
   input logic clk_aon_i,
@@ -37,7 +39,7 @@ interface rstmgr_cascading_sva_if (
 
   // This is used to check por_n_i active high leads to a rising edge of rst_por_aon_n[0].
   // The number of cycles with por_n_i stable is 32 plus synchronizers and some filter stages.
-  localparam edge_bounds_t PorCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 32, max: 40}};
+  localparam edge_bounds_t PorCycles = '{fall: '{min: 0, max: 4}, rise: '{min: 35, max: 40}};
 
   // This is used to check for regular synchronizing delay. Reset falls asynchronously so the
   // fall min cycles is zero.
@@ -62,33 +64,40 @@ interface rstmgr_cascading_sva_if (
 
   bit disable_sva;
 
-  // Macros to avoid excesive boiler-plate code below.
+  // Macros to avoid excessive boiler-plate code below.
   `define FALL_ASSERT(name, from, to, cycles, clk) \
-    `ASSERT(name``Fall_A, \
-            $fell(from) |-> ##[cycles.fall.min:cycles.fall.max] $fell(to), clk, disable_sva)
+    `ASSERT(name``AboveFallBelowHigh_A, \
+            $fell(from) && to |-> ##[cycles.fall.min:cycles.fall.max] $fell(to), clk, disable_sva)
 
-  `define RISE_ASSERT(name, from, to, cycles, clk) \
-    `ASSERT(name``Rise_A, \
-            $rose(from) |-> ##[cycles.rise.min:cycles.rise.max] $rose(to), clk, disable_sva)
+  `define RISE_ASSERTS(name, from, to, cycles, clk) \
+    `ASSERT(name``AboveRise_A, \
+            $rose(from) |-> ##[cycles.rise.min:cycles.rise.max] $rose(to), clk, disable_sva) \
+    `ASSERT(name``BelowRise_A, \
+            $rose(to) |-> from == 1'b1, clk, disable_sva)
 
   `define CASCADED_ASSERTS(name, from, to, cycles, clk) \
       `FALL_ASSERT(name, from, to, cycles, clk) \
-      `RISE_ASSERT(name, from, to, cycles, clk)
+      `RISE_ASSERTS(name, from, to, cycles, clk)
 
   // A fall in por_n_i leads to a fall in rst_por_aon_n[0].
-  `FALL_ASSERT(CascadePorToAon, por_n_i[rstmgr_pkg::DomainAonSel], resets_o.rst_por_aon_n[0], PorCycles, clk_aon_i)
+  `FALL_ASSERT(CascadePorToAon, por_n_i[rstmgr_pkg::DomainAonSel], resets_o.rst_por_aon_n[0],
+               PorCycles, clk_aon_i)
 
   // A number of consecutive cycles with por_n_i inactive (high) should cause the aon resets to
   // become inactive. This checks POR stretching.
 
   // The antecedent: por_n_i rising and being stably high for a minimum number of cycles.
   sequence PorStable_S;
-    $rose(por_n_i[rstmgr_pkg::DomainAonSel]) ##1 por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.min];
+    $rose(
+        por_n_i[rstmgr_pkg::DomainAonSel]
+    ) ##1 por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.min];
   endsequence
 
   // The consequence: reset will rise after some cycles.
   sequence EventualAonRstRise_S;
-    ##[0:PorCycles.rise.max - PorCycles.rise.min] $rose(resets_o.rst_por_aon_n[0]);
+    ##[0:PorCycles.rise.max-PorCycles.rise.min] $rose(
+        resets_o.rst_por_aon_n[0]
+    );
   endsequence
 
   // The reset stretching assertion.
@@ -102,19 +111,19 @@ interface rstmgr_cascading_sva_if (
 
   // The internal reset is triggered by one of the generated reset outputs.
   logic [rstmgr_pkg::PowerDomains-1:0] local_rst_n;
-  always_comb local_rst_n = resets_o.rst_por_io_div4_n;
+  always_comb local_rst_n = {rstmgr_pkg::PowerDomains{resets_o.rst_por_io_div4_n[0]}};
 
   for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : power_domains
     // The AON reset triggers the various por reset for the different clock domains through
     // syncronizers.
-    `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst[pd],resets_o.rst_por_n[pd],
+    `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst[pd], resets_o.rst_por_n[pd],
                       SyncCycles, clk_main_i)
     `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst[pd], resets_o.rst_por_io_n[pd],
                       SyncCycles, clk_io_i)
-    `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst[pd], resets_o.rst_por_io_div2_n[pd],
-                      SyncCycles, clk_io_div2_i)
-    `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[pd], resets_o.rst_por_io_div4_n[pd],
-                      SyncCycles, clk_io_div4_i)
+    `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst[pd],
+                      resets_o.rst_por_io_div2_n[pd], SyncCycles, clk_io_div2_i)
+    `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[pd],
+                      resets_o.rst_por_io_div4_n[pd], SyncCycles, clk_io_div4_i)
     `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst[pd], resets_o.rst_por_usb_n[pd],
                       SyncCycles, clk_usb_i)
 
@@ -149,4 +158,7 @@ interface rstmgr_cascading_sva_if (
                     clk_io_div4_i)
   `CASCADED_ASSERTS(CascadeSysToI2C2, rst_sys_src_n[1], resets_o.rst_i2c2_n[1], PeriCycles,
                     clk_io_div4_i)
+  `undef FALL_ASSERT
+  `undef RISE_ASSERTS
+  `undef CASCADED_ASSERTS
 endinterface

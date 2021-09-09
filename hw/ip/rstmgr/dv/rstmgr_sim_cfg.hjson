@@ -60,7 +60,10 @@
       name: rstmgr_smoke
       uvm_test_seq: rstmgr_smoke_vseq
     }
-
+    {
+      name: rstmgr_por_stretcher
+      uvm_test_seq: rstmgr_por_stretcher_vseq
+    }
     // TODO: add more tests here
   ]
 

@@ -30,7 +30,27 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      monitor_por();
     join_none
+  endtask
+
+  // Start coverage collection after the very first POR negedge, since that transition is not
+  // useful for coverage.
+  task monitor_por();
+    int stretch_start;
+    int reset_count;
+    if (!cfg.en_cov) return;
+    @(negedge cfg.rstmgr_vif.por_n);
+    forever
+      @cfg.rstmgr_vif.por_n begin
+        if (cfg.rstmgr_vif.por_n == 1'b1) stretch_start = cfg.rstmgr_vif.aon_cycles;
+        else begin
+          int stretch_cycles = cfg.rstmgr_vif.aon_cycles - stretch_start;
+          ++reset_count;
+          `DV_CHECK_GT(stretch_cycles, 0)
+          cov.reset_stretcher_cg.sample(stretch_cycles, reset_count);
+        end
+      end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
