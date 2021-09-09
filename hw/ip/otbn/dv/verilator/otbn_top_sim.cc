@@ -95,18 +95,22 @@ class OtbnTraceUtil : public SimCtrlExtension {
   }
 };
 
-static std::unique_ptr<otbn_top_sim> verilator_top;
+static otbn_top_sim *verilator_top;
 static OtbnMemUtil otbn_memutil("TOP.otbn_top_sim");
 
 int main(int argc, char **argv) {
   VerilatorMemUtil memutil(&otbn_memutil);
   OtbnTraceUtil traceutil;
 
-  verilator_top.reset(new otbn_top_sim());
+  otbn_top_sim top;
+  // Make the otbn_top_sim object visible to OtbnTopApplyLoopWarp.
+  // This will leave a dangling pointer when we exit main, but that
+  // doesn't really matter because we don't have anything that uses it
+  // running in atexit hooks.
+  verilator_top = &top;
 
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
-  simctrl.SetTop(verilator_top.get(), &verilator_top->IO_CLK,
-                 &verilator_top->IO_RST_N,
+  simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
   simctrl.RegisterExtension(&memutil);
   simctrl.RegisterExtension(&traceutil);
@@ -198,8 +202,6 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-
-  verilator_top.reset();
 
   return 0;
 }
