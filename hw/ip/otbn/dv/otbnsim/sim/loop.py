@@ -176,5 +176,5 @@ class LoopStack:
             return
 
         assert cur_iter_count <= new_iter_count
-        assert new_iter_count + 1 < top.loop_count
+        assert new_iter_count + 1 <= top.loop_count
         top.restarts_left = top.loop_count - new_iter_count - 1
