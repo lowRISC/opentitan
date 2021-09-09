@@ -137,11 +137,11 @@
   // Project defaults for VCS
   vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
   vcs_unr_cfg_file: "{dv_root}/tools/vcs/unr.cfg"
-  vcs_cov_excl_files: ["{dv_root}/tools/vcs/common_cov_excl.el"]
+  vcs_cov_excl_files: []
 
   // Build-specific coverage cfg files for VCS.
-  default_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover.cfg"
-  cover_reg_top_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover_reg_top.cfg"
+  default_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
+  cover_reg_top_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
 
   // Project defaults for Xcelium
   xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"

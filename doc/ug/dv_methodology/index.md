@@ -479,7 +479,7 @@ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson --cov-unr
 ```
 3. If no exclusion file is generated, there is no unreachable code in RTL.
    If there is an exclusion file generated, the output should be reviewed by both designer and verification engineer.
-   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el).
+   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.cfg'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.cfg) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el).
 
 Here are some guidelines for using UNR and checking in generating exclusion.
 1. It's encouraged that designers run UNR to check the design in the early design stage (D1/D2), but adding exclusions for unreachable coverage should be done between the D2 and V3 stage when the design is frozen (no feature update is allowed, except bug fix).
