@@ -128,8 +128,10 @@ class dv_base_reg_field extends uvm_reg_field;
 
   // shadow register field read will clear its phase tracker
   virtual task post_read(uvm_reg_item rw);
-    dv_base_reg parent_csr = get_dv_base_reg_parent();
-    parent_csr.clear_shadow_wr_staged();
+    if (rw.status == UVM_IS_OK) begin
+      dv_base_reg parent_csr = get_dv_base_reg_parent();
+      parent_csr.clear_shadow_wr_staged();
+    end
   endtask
 
   // override RAL's reset function to support enable registers
