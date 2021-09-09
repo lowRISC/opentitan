@@ -63,6 +63,7 @@ class OTBNState:
 
     def set_next_pc(self, next_pc: int) -> None:
         '''Overwrite the next program counter, e.g. as result of a jump.'''
+        assert(self.is_pc_valid(next_pc))
         self._pc_next_override = next_pc
 
     def set_rnd_data(self, rnd_data: int) -> None:
@@ -229,20 +230,19 @@ class OTBNState:
         '''Run before running an instruction'''
         self.loop_stack.check_insn(self.pc, insn_affects_control)
 
-    def is_next_pc_valid(self) -> bool:
-        '''Return whether the next program counter is valid.'''
-        next_pc = self.get_next_pc()
-
-        # The PC should always be non-negative (it's an error in the simulator
-        # if that's come unstuck)
-        assert 0 <= next_pc
+    def is_pc_valid(self, pc: int) -> bool:
+        '''Return whether pc is a valid program counter.'''
+        # The PC should always be non-negative since it's represented as an
+        # unsigned value. (It's an error in the simulator if that's come
+        # unstuck)
+        assert 0 <= pc
 
         # Check the new PC is word-aligned
-        if next_pc & 3:
+        if pc & 3:
             return False
 
         # Check the new PC lies in instruction memory
-        if next_pc >= self.imem_size:
+        if pc >= self.imem_size:
             return False
 
         return True
@@ -257,13 +257,18 @@ class OTBNState:
         if self._err_bits:
             self.pending_halt = True
 
-        # Check the next PC is valid, but only if we're not stopping anyway. We
-        # do this right at the end of post_insn because any of the errors that
-        # we've just checked for would squash the "next PC" check.
-        if not self.pending_halt:
-            if not self.is_next_pc_valid():
-                self._err_bits |= ErrBits.BAD_INSN_ADDR
-                self.pending_halt = True
+        # Check that the next PC is valid, but only if we're not stopping
+        # anyway. This handles the case where we have a straight-line
+        # instruction at the top of memory. Jumps and branches to invalid
+        # addresses are handled in the instruction definition.
+        #
+        # This check is squashed if we're already halting, which avoids a
+        # problem when you have an ECALL instruction at the top of memory (the
+        # next address is bogus, but we don't care because we're stopping
+        # anyway).
+        if not self.is_pc_valid(self.get_next_pc()) and not self.pending_halt:
+            self._err_bits |= ErrBits.BAD_INSN_ADDR
+            self.pending_halt = True
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
