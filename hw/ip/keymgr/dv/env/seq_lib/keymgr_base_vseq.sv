@@ -186,12 +186,17 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     read_current_state();
 
-    // check for chech in scb and clear err_code
+    // check err_code in scb and clear err_code
     csr_rd(.ptr(ral.err_code), .value(rd_val));
     if (rd_val != 0) begin
       csr_wr(.ptr(ral.err_code), .value(rd_val));
     end
-
+    // check fault_status
+    csr_rd(.ptr(ral.fault_status), .value(rd_val));
+    // Do a dummy write to RO register
+    if (rd_val != 0 && $urandom_range(0, 1)) begin
+      csr_wr(.ptr(ral.fault_status), .value($urandom));
+    end
     // read and clear interrupt
     csr_rd(.ptr(ral.intr_state), .value(rd_val));
     if (rd_val != 0) begin
