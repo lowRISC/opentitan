@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 x11 = 4
+
+INSN_CNT = 5

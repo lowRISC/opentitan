@@ -9,3 +9,4 @@ x3 = 3
 x4 = 2
 x5 = 0xfffffffe
 
+INSN_CNT = 7

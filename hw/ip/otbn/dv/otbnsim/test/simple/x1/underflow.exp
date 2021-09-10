@@ -5,3 +5,6 @@
 x2  = 123
 x3  = 246
 x10 = 10
+
+INSN_CNT = 5
+ERR_BITS = 4  # CALL_STACK

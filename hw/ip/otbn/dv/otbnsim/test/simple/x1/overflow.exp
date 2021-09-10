@@ -4,3 +4,6 @@
 
 x2  = 8
 x10 = 10
+
+INSN_CNT = 19
+ERR_BITS = 4  # CALL_STACK

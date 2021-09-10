@@ -14,3 +14,8 @@ x10 = 0x7fffffff
 x11 = 0xffffffff
 x12 = 0x80000000
 x13 = 0x80000001
+
+# Note that this gives a check of the assembler, to make sure it
+# correctly spots 'li' pseudo-instructions that it can do in a single
+# instruction.
+INSN_CNT = 19
