@@ -271,6 +271,18 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     if insn.rv32i:
         parts.append('This instruction is defined in the RV32I instruction set.\n\n')
 
+    # A list of errors that the instruction might cause.
+    if insn.errs is not None:
+        parts.append(subhead + 'Errors\n')
+        if not insn.errs:
+            parts.append('{} cannot cause any synchronous errors.\n'.format(mnem))
+        else:
+            parts.append('{} might cause the following synchronous errors:\n'
+                         .format(mnem))
+            for desc in insn.errs:
+                parts.append('- {}\n'.format(desc))
+        parts.append('\n')
+
     # Syntax example: either given explicitly or figured out from operands
     parts.append(subhead + 'Syntax\n')
     parts.append("```\n")
