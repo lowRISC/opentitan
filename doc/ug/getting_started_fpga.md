@@ -61,6 +61,13 @@ The `fileset_top` flag used above is specific to the OpenTitan project to select
 The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
+### Dealing with FPGA Congestion Issues
+
+The default Vivado tool placement may sometimes result in congested FPGA floorplans.
+When this happens, the implemenation time and results become unpredictable.
+It may become necessary for the user to manually adjust certain placement.
+See [this comment](https://github.com/lowRISC/opentitan/pull/8138#issuecomment-916696830) for a thorough analysis of one such situation and what changes were made to improve congestion.
+
 ## Connecting the ChipWhisperer CW310 board
 
 The ChipWhisperer CW310 board supports different power options.
