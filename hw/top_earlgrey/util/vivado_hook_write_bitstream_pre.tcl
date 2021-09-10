@@ -30,6 +30,11 @@ foreach inst [lsort -dictionary $brams] {
   if {$slice_begin eq {} || $slice_end eq {}} {
     send_msg "Designtask 1-2" ERROR "Extraction of Boot ROM MMI information failed."
   }
+  # The scrambled Boot ROM is actually 39 bits wide but the updatemem tool segfaults
+  # for slice sizes not divisible by 8.
+  if {[expr {($slice_end - $slice_begin + 1) < 8}]} {
+    set slice_end [expr {$slice_begin + 7}]
+  }
   set addr_begin [get_property ram_addr_begin [get_cells $inst]]
   set addr_end [get_property ram_addr_end [get_cells $inst]]
   if {$addr_begin eq {} || $addr_end eq {}} {
@@ -53,6 +58,11 @@ foreach inst [lsort -dictionary $brams] {
   set loc [string trimleft $loc RAMB36_]
   set slice_begin [get_property ram_slice_begin [get_cells $inst]]
   set slice_end [get_property ram_slice_end [get_cells $inst]]
+  # The scrambled Boot ROM is actually 39 bits wide but the updatemem tool segfaults
+  # for slice sizes not divisible by 8.
+  if {[expr {($slice_end - $slice_begin + 1) < 8}]} {
+    set slice_end [expr {$slice_begin + 7}]
+  }
   set addr_begin [get_property ram_addr_begin [get_cells $inst]]
   set addr_end [get_property ram_addr_end [get_cells $inst]]
   puts $fileout "        <BitLane MemType=\"RAMB32\" Placement=\"$loc\">"
