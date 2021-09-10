@@ -15,42 +15,27 @@
     { clock: "clk_ast_usb_i",   reset: "rst_ast_usb_ni"},
   ],
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul",
+      direction: "device"
+    }
   ],
   no_auto_alert_regs: "True",
   param_list: [
     { name:    "NumRegsA",
       type:    "int",
-      default: "50",
-      desc: "Number of registers in the array",
+      default: "31",
+      desc: "Number of registers in the Array-A",
       local:   "true",
     },
     { name:    "NumRegsB",
       type:    "int",
-      default: "10",
-      desc: "Number of registers in the array",
+      default: "4",
+      desc: "Number of registers in the Array-B",
       local:   "true",
     },
   ],
   regwidth: "32",
   registers: [
-    { name: "REVID",
-      desc: '''
-	    AST Revision Identification Register <br>
-	    Reset: TLUL Reset
-	    '''
-      swaccess: "ro",
-      hwaccess: "hro",
-      fields: [
-        { bits: "7:0",
-          desc: "Revision",
-          resval: "0x01",
-	},
-	//
-        // bits: "31:8", Reserved
-	//
-      ],
-    },
     { multireg:
       {
         name: "REGA",
@@ -62,29 +47,47 @@
         fields: [
           { bits: "31:0",
             name: "reg32",
-	    desc: "32-bit Register",
+            desc: "32-bit Register",
             resval: "0",
           },
         ],
       },
-    },
+    }, //----------------------------------------------------------------------
+    { name: "REGAL",
+      desc: "AST Array-A Last Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+
+    ///////////////////////////////////////////////////////////////////////////
     { skipto: "0x200" }
+    ///////////////////////////////////////////////////////////////////////////
+
     { multireg:
       {
         name: "REGB",
-        desc: "AST Registers Array-B",
+        desc: "AST Registers Array-B to set address space size",
         count: "NumRegsB",
         cname: "REGB",
         swaccess: "rw",
-        hwaccess: "hrw",
+        hwaccess: "hro",
         fields: [
           { bits: "31:0",
             name: "reg32",
-	    desc: "32-bit Register",
+            desc: "32-bit Register",
             resval: "0",
           },
         ],
       },
-    },
+    }, //----------------------------------------------------------------------
   ],
 }

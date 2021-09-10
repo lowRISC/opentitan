@@ -13,13 +13,15 @@ filesets:
       - lowrisc:prim:clock_div
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:lc_dec
       - lowrisc:prim:lfsr
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
+      - lowrisc:prim:prim_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:systems:clkmgr_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
@@ -74,6 +76,9 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
 
 
 targets:
@@ -86,6 +91,7 @@ targets:
     toplevel: ast
     parameters:
      - SYNTHESIS
+     - AST_BYPASS_CLK
 
 
   lint:

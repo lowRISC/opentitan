@@ -13,14 +13,15 @@ module aon_clk (
   input clk_src_aon_en_i,                  // AON Source Clock Enable
   input scan_mode_i,                       // Scan Mode
   input scan_reset_ni,                     // Scan Reset
+`ifdef AST_BYPASS_CLK
   input clk_aon_ext_i,                     // FPGA/VERILATOR Clock input
+`endif
   output logic clk_src_aon_o,              // AON Source Clock
   output logic clk_src_aon_val_o           // AON Source Clock Valid
 );
 
-logic clk, osc_en, aon_clk_en, rst_n;
+logic clk, osc_en, aon_clk_en;
 
-assign rst_n = rst_aon_clk_ni;  // Scan enabled
 assign osc_en = (clk_src_aon_en_i && clk_aon_pd_ni && rst_aon_clk_ni);
 assign aon_clk_en = scan_mode_i || osc_en;
 
@@ -29,7 +30,9 @@ assign aon_clk_en = scan_mode_i || osc_en;
 aon_osc u_aon_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .aon_en_i ( aon_clk_en ),
+`ifdef AST_BYPASS_CLK
   .clk_aon_ext_i ( clk_aon_ext_i ),
+`endif
   .aon_clk_o ( clk )
 );  // of u_aon_osc
 
@@ -42,7 +45,7 @@ prim_clock_buf u_clk_aon_buf(
 
 // 2-stage de-assertion
 logic rst_val_n;
-assign rst_val_n = scan_mode_i ? scan_reset_ni : rst_n && clk_aon_pd_ni;
+assign rst_val_n = scan_mode_i ? scan_reset_ni : aon_clk_en;
 
 prim_flop_2sync #(
   .Width ( 1 ),

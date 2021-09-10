@@ -947,10 +947,6 @@ module chip_earlgrey_asic (
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
-    // clocks and resets supplied for detection
-    .sns_clks_i      ( clkmgr_aon_clocks    ),
-    .sns_rsts_i      ( rstmgr_aon_resets    ),
-    .sns_ext_clk_i   ( sck_monitor          ),
     // tlul
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
@@ -971,8 +967,10 @@ module chip_earlgrey_asic (
     .rst_ast_usb_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
     .por_ni                ( manual_in_por_n ),
-    // clocks' oschillator bypass for FPGA
-    .clk_osc_byp_i         ( '0 ),
+    // clocks and resets supplied for detection
+    .sns_clks_i            ( clkmgr_aon_clocks ),
+    .sns_rsts_i            ( rstmgr_aon_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor ),
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
     .vcaon_supp_i          ( 1'b1 ),

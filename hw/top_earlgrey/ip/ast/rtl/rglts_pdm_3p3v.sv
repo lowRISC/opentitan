@@ -19,6 +19,7 @@ module rglts_pdm_3p3v (
   input main_pd_h_ni,                    // MAIN Regulator Power Down @3.3v
   input main_env_iso_en_h_i,             // Enveloped ISOlation ENable for MAIN @3.3v
   input [1:0] otp_power_seq_h_i,         // MMR0,24 in @3.3v
+  input scan_mode_i,                     // Scan Mode
   output logic vcaon_pok_h_o,            // VCAON (1.1v) Exist @3.3v
   output logic main_pwr_dly_o,           // For modeling only.
   output logic flash_power_down_h_o,     //
@@ -103,15 +104,15 @@ end
 ///////////////////////////////////////
 // Flash
 ///////////////////////////////////////
-assign flash_power_down_h_o  = ~(main_pd_h_ni && vcmain_pok_o_h_i);  // TODO Scan mode
+assign flash_power_down_h_o  = scan_mode_i || !(main_pd_h_ni && vcmain_pok_o_h_i);
 assign flash_power_ready_h_o = vcc_pok_h_i;
 
 
 ///////////////////////////////////////
 // OTP
 ///////////////////////////////////////
-assign otp_power_seq_h_o[0] = !flash_power_down_h_o && otp_power_seq_h_i[0];  // TODO Scan mode
-assign otp_power_seq_h_o[1] =  flash_power_down_h_o || otp_power_seq_h_i[1];  // TODO Scan mode
+assign otp_power_seq_h_o[0] = !scan_mode_i && !flash_power_down_h_o && otp_power_seq_h_i[0];
+assign otp_power_seq_h_o[1] =  scan_mode_i || flash_power_down_h_o || otp_power_seq_h_i[1];
 
 
 ///////////////////////
