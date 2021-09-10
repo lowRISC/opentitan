@@ -5,3 +5,6 @@
 x2 = 1
 x3 = 1
 x4 = 0
+
+INSN_CNT = 3
+ERR_BITS = 0x10  # ErrBits.LOOP

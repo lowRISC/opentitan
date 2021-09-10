@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Tuple
 
 from testutil import asm_and_link_one_file, SIM_DIR
 
-_REG_RE = re.compile(r'\s*([xw][0-9]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
+_REG_RE = re.compile(r'\s*([a-zA-Z0-9_]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
 
 
 def find_simple_tests() -> List[Tuple[str, str]]:
@@ -84,20 +84,22 @@ def get_reg_dump(stdout: str) -> Dict[str, int]:
     value that register ended up with.
 
     '''
-    started = False
-    done = False
+    mode = None
+
     ret = {}
     for line in stdout.split('\n'):
-        if line == 'PRINT_REGS':
-            if started:
-                raise RuntimeError('Multiple PRINT_REGS lines seen')
-            started = True
+        if line in ['RUN', 'PRINT_REGS']:
+            if mode is not None:
+                raise RuntimeError('Opened {} when in {} mode.'
+                                   .format(line, mode))
+            mode = line
             continue
-        if done or not started:
+
+        if mode is None:
             continue
 
         if line == '.':
-            done = True
+            mode = None
             continue
 
         m = _REG_RE.match(line)
@@ -114,10 +116,11 @@ def get_reg_expected(exp_path: str) -> Dict[str, int]:
     '''Read expected.txt
 
     Returns same format as get_reg_dump, assuming any unspecified registers
-    should be zero.
+    should be zero (except for INSN_CNT, which always needs specifying)
 
     '''
     ret = {}
+    ret['ERR_BITS'] = 0
     for idx in range(32):
         ret['x{}'.format(idx)] = 0
         ret['w{}'.format(idx)] = 0

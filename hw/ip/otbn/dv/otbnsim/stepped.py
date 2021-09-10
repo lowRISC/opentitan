@@ -118,8 +118,12 @@ def on_run(sim: OTBNSim, args: List[str]) -> None:
         raise ValueError('run expects zero arguments. Got {}.'
                          .format(args))
 
-    num_cycles = sim.run(verbose=False, collect_stats=False)
-    print(' ran for {} cycles'.format(num_cycles))
+    print('RUN')
+
+    sim.run(verbose=False, collect_stats=False)
+
+    print(' INSN_CNT = {:#x}'.format(sim.state.ext_regs.read('INSN_CNT', False)))
+    print(' ERR_BITS = {:#x}'.format(sim.state.ext_regs.read('ERR_BITS', False)))
 
 
 def on_load_elf(sim: OTBNSim, args: List[str]) -> None:
