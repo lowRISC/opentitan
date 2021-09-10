@@ -275,13 +275,6 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     if insn.rv32i:
         parts.append('This instruction is defined in the RV32I instruction set.\n\n')
 
-    # Show any trailing documentation (stuff that should come after the syntax
-    # example but before the operand table).
-    if insn.trailing_doc is not None:
-        parts.append('\n')
-        parts.append(insn.trailing_doc)
-        parts.append('\n\n')
-
     is_pseudo = insn.literal_pseudo_op or insn.python_pseudo_op
 
     # If we have an encoding, match up encoding fields with operands
