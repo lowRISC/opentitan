@@ -287,8 +287,9 @@ class Testplan():
         self.progress = {}
         for key in Testpoint.milestones:
             self.progress[key] = {
-                "written": 0,
                 "total": 0,
+                "written": 0,
+                "passing": 0,
                 "progress": 0.0,
             }
 
@@ -440,6 +441,8 @@ class Testplan():
                 # Compute the testplan progress.
                 self.progress[ms]["total"] += 1
                 if tr.total != 0:
+                    if tr.passing == tr.total:
+                        self.progress[ms]["passing"] += 1
                     self.progress[ms]["written"] += 1
 
                 # Compute the milestone total & the grand total.
@@ -500,7 +503,7 @@ class Testplan():
                 self.progress.pop(ms)
                 continue
 
-            stat["progress"] = self._get_percentage(stat["written"],
+            stat["progress"] = self._get_percentage(stat["passing"],
                                                     stat["total"])
 
         self.test_results_mapped = True
@@ -527,8 +530,9 @@ class Testplan():
                 written += 1
 
         self.progress["Covergroups"] = {
-            "written": written,
             "total": total,
+            "written": written,
+            "passing": written,
             "progress": self._get_percentage(written, total),
         }
 
