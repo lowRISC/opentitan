@@ -18,6 +18,9 @@
       funct3: b000
       rd: grd
       opcode: b01100
+  errs:
+    - A `CALL_STACK` error from using `x1` as GRS1 or GRS2 when the call stack is empty.
+    - A `CALL_STACK` error from using `x1` as GRD when the call stack is full.
 
 - mnemonic: addi
   rv32i: true
@@ -417,8 +420,8 @@
   operands: []
   straight-line: false
   doc: |
-    Triggers the `done` interrupt to indicate the completion of the
-    operation.
+    Triggers the `done` interrupt to indicate completion of the operation.
+  errs: []
   encoding:
     scheme: I
     mapping:
