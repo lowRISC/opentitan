@@ -37,6 +37,7 @@
     Adds two WDR values, writes the result to the destination WDR and updates
     flags. The content of the second source WDR can be shifted by an unsigned
     immediate before it is consumed by the operation.
+  errs: []
   encoding:
     scheme: bnaf
     mapping:
@@ -57,6 +58,7 @@
     destination WDR, and updates the flags. The content of the second source
     WDR can be shifted by an unsigned immediate before it is consumed by the
     operation.
+  errs: []
   encoding:
     scheme: bnaf
     mapping:
@@ -84,6 +86,7 @@
   doc: |
     Adds a zero-extended unsigned immediate to the value of a WDR, writes the
     result to the destination WDR, and updates the flags.
+  errs: []
   encoding:
     scheme: bnai
     mapping:
@@ -108,6 +111,7 @@
     The intermediate result is small enough if both inputs are less than `MOD`.
 
     Flags are not used or saved.
+  errs: []
   encoding:
     scheme: bnam
     mapping:
@@ -168,6 +172,7 @@
     Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
 
     For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
+  errs: []
   encoding:
     scheme: bnaq
     mapping:
@@ -201,6 +206,7 @@
   doc: |
     Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
     Writes the resulting accumulator to `wrd`.
+  errs: []
   encoding:
     scheme: bnaq
     mapping:
@@ -251,6 +257,7 @@
     If `wrd_hwsel` is one (so the instruction is updating the upper half-word of `wrd`), it updates the `M` and `Z` flags and leaves `L` unchanged.
     The `M` flag is set iff the top bit of the shifted-out result is zero.
     The `Z` flag is left unchanged if the shifted-out result is zero and cleared if not.
+  errs: []
   encoding:
     scheme: bnaq
     mapping:
@@ -281,6 +288,7 @@
   doc: |
     Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
+  errs: []
   encoding:
     scheme: bnaf
     mapping:
@@ -325,6 +333,7 @@
   doc: |
     Subtracts a zero-extended unsigned immediate from the value of a WDR,
     writes the result to the destination WDR, and updates the flags.
+  errs: []
   encoding:
     scheme: bnai
     mapping:
@@ -349,6 +358,7 @@
     This is guaranteed if both inputs are less than `MOD`.
 
     Flags are not used or saved.
+  errs: []
   encoding:
     scheme: bnam
     mapping:
@@ -377,6 +387,7 @@
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
     The content of the second source register can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
+  errs: []
   encoding:
     scheme: bna
     mapping:
@@ -397,6 +408,7 @@
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
+  errs: []
   encoding:
     scheme: bna
     mapping:
@@ -424,6 +436,7 @@
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
+  errs: []
   encoding:
     scheme: bnan
     mapping:
@@ -443,6 +456,7 @@
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
+  errs: []
   encoding:
     scheme: bna
     mapping:
@@ -472,6 +486,7 @@
   doc: |
     Concatenates the content of WDRs referenced by `wrs1` and `wrs2` (`wrs1` forms the upper part), shifts it right by an immediate value and truncates to WLEN bit.
     The result is stored in the WDR referenced by `wrd`.
+  errs: []
   encoding:
     scheme: bnr
     mapping:
@@ -503,6 +518,7 @@
     <wrd>, <wrs1>, <wrs2>, [FG<flag_group>.]<flag>
   doc: |
     Returns in the destination WDR the value of the first source WDR if the flag in the chosen flag group is set, otherwise returns the value of the second source WDR.
+  errs: []
   encoding:
     scheme: bns
     mapping:
@@ -527,6 +543,7 @@
   doc: |
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUB, except that no result register is written.
+  errs: []
   encoding:
     scheme: bnc
     mapping:
@@ -544,6 +561,7 @@
   doc: |
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUBB, except that no result register is written.
+  errs: []
   encoding:
     scheme: bnc
     mapping:
@@ -607,6 +625,11 @@
     type: mem-load
     target: [offset, grs1]
     bytes: 32
+  errs:
+    - A `CALL_STACK` error from using `x1` as `grs1` or `grd` when the call stack is empty.
+    - An `ILLEGAL_INSN` error if both `grd_inc` and `grs1_inc` are set.
+    - An `ILLEGAL_INSN` error if the value in GPR `grd` is greater than 31.
+    - &data-addr A `BAD_DATA_ADDR` error if the computed address is not a valid DMEM address aligned to WLEN bits.
   encoding:
     scheme: bnxid
     mapping:
@@ -661,6 +684,11 @@
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
     Any `*grs2` value greater than 31 before executing the instruction results in an error (setting bit `illegal_insn` in `ERR_BITS`) and no store or optional increment occurring.
+  errs:
+    - A `CALL_STACK` error from using `x1` as `grs1` or `grs2` when the call stack is empty.
+    - An `ILLEGAL_INSN` error if both `grs1_inc` and `grs2_inc` are set.
+    - An `ILLEGAL_INSN` error if the value in GPR `grs2` is greater than 31.
+    - *data-addr
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -683,6 +711,7 @@
     mapping:
       src: wrs
       dst: wrd
+  errs: []
 
 - mnemonic: bn.movr
   synopsis: Copy content between WDRs (register-indirect addressing)
@@ -717,6 +746,10 @@
     - If `grs_inc` is set, `grs` is updated to be `*grs + 1`.
 
     Any `*grd` or `*grs` value greater than 31 results in an error (setting bit `illegal_insn` in `ERR_BITS`)
+  errs:
+    - A `CALL_STACK` error from using `x1` as `grs` or `grd` when the call stack is empty.
+    - An `ILLEGAL_INSN` error if either the value in GPR `grd` or the value in GPR `grs` is greater than 31.
+    - An `ILLEGAL_INSN` error if both `grs_inc` and `grd_inc` are set.
   encoding:
     scheme: bnmovr
     mapping:
@@ -735,6 +768,8 @@
   doc: |
     Reads a WSR to a WDR.
     If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
+  errs:
+    - &bad-wsr An `ILLEGAL_INSN` error if `wsr` doesn't name a valid WSR.
   encoding:
     scheme: wcsr
     mapping:
@@ -757,6 +792,8 @@
   doc: |
     Writes a WDR to a WSR.
     If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
+  errs:
+    - *bad-wsr
   encoding:
     scheme: wcsr
     mapping:

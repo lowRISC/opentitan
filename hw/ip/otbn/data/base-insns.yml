@@ -18,9 +18,9 @@
       funct3: b000
       rd: grd
       opcode: b01100
-  errs:
-    - A `CALL_STACK` error from using `x1` as GRS1 or GRS2 when the call stack is empty.
-    - A `CALL_STACK` error from using `x1` as GRD when the call stack is full.
+  errs: &enc-r-errors
+    - &grs12-call-stack A `CALL_STACK` error from using `x1` as `grs1` or `grs2` when the call stack is empty.
+    - &grd12-call-stack A `CALL_STACK` error from using `x1` as `grd` when the call stack is full and neither `grs1` nor `grs2` is `x1`.
 
 - mnemonic: addi
   rv32i: true
@@ -34,6 +34,9 @@
       funct3: b000
       rd: grd
       opcode: b00100
+  errs: &enc-i-errors
+    - &grs1-call-stack A `CALL_STACK` error from using `x1` as `grs1` when the call stack is empty.
+    - &grd1-call-stack A `CALL_STACK` error from using `x1` as `grd` when the call stack is full and `grs1` is not `x1`.
 
 - mnemonic: lui
   rv32i: true
@@ -48,6 +51,8 @@
       imm: imm
       rd: grd
       opcode: b01101
+  errs:
+    - &grd-call-stack A `CALL_STACK` error from using `x1` as `grd` when the call stack is full.
 
 - mnemonic: sub
   rv32i: true
@@ -62,6 +67,7 @@
       funct3: b000
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: sll
   rv32i: true
@@ -76,6 +82,7 @@
       funct3: b001
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: slli
   rv32i: true
@@ -95,6 +102,7 @@
       funct3: b001
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: srl
   rv32i: true
@@ -109,6 +117,7 @@
       funct3: b101
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: srli
   rv32i: true
@@ -126,6 +135,7 @@
       funct3: b101
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: sra
   rv32i: true
@@ -140,6 +150,7 @@
       funct3: b101
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: srai
   rv32i: true
@@ -157,6 +168,7 @@
       funct3: b101
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: and
   rv32i: true
@@ -171,6 +183,7 @@
       funct3: b111
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: andi
   rv32i: true
@@ -184,6 +197,7 @@
       funct3: b111
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: or
   rv32i: true
@@ -198,6 +212,7 @@
       funct3: b110
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: ori
   rv32i: true
@@ -211,6 +226,7 @@
       funct3: b110
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: xor
   rv32i: true
@@ -225,6 +241,7 @@
       funct3: b100
       rd: grd
       opcode: b01100
+  errs: *enc-r-errors
 
 - mnemonic: xori
   rv32i: true
@@ -238,6 +255,7 @@
       funct3: b100
       rd: grd
       opcode: b00100
+  errs: *enc-i-errors
 
 - mnemonic: lw
   rv32i: true
@@ -261,6 +279,10 @@
     Unaligned loads are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
     This instruction takes 2 cycles.
+  errs:
+    - *grs1-call-stack
+    - &data-addr A `BAD_DATA_ADDR` error if the computed address is not a valid 4-byte aligned DMEM address.
+    - *grd1-call-stack
   lsu:
     type: mem-load
     target: [offset, grs1]
@@ -287,6 +309,9 @@
     Stores a 32b word in `grs2` to address `offset + grs1` in data memory.
     Unaligned stores are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
+  errs:
+    - *grs12-call-stack
+    - *data-addr
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -312,6 +337,10 @@
       rs1: grs1
       funct3: b000
       opcode: b11000
+  errs: &branch-errors
+    - *grs12-call-stack
+    - A `BAD_INSN_ADDR` error if the branch is taken and the computed address is not a valid PC.
+    - &loop-at-end A `LOOP` error if this instruction appears as the last instruction of a loop body.
 
 - mnemonic: bne
   rv32i: true
@@ -326,6 +355,7 @@
       rs1: grs1
       funct3: b001
       opcode: b11000
+  errs: *branch-errors
 
 - mnemonic: jal
   rv32i: true
@@ -339,6 +369,10 @@
 
     OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling subroutines.
     Do so by using `x1` as the link register: `jal x1, <offset>`.
+  errs:
+    - *grd-call-stack
+    - &jump-bad-addr A `BAD_INSN_ADDR` error if the computed address is not a valid PC.
+    - *loop-at-end
   encoding:
     scheme: J
     mapping:
@@ -359,6 +393,11 @@
     This pops a link address from the call stack and branches to it.
     To call a subroutine through a function pointer, use `jalr x1, <grs1>, 0`.
     This jumps to the address in `<grs1>` and pushes the link address onto the call stack.
+  errs:
+    - *grs1-call-stack
+    - *grd1-call-stack
+    - *jump-bad-addr
+    - *loop-at-end
   encoding:
     scheme: I
     mapping:
@@ -379,6 +418,9 @@
     Other bits in the CSR are unaffected (though CSRs might have side effects when written).
 
     If `csr` isn't the index of a valid CSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
+  errs:
+    - *grs1-call-stack
+    - &bad-csr An `ILLEGAL_INSN` error if `csr` doesn't name a valid CSR.
   encoding:
     scheme: I
     mapping:
@@ -402,6 +444,10 @@
     If `grd == x0` the instruction does not read the CSR or cause any read-related side-effects.
 
     If `csr` isn't the index of a valid CSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
+  errs:
+    - *grs1-call-stack
+    - *grd1-call-stack
+    - *bad-csr
   encoding:
     scheme: I
     mapping:
@@ -456,6 +502,10 @@
     OTBN will stop on that instruction, setting bit `loop` in `ERR_BITS`.
 
     For more information on how to correctly use `LOOP` see [loop nesting](../#loop-nesting).
+  errs:
+    - &grs-call-stack A `CALL_STACK` error from using `x1` as `grs` when the call stack is empty.
+    - A `LOOP` error if the value in `grs` is zero.
+    - *loop-at-end
   encoding:
     scheme: loop
     mapping:
@@ -489,6 +539,9 @@
     mapping:
       bodysize: bodysize
       iterations: iterations
+  errs:
+    - A `LOOP` error if `iterations` is zero.
+    - *loop-at-end
 
 - mnemonic: nop
   synopsis: No Operation

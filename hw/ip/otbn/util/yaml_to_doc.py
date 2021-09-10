@@ -275,9 +275,9 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     if insn.errs is not None:
         parts.append(subhead + 'Errors\n')
         if not insn.errs:
-            parts.append('{} cannot cause any synchronous errors.\n'.format(mnem))
+            parts.append('{} cannot cause any software errors.\n'.format(mnem))
         else:
-            parts.append('{} might cause the following synchronous errors:\n'
+            parts.append('{} might cause the following software errors:\n'
                          .format(mnem))
             for desc in insn.errs:
                 parts.append('- {}\n'.format(desc))
