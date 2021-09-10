@@ -243,10 +243,11 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     assert heading_level > 0
 
     parts = []
+    mnem = insn.mnemonic.upper()
+    subhead = '#' * (heading_level + 1) + ' '
 
     # Heading, based on mnemonic (upper-cased)
-    parts.append('{} {}\n'.format('#' * heading_level,
-                                  insn.mnemonic.upper()))
+    parts.append('{} {}\n'.format('#' * heading_level, mnem))
 
     # If there's a note, render it as a callout
     if insn.note is not None:
@@ -263,17 +264,19 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     # Optional documentation (using existing markdown formatting). Add a blank
     # line afterwards to separate from the syntax and operand table.
     if insn.doc is not None:
-        parts.append(insn.doc + '\n\n')
-
-    # Syntax example: either given explicitly or figured out from operands
-    parts.append("```\n")
-    parts.append(insn.mnemonic.upper() + ('' if insn.glued_ops else ' '))
-    parts.append(insn.syntax.render_doc())
-    parts.append("\n```\n\n")
+        parts.append(insn.doc + '\n')
+    parts.append('\n')
 
     # If this came from the RV32I instruction set, say so.
     if insn.rv32i:
         parts.append('This instruction is defined in the RV32I instruction set.\n\n')
+
+    # Syntax example: either given explicitly or figured out from operands
+    parts.append(subhead + 'Syntax\n')
+    parts.append("```\n")
+    parts.append(insn.mnemonic.upper() + ('' if insn.glued_ops else ' '))
+    parts.append(insn.syntax.render_doc())
+    parts.append("\n```\n\n")
 
     is_pseudo = insn.literal_pseudo_op or insn.python_pseudo_op
 
@@ -287,10 +290,12 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     # Show the operand table if there is at least one operand and this isn't a
     # pseudo-op.
     if insn.operands and not is_pseudo:
+        parts.append(subhead + 'Operands\n')
         parts.append(render_operand_table(insn.operands, o2e))
 
     # Show encoding if we have one
     if e2o is not None:
+        parts.append(subhead + 'Encoding\n')
         assert insn.encoding is not None
         parts.append(render_encoding(insn.mnemonic, insn.encoding, e2o))
 
@@ -299,8 +304,7 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
         parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
 
     if impl is not None:
-        parts.append('{} Operation\n\n'
-                     .format('#' * (heading_level + 1)))
+        parts.append(subhead + 'Operation\n')
 
         # Add a handy header to remind readers that enum operands and option
         # operands are referred to by their integer values.
