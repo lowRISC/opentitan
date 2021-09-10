@@ -6,7 +6,7 @@
   build_ex:   "{build_dir}/simv"
   run_cmd:    "{job_prefix} {build_ex}"
 
-  build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
+  build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
                "-timescale=1ns/1ps",
                "-Mdir={build_ex}.csrc",
                "-o {build_ex}",
@@ -248,7 +248,9 @@
     {
       name: vcs_waves
       is_sim_mode: 1
-      build_opts: ["-debug_access"]
+      build_opts: [// Enable generating Verdi Knowledge Database
+                   "-kdb",
+                   "-debug_access"]
     }
     {
       name: vcs_cov
