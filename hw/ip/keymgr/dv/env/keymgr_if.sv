@@ -79,10 +79,48 @@ interface keymgr_if(input clk, input rst_n);
   bit edn_req_ack_sync;
   bit edn_req_ack_sync_done;
 
-  // for scb to predict error and alert
+  localparam int CtrlCntCopies  = 2;
+  localparam int CtrlCntWitdh   = 3;
+  localparam int KmacIfCntWitdh = 5;
+  localparam int StateWidth = 10;
+  localparam bit [StateWidth-1:0] KmacIfValidStates = {10'b1110100010,
+                                                       10'b0010011011,
+                                                       10'b0101000000,
+                                                       10'b1000101001,
+                                                       10'b1111111101,
+                                                       10'b0011101110};
+  localparam bit [StateWidth-1:0] CtrlValidStates = {10'b1101100001,
+                                                     10'b1110010010,
+                                                     10'b0011110100,
+                                                     10'b0110101111,
+                                                     10'b0100000100,
+                                                     10'b1000011101,
+                                                     10'b0001001010,
+                                                     10'b1101111110,
+                                                     10'b1010101000,
+                                                     10'b0000110011,
+                                                     10'b1011000111};
+
+  // for scb/seq to predict error/alert and sample coverage
   bit is_cmd_err;
-  bit is_fsm_err;
-  bit [2:0] force_cmds;
+  bit is_kmac_if_fsm_err;
+  bit is_ctrl_fsm_err;
+  bit is_ctrl_cnt_err;
+  bit is_kmac_if_cnt_err;
+  // invalid values
+  bit [2:0] force_cmds, prev_cmds;
+  bit [StateWidth-1:0] invalid_state, prev_state;
+  bit [KmacIfCntWitdh-1:0] kmac_if_invalid_cnt;
+  bit [CtrlCntCopies-1:0][CtrlCntWitdh:0] cnt_copies;
+
+  // If we need to wait for internal signal to be certain value, we may not be able to get that
+  // when the sim is close to end. Define a cnt and MaxWaitCycle to avoid sim hang
+  int cnt_to_wait_for_internal_value;
+  localparam int MaxWaitCycle = 100_000;
+
+  // Disable the check when we force internal design as it's hard to predict design behavior when
+  // internal FSM is changed or internal error is triggered
+  bit en_chk = 1;
 
   string msg_id = "keymgr_if";
 
@@ -113,13 +151,11 @@ interface keymgr_if(input clk, input rst_n);
     edn_interval  = 'h100;
     start_edn_req = 0;
 
-    if (is_cmd_err) begin
-      if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
-      if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
-      if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
-    end
     is_cmd_err = 0;
-    is_fsm_err = 0;
+    is_kmac_if_fsm_err = 0;
+    is_ctrl_fsm_err = 0;
+    is_ctrl_cnt_err = 0;
+    is_kmac_if_cnt_err = 0;
   endfunction
 
   // randomize otp, lc, flash input data
@@ -309,12 +345,14 @@ interface keymgr_if(input clk, input rst_n);
     otbn_sideload_status <= SideLoadClear;
   endfunction
 
+  // TODO, create a more generic approach to verify sec_cm
   task automatic force_cmd_err();
     @(posedge clk);
     randcase
       // force more than one force_cmds are issued
-      // TODO disable this case due to design issue #5363
-      0: begin
+      1: begin
+        `uvm_info(msg_id, "Force cmd", UVM_LOW)
+        prev_cmds = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o, tb.dut.u_ctrl.adv_en_o};
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
 
         // these signals are wires, need force and then release at reset
@@ -322,20 +360,99 @@ interface keymgr_if(input clk, input rst_n);
         if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
         if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
         @(posedge clk);
+
+        if ($urandom_range(0, 1)) begin
+          if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
+          if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
+          if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
+          @(posedge clk);
+        end
+
         if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
         if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
         if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
         is_cmd_err = 1;
       end
       1: begin
-        // Dynamic type in non-procedural context isn't allowed
-        static reg [2:0] invalid_state;
-        // 0-4 are illegal state
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state, invalid_state > 4;, , msg_id)
+        `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
+        prev_state = tb.dut.u_kmac_if.state_q;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
+            !(invalid_state inside {KmacIfValidStates});,
+            , msg_id)
+
         force tb.dut.u_kmac_if.state_q = invalid_state;
         @(posedge clk);
+
+        if ($urandom_range(0, 1)) begin
+          force tb.dut.u_kmac_if.state_q = prev_state;
+          @(posedge clk);
+        end
         release tb.dut.u_kmac_if.state_q;
-        is_fsm_err = 1;
+        is_kmac_if_fsm_err = 1;
+      end
+      1: begin
+        `uvm_info(msg_id, "Force KMC_IF cnt", UVM_LOW)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
+            kmac_if_invalid_cnt inside {[1 : 16]};,
+            , msg_id)
+        // wait for cnt to match a the picked value
+        cnt_to_wait_for_internal_value = 0;
+        while (1) begin
+          @(negedge clk);
+          if (tb.dut.u_kmac_if.u_cnt.up_cnt_q == kmac_if_invalid_cnt) begin
+            break;
+          end else if (cnt_to_wait_for_internal_value < MaxWaitCycle) begin
+            cnt_to_wait_for_internal_value++;
+          end else begin
+            return;
+          end
+        end
+
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
+            kmac_if_invalid_cnt != tb.dut.u_kmac_if.u_cnt.up_cnt_q;,
+            , msg_id)
+        $deposit(tb.dut.u_kmac_if.u_cnt.up_cnt_q, kmac_if_invalid_cnt);
+        @(posedge clk);
+        if ($urandom_range(0, 1)) begin
+          @(negedge clk);
+          $deposit(tb.dut.u_kmac_if.u_cnt.up_cnt_q, kmac_if_invalid_cnt + 1);
+          @(posedge clk);
+        end
+        is_kmac_if_cnt_err = 1;
+      end
+      1: begin
+        `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
+        prev_state = tb.dut.u_ctrl.state_q;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
+            !(invalid_state inside {CtrlValidStates});,
+            , msg_id)
+
+        force tb.dut.u_ctrl.state_q = invalid_state;
+        @(posedge clk);
+
+        if ($urandom_range(0, 1)) begin
+          force tb.dut.u_ctrl.state_q = prev_state;
+          @(posedge clk);
+        end
+        release tb.dut.u_ctrl.state_q;
+        is_ctrl_fsm_err = 1;
+      end
+      1: begin
+        `uvm_info(msg_id, "Force ctrl cnt", UVM_LOW)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
+            cnt_copies[0] != cnt_copies[1];,
+            , msg_id)
+        $deposit(tb.dut.u_ctrl.u_cnt.up_cnt_q, cnt_copies);
+        @(posedge clk);
+        if ($urandom_range(0, 1)) begin
+          @(negedge clk);
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
+              cnt_copies[0] == cnt_copies[1];,
+              , msg_id)
+          $deposit(tb.dut.u_ctrl.u_cnt.up_cnt_q, cnt_copies);
+          @(posedge clk);
+        end
+        is_ctrl_cnt_err = 1;
       end
     endcase
   endtask
@@ -393,7 +510,7 @@ interface keymgr_if(input clk, input rst_n);
   end
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
-    if (rst_n && act_key.valid && !is_cmd_err && !is_fsm_err) begin
+    if (rst_n && act_key.valid && en_chk) begin
       foreach (keys_a_array[state, cdi, dest]) begin
         `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
             $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
@@ -408,8 +525,7 @@ interface keymgr_if(input clk, input rst_n);
 
   // Create a macro to skip checking key values when LC is off or fault error occurs
   `define ASSERT_IFF_KEYMGR_LEGAL(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || is_cmd_err || \
-           is_fsm_err)
+    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
                            kmac_key == kmac_key_exp)

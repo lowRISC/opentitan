@@ -423,7 +423,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       // if OP WIP or keymgr_en=0, will clear cfg_regwen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || !cfg.keymgr_vif.get_keymgr_en()) &&
           ral.cfg_regwen.locks_reg_or_fld(dv_reg)) begin
-        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfg_regwen=0", csr.get_name()),
+        `uvm_info(`gfn, $sformatf("Reg write to %s is ignored due to cfg_regwen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
       end else if ((`gmv(ral.sw_binding_regwen) == 0 || !cfg.keymgr_vif.get_keymgr_en()) &&
@@ -708,6 +708,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         if (cfg.en_cov && addr_phase_write) begin
           cov.sw_input_cg_wrap["max_owner_key_ver_shadowed"].sample(item.a_data,
               `gmv(ral.max_owner_key_ver_regwen));
+        end
+      end
+      "fault_status": begin
+        // Check in this block
+        do_read_check = 1'b0;
+
+        if (data_phase_read) begin
+          `DV_CHECK_EQ(item.d_data[keymgr_pkg::FaultKmacOp],  is_kmac_rsp_err)
+          `DV_CHECK_EQ(item.d_data[keymgr_pkg::FaultKmacOut], is_kmac_invalid_data)
         end
       end
       default: begin
