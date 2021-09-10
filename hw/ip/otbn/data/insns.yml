@@ -56,11 +56,6 @@ encoding-schemes: enc-schemes.yml
 #             immediately after the mnemonic (with no space). Optional,
 #             defaults to false.
 #
-#  trailing-doc: Documentation that should appear after the syntax example but
-#                before the operand table. Useful for things like alternative
-#                assembly syntax, or deviations from the usual meaning of the
-#                instruction. (optional)
-#
 #  literal-pseudo-op: This instruction is a pseudo-operation that expands into
 #                     a list of underlying RISC-V operations, given as a list.
 #                     Optional. Can't be specified with encoding or

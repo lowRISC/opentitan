@@ -331,8 +331,9 @@
     - grd
     - *branch-offset-operand
   straight-line: false
-  trailing-doc: |
+  doc: |
     The JAL instruction has the same behavior as in RV32I, jumping by the given offset and writing `PC+4` as a link address to the destination register.
+
     OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling subroutines.
     Do so by using `x1` as the link register: `jal x1, <offset>`.
   encoding:
@@ -347,8 +348,9 @@
   synopsis: Jump And Link Register
   operands: [grd, grs1, offset]
   straight-line: false
-  trailing-doc: |
+  doc: |
     The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
+
     OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
     To return from a subroutine, use `jalr x0, x1, 0`.
     This pops a link address from the call stack and branches to it.

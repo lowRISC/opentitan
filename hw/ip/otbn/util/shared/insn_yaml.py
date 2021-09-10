@@ -26,7 +26,7 @@ class Insn:
         yd = check_keys(yml, 'instruction',
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
-                         'syntax', 'doc', 'note', 'trailing-doc',
+                         'syntax', 'doc', 'note',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
                          'straight-line'])
@@ -85,7 +85,6 @@ class Insn:
         self.synopsis = get_optional_str(yd, 'synopsis', what)
         self.doc = get_optional_str(yd, 'doc', what)
         self.note = get_optional_str(yd, 'note', what)
-        self.trailing_doc = get_optional_str(yd, 'trailing-doc', what)
 
         raw_syntax = get_optional_str(yd, 'syntax', what)
         if raw_syntax is not None:
