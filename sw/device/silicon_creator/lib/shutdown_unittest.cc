@@ -16,6 +16,7 @@
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 
 // FIXME: I can't get ARRAYSIZE from `memory.h` because the definitions of
@@ -40,6 +41,7 @@ namespace internal {
 // Create a mock for shutdown functions.
 class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
  public:
+  MOCK_METHOD(void, shutdown_report_error, (rom_error_t));
   MOCK_METHOD(void, shutdown_software_escalate, ());
   MOCK_METHOD(void, shutdown_keymgr_kill, ());
   MOCK_METHOD(void, shutdown_flash_kill, ());
@@ -52,7 +54,9 @@ class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
 }  // namespace internal
 using MockShutdown = testing::StrictMock<internal::MockShutdown>;
 extern "C" {
-
+void shutdown_report_error(rom_error_t error) {
+  return MockShutdown::Instance().shutdown_report_error(error);
+}
 void shutdown_software_escalate(void) {
   return MockShutdown::Instance().shutdown_software_escalate();
 }
@@ -488,6 +492,55 @@ TEST_F(ShutdownTest, InitializeRma) {
   EXPECT_EQ(shutdown_init(kLcStateRma), kErrorOk);
 }
 
+TEST_F(ShutdownTest, RedactPolicyManufacturing) {
+  // Devices in manufacturing or RMA states should not redact errors regardless
+  // of the redaction level set by OTP.
+  constexpr auto kManufacturingStates = std::array<lifecycle_state_t, 10>{
+      kLcStateRaw,           kLcStateTestUnlocked0,
+      kLcStateTestUnlocked1, kLcStateTestUnlocked2,
+      kLcStateTestUnlocked3, kLcStateTestUnlocked4,
+      kLcStateTestUnlocked5, kLcStateTestUnlocked6,
+      kLcStateTestUnlocked7, kLcStateRma};
+  for (const auto state : kManufacturingStates) {
+    EXPECT_ABS_READ32(
+        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        static_cast<uint32_t>(state));
+    EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactNone);
+  }
+}
+
+TEST_F(ShutdownTest, RedactPolicyProduction) {
+  // Production states should read redaction level from OTP.
+  constexpr auto kProductionStates = std::array<lifecycle_state_t, 3>{
+      kLcStateProd, kLcStateProdEnd, kLcStateDev};
+  for (const auto state : kProductionStates) {
+    EXPECT_ABS_READ32(
+        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        static_cast<uint32_t>(state));
+    EXPECT_ABS_READ32(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                          OTP_CTRL_PARAM_ROM_ERROR_REPORTING_OFFSET,
+                      static_cast<uint32_t>(kShutdownErrorRedactModule));
+    EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactModule);
+  }
+}
+
+TEST_F(ShutdownTest, RedactPolicyInvalid) {
+  // Invalid states should result in the highest redaction level regardless of
+  // the redaction level set by OTP.
+  constexpr auto kInvalidStates = std::array<lifecycle_state_t, 11>{
+      kLcStateTestLocked0, kLcStateTestLocked1, kLcStateTestLocked2,
+      kLcStateTestLocked3, kLcStateTestLocked4, kLcStateTestLocked5,
+      kLcStateTestLocked6, kLcStateScrap,       kLcStatePostTransition,
+      kLcStateEscalate,    kLcStateInvalid};
+  for (const auto state : kInvalidStates) {
+    EXPECT_ABS_READ32(
+        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        static_cast<uint32_t>(state));
+    EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
+  }
+}
+
 TEST(ShutdownModule, RedactErrors) {
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactNone), 0);
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactError), 0);
@@ -506,6 +559,7 @@ TEST(ShutdownModule, RedactErrors) {
 
 TEST_F(ShutdownTest, ShutdownFinalize) {
   SetupOtpReads();
+  EXPECT_CALL(shutdown_, shutdown_report_error(kErrorUnknown));
   EXPECT_CALL(shutdown_, shutdown_software_escalate());
   EXPECT_CALL(shutdown_, shutdown_keymgr_kill());
   EXPECT_CALL(shutdown_, shutdown_flash_kill());
