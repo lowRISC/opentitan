@@ -125,6 +125,9 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
       alert_handler_wr_regwen_regs(clr_en);
 
+      // randomize crashdump triggered phases
+      alert_handler_crashdump_phases();
+
       // randomly write phase cycle registers
       // always set phase_cycle for the first iteration, in order to pass stress_all test
       if (do_wr_phases_cyc || i == 1) wr_phases_cycle(max_phase_cyc);

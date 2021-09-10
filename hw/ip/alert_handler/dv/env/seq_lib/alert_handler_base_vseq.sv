@@ -148,8 +148,16 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // checking for csr_rd is done in scb
   virtual task read_alert_cause();
     bit [TL_DW-1:0] alert_cause;
-    csr_rd(.ptr(ral.alert_cause[0]), .value(alert_cause));
-    csr_rd(.ptr(ral.loc_alert_cause[0]), .value(alert_cause));
+    foreach (ral.alert_cause[i]) begin
+      if ($urandom_range(0, 1)) begin
+        csr_rd(.ptr(ral.alert_cause[i]), .value(alert_cause));
+      end
+    end
+    foreach (ral.loc_alert_cause[i]) begin
+      if ($urandom_range(0, 1)) begin
+        csr_rd(.ptr(ral.loc_alert_cause[i]), .value(alert_cause));
+      end
+    end
   endtask
 
   virtual task read_esc_status();
@@ -225,6 +233,16 @@ class alert_handler_base_vseq extends cip_base_vseq #(
         ping_index = ping_i;
       end
     join
+  endtask
+
+  virtual task alert_handler_crashdump_phases(bit [1:0] classa_phase = $urandom(),
+                                              bit [1:0] classb_phase = $urandom(),
+                                              bit [1:0] classc_phase = $urandom(),
+                                              bit [1:0] classd_phase = $urandom());
+    csr_wr(.ptr(ral.classa_crashdump_trigger_shadowed), .value(classa_phase));
+    csr_wr(.ptr(ral.classb_crashdump_trigger_shadowed), .value(classb_phase));
+    csr_wr(.ptr(ral.classc_crashdump_trigger_shadowed), .value(classc_phase));
+    csr_wr(.ptr(ral.classd_crashdump_trigger_shadowed), .value(classd_phase));
   endtask
 
   virtual task wr_phases_cycle(int max_phase_cyc);
