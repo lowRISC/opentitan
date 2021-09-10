@@ -49,10 +49,6 @@ encoding-schemes: enc-schemes.yml
 #
 #  doc:       Documentation for the instruction in markdown. (optional)
 #
-#  decode:    Python pseudocode for decoding instruction objects (optional)
-#
-#  operation: Python pseudocode for the operation of the instruction (optional)
-#
 #  note:      Text that should appear in a callout banner at the top of the
 #             instruction documentation. (optional)
 #
