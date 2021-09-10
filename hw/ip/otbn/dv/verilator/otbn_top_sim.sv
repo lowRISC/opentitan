@@ -332,10 +332,27 @@ module otbn_top_sim (
     end
   end
 
+  bit err_latched;
+  assign err_latched = model_err_latched | done_mismatch_latched | err_bits_mismatch_latched;
+
+  int bad_cycles;
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      bad_cycles <= 0;
+    end else begin
+      if (err_latched) begin
+        bad_cycles <= bad_cycles + 1;
+      end
+      if (bad_cycles >= 3) begin
+        $error("Mismatch or model error (see message above)");
+      end
+    end
+  end
+
   // Defined in otbn_top_sim.cc
   import "DPI-C" context function int OtbnTopApplyLoopWarp();
 
-  always @(negedge IO_CLK or negedge IO_RST_N) begin
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
       loop_warp_model_err <= 1'b0;
     end else begin
@@ -373,7 +390,7 @@ module otbn_top_sim (
   export "DPI-C" function otbn_err_get;
 
   function automatic bit otbn_err_get();
-    return model_err_latched | done_mismatch_latched | err_bits_mismatch_latched;
+    return err_latched;
   endfunction
 
 endmodule
