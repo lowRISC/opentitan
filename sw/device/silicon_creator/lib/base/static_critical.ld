@@ -11,4 +11,4 @@
 ASSERT(. == ORIGIN(ram_main), "Error: .static_critical section not at the base address of main RAM.");
 ASSERT(. - ADDR(.static_critical) == 0, "Error: .static_critical.sec_mmio_ctx section offset has changed.");
 KEEP(*(.static_critical.sec_mmio_ctx))
-ASSERT(. - ADDR(.static_critical) == 816, "Error: .static_critical.sec_mmio_ctx section size has changed");
+ASSERT(. - ADDR(.static_critical) == 1616, "Error: .static_critical.sec_mmio_ctx section size has changed");

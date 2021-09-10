@@ -61,7 +61,7 @@ enum {
    * This value must be less than the `kSecMmioRndStep` in sec_mmio.c.
    */
   // TODO(#6609): Update size of expectations table.
-  kSecMmioRegFileSize = 100,
+  kSecMmioRegFileSize = 200,
 };
 
 /**
@@ -109,12 +109,12 @@ typedef struct sec_mmio_ctx {
  * to both boot stages.
  */
 OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, values, 0);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 400);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 800);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 804);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 808);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 812);
-OT_ASSERT_SIZE(sec_mmio_ctx_t, 816);  // Checked by linker script.
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 800);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 1600);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 1604);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 1608);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 1612);
+OT_ASSERT_SIZE(sec_mmio_ctx_t, 1616);  // Checked by linker script.
 
 /**
  * Shutdown module callback handler.

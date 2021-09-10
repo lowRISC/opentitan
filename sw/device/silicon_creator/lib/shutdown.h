@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #ifdef __cplusplus
@@ -19,6 +20,8 @@ extern "C" {
  * Reads the shutdown policy from OTP, and initializes the alert handler.
  *
  * @param lc_state: Lifecycle state of the chip.
+ * @param[out] redaction Redaction level initialized according to the lifecycle
+ * state and OTP configuration.
  * @return: Any error encountered during initialization.
  */
 rom_error_t shutdown_init(lifecycle_state_t lc_state);
@@ -42,6 +45,15 @@ typedef enum shutdown_error_redact {
 } shutdown_error_redact_t;
 
 /**
+ * Calculate the error redaction level required given the current lifecycle
+ * state and OTP configuration.
+ *
+ * @return Redaction level to apply to error codes.
+ */
+OT_WARN_UNUSED_RESULT
+shutdown_error_redact_t shutdown_redact_policy(void);
+
+/**
  * Redact an error code.
  *
  * @param reason: The error code to be redacted.
@@ -53,7 +65,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity);
 /**
  * Perform a shutdown in the Mask ROM in response to an exceptional condition.
  *
- * @param reason: A reason for entering the shutdown state.
+ * @param reason A reason for entering the shutdown state.
  */
 #ifndef OT_OFF_TARGET_TEST
 // If this is a test, we'll omit `noreturn` so we can call this function

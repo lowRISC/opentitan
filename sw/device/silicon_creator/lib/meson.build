@@ -69,6 +69,7 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
     sources: [
       hw_ip_alert_handler_reg_h,
       hw_ip_otp_ctrl_reg_h,
+      hw_ip_lc_ctrl_reg_h,
       hw_ip_keymgr_reg_h,
       hw_ip_sram_ctrl_reg_h,
       hw_ip_flash_ctrl_reg_h,
@@ -120,6 +121,7 @@ test('sw_silicon_creator_lib_shutdown_unittest', executable(
     'sw_silicon_creator_lib_shutdown_unittest',
     sources: [
       hw_ip_alert_handler_reg_h,
+      hw_ip_lc_ctrl_reg_h,
       hw_ip_otp_ctrl_reg_h,
       hw_ip_keymgr_reg_h,
       hw_ip_sram_ctrl_reg_h,
