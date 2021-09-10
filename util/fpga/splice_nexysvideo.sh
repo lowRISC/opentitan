@@ -31,7 +31,7 @@ FPGA_BIT_NAME=lowrisc_systems_chip_earlgrey_nexysvideo_0.1
 ninja -C "${OBJ_DIR}" "${TARGET_EXPORT}"
 
 # Create the Vivado image for splicing.
-hw/ip/rom_ctrl/util/gen_vivado_mem_image.py "${TARGET}.32.vmem" "${TARGET}.updatemem.mem"
+hw/ip/rom_ctrl/util/gen_vivado_mem_image.py "${TARGET}.scr.39.vmem" "${TARGET}.updatemem.mem"
 
 # The --debug flag is undocumented and causes updatemem to print out the INIT_XX
 # values of the four BRAM cells. These values are also oberservable when opening
