@@ -10174,6 +10174,14 @@
         attr: ""
       }
       {
+        instance: spi_device
+        port: tpm_csb
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
         instance: spi_host1
         port: ""
         connection: muxed
@@ -11002,7 +11010,7 @@
         glob_idx: 45
       }
       {
-        name: flash_ctrl_tck
+        name: spi_device_tpm_csb
         width: 1
         type: input
         idx: -1
@@ -11013,7 +11021,7 @@
         glob_idx: 46
       }
       {
-        name: flash_ctrl_tms
+        name: flash_ctrl_tck
         width: 1
         type: input
         idx: -1
@@ -11024,7 +11032,7 @@
         glob_idx: 47
       }
       {
-        name: flash_ctrl_tdi
+        name: flash_ctrl_tms
         width: 1
         type: input
         idx: -1
@@ -11035,7 +11043,7 @@
         glob_idx: 48
       }
       {
-        name: sysrst_ctrl_aon_ac_present
+        name: flash_ctrl_tdi
         width: 1
         type: input
         idx: -1
@@ -11046,7 +11054,7 @@
         glob_idx: 49
       }
       {
-        name: sysrst_ctrl_aon_key0_in
+        name: sysrst_ctrl_aon_ac_present
         width: 1
         type: input
         idx: -1
@@ -11057,7 +11065,7 @@
         glob_idx: 50
       }
       {
-        name: sysrst_ctrl_aon_key1_in
+        name: sysrst_ctrl_aon_key0_in
         width: 1
         type: input
         idx: -1
@@ -11068,7 +11076,7 @@
         glob_idx: 51
       }
       {
-        name: sysrst_ctrl_aon_key2_in
+        name: sysrst_ctrl_aon_key1_in
         width: 1
         type: input
         idx: -1
@@ -11079,7 +11087,7 @@
         glob_idx: 52
       }
       {
-        name: sysrst_ctrl_aon_pwrb_in
+        name: sysrst_ctrl_aon_key2_in
         width: 1
         type: input
         idx: -1
@@ -11090,7 +11098,7 @@
         glob_idx: 53
       }
       {
-        name: sysrst_ctrl_aon_lid_open
+        name: sysrst_ctrl_aon_pwrb_in
         width: 1
         type: input
         idx: -1
@@ -11099,6 +11107,17 @@
         connection: muxed
         desc: ""
         glob_idx: 54
+      }
+      {
+        name: sysrst_ctrl_aon_lid_open
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        glob_idx: 55
       }
       {
         name: spi_host0_sck
@@ -11575,7 +11594,7 @@
       muxed:
       {
         inouts: 42
-        inputs: 13
+        inputs: 14
         outputs: 33
         pads: 47
       }
@@ -12371,6 +12390,12 @@
     }
     {
       name: spi_device_txunderflow
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_tpm_cmdaddr_notempty
       width: 1
       type: interrupt
       module_name: spi_device

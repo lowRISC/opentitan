@@ -165,7 +165,7 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "55",
+      default: "56",
       local: "true"
     },
     { name: "NMioPeriphOut",
