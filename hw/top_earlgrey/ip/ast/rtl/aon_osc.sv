@@ -9,11 +9,13 @@
 module aon_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input aon_en_i,         // AON Source Clock Enable
-  input clk_aon_ext_i,    // FPGA/VERILATOR Clock input
+`ifdef AST_BYPASS_CLK
+  input clk_aon_ext_i,    // FPGA/VERILATOR Clock input\
+`endif
   output logic aon_clk_o  // AON Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 10ps;
@@ -42,7 +44,7 @@ logic en_osc;
 always begin
   #(AonClkPeriod/2) clk = ~clk && en_osc;
 end
-`else  // of SYNTHESIS
+`else  // of AST_BYPASS_CLK
 // SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
 logic aon_clk_dly;

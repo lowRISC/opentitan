@@ -10,11 +10,13 @@ module sys_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input sys_en_i,         // System Source Clock Enable
   input sys_jen_i,        // System Source Clock Jitter Enable
+`ifdef AST_BYPASS_CLK
   input clk_sys_ext_i,    // FPGA/VERILATOR Clock input
+`endif
   output logic sys_clk_o  // System Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit  1ns / 1ps;
@@ -46,7 +48,7 @@ always begin
   jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
   #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
 end
-`else  // of SYNTHESIS
+`else  // of AST_BYPASS_CLK
 // SYNTHESIS/VERILATOR/LINTER/FPGA
 ////////////////////////////////////////
 logic sys_clk_dly;

@@ -14,14 +14,15 @@ module sys_clk (
   input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
   input scan_mode_i,                       // Scan Mode
   input scan_reset_ni,                     // Scan Reset
+`ifdef AST_BYPASS_CLK
   input clk_sys_ext_i,                     // FPGA/VERILATOR Clock input
+`endif
   output logic clk_src_sys_o,              // System Source Clock
   output logic clk_src_sys_val_o           // System Source Clock Valid
 );
 
-logic clk, osc_en, sys_clk_en, rst_n;
+logic clk, osc_en, sys_clk_en;
 
-assign rst_n = rst_sys_clk_ni;  // scan enabled
 assign osc_en = (clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni);
 assign sys_clk_en = scan_mode_i || osc_en;
 
@@ -31,7 +32,9 @@ sys_osc u_sys_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .sys_en_i ( sys_clk_en ),
   .sys_jen_i ( clk_src_sys_jen_i ),
+`ifdef AST_BYPASS_CLK
   .clk_sys_ext_i ( clk_sys_ext_i ),
+`endif
   .sys_clk_o ( clk )
 );  // of u_sys_osc
 
@@ -44,7 +47,7 @@ prim_clock_buf u_clk_sys_buf(
 
 // 2-stage de-assertion
 logic rst_val_n;
-assign rst_val_n = scan_mode_i ? scan_reset_ni : rst_n && sys_clk_en;
+assign rst_val_n = scan_mode_i ? scan_reset_ni : sys_clk_en;
 
 prim_flop_2sync #(
   .Width ( 1 ),

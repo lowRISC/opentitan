@@ -16,11 +16,6 @@ module ast #(
   parameter int Ast2PadOutWidth = 9,
   parameter int Pad2AstInWidth  = 6
 ) (
-  // clocks and resets supplied for detection
-  input clkmgr_pkg::clkmgr_out_t sns_clks_i,
-  input rstmgr_pkg::rstmgr_out_t sns_rsts_i,
-  input sns_ext_clk_i,
-
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
@@ -42,8 +37,15 @@ module ast #(
   input clk_ast_ext_i,                        // Buffered AST External Clock
   input por_ni,                               // Power ON Reset
 
+  // sensed clocks / resets
+  input clkmgr_pkg::clkmgr_out_t sns_clks_i,  // Sensed Clocks
+  input rstmgr_pkg::rstmgr_out_t sns_rsts_i,  // Sensed Resets
+  input sns_spi_ext_clk_i,                    // Sensed SPI External Clock
+
+`ifdef AST_BYPASS_CLK
   // Clocks' Oschillator bypass for OS FPGA
-  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
+`endif
 
   // power OK control
   // In non-power aware DV environment, the <>_supp_i is for debug only!
@@ -280,6 +282,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .main_pd_h_ni ( main_pd_ni ),
   .main_env_iso_en_h_i ( main_env_iso_en_i ),
   .otp_power_seq_h_i ( otp_power_seq_i[1:0] ),
+  .scan_mode_i ( scan_mode ),
   .vcaon_pok_h_o ( vcaon_pok_h_int ),
   .main_pwr_dly_o ( main_pwr_dly_o ),
   .otp_power_seq_h_o ( otp_power_seq_h_o[1:0] ),
@@ -292,11 +295,13 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n, clk_sys_pd_n;
+`ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
 
+assign clk_sys_ext   = clk_osc_byp_i.sys;
+`endif
 assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
 assign clk_sys_pd_n  = vcmain_pok;
-assign clk_sys_ext   = clk_osc_byp_i.sys;
 
 sys_clk u_sys_clk (
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
@@ -306,13 +311,16 @@ sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+`ifdef AST_BYPASS_CLK
   .clk_sys_ext_i ( clk_sys_ext ),
+`endif
   .clk_src_sys_o ( clk_src_sys_o ),
   .clk_src_sys_val_o ( clk_src_sys_val_o )
 );  // of u_sys_clk
 
 // Local (AST) System clock buffer
 ////////////////////////////////////////
+logic clk_sys;
 prim_clock_buf u_clk_sys_buf (
   .clk_i ( clk_src_sys_o ),
   .clk_o ( clk_sys )
@@ -327,11 +335,13 @@ prim_clock_buf u_clk_sys_buf (
 // USB Clock (Always ON)
 ///////////////////////////////////////
 logic rst_usb_clk_n, clk_usb_pd_n;
+`ifdef AST_BYPASS_CLK
 logic clk_usb_ext;
 
+assign clk_usb_ext   = clk_osc_byp_i.usb;
+`endif
 assign rst_usb_clk_n = vcmain_pok_por;
 assign clk_usb_pd_n  = vcmain_pok;
-assign clk_usb_ext   = clk_osc_byp_i.usb;
 
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -342,7 +352,9 @@ usb_clk u_usb_clk (
   .usb_ref_pulse_i ( usb_ref_pulse_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+`ifdef AST_BYPASS_CLK
   .clk_usb_ext_i ( clk_usb_ext ),
+`endif
   .clk_src_usb_o ( clk_src_usb_o ),
   .clk_src_usb_val_o ( clk_src_usb_val_o )
 );  // of u_usb_clk
@@ -352,10 +364,12 @@ usb_clk u_usb_clk (
 // AON Clock (Always ON)
 ///////////////////////////////////////
 logic rst_aon_clk_n;
+`ifdef AST_BYPASS_CLK
 logic clk_aon_ext;
 
-assign rst_aon_clk_n = vcaon_pok;
 assign clk_aon_ext   = clk_osc_byp_i.aon;
+`endif
+assign rst_aon_clk_n = vcaon_pok;
 
 aon_clk  u_aon_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -364,7 +378,9 @@ aon_clk  u_aon_clk (
   .clk_src_aon_en_i ( 1'b1 ),  // Always Enabled
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+`ifdef AST_BYPASS_CLK
   .clk_aon_ext_i ( clk_aon_ext ),
+`endif
   .clk_src_aon_o ( clk_src_aon_o ),
   .clk_src_aon_val_o ( clk_src_aon_val_o )
 );  // of u_aon_clk
@@ -397,11 +413,13 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 // IO Clock (Always ON)
 ///////////////////////////////////////
 logic clk_io_osc, clk_io_osc_val, rst_io_clk_n, clk_io_pd_n;
+`ifdef AST_BYPASS_CLK
 logic clk_io_ext;
 
+assign clk_io_ext   = clk_osc_byp_i.io;
+`endif
 assign rst_io_clk_n = vcmain_pok_por;  // scan reset included
 assign clk_io_pd_n  = vcmain_pok;
-assign clk_io_ext   = clk_osc_byp_i.io;
 
 io_clk u_io_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -410,7 +428,9 @@ io_clk u_io_clk (
   .clk_src_io_en_i ( clk_src_io_en_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+`ifdef AST_BYPASS_CLK
   .clk_io_ext_i ( clk_io_ext ),
+`endif
   .clk_src_io_o ( clk_io_osc ),
   .clk_src_io_val_o ( clk_io_osc_val )
 );  // of u_io_clk
@@ -681,14 +701,33 @@ ast_reg_top u_reg (
   .devmode_i ( 1'b0 )
 );  // u_reg
 
-// AST to Registers Input
-for (genvar i=0; i<10; i++ ) begin : gen_regb
-  assign hw2reg.regb[i].d  = 32'h0000_0000;
-  assign hw2reg.regb[i].de = 1'b0;
+
+///////////////////////////////////////
+// REGAL Register
+///////////////////////////////////////
+logic regal_rst_n;
+assign regal_rst_n = rst_ast_tlul_ni;
+
+logic regal_we;
+logic [32-1:0] regal, regal_di;
+
+assign regal_we = reg2hw.regal.qe;
+assign regal_di = reg2hw.regal.q;
+assign hw2reg.regal.d = regal;
+
+// REGAL & AST init done indication
+always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
+  if ( !regal_rst_n ) begin
+    regal           <= AST_REGAL_RESVAL;
+    ast_init_done_o <= 1'b0;
+  end else if ( regal_we ) begin
+    regal           <= regal_di;
+    ast_init_done_o <= 1'b1;
+  end
 end
-//
-assign usb_io_pu_cal_o = {UsbCalibWidth{1'b0}};
-assign ast_init_done_o = 1'b0;   // TODO
+
+// USB PU-P and PU-N value selection
+assign usb_io_pu_cal_o = (1 << (UsbCalibWidth[5-1:0]/2));
 
 
 ///////////////////////////////////////
@@ -786,20 +825,17 @@ assign unused_analog_sigs = ^{ pad2ast_t0_ai,
 `endif
 assign unused_sigs = ^{ clk_ast_usb_i,
                         rst_ast_usb_ni,
+                        sns_spi_ext_clk_i,
+                        sns_clks_i,
+                        sns_rsts_i,
                         intg_err,
                         rst_vcmpp_aon_n,
                         padmux2ast_i[5:0],
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],
-                        reg2hw.rega,  // [0:49]
-                        reg2hw.regb,  // [0:9]
-                        reg2hw.revid.q
+                        reg2hw.rega,  // [0:31]
+                        reg2hw.regb   // [0:3]
                       };
-
-logic unused_clks;
-logic unused_rsts;
-assign unused_clks = ^sns_clks_i ^ sns_ext_clk_i;
-assign unused_rsts = ^sns_rsts_i;
 
 endmodule : ast

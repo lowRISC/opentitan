@@ -10,11 +10,13 @@ module usb_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input usb_en_i,         // USB Source Clock Enable
   input usb_ref_val_i,    // USB Reference Valid
+`ifdef AST_BYPASS_CLK
   input clk_usb_ext_i,    // FPGA/VERILATOR Clock input
+`endif
   output logic usb_clk_o  // USB Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 1ps;
@@ -52,7 +54,7 @@ assign drift = ref_val ? 0 : rand32;
 always begin
   #((UsbClkPeriod + drift)/2000) clk = ~clk && en_osc;
 end
-`else  // of SYNTHESIS
+`else  // of AST_BYPASS_CLK
 // SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
 logic usb_clk_dly;
