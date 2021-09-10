@@ -47,14 +47,18 @@ encoding-schemes: enc-schemes.yml
 #             are taken to be required literal syntax. So "foo<bar>" means "the
 #             string 'foo', followed by the bar operand".
 #
+#  glued-ops: A boolean. If true, the first operand in the syntax can appear
+#             immediately after the mnemonic (with no space). Optional,
+#             defaults to false.
+#
 #  doc:       Documentation for the instruction in markdown. (optional)
 #
 #  note:      Text that should appear in a callout banner at the top of the
 #             instruction documentation. (optional)
 #
-#  glued-ops: A boolean. If true, the first operand in the syntax can appear
-#             immediately after the mnemonic (with no space). Optional,
-#             defaults to false.
+#  errs:      A list of errors that might be signalled by this instruction.
+#             This should be a list of strings, each of which is interpreted as
+#             markdown.
 #
 #  literal-pseudo-op: This instruction is a pseudo-operation that expands into
 #                     a list of underlying RISC-V operations, given as a list.

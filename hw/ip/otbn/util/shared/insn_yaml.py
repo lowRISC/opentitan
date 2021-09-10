@@ -26,7 +26,7 @@ class Insn:
         yd = check_keys(yml, 'instruction',
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
-                         'syntax', 'doc', 'note',
+                         'syntax', 'doc', 'errs', 'note',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
                          'straight-line'])
@@ -85,6 +85,16 @@ class Insn:
         self.synopsis = get_optional_str(yd, 'synopsis', what)
         self.doc = get_optional_str(yd, 'doc', what)
         self.note = get_optional_str(yd, 'note', what)
+
+        self.errs = None
+        if 'errs' in yd:
+            errs_what = 'errs field for ' + what
+            y_errs = check_list(yd.get('errs'), errs_what)
+            self.errs = []
+            for idx, err_desc in enumerate(y_errs):
+                self.errs.append(check_str(err_desc,
+                                           'element {} of the {}'
+                                           .format(idx, errs_what)))
 
         raw_syntax = get_optional_str(yd, 'syntax', what)
         if raw_syntax is not None:
