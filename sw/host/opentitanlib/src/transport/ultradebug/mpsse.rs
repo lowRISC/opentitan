@@ -6,9 +6,10 @@ use anyhow::{bail, Result};
 use bitflags::bitflags;
 use log;
 use safe_ftdi as ftdi;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 
-use std::time::{Duration, Instant};
+use crate::io::gpio::GpioError;
 
 pub const MPSSE_WRCLK_FALLING: u8 = 0x01;
 pub const MPSSE_RDCLK_FALLING: u8 = 0x04;
@@ -189,10 +190,6 @@ pub enum Error {
     MpsseTimeout,
     #[error("unknown MPSSE error: {0:02x} {1:02x}")]
     MpsseUnknown(u8, u8),
-    #[error("Invalid GPIO pin: {0}")]
-    InvalidGpioPin(u32),
-    #[error("Invalid GPIO direction: {0}")]
-    InvalidGpioDirection(u32),
     #[error("Invalid data length: {0}")]
     InvalidDataLength(usize),
 }
@@ -327,10 +324,10 @@ impl Context {
     }
 
     /// Set the GPIO state of an individual pin on the FTDI device.
-    pub fn gpio_set(&mut self, pin: u32, high: bool) -> Result<()> {
-        let dir = GpioDirection::from_bits(1 << pin).ok_or(Error::InvalidGpioPin(pin))?;
+    pub fn gpio_set(&mut self, pin: u8, high: bool) -> Result<()> {
+        let dir = GpioDirection::from_bits(1 << pin).ok_or(GpioError::InvalidPinNumber(pin))?;
         if (dir & self.gpio_direction).bits() == 0 {
-            return Err(Error::InvalidGpioDirection(pin).into());
+            return Err(GpioError::InvalidPinDirection(pin).into());
         }
         if high {
             self.gpio_value |= 1 << pin;
@@ -344,6 +341,20 @@ impl Context {
         );
         let command = Command::SetLowGpio(self.gpio_direction, self.gpio_value);
         self.execute(&mut [command])
+    }
+
+    /// Set the direction of an individual pin on the FTDI device.
+    pub fn gpio_set_direction(&mut self, pin: u8, output: bool) -> Result<()> {
+        let direction =
+            GpioDirection::from_bits(1 << pin).ok_or(GpioError::InvalidPinNumber(pin))?;
+        if output {
+            self.gpio_direction |= direction;
+        } else {
+            self.gpio_direction &= direction;
+        }
+        // Perform a read to immediately synchronize the direction to the device.
+        let _ = self.gpio_get()?;
+        Ok(())
     }
 
     /// Set the clock frequency for serial opertions on the FTDI device.

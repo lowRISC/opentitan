@@ -3,6 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use thiserror::Error;
+
+/// Errors related to the SPI interface and SPI transactions.
+#[derive(Error, Debug)]
+pub enum SpiError {
+    #[error("Invalid word size: {0}")]
+    InvalidWordSize(u32),
+    #[error("Invalid speed: {0}")]
+    InvalidSpeed(u32),
+}
 
 /// Represents the SPI transfer mode.
 /// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase

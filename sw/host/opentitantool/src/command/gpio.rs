@@ -7,18 +7,19 @@ use erased_serde::Serialize;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::io::gpio::PinDirection;
 use opentitanlib::transport::{Capability, Transport};
 
 #[derive(Debug, StructOpt)]
 /// Reads a GPIO pin.
 pub struct GpioRead {
-    #[structopt(short, long, help = "The GPIO pin to read")]
-    pub pin: u32,
+    #[structopt(name = "PIN", help = "The GPIO pin to read")]
+    pub pin: String,
 }
 
 #[derive(serde::Serialize)]
 pub struct GpioReadResult {
-    pub pin: u32,
+    pub pin: String,
     pub value: bool,
 }
 
@@ -26,9 +27,9 @@ impl CommandDispatch for GpioRead {
     fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::GPIO).ok()?;
         let gpio = transport.gpio()?;
-        let value = gpio.read(self.pin)?;
+        let value = gpio.read(&self.pin)?;
         Ok(Some(Box::new(GpioReadResult {
-            pin: self.pin,
+            pin: self.pin.clone(),
             value,
         })))
     }
@@ -37,10 +38,14 @@ impl CommandDispatch for GpioRead {
 #[derive(Debug, StructOpt)]
 /// Writes a GPIO pin.
 pub struct GpioWrite {
-    #[structopt(short, long, help = "The GPIO pin to write")]
-    pub pin: u32,
-    #[structopt(short, long, help = "The value to write to the pin")]
-    pub value: u8,
+    #[structopt(name = "PIN", help = "The GPIO pin to write")]
+    pub pin: String,
+    #[structopt(
+        name = "VALUE",
+        parse(try_from_str),
+        help = "The value to write to the pin"
+    )]
+    pub value: bool,
 }
 
 impl CommandDispatch for GpioWrite {
@@ -48,8 +53,30 @@ impl CommandDispatch for GpioWrite {
         transport.capabilities().request(Capability::GPIO).ok()?;
         let gpio = transport.gpio()?;
 
-        gpio.write(self.pin, self.value != 0)?;
-        let _value = gpio.read(self.pin)?;
+        gpio.write(&self.pin, self.value)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, StructOpt)]
+/// Set the I/O direction of a GPIO pin.
+pub struct GpioSetDirection {
+    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    pub pin: String,
+    #[structopt(
+        name = "DIRECTION",
+        possible_values = &PinDirection::variants(),
+        case_insensitive=true,
+        help = "The I/O direction of the pin"
+    )]
+    pub direction: PinDirection,
+}
+
+impl CommandDispatch for GpioSetDirection {
+    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+        transport.capabilities().request(Capability::GPIO).ok()?;
+        let gpio = transport.gpio()?;
+        gpio.set_direction(&self.pin, self.direction)?;
         Ok(None)
     }
 }
@@ -59,4 +86,5 @@ impl CommandDispatch for GpioWrite {
 pub enum GpioCommand {
     Read(GpioRead),
     Write(GpioWrite),
+    SetDirection(GpioSetDirection),
 }
