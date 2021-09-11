@@ -241,7 +241,9 @@ registers: [
           ''',
           resval: "3",
         },
-      ]
+      ],
+      tags: [// The status readback depends on state of ast and do not always have a set value
+        "excl:CsrAllTests:CsrExclCheck"]
     },
   ]
 }
