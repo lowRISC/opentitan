@@ -7,19 +7,10 @@ use log;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
-use thiserror::Error;
 
-use crate::io::spi::{ClockPolarity, Target, Transfer, TransferMode};
+use crate::io::spi::{ClockPolarity, SpiError, Target, Transfer, TransferMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
-
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("Invalid word size: {0}")]
-    InvalidWordSize(u32),
-    #[error("Invalid speed: {0}")]
-    InvalidSpeed(u32),
-}
 
 /// Represents the Ultradebug SPI device.
 pub struct UltradebugSpi {
@@ -29,11 +20,11 @@ pub struct UltradebugSpi {
 }
 
 impl UltradebugSpi {
-    pub const PIN_CLOCK: u32 = 0;
-    pub const PIN_MOSI: u32 = 1;
-    pub const PIN_MISO: u32 = 2;
-    pub const PIN_CHIP_SELECT: u32 = 3;
-    pub const PIN_SPI_ZB: u32 = 4;
+    pub const PIN_CLOCK: u8 = 0;
+    pub const PIN_MOSI: u8 = 1;
+    pub const PIN_MISO: u8 = 2;
+    pub const PIN_CHIP_SELECT: u8 = 3;
+    pub const PIN_SPI_ZB: u8 = 4;
     pub fn open(ultradebug: &Ultradebug) -> Result<Self> {
         let mpsse = ultradebug.mpsse(ftdi::Interface::B)?;
         // Note: platforms ultradebugs tristate their SPI lines
@@ -68,7 +59,7 @@ impl Target for UltradebugSpi {
     fn set_bits_per_word(&mut self, bits_per_word: u32) -> Result<()> {
         match bits_per_word {
             8 => Ok(()),
-            _ => Err(Error::InvalidWordSize(bits_per_word).into()),
+            _ => Err(SpiError::InvalidWordSize(bits_per_word).into()),
         }
     }
 
