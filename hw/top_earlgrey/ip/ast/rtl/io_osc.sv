@@ -13,7 +13,7 @@ module io_osc (
   output logic io_clk_o   // IO Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 1ps;

@@ -14,7 +14,7 @@ module sys_osc (
   output logic sys_clk_o  // System Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit  1ns / 1ps;

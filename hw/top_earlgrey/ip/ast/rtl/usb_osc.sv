@@ -14,7 +14,7 @@ module usb_osc (
   output logic usb_clk_o  // USB Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 1ps;

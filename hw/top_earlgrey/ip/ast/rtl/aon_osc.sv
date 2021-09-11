@@ -13,7 +13,7 @@ module aon_osc (
   output logic aon_clk_o  // AON Clock Output
 );
 
-`ifndef SYNTHESIS
+`ifndef AST_BYPASS_CLK
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 10ps;
