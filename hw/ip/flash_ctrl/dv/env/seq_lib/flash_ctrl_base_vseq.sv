@@ -18,6 +18,21 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  
+  // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
+  flash_ctrl_callback_vseq callback_vseq;
+
+  virtual task pre_start();
+    `uvm_create_on(callback_vseq, p_sequencer);
+    super.pre_start();
+  endtask
+
+  // After finishing basic dut_init do some additional required actions with callback_vseq
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    callback_vseq.dut_init_callback();
+  endtask : dut_init
+
   virtual task dut_shutdown();
     // check for pending flash_ctrl operations and wait for them to complete
     // TODO
