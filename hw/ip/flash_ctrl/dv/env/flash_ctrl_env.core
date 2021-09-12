@@ -24,6 +24,7 @@ filesets:
       - flash_ctrl_scoreboard.sv: {is_include_file: true}
       - flash_ctrl_env.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_callback_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_rand_ops_base_vseq.sv: {is_include_file: true}
