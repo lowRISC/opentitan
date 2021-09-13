@@ -68,7 +68,9 @@ end
 logic clk_osc_en;
 assign clk_osc_en = clk_osc_sel && (clk_osc_en_q || clk_osc_aoff);
 
-prim_clock_gating u_clk_osc_ckgt (
+prim_clock_gating #(
+  .NoFpgaGate(1'b1)
+) u_clk_osc_ckgt (
   .clk_i ( clk_io_osc_i ),
   .en_i ( clk_osc_en ),
   .test_en_i ( 1'b0 ),
@@ -104,7 +106,9 @@ end
 logic clk_byp_en;
 assign clk_byp_en = clk_byp_sel && (clk_byp_en_q || clk_byp_aoff);
 
-prim_clock_gating u_clk_byp_ckgt (
+prim_clock_gating #(
+  .NoFpgaGate(1'b1)
+) u_clk_byp_ckgt (
   .clk_i ( clk_ast_ext_i ),
   .en_i ( clk_byp_en ),
   .test_en_i ( 1'b0 ),
