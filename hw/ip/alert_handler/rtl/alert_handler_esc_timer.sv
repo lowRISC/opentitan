@@ -162,7 +162,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
         if (accu_trig_i && en_i && !clr_i) begin
           state_d    = Phase0St;
-          latch_crashdump_o = (crashdump_phase_i == 2'b00);
           cnt_en     = 1'b1;
           esc_trig_o = 1'b1;
         // the counter is zero in this state. so if the
@@ -183,7 +182,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
         if ((accu_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
           state_d    = Phase0St;
-          latch_crashdump_o = (crashdump_phase_i == 2'b00);
           cnt_en     = 1'b1;
           cnt_clr    = 1'b1;
           esc_trig_o = 1'b1;
@@ -202,6 +200,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         phase_oh[0] = 1'b1;
         thresh      = phase_cyc_i[0];
         esc_state_o = Phase0;
+        latch_crashdump_o = (crashdump_phase_i == 2'b00);
 
         if (clr_i) begin
           state_d = IdleSt;
@@ -209,7 +208,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase1St;
-          latch_crashdump_o = (crashdump_phase_i == 2'b01);
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
         end
@@ -219,6 +217,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         phase_oh[1] = 1'b1;
         thresh      = phase_cyc_i[1];
         esc_state_o = Phase1;
+        latch_crashdump_o = (crashdump_phase_i == 2'b01);
 
         if (clr_i) begin
           state_d = IdleSt;
@@ -226,7 +225,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase2St;
-          latch_crashdump_o = (crashdump_phase_i == 2'b10);
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
         end
@@ -236,6 +234,8 @@ module alert_handler_esc_timer import alert_pkg::*; (
         phase_oh[2] = 1'b1;
         thresh      = phase_cyc_i[2];
         esc_state_o = Phase2;
+        latch_crashdump_o = (crashdump_phase_i == 2'b10);
+
 
         if (clr_i) begin
           state_d = IdleSt;
@@ -243,7 +243,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
           cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase3St;
-          latch_crashdump_o = (crashdump_phase_i == 2'b11);
           cnt_clr = 1'b1;
         end
       end
@@ -252,6 +251,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         phase_oh[3] = 1'b1;
         thresh      = phase_cyc_i[3];
         esc_state_o = Phase3;
+        latch_crashdump_o = (crashdump_phase_i == 2'b11);
 
         if (clr_i) begin
           state_d = IdleSt;
