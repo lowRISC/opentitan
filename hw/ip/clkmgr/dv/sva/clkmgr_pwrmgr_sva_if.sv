@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This contains SVA assertions to check that rising or falling edges of ip_clk_en
-// are followed by corresponding edges of clk_status. Notice when it falls the response
-// could be slower due to devices not being idle. We create two different assertions to
-// avoid very large wait times for them to be idle.
+// are followed by corresponding edges of clk_status.
 interface clkmgr_pwrmgr_sva_if (
   input logic clk_i,
   input logic rst_ni,
@@ -26,21 +24,11 @@ interface clkmgr_pwrmgr_sva_if (
   bit disable_sva;
 
   // clk_status should fall if all units are idle when enable falls.
-  `ASSERT(StatusFallForDisableIdle_A,
-          $fell(ip_clk_en) && (idle == '1) |-> ##[FallCyclesMin:FallCyclesMax] $fell(clk_status),
-          clk_i, !rst_ni || disable_sva)
-
-  // clk_status should fall if all units become idle while enable is inactive.
-  `ASSERT(StatusFallForIdleDisable_A,
-          $rose(idle == '1) && !ip_clk_en |-> ##[FallCyclesMin:FallCyclesMax] $fell(clk_status),
+  `ASSERT(StatusFall_A, $fell(ip_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] $fell(clk_status),
           clk_i, !rst_ni || disable_sva)
 
   // clk_status whould rise is ip_clk_en rises.
   `ASSERT(StatusRiseForEnable_A,
           $rose(ip_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] $rose(clk_status), clk_i,
-          !rst_ni || disable_sva)
-
-  // clk_status should not fall unless units are idle.
-  `ASSERT(NoStatusFallUnlessIdle_A, $fell(clk_status) |-> (idle == '1), clk_i,
           !rst_ni || disable_sva)
 endinterface
