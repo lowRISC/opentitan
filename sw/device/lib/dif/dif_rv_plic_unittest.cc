@@ -20,7 +20,7 @@ using testing::Test;
 
 // If either of these static assertions fail, then the unit-tests for related
 // API should be revisited.
-static_assert(RV_PLIC_PARAM_NUM_SRC == 180,
+static_assert(RV_PLIC_PARAM_NUM_SRC == 181,
               "PLIC instantiation parameters have changed.");
 static_assert(RV_PLIC_PARAM_NUM_TARGET == 1,
               "PLIC instantiation parameters have changed.");
@@ -105,7 +105,7 @@ class IrqTest : public PlicTest {
           {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_95_BIT},
           {RV_PLIC_IE0_3_REG_OFFSET, RV_PLIC_IE0_3_E_127_BIT},
           {RV_PLIC_IE0_4_REG_OFFSET, RV_PLIC_IE0_4_E_159_BIT},
-          {RV_PLIC_IE0_5_REG_OFFSET, RV_PLIC_IE0_5_E_179_BIT},
+          {RV_PLIC_IE0_5_REG_OFFSET, RV_PLIC_IE0_5_E_180_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_IP_MULTIREG_COUNT>
       kPendingRegisters{{
@@ -114,7 +114,7 @@ class IrqTest : public PlicTest {
           {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_95_BIT},
           {RV_PLIC_IP_3_REG_OFFSET, RV_PLIC_IP_3_P_127_BIT},
           {RV_PLIC_IP_4_REG_OFFSET, RV_PLIC_IP_4_P_159_BIT},
-          {RV_PLIC_IP_5_REG_OFFSET, RV_PLIC_IP_5_P_179_BIT},
+          {RV_PLIC_IP_5_REG_OFFSET, RV_PLIC_IP_5_P_180_BIT},
       }};
 
   // Set enable/disable multireg expectations, one bit per call.
