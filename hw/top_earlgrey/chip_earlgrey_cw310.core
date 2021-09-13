@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:systems:ast
       - lowrisc:systems:padring
     files:
       - rtl/clkgen_xil7series.sv
@@ -53,6 +54,9 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -71,6 +75,7 @@ targets:
       - BootRomInitFile
       - OtpCtrlMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - AST_BYPASS_CLK=true
     tools:
       vivado:
         part: "xc7k410tfbg676-1" # CW310 with K410T
