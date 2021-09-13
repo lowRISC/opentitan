@@ -36,7 +36,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     send_reset(pwrmgr_pkg::LowPwrEntry, rstreqs);
     csr_rd_check(.ptr(ral.reset_info), .compare_value(32'h2),
                  .err_msg("Expected reset info to indicate low power"));
-    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
+    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
     // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
@@ -64,7 +64,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     send_ndm_reset();
     csr_rd_check(.ptr(ral.reset_info), .compare_value(32'h4),
                  .err_msg("Expected reset_info to indicate ndm reset"));
-    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
+    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
     // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
