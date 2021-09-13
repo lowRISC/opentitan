@@ -70,14 +70,14 @@
             The `sw_rst_regen` and `sw_rst_ctrl_n` CSRs control the specific
             reset outputs to peripherals in the following sequence:
             - Test all `sw_rst_ctrl_n` bits when `sw_rst_regen` is all 1's.
-            - Clear subsets of `sw_rst_regen` to verify they mask the
-              corresponding resets.
+            - Clear each `sw_rst_regen` bit to verify the corresponding resets
+              are masked.
 
             **Stimulus**:
-            - Write `sw_rst_ctrl_n` CSR with random values in either regen
-              settings.
-            - Write the `sw_rst_regen` and `sw_rst_ctrl_n` CSRs with random
-              values.
+            - Write `sw_rst_ctrl_n` CSR with random values when regen is all 1's.
+            - Clear each `sw_rst_regen` bit and write `sw_rst_ctrl_n` CSR with
+              all 0's.
+            - After each regen bit check set `sw_rst_ctrl_n` to all 1's.
 
             **Checks**:
             - Check that the zero bits in `sw_rst_ctrl_n` enabled by
