@@ -94,19 +94,9 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
       csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
                    .err_msg("Expected sw_rst_ctrl_n not to change"));
 
-      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_ctrl_n));
-      `uvm_info(`gfn, $sformatf("Attempted to set sw_rst_ctrl_n to 0x%0x", sw_rst_ctrl_n), UVM_LOW)
-      exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
-      // And check that the reset outputs match the actual ctrl_n settings.
-      // Allow for domain crossing delay.
-      cfg.io_div2_clk_rst_vif.wait_clks(3);
-      check_software_reset_csr_and_pins(exp_ctrl_n);
-      check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
-
-      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value('1));
-      csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
-                   .err_msg("Expected sw_rst_ctrl_n to be set"));
+      check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regen, 1);
     end
+    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
   endtask : body
 
 endclass : rstmgr_smoke_vseq

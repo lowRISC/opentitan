@@ -28,12 +28,30 @@ module tb;
     .clk,
     .rst_n
   );
-  clk_rst_if aon_clk_rst_if (.clk(clk_aon));
-  clk_rst_if io_clk_rst_if (.clk(clk_io));
-  clk_rst_if io_div2_clk_rst_if (.clk(clk_io_div2));
-  clk_rst_if io_div4_clk_rst_if (.clk(clk_io_div4));
-  clk_rst_if main_clk_rst_if (.clk(clk_main));
-  clk_rst_if usb_clk_rst_if (.clk(clk_usb));
+  clk_rst_if aon_clk_rst_if (
+    .clk  (clk_aon),
+    .rst_n()
+  );
+  clk_rst_if io_clk_rst_if (
+    .clk  (clk_io),
+    .rst_n()
+  );
+  clk_rst_if io_div2_clk_rst_if (
+    .clk  (clk_io_div2),
+    .rst_n()
+  );
+  clk_rst_if io_div4_clk_rst_if (
+    .clk  (clk_io_div4),
+    .rst_n()
+  );
+  clk_rst_if main_clk_rst_if (
+    .clk  (clk_main),
+    .rst_n()
+  );
+  clk_rst_if usb_clk_rst_if (
+    .clk  (clk_usb),
+    .rst_n()
+  );
 
   pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
