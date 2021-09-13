@@ -222,30 +222,6 @@ module rstmgr
   assign pwr_o.rst_lc_src_n = rst_lc_src_n;
   assign pwr_o.rst_sys_src_n = rst_sys_src_n;
 
-
-  ////////////////////////////////////////////////////
-  // Software reset controls external reg           //
-  ////////////////////////////////////////////////////
-  logic [NumSwResets-1:0] sw_rst_ctrl_n;
-
-  for (genvar i=0; i < NumSwResets; i++) begin : gen_sw_rst_ext_regs
-    prim_subreg #(
-      .DW(1),
-      .SwAccess(prim_subreg_pkg::SwAccessRW),
-      .RESVAL(1)
-    ) u_rst_sw_ctrl_reg (
-      .clk_i,
-      .rst_ni,
-      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
-      .wd(reg2hw.sw_rst_ctrl_n[i].q),
-      .de('0),
-      .d('0),
-      .qe(),
-      .q(sw_rst_ctrl_n[i]),
-      .qs(hw2reg.sw_rst_ctrl_n[i].d)
-    );
-  end
-
   ////////////////////////////////////////////////////
   // leaf reset in the system                       //
   // These should all be generated                  //
@@ -284,7 +260,7 @@ module rstmgr
     .clk_i(clk_${rst.clock.name}_i),
     .rst_ni(rst_${rst.parent}_n[Domain${domain}Sel]),
         % if rst.sw:
-    .d_i(sw_rst_ctrl_n[${rst.name.upper()}]),
+    .d_i(reg2hw.sw_rst_ctrl_n[${rst.name.upper()}]),
         % else:
     .d_i(1'b1),
         % endif

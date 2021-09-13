@@ -261,15 +261,16 @@
 
     { multireg: {
         cname: "RSTMGR_SW_RST",
-        name:  "SW_RST_REGEN",
+        name:  "SW_RST_REGWEN",
         desc:  '''
           Register write enable for software controllable resets.
-          When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.
-          When a particular bit value is 1, the corresponding value in !!SW_RST_CTRL_N can be changed.
+          When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N0 can no longer be changed.
+          When a particular bit value is 1, the corresponding value in !!SW_RST_CTRL_N0 can be changed.
         ''',
         count: "NumSwResets",
         swaccess: "rw0c",
-        hwaccess: "hro",
+        hwaccess: "none",
+        compact: false,
         fields: [
           {
             bits: "0",
@@ -286,6 +287,9 @@
     { multireg: {
         cname: "RSTMGR_SW_RST",
         name:  "SW_RST_CTRL_N",
+        regwen: "SW_RST_REGWEN",
+        compact: false,
+        regwen_multi: true,
         desc:  '''
           Software controllable resets.
           When a particular bit value is 0, the corresponding module is held in reset.
@@ -293,9 +297,7 @@
         ''',
         count: "NumSwResets",
         swaccess: "rw",
-        hwaccess: "hrw",
-        hwext: "true",
-        hwqe: "true",
+        hwaccess: "hro",
         fields: [
           {
             bits: "0",
