@@ -1,0 +1,6 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+INSN_CNT = 10
+ERR_BITS = 0x16  # BAD_INSN_ADDR, CALL_STACK, LOOP

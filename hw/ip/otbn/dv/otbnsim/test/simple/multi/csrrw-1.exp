@@ -1,0 +1,6 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+INSN_CNT = 9
+ERR_BITS = 0x8  # ILLEGAL_INSN
