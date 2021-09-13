@@ -218,8 +218,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
   enum { kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR };
-  // TODO(lowRISC/opentitan#7148): Add flash disable when the hw is implemented.
-  // abs_mmio_write32(kBase + FLASH_CTRL_FLASH_DISABLE_REG_OFFSET, 1);
+  abs_mmio_write32(kBase + FLASH_CTRL_FLASH_DISABLE_REG_OFFSET, 1);
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
