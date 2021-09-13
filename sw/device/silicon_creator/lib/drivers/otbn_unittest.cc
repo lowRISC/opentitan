@@ -56,14 +56,6 @@ TEST_F(GetErrBitsTest, Success) {
 
 class ImemWriteTest : public OtbnTest {};
 
-TEST_F(ImemWriteTest, BadOffset) {
-  std::array<uint32_t, 2> test_data = {0};
-
-  // `offset` must be 32b-aligned.
-  EXPECT_EQ(otbn_imem_write(1, test_data.data(), 1), kErrorOtbnBadOffset);
-  EXPECT_EQ(otbn_imem_write(2, test_data.data(), 1), kErrorOtbnBadOffset);
-}
-
 TEST_F(ImemWriteTest, BadAddressBeyondMemorySize) {
   std::array<uint32_t, 2> test_data = {0};
 
@@ -104,14 +96,6 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
 
 class DmemWriteTest : public OtbnTest {};
 
-TEST_F(DmemWriteTest, BadOffset) {
-  std::array<uint32_t, 1> test_data = {0};
-
-  // `offset` must be 32b-aligned.
-  EXPECT_EQ(otbn_dmem_write(1, test_data.data(), 1), kErrorOtbnBadOffset);
-  EXPECT_EQ(otbn_dmem_write(2, test_data.data(), 1), kErrorOtbnBadOffset);
-}
-
 TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   // Test assumption.
   static_assert(OTBN_DMEM_SIZE_BYTES >= 8, "OTBN DMEM size too small.");
@@ -137,14 +121,6 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
 }
 
 class DmemReadTest : public OtbnTest {};
-
-TEST_F(DmemReadTest, BadOffset) {
-  std::array<uint32_t, 2> test_data = {0};
-
-  // `offset` must be 32b-aligned.
-  EXPECT_EQ(otbn_dmem_read(1, test_data.data(), 2), kErrorOtbnBadOffset);
-  EXPECT_EQ(otbn_dmem_read(2, test_data.data(), 2), kErrorOtbnBadOffset);
-}
 
 TEST_F(DmemReadTest, SuccessWithoutOffset) {
   // Assumption in the test.
