@@ -373,7 +373,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
 
-- Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range. 
+- Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
   Tracked as `oob_base_neg_off_cross`.
 - Load from a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
   Tracked as `neg_base_pos_off_cross`.
