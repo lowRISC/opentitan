@@ -88,13 +88,18 @@ class MultiRegister(RegBase):
                                        'regwen_multi field of multireg {}'
                                        .format(self.reg.name))
 
-        default_compact = True if len(self.reg.fields) == 1 else False
+        default_compact = True if len(self.reg.fields) == 1 and not self.regwen_multi else False
         self.compact = check_bool(rd.get('compact', default_compact),
                                   'compact field of multireg {}'
                                   .format(self.reg.name))
         if self.compact and len(self.reg.fields) > 1:
             raise ValueError('Multireg {} sets the compact flag '
                              'but has multiple fields.'
+                             .format(self.reg.name))
+
+        if self.regwen_multi and self.compact:
+            raise ValueError('Multireg {} sets the compact flag '
+                             'but has regwen_multi set.'
                              .format(self.reg.name))
 
         count_str = check_str(rd['count'],

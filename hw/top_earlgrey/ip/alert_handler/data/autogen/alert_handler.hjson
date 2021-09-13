@@ -306,7 +306,6 @@
                   desc:     '''Enable register for alerts.
                   ''',
                   count:    "NAlerts",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -333,7 +332,6 @@
                   desc:     '''Class assignment of alerts.
                   ''',
                   count:    "NAlerts",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -405,7 +403,6 @@
                   and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -434,7 +431,6 @@
                   and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",

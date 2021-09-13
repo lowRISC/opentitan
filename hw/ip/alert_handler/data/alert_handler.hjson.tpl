@@ -292,7 +292,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   desc:     '''Enable register for alerts.
                   ''',
                   count:    "NAlerts",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -319,7 +318,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   desc:     '''Class assignment of alerts.
                   ''',
                   count:    "NAlerts",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -391,7 +389,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
@@ -420,7 +417,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   and "shadow reg storage error" (6).
                   ''',
                   count:    "N_LOC_ALERT",
-                  compact:  "false",
                   shadowed: "true",
                   swaccess: "rw",
                   hwaccess: "hro",
