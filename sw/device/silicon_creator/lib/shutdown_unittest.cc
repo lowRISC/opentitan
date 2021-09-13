@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "alert_handler_regs.h"
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
@@ -43,6 +44,9 @@ class MockShutdown : public ::mask_rom_test::GlobalMock<MockShutdown> {
   MOCK_METHOD(void, shutdown_keymgr_kill, ());
   MOCK_METHOD(void, shutdown_flash_kill, ());
   MOCK_METHOD(void, shutdown_hang, ());
+
+ protected:
+  mask_rom_test::MockAbsMmio mmio_;
 };
 
 }  // namespace internal
@@ -59,6 +63,9 @@ void shutdown_flash_kill(void) {
   return MockShutdown::Instance().shutdown_flash_kill();
 }
 void shutdown_hang(void) { return MockShutdown::Instance().shutdown_hang(); }
+
+// Real implementations of the above mocks.
+extern void unmocked_shutdown_flash_kill(void);
 }  // extern "C"
 
 constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
@@ -508,6 +515,13 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
   // In the X86_64 unittest environment, verify that all of the various
   // kill functions were called.
   shutdown_finalize(kErrorUnknown);
+}
+
+TEST_F(ShutdownTest, FlashKill) {
+  EXPECT_ABS_WRITE32(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR +
+                         FLASH_CTRL_FLASH_DISABLE_REG_OFFSET,
+                     1);
+  unmocked_shutdown_flash_kill();
 }
 
 }  // namespace
