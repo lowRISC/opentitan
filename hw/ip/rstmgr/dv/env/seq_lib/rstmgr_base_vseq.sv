@@ -187,6 +187,29 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_i2c2_n[1], exp_ctrl_n[9])
   endtask
 
+  // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regen setting.
+  task check_sw_rst_ctrl_n(bit [NumSwResets-1:0] sw_rst_ctrl_n,
+                           bit [NumSwResets-1:0] sw_rst_regen, bit erase_ctrl_n);
+    bit [NumSwResets-1:0] exp_ctrl_n;
+
+    `uvm_info(`gfn, $sformatf("Set sw_rst_ctrl_n to 0x%0x", sw_rst_ctrl_n), UVM_MEDIUM)
+    csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_ctrl_n));
+    // And check that the reset outputs match the actual ctrl_n settings.
+    // Allow for domain crossing delay.
+    cfg.io_div2_clk_rst_vif.wait_clks(3);
+    exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
+    `uvm_info(`gfn, $sformatf(
+              "regen=%b, ctrl_n=%b, expected=%b", sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
+              UVM_MEDIUM)
+    check_software_reset_csr_and_pins(exp_ctrl_n);
+    if (erase_ctrl_n) begin
+      const logic [NumSwResets-1:0] sw_rst_all_ones = '1;
+      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_all_ones));
+      csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
+                   .err_msg("Expected sw_rst_ctrl_n to be set"));
+    end
+  endtask
+
   // Sends either a low power exit or an external hardware reset request, and drops it once it
   // should have caused the hardware to handle it.
   task send_reset(pwrmgr_pkg::reset_cause_e reset_cause,
