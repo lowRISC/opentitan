@@ -26,7 +26,6 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   rand bit do_wr_phases_cyc;
   rand bit do_esc_intr_timeout;
   rand bit do_lock_config;
-  rand bit rand_drive_entropy;
   rand bit [TL_DW-1:0] ping_timeout_cyc;
   rand bit [TL_DW-1:0] max_phase_cyc;
   rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_CLASSES];
@@ -136,9 +135,6 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
       if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
       wr_class_accum_threshold(accum_thresh);
       wr_ping_timeout_cycle(ping_timeout_cyc);
-
-      //drive entropy
-      cfg.entropy_vif.drive(rand_drive_entropy);
 
       // when all configuration registers are set, write lock register
       lock_config(do_lock_config);

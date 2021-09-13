@@ -39,8 +39,8 @@ class alert_handler_env extends cip_base_env #(
       cfg.esc_device_cfg[i].en_cov = cfg.en_cov;
     end
     // get vifs
-    if (!uvm_config_db#(entropy_vif)::get(this, "", "entropy_vif", cfg.entropy_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get entropy_vif from uvm_config_db")
+    if (!uvm_config_db#(crashdump_vif)::get(this, "", "crashdump_vif", cfg.crashdump_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get crashdump_vif from uvm_config_db")
     end
   endfunction
 
