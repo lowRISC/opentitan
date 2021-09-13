@@ -180,7 +180,7 @@ The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits
   typedef struct packed {
     // alerts
     logic    [NAlerts-1:0] alert_cause;     // alert cause bits
-    logic    [3:0]         loc_alert_cause; // local alert cause bits
+    logic    [6:0]         loc_alert_cause; // local alert cause bits
     // class state
     logic    [3:0][15:0]   class_accum_cnt; // current accumulator value
     logic    [3:0][31:0]   class_esc_cnt;   // current escalation counter value
