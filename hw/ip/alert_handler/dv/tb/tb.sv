@@ -17,12 +17,12 @@ module tb;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
-  wire entropy;
+  wire [NUM_CRASHDUMP-1:0]      crashdump;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) entropy_if(entropy);
+  pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
@@ -80,7 +80,7 @@ module tb;
     .intr_classb_o        ( interrupts[1] ),
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
-    .crashdump_o          (               ),
+    .crashdump_o          ( crashdump     ),
     .edn_o                ( edn_if.req    ),
     .edn_i                ( {edn_if.ack, edn_if.d_data} ),
     .alert_rx_o           ( alert_rx      ),
@@ -94,7 +94,7 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(entropy_vif)::set(null, "*.env", "entropy_vif", entropy_if);
+    uvm_config_db#(crashdump_vif)::set(null, "*.env", "crashdump_vif", crashdump_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);

@@ -6,7 +6,7 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
 
   // ext component cfgs
   esc_en_vif               esc_en_vif;
-  entropy_vif              entropy_vif;
+  crashdump_vif            crashdump_vif;
   rand alert_esc_agent_cfg alert_host_cfg[];
   rand alert_esc_agent_cfg esc_device_cfg[];
 
