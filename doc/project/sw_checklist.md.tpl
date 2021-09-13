@@ -1,14 +1,20 @@
 ---
-title: "${display_name} DIF Checklist"
+title: "${ip.name_long_upper} DIF Checklist"
 ---
+
+<%doc>
+    This templates requires the following Python objects to be passed:
+
+    1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
+</%doc>
 
 <!--
 NOTE: This is a template checklist document that is required to be copied over
-to `sw/device/lib/dif/dif_${dif_name}.md` for a new DIF that transitions
+to `sw/device/lib/dif/dif_${ip.name_snake}.md` for a new DIF that transitions
 from L0 (Specification) to L1 (Development) stage, and updated as needed.
 Once done, please remove this comment before checking it in.
 -->
-This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [${display_name} DIF]({{< relref "hw/ip/${ip_name}/doc" >}}).
+This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [${ip.name_long_upper} DIF]({{< relref "hw/ip/${ip.name_snake}/doc" >}}).
 All checklist items refer to the content in the [Checklist]({{< relref "/doc/project/checklist.md" >}}).
 
 ## DIF Checklist
