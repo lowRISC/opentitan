@@ -40,7 +40,9 @@ sys_osc u_sys_osc (
 
 // Clock & Valid
 ///////////////////////////////////////
-prim_clock_buf u_clk_sys_buf(
+prim_clock_buf #(
+  .NoFpgaBuf(1'b1)
+) u_clk_sys_buf(
   .clk_i ( clk ),
   .clk_o ( clk_src_sys_o )
 );

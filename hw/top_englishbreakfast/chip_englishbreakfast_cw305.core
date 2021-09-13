@@ -9,6 +9,7 @@ filesets:
   files_rtl_cw305:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:ast
       - lowrisc:systems:topgen
       - lowrisc:systems:padring
     file_type: systemVerilogSource
@@ -45,6 +46,9 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -62,6 +66,7 @@ targets:
     parameters:
       - BootRomInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - AST_BYPASS_CLK=true
     tools:
       vivado:
         part: "xc7a100tftg256-2" # CW305 Board
