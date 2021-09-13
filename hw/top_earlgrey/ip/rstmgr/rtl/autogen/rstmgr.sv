@@ -1004,6 +1004,10 @@ module rstmgr
   logic dump_capture;
   assign dump_capture =  rst_hw_req | rst_ndm | rst_low_power;
 
+  // halt dump capture once we hit particular conditions
+  logic dump_capture_halt;
+  assign dump_capture_halt = rst_hw_req;
+
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(alert_pkg::alert_crashdump_t))
   ) u_alert_info (
@@ -1031,9 +1035,9 @@ module rstmgr
   // once dump is captured, no more information is captured until
   // re-eanbled by software.
   assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.alert_info_ctrl.en.de = dump_capture;
+  assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
   assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.cpu_info_ctrl.en.de = dump_capture;
+  assign hw2reg.cpu_info_ctrl.en.de = dump_capture_halt;
 
   ////////////////////////////////////////////////////
   // Exported resets                                //
