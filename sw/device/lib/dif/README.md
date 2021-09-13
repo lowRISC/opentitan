@@ -129,19 +129,21 @@ information about their size from other information (e.g. topgen).
 The following basic types are expected to be provided by all DIFs (unless
 otherwise specified).
 
-* `dif_<ip>_t` is a type representing a handle to the peripheral. Its fields
-  are private implementation details, and should not be read or written to by
-  clients. This type is usually passed by `const` pointer, except when it is
+* `dif_<ip>_t` is an **auto-generated** type representing a handle to the 
+  peripheral. Its first (and only) field is always the base address for the
+  peripheral registers, styled `mmio_region_t base_addr;`.
+  This type is usually passed by `const` pointer, except when it is
   being initialized (see `dif_<ip>_init()` below).
-* `dif_<ip>_params_t` is a struct representing hardware instantiation parameters
-  that a DIF library cannot know in advance. Its first field is always the
-  base address for the peripheral registers, styled `mmio_region_t base_addr;`.
   This type is always passed by value.
-* `dif_<ip>_config_t` is a struct representing runtime configuration
-  parameters. It is only present when `dif_<ip>_configure()` is defined.
-  This type is always passed by value.
-* `dif_<ip>_result_t` is an enum representing general return codes for DIFs. It
-  must define the following constants, in order:
+* `dif_<ip>_params_t` is a *manually-defined* struct representing hardware
+  instantiation parameters that a DIF library cannot know in advance. This type
+  is optional, and may not be defined for IPs that do not have hardware
+  instantiation parameters outside their instantiation specific base address.
+* `dif_<ip>_config_t` is a *manually-defined* struct representing runtime
+  configuration parameters. It is only present when `dif_<ip>_configure()` is
+  defined. This type is always passed by value.
+* `dif_<ip>_result_t` is an *auto-generated* enum representing general return
+  codes for DIFs. It must define the following constants, in order:
     * `kDif<ip>Ok`, with value 0, to denote the call succeeded.
     * `kDif<ip>Error`, with value 1, to denote a non-specific error happened
       during the call. This is for the `default:` case of enum switches (as
@@ -150,10 +152,10 @@ otherwise specified).
     * `kDif<ip>BadArg`, with value 2, to denote that the caller supplied
       incorrect arguments. This value must only be returned if the function has
       not caused any side-effects.
-
-  Additional, specific return code constants must all be defined after
-  these three general constants, and may cover more specific forms of the
-  return codes defined above.
+* `dif_<ip>_result_ext_t` is an *manually-defined* enum representing additional
+  return code constants. These must begin with the value 3, and may cover more
+  specific forms of the return codes defined above, including more specific
+  reasons arguments are invalid.
 * **DEPRECATED** `dif_<ip>_<operation>_result_t` is an enum representing more
   specific failure modes. These specific return code enums can be shared
   between multiple DIFs that fail in the same way. `<operation>` need not
@@ -162,36 +164,20 @@ otherwise specified).
   Operation return codes are being deprecated. See GitHub issue
   [#6137](https://github.com/lowRISC/opentitan/issues/6137) for more details.
 
-  The first three constants in these specific enums must define the following
-  constants:
-  * `kDif<ip><operation>Ok`, with value `kDif<ip>Ok`,
-  * `kDif<ip><operation>Error`, with value `kDif<ip>Error`, and
-  * `kDif<ip><operation>BadArg`, with value `kDif<ip>BadArg`.
-
-  Additional, specific return code constants must all be defined after
-  these three general constants, and may cover more specific forms of the
-  return codes defined above, including more specific reasons arguments are
-  invalid.
-* `dif_<ip>_toggle_t` is an enum representing an enabled or disabled state. This
-  must define exactly two constants, in no particular order:
-  * `kDif<ip>ToggleEnable`, indicating an enabled state.
-  * `kDif<ip>ToggleDisable`, indicating an enabled state.
-
-  This type is intended to be used as a better-named replacement for `bool`,
-  for operations which are setting wither a behavior is enabled or disabled
-  (such as whether an interrupt is maskable). Values of this type should *not* be
-  used as `if`-statement conditions.
-
-  If no function requires this type, it may be omitted.
-
 #### Lifecycle Functions
 The following functions are the basic functionality for initializing and
 handling the lifetime of a handle.
 
-* `result_t dif_<ip>_init(dif_<ip>_params_t params, dif_<ip>_t *handle);`
+* `result_t dif_<ip>_init(mmio_region_t base_addr, dif_<ip>_t *handle);`
   initializes `handle` in an implementation-defined way, but does not perform any
   hardware operations. `handle` may point to uninitialized data on function entry,
   but if the function returns `Ok`, then `handle` must point to initialized data.
+
+  Additionally, this function may take an additional argument, of type
+  `dif_<ip>_params_t`, for parameter validation. This argument will only be
+  provided for peripherals that have additional hardware instantiation
+  parameters besides a base address (e.g., the alert handler).
+
 * `result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t
   config);` configures the hardware managed by `handle` with runtime parameters
   in an implementation-defined way. This function should be "one-off": it should
@@ -256,17 +242,25 @@ portions of their software-accessible functionality.
 The following types and functions are the standard interface for peripherals that
 provide a collection of `INTR_ENABLE`, `INTR_STATE`, and `INTR_TEST` registers
 for interrupt management. A DIF library for a peripheral providing such
-registers must provide this interface.
+registers must provide this interface. To ensure this, all interrupt DIFs,
+including: headers, (C) implementations, and unit tests, are *auto-generated* from
+templates and an IP's HJSON configuration file using the `util/make_new_dif.py`
+tool.
 
 If a peripheral is defined with `no_auto_intr_regs: true`, this exact API is not
 required even if the `INTR_` registers are provided (though DIF libraries are
-encouraged to follow it where it makes sense).
+encouraged to follow it where it makes sense). _In these cases, auto-generated
+interrupt DIFs may not exist._
 
 * `dif_<ip>_irq_t` is an enum that lists all of the interrupt types for this
   peripheral. A DIF library may opt to use another pre-existing type instead,
   when, for example, interrupt types are coupled to a distinct
   peripheral-specific concept. In that case, all occurrences of `dif_<ip>_irq_t`
   below should be replaced with this type.
+* `result_t dif_<ip>_irq_get_state(const dif_<ip>_t *handle, 
+  dif_<ip>_irq_state_snapshot_t *snapshot, bool *is_pending);` returns a
+  snapshot of the entire interrupt state register, to check the status of all
+  interrupts for a peripheral. 
 * `result_t dif_<ip>_irq_is_pending(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq, bool *is_pending);` checks whether a specific interrupt is
   pending (i.e., if the interrupt has been asserted but not yet cleared).
@@ -287,16 +281,16 @@ encouraged to follow it where it makes sense).
 Additionally, the following types allow for batch save/restore operations on
 the interrupt enable register:
 
-* `dif_<ip>_irq_snapshot_t` is a type that encapsulates restorable interrupt
-  state, to be used with the two functions below. This type should be treated as
-  opaque by clients.
+* `dif_<ip>_irq_enable_snapshot_t` is a type that encapsulates restorable
+  interrupt state, to be used with the two functions below. This type should be
+  treated as opaque by clients.
 * `result_t dif_<ip>_irq_disable_all(const dif_<ip>_t *handle,
-  dif_<ip>_irq_snapshot_t *snapshot);` disables all interrupts associated with
-  the peripheral, saving them to `*snapshot`. `snapshot` may be null, in which
-  case the previous enablement state is not saved.
+  dif_<ip>_irq_enable_snapshot_t *snapshot);` disables all interrupts associated
+  with the peripheral, saving them to `*snapshot`. `snapshot` may be null, in
+  which case the previous enablement state is not saved.
 * `result_t dif_<ip>_irq_restore_all(const dif_<ip>_t *handle,
-  const dif_<ip>_irq_snapshot_t *snapshot);` restores an interrupt enablement snapshot
-  produced by the above function.
+  const dif_<ip>_irq_enable_snapshot_t *snapshot);` restores an interrupt
+  enablement snapshot produced by the above function.
 
 #### Unit Testing
 
@@ -320,7 +314,7 @@ there are some relaxations of these rules for them described at the end.
   * Scalar arguments must not be declared `const` or `volatile` (cv-qualified)
     in DIF signatures.
 
-* DIFs must use one of the `result_t` enums described above rather than booleans
+* DIFs must use one of the `result_[ext_]t` enums described above rather than booleans
   for reporting errors. If a DIF can either error or instead produce a value, it
   must return a `result_t`, and use an out-parameter for returning the produced
   value.
